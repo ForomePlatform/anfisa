@@ -1,0 +1,150 @@
+body {padding: 0px; margin: 0px;  
+    background-color: white; overflow: hidden;    white-space: nowrap;
+}
+
+table.top, { padding: 0px; margin: 0px;
+    border: 0px; width: 100%; height: 97%;}
+table td { border: solid black 1px;}
+
+td.top-left  {min-width: 200px; background-color:#fff0ff; 
+    margin:0; padding:0; height: 100%;
+    vertical-align: top;}
+    
+td.top-right {width: 100%; min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    white-space: nowrap; vertical-align: top;
+}
+
+div.data-sets {min-height: 50px; width: 100%;}
+div.rec-list  {height: 100%; width: 100%;}
+
+ul.records  {
+  list-style: none;
+  padding: 0;
+  overflow-y: scroll;
+  max-height: 80vh;
+}
+
+ul.records li {
+    cursor: pointer;
+    padding: 5px 30px;
+    background: linear-gradient(to left, #f8ab8d 0%, white, #f8ab8d);
+    border-bottom: 1px solid grey;
+    color: #506a6b;
+    font-size: 12px;
+    box-shadow: 5px 5px 5px 0 rgba(0,0,0, .2);
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+ul.records li.press {
+    padding: 5px 30px;
+    background: linear-gradient(to left, green 0%, white, green);
+    border-bottom: 1px solid grey;
+    color: green;
+    font-size: 15px;
+    box-shadow: 5px 5px 5px 0 rgba(0,0,0, .2);
+    margin-bottom: 5px;
+    height: 10px;
+    width: 150px;
+    text-align: center;
+}
+
+
+iframe#record {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+/*************************************************/
+ /* Style the tab */
+.r-tab {
+    display: block;
+    height: 25px;
+    width: 100%
+    border: 1px solid #ccc;
+    background-color: #aaa;
+}
+
+/* Style the buttons that are used to open the tab content */
+.r-tab button {
+    background-color: inherit;
+    color: white;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 5px 8px;
+    transition: 0.3s;
+    border-radius: 0px 10px 0px 0px;
+}
+
+/* Change background color of buttons on hover */
+.r-tab button:hover {
+    background-color: #ccc;
+}
+
+/* Create an active/current tablink class */
+.r-tab button.active {
+    background-color: white;
+    color: black;
+    cursor: default;
+}
+
+/* Style the tab content */
+.r-tabcnt {
+    position: absolute;
+    padding: 3px 6px;
+    border: 1px solid #ccc;
+    border-top: none;
+    height: 93%;
+    width: 99%;
+    overflow: auto;
+    white-space: nowrap;
+    background-color: white;
+} 
+
+table#rec-main {
+    width: 200px;
+}
+
+td.norm {
+    text-align: left;
+    vertical-align: top;
+}
+
+td.title {
+    font-weight: bold;
+    color: #402202;
+    background-color: #FFFCF4;
+}
+
+td.numeric {
+    text-align: right;
+}
+
+td.flex {
+    text-align: center;
+    font: Arial;
+}
+
+td.none {
+    text-align: center;
+    color: grey;
+}
+
+pre {
+    margin: 3px;
+    padding: 5px;
+    background-color: #F8F8FF;
+    font-family: Courier New;
+    font-size: 12px;
+}
+
+p.error {color: red;}
+
+table.main-table, table.main-table.td {border: 0px;}
+
+/*************************************************/
