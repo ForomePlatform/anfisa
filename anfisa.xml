@@ -31,6 +31,6 @@
     ]]></logging>
 <data>
     <dataset name="bgm9001"  kind="a-json"
-        file="../a-data/bgm9001-100.json" />
+        file="/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_final.json" />
 </data>
 </conf>
