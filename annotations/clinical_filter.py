@@ -80,6 +80,12 @@ def process_file(f, out = None, vcf_header = None):
                 if (info['ClinVar']):
                     key = "{} & ClinVar".format(key)
 
+            if (info['ClinVar']):
+                v.data["ClinVar"] = ""
+
+            if (info['HGMD']):
+                v.data["HGMD"] = ""
+
             if (not key in KEYs):
                 KEYs.append(key)
 
@@ -87,6 +93,8 @@ def process_file(f, out = None, vcf_header = None):
 
             f = cube.get((msq, key),0)
             cube[(msq, key)] = f + 1
+
+            out.write(v.get_view_json() + '\n')
 
             # if (msq in ["frameshift_variant", "missense_variant"] and key == 'Singleton'):
             #     print "{}: {}, {}:{}".format(v.get('id'), msq, v.get("seq_region_name"), v.get('start'))

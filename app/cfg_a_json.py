@@ -3,9 +3,16 @@ CONFIG_AJson = {
         "main": "Data",
         "cons": "Consequences",
         "colv": "Colocated Variants",
+        "view.general": "View [General]",
+        "view.quality": "View [Quality]",
+        "view.gnomAD": "View [gnamAD]",
+        "view.Databases": "View [Databases]",
+        "view.Predictions": "View [Predictions]",
+        "view.Genetics": "View [Genetics]",
+        "view.Inheritance": "View [Inheritance]",
         "inp": "Raw Input"},
     "main": {
-        "fields": ["id", "assembly_name",
+        "fields": ["label", "id", "assembly_name",
             "seq_region_name", "start", "end", "strand", "",
             "allele_string", "variant_class",
             "most_severe_consequence"],
@@ -20,6 +27,37 @@ CONFIG_AJson = {
             "most_severe_consequence": {
                 "title": "Most Severe Consequence", "class": "flex"}
         }
+    },
+    "view.general":{
+        "fields":["Genes", "cPos", "pPos",
+                  "Ensembl Transcripts (Worst)","Variant Exon (Worst Annotation)", "Variant Intron (Worst Annotation)",
+                  "Ensembl Transcripts (Canonical)", "Variant Exon (Canonical)", "Variant Intron (Canonical)"
+
+        ]
+    },
+    "view.quality":{
+        "fields":["MQ", "QUAL"]
+    },
+    "view.gnomAD":{
+        "fields":["AF", "URL"]
+    },
+    "view.Databases":{
+        "fields":["HGMD", "ClinVar"]
+    },
+    "view.Predictions":{
+        "fields":["Polyphen",
+                  "SIFT",
+                  "REVEL",
+                  "Mutation Taster",
+                  "FATHMM",
+                  "CADD",
+                  "MutationAssessor"]
+    },
+    "view.Genetics":{
+        "fields":[]
+    },
+    "view.Inheritance":{
+        "fields":[]
     },
     "colocated_variants": {
         "fields": ["id", "start", "end", "allele_string", "strand",
