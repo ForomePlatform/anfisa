@@ -54,8 +54,8 @@ class AnfisaService:
         print >> output, ' <title>Anfisa: %s</title>' % data_set.getName()
         HTML_Setup.printRefJS(output, "anf.js")
         print >> output, '</head>'
-        print >> output, ('<body onload="changeRec(\'%s\', \'%s\');">' %
-            (data_set.getName(), data_set.getRecId(0)))
+        print >> output, ('<body onload="changeRec(\'%s\', 0);">' %
+            data_set.getName())
         print >> output, ' <table class="top"><tr>'
         print >> output, '  <td class="top-left">'
         print >> output, '   <div class="data-sets">'

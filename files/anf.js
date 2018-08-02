@@ -1,12 +1,12 @@
-var sCurRecId = null;
+var sCurRecNo = null;
 var sCurRecTab = null;
 
-function changeRec(data_set, rec_id) {
-    if (sCurRecId != null) {
-        document.getElementById("li--" + sCurRecId).className = "";
+function changeRec(data_set, rec_no) {
+    if (sCurRecNo != null) {
+        document.getElementById("li--" + sCurRecNo).className = "";
     }
-    sCurRecId = rec_id;
-    document.getElementById("li--" + sCurRecId).className = "press";
+    sCurRecNo = rec_no;
+    document.getElementById("li--" + sCurRecNo).className = "press";
     document.getElementById("record").src = 
-        "rec?data=" + data_set + "&rec=" + sCurRecId;
+        "rec?data=" + data_set + "&rec=" + sCurRecNo;
 }

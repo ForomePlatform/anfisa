@@ -68,6 +68,8 @@ def formTable(output, table_id, objects, fields, options,
         for val in values:
             if val:
                 vv, cls_name = _escapeValue(val), class_name
+                if class_name == "link":
+                    vv = '<a href="%s" target="blank">link</a>' % vv
             else:
                 vv, cls_name = "-", 'none'
             print >> output, '<td class="%s">%s</td>' % (cls_name, vv)

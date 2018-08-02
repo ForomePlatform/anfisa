@@ -1,4 +1,9 @@
 CONFIG_AJson = {
+    "_main_key": "id",
+    "_view_tabs": ["view.general", "view.quality",
+        "view.gnomAD", "view.Databases", "view.Predictions"],
+    "_no_view_fields": ["view", "view.Genetics", "view.Inheritance"],
+
     "_aspect_title": {
         "main": "Data",
         "cons": "Consequences",
@@ -15,7 +20,8 @@ CONFIG_AJson = {
         "fields": ["label", "id", "assembly_name",
             "seq_region_name", "start", "end", "strand", "",
             "allele_string", "variant_class",
-            "most_severe_consequence"],
+            "most_severe_consequence",
+            "ClinVar", "HGMD"],
         "options": {
             "start":  {"class": "numeric"},
             "end":    {"class": "numeric"},
@@ -30,19 +36,26 @@ CONFIG_AJson = {
     },
     "view.general":{
         "fields":["Genes", "cPos", "pPos",
-                  "Ensembl Transcripts (Worst)","Variant Exon (Worst Annotation)", "Variant Intron (Worst Annotation)",
-                  "Ensembl Transcripts (Canonical)", "Variant Exon (Canonical)", "Variant Intron (Canonical)"
-
-        ]
+                  "Ensembl Transcripts (Worst)",
+                  "Variant Exon (Worst Annotation)",
+                  "Variant Intron (Worst Annotation)",
+                  "Ensembl Transcripts (Canonical)",
+                  "Variant Exon (Canonical)",
+                  "Variant Intron (Canonical)"],
+        "options": {}
     },
+
     "view.quality":{
-        "fields":["MQ", "QUAL"]
+        "fields":["MQ", "QUAL"],
+        "options": {}
     },
     "view.gnomAD":{
-        "fields":["AF", "URL"]
+        "fields": ["AF", "URL"],
+        "options": {"URL": {"class": "link"}}
     },
     "view.Databases":{
-        "fields":["HGMD", "ClinVar"]
+        "fields":["HGMD", "ClinVar"],
+        "options": {}
     },
     "view.Predictions":{
         "fields":["Polyphen",
@@ -51,13 +64,16 @@ CONFIG_AJson = {
                   "Mutation Taster",
                   "FATHMM",
                   "CADD",
-                  "MutationAssessor"]
+                  "MutationAssessor"],
+        "options": {}
     },
     "view.Genetics":{
-        "fields":[]
+        "fields":[],
+        "options": {}
     },
     "view.Inheritance":{
-        "fields":[]
+        "fields":[],
+        "options": {}
     },
     "colocated_variants": {
         "fields": ["id", "start", "end", "allele_string", "strand",
