@@ -6,7 +6,7 @@ table.top, { padding: 0px; margin: 0px;
     border: 0px; width: 100%; height: 97%;}
 table td { border: solid black 1px;}
 
-td.top-left  {min-width: 200px; background-color:#fff0ff; 
+td.top-left  {min-width: 250px; background-color:#fff0ff; 
     margin:0; padding:0; height: 100%;
     vertical-align: top;}
     
@@ -28,7 +28,7 @@ ul.records  {
 
 ul.records li {
     cursor: pointer;
-    padding: 5px 30px;
+    padding: 1px 1px;
     background: linear-gradient(to left, #f8ab8d 0%, white, #f8ab8d);
     border-bottom: 1px solid grey;
     color: #506a6b;
@@ -36,21 +36,14 @@ ul.records li {
     box-shadow: 5px 5px 5px 0 rgba(0,0,0, .2);
     margin-bottom: 5px;
     text-align: center;
+    height: 28px;
 }
 
 ul.records li.press {
-    padding: 5px 30px;
     background: linear-gradient(to left, green 0%, white, green);
-    border-bottom: 1px solid grey;
     color: green;
-    font-size: 15px;
-    box-shadow: 5px 5px 5px 0 rgba(0,0,0, .2);
-    margin-bottom: 5px;
-    height: 10px;
-    width: 150px;
-    text-align: center;
+    font-weight: bold;
 }
-
 
 iframe#record {
     height: 100%;

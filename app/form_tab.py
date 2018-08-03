@@ -36,7 +36,7 @@ def formTable(output, table_id, objects, fields, options,
         else:
             if use_fields is not None:
                 use_fields[fld] = True
-            if not any([fld in obj for obj in objects]):
+            if not any([fld in obj for obj in objects] + [False]):
                 continue
             values = [obj.get(fld) for obj in objects]
         opts = options.get(fld, {})

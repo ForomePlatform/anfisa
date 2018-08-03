@@ -56,7 +56,7 @@ CONFIG_AJson = {
     },
     "view.Databases":{
         "fields":["HGMD", "ClinVar"],
-        "options": {}
+        "options": {"ClinVar": {"class": "link"}}
     },
     "view.Predictions":{
         "fields":["Polyphen",

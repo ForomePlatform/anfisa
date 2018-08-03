@@ -181,5 +181,8 @@ class DataRecord_AJson(DataRecord):
     def reportAspect(self, output, aspect):
         self.mUseFields[aspect] = True
         cfg = CONFIG_AJson[aspect]
+        data = self.mObj.get(aspect)
+        if not data:
+            return
         formTable(output, "rec-%s" % aspect,
-            [self.mObj[aspect]], cfg["fields"], cfg["options"])
+            [data], cfg["fields"], cfg["options"])
