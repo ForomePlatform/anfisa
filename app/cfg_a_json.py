@@ -1,8 +1,8 @@
 CONFIG_AJson = {
     "_main_key": "label",
     "_view_tabs": ["view.general", "view.quality",
-        "view.gnomAD", "view.Databases", "view.Predictions"],
-    "_no_view_fields": ["view", "view.Genetics", "view.Inheritance"],
+        "view.gnomAD", "view.Databases", "view.Predictions", "view.Genetics"],
+    "_no_view_fields": ["view", "view.Inheritance"],
 
     "_aspect_title": {
         "view.general": "General",
@@ -35,7 +35,7 @@ CONFIG_AJson = {
         }
     },
     "view.general":{
-        "fields":["Genes", "header",
+        "fields":["Genes", "header", "Ref", "Alt",
                   "cPos", "pPos",
                   "Ensembl Transcripts (Worst)",
                   "Variant Exon (Worst Annotation)",
@@ -69,7 +69,9 @@ CONFIG_AJson = {
         "options": {}
     },
     "view.Genetics":{
-        "fields":[],
+        "fields":["Distance From Intron/Exon Boundary (Worst)", "Distance From Intron/Exon Boundary (Canonical)",
+                  "Conservation",
+                  "Species with variant", "Species with other variants", "MaxEntScan", "NNSplice", "Human Splicing Finder"],
         "options": {}
     },
     "view.Inheritance":{

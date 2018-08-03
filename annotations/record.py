@@ -9,6 +9,45 @@ def unique(list):
     list2.extend(s)
     return list2
 
+def hgvcs_pos(str, type, with_pattern = True):
+    pattern = ":{}.".format(type)
+    if (not pattern in str):
+        return None
+    x = str.split(pattern)[1]
+    if (with_pattern):
+        return "{}{}".format(pattern, x)
+    return x
+
+
+def get_distance_hgvsc(hgvsc):
+    coord = hgvsc.split(':')[1]
+    xx = coord.split('.')
+    t = xx[0]
+    d = None
+    for x in xx[1].split('_'):
+        sign = None
+        p1 = None
+        p2 = None
+        while (not x[0].isdigit()):
+            x = x[1:]
+        end = len(x)
+        for i in range(0, end):
+            c = x[i]
+            if (c.isdigit()):
+                continue
+            if (c in ['-', '+']):
+                p1 = int(x[0:i])
+                sign = i
+            if (c.isalpha()):
+                end = i
+                break
+        if (p1 and sign):
+            p2 = int(x[sign + 1:end])
+        if (p2):
+            if (not d or d > p2):
+                d = p2
+    return d
+
 class Variant:
     consequences = [
         "frameshift_variant",
@@ -149,23 +188,13 @@ class Variant:
             raise Exception("Unknown type: {}".format(type))
         return v
 
-    @classmethod
-    def hgvcs_pos(cls, str, type):
-        pattern = ":{}.".format(type)
-        if (not pattern in str):
-            return None
-        x = str.split(pattern)[1]
-        c = x.split('>')[0][:-1]
-        return c
-
     def get_pos(self, type, kind = "all"):
         hgvcs_list = self.get_from_transcripts("hgvsc", kind)
-        pos = set()
-        for hgvcs in hgvcs_list:
-            p = Variant.hgvcs_pos(hgvcs, type)
-            if (p):
-                pos.add(p)
-        return pos
+        return unique([hgvcs_pos(hgvcs, type) for hgvcs in hgvcs_list if hgvcs])
+
+    def get_distance_from_exon(self, kind):
+        hgvcs_list = self.get_from_transcripts("hgvsc", kind)
+        return unique([get_distance_hgvsc(hgvcs) for hgvcs in hgvcs_list if hgvcs])
 
     def get_gnomad_af(self):
         gm_af = None
@@ -248,8 +277,11 @@ class Variant:
         data["view.general"] = tab1
         tab1['Gene(s)'] = self.get_genes()
         tab1['header'] = str(self)
-        tab1['cPos'] = ','.join(self.get_pos('c'))
-        tab1['pPos'] = ','.join(self.get_pos('p'))
+        if (not self.is_snv()):
+            tab1["Ref"] = self.ref()
+            tab1["Alt"] = self.alt_string()
+        tab1['cPos'] = self.get_pos('c')
+        tab1['pPos'] = self.get_pos('p')
         tab1['Proband Genotype'] = proband_genotype.gt_bases
         tab1['Maternal Genotype'] = self.vcf_record.genotype(mother).gt_bases
         tab1['Paternal Genotype'] = self.vcf_record.genotype(father).gt_bases
@@ -309,6 +341,14 @@ class Variant:
         tab6 = dict()
         #view['Genetics'] = tab6
         data["view.Genetics"] = tab6
+        tab6["Distance From Intron/Exon Boundary (Worst)"] = self.get_distance_from_exon("worst")
+        tab6["Distance From Intron/Exon Boundary (Canonical)"] = self.get_distance_from_exon("canonical")
+        tab6["Conservation"] = unique(self.get_from_transcripts_list("conservation"))
+        tab6["Species with variant"] = ""
+        tab6["Species with other variants"] = ""
+        tab6["MaxEntScan"] = ""
+        tab6["NNSplice"] = ""
+        tab6["Human Splicing Finder"] = ""
 
         tab7 = dict()
         #view['Inheritance'] = tab7
