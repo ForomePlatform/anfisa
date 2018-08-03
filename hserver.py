@@ -4,19 +4,10 @@ from lxml     import etree
 from urlparse import parse_qs
 import logging.config
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-from SocketServer import ThreadingMixIn
-
 from app.a_serv import AnfisaService
-#===============================================
-class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
-    """Handle requests in a separate thread."""
-
 #========================================
-sHServer = None
-class HServHandler(BaseHTTPRequestHandler):
-    sConfig = None
-
+class HServResponse:
+    #========================================
     sContentTypes = {
         "html":   "text/html",
         "xml":    "text/xml",
@@ -35,20 +26,21 @@ class HServHandler(BaseHTTPRequestHandler):
         423: "423 Locked",
         500: "500 Internal Error"}
 
+    def __init__(self, start_response):
+        self.mStartResponse = start_response
+
     def makeResponse(self,
             mode        = "html",
             content     = None,
             error       = None,
             add_headers = None,
             without_decoding = False):
-        response_code = 200
         response_status = "200 OK"
         if error is not None:
-            response_code = error
             response_status  = self.sErrorCodes[error]
         if content is not None:
             if without_decoding:
-                response_body = content
+                response_body = bytes(content)
             else:
                 response_body = content.encode("utf-8")
             response_headers = [("Content-Type", self.sContentTypes[mode]),
@@ -58,39 +50,42 @@ class HServHandler(BaseHTTPRequestHandler):
             response_headers = []
         if add_headers is not None:
             response_headers += add_headers
+        self.mStartResponse(response_status, response_headers)
+        return [response_body]
 
-        self.send_response(response_code, response_status)
-        for name, value in response_headers:
-            self.send_header(name, value)
-        self.end_headers()
-        self.wfile.write(response_body)
-        self.wfile.flush()
-        return True
+#========================================
+class HServHandler:
+    sInstance = None
+    sPathPrefix = "/anfisa"
 
-    def log_message(self, format, *args):
-        logging.info(("%s - - [%s] %s\n" % (self.client_address[0],
-            self.log_date_time_string(), format%args)).rstrip())
+    @classmethod
+    def init(cls, config):
+        cls.sInstance = cls(config)
 
-    def address_string(self):
-        host, port = self.client_address[:2]
-        #return socket.getfqdn(host)
-        return host
+    @classmethod
+    def request(cls, environ, start_response):
+        return cls.sInstance.processRq(environ, start_response)
+
+    def __init__(self, config):
+        self.mConfig = config
 
     #===============================================
-    def parseRequest(self):
-        path, q, query_string = self.path.partition('?')
+    def parseRequest(self, environ):
+        path = environ["PATH_INFO"]
+        if path.startswith(self.sPathPrefix):
+            path = path[len(self.sPathPrefix):]
+        if not path:
+            path = "/"
+        query_string = environ["QUERY_STRING"]
 
         query_args = dict()
         if query_string:
             for a, v in parse_qs(query_string).items():
                 query_args[a] = v[0]
 
-        if self.command == "POST":
+        if environ["REQUEST_METHOD"] == "POST":
             try:
-                form = cgi.FieldStorage(fp = self.rfile,
-                    headers = self.headers,
-                    environ = {'REQUEST_METHOD':'POST',
-                    'CONTENT_TYPE':self.headers['Content-Type']})
+                form = cgi.FieldStorage(environ = environ)
                 for arg in form.keys():
                     val = form[arg]
                     if isinstance(val, types.ListType):
@@ -106,8 +101,8 @@ class HServHandler(BaseHTTPRequestHandler):
         return path, query_args
 
     #===============================================
-    def fileResponse(self, fname,  without_decoding):
-        fpath = self.sConfig["files"] + fname
+    def fileResponse(self, resp_h, fname,  without_decoding):
+        fpath = self.mConfig["files"] + fname
         if not os.path.exists(fpath):
             return False
         if without_decoding:
@@ -117,34 +112,30 @@ class HServHandler(BaseHTTPRequestHandler):
             with codecs.open(fpath, "r", encoding = "utf-8") as inp:
                 content = inp.read()
         inp.close()
-        return self.makeResponse(mode = fname.rpartition('.')[2],
+        return resp_h.makeResponse(mode = fname.rpartition('.')[2],
             content = content,  without_decoding = without_decoding)
 
     #===============================================
-    def do_GET(self):
-        global sHServer
+    def processRq(self, environ, start_response):
+        resp_h = HServResponse(start_response)
         try:
-            path, query_args = self.parseRequest()
+            path, query_args = self.parseRequest(environ)
             print(path, query_args)
             if path.find('.') != -1:
-                ret = self.fileResponse(path, True)
+                ret = self.fileResponse(resp_h, path, True)
                 if ret is not False:
                     return ret
-            return AnfisaService.request(self, path, query_args)
+            return AnfisaService.request(resp_h, path, query_args)
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep)
             log_record = rep.getvalue()
             logging.error(
                 "Exception on GET request:\n " + log_record)
-            return self.makeResponse(error = 500)
-
-    def do_POST(self):
-        return self.do_GET()
+            return resp_h.makeResponse(error = 500)
 
 #========================================
-def runHServer(config_file):
-    global sHServer
+def setupHServer(config_file):
     if not os.path.exists(config_file):
         logging.critical("No config file provided (hserv.xml)")
         sys.exit(2)
@@ -158,12 +149,13 @@ def runHServer(config_file):
                 logging.critical("Config: duplicate property %s" % nd.tag)
                 sys.exit(1)
             config[nd.tag] = value
-    HServHandler.sConfig = config
     AnfisaService.start(cfg_tree)
-    host, port = config["host"], int(config["port"])
-    server = ThreadedHTTPServer((host, port), HServHandler)
-    logging.info("HServer listening %s:%d" % (host, port))
-    server.serve_forever()
+    HServHandler.init(config)
+    return (config["host"], int(config["port"]))
+
+#========================================
+def application(environ, start_response):
+    return HServHandler.request(environ, start_response)
 
 #========================================
 if __name__ == '__main__':
@@ -172,4 +164,18 @@ if __name__ == '__main__':
         config_file = sys.argv[1]
     else:
         config_file = "anfisa.xml"
-    runHServer(config_file)
+
+    from wsgiref.simple_server import make_server, WSGIRequestHandler
+    #========================================
+    class _LoggingWSGIRequestHandler(WSGIRequestHandler):
+        def log_message(self, format, *args):
+            logging.info(("%s - - [%s] %s\n" %
+                (self.client_address[0], self.log_date_time_string(),
+                format%args)).rstrip())
+
+    #========================================
+    host, port = setupHServer(config_file)
+    httpd = make_server(host, port, application,
+        handler_class = _LoggingWSGIRequestHandler)
+    logging.info("HServer listening %s:%d" % (host, port))
+    httpd.serve_forever()
