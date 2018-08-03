@@ -1,21 +1,21 @@
 CONFIG_AJson = {
-    "_main_key": "id",
+    "_main_key": "label",
     "_view_tabs": ["view.general", "view.quality",
         "view.gnomAD", "view.Databases", "view.Predictions"],
     "_no_view_fields": ["view", "view.Genetics", "view.Inheritance"],
 
     "_aspect_title": {
-        "main": "Data",
-        "cons": "Consequences",
+        "view.general": "General",
+        "view.quality": "Quality",
+        "view.gnomAD": "gnamAD",
+        "view.Databases": "Databases",
+        "view.Predictions": "Predictions",
+        "view.Genetics": "Genetics",
+        "view.Inheritance": "Inheritance",
+        "main": "VEP: Data",
+        "cons": "VEP: Consequences",
         "colv": "Colocated Variants",
-        "view.general": "View [General]",
-        "view.quality": "View [Quality]",
-        "view.gnomAD": "View [gnamAD]",
-        "view.Databases": "View [Databases]",
-        "view.Predictions": "View [Predictions]",
-        "view.Genetics": "View [Genetics]",
-        "view.Inheritance": "View [Inheritance]",
-        "inp": "Raw Input"},
+        "inp": "VCF"},
     "main": {
         "fields": ["label", "id", "assembly_name",
             "seq_region_name", "start", "end", "strand", "",
@@ -35,7 +35,8 @@ CONFIG_AJson = {
         }
     },
     "view.general":{
-        "fields":["Genes", "cPos", "pPos",
+        "fields":["Genes", "header",
+                  "cPos", "pPos",
                   "Ensembl Transcripts (Worst)",
                   "Variant Exon (Worst Annotation)",
                   "Variant Intron (Worst Annotation)",

@@ -3,7 +3,7 @@ from StringIO import StringIO
 
 import vcf
 
-def unqiue(list):
+def unique(list):
     s = set(list)
     list2 = []
     list2.extend(s)
@@ -23,9 +23,10 @@ class Variant:
         "intron_variant"
     ]
 
-    def __init__(self, json_string, vcf_header = None):
+    def __init__(self, json_string, vcf_header = None, samples = None):
         self.original_json = json_string
         self.data = json.loads(json_string)
+        self.samples = samples
         if (not vcf_header):
             vcf_header = "#"
         vcf_string = "{}\n{}\n".format(vcf_header, self.data.get("input"))
@@ -84,10 +85,19 @@ class Variant:
         return {}
 
     def __str__(self):
-        return "{}:{}  {}>{}".format(self.chromosome(), self.start(),self.ref(), self.alt_string())
+        str = "{}:{}".format(self.chromosome(), self.start())
+        if (self.is_snv()):
+            return "{}  {}>{}".format(str, self.ref(), self.alt_string())
+        return "{} {}".format(str, self.get_variant_class())
     
     def get_msq(self):
         return self.data.get("most_severe_consequence")
+
+    def is_snv(self):
+        return self.get_variant_class() == "SNV"
+
+    def get_variant_class(self):
+        return self.data.get("variant_class")
 
     def get_transcripts(self):
         return self.data.get("transcript_consequences", [])
@@ -126,7 +136,7 @@ class Variant:
         return [t for t in self.get_transcripts() if (t.get("canonical"))]
 
     def get_genes(self):
-        return self.get_from_transcripts_list("gene_symbol")
+        return unique(self.get_from_transcripts_list("gene_symbol"))
 
     def get_from_transcripts(self, key, type = "all"):
         if (type == "all"):
@@ -201,11 +211,37 @@ class Variant:
 
         return gm_af
 
+    def get_label(self):
+        genes = self.get_genes()
+        if (len(genes) == 1):
+            gene = genes[0]
+        elif (len(genes) == 0):
+            gene = "None"
+        else:
+            gene = "..."
+
+        vstr = str(self)
+        return "{}| {}".format(gene, vstr)
+
+    def get_proband(self):
+        if (not self.samples):
+            return None
+        for sample in self.samples.values():
+            if (sample['id'].endswith('a1')):
+                return sample['id']
+        return None
+
+
     def get_view_json(self):
         data = self.data.copy()
-        data['label'] = str(self)
+        data['label'] = self.get_label()
         view = dict()
         data["view"] = view
+
+        proband = self.get_proband()
+        proband_genotype = self.vcf_record.genotype(proband)
+        mother = self.samples[proband]['mother']
+        father = self.samples[proband]['father']
 
         tab1 = dict()
         #view['general'] = tab1
@@ -214,9 +250,9 @@ class Variant:
         tab1['header'] = str(self)
         tab1['cPos'] = ','.join(self.get_pos('c'))
         tab1['pPos'] = ','.join(self.get_pos('p'))
-        tab1['Proband Genotype'] = ""
-        tab1['Maternal Genotype'] = ""
-        tab1['Paternal Genotype'] = ""
+        tab1['Proband Genotype'] = proband_genotype.gt_bases
+        tab1['Maternal Genotype'] = self.vcf_record.genotype(mother).gt_bases
+        tab1['Paternal Genotype'] = self.vcf_record.genotype(father).gt_bases
         tab1['Worst Annotation'] = self.get_msq()
         tab1['RefSeq Transcript (Worst)'] = ""
         tab1['Ensembl Transcripts (Worst)'] = self.get_from_worst_transcript("transcript_id")
@@ -230,38 +266,44 @@ class Variant:
         tab2 = dict()
         #view['quality'] = tab2
         data["view.quality"] = tab2
-        tab2['AD'] = ""
-        tab2['DP'] = ""
-        tab2['SB'] = ""
+        tab2['AD'] = proband_genotype.data.AD
+        tab2['DP'] = proband_genotype.data.DP
+        tab2['SB'] = self.vcf_record.INFO.get("SOR")
         tab2['MQ'] = self.vcf_record.INFO["MQ"]
         tab2['QUAL'] = self.vcf_record.QUAL
 
-        tab3 = dict()
-        #view['gnomAD'] = tab3
-        data["view.gnomAD"] = tab3
-        tab3["AF"] = self.get_gnomad_af()
-        tab3["PopMax #1"] = ""
-        tab3["PopMax #2"] = ""
-        tab3["URL"] = "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".\
-            format(self.chr_num(), self.start(), self.ref(), self.alt_string())
+        if (self.get_gnomad_af()):
+            tab3 = dict()
+            #view['gnomAD'] = tab3
+            data["view.gnomAD"] = tab3
+            tab3["AF"] = self.get_gnomad_af()
+            tab3["PopMax #1"] = ""
+            tab3["PopMax #2"] = ""
+            tab3["URL"] = "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".\
+                format(self.chr_num(), self.start(), self.ref(), self.alt_string())
+        else:
+            data["view.gnomAD"] = None
 
         tab4 = dict()
         #view['Databases'] = tab4
         data["view.Databases"] = tab4
         tab4["OMIM"] = ""
-        tab4["HGMD"] = self.data.get("HGMD")
-        tab4["HGMD PMIDs"] = ""
-        tab4["ClinVar"] = self.data.get("ClinVar")
+        if (self.data.get("HGMD")):
+            tab4["HGMD"] = self.data.get("HGMD")
+            tab4["HGMD PMIDs"] = ""
+        if (self.data.get("ClinVar") <> None):
+            tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
+                format(self.chr_num(), self.start(), self.end())
 
         tab5 = dict()
         #view['Predictions'] = tab5
         data["view.Predictions"] = tab5
-        tab5['Polyphen'] = unqiue(self.get_from_transcripts_list("polyphen_prediction"))
-        tab5['SIFT'] = unqiue(self.get_from_transcripts_list("sift_prediction"))
-        tab5["REVEL"] = unqiue(self.get_from_transcripts_list("revel_score"))
-        tab5["Mutation Taster"] = unqiue(self.get_from_transcripts_list("mutationtaster_pred"))
-        tab5["FATHMM"] = unqiue(self.get_from_transcripts_list("fathmm_score"))
-        tab5["CADD"] = unqiue(self.get_from_transcripts_list("cadd_phred"))
+        tab5['Polyphen'] = unique(self.get_from_transcripts_list("polyphen_prediction"))
+        tab5['SIFT'] = unique(self.get_from_transcripts_list("sift_prediction"))
+        tab5["REVEL"] = unique(self.get_from_transcripts_list("revel_score"))
+        tab5["Mutation Taster"] = unique(self.get_from_transcripts_list("mutationtaster_pred"))
+        tab5["FATHMM"] = unique(self.get_from_transcripts_list("fathmm_score"))
+        tab5["CADD"] = unique(self.get_from_transcripts_list("cadd_phred"))
         tab5["MutationAssessor"] = ""
 
         tab6 = dict()

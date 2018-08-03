@@ -1,4 +1,4 @@
-from annotations import filters, gnomad
+from annotations import filters, gnomad, case_utils
 from annotations.record import Variant
 
 
@@ -37,7 +37,7 @@ class Filter:
 
 
 
-def process_file(f, out = None, vcf_header = None):
+def process_file(f, out = None, vcf_header = None, samples = None):
     n = 0
     n_accepted = 0
     n1 = 0
@@ -52,7 +52,7 @@ def process_file(f, out = None, vcf_header = None):
             line = input.readline()
             if (not line):
                 break
-            v = Variant(line, vcf_header=vcf_header)
+            v = Variant(line, vcf_header=vcf_header, samples=samples)
             n += 1
             info = {}
             if (not clinical_filter.accept(v, info)):
@@ -117,5 +117,7 @@ if __name__ == '__main__':
     with open ("/Users/misha/projects/bgm/cases/BGM9001/header.vcf") as vcf:
         header = vcf.read()
 
+    samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001.fam")
+
     with open ("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_final.json", "w") as output:
-        process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output, vcf_header=header)
+        process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output, vcf_header=header, samples=samples)
