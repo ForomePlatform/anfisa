@@ -39,7 +39,7 @@ class AnfisaService:
         self.mHtmlTitle = self.mConfig["html-title"]
         self.mHtmlBase = (self.mConfig["html-base"]
             if self.mInContainer else None)
-        if self.mHtmlBase and not self.mHtmlBase.endsswith('/'):
+        if self.mHtmlBase and not self.mHtmlBase.endswith('/'):
             self.mHtmlBase += '/'
 
     #===============================================
