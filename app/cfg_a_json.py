@@ -36,6 +36,7 @@ CONFIG_AJson = {
     },
     "view.general":{
         "fields":["Genes", "header", "Ref", "Alt",
+                  "Worst Annotation",
                   "cPos", "pPos",
                   "Ensembl Transcripts (Worst)",
                   "Variant Exon (Worst Annotation)",
@@ -47,7 +48,7 @@ CONFIG_AJson = {
     },
 
     "view.quality":{
-        "fields":["MQ", "QUAL"],
+        "fields":["AD", "DP", "SB", "MQ", "QUAL"],
         "options": {}
     },
     "view.gnomAD":{

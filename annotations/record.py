@@ -5,6 +5,7 @@ import vcf
 
 def unique(list):
     s = set(list)
+    s.discard(None)
     list2 = []
     list2.extend(s)
     return list2
@@ -15,7 +16,7 @@ def hgvcs_pos(str, type, with_pattern = True):
         return None
     x = str.split(pattern)[1]
     if (with_pattern):
-        return "{}{}".format(pattern, x)
+        return "{}{}".format(pattern[1:], x)
     return x
 
 
@@ -190,7 +191,8 @@ class Variant:
 
     def get_pos(self, type, kind = "all"):
         hgvcs_list = self.get_from_transcripts("hgvsc", kind)
-        return unique([hgvcs_pos(hgvcs, type) for hgvcs in hgvcs_list if hgvcs])
+        pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in hgvcs_list if hgvcs])
+        return pos_list
 
     def get_distance_from_exon(self, kind):
         hgvcs_list = self.get_from_transcripts("hgvsc", kind)
