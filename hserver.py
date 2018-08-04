@@ -68,6 +68,8 @@ class HServHandler:
         self.mFileDir = config["files"]
         self.mHtmlBase = (config["html-base"]
             if in_container else None)
+        if self.mHtmlBase and self.mHtmlBase.endsswith('/'):
+            self.mHtmlBase = self.mHtmlBase[:-1]
 
     #===============================================
     def parseRequest(self, environ):

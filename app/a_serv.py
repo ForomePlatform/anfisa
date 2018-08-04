@@ -39,6 +39,8 @@ class AnfisaService:
         self.mHtmlTitle = self.mConfig["html-title"]
         self.mHtmlBase = (self.mConfig["html-base"]
             if self.mInContainer else None)
+        if self.mHtmlBase and not self.mHtmlBase.endsswith('/'):
+            self.mHtmlBase += '/'
 
     #===============================================
     def _formHtmlHead(self, output, title = None, js_file = None):
