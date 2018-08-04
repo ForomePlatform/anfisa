@@ -48,8 +48,8 @@ class DataRecord_AJson(DataRecord):
     def reportIt(self, output):
         cfg = CONFIG_AJson["_aspect_title"]
         print >> output, '<div class="r-tab">'
-        for aspect in (["main", "cons", "colv"] +
-                CONFIG_AJson["_view_tabs"] + ["inp"]):
+        for aspect in (CONFIG_AJson["_view_tabs"] +
+                ["main", "cons", "colv", "inp"]):
             print >> output, ('<button class="r-tablnk" id="la--%s" '
                 'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
                 (aspect, aspect, cfg[aspect]))
