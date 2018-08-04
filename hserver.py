@@ -55,24 +55,25 @@ class HServResponse:
 #========================================
 class HServHandler:
     sInstance = None
-    sPathPrefix = "/anfisa"
 
     @classmethod
-    def init(cls, config):
-        cls.sInstance = cls(config)
+    def init(cls, config, in_container):
+        cls.sInstance = cls(config, in_container)
 
     @classmethod
     def request(cls, environ, start_response):
         return cls.sInstance.processRq(environ, start_response)
 
-    def __init__(self, config):
+    def __init__(self, config, in_container):
         self.mFileDir = config["files"]
+        self.mHtmlBase = (config["html-base"]
+            if in_container else None)
 
     #===============================================
     def parseRequest(self, environ):
         path = environ["PATH_INFO"]
-        if path.startswith(self.sPathPrefix):
-            path = path[len(self.sPathPrefix):]
+        if self.mHtmlBase and path.startswith(self.mHtmlBase):
+            path = path[len(self.mHtmlBase):]
         if not path:
             path = "/"
         query_string = environ["QUERY_STRING"]
@@ -147,7 +148,7 @@ def setupHServer(config_file, in_container):
         logging.config.dictConfig(logging_config)
         logging.basicConfig(level = 10)
     AnfisaService.start(config, in_container)
-    HServHandler.init(config)
+    HServHandler.init(config, in_container)
     if not in_container:
         return (config["host"], int(config["port"]))
     return None
