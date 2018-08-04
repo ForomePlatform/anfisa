@@ -1,0 +1,35 @@
+{
+    "host": "0.0.0.0",
+    "port": 8090,
+    "files": "files", 
+    "html-base": "/anfisa",
+    "html-title": "Anfisa: %s",
+    "datasets": [
+        {"name": "bgm9001_wgs_final", "kind": "a-json",
+            "file": "../a-data/bgm9001_wgs_final.json"}
+    ],
+    "logging": { 
+        "version": 1,
+        "disable_existing_loggers": false,
+        "formatters": { 
+                "standard": { 
+                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            }
+        },
+        "handlers": { 
+            "default": { 
+                "level": "INFO",
+                "formatter": "standard",
+                "class": "logging.FileHandler",
+                "filename": "../a-logs/anfisa.log" 
+            }
+        },
+        "loggers": { 
+            "": { 
+                "handlers": ["default"],
+                "level": "INFO",
+                "propagate": true
+            }
+        } 
+    }      
+}
