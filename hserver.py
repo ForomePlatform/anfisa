@@ -1,6 +1,5 @@
-import sys, os, traceback, logging, codecs, cgi, types
+import sys, os, traceback, logging, codecs, cgi, types, json
 from StringIO import StringIO
-from lxml     import etree
 from urlparse import parse_qs
 import logging.config
 
@@ -67,7 +66,7 @@ class HServHandler:
         return cls.sInstance.processRq(environ, start_response)
 
     def __init__(self, config):
-        self.mConfig = config
+        self.mFileDir = config["files"]
 
     #===============================================
     def parseRequest(self, environ):
@@ -102,7 +101,7 @@ class HServHandler:
 
     #===============================================
     def fileResponse(self, resp_h, fname,  without_decoding):
-        fpath = self.mConfig["files"] + fname
+        fpath = self.mFileDir + fname
         if not os.path.exists(fpath):
             return False
         if without_decoding:
@@ -135,23 +134,23 @@ class HServHandler:
             return resp_h.makeResponse(error = 500)
 
 #========================================
-def setupHServer(config_file):
+def setupHServer(config_file, in_container):
     if not os.path.exists(config_file):
         logging.critical("No config file provided (hserv.xml)")
         sys.exit(2)
-    config = dict()
-    with open(config_file) as inp:
-        cfg_tree = etree.parse(inp, etree.XMLParser())
-        config["version"] = cfg_tree.xpath("/conf")[0].get("version")
-        for nd in cfg_tree.xpath("/conf/*"):
-            value = nd.text.strip() if nd.text else ""
-            if nd.tag in config:
-                logging.critical("Config: duplicate property %s" % nd.tag)
-                sys.exit(1)
-            config[nd.tag] = value
-    AnfisaService.start(cfg_tree)
+    config = None
+    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
+        content = inp.read()
+    config = json.loads(content)
+    logging_config = config.get("logging")
+    if logging_config:
+        logging.config.dictConfig(logging_config)
+        logging.basicConfig(level = 10)
+    AnfisaService.start(config, in_container)
     HServHandler.init(config)
-    return (config["host"], int(config["port"]))
+    if not in_container:
+        return (config["host"], int(config["port"]))
+    return None
 
 #========================================
 def application(environ, start_response):
@@ -163,7 +162,7 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
     else:
-        config_file = "anfisa.xml"
+        config_file = "anfisa.json"
 
     from wsgiref.simple_server import make_server, WSGIRequestHandler
     #========================================
@@ -174,8 +173,11 @@ if __name__ == '__main__':
                 format%args)).rstrip())
 
     #========================================
-    host, port = setupHServer(config_file)
+    host, port = setupHServer(config_file, False)
     httpd = make_server(host, port, application,
         handler_class = _LoggingWSGIRequestHandler)
     logging.info("HServer listening %s:%d" % (host, port))
     httpd.serve_forever()
+else:
+    logging.basicConfig(level = 10)
+    setupHServer("./anfisa.json", True)

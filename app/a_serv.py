@@ -11,21 +11,15 @@ class HTML_Setup:
         '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'
 
     STYLE_SHEET = \
-        '<link rel="stylesheet" href="/anf.css" type="text/css" media="all"/>'
-
-    @staticmethod
-    def printRefJS(output, fname):
-        print >> output, ('   <script type="text/javascript" src="/%s">' %
-            fname)
-        print >> output, '   </script>'
+        '<link rel="stylesheet" href="anf.css" type="text/css" media="all"/>'
 
 #===============================================
 class AnfisaService:
     sMain = None
     @classmethod
-    def start(cls, config):
+    def start(cls, config, in_container):
         assert cls.sMain is None
-        cls.sMain = cls(config)
+        cls.sMain = cls(config, in_container)
 
     @classmethod
     def request(cls, serv_h, rq_path, rq_args):
@@ -38,9 +32,28 @@ class AnfisaService:
         return serv_h.makeResponse(error = 404)
 
     #===============================================
-    def __init__(self, config):
+    def __init__(self, config, in_container):
         self.mConfig = config
+        self.mInContainer = in_container
         AnfisaData.setup(config)
+        self.mHtmlTitle = self.mConfig["html-title"]
+        self.mHtmlBase = (self.mConfig["html-base"]
+            if self.mInContainer else None)
+
+    #===============================================
+    def _formHtmlHead(self, output, title = None, js_file = None):
+        print >> output, '<head>'
+        print >> output, HTML_Setup.META_UTF
+        if self.mHtmlBase:
+             print >> output, ' <base href="%s" />' % self.mHtmlBase
+        print >> output, HTML_Setup.STYLE_SHEET
+        if title:
+            print >> output, ' <title>%s</title>' % title
+        if js_file:
+            print >> output, (
+                '   <script type="text/javascript" src="%s">' % js_file)
+            print >> output, '   </script>'
+        print >> output, '</head>'
 
     #===============================================
     def formTop(self, rq_args):
@@ -48,12 +61,8 @@ class AnfisaService:
         output = StringIO()
         print >> output, HTML_Setup.START
         print >> output, '<html>'
-        print >> output, '<head>'
-        print >> output, HTML_Setup.META_UTF
-        print >> output, HTML_Setup.STYLE_SHEET
-        print >> output, ' <title>Anfisa: %s</title>' % data_set.getName()
-        HTML_Setup.printRefJS(output, "anf.js")
-        print >> output, '</head>'
+        self._formHtmlHead(output,
+            title = self.mHtmlTitle % data_set.getName(), js_file = "anf.js")
         print >> output, ('<body onload="changeRec(\'%s\', 0);">' %
             data_set.getName())
         print >> output, ' <table class="top"><tr>'
@@ -80,11 +89,7 @@ class AnfisaService:
         record = data_set.getRecord(rq_args.get("rec"))
         print >> output, HTML_Setup.START
         print >> output, '<html>'
-        print >> output, '<head>'
-        print >> output, HTML_Setup.META_UTF
-        print >> output, HTML_Setup.STYLE_SHEET
-        HTML_Setup.printRefJS(output, "a_rec.js")
-        print >> output, '</head>'
+        self._formHtmlHead(output, js_file = "a_rec.js")
         print >> output, '<body onload="init_r();" class="rec">'
         record.reportIt(output)
         print >> output, '</body>'

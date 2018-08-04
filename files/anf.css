@@ -34,8 +34,8 @@ ul.records li {
     color: #506a6b;
     font-size: 12px;
     box-shadow: 5px 5px 5px 0 rgba(0,0,0, .2);
-    margin-bottom: 5px;
     text-align: center;
+    vertical-align: middle;
     height: 28px;
 }
 

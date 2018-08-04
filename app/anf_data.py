@@ -3,19 +3,17 @@ from .data_a_json import DataSet_AJson
 
 #===============================================
 class AnfisaData:
-    sConfig = None
     sSets = dict()
     sDefaultSetName = None
 
     @classmethod
     def setup(cls, config):
-        cls.sConfig = config
-        for nd in config.xpath("/conf/data/dataset"):
-            set_name = nd.get("name")
+        for descr in config["datasets"]:
+            set_name = descr["name"]
             if cls.sDefaultSetName is None:
                 cls.sDefaultSetName = set_name
-            if nd.get("kind") == "a-json":
-                cls.sSets[set_name] = DataSet_AJson(set_name, nd.get("file"))
+            if descr["kind"] == "a-json":
+                cls.sSets[set_name] = DataSet_AJson(set_name, descr["file"])
             else:
                 assert False
 
@@ -34,4 +32,3 @@ class AnfisaData:
             print >> output, ' <option value="%s">%s</option>' % (
                 d_set.getName(), d_set.getName())
         print >> output, '</select>'
-
