@@ -21,6 +21,10 @@ class DataSet:
     def getRecord(self, rec_key):
         return None
 
+    @abc.abstractmethod
+    def getFirstAspectID(self):
+        return None
+
 #===============================================
 class DataRecord:
     @abc.abstractmethod

@@ -4,8 +4,7 @@ from anf_data import AnfisaData
 #===============================================
 class HTML_Setup:
 
-    START = '''<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>'''
+    START = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'
 
     META_UTF = \
         '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'
@@ -92,7 +91,8 @@ class AnfisaService:
         print >> output, HTML_Setup.START
         print >> output, '<html>'
         self._formHtmlHead(output, js_file = "a_rec.js")
-        print >> output, '<body onload="init_r();" class="rec">'
+        print >> output, ('<body onload="init_r(\'%s\');" class="rec">' %
+            data_set.getFirstAspectID())
         record.reportIt(output)
         print >> output, '</body>'
         print >> output, '</html>'

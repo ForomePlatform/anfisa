@@ -1,77 +1,66 @@
 #import sys
 from xml.sax.saxutils import escape
 #===============================================
+#                if class_name == "link":
+#                    vv = '<a href="%s" target="blank">link</a>' % vv
 def _escapeValue(val):
     if isinstance(val, list):
         return ", ".join([_escapeValue(v) for v in val])
     return escape(str(val).replace('_', ' '))
 
-def formTable(output, table_id, objects, fields, options,
-        use_fields = None, prefix_head = None):
+def formAspectTable(output, aspect, rec_obj):
+    if aspect.getColGroups():
+        prefix_head = []
+        objects = []
+        for grp in aspect.getColGroups():
+            if grp.getAttr() not in rec_obj:
+                continue
+            seq = rec_obj[grp.getAttr()]
+            if len(seq) == 0:
+                continue
+            objects += seq
+            prefix_head.append((grp.getTitle(), len(seq)))
+        if len(prefix_head) == 1 and prefix_head[0][0] is None:
+           prefix_head = None
+        if len(objects) == 0:
+            return
+    else:
+        prefix_head = None
+        if aspect.getJsonContainer():
+            if aspect.getJsonContainer() not in rec_obj:
+              return
+            objects = [rec_obj[aspect.getJsonContainer()]]
+        else:
+            objects = [rec_obj]
+    assert objects
+
     fld_data = dict()
     n_obj = len(objects)
-    for fld in fields:
-        if isinstance(fld, list):
-            fld, r_fields = fld
-            if use_fields is not None:
-                for f in r_fields:
-                    use_fields[f] = True
-            q_found = False
-            for f in r_fields:
-                if any([f in obj for obj in objects]):
-                    q_found = True
-                    break
-            if not q_found:
-                continue
-            values = []
-            for obj in objects:
-                vv = []
-                for f in r_fields:
-                    if f in obj:
-                        vv.append(str(obj[f]))
-                if len(vv) > 0:
-                    values.append(' '.join(vv))
-                else:
-                    values.append(None)
-        else:
-            if use_fields is not None:
-                use_fields[fld] = True
-            if not any([fld in obj for obj in objects] + [False]):
-                continue
-            values = [obj.get(fld) for obj in objects]
-        opts = options.get(fld, {})
-        fld_data[fld] = (opts.get("title", fld.replace('_', ' ')),
-            opts.get("class"), values)
+    for attr in aspect.getAttrs():
+        if attr.getName() is None:
+            continue
+        values = [attr.getHtmlRepr(obj) for obj in objects]
+        if not all([not val for val, class_name in values]):
+            fld_data[attr.getName()] = values
 
-    print >> output, '<table id="%s">' % table_id
+    print >> output, '<table id="rec-%s">' % aspect.getName()
     if prefix_head:
         print >> output, '<tr><td class="title"></td>'
         for title, count in prefix_head:
             print >> output, ('<td class="title" colspan="%d">%s</td>' %
-                (count, title))
+                (count, escape(title)))
         print >> output, '</tr>'
 
-    for fld in fields:
-        if not fld:
+    for attr in aspect.getAttrs():
+        if attr.getName() is None:
             print >> output, (
                 '<tr><td colspan="%d" class="title">.</td></tr>' % (n_obj + 1))
             continue
-        if isinstance(fld, list):
-            fld = fld[0]
-        if fld not in fld_data:
+        if attr.getName() not in fld_data:
             continue
-        title, class_name, values = fld_data[fld]
         print >> output, '<tr>'
-        print >> output, '<td class="title">%s</td>' % escape(title)
-        if not class_name:
-            class_name = "norm"
-        for val in values:
-            if val:
-                vv, cls_name = _escapeValue(val), class_name
-                if class_name == "link":
-                    vv = '<a href="%s" target="blank">link</a>' % vv
-            else:
-                vv, cls_name = "-", 'none'
-            print >> output, '<td class="%s">%s</td>' % (cls_name, vv)
+        print >> output, '<td class="title">%s</td>' % escape(attr.getTitle())
+        for val, class_name in fld_data[attr.getName()]:
+            print >> output, '<td class="%s">%s</td>' % (class_name, val)
         print >> output, '</tr>'
     print >> output, '</table>'

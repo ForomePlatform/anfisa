@@ -148,7 +148,7 @@ def setupHServer(config_file, in_container):
     logging_config = config.get("logging")
     if logging_config:
         logging.config.dictConfig(logging_config)
-        logging.basicConfig(level = 10)
+        logging.basicConfig(level = 0)
     AnfisaService.start(config, in_container)
     HServHandler.init(config, in_container)
     if not in_container:
@@ -161,7 +161,7 @@ def application(environ, start_response):
 
 #========================================
 if __name__ == '__main__':
-    logging.basicConfig(level = 10)
+    logging.basicConfig(level = 0)
     if len(sys.argv) > 1:
         config_file = sys.argv[1]
     else:

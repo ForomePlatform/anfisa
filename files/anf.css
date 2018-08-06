@@ -65,6 +65,7 @@ iframe#record {
 .r-tab button {
     background-color: inherit;
     color: white;
+    font-weight: bold;
     float: left;
     border: none;
     outline: none;
@@ -74,6 +75,11 @@ iframe#record {
     border-radius: 0px 10px 0px 0px;
 }
 
+.r-tab button.tech {
+    font-weight: normal;
+    color: #F0F0F0;
+}
+    
 /* Change background color of buttons on hover */
 .r-tab button:hover {
     background-color: #ccc;
@@ -98,10 +104,6 @@ iframe#record {
     white-space: nowrap;
     background-color: white;
 } 
-
-table#rec-main {
-    width: 200px;
-}
 
 td.norm {
     text-align: left;

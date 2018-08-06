@@ -21,8 +21,8 @@ function chooseAspect(evt, aspect_id) {
     }
 }
 
-function init_r() {
+function init_r(first_tab) {
     if (!window.parent.sCurRecTab) 
-            window.parent.sCurRecTab = "a--main";
+            window.parent.sCurRecTab = first_tab;
     chooseAspect(null, window.parent.sCurRecTab);
 }
