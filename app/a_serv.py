@@ -64,7 +64,8 @@ class AnfisaService:
         print >> output, '<html>'
         self._formHtmlHead(output,
             title = self.mHtmlTitle % data_set.getName(), js_file = "anf.js")
-        print >> output, ('<body onload="changeRec(\'%s\', 0);">' %
+        print >> output, (
+            '<body onload="sCurDataSet = \'%s\'; changeRec(0);" onkeydown="onkey(event);">' %
             data_set.getName())
         print >> output, ' <table class="top"><tr>'
         print >> output, '  <td class="top-left">'

@@ -44,7 +44,7 @@ Aspect_Databases = AspectH("view.Databases",   "Databases",
     attrs = [
         AttrH("HGMD"),
         AttrH("OMIM"),
-        AttrH("ClinVar")])
+        AttrH("ClinVar", "link")])
 
 #===============================================
 Aspect_Predictions = AspectH("view.Predictions", "Predictions",
@@ -110,8 +110,7 @@ Aspect_Consequences = AspectH("cons", "VEP: Consequences",
         AttrH("consequence_terms", is_seq = True),
         AttrH("conservation"),
         AttrH("distance"),
-        AttrH("domains", is_seq = True,
-            dict_keys = ["db", "name"]),
+        AttrH("domains", "json"),
         AttrH("exacpli"),
         AttrH("exon"),
         AttrH("fathmm_pred"),

@@ -1,8 +1,6 @@
 #import sys
 from xml.sax.saxutils import escape
 #===============================================
-#                if class_name == "link":
-#                    vv = '<a href="%s" target="blank">link</a>' % vv
 def _escapeValue(val):
     if isinstance(val, list):
         return ", ".join([_escapeValue(v) for v in val])
@@ -40,7 +38,7 @@ def formAspectTable(output, aspect, rec_obj):
         if attr.getName() is None:
             continue
         values = [attr.getHtmlRepr(obj) for obj in objects]
-        if not all([not val for val, class_name in values]):
+        if not all([vv == ('-', "none") for vv in values]):
             fld_data[attr.getName()] = values
 
     print >> output, '<table id="rec-%s">' % aspect.getName()
@@ -54,7 +52,7 @@ def formAspectTable(output, aspect, rec_obj):
     for attr in aspect.getAttrs():
         if attr.getName() is None:
             print >> output, (
-                '<tr><td colspan="%d" class="title">.</td></tr>' % (n_obj + 1))
+                '<tr><td colspan="%d" class="title">&emsp;</td></tr>' % (n_obj + 1))
             continue
         if attr.getName() not in fld_data:
             continue

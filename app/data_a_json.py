@@ -22,7 +22,7 @@ class DataSet_AJson(DataSet):
         for rec in self.mRecords:
             self.mRecDict[rec[self.sMainKey]] = rec
             checker.checkObj(rec)
-        if not checker.isOK():
+        if not checker.finishUp():
             report = StringIO()
             print >> report, "Errors in DataRecord_AJson %s" % name
             checker.reportBadAttributes(report)
@@ -39,8 +39,8 @@ class DataSet_AJson(DataSet):
         for idx, rec in enumerate(self.mRecords):
             rec_key = rec[self.sMainKey]
             print >> output, ('<li id="li--%d" '
-                'onclick="changeRec(\'%s\', %d)";">%s</li>' %
-                (idx, self.getName(), idx, rec_key))
+                'onclick="changeRec(%d)";">%s</li>' %
+                (idx, idx, rec_key))
         print >> output, '</ul>'
 
     def getRecKey(self, rec_no):
