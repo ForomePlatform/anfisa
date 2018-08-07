@@ -2,6 +2,24 @@ var sCurRecNo = null;
 var sCurRecTab = null;
 var sCurDataSet = null;
 
+var sNodeTopLeft      = null;
+var sNodeModalBack    = null;
+var sNodeFilterMod    = null;
+var sNodeOpenFilter   = null;
+var sNodeCloseFilter = null;
+
+function initWin(data_set_name) {
+    sCurDataSet = data_set_name; 
+    sNodeTopLeft = document.getElementById("top-left");
+    sNodeModalBack  = document.getElementById("modal-back");
+    sNodeFilterMod  = document.getElementById("filter-mod");
+    sNodeOpenFilter = document.getElementById("open-filter");
+    sNodeCloseFilter = document.getElementById("close-filter");
+    window.onkeydown = onKey;
+    window.onclick   = onClick;
+    changeRec(0);
+}
+
 function changeRec(rec_no) {
     if (sCurRecNo == rec_no) 
         return;
@@ -9,32 +27,48 @@ function changeRec(rec_no) {
     if (new_rec_el == null) 
         return;
     if (sCurRecNo != null) 
-        document.getElementById("li--" + sCurRecNo).className = "";
+        document.getElementById("li--" + sCurRecNo).className = "rec-label";
     sCurRecNo = rec_no;
-    new_rec_el.className = "press";
+    new_rec_el.className = " rec-label press";
     softScroll(new_rec_el);
     document.getElementById("record").src = 
         "rec?data=" + sCurDataSet + "&rec=" + sCurRecNo;
-    document.getElementsByClassName("top-left")[0].scrollIntoView(true);
+    //sNodeTopLeft.scrollIntoView(true);
 }
 
-function onkey(event_key) {
-    if (event_key.code == "ArrowUp" && sCurRecNo > 0) {
+function onKey(event_key) {
+    if (event_key.code == "ArrowUp" && sCurRecNo > 0)
         changeRec(sCurRecNo - 1);
-    }
-    if (event_key.code == "ArrowDown") {
+    if (event_key.code == "ArrowDown") 
         changeRec(sCurRecNo + 1);
-    }
+}
+
+function onClick(event_ms) {
+    if (event_ms.target == sNodeModalBack)
+        filterModOff();
 }
 
 function softScroll(nd) {
-    if (nd != null) {
-        var rect = nd.getBoundingClientRect();
-        var rect_parent = nd.parentNode.getBoundingClientRect();
-        if (rect.top + rect.height < rect_parent.top + 50) {
-            nd.scrollIntoView(true);
-        }  else if (rect.top + 50 >  rect_parent.top + rect_parent.height) {
-            nd.scrollIntoView(false);
-        }
+    if (nd == null) 
+        return;
+    var rect = nd.getBoundingClientRect();
+    var rect_parent = nd.parentNode.getBoundingClientRect();
+    if (rect.top - 10 < rect_parent.top) {
+        nd.scrollIntoView(
+            {behavior: 'auto', block: 'center', inline: 'center'});
+    }
+    else if (rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
+        nd.scrollIntoView(
+            {behavior: 'auto', block: 'center', inline: 'center'});
     }
 }
+
+function filterModOn() {
+    sNodeModalBack.style.display = "block";
+}
+
+function filterModOff() {
+    sNodeModalBack.style.display = "none";
+}
+
+//=====================================

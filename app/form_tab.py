@@ -62,3 +62,4 @@ def formAspectTable(output, aspect, rec_obj):
             print >> output, '<td class="%s">%s</td>' % (class_name, val)
         print >> output, '</tr>'
     print >> output, '</table>'
+    print >> output, '<div class="tab-end"></div>'

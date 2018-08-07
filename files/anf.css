@@ -1,33 +1,52 @@
 body {padding: 0px; margin: 0px;  
     background-color: white; overflow: hidden;    white-space: nowrap;
 }
-
-table.top, { padding: 0px; margin: 0px;
-    border: 0px; width: 95%; height: 97%; min-height: 97%;
+#top {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    min-height: 100%;
+    width: 100%;
 }
-table td { border: solid black 1px;}
 
-td.top-left  {min-width: 250px; background-color:#fff0ff; 
-    margin:0; padding:0; height: 100%;
-    vertical-align: top; }
+#top-left  {min-width: 250px; background-color:#fff0ff; 
+    /*height: auto !important;*/
+    height: 100%;
+    min-height: 100%;
+    margin:0; padding:0;
+    vertical-align: top; 
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: space-between;
+}
     
-td.top-right {width: 100%; min-height: 100%;
+#top-right {width: 100%; 
     height: auto !important;
     height: 100%;
+    min-height: 100%;
     white-space: nowrap; vertical-align: top;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 
-div.data-sets {min-height: 50px; width: 100%;}
-div.rec-list  {height: 100%; width: 100%;}
+table {border: 0px; margin: 0px; padding: 0px;}
+table td {border: 1px solid #E0E0E0;}
 
-ul.records  {
-  list-style: none;
-  padding: 0;
-  overflow-y: scroll;
-  max-height: 80vh;
+div.data-sets {
+    width: 100%;
+    height: 30px;
+}
+div.rec-list  {
+    margin-top: auto;
+    overflow-y: scroll;
+    height: 80%;
+    width: 100%;
+    align-self: flex-end;
 }
 
-ul.records li {
+div.rec-label {
     cursor: pointer;
     padding: 1px 1px;
     background: linear-gradient(to left, #f8ab8d 0%, white, #f8ab8d);
@@ -40,13 +59,15 @@ ul.records li {
     height: 28px;
 }
 
-ul.records li.press {
+div.rec-label.press {
     background: linear-gradient(to left, green 0%, white, green);
     color: green;
     font-weight: bold;
 }
 
 iframe#record {
+    margin: 0px;
+    padding: 0px;
     height: 100%;
     width: 100%;
     overflow: hidden;
@@ -96,7 +117,8 @@ iframe#record {
 /* Style the tab content */
 .r-tabcnt {
     position: absolute;
-    padding: 3px 6px;
+    padding: 0px;
+    margin: 0px
     border: 1px solid #ccc;
     border-top: none;
     height: 93%;
@@ -141,6 +163,46 @@ pre {
 
 p.error {color: red;}
 
-table.main-table, table.main-table.td {border: 0px;}
+div.tab-end {height: 40px; width: 100%;}
 
 /*************************************************/
+ /* The Modal (background) */
+#modal-back {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 30; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+#filter-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 00px;
+    border: 1px solid #8t be more or less, depending on screen size */
+    height: 90%; 
+    min-height: 90%;
+    width: 95%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+/* The Close Button */
+#close-filter {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+#close-filter:hover,
+#close-filter:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+} 

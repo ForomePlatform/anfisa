@@ -35,13 +35,11 @@ class DataSet_AJson(DataSet):
         return "a--" + CONFIG_AJson["view_tabs"][0].getName()
 
     def reportList(self, output):
-        print >> output, '<ul class="records">'
         for idx, rec in enumerate(self.mRecords):
             rec_key = rec[self.sMainKey]
-            print >> output, ('<li id="li--%d" '
-                'onclick="changeRec(%d)";">%s</li>' %
+            print >> output, ('<div id="li--%d" class="rec-label" '
+                'onclick="changeRec(%d)";">%s</div>' %
                 (idx, idx, rec_key))
-        print >> output, '</ul>'
 
     def getRecKey(self, rec_no):
         return self.mRecords[rec_no][self.sMainKey]

@@ -65,21 +65,31 @@ class AnfisaService:
         self._formHtmlHead(output,
             title = self.mHtmlTitle % data_set.getName(), js_file = "anf.js")
         print >> output, (
-            '<body onload="sCurDataSet = \'%s\'; changeRec(0);" onkeydown="onkey(event);">' %
+            '<body onload="initWin(\'%s\');">' %
             data_set.getName())
-        print >> output, ' <table class="top"><tr>'
-        print >> output, '  <td class="top-left">'
+        print >> output, ' <div id="modal-back">'
+        print >> output, '   <div id="filter-mod">'
+        print >> output, '     <span id="close-filter" ' + \
+            'onclick="filterModOff();">&times;</span>'
+        print >> output, '     <h3>Filter...</h3>'
+        print >> output, '   </div>'
+        print >> output, ' </div>'
+        print >> output, ' <div id="top">'
+        print >> output, '  <div id="top-left">'
         print >> output, '   <div class="data-sets">'
+        print >> output, '   <button id="open-filter" ' + \
+            'onclick="filterModOn();">Filter</button>'
         AnfisaData.reportSets(data_set, output)
         print >> output, '   </div>'
         print >> output, '   <div class="rec-list">'
         data_set.reportList(output)
         print >> output, '   </div>'
-        print >> output, '  </td><td class="top-right">'
+        print >> output, '  </div>'
+        print >> output, '  <div id="top-right">'
         print >> output, '   <iframe id="record">'
         print >> output, '   </iframe>'
-        print >> output, '  </td>'
-        print >> output, ' </tr></table>'
+        print >> output, '  </div>'
+        print >> output, ' </div>'
         print >> output, '</body>'
         print >> output, '</html>'
         return output.getvalue()
