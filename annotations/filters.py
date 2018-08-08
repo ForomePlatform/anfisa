@@ -76,7 +76,7 @@ class NumericVCFFilter(Filter):
         info = variant.info()
         for key in self.filters:
             if (info.has_key(key)):
-                v = float(info)
+                v = float(info[key])
                 op = self.filters[key][0]
                 threshold = self.filters[key][1]
                 if (op == '<='):
@@ -87,6 +87,7 @@ class NumericVCFFilter(Filter):
                     return False
             else:
                 return False
+        return True
 
 
 class Filter_Quality(NumericVCFFilter):

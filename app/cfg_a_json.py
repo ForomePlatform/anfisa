@@ -25,9 +25,11 @@ Aspect_General = AspectH("view.general",     "General",
 #===============================================
 Aspect_Quality = AspectH("view.quality",     "Quality",
     attrs = [
-        AttrH("AD", is_seq = True),
-        AttrH("DP"),
-        AttrH("SB"),
+        AttrH("Allelic Depth", is_seq = True),
+        AttrH("Read Depth"),
+        AttrH("Strand Odds Ratio"),
+        AttrH("Quality by Depth"),
+        AttrH("Fisher Strand Bias"),
         AttrH("MQ"),
         AttrH("QUAL")])
 

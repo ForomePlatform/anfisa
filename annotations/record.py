@@ -244,15 +244,22 @@ class Variant:
 
     def get_label(self):
         genes = self.get_genes()
-        if (len(genes) == 1):
-            gene = genes[0]
-        elif (len(genes) == 0):
+        if (len(genes) == 0):
             gene = "None"
+        elif (len(genes) < 3):
+            gene = ",".join(genes)
         else:
             gene = "..."
 
         vstr = str(self)
-        return "{}| {}".format(gene, vstr)
+        exp = ""
+        if (self.data.get("EXPECTED")):
+            exp = '+ '
+        if (self.data.get("SEQaBOO")):
+            pss = "* "
+        else:
+            pss = ""
+        return "{}{}[{}] {}".format(exp, pss, gene, vstr)
 
     def get_proband(self):
         if (not self.samples):
@@ -300,11 +307,13 @@ class Variant:
         tab2 = dict()
         #view['quality'] = tab2
         data["view.quality"] = tab2
-        tab2['AD'] = proband_genotype.data.AD
-        tab2['DP'] = proband_genotype.data.DP
-        tab2['SB'] = self.vcf_record.INFO.get("SOR")
+        tab2['Allelic Depth'] = proband_genotype.data.AD
+        tab2['Read Depth'] = proband_genotype.data.DP
+        tab2['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
         tab2['MQ'] = self.vcf_record.INFO["MQ"]
         tab2['QUAL'] = self.vcf_record.QUAL
+        tab2['Quality by Depth'] = self.vcf_record.INFO.get("QD")
+        tab2['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
 
         if (self.get_gnomad_af()):
             tab3 = dict()

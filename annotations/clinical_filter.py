@@ -1,3 +1,5 @@
+import os
+
 from annotations import filters, gnomad, case_utils
 from annotations.record import Variant
 
@@ -11,6 +13,7 @@ class Filter:
         self.clinvar_filter = filters.Filter_ClinVar(data_dir)
         self.gnomad_filter1 = filters.Filter_gnomAD_AF_local(0.01)
         self.gnomad_filter5 = filters.Filter_gnomAD_AF_local(0.05)
+        self.quality_filter = filters.Filter_Quality()
 
     def accept(self, vcf_record, info = dict()):
         ok = False
@@ -33,11 +36,12 @@ class Filter:
             ok = self.gnomad_filter1.accept(vcf_record)
             info['gnomAD(1%)'] = ok
 
+        ok = ok and self.quality_filter.accept(vcf_record)
+
         return ok
 
 
-
-def process_file(f, out = None, vcf_header = None, samples = None):
+def process_file(f, out = None, vcf_header = None, samples = None, expected = None):
     n = 0
     n_accepted = 0
     n1 = 0
@@ -56,7 +60,18 @@ def process_file(f, out = None, vcf_header = None, samples = None):
             n += 1
             info = {}
             if (not clinical_filter.accept(v, info)):
-                continue
+                ## continue
+                pass
+            else:
+                #n_accepted += 1
+                v.data["SEQaBOO"] = True
+            if (expected.has_key((v.chr_num(), v.start()))):
+                v.data["EXPECTED"] = True
+
+
+            if (v.data.get("EXPECTED") == v.data.get("SEQaBOO")):
+                #continue
+                pass
             n_accepted += 1
             if (v.get_gnomad_af()):
                 n1 += 1
@@ -117,7 +132,25 @@ if __name__ == '__main__':
     with open ("/Users/misha/projects/bgm/cases/BGM9001/header.vcf") as vcf:
         header = vcf.read()
 
+    expected_set = {}
+    dir = "/Users/misha/projects/bgm/cases/BGM9001"
+    with open (os.path.join(dir,"xbrowse_BGM9001_SEQaBOO_filters.txt")) as f1:
+        lines = f1.readlines()
+        for line in lines:
+            data = line.split('\t')
+            ch = data[2].strip()
+            c = ch[3:]
+            p = int (data[3].strip())
+            expected_set[(c,p)] = 1
+
+
     samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001.fam")
 
-    with open ("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_final.json", "w") as output:
-        process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output, vcf_header=header, samples=samples)
+    if (True):
+        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_all.json"
+    else:
+        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_false.json"
+
+    with open (output, "w") as output:
+        process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
+                     vcf_header=header, samples=samples, expected=expected_set)
