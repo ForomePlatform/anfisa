@@ -5,8 +5,10 @@
     "html-base": "/anfisa/",
     "html-title": "Anfisa: %s",
     "datasets": [
-        {"name": "bgm9001_wgs_final", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_final.json"}
+        {"name": "bgm9001_wgs_all", "kind": "a-json",
+            "file": "../a-data/bgm9001_wgs_all.json"},
+        {"name": "bgm9001_wgs_false", "kind": "a-json",
+            "file": "../a-data/bgm9001_wgs_false.json"}
     ],
     "logging": { 
         "version": 1,

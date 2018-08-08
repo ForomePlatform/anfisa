@@ -91,11 +91,11 @@ class AttrH:
         if self.mName is None:
             self.mPath = "None"
             return
+        self.mPath = a_path = path + self.mName
         if self.mAttrs:
             for a_name in self.mAttrs:
                 registry.add(path + a_name)
             return
-        self.mPath = a_path = path + self.mName
         registry.add(a_path)
         if self.mKind == "json":
             registry.add(a_path + "*")
@@ -137,7 +137,7 @@ class AttrH:
 
     @staticmethod
     def _htmlEscape(val):
-        if not val:
+        if val is None or val == "":
             return val
         return escape(str(val).replace('_', ' '))
 

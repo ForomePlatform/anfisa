@@ -122,7 +122,6 @@ class HServHandler:
         resp_h = HServResponse(start_response)
         try:
             path, query_args = self.parseRequest(environ)
-            print(path, query_args)
             if path.find('.') != -1:
                 ret = self.fileResponse(resp_h, path, True)
                 if ret is not False:
@@ -139,7 +138,7 @@ class HServHandler:
 #========================================
 def setupHServer(config_file, in_container):
     if not os.path.exists(config_file):
-        logging.critical("No config file provided (hserv.xml)")
+        logging.critical("No config file provided (%s)" % config_file)
         sys.exit(2)
     config = None
     with codecs.open(config_file, "r", encoding = "utf-8") as inp:

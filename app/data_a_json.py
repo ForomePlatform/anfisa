@@ -100,9 +100,12 @@ class DataRecord_AJson(DataRecord):
                     print >> output, "==v====SCQ======v========"
                     for idx, dt in enumerate(val.split(',')):
                         ddd = dt.split('|')
-                        print >> output, "%d:\t%s" % (idx, '|'.join(ddd[:17]))
-                        print >> output, "\t|%s" % ('|'.join(ddd[17:37]))
-                        print >> output, "\t|%s" %  ('|'.join(ddd[37:]))
+                        print >> output, "%d:\t%s" % (idx, '|'.join(ddd[:12]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[12:29]))
+                        print >> output, "\t|%s" %  ('|'.join(ddd[28:33]))
+                        print >> output, "\t|%s" %  ('|'.join(ddd[33:40]))
+                        print >> output, "\t|%s" %  ('|'.join(ddd[40:50]))
+                        print >> output, "\t|%s" %  ('|'.join(ddd[50:]))
                     print >> output, "==^====SCQ======^========"
                 else:
                     print >> output, vv

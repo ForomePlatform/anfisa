@@ -2,7 +2,6 @@ var sCurRecNo = null;
 var sCurRecTab = null;
 var sCurDataSet = null;
 
-var sNodeTopLeft      = null;
 var sNodeModalBack    = null;
 var sNodeFilterMod    = null;
 var sNodeOpenFilter   = null;
@@ -10,7 +9,6 @@ var sNodeCloseFilter = null;
 
 function initWin(data_set_name) {
     sCurDataSet = data_set_name; 
-    sNodeTopLeft = document.getElementById("top-left");
     sNodeModalBack  = document.getElementById("modal-back");
     sNodeFilterMod  = document.getElementById("filter-mod");
     sNodeOpenFilter = document.getElementById("open-filter");
@@ -33,7 +31,6 @@ function changeRec(rec_no) {
     softScroll(new_rec_el);
     document.getElementById("record").src = 
         "rec?data=" + sCurDataSet + "&rec=" + sCurRecNo;
-    //sNodeTopLeft.scrollIntoView(true);
 }
 
 function onKey(event_key) {
@@ -69,6 +66,13 @@ function filterModOn() {
 
 function filterModOff() {
     sNodeModalBack.style.display = "none";
+}
+
+function changeDataSet() {
+    sel = document.getElementById("data_set");
+    new_data_set = sel.options[sel.selectedIndex].text;
+    if (sCurDataSet != new_data_set)
+        window.location = "?data=" + new_data_set;
 }
 
 //=====================================

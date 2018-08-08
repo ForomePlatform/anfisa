@@ -30,7 +30,10 @@ Aspect_Quality = AspectH("view.quality",     "Quality",
         AttrH("Strand Odds Ratio"),
         AttrH("Quality by Depth"),
         AttrH("Fisher Strand Bias"),
+        AttrH("AD", is_seq = True),
+        AttrH("DP"),
         AttrH("MQ"),
+        AttrH("SB"),
         AttrH("QUAL")])
 
 #===============================================
@@ -90,7 +93,9 @@ Aspect_TechMainData = AspectH("_main", "VEP: Data", json_container = None,
         AttrH("variant_class", "flex"),
         AttrH("most_severe_consequence", "flex"),
         AttrH("ClinVar"),
-        AttrH("HGMD")], kind = "tech")
+        AttrH("HGMD"),
+        AttrH("EXPECTED"),
+        AttrH("SEQaBOO")], kind = "tech")
 
 #===============================================
 Aspect_Consequences = AspectH("cons", "VEP: Consequences",

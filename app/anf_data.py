@@ -25,10 +25,14 @@ class AnfisaData:
 
     @classmethod
     def reportSets(cls, cur_set, output):
-        print >> output, ('<select id="data_set" value="%s">' %
-            cur_set.getName())
+        print >> output, '<select id="data_set" onchange="changeDataSet();">'
         for set_name in sorted(cls.sSets.keys()):
             d_set = cls.sSets[set_name]
-            print >> output, ' <option value="%s">%s</option>' % (
-                d_set.getName(), d_set.getName())
+            if cur_set is not None and cur_set.getName() == d_set.getName():
+                opt_sel = 'selected="true"'
+                cur_set = None
+            else:
+                opt_sel = ''
+            print >> output, ' <option value="%s" %s>%s</option>' % (
+                d_set.getName(), opt_sel, d_set.getName())
         print >> output, '</select>'
