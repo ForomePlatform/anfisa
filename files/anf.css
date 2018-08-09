@@ -9,7 +9,8 @@ body {padding: 0px; margin: 0px;
     width: 100%;
 }
 
-#top-left  {min-width: 250px; background-color:#C0C0C0; 
+#top-left  {min-width: 250px; 
+    background-color:#CF9B42; 
     /*height: auto !important;*/
     height: 100%;
     min-height: 100%;
@@ -59,19 +60,19 @@ div.rec-label {
 }
 
 div.rec-label.red {
-    background: linear-gradient(to left, red 0%, #E0E0E0, red);
+    background: linear-gradient(to left, #FDD007 0%, red);
     cursor: pointer;
 }
 div.rec-label.green {
-    background: linear-gradient(to left, green 0%, #E0E0E0, green);
+    background: linear-gradient(to left, #FDD007 0%, #84FA36);
     cursor: pointer;
 }
 div.rec-label.yellow {
-    background: linear-gradient(to left, yellow 0%, #E0E0E0, yellow);
+    background: linear-gradient(to left, #FDD007 0%, #FAF205);
     cursor: pointer;
 }
 div.rec-label.grey {
-    background: linear-gradient(to left, #C0C0C0 0%, #E0E0E0, #C0C0C0);
+    background: linear-gradient(to left, #FDD007 0%, white);
     cursor: pointer;
 }
 
