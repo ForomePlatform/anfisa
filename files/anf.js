@@ -21,13 +21,15 @@ function initWin(data_set_name) {
 function changeRec(rec_no) {
     if (sCurRecNo == rec_no) 
         return;
-    new_rec_el = document.getElementById("li--" + rec_no);
+    var new_rec_el = document.getElementById("li--" + rec_no);
     if (new_rec_el == null) 
         return;
-    if (sCurRecNo != null) 
-        document.getElementById("li--" + sCurRecNo).className = "rec-label";
+    if (sCurRecNo != null) {
+        var prev_el = document.getElementById("li--" + sCurRecNo);
+        prev_el.className = prev_el.className.replace(" press", "");
+    }
     sCurRecNo = rec_no;
-    new_rec_el.className = " rec-label press";
+    new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     document.getElementById("record").src = 
         "rec?data=" + sCurDataSet + "&rec=" + sCurRecNo;

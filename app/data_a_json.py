@@ -8,6 +8,9 @@ from .cfg_data import ObjectAttributeChecker
 #===============================================
 class DataSet_AJson(DataSet):
     sMainKey = CONFIG_AJson["main_key"]
+    sColorCode = CONFIG_AJson["color_code"]
+    sColors = {"red", "yellow", "green"}
+    sDefaultColor = "grey"
     def __init__(self, name, fname):
         DataSet.__init__(self, name)
         self.mRecords = []
@@ -15,7 +18,6 @@ class DataSet_AJson(DataSet):
         with codecs.open(fname, "r", encoding = "utf-8") as inp:
             for line in inp:
                 record = json.loads(line)
-                record["_no"] = len(self.mRecords)
                 self.mRecords.append(record)
         checker = ObjectAttributeChecker(
             CONFIG_AJson["view_tabs"], CONFIG_AJson["attrs_to_ignore"])
@@ -37,9 +39,13 @@ class DataSet_AJson(DataSet):
     def reportList(self, output):
         for idx, rec in enumerate(self.mRecords):
             rec_key = rec[self.sMainKey]
-            print >> output, ('<div id="li--%d" class="rec-label" '
+            if self.sColorCode:
+                rec_color = rec.get(self.sColorCode)
+                if rec_color not in self.sColors:
+                    rec_color = self.sDefaultColor
+            print >> output, ('<div id="li--%d" class="rec-label %s" '
                 'onclick="changeRec(%d)";">%s</div>' %
-                (idx, idx, rec_key))
+                (idx, rec_color, idx, rec_key))
 
     def getRecKey(self, rec_no):
         return self.mRecords[rec_no][self.sMainKey]

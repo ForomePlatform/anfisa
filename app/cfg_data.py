@@ -139,7 +139,8 @@ class AttrH:
     def _htmlEscape(val):
         if val is None or val == "":
             return val
-        return escape(str(val).replace('_', ' '))
+        #return escape(str(val).replace('_', ' '))
+        return escape(str(val))
 
     @classmethod
     def _jsonRepr(cls, obj):
