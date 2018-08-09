@@ -164,13 +164,13 @@ class Variant:
         return [t for t in self.get_transcripts() if (msq in t.get("consequence_terms"))]
 
     def get_from_transcripts_list(self, key):
-        return [t.get(key) for t in self.get_transcripts() if (t.has_key(key))]
+        return unique([t.get(key) for t in self.get_transcripts() if (t.has_key(key))])
 
     def get_from_worst_transcript(self, key):
-        return [t.get(key) for t in self.get_most_severe_transcripts() if (t.has_key(key))]
+        return unique([t.get(key) for t in self.get_most_severe_transcripts() if (t.has_key(key))])
 
     def get_from_canonical_transcript(self, key):
-        return [t.get(key) for t in self.get_canonical_transcripts() if (t.has_key(key))]
+        return unique([t.get(key) for t in self.get_canonical_transcripts() if (t.has_key(key))])
 
     def get_canonical_transcripts(self):
         return [t for t in self.get_transcripts() if (t.get("canonical"))]
@@ -197,6 +197,47 @@ class Variant:
     def get_distance_from_exon(self, kind):
         hgvcs_list = self.get_from_transcripts("hgvsc", kind)
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in hgvcs_list if hgvcs])
+
+    def get_gnomad_pop_max(self):
+        ancestries = dict()
+        collocated_variants = self.get_colocated_variants()
+        for v in collocated_variants:
+            if (v.get("somatic")):
+                continue
+            for key in v.keys():
+                if (not 'gnomad' in key):
+                    continue
+                g = key.split('_')
+                if (len(g) <> 3):
+                    continue
+                a = g[1]
+                tpl = ancestries.get(a, [None, None])
+                if (g[2] == 'allele'):
+                    tpl[0] = v[key]
+                elif (g[2] == 'maf'):
+                    tpl[1] = v[key]
+                else:
+                    raise Exception("Unrecognized key: {}".format(key))
+                ancestries[a] = tpl
+
+        pop_max_a_1 = None
+        pop_max_f_1 = None
+        pop_max_a_2 = None
+        pop_max_f_2 = None
+        a1 = None
+        a2 = None
+        for a in ancestries.keys():
+            f = ancestries[a][1]
+            if (not pop_max_f_1 or f > pop_max_f_1):
+                if (pop_max_f_1):
+                    pop_max_f_2 = pop_max_f_1
+                    pop_max_a_2 = pop_max_a_1
+                    a2 = a1
+                pop_max_f_1 = f
+                pop_max_a_1 = ancestries[a][0]
+                a1 = a
+
+        return (a1, pop_max_a_1, pop_max_f_1, a2, pop_max_a_2, pop_max_f_2)
 
     def get_gnomad_af(self):
         gm_af = None
@@ -269,10 +310,47 @@ class Variant:
                 return sample['id']
         return None
 
+    def get_color_code(self):
+        pp = unique(self.get_from_transcripts_list("polyphen_prediction"))
+        ss = unique(self.get_from_transcripts_list("sift_prediction"))
+        best = None
+        worst = None
+        if (self.start() == 21238413):
+            pass
+        for p in pp:
+            if ('benign' in  p):
+                best = 'B'
+            elif ('possibly_damaging' in p):
+                if (worst <> 'D'):
+                    worst = 'PD'
+            elif ('damaging' in p):
+                worst = 'D'
+        for s in ss:
+            if ('tolerated' in s):
+                best = 'B'
+            if ('deleterious' in s):
+                worst = 'D'
+
+        code = None
+        if (best <> 'B' and worst == 'D'):
+            code = 'red'
+        elif (best == 'B' and not worst):
+            code = 'green'
+        elif (best or worst):
+            code = 'yellow'
+
+        return code
+
+    def get_pLI(self):
+        list = self.get_from_transcripts_list("exacpli")
+        if (len(list) > 0):
+            return list
+        return None
 
     def get_view_json(self):
         data = self.data.copy()
         data['label'] = self.get_label()
+        data['color_code'] = self.get_color_code()
         view = dict()
         data["view"] = view
 
@@ -310,8 +388,8 @@ class Variant:
         tab2['Allelic Depth'] = proband_genotype.data.AD
         tab2['Read Depth'] = proband_genotype.data.DP
         tab2['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
-        tab2['MQ'] = self.vcf_record.INFO["MQ"]
-        tab2['QUAL'] = self.vcf_record.QUAL
+        tab2['Mapping Quality'] = self.vcf_record.INFO["MQ"]
+        tab2['Variant Call Quality'] = self.vcf_record.QUAL
         tab2['Quality by Depth'] = self.vcf_record.INFO.get("QD")
         tab2['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
 
@@ -320,8 +398,11 @@ class Variant:
             #view['gnomAD'] = tab3
             data["view.gnomAD"] = tab3
             tab3["AF"] = self.get_gnomad_af()
-            tab3["PopMax #1"] = ""
-            tab3["PopMax #2"] = ""
+            pop_max = self.get_gnomad_pop_max()
+            if (pop_max[0]):
+                tab3["PopMax #1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
+            if (pop_max[3]):
+                tab3["PopMax #2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
             tab3["URL"] = "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".\
                 format(self.chr_num(), self.start(), self.ref(), self.alt_string())
         else:
@@ -331,6 +412,7 @@ class Variant:
         #view['Databases'] = tab4
         data["view.Databases"] = tab4
         tab4["OMIM"] = ""
+        tab4["pLI"] = self.get_pLI()
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
             tab4["HGMD PMIDs"] = ""

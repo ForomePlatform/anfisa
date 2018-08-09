@@ -50,8 +50,11 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     KEYs = ['HGMD only', 'ClinVar only', 'HGMD & ClinVar', 'gnomAD: AF<1%', 'Singleton']
 
     clinical_filter = Filter()
+    output1 = out.format("all")
+    output2 = out.format("false")
+    output3 = out.format("true_pos")
 
-    with open(f) as input:
+    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3:
         while(True):
             line = input.readline()
             if (not line):
@@ -109,7 +112,11 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             f = cube.get((msq, key),0)
             cube[(msq, key)] = f + 1
 
-            out.write(v.get_view_json() + '\n')
+            out1.write(v.get_view_json() + '\n')
+            if (v.data.get("EXPECTED") <> v.data.get("SEQaBOO")):
+                out2.write(v.get_view_json() + '\n')
+            elif (v.data.get("EXPECTED") and v.data.get("SEQaBOO")):
+                out3.write(v.get_view_json() + '\n')
 
             # if (msq in ["frameshift_variant", "missense_variant"] and key == 'Singleton'):
             #     print "{}: {}, {}:{}".format(v.get('id'), msq, v.get("seq_region_name"), v.get('start'))
@@ -147,10 +154,7 @@ if __name__ == '__main__':
     samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001.fam")
 
     if (True):
-        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_all.json"
-    else:
-        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_false.json"
+        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_{}.json"
 
-    with open (output, "w") as output:
-        process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
+    process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
                      vcf_header=header, samples=samples, expected=expected_set)

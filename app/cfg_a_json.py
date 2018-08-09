@@ -27,14 +27,12 @@ Aspect_Quality = AspectH("view.quality",     "Quality",
     attrs = [
         AttrH("Allelic Depth", is_seq = True),
         AttrH("Read Depth"),
-        AttrH("Strand Odds Ratio"),
         AttrH("Quality by Depth"),
-        AttrH("Fisher Strand Bias"),
-        AttrH("AD", is_seq = True),
-        AttrH("DP"),
-        AttrH("MQ"),
-        AttrH("SB"),
-        AttrH("QUAL")])
+        AttrH("Mapping Quality"),
+        AttrH("Variant Call Quality"),
+        AttrH("Strand Odds Ratio"),
+        AttrH("Fisher Strand Bias")
+    ])
 
 #===============================================
 Aspect_gnomAD = AspectH("view.gnomAD",      "gnomAD",
@@ -47,6 +45,7 @@ Aspect_gnomAD = AspectH("view.gnomAD",      "gnomAD",
 #===============================================
 Aspect_Databases = AspectH("view.Databases",   "Databases",
     attrs = [
+        AttrH("pLI", is_seq = True),
         AttrH("HGMD"),
         AttrH("OMIM"),
         AttrH("ClinVar", "link")])
@@ -82,6 +81,7 @@ Aspect_Inheritance = AspectH("view.Inheritance", "Inheritance",
 Aspect_TechMainData = AspectH("_main", "VEP: Data", json_container = None,
     attrs = [
         AttrH("label"),
+        AttrH("color_code"),
         AttrH("id"),
         AttrH("assembly_name", title = "Assembly"),
         AttrH("seq_region_name", "flex"),
@@ -98,7 +98,7 @@ Aspect_TechMainData = AspectH("_main", "VEP: Data", json_container = None,
         AttrH("SEQaBOO")], kind = "tech")
 
 #===============================================
-Aspect_Consequences = AspectH("cons", "VEP: Consequences",
+Aspect_Consequences = AspectH("cons", "VEP: Transcripts",
     json_container = None,
     attrs = [
         AttrH("amino_acids"),
