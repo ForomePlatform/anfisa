@@ -66,8 +66,7 @@ class AttrH:
     def __init__(self, name, kind = None, title = None,
             attrs = None, is_seq = False):
         self.mName = name
-        self.mTitle = (title
-            if title is not None else str(name).replace('_', ' '))
+        self.mTitle = (title if title is not None else name)
         self.mKind = kind if kind else "norm"
         assert attrs is None or not is_seq
         assert attrs is None or kind != "json"
