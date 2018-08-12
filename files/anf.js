@@ -54,11 +54,11 @@ function softScroll(nd) {
     var rect_parent = nd.parentNode.getBoundingClientRect();
     if (rect.top - 10 < rect_parent.top) {
         nd.scrollIntoView(
-            {behavior: 'auto', block: 'center', inline: 'center'});
+            {behavior: 'auto', block: 'start', inline: 'center'});
     }
     else if (rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
         nd.scrollIntoView(
-            {behavior: 'auto', block: 'center', inline: 'center'});
+            {behavior: 'auto', block: 'start', inline: 'center'});
     }
 }
 
