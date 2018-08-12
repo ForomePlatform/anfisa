@@ -98,14 +98,14 @@ div.rec-label:hover {
     color: #f6f6f7;
 }
 
-div.rec-label.red { background: url(/images/red.png) no-repeat 5px 3px; }
-div.rec-label.red:hover { background: url(/images/red-hover.png) no-repeat 5px 3px; }
-div.rec-label.green { background: url(/images/green.png) no-repeat 5px 3px; }
-div.rec-label.green:hover { background: url(/images/green-hover.png) no-repeat 5px 3px; }
-div.rec-label.yellow { background: url(/images/yellow.png) no-repeat 5px 3px; }
-div.rec-label.yellow:hover { background: url(/images/yellow-hover.png) no-repeat 5px 3px; }
-div.rec-label.grey { background: url(/images/grey.png) no-repeat 6px 5px; }
-div.rec-label.grey:hover { background: url(/images/grey-hover.png) no-repeat 6px 5px; }
+div.rec-label.red { background: url(images/red.png) no-repeat 5px 3px; }
+div.rec-label.red:hover { background: url(images/red-hover.png) no-repeat 5px 3px; }
+div.rec-label.green { background: url(images/green.png) no-repeat 5px 3px; }
+div.rec-label.green:hover { background: url(images/green-hover.png) no-repeat 5px 3px; }
+div.rec-label.yellow { background: url(images/yellow.png) no-repeat 5px 3px; }
+div.rec-label.yellow:hover { background: url(images/yellow-hover.png) no-repeat 5px 3px; }
+div.rec-label.grey { background: url(images/grey.png) no-repeat 6px 5px; }
+div.rec-label.grey:hover { background: url(images/grey-hover.png) no-repeat 6px 5px; }
 
 div.rec-label.press {
     color: #f6f6f7;
