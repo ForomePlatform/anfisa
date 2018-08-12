@@ -189,14 +189,21 @@ class Variant:
             raise Exception("Unknown type: {}".format(type))
         return v
 
+    def get_hgvs_list(self, kind):
+        if (kind == 'c'):
+            hgvs_list = self.get_from_transcripts("hgvsc", kind)
+        elif (kind == 'p'):
+            hgvs_list = self.get_from_transcripts("hgvsp", kind)
+        else:
+            hgvs_list = self.get_from_transcripts("hgvsc", kind) + self.get_from_transcripts("hgvsp", kind)
+        return hgvs_list
+
     def get_pos(self, type, kind = "all"):
-        hgvcs_list = self.get_from_transcripts("hgvsc", kind)
-        pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in hgvcs_list if hgvcs])
+        pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
         return pos_list
 
     def get_distance_from_exon(self, kind):
-        hgvcs_list = self.get_from_transcripts("hgvsc", kind)
-        return unique([get_distance_hgvsc(hgvcs) for hgvcs in hgvcs_list if hgvcs])
+        return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
 
     def get_gnomad_pop_max(self):
         ancestries = dict()
@@ -262,26 +269,22 @@ class Variant:
         if (gm_af):
             return gm_af
 
+        af_e = self.get_gnomad_split_af("exomes")
+        af_g = self.get_gnomad_split_af("genomes")
+
+        return max(af_e, af_g)
+
+    def get_gnomad_split_af(self, exomes_or_genomes):
         transcripts = self.get_transcripts()
+        af = None
         for t in transcripts:
-            af_e = t.get("gnomad_exomes_af")
-            af_g = t.get("gnomad_genomes_af")
-            if (af_g <> None and af_e <> None):
-                af = min(af_g, af_e)
-            elif (af_e <> None):
-                af = af_e
-            elif (af_g <> None):
-                af = af_g
+            af1 = t.get("gnomad_{}_af".format(exomes_or_genomes))
+            if (af):
+                af = min(af1, af)
             else:
-                continue
+                af = af1
 
-            if (gm_af):
-                gm_af = min(gm_af, af)
-            else:
-                gm_af = af
-
-
-        return gm_af
+        return af
 
     def get_label(self):
         genes = self.get_genes()
@@ -367,6 +370,10 @@ class Variant:
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
             tab1["Alt"] = self.alt_string()
+        tab1['BGM_CMPD_HET'] = self.vcf_record.INFO.get("BGM_CMPD_HET")
+        callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
+                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
+        tab1['Called by'] = [caller for caller in callers if (self.vcf_record.INFO.has_key(caller))]
         tab1['cPos'] = self.get_pos('c')
         tab1['pPos'] = self.get_pos('p')
         tab1['Proband Genotype'] = proband_genotype.gt_bases
@@ -398,13 +405,19 @@ class Variant:
             #view['gnomAD'] = tab3
             data["view.gnomAD"] = tab3
             tab3["AF"] = self.get_gnomad_af()
+            tab3["Genome AF"] = self.get_gnomad_split_af("genomes")
+            tab3["Exome AF"] = self.get_gnomad_split_af("exomes")
             pop_max = self.get_gnomad_pop_max()
             if (pop_max[0]):
                 tab3["PopMax #1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
             if (pop_max[3]):
                 tab3["PopMax #2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
-            tab3["URL"] = "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".\
-                format(self.chr_num(), self.start(), self.ref(), self.alt_string())
+
+            alt_list = self.alt_string().split(',')
+            tab3["URL"] = [
+                "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), alt)
+                for alt in alt_list
+            ]
         else:
             data["view.gnomAD"] = None
 
@@ -419,17 +432,24 @@ class Variant:
         if (self.data.get("ClinVar") <> None):
             tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
                 format(self.chr_num(), self.start(), self.end())
+        tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig'))
 
         tab5 = dict()
         #view['Predictions'] = tab5
         data["view.Predictions"] = tab5
         tab5['Polyphen'] = unique(self.get_from_transcripts_list("polyphen_prediction"))
+        tab5['Polyphen 2 HVAR'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_pred".lower()))
+        tab5['Polyphen 2 HDIV'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_pred".lower()))
+        tab5['Polyphen 2 HVAR score'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_score".lower()))
+        tab5['Polyphen 2 HDIV score'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_score".lower()))
         tab5['SIFT'] = unique(self.get_from_transcripts_list("sift_prediction"))
+        tab5['SIFT score'] = unique(self.get_from_transcripts_list("sift_score"))
         tab5["REVEL"] = unique(self.get_from_transcripts_list("revel_score"))
         tab5["Mutation Taster"] = unique(self.get_from_transcripts_list("mutationtaster_pred"))
-        tab5["FATHMM"] = unique(self.get_from_transcripts_list("fathmm_score"))
-        tab5["CADD"] = unique(self.get_from_transcripts_list("cadd_phred"))
-        tab5["MutationAssessor"] = ""
+        tab5["FATHMM"] = unique(self.get_from_transcripts_list("fathmm_pred"))
+        tab5["CADD (Phred)"] = unique(self.get_from_transcripts_list("cadd_phred"))
+        tab5["CADD (Raw)"] = unique(self.get_from_transcripts_list("cadd_raw"))
+        tab5["Mutation Assessor"] = unique(self.get_from_transcripts_list("mutationassessor_pred"))
 
         tab6 = dict()
         #view['Genetics'] = tab6

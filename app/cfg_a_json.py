@@ -10,6 +10,8 @@ Aspect_General = AspectH("view.general",     "General",
         AttrH("Proband Genotype"),
         AttrH("Maternal Genotype"),
         AttrH("Paternal Genotype"),
+        AttrH("Called by", is_seq = True),
+        AttrH("BGM_CMPD_HET"),
         AttrH("Worst Annotation"),
         AttrH("cPos", is_seq = True),
         AttrH("pPos", is_seq = True),
@@ -38,7 +40,9 @@ Aspect_Quality = AspectH("view.quality",     "Quality",
 Aspect_gnomAD = AspectH("view.gnomAD",      "gnomAD",
     attrs = [
         AttrH("AF"),
-        AttrH("URL", kind = "link"),
+        AttrH("Genome AF"),
+        AttrH("Exome AF"),
+        AttrH("URL", kind = "link", is_seq=True),
         AttrH("PopMax #1"),
         AttrH("PopMax #2")])
 
@@ -48,18 +52,27 @@ Aspect_Databases = AspectH("view.Databases",   "Databases",
         AttrH("pLI", is_seq = True),
         AttrH("HGMD"),
         AttrH("OMIM"),
-        AttrH("ClinVar", "link")])
+        AttrH("ClinVar Significance", is_seq=True),
+        AttrH("ClinVar", "link")
+    ])
 
 #===============================================
 Aspect_Predictions = AspectH("view.Predictions", "Predictions",
     attrs = [
         AttrH("Polyphen", is_seq = True),
+        AttrH("Polyphen 2 HVAR", is_seq = True),
+        AttrH("Polyphen 2 HDIV", is_seq = True),
         AttrH("SIFT", is_seq = True),
         AttrH("REVEL", is_seq = True),
         AttrH("Mutation Taster", is_seq = True),
         AttrH("FATHMM", is_seq = True),
-        AttrH("CADD", is_seq = True),
-        AttrH("MutationAssessor")])
+        AttrH("CADD (Phred)", is_seq = True),
+        AttrH("CADD (Raw)", is_seq = True),
+        AttrH("Mutation Assessor", is_seq=True),
+        AttrH("SIFT score", is_seq=True),
+        AttrH("Polyphen 2 HVAR score", is_seq=True),
+        AttrH("Polyphen 2 HDIV score", is_seq=True),
+    ])
 
 #===============================================
 Aspect_Genetics = AspectH("view.Genetics",    "Genetics",
