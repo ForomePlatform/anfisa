@@ -43,7 +43,7 @@ def formAspectTable(output, aspect, rec_obj):
 
     print >> output, '<table id="rec-%s">' % aspect.getName()
     if prefix_head:
-        print >> output, '<tr><td class="title"></td>'
+        print >> output, '<tr class="head"><td class="title"></td>'
         for title, count in prefix_head:
             print >> output, ('<td class="title" colspan="%d">%s</td>' %
                 (count, escape(title)))
