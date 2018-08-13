@@ -3,7 +3,7 @@ function chooseAspect(evt, aspect_id) {
 
     tabcontent = document.getElementsByClassName("r-tabcnt");
     for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.zIndex = (tabcontent[i].id == aspect_id)? "1":"0";
+        tabcontent[i].style.display = (tabcontent[i].id == aspect_id)? "block":"none";
     }
 
     tablinks = document.getElementsByClassName("r-tablnk");

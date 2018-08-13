@@ -2,11 +2,13 @@ body {
     padding: 0px;
     margin: 0px;  
     background-color: white;
-    overflow: hidden;
     font-family: sans-serif;
+    overflow: hidden;
 }
 body.rec {
     background-color: #ffffff; 
+    height: 100%;
+    overflow: auto;
 }
 #top {
     display: flex;
@@ -35,6 +37,7 @@ body.rec {
     height: 100%;
     min-height: 100%;
     white-space: nowrap;
+    overflow: hidden;
 }
 a {
     color: #526ca5;
@@ -62,7 +65,7 @@ tr.head td {
 }
 table td {
     border-bottom: 1px solid #dee2e6;
-    padding: 1.75rem;
+    padding: .75rem;
 }
 table tr:nth-child(even) {
     background-color:#ffffff; 
@@ -98,14 +101,14 @@ div.rec-label:hover {
     color: #f6f6f7;
 }
 
-div.rec-label.red { background: url(/images/red.png) no-repeat 5px 3px; }
-div.rec-label.red:hover { background: url(/images/red-hover.png) no-repeat 5px 3px; }
-div.rec-label.green { background: url(/images/green.png) no-repeat 5px 3px; }
-div.rec-label.green:hover { background: url(/images/green-hover.png) no-repeat 5px 3px; }
-div.rec-label.yellow { background: url(/images/yellow.png) no-repeat 5px 3px; }
-div.rec-label.yellow:hover { background: url(/images/yellow-hover.png) no-repeat 5px 3px; }
-div.rec-label.grey { background: url(/images/grey.png) no-repeat 6px 5px; }
-div.rec-label.grey:hover { background: url(/images/grey-hover.png) no-repeat 6px 5px; }
+div.rec-label.red { background: url(images/red.png) no-repeat 5px 3px; }
+div.rec-label.red:hover { background: url(images/red-hover.png) no-repeat 5px 3px; }
+div.rec-label.green { background: url(images/green.png) no-repeat 5px 3px; }
+div.rec-label.green:hover { background: url(images/green-hover.png) no-repeat 5px 3px; }
+div.rec-label.yellow { background: url(images/yellow.png) no-repeat 5px 3px; }
+div.rec-label.yellow:hover { background: url(images/yellow-hover.png) no-repeat 5px 3px; }
+div.rec-label.grey { background: url(images/grey.png) no-repeat 6px 5px; }
+div.rec-label.grey:hover { background: url(images/grey-hover.png) no-repeat 6px 5px; }
 
 div.rec-label.press {
     color: #f6f6f7;
@@ -116,7 +119,7 @@ iframe#record {
     padding: 0px;
     height: 100%;
     width: 100%;
-    overflow: hidden;
+    border: none;
 }
 
 /*************************************************/
@@ -176,13 +179,8 @@ iframe#record {
 
 /* Style the tab content */
 .r-tabcnt {
-    position: absolute;
     margin: 0px;
-    border: 1px solid #ccc;
     border-top: none;
-    height: 93%;
-    width: 99%;
-    overflow: auto;
     white-space: nowrap;
     background-color: #ffffff;
     padding: 10px;
@@ -220,13 +218,12 @@ pre {
     font-family: Courier New;
     font-size: 14px;
     margin-bottom: 45px;
-    width: 95%;
     border: solid 1px #dee2e6;
     background-color:#f7f7f7; 
     -webkit-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
     -moz-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
     box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    overflow-x: scroll;
+    overflow: auto;
 }
 
 p.error {color: red;}
