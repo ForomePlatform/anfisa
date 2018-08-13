@@ -22,7 +22,9 @@ Aspect_General = AspectH("view.general",     "General",
         AttrH("Variant Intron (Worst Annotation)", is_seq = True),
         AttrH("Variant Intron (Canonical)", is_seq = True),
         AttrH("RefSeq Transcript (Canonical)", is_seq = True),
-        AttrH("RefSeq Transcript (Worst)", is_seq = True)])
+        AttrH("RefSeq Transcript (Worst)", is_seq = True),
+        AttrH("IGV", kind ="link")
+    ])
 
 #===============================================
 Aspect_Quality = AspectH("view.quality",     "Quality",

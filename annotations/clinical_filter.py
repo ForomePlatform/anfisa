@@ -41,7 +41,7 @@ class Filter:
         return ok
 
 
-def process_file(f, out = None, vcf_header = None, samples = None, expected = None):
+def process_file(f, out = None, vcf_header = None, samples = None, expected = None, case = None):
     n = 0
     n_accepted = 0
     n1 = 0
@@ -59,7 +59,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             line = input.readline()
             if (not line):
                 break
-            v = Variant(line, vcf_header=vcf_header, samples=samples)
+            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case)
             n += 1
             info = {}
             if (not clinical_filter.accept(v, info)):
@@ -157,4 +157,4 @@ if __name__ == '__main__':
         output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_{}.json"
 
     process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
-                     vcf_header=header, samples=samples, expected=expected_set)
+                     vcf_header=header, samples=samples, expected=expected_set, case="bgm9001_wgs")

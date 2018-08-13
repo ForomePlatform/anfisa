@@ -63,9 +63,10 @@ class Variant:
         "intron_variant"
     ]
 
-    def __init__(self, json_string, vcf_header = None, samples = None):
+    def __init__(self, json_string, vcf_header = None, case = None, samples = None):
         self.original_json = json_string
         self.data = json.loads(json_string)
+        self.case = case
         self.samples = samples
         if (not vcf_header):
             vcf_header = "#"
@@ -286,6 +287,21 @@ class Variant:
 
         return af
 
+    def get_igv_url(self):
+        if (not self.case or not self.samples):
+            return None
+        url = "http://localhost:60151/load?"
+        path = "/anfisa/links/"
+        host = "anfisa.forome.org"
+        file_urls = [
+            "http://{host}{path}{case}/{sample}.hg19.bam".format(host=host,path=path,case=self.case,sample=sample)
+                     for sample in self.samples
+        ]
+        name = ",".join(self.samples)
+        args = "file={}&genome=hg19&merge=false&name={}&locus={}:{}-{}".\
+            format(','.join(file_urls), name, self.chromosome(), self.start()-250, self.end()+250)
+        return "{}{}".format(url, args)
+
     def get_label(self):
         genes = self.get_genes()
         if (len(genes) == 0):
@@ -388,6 +404,7 @@ class Variant:
         tab1['Ensembl Transcripts (Canonical)'] = self.get_from_canonical_transcript("transcript_id")
         tab1['Variant Exon (Canonical)'] = self.get_from_canonical_transcript("exon")
         tab1['Variant Intron (Canonical)'] = self.get_from_canonical_transcript("intron")
+        tab1["IGV"] = self.get_igv_url()
 
         tab2 = dict()
         #view['quality'] = tab2
