@@ -14,6 +14,10 @@ class DataSet:
         print >> output, '<p>list of records here</p>'
 
     @abc.abstractmethod
+    def getNRecords(self):
+        return None
+
+    @abc.abstractmethod
     def getRecKey(self, rec_no):
         return None
 

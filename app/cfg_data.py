@@ -38,19 +38,18 @@ class AspectH:
     def _feedAttrPath(self, registry):
         path = self.mJsonContainer
         if path is None:
-            path = "/"
+            path = ""
         else:
             path = "/" + path
             registry.add(path)
-            path += '/'
         if self.mColGroups is not None:
             for grp in self.mColGroups:
-                grp_path = path + grp.getAttr()
+                grp_path = path + '/' + grp.getAttr()
                 registry.add(grp_path)
                 grp_path += "[]"
                 registry.add(grp_path)
                 for attr in self.mAttrs:
-                    attr._feedAttrPath(grp_path + "/", registry)
+                    attr._feedAttrPath(grp_path, registry)
         else:
             for attr in self.mAttrs:
                 attr._feedAttrPath(path, registry)
@@ -90,18 +89,17 @@ class AttrH:
         if self.mName is None:
             self.mPath = "None"
             return
-        self.mPath = a_path = path + self.mName
-        if self.mAttrs:
+        self.mPath = a_path = path + '/' + self.mName
+        if self.mAttrs is not None:
             for a_name in self.mAttrs:
-                registry.add(path + a_name)
+                registry.add(path + '/' + a_name)
             return
         registry.add(a_path)
+        if self.mIsSeq:
+            registry.add(a_path + "[]")
         if self.mKind == "json":
             registry.add(a_path + "*")
             return
-        if self.mIsSeq:
-            a_path += "[]"
-            registry.add(a_path)
 
     def getHtmlRepr(self, obj):
         repr_text = None
@@ -193,10 +191,6 @@ class ObjectAttributeChecker:
         for asp in aspects:
             asp._feedAttrPath(self.mGoodAttrs)
 
-    def _feedAttrs(self, attrs, path):
-        for attr in attrs:
-            attr._feedAttrPath(path, self.mGoodAttrs)
-
     def checkObj(self, obj, path = ""):
         if path and path not in self.mGoodAttrs:
             self.mBadAttrs.add(path)
@@ -218,10 +212,10 @@ class ObjectAttributeChecker:
     def finishUp(self):
         if len(self.mBadAttrs) > 0:
             good_path_heads = set()
-            ign_path_set = set()
             for path in self.mGoodAttrs:
                 if path.endswith('*'):
                     good_path_heads.add(path[:-1])
+            ign_path_set = set()
             for bad_path in self.mBadAttrs:
                 for path in good_path_heads:
                     if (bad_path.startswith(path) and
@@ -231,9 +225,8 @@ class ObjectAttributeChecker:
             self.mBadAttrs -= ign_path_set
         return len(self.mBadAttrs) == 0
 
-        return len(self.mBadAttrs) == 0
-
     def reportBadAttributes(self, output):
-        print >> output, "Bad attribute path list(%d):" % len(self.mBadAttrs)
+        print >> output, ("Bad attribute path list(%d):" %
+            len(self.mBadAttrs))
         for path in sorted(self.mBadAttrs):
             print >> output, "\t%s" % path

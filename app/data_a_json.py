@@ -47,6 +47,9 @@ class DataSet_AJson(DataSet):
                 'onclick="changeRec(%d)";">%s</div>' %
                 (idx, rec_color, idx, rec_key))
 
+    def getNRecords(self):
+        return len(self.mRecords)
+
     def getRecKey(self, rec_no):
         return self.mRecords[rec_no][self.sMainKey]
 
@@ -57,6 +60,9 @@ class DataSet_AJson(DataSet):
 class DataRecord_AJson(DataRecord):
     def __init__(self, json_obj):
         self.mObj = json_obj
+
+    def getObj(self):
+        return self.mObj
 
     def getID(self):
         return self.mObj[self.sMainKey]
