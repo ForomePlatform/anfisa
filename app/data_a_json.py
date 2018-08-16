@@ -78,6 +78,7 @@ class DataRecord_AJson(DataRecord):
                 aspect.getName(), aspect.getTitle()))
         print >> output, '</div>'
 
+        print >> output, '<div id="r-cnt-container">'
         for aspect in (CONFIG_AJson["view_tabs"]):
             if aspect.isIgnored():
                 continue
@@ -88,6 +89,7 @@ class DataRecord_AJson(DataRecord):
             else:
                 formAspectTable(output, aspect, self.mObj)
             print >> output, '</div>'
+        print >> output, '</div>'
 
     def reportInput(self, output):
         if "input" not in self.mObj:

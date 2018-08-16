@@ -8,7 +8,7 @@ body {
 body.rec {
     background-color: #ffffff; 
     height: 100%;
-    overflow: auto;
+    overflow: hidden;
 }
 #top {
     display: flex;
@@ -38,6 +38,9 @@ body.rec {
     min-height: 100%;
     white-space: nowrap;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
 }
 a {
     color: #526ca5;
@@ -58,33 +61,37 @@ table {
     color: #474441;
     font-size: 14px;
 }
-tr.head td {
-    background-color: #394a6c;
-    color: #d3d7de;
-    font-weight: normal;
+table tr.head td.title {
+    background-color:#ffffff; 
 }
 table td {
     border-bottom: 1px solid #dee2e6;
-    padding: .75rem;
+    padding: .20rem;
 }
-table tr:nth-child(even) {
+table tr:nth-child(even) td:nth-child(even) {
     background-color:#ffffff; 
 }
-table tr:nth-child(odd) {
+table tr:nth-child(even) td:nth-child(odd) {
     background-color:#f7f7f7; 
+}
+table tr:nth-child(odd) td:nth-child(even) {
+    background-color:#f7f7f7; 
+}
+table tr:nth-child(odd) td:nth-child(odd) {
+    background-color:#ffffff; 
 }
 
 div.data-sets {
     height: 30px;
-    padding-top: 30px;
-    padding-left: 30px;
+    padding-top: 3px;
+    padding-left: 3px;
 }
 div.rec-list  {
-    margin-top: 20px;
+    margin-top: 2px;
     overflow-y: scroll;
     align-self: flex-end;
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 3px;
+    padding-right: 3px;
 }
 
 div.rec-label {
@@ -94,7 +101,7 @@ div.rec-label {
     text-align: left;
     vertical-align: middle;
     padding-bottom: 15px;
-    padding-left: 25px;
+    padding-left: 2px;
     line-height: 18px;
 }
 div.rec-label:hover {
@@ -128,8 +135,9 @@ iframe#record {
     display: block;
     height: 40px;
     border-bottom: solid 1px #e0e0e0;
-    margin: 10px;
-    min-width: 950px;
+    margin: 1px;
+    min-width: 800px;
+    background-color: #f0f0f0;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -141,10 +149,9 @@ iframe#record {
     border: none;
     outline: none;
     cursor: pointer;
-    padding: 13px 17px;
-    border-radius: 5px 5px 0px 0px;
+    margin: 2px 3px;
+    border-radius: 10px 10px 0px 0px;
     height: 100%;
-    margin: 0;
     border-top: solid 1px #ffffff;
     border-left: solid 1px #ffffff;
     border-right: solid 1px #ffffff;
@@ -152,6 +159,7 @@ iframe#record {
 }
 
 .r-tab button.tech {
+    font-weight: normal;
 }
     
 /* Change background color of buttons on hover */
@@ -167,7 +175,7 @@ iframe#record {
     border-top: solid 1px #e0e0e0;
     border-left: solid 1px #e0e0e0;
     border-right: solid 1px #e0e0e0;
-    border-bottom: solid 1px #ffffff;
+    border-bottom: 0px;
     position: relative;
     bottom: -1px;
 }
@@ -178,12 +186,26 @@ iframe#record {
 }
 
 /* Style the tab content */
+div#r-cnt-container {
+    padding-left: 10px;
+    padding-top: 10px;
+    padding: 0px
+    border: 0px;
+    margin: 0px;
+    height: 90%;
+    min-height: 90%;
+    width: 98%;
+    display: grid;
+}
+
 .r-tabcnt {
     margin: 0px;
+    padding: 0px;
     border-top: none;
     white-space: nowrap;
     background-color: #ffffff;
-    padding: 10px;
+    overflow: auto;
+    height: auto !important;
 } 
 .r-tabcnt td {
 }
