@@ -30,7 +30,7 @@ table tr.head td.title {
 }
 table td {
     border-bottom: 1px solid #dee2e6;
-    padding: .20rem;
+    padding: .40rem;
 }
 table tr:nth-child(even) td:nth-child(even) {
     background-color:#ffffff; 
@@ -92,12 +92,12 @@ p.error {color: red;}
     border-bottom: solid 1px #e0e0e0;
     margin: 1px;
     min-width: 800px;
-    background-color: #f0f0f0;
+    background-color: #ffffff;
 }
 
 /* Style the buttons that are used to open the tab content */
 .r-tab button {
-    background-color: inherit;
+    background-color: #f0f0f0;
     color: black;
     font-weight: bold;
     float: left;
@@ -105,12 +105,12 @@ p.error {color: red;}
     outline: none;
     cursor: pointer;
     margin: 2px 3px;
-    border-radius: 10px 10px 0px 0px;
+    border-radius: 5px 5px 0px 0px;
     height: 100%;
-    border-top: solid 1px #ffffff;
-    border-left: solid 1px #ffffff;
-    border-right: solid 1px #ffffff;
-    border-bottom: solid 1px #ffffff;
+    border-top: solid 2px #ffffff;
+    border-left: solid 2px #ffffff;
+    border-right: solid 2px #ffffff;
+    border-bottom: solid 1px #f0f0f0;
 }
 
 .r-tab button.tech {
@@ -127,17 +127,17 @@ p.error {color: red;}
     background-color: #ffffff;
     color: black;
     cursor: default;
-    border-top: solid 1px #e0e0e0;
-    border-left: solid 1px #e0e0e0;
-    border-right: solid 1px #e0e0e0;
-    border-bottom: 0px;
+    border-top: solid 2px #e0e0e0;
+    border-left: solid 2px #e0e0e0;
+    border-right: solid 2px #e0e0e0;
+    border-bottom: solid 1px #ffffff;
     position: relative;
     bottom: -1px;
 }
 .r-tab button:hover {
-    border-top: solid 1px #e0e0e0;
-    border-left: solid 1px #e0e0e0;
-    border-right: solid 1px #e0e0e0;
+    border-top: solid 2px #e0e0e0;
+    border-left: solid 2px #e0e0e0;
+    border-right: solid 2px #e0e0e0;
 }
 
 /********************Tabs*****************************/
