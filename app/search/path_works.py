@@ -89,6 +89,7 @@ class AttrFuncPool:
         return ret_f
 
     sPatt = re.compile('[\[\/]')
+
     def makeFunc(self, path_str):
         ret_func = self.mPoolF[""]
         idx = 0

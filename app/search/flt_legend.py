@@ -4,10 +4,10 @@ from .path_works import AttrFuncPool
 #===============================================
 class FilterLegend:
     def __init__(self, name):
-        self.mName       = name
-        self.mFuncPool   = AttrFuncPool()
-        self.mColumns    = []
-        self.mColDict    = dict()
+        self.mName     = name
+        self.mFuncPool = AttrFuncPool()
+        self.mColumns  = []
+        self.mColDict  = dict()
         self.mUnits    = []
         self.mUnitDict = dict()
 

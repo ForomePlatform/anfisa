@@ -4,6 +4,7 @@ from urlparse import parse_qs
 import logging.config
 
 from app.a_serv import AnfisaService
+
 #========================================
 class HServResponse:
     #========================================
@@ -28,15 +29,11 @@ class HServResponse:
     def __init__(self, start_response):
         self.mStartResponse = start_response
 
-    def makeResponse(self,
-            mode        = "html",
-            content     = None,
-            error       = None,
-            add_headers = None,
-            without_decoding = False):
+    def makeResponse(self, mode = "html", content = None, error = None,
+            add_headers = None, without_decoding = False):
         response_status = "200 OK"
         if error is not None:
-            response_status  = self.sErrorCodes[error]
+            response_status = self.sErrorCodes[error]
         if content is not None:
             if without_decoding:
                 response_body = bytes(content)
@@ -167,12 +164,13 @@ if __name__ == '__main__':
         config_file = "anfisa.json"
 
     from wsgiref.simple_server import make_server, WSGIRequestHandler
+
     #========================================
     class _LoggingWSGIRequestHandler(WSGIRequestHandler):
         def log_message(self, format, *args):
             logging.info(("%s - - [%s] %s\n" %
                 (self.client_address[0], self.log_date_time_string(),
-                format%args)).rstrip())
+                format % args)).rstrip())
 
     #========================================
     host, port = setupHServer(config_file, False)

@@ -11,6 +11,7 @@ class DataSet_AJson(DataSet):
     sColorCode = CONFIG_AJson["color_code"]
     sColors = {"red", "yellow", "green"}
     sDefaultColor = "grey"
+
     def __init__(self, name, fname):
         DataSet.__init__(self, name)
         self.mRecords = []
@@ -116,10 +117,10 @@ class DataRecord_AJson(DataRecord):
                         ddd = dt.split('|')
                         print >> output, "%d:\t%s" % (idx, '|'.join(ddd[:12]))
                         print >> output, "\t|%s" % ('|'.join(ddd[12:29]))
-                        print >> output, "\t|%s" %  ('|'.join(ddd[28:33]))
-                        print >> output, "\t|%s" %  ('|'.join(ddd[33:40]))
-                        print >> output, "\t|%s" %  ('|'.join(ddd[40:50]))
-                        print >> output, "\t|%s" %  ('|'.join(ddd[50:]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[28:33]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[33:40]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[40:50]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[50:]))
                     print >> output, "==^====SCQ======^========"
                 else:
                     print >> output, vv

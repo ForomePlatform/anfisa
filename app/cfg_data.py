@@ -164,8 +164,8 @@ class AttrH:
         if not value:
             return None
         if self.mKind == "link":
-            return ('<span title="%s"><a href="%s" target="blank">link</a></span>' %
-                (value, value))
+            return ('<span title="%s"><a href="%s" target="blank">'
+                'link</a></span>' % (value, value))
         else:
             return self._htmlEscape(value)
 

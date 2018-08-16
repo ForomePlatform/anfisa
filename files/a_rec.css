@@ -1,0 +1,167 @@
+/********************Globals*****************************/
+body {
+    background-color: #ffffff; 
+    font-family: sans-serif;
+    height: 100%;
+    overflow: hidden;
+}
+
+a {
+    color: #526ca5;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+table {
+    border: solid 1px #dee2e6;
+    margin: 0px;
+    padding: 0px;
+    border-collapse: collapse;
+    -webkit-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    -moz-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    color: #474441;
+    font-size: 14px;
+}
+table tr.head td.title {
+    background-color:#ffffff; 
+}
+table td {
+    border-bottom: 1px solid #dee2e6;
+    padding: .20rem;
+}
+table tr:nth-child(even) td:nth-child(even) {
+    background-color:#ffffff; 
+}
+table tr:nth-child(even) td:nth-child(odd) {
+    background-color:#f7f7f7; 
+}
+table tr:nth-child(odd) td:nth-child(even) {
+    background-color:#f7f7f7; 
+}
+table tr:nth-child(odd) td:nth-child(odd) {
+    background-color:#ffffff; 
+}
+
+td.norm {
+    text-align: left;
+    vertical-align: top;
+}
+
+td.title {
+    font-weight: bold;
+    color: #402202;
+}
+
+td.numeric {
+    text-align: right;
+}
+
+td.flex {
+    text-align: center;
+    font: Arial;
+}
+
+td.none {
+    text-align: center;
+    color: grey;
+}
+
+pre {
+    margin: 0;
+    padding: 20px;
+    font-family: Courier New;
+    font-size: 14px;
+    margin-bottom: 45px;
+    border: solid 1px #dee2e6;
+    background-color:#f7f7f7; 
+    -webkit-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    -moz-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
+    overflow: auto;
+}
+
+p.error {color: red;}
+
+/********************Tab Bar*****************************/
+.r-tab {
+    display: block;
+    height: 40px;
+    border-bottom: solid 1px #e0e0e0;
+    margin: 1px;
+    min-width: 800px;
+    background-color: #f0f0f0;
+}
+
+/* Style the buttons that are used to open the tab content */
+.r-tab button {
+    background-color: inherit;
+    color: black;
+    font-weight: bold;
+    float: left;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    margin: 2px 3px;
+    border-radius: 10px 10px 0px 0px;
+    height: 100%;
+    border-top: solid 1px #ffffff;
+    border-left: solid 1px #ffffff;
+    border-right: solid 1px #ffffff;
+    border-bottom: solid 1px #ffffff;
+}
+
+.r-tab button.tech {
+    font-weight: normal;
+}
+    
+/* Change background color of buttons on hover */
+.r-tab button:hover {
+    background-color: inherit;
+}
+
+/* Create an active/current tablink class */
+.r-tab button.active {
+    background-color: #ffffff;
+    color: black;
+    cursor: default;
+    border-top: solid 1px #e0e0e0;
+    border-left: solid 1px #e0e0e0;
+    border-right: solid 1px #e0e0e0;
+    border-bottom: 0px;
+    position: relative;
+    bottom: -1px;
+}
+.r-tab button:hover {
+    border-top: solid 1px #e0e0e0;
+    border-left: solid 1px #e0e0e0;
+    border-right: solid 1px #e0e0e0;
+}
+
+/********************Tabs*****************************/
+div#r-cnt-container {
+    padding-left: 10px;
+    padding-top: 10px;
+    padding: 0px
+    border: 0px;
+    margin: 0px;
+    height: 90%;
+    min-height: 90%;
+    width: 98%;
+    display: grid;
+}
+
+.r-tabcnt {
+    margin: 0px;
+    padding: 0px;
+    border-top: none;
+    white-space: nowrap;
+    background-color: #ffffff;
+    overflow: auto;
+    height: auto !important;
+} 
+
+div.tab-end {height: 40px; width: 100%;}
+

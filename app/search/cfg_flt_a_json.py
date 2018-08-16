@@ -1,5 +1,5 @@
-from   .flt_legend import FilterLegend
-from   .chunker import AttrChunker
+from .flt_legend import FilterLegend
+from .chunker import AttrChunker
 import flt_unit
 
 #===============================================

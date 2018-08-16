@@ -19,14 +19,14 @@ def formAspectTable(output, aspect, rec_obj):
             objects += seq
             prefix_head.append((grp.getTitle(), len(seq)))
         if len(prefix_head) == 1 and prefix_head[0][0] is None:
-           prefix_head = None
+            prefix_head = None
         if len(objects) == 0:
             return
     else:
         prefix_head = None
         if aspect.getJsonContainer():
             if aspect.getJsonContainer() not in rec_obj:
-              return
+                return
             objects = [rec_obj[aspect.getJsonContainer()]]
         else:
             objects = [rec_obj]
@@ -52,7 +52,8 @@ def formAspectTable(output, aspect, rec_obj):
     for attr in aspect.getAttrs():
         if attr.getName() is None:
             print >> output, (
-                '<tr><td colspan="%d" class="title">&emsp;</td></tr>' % (n_obj + 1))
+                '<tr><td colspan="%d" class="title">&emsp;</td></tr>' %
+                (n_obj + 1))
             continue
         if attr.getName() not in fld_data:
             continue

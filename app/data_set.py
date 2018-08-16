@@ -38,4 +38,3 @@ class DataRecord:
     @abc.abstractmethod
     def reportIt(self, output):
         pass
-

@@ -1,3 +1,4 @@
+/********************Globals*****************************/
 body {
     padding: 0px;
     margin: 0px;  
@@ -5,11 +6,16 @@ body {
     font-family: sans-serif;
     overflow: hidden;
 }
-body.rec {
-    background-color: #ffffff; 
-    height: 100%;
-    overflow: hidden;
+
+a {
+    color: #526ca5;
+    text-decoration: none;
 }
+a:hover {
+    text-decoration: underline;
+}
+
+/********************Top area split*****************************/
 #top {
     display: flex;
     align-items: stretch;
@@ -17,6 +23,7 @@ body.rec {
     min-height: 100%;
     width: 100%;
 }
+
 
 #top-left  {
     width: 320px; 
@@ -42,45 +49,9 @@ body.rec {
     flex-direction: column;
     align-items: stretch;
 }
-a {
-    color: #526ca5;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
-}
 
-table {
-    border: solid 1px #dee2e6;
-    margin: 0px;
-    padding: 0px;
-    border-collapse: collapse;
-    -webkit-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    -moz-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    color: #474441;
-    font-size: 14px;
-}
-table tr.head td.title {
-    background-color:#ffffff; 
-}
-table td {
-    border-bottom: 1px solid #dee2e6;
-    padding: .20rem;
-}
-table tr:nth-child(even) td:nth-child(even) {
-    background-color:#ffffff; 
-}
-table tr:nth-child(even) td:nth-child(odd) {
-    background-color:#f7f7f7; 
-}
-table tr:nth-child(odd) td:nth-child(even) {
-    background-color:#f7f7f7; 
-}
-table tr:nth-child(odd) td:nth-child(odd) {
-    background-color:#ffffff; 
-}
 
+/********************Left area*****************************/
 div.data-sets {
     height: 30px;
     padding-top: 3px;
@@ -108,19 +79,36 @@ div.rec-label:hover {
     color: #f6f6f7;
 }
 
-div.rec-label.red { background: url(images/red.png) no-repeat 5px 3px; }
-div.rec-label.red:hover { background: url(images/red-hover.png) no-repeat 5px 3px; }
-div.rec-label.green { background: url(images/green.png) no-repeat 5px 3px; }
-div.rec-label.green:hover { background: url(images/green-hover.png) no-repeat 5px 3px; }
-div.rec-label.yellow { background: url(images/yellow.png) no-repeat 5px 3px; }
-div.rec-label.yellow:hover { background: url(images/yellow-hover.png) no-repeat 5px 3px; }
-div.rec-label.grey { background: url(images/grey.png) no-repeat 6px 5px; }
-div.rec-label.grey:hover { background: url(images/grey-hover.png) no-repeat 6px 5px; }
+div.rec-label.red { 
+    background: url(images/red.png) no-repeat 5px 3px; 
+}
+div.rec-label.red:hover { 
+    background: url(images/red-hover.png) no-repeat 5px 3px; 
+}
+div.rec-label.green { 
+    background: url(images/green.png) no-repeat 5px 3px; 
+}
+div.rec-label.green:hover { 
+    background: url(images/green-hover.png) no-repeat 5px 3px; 
+}
+div.rec-label.yellow { 
+    background: url(images/yellow.png) no-repeat 5px 3px; 
+}
+div.rec-label.yellow:hover { 
+    background: url(images/yellow-hover.png) no-repeat 5px 3px; 
+}
+div.rec-label.grey { 
+    background: url(images/grey.png) no-repeat 6px 5px;     
+}
+div.rec-label.grey:hover { 
+    background: url(images/grey-hover.png) no-repeat 6px 5px; 
+}
 
 div.rec-label.press {
     color: #f6f6f7;
 }
 
+/********************Right area*****************************/
 iframe#record {
     margin: 0px;
     padding: 0px;
@@ -129,157 +117,31 @@ iframe#record {
     border: none;
 }
 
-/*************************************************/
- /* Style the tab */
-.r-tab {
-    display: block;
-    height: 40px;
-    border-bottom: solid 1px #e0e0e0;
-    margin: 1px;
-    min-width: 800px;
-    background-color: #f0f0f0;
-}
-
-/* Style the buttons that are used to open the tab content */
-.r-tab button {
-    background-color: inherit;
-    color: black;
-    font-weight: bold;
-    float: left;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    margin: 2px 3px;
-    border-radius: 10px 10px 0px 0px;
-    height: 100%;
-    border-top: solid 1px #ffffff;
-    border-left: solid 1px #ffffff;
-    border-right: solid 1px #ffffff;
-    border-bottom: solid 1px #ffffff;
-}
-
-.r-tab button.tech {
-    font-weight: normal;
-}
-    
-/* Change background color of buttons on hover */
-.r-tab button:hover {
-    background-color: inherit;
-}
-
-/* Create an active/current tablink class */
-.r-tab button.active {
-    background-color: #ffffff;
-    color: black;
-    cursor: default;
-    border-top: solid 1px #e0e0e0;
-    border-left: solid 1px #e0e0e0;
-    border-right: solid 1px #e0e0e0;
-    border-bottom: 0px;
-    position: relative;
-    bottom: -1px;
-}
-.r-tab button:hover {
-    border-top: solid 1px #e0e0e0;
-    border-left: solid 1px #e0e0e0;
-    border-right: solid 1px #e0e0e0;
-}
-
-/* Style the tab content */
-div#r-cnt-container {
-    padding-left: 10px;
-    padding-top: 10px;
-    padding: 0px
-    border: 0px;
-    margin: 0px;
-    height: 90%;
-    min-height: 90%;
-    width: 98%;
-    display: grid;
-}
-
-.r-tabcnt {
-    margin: 0px;
-    padding: 0px;
-    border-top: none;
-    white-space: nowrap;
-    background-color: #ffffff;
-    overflow: auto;
-    height: auto !important;
-} 
-.r-tabcnt td {
-}
-
-td.norm {
-    text-align: left;
-    vertical-align: top;
-}
-
-td.title {
-    font-weight: bold;
-    color: #402202;
-}
-
-td.numeric {
-    text-align: right;
-}
-
-td.flex {
-    text-align: center;
-    font: Arial;
-}
-
-td.none {
-    text-align: center;
-    color: grey;
-}
-
-pre {
-    margin: 0;
-    padding: 20px;
-    font-family: Courier New;
-    font-size: 14px;
-    margin-bottom: 45px;
-    border: solid 1px #dee2e6;
-    background-color:#f7f7f7; 
-    -webkit-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    -moz-box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    box-shadow: 0px 4px 7px -3px rgba(0,0,0,0.46);
-    overflow: auto;
-}
-
-p.error {color: red;}
-
-div.tab-end {height: 40px; width: 100%;}
-
-/*************************************************/
- /* The Modal (background) */
+/********************Modal Filter*****************************/
 #modal-back {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 30; /* Sit on top */
+    display: none;
+    position: fixed;
+    z-index: 30;
     left: 0;
     top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
 }
 
-/* Modal Content/Box */
 #filter-mod {
     background-color: #fffefe;
     margin: 3% 3% 2% 2%; 
     padding: 00px;
-    border: 1px solid #8t be more or less, depending on screen size */
+    border: 1px solid black;
     height: 90%; 
     min-height: 90%;
     width: 95%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
-/* The Close Button */
 #close-filter {
     color: #aaa;
     float: right;
@@ -287,8 +149,7 @@ div.tab-end {height: 40px; width: 100%;}
     font-weight: bold;
 }
 
-#close-filter:hover,
-#close-filter:focus {
+#close-filter:hover, #close-filter:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;

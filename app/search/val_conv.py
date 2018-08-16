@@ -118,7 +118,7 @@ class _NumericConvertor(ValueConvertor):
                 return True
             if (self.mMinValue is not None and not
                     (self.mMinValue <= val <= self.mMaxValue)):
-                self.mBadValues[str(val)] +=1
+                self.mBadValues[str(val)] += 1
                 return False
             if self.mStat[0] is None:
                 self.mStat[0] = self.mStat[1] = val
@@ -235,7 +235,7 @@ class EnumConvertor(ValueConvertor):
             for val in values:
                 self.mStat[val] += 1
             if (self.mVariantDict is not None and
-                    self.mOthersValueis is False):
+                    self.mOthersValue is not False):
                 for val in values:
                     if val not in self.mVariantDict:
                         return False
