@@ -19,6 +19,8 @@ def hgvcs_pos(str, type, with_pattern = True):
         return "{}{}".format(pattern[1:], x)
     return x
 
+def get_from_transcripts(transcripts, key, source):
+    return unique([t.get(key) for t in transcripts if (t.get("source") == source)])
 
 def get_distance_hgvsc(hgvsc):
     coord = hgvsc.split(':')[1]
@@ -262,6 +264,9 @@ class Variant:
                 af = v.get("minor_allele_freq")
             if (af == None):
                 continue
+
+            if (af):
+                af = float(af)
             if (gm_af):
                 gm_af = min(gm_af, af)
             else:
@@ -279,7 +284,8 @@ class Variant:
         transcripts = self.get_transcripts()
         af = None
         for t in transcripts:
-            af1 = t.get("gnomad_{}_af".format(exomes_or_genomes))
+            af1_str = t.get("gnomad_{}_af".format(exomes_or_genomes))
+            af1 = float(af1_str) if (af1_str) else None
             if (af):
                 af = min(af1, af)
             else:
@@ -377,6 +383,7 @@ class Variant:
         proband_genotype = self.vcf_record.genotype(proband)
         mother = self.samples[proband]['mother']
         father = self.samples[proband]['father']
+        genotypes = [self.vcf_record.genotype(s) for s in self.samples]
 
         tab1 = dict()
         #view['general'] = tab1
@@ -395,27 +402,52 @@ class Variant:
         tab1['Proband Genotype'] = proband_genotype.gt_bases
         tab1['Maternal Genotype'] = self.vcf_record.genotype(mother).gt_bases
         tab1['Paternal Genotype'] = self.vcf_record.genotype(father).gt_bases
+
         tab1['Worst Annotation'] = self.get_msq()
-        tab1['RefSeq Transcript (Worst)'] = ""
-        tab1['Ensembl Transcripts (Worst)'] = self.get_from_worst_transcript("transcript_id")
+
+        transcripts = self.get_most_severe_transcripts()
+        tab1['RefSeq Transcript (Worst)'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
+        tab1['Ensembl Transcripts (Worst)'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
+
+        transcripts = self.get_canonical_transcripts()
+        tab1['RefSeq Transcript (Canonical)'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
+        tab1['Ensembl Transcripts (Canonical)'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
+
         tab1['Variant Exon (Worst Annotation)'] = self.get_from_worst_transcript("exon")
         tab1['Variant Intron (Worst Annotation)'] = self.get_from_worst_transcript("intron")
-        tab1['RefSeq Transcript (Canonical)'] = ""
-        tab1['Ensembl Transcripts (Canonical)'] = self.get_from_canonical_transcript("transcript_id")
         tab1['Variant Exon (Canonical)'] = self.get_from_canonical_transcript("exon")
         tab1['Variant Intron (Canonical)'] = self.get_from_canonical_transcript("intron")
         tab1["IGV"] = self.get_igv_url()
 
-        tab2 = dict()
+        tab2 = list()
         #view['quality'] = tab2
-        data["view.quality"] = tab2
-        tab2['Allelic Depth'] = proband_genotype.data.AD
-        tab2['Read Depth'] = proband_genotype.data.DP
-        tab2['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
-        tab2['Mapping Quality'] = self.vcf_record.INFO["MQ"]
-        tab2['Variant Call Quality'] = self.vcf_record.QUAL
-        tab2['Quality by Depth'] = self.vcf_record.INFO.get("QD")
-        tab2['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
+        #data["view.quality"] = tab2
+        data["quality.samples"] = tab2
+        q_all = dict()
+        q_all["Title"] = "All"
+        q_all['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
+        q_all['Mapping Quality'] = self.vcf_record.INFO["MQ"]
+        q_all['Variant Call Quality'] = self.vcf_record.QUAL
+        q_all['Quality by Depth'] = self.vcf_record.INFO.get("QD")
+        q_all['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
+        tab2.append(q_all)
+
+        for s in self.samples:
+            genotype = self.vcf_record.genotype(s)
+            q_s = dict()
+            if (s == proband):
+                q_s["Title"] = "Proband: {}".format(s)
+            elif (s == mother):
+                q_s["Title"] = "Mother: {}".format(s)
+            elif (s == father):
+                q_s["Title"] = "Father: {}".format(s)
+            else:
+                q_s["Title"] = s
+
+            q_s['Allelic Depth'] = genotype.data.AD
+            q_s['Read Depth'] = genotype.data.DP
+            q_s['Genotype Quality'] = genotype.data.GQ
+            tab2.append(q_s)
 
         if (self.get_gnomad_af()):
             tab3 = dict()
@@ -449,7 +481,8 @@ class Variant:
         if (self.data.get("ClinVar") <> None):
             tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
                 format(self.chr_num(), self.start(), self.end())
-        tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig'))
+        tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig') +
+                                              self.get_from_transcripts_list('clin_sig'))
 
         tab5 = dict()
         #view['Predictions'] = tab5

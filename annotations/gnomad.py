@@ -2,8 +2,8 @@ import os
 import sqlite3
 
 
-gnomAD_dir = "/opt/data/gnomad"
-db_file_genomes = os.path.join(gnomAD_dir, "gnomAD.db")
+gnomAD_dir = "/opt/data/gnomad/db"
+db_file_genomes = os.path.join(gnomAD_dir, "gnomAD_genomes.db")
 db_file_exomes = os.path.join(gnomAD_dir, "gnomAD_exomes.db")
 
 

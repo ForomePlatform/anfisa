@@ -29,6 +29,8 @@ class Filter:
         else:
             info['ClinVar'] = False
 
+        # if (vcf_record.start() == 16378047):
+        #     pass
         if (ok):
             ok = self.gnomad_filter5.accept(vcf_record)
             info['gnomAD(5%)'] = ok
@@ -135,13 +137,13 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
 
 if __name__ == '__main__':
-    ##process_file("/Users/misha/projects/bgm/cases/BGM9001/tmp/f1.json")
-    with open ("/Users/misha/projects/bgm/cases/BGM9001/header.vcf") as vcf:
+    ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
+    with open ("/Users/misha/projects/bgm/cases/bgm9001/header.vcf") as vcf:
         header = vcf.read()
 
     expected_set = {}
-    dir = "/Users/misha/projects/bgm/cases/BGM9001"
-    with open (os.path.join(dir,"xbrowse_BGM9001_SEQaBOO_filters.txt")) as f1:
+    dir = "/Users/misha/projects/bgm/cases/bgm9001"
+    with open (os.path.join(dir,"xbrowse_bgm9001_SEQaBOO_filters.txt")) as f1:
         lines = f1.readlines()
         for line in lines:
             data = line.split('\t')
@@ -151,10 +153,10 @@ if __name__ == '__main__':
             expected_set[(c,p)] = 1
 
 
-    samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001.fam")
+    samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001.fam")
 
     if (True):
-        output = "/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_{}.json"
+        output = "/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_{}.json"
 
-    process_file("/Users/misha/projects/bgm/cases/BGM9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
+    process_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
                      vcf_header=header, samples=samples, expected=expected_set, case="bgm9001_wgs")
