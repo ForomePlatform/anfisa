@@ -140,27 +140,47 @@ class AttrH:
         return escape(str(val))
 
     @classmethod
-    def _jsonRepr(cls, obj):
+    def _jsonRepr(cls, obj, level = 0):
         if obj is None:
             return "null"
         if isinstance(obj, basestring) or isinstance(obj, numbers.Number):
             return str(obj)
         elif isinstance(obj, dict):
+            if level < 2:
+                ret = []
+                for key in sorted(obj.keys()):
+                    if level == 0:
+                        ret.append("<b>%s</b>: " % cls._htmlEscape(key))
+                        ret.append("<br/>")
+                    else:
+                        ret.append("%s: " % cls._htmlEscape(key))
+                    rep_val = cls._jsonRepr(obj[key], level + 1)
+                    if level == 0:
+                        rep_val = cls._htmlEscape(rep_val)
+                    ret.append(rep_val)
+                    ret.append(", ")
+                    if level == 0:
+                        ret.append("<br/>")
+                while len(ret) > 0 and ret[-1] in ("<br/>", ", "):
+                    del ret[-1]
+                return ''.join(ret)
             return '{' + ', '.join(['%s:"%s"' %
-                (key, cls._jsonRepr(obj[key]))
+                (key, cls._jsonRepr(obj[key], level + 1))
                 for key in sorted(obj.keys())]) + '}'
         elif isinstance(obj, list):
-            return '[' + ', '.join([cls._jsonRepr(sub_obj)
+            ret = '[' + ', '.join([cls._jsonRepr(sub_obj, level + 1)
                 for sub_obj in obj]) + ']'
+            if level == 0:
+                return cls._htmlEscape(ret)
+            return ret
         return '???'
 
     def _htmlRepr(self, it_obj):
         if not it_obj:
             return None
         if self.mKind == "json":
-            value = self._jsonRepr(it_obj)
-        else:
-            value = it_obj
+            return self._jsonRepr(it_obj)
+        value = it_obj
         if not value:
             return None
         if self.mKind == "link":
