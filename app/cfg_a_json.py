@@ -27,7 +27,8 @@ Aspect_General = AspectH("view.general",     "General",
     ])
 
 #===============================================
-Aspect_Quality = AspectH("view.quality",     "Quality",
+Aspect_Quality = AspectH("quality_samples",     "Quality",
+    json_container = None,
     attrs = [
         AttrH("Title"),
         AttrH("Allelic Depth", is_seq = True),
@@ -97,7 +98,7 @@ Aspect_Inheritance = AspectH("view.Inheritance", "Inheritance",
     ignored = True)
 
 #===============================================
-Aspect_TechMainData = AspectH("_main", "VEP: Data", json_container = None,
+Aspect_TechMainData = AspectH("_main", "VEP<br/>Data", json_container = None,
     attrs = [
         AttrH("label"),
         AttrH("color_code"),
@@ -117,7 +118,7 @@ Aspect_TechMainData = AspectH("_main", "VEP: Data", json_container = None,
         AttrH("SEQaBOO")], kind = "tech")
 
 #===============================================
-Aspect_Consequences = AspectH("cons", "VEP: Transcripts",
+Aspect_Consequences = AspectH("cons", "VEP<br/>Transcripts",
     json_container = None,
     attrs = [
         AttrH("amino_acids"),
@@ -201,7 +202,7 @@ Aspect_Consequences = AspectH("cons", "VEP: Transcripts",
     kind = "tech")
 
 #===============================================
-Aspect_ColocatedVars = AspectH("colv", "Colocated Variants",
+Aspect_ColocatedVars = AspectH("colv", "Colocated<br/>Variants",
     json_container = None,
     attrs = [
         AttrH("id"),

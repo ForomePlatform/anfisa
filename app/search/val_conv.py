@@ -200,14 +200,14 @@ class EnumConvertor(ValueConvertor):
         if self.mVariantNames is not None:
             print >> rep_out, "=Variants(%d):" % len(self.mVariantNames)
             for name in self.mVariantNames:
-                print "\t%s: %d" % (name, self.mStat[name])
+                print >> rep_out, "\t%s: %d" % (name, self.mStat[name])
                 used_names.add(name)
         if len(set(self.mStat.keys()) - used_names) > 0:
             print >> rep_out, "=Rest:"
             for name in sorted(self.mStat.keys()):
                 if name in used_names:
                     continue
-                print "\t%s: %d" % (str(name), self.mStat[name])
+                print >> rep_out, "\t%s: %d" % (str(name), self.mStat[name])
         return not self.mBadValues and self.mVariantNames is not None
 
     def getVarTypeCode(self):

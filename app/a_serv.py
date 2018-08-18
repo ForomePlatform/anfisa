@@ -84,9 +84,9 @@ class AnfisaService:
         print >> output, ' <div id="top">'
         print >> output, '  <div id="top-left">'
         print >> output, '   <div class="data-sets">'
+        AnfisaData.reportSets(data_set, output)
         print >> output, '   <button id="open-filter" ' + \
             'onclick="filterModOn();">Filter</button>'
-        AnfisaData.reportSets(data_set, output)
         print >> output, '   </div>'
         print >> output, '   <div class="rec-list">'
         data_set.reportList(output)
