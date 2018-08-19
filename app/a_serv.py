@@ -76,7 +76,7 @@ class AnfisaService:
     def formTop(self, rq_args):
         data_set = AnfisaData.getSet(rq_args.get("data"))
         output = StringIO()
-        formTopPage(output, self.mHtmlTitle,
+        formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
             data_set.getName(), AnfisaData.getSetNames())
         return output.getvalue()
 

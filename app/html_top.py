@@ -1,11 +1,13 @@
 #===============================================
-def formTopPage(output, title, data_set_name, data_set_names):
+def formTopPage(output, title, html_base, data_set_name, data_set_names):
     params = {
         "title": title,
         "data-set": data_set_name,
         "data-set-list": '\n'.join(
             ['<option value="%s">%s</option>' % (set_name, set_name)
-            for set_name in sorted(data_set_names)])}
+            for set_name in sorted(data_set_names)]),
+        "html-base": (' <base href="%s" />' % html_base)
+            if html_base else ""}
 
     print >> output, '''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
@@ -13,6 +15,7 @@ def formTopPage(output, title, data_set_name, data_set_names):
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>%(title)s</title>
+    %(html-base)s
     <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
     <script type="text/javascript" src="anf.js"></script>
     <script type="text/javascript" src="filters.js"></script>
