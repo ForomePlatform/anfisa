@@ -87,7 +87,7 @@ def formTopPage(output, title, data_set_name, data_set_names):
         </div>
       </div>
       <div id="top-right">
-        <iframe id="record" src="no-records"></iframe>
+        <iframe id="record" src="norecords"></iframe>
       </div>
     </div>
   </body>

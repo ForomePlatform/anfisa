@@ -77,7 +77,7 @@ function refreshRecList() {
     document.getElementById("rec-list").innerHTML = rep.join('\n');
     sCurRecIdx = null;
     if (sViewRecNoSeq.length == 0) 
-        document.getElementById("record").src = "no-records";
+        document.getElementById("record").src = "norecords";
     else 
         changeRec(0);
 }

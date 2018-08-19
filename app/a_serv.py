@@ -35,7 +35,7 @@ class AnfisaService:
         if rq_path == "/rec":
             return serv_h.makeResponse(
                 content = cls.sMain.formRec(rq_args))
-        if rq_path == "/no-records":
+        if rq_path == "/norecords":
             return serv_h.makeResponse(
                 content = cls.sMain.formNoRec(rq_args))
         if rq_path == "/list":
