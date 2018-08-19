@@ -27,8 +27,6 @@ a:hover {
 
 #top-left  {
     width: 320px; 
-    background-color:#333455; 
-    /*height: auto !important;*/
     height: 100%;
     min-height: 100%;
     margin:0; padding:0;
@@ -36,7 +34,6 @@ a:hover {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    justify-content: space-between;
 }
     
 #top-right {
@@ -47,22 +44,34 @@ a:hover {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    align-items: stretch;
 }
 
 
 /********************Left area*****************************/
-div.data-sets {
+div#data-sets {
     height: 30px;
     padding-top: 3px;
     padding-left: 3px;
     text-align: justify;
+    background-color: #40408f;
+    color: yellow;
+    min-height: 100px;
 }
-div.rec-list  {
+
+div#rec-list  {
+    background-color:#333455; 
     margin-top: 2px;
     overflow-y: scroll;
-    align-self: flex-end;
     padding-left: 3px;
     padding-right: 3px;
+    flex-grow: 1;
+}
+
+
+input#list-rand-portion {
+    width: 40px;
+    font-size: 10px;
 }
 
 div.rec-label {
@@ -139,6 +148,9 @@ iframe#record {
     min-height: 90%;
     width: 95%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
 }
 
 #close-filter {
@@ -153,3 +165,52 @@ iframe#record {
     text-decoration: none;
     cursor: pointer;
 } 
+
+/********************Filter controls*****************************/
+
+div#filter-stat, div#filter-criteria {
+    flex-grow: 1;
+    overflow: hidden;
+    display: grid;
+    border: 1px solid black;
+}
+
+div#filter-stat {
+}
+div#filter-criteria {
+}
+
+div#stat-list {
+    margin: 5px;
+    padding: 5px;
+    white-space: nowrap;
+    overflow: auto;
+    font-size: 12px;
+}
+
+div.stat-unit.cur {
+    border: 1px solid magenta;
+    cursor: pointer;
+}
+
+div.stat-unit {
+    border: 1px solid blue;
+    cursor: hand;
+}
+
+span.stat-unit-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: blue;
+}
+
+div.stat-unit.cur span.stat-unit-name {
+    color: magenta;
+}
+
+
+dif.stat-unit ul {
+    margin-before: 0px;
+    margin-after: 0px;
+    padding-start: 1px;
+}

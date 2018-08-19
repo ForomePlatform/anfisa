@@ -1,10 +1,16 @@
 #import sys
-import json, codecs, logging
+import json, codecs, logging, random
 from StringIO import StringIO
 from .data_set import DataSet, DataRecord
 from .form_tab import formAspectTable
 from .cfg_a_json import CONFIG_AJson
 from .cfg_data import ObjectAttributeChecker
+
+#===============================================
+RAND_SEED = 179
+MAX_COMPLETE_LIST_SIZE = 100
+SAMPLE_LIST_SIZE = 100
+
 #===============================================
 class DataSet_AJson(DataSet):
     sMainKey = CONFIG_AJson["main_key"]
@@ -33,6 +39,13 @@ class DataSet_AJson(DataSet):
         else:
             logging.warning("Attrs are all set for DataRecord_AJson %s"
                 % name)
+        global RAND_SEED
+        r_h = random.WichmannHill(RAND_SEED)
+        hashes = range(len(self.mRecords))[:]
+        r_h.shuffle(hashes)
+        self.mRecHash = {idx: hash
+            for idx, hash in enumerate(hashes)}
+
 
     def getFirstAspectID(self):
         return "a--" + CONFIG_AJson["view_tabs"][0].getName()
@@ -56,6 +69,36 @@ class DataSet_AJson(DataSet):
 
     def getRecord(self, rec_no):
         return DataRecord_AJson(self.mRecords[int(rec_no)])
+
+    def _prepareList(self, rec_no_seq):
+        ret = []
+        for rec_no in rec_no_seq:
+            rec = self.mRecords[rec_no]
+            rec_key = rec[self.sMainKey]
+            rec_color = rec.get(self.sColorCode)
+            if rec_color not in self.sColors:
+                rec_color = self.sDefaultColor
+            ret.append([rec_no, rec_key, rec_color])
+        return ret
+
+    def makeJSonReport(self, rec_no_seq):
+        global MAX_COMPLETE_LIST_SIZE, SAMPLE_LIST_SIZE
+        ret = {
+            "data-set": self.getName(),
+            "total": len(self.mRecords) }
+        ret["filtered"] = len(rec_no_seq)
+        if len(rec_no_seq) <= MAX_COMPLETE_LIST_SIZE:
+            ret["records"] = self._prepareList(rec_no_seq)
+            ret["list-mode"] = "complete"
+        else:
+            sheet = [(self.mRecHash[rec_no], rec_no)
+                for rec_no in rec_no_seq]
+            sheet.sort()
+            sheet = sheet[:SAMPLE_LIST_SIZE]
+            ret["records"] = self._prepareList(
+                [rec_no for hash, rec_no in sheet])
+            ret["list-mode"] = "samples"
+        return ret
 
 #===============================================
 class DataRecord_AJson(DataRecord):

@@ -6,7 +6,8 @@ import flt_unit
 LEGEND_AJson = FilterLegend("AJson")
 
 flt_unit.StatusUnit(LEGEND_AJson, "color", "/color_code",
-    ["red", "yellow", "green", None])
+    ["red", "yellow", "green", "undef"],
+    default_value = "undef")
 
 flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name")
 flt_unit.IntValueUnit(LEGEND_AJson, "chr_start", "/start")

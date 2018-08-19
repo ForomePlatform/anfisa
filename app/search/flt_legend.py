@@ -10,6 +10,7 @@ class FilterLegend:
         self.mColDict  = dict()
         self.mUnits    = []
         self.mUnitDict = dict()
+        self.mIsOK     = False
 
     def _regColumnHandler(self, col_h):
         assert col_h.getName() not in self.mColDict
@@ -49,12 +50,28 @@ class FilterLegend:
     def iterUnits(self):
         return iter(self.mUnits)
 
+    def isOK(self):
+        return self.mIsOK
+
     def testObj(self, obj):
         for unit in self.mUnits:
             unit.testValues(obj)
 
-    def setup(self, rep_out):
+    def fillRecord(self, obj, record):
         for unit in self.mUnits:
-            unit.setup(rep_out)
-        print >> rep_out, ("=Legend total = Units: %s, columns: %d" %
-            (len(self.mUnits), len(self.mColumns)))
+            unit.fillRecord(obj, record)
+
+    def setup(self, rep_out):
+        self.mIsOK = True
+        for unit in self.mUnits:
+            self.mIsOK != unit.setup(rep_out)
+        return self.mIsOK
+
+    def getStatusInfo(self):
+        return ("Legend %s started %s: Units: %s, Columns: %d" %
+            (self.mName, ["with problems", "successfuly"][self.mIsOK],
+            len(self.mUnits), len(self.mColumns)))
+
+    def collectStatJSon(self, data_records):
+        return [unit.collectStatJSon(data_records)
+            for unit in self.mUnits]

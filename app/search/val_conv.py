@@ -1,6 +1,9 @@
 #import sys
 import abc
 from collections import Counter
+
+from .val_stat import BoolStat, NumDiapStat, EnumStat
+
 #===============================================
 class ValueConvertor:
     def __init__(self):
@@ -8,6 +11,10 @@ class ValueConvertor:
 
     def isAtomic(self):
         return True
+
+    @abc.abstractmethod
+    def newStat(self):
+        return None
 
     @abc.abstractmethod
     def setup(self, rep_out):
@@ -29,16 +36,19 @@ class ValueConvertor:
     def convert(self, values):
         return None
 
+
 #===============================================
 #===============================================
 class BoolConvertor(ValueConvertor):
     def __init__(self):
         ValueConvertor.__init__(self)
-        self.mStat = Counter()
+        self.mStat = BoolStat()
+
+    def newStat(self):
+        return BoolStat()
 
     def setup(self, rep_out):
-        print >> rep_out, (
-            "True: %d, False: %d" % (self.mStat[True], self.mStat[False]))
+        self.mStat.report(rep_out)
         return True
 
     def getVarTypeCode(self):
@@ -51,12 +61,11 @@ class BoolConvertor(ValueConvertor):
         if len(values) > 1:
             return False
         val = len(values) > 0 and values[0]
-        self.mStat[val] += 1
+        self.mStat.regValue(val)
         return True
 
     def convert(self, values):
         return {len(values) > 0 and values[0]}
-
 
 #===============================================
 class _NumericConvertor(ValueConvertor):
@@ -72,14 +81,14 @@ class _NumericConvertor(ValueConvertor):
                 self.mMinValue <= self.mDefaultValue <= self.mMaxValue)
         else:
             self.mMinValue = None
-        self.mStat = [None, None, 0]
+        self.mStat = NumDiapStat(num_name)
         self.mBadValues = Counter()
 
+    def newStat(self):
+        return NumDiapStat(self.mNumName)
+
     def setup(self, rep_out):
-        print >> rep_out, "Min: %s, Max: %s" % (
-            str(self.mStat[0]), str(self.mStat[1]))
-        if self.mStat[2] > 0:
-            print >> rep_out, "Undef: %d" % self.mStat[2]
+        self.mStat.report(rep_out)
         if len(self.mBadValues) > 0:
             print >> rep_out, "Bad values %d:" % len(self.mBadValues)
             for neg_cnt, val in sorted([(-cnt, val)
@@ -87,7 +96,7 @@ class _NumericConvertor(ValueConvertor):
                 print >> rep_out, "\t %s: %d" % (-neg_cnt, val)
             if len(self.mBadValues) > 5:
                 print >> rep_out, "\t..."
-        return self.mStat[0] is not None and len(self.mBadValues) == 0
+        return self.mStat.isDefined() and len(self.mBadValues) == 0
 
     def getVarTypeCode(self):
         ret = self.mNumName
@@ -107,6 +116,7 @@ class _NumericConvertor(ValueConvertor):
     def testValues(self, values):
         if len(values) > 1:
             self.mBadValues["<?list?>"] += 1
+            self.mStat.regValue(None)
             return False
         try:
             if len(values) == 0:
@@ -114,26 +124,29 @@ class _NumericConvertor(ValueConvertor):
             else:
                 val = self.mNumType(values[0])
             if val is None:
-                self.mStat[2] += 1
+                self.mStat.regValue(None)
                 return True
             if (self.mMinValue is not None and not
                     (self.mMinValue <= val <= self.mMaxValue)):
                 self.mBadValues[str(val)] += 1
                 return False
-            if self.mStat[0] is None:
-                self.mStat[0] = self.mStat[1] = val
-            else:
-                self.mStat[0] = min(self.mStat[0], val)
-                self.mStat[1] = max(self.mStat[0], val)
+            self.mStat.regValue(val)
             return True
         except Exception:
+            self.mStat.regValue(None)
             self.mBadValues[str(values)] += 1
             return False
 
     def convert(self, values):
         if len(values) == 0:
             return self.mDefaultValue
-        return {self.mNumType(values[0])}
+        try:
+            val = self.mNumType(values[0])
+            if self.mMinValue is None:
+                return val
+            return min(max(val, self.mMinValue), self.mMaxValue)
+        except Exception:
+            return None
 
 #===============================================
 class FloatConvertor(_NumericConvertor):
@@ -154,9 +167,9 @@ class EnumConvertor(ValueConvertor):
         self.mAtomicMode = atomic_mode
         self.mChunker = chunker
         self.mDefaultValue = default_value
-        self.mDefaultVariant = None
+        self.mDefaultVariant = {}
         self.mOthersValue = others_value
-        self.mOthersVariant = None
+        self.mOthersVariant = {}
         self.mStat = Counter()
         self.mBadValues = False
         if variants is not None:
@@ -165,20 +178,23 @@ class EnumConvertor(ValueConvertor):
     def isAtomic(self):
         return self.mAtomicMode
 
+    def newStat(self):
+        return EnumStat(self.mVariantNames)
+
     def __initVariants(self, variants):
         self.mVariantNames = variants
         self.mVariantDict = {name: idx
             for idx, name in enumerate(self.mVariantNames)}
         if (self.mDefaultValue is not False and
                 self.mDefaultValue in variants):
-            self.mDefaultVariant = variants.index(self.mDefaultValue)
+            self.mDefaultVariant = {variants.index(self.mDefaultValue)}
         else:
-            self.mDefaultValue = None
+            self.mDefaultVariant = {}
         if (self.mOthersValue is not False and
                 self.mOthersValue in variants):
-            self.mOthersValue = variants.index(self.mOthersValue)
+            self.mOthersVariant = {variants.index(self.mOthersValue)}
         else:
-            self.mOthersValue = None
+            self.mOthersVariant = {}
 
     def setup(self, rep_out):
         if self.mBadValues:
@@ -214,7 +230,7 @@ class EnumConvertor(ValueConvertor):
         return "enum"
 
     def hasDefault(self):
-        return self.mDefaultVariant is not False
+        return len(self.mDefaultVariant) == 0
 
     def hasOthers(self):
         return self.mOthersValue is not False
@@ -245,11 +261,11 @@ class EnumConvertor(ValueConvertor):
             self.mBadValues = True
             return False
 
-    def convert(self, values):
+    def _convert(self, values):
         if self.mChunker:
-            values = self.mChunker.apply()
+            values = self.mChunker.apply(values)
         if len(values) == 0:
-            return {self.mDefaultVariant}
+            return self.mDefaultVariant
         ret = set()
         for val in values:
             if val in self.mVariantDict:
@@ -257,5 +273,11 @@ class EnumConvertor(ValueConvertor):
             if self.mAtomicMode:
                 break
         if len(ret) == 0:
-            return {self.mOthersVariant}
+            return self.mOthersVariant
+        return ret
+
+    def convert(self, values):
+        ret = self._convert(values)
+        if self.mAtomicMode:
+            return list(ret)[0]
         return ret

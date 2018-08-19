@@ -29,6 +29,10 @@ class DataSet:
     def getFirstAspectID(self):
         return None
 
+    def testLegend(self, legend):
+        for rec_no in range(self.getNRecords()):
+            legend.testObj(self.getRecord(rec_no).getObj())
+
 #===============================================
 class DataRecord:
     @abc.abstractmethod

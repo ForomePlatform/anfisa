@@ -1,6 +1,9 @@
 # import sys
+import json
 from StringIO import StringIO
-from anf_data import AnfisaData
+from .anf_data import AnfisaData
+from .html_top import formTopPage, emptyPage
+
 #===============================================
 class HTML_Setup:
 
@@ -32,6 +35,13 @@ class AnfisaService:
         if rq_path == "/rec":
             return serv_h.makeResponse(
                 content = cls.sMain.formRec(rq_args))
+        if rq_path == "/no-records":
+            return serv_h.makeResponse(
+                content = cls.sMain.formNoRec(rq_args))
+        if rq_path == "/list":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formList(rq_args))
+
         return serv_h.makeResponse(error = 404)
 
     #===============================================
@@ -66,39 +76,8 @@ class AnfisaService:
     def formTop(self, rq_args):
         data_set = AnfisaData.getSet(rq_args.get("data"))
         output = StringIO()
-        print >> output, HTML_Setup.START
-        print >> output, '<html>'
-        self._formHtmlHead(output,
-            title = self.mHtmlTitle % data_set.getName(),
-            css_files = ["anf.css"], js_files = ["anf.js"])
-        print >> output, (
-            '<body onload="initWin(\'%s\');">' %
-            data_set.getName())
-        print >> output, ' <div id="modal-back">'
-        print >> output, '   <div id="filter-mod">'
-        print >> output, '     <span id="close-filter" ' + \
-            'onclick="filterModOff();">&times;</span>'
-        print >> output, '     <h3>Filter...</h3>'
-        print >> output, '   </div>'
-        print >> output, ' </div>'
-        print >> output, ' <div id="top">'
-        print >> output, '  <div id="top-left">'
-        print >> output, '   <div class="data-sets">'
-        AnfisaData.reportSets(data_set, output)
-        print >> output, '   <button id="open-filter" ' + \
-            'onclick="filterModOn();">Filter</button>'
-        print >> output, '   </div>'
-        print >> output, '   <div class="rec-list">'
-        data_set.reportList(output)
-        print >> output, '   </div>'
-        print >> output, '  </div>'
-        print >> output, '  <div id="top-right">'
-        print >> output, '   <iframe id="record">'
-        print >> output, '   </iframe>'
-        print >> output, '  </div>'
-        print >> output, ' </div>'
-        print >> output, '</body>'
-        print >> output, '</html>'
+        formTopPage(output, self.mHtmlTitle,
+            data_set.getName(), AnfisaData.getSetNames())
         return output.getvalue()
 
     #===============================================
@@ -115,4 +94,18 @@ class AnfisaService:
         record.reportIt(output)
         print >> output, '</body>'
         print >> output, '</html>'
+        return output.getvalue()
+
+    #===============================================
+    def formNoRec(self, rq_args):
+        output = StringIO()
+        emptyPage(output)
+        return output.getvalue()
+
+    #===============================================
+    def formList(self, rq_args):
+        output = StringIO()
+        data_index = AnfisaData.getIndex(rq_args.get("data"))
+        filter = json.loads(rq_args.get("filter"))
+        output.write(json.dumps(data_index.makeJSonReport(filter)))
         return output.getvalue()

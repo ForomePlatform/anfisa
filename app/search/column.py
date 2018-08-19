@@ -24,7 +24,7 @@ class DataPortion:
         return False
 
     @abc.abstractmethod
-    def setValue(self, record, value):
+    def setValues(self, record, value):
         pass
 
 #===============================================
@@ -47,9 +47,12 @@ class DataColumn(DataPortion):
     def getAtomType(self):
         return self.mAtomType
 
-    def setValue(self, record, value):
+    def setValues(self, record, value):
         assert self.mColIdx >= 0
-        record.setValue(self.mColIdx, value)
+        record[self.mColIdx] = value
+
+    def recordValue(self, data_record):
+        return data_record[self.mColIdx]
 
 #===============================================
 class DataColumnSet(DataPortion):
@@ -72,7 +75,14 @@ class DataColumnSet(DataPortion):
 
     def setValues(self, record, values):
         for value in values:
-            self.mColumns[value].setValue(True)
+            self.mColumns[value].setValues(record, True)
+
+    def recordValues(self, data_record):
+        ret = set()
+        for var_no, col in enumerate(self.mColumns):
+            if col.recordValue(data_record):
+                ret.add(var_no)
+        return ret
 
 #===============================================
 class DataCompactColumn(DataColumn):
@@ -82,7 +92,7 @@ class DataCompactColumn(DataColumn):
         self.mPackSetSeq  = []
 
     def isAtomic(self):
-        return False
+        return True
 
     def isCompact(self):
         return True
@@ -97,8 +107,8 @@ class DataCompactColumn(DataColumn):
         if idx is None:
             idx = len(self.mPackSetSeq)
             self.mPackSetDict[key] = idx
-            self.mPackSetSeq.append(list(variants[:]))
-        DataColumn.setValue(record, idx)
+            self.mPackSetSeq.append(list(variants)[:])
+        DataColumn.setValues(self, record, idx)
 
     def getSetByIdx(self, idx):
         if 0 <= idx < len(self.mPackSetSeq):

@@ -1,4 +1,4 @@
-import sys, os, traceback, logging, codecs, cgi, types, json
+import sys, os, traceback, logging, codecs, json
 from StringIO import StringIO
 from urlparse import parse_qs
 import logging.config
@@ -13,7 +13,8 @@ class HServResponse:
         "xml":    "text/xml",
         "css":    "text/css",
         "js":     "application/javascript",
-        "png":     "image/png"}
+        "png":    "image/png",
+        "json":   "application/json"}
 
     sErrorCodes = {
         202: "202 Accepted",
@@ -84,12 +85,10 @@ class HServHandler:
 
         if environ["REQUEST_METHOD"] == "POST":
             try:
-                form = cgi.FieldStorage(environ = environ)
-                for arg in form.keys():
-                    val = form[arg]
-                    if isinstance(val, types.ListType):
-                        val = val[0]
-                    query_args[arg] = val.value.decode("utf-8")
+                rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
+                rq_body = environ['wsgi.input'].read(rq_body_size)
+                for a, v in parse_qs(rq_body).items():
+                    query_args[a] = v[0].decode("utf-8")
             except Exception:
                 rep = StringIO()
                 traceback.print_exc(file = rep)

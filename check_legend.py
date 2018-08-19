@@ -13,3 +13,5 @@ for rec_no in range(data_set.getNRecords()):
     LEGEND_AJson.testObj(data_set.getRecord(rec_no).getObj())
 
 LEGEND_AJson.setup(sys.stderr)
+
+print >> sys.stderr, LEGEND_AJson.getStatusInfo()

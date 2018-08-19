@@ -3,12 +3,12 @@
     "port": 8090,
     "files": "files", 
     "html-base": "/anfisa/",
-    "html-title": "Anfisa: %s",
+    "html-title": "Anfisa",
     "datasets": [
-        {"name": "bgm9001_wgs_all", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_all.json"},
         {"name": "bgm9001_wgs_false", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_false.json"}
+            "file": "../a-data/bgm9001_wgs_false.json"},
+        {"name": "bgm9001_wgs_true_pos", "kind": "a-json",
+            "file": "../a-data/bgm9001_wgs_true_pos.json"}
     ],
     "logging": { 
         "version": 1,

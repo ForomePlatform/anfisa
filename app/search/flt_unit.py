@@ -1,8 +1,11 @@
 #import sys
 import abc
+from collections import Counter
+
 import val_conv
 from .column import DataPortion, DataColumn
 from .extract import DataExtractor
+from .val_stat import EnumStat
 
 #===============================================
 class FilterUnit:
@@ -27,6 +30,10 @@ class FilterUnit:
     @abc.abstractmethod
     def iterExtractors(self):
         pass
+
+    @abc.abstractmethod
+    def collectStatJSon(self, data_records):
+        return None
 
     def testValues(self, obj):
         is_ok = True
@@ -54,6 +61,13 @@ class IntValueUnit(FilterUnit):
     def iterExtractors(self):
         yield self.mExtractor
 
+    def collectStatJSon(self, data_records):
+        col = self.mExtractor.getDataP()
+        stat = self.mExtractor.getVConv().newStat()
+        for data_rec in data_records:
+            stat.regValue(col.recordValue(data_rec))
+        return stat.getJSon(self.getName())
+
 #===============================================
 class FloatValueUnit(FilterUnit):
     def __init__(self, legend, name, path,
@@ -66,16 +80,32 @@ class FloatValueUnit(FilterUnit):
     def iterExtractors(self):
         yield self.mExtractor
 
+    def collectStatJSon(self, data_records):
+        col = self.mExtractor.getDataP()
+        stat = self.mExtractor.getVConv().newStat()
+        for data_rec in data_records:
+            stat.regValue(col.recordValue(data_rec))
+        return stat.getJSon(self.getName())
+
 #===============================================
 class StatusUnit(FilterUnit):
-    def __init__(self, legend, name, path, variants = None, title = None):
+    def __init__(self, legend, name, path,
+            variants = None, title = None, default_value = False):
         FilterUnit.__init__(self, legend, name, title)
         self.mExtractor = DataExtractor(self, name, path,
-            val_conv.EnumConvertor(variants, atomic_mode = True),
+            val_conv.EnumConvertor(variants, atomic_mode = True,
+                default_value = default_value),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
     def iterExtractors(self):
         yield self.mExtractor
+
+    def collectStatJSon(self, data_records):
+        col = self.mExtractor.getDataP()
+        stat = self.mExtractor.getVConv().newStat()
+        for data_rec in data_records:
+            stat.regValues([col.recordValue(data_rec)])
+        return stat.getJSon(self.getName())
 
 #===============================================
 class PresenceUnit(FilterUnit):
@@ -91,6 +121,19 @@ class PresenceUnit(FilterUnit):
     def iterExtractors(self):
         return iter(self.mExtractors)
 
+    def collectStatJSon(self, data_records):
+        variants = []
+        col_seq = []
+        for extr in self.mExtractors:
+            variants.append(extr.getName())
+            col_seq.append(extr.getDataP())
+        stat = EnumStat(variants)
+        for data_rec in data_records:
+            for var_no, col in enumerate(col_seq):
+                if col.recordValue(data_rec):
+                    stat.regValues([var_no])
+        return stat.getJSon(self.getName())
+
 #===============================================
 class MultiStatusUnit(FilterUnit):
     def __init__(self, legend, name, path, variants = None,
@@ -104,3 +147,17 @@ class MultiStatusUnit(FilterUnit):
 
     def iterExtractors(self):
         return iter(self.mExtractors)
+
+    def collectStatJSon(self, data_records):
+        col = self.mExtractors[0].getDataP()
+        stat = self.mExtractors[0].getVConv().newStat()
+        if col.isAtomic():
+            counts = Counter()
+            for data_rec in data_records:
+                counts[col.recordValue(data_rec)] += 1
+            for var_idx, cnt in counts.items():
+                stat.regValues(col.getSetByIdx(var_idx), cnt)
+        else:
+            for data_rec in data_records:
+                stat.regValues(col.recordValues(data_rec))
+        return stat.getJSon(self.getName())
