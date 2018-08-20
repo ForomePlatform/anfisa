@@ -65,7 +65,7 @@ class BoolConvertor(ValueConvertor):
         return True
 
     def convert(self, values):
-        return {len(values) > 0 and values[0]}
+        return len(values) > 0 and values[0]
 
 #===============================================
 class _NumericConvertor(ValueConvertor):

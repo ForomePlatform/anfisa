@@ -29,7 +29,7 @@ def formTopPage(output, title, html_base, data_set_name, data_set_names):
         </div>
         <div id="filter-criteria">
           <div id="filter-ctrl">
-            <span id="filter-title">Filter...</span>
+            <span id="crit-title"></span>
             <button id="filter-add-crit" onclick="filterAddCrit();">
               Add
             </button>
@@ -47,31 +47,47 @@ def formTopPage(output, title, html_base, data_set_name, data_set_names):
             </button>
             <span id="close-filter" onclick="filterModOff();">&times;</span>
           </div>
+          <div id="filter-cur-crit-text">
+            <span id="crit-text"></span>
+            <span id="crit-error"></span>
+          </div>
           <div id="filter-cur-crit">
             <div id="cur-crit-numeric">
-              <span id=crit-min" class="num-set"></span>
+              <span id="crit-min" class="num-set"></span>
               <input id="crit-min-inp" class="num-inp"
-                type="text" onchange="checkCurCrit();"/>
-              <span id="crit-sign" class="num-sign"></span>,
+                type="text" onchange="checkCurCrit(\'min\');"/>
+              <span id="crit-sign" class="num-sign"
+                onclick="checkCurCrit(\'sign\');"></span>
               <input id="crit-max-inp" class="num-inp"
-                type="text" onchange="checkCurCrit();"/>
+                type="text" onchange="checkCurCrit(\'max\');"/>
               <span id="crit-max" class="num-set"></span>
-              <span id="num-count" class="num-count"></span>
-            </div>
-            <div id="cur-crit-enum">
-            </div>
-            <div id="cur-crit-undef">
+              <span id="num-count" class="num-count"></span><br/>
               <input id="crit-undef-check" class="num-inp"
-                type="checkbox"  onchange="checkCurCrit();"/>
+                type="checkbox"  onchange="checkCurCrit(\'undef\');"/>
               <span id="crit-undef-count" class="num-count"
                 class="num-count"></span>
+            </div>
+            <div id="cur-crit-enum">
+              <div id="cur-crit-enum-mode">
+                <span id="cur-crit-mode-and-span">AND:
+                 <input id="crit-mode-and" class="num-inp" type="checkbox"
+                    onchange="checkCurCrit(\'mod-and\');"/>
+                </span>
+                <span id="cur-crit-mode-only-span">ONLY:
+                 <input id="crit-mode-only" class="num-inp" type="checkbox"
+                    onchange="checkCurCrit(\'mod-only\');"/>
+                </span>
+                <span id="cur-crit-mode-not-span">NOT:
+                 <input id="crit-mode-not" class="num-inp" type="checkbox"
+                    onchange="checkCurCrit(\'mod-not\');"/>
+                </span>
+              </div>
             </div>
           </div>
           <div id="filter-list-criteria">
             <div id="crit-list">
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

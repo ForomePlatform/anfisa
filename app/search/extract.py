@@ -55,7 +55,10 @@ class DataExtractor:
                     self.mUnit, self.mName, self.mVConv.getVariants())
 
     def extract(self, obj, record):
-        self.mDataP.setValues(record,
-            self.mVConv.convert(self.mPathF(obj)))
+        vv = self.mPathF(obj)
+        values = self.mVConv.convert(vv)
+        self.mDataP.setValues(record, values)
+        #self.mDataP.setValues(record,
+        #    self.mVConv.convert(self.mPathF(obj)))
 
 #===============================================

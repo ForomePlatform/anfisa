@@ -13,10 +13,24 @@ class HotIndex:
     def getRecNoSeq(self):
         return self.mRecNoSeq[:]
 
-    def getStat(self):
-        return self.mStat
-
     def _applyCrit(self, rec_no_seq, crit_info):
+        if crit_info[0] == "numeric":
+            unit_name, lt_mode, the_val, use_undef = crit_info[1:]
+            col = self.mLegend.getUnit(unit_name).getColumn()
+            flt_rec_no_seq = []
+            for rec_no in rec_no_seq:
+                val = col.recordValue(self.mRecords[rec_no])
+                if val is None:
+                    if not use_undef:
+                        continue
+                elif lt_mode:
+                    if val > the_val:
+                        continue
+                else:
+                    if val < the_val:
+                        continue
+                flt_rec_no_seq.append(rec_no)
+            return flt_rec_no_seq
         return rec_no_seq
 
     def _iterRecords(self, rec_no_seq):

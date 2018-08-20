@@ -15,6 +15,9 @@ a:hover {
     text-decoration: underline;
 }
 
+button {
+    padding: 0px !important;
+}
 /********************Top area split*****************************/
 #top {
     display: flex;
@@ -155,9 +158,9 @@ iframe#record {
 
 #close-filter {
     color: #aaa;
-    float: right;
     font-size: 28px;
     font-weight: bold;
+    margin: 0px 10px 0px 10px;
 }
 
 #close-filter:hover, #close-filter:focus {
@@ -173,11 +176,56 @@ div#filter-stat, div#filter-criteria {
     overflow: hidden;
     display: grid;
     border: 1px solid black;
+    white-space: nowrap;
 }
 
 div#filter-stat {
+    width: 40%;
 }
+
 div#filter-criteria {
+    width: 60%;
+    height: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+div#filter-ctrl {
+    text-align: right;
+    margin-top: 10px;
+    height: 40px;
+    min-height: 40px;
+    width: 100%;
+}
+
+div#filter-ctrl button {
+    margin: 1px;
+}
+
+div#filter-cur-crit-text {
+    height: 30px;
+    min-height: 30px;
+    width: 100%;
+    background-color: #fffff0;    
+}
+div#filter-cur-crit {
+    height: 120px;
+    min-height: 120px;
+    width: 100%;
+    display: block;
+    vertical-align: top;
+}
+
+div#filter-list-criteria {
+    flex-grow: 1;
+    margin: 0px;
+    padding: 0px;
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    border: 1px solid brown;
 }
 
 div#stat-list {
@@ -194,7 +242,7 @@ div.stat-unit.cur {
 }
 
 div.stat-unit {
-    border: 1px solid blue;
+    border: 1px solid #c0c0ff;
     cursor: hand;
 }
 
@@ -208,9 +256,76 @@ div.stat-unit.cur span.stat-unit-name {
     color: magenta;
 }
 
-
-dif.stat-unit ul {
+div.stat-unit ul {
     margin-before: 0px;
     margin-after: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
     padding-start: 1px;
+}
+
+span#crit-text {
+    color: magenta;
+    font-weight: bold;
+    font-size: 13pt;
+    margin: 10px;
+}
+
+span#crit-error {
+    color: red;
+    font-style: italic;
+    font-size: 13pt;
+    margin: 10px;
+}
+
+span#crit-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: magenta;
+    margin-right: 20px;
+}
+
+div#cur-crit-numeric {
+    position: absolute;
+    margin: 10px;
+    text-align: right;
+    vertical-align: top;
+    display: block;
+    padding: 0px;
+}
+
+div#cur-crit-enum {
+    position: absolute;
+    padding: 0px;
+    margin: 10px;
+    text-align: right;
+    vertical-align: top;
+    display: block;
+}
+
+
+span#crit-sign {
+    cursor: hand;
+}
+
+div#crit-list {
+    margin: 5px;
+    padding: 5px;
+    overflow: auto;
+    font-size: 12px;
+    vertical-align: top;
+}
+
+div.crit-descr {
+    background-color: #fffff0;
+    border: 2px solid brown;
+    cursor: hand;
+    margin: 3px;
+    padding: 10px;
+    text-align: justify;
+}
+
+div.crit-descr.cur {
+    border: 2px solid red;
+    cursor: pointer;
 }

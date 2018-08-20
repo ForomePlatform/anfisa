@@ -66,8 +66,6 @@ class EnumStat:
 
     def regValues(self, values, count = 1):
         for val in values:
-            if not(0 <= val < len(self.mVariants)):
-                continue
             assert 0 <= val < len(self.mVariants)
             self.mStat[val] += count
 
@@ -75,10 +73,10 @@ class EnumStat:
         #TRF: write it later
         assert False
 
-    def getJSon(self, name):
+    def getJSon(self, name, enum_type = None):
         rep_list = []
         for idx, variant in enumerate(self.mVariants):
             cnt = self.mStat.get(idx)
             if cnt:
                 rep_list.append([variant, cnt])
-        return ["enum", name, rep_list]
+        return ["enum" if enum_type is None else enum_type, name, rep_list]

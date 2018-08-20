@@ -16,6 +16,7 @@ function initWin(data_set_name) {
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
+    initFilters();
     loadList();
 }
 
@@ -40,8 +41,8 @@ function setupList(info) {
     var el = document.getElementById("list-report");
     var el_p = document.getElementById("list-rand-portion");
     var rep = "Records: <b>" + info["filtered"] + "<b>";
-    if (info["total"] != info["filtered"]) {
-        rep += "/" + info["total"];
+    if (sCurFilter.length > 0) {
+        rep += "/" + info["total"] + " [" + sCurFilter.length + "]";
     }
     if (info["list-mode"] == "samples") {
         rep += "<br/>Samples:";

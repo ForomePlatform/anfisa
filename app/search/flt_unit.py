@@ -58,6 +58,9 @@ class IntValueUnit(FilterUnit):
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
+    def getColumn(self):
+        return self.mExtractor.getDataP()
+
     def iterExtractors(self):
         yield self.mExtractor
 
@@ -76,6 +79,9 @@ class FloatValueUnit(FilterUnit):
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
+
+    def getColumn(self):
+        return self.mExtractor.getDataP()
 
     def iterExtractors(self):
         yield self.mExtractor
@@ -105,7 +111,7 @@ class StatusUnit(FilterUnit):
         stat = self.mExtractor.getVConv().newStat()
         for data_rec in data_records:
             stat.regValues([col.recordValue(data_rec)])
-        return stat.getJSon(self.getName())
+        return stat.getJSon(self.getName(), enum_type = "status")
 
 #===============================================
 class PresenceUnit(FilterUnit):
@@ -132,7 +138,7 @@ class PresenceUnit(FilterUnit):
             for var_no, col in enumerate(col_seq):
                 if col.recordValue(data_rec):
                     stat.regValues([var_no])
-        return stat.getJSon(self.getName())
+        return stat.getJSon(self.getName(), enum_type = "presence")
 
 #===============================================
 class MultiStatusUnit(FilterUnit):
