@@ -1,6 +1,6 @@
 import os
 import sqlite3
-import socket
+from annotations import gnomAD_path
 
 
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
@@ -19,15 +19,7 @@ def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
 class GnomAD:
     def __init__(self, path_to_gnomad_data = None):
         if (not path_to_gnomad_data):
-            hostname = socket.gethostname().lower()
-            if ("partners.org" in hostname):
-                path_to_gnomad_data = "/net/bgm/resources/gnomAD/SQLite"
-            elif ("misha" in hostname):
-                path_to_gnomad_data = "/opt/data/gnomad/db"
-            else:
-                uname = os.uname()
-                if ('aws' in uname[2].lower()):
-                    path_to_gnomad_data = "/db/data/gnomad/db"
+            path_to_gnomad_data = gnomAD_path()
 
         self.db_file_genomes = os.path.join(path_to_gnomad_data, "gnomAD_genomes.db")
         self.db_file_exomes = os.path.join(path_to_gnomad_data, "gnomAD_exomes.db")

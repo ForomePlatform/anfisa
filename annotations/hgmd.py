@@ -1,8 +1,9 @@
 import os
-import socket
 import mysql.connector
 import paramiko
 import sshtunnel
+
+from annotations import host_name
 
 
 def connect(port = 3306, user = "hgmd", password = "hgmd"):
@@ -27,7 +28,7 @@ class HGMD:
 
     def __init__(self):
         self.tunnel = None
-        hostname = socket.gethostname().lower()
+        hostname = host_name()
         if ("ip-172-31-24-96" in hostname):
             self.connection = connect()
         else:

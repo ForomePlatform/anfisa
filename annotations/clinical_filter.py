@@ -1,13 +1,13 @@
 import os
 
-from annotations import filters, gnomad, case_utils
+from annotations import filters, case_utils, data_path
 from annotations.gnomad import GnomAD
 from annotations.hgmd import HGMD
 from annotations.record import Variant
 
 
 class Filter:
-    DATA_PATH = "/opt/data/"
+    DATA_PATH = data_path()
     def __init__(self, data_dir = None):
         if (not data_dir):
             data_dir = Filter.DATA_PATH
