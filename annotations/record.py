@@ -513,7 +513,7 @@ class Variant:
         pmids = self.data.get("HGMD_PIMIDs")
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("HGMD_phenotypes")
-        tab4["HGMD Phenotypes"] = phenotypes if phenotypes else None
+        tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
         if (self.data.get("ClinVar") <> None):
             tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\

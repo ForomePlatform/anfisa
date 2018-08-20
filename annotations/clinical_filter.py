@@ -58,9 +58,8 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     output2 = out.format("false")
     output3 = out.format("true_pos")
     gnomAD = GnomAD()
-    hgmd = HGMD()
 
-    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3:
+    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3, HGMD() as hgmd:
         while(True):
             line = input.readline()
             if (not line):
@@ -143,13 +142,18 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
 
 if __name__ == '__main__':
+    header_file = "header.vcf"
+    case = "bgm9001"
+    dir = os.getcwd()
+    expected_file = "xbrowse_bgm9001_SEQaBOO_filters.txt"
+    fam_file = "{}.fam".format(case)
+
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
-    with open ("/Users/misha/projects/bgm/cases/bgm9001/header.vcf") as vcf:
+    with open (header_file) as vcf:
         header = vcf.read()
 
     expected_set = {}
-    dir = "/Users/misha/projects/bgm/cases/bgm9001"
-    with open (os.path.join(dir,"xbrowse_bgm9001_SEQaBOO_filters.txt")) as f1:
+    with open (os.path.join(dir,expected_file)) as f1:
         lines = f1.readlines()
         for line in lines:
             data = line.split('\t')
@@ -159,10 +163,10 @@ if __name__ == '__main__':
             expected_set[(c,p)] = 1
 
 
-    samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001.fam")
+    samples = case_utils.parse_fam_file(fam_file)
 
     if (True):
-        output = "/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_{}.json"
+        output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
     process_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
                      vcf_header=header, samples=samples, expected=expected_set, case="bgm9001_wgs")
