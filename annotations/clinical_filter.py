@@ -145,8 +145,9 @@ if __name__ == '__main__':
     header_file = "header.vcf"
     case = "bgm9001"
     dir = os.getcwd()
-    expected_file = "xbrowse_bgm9001_SEQaBOO_filters.txt"
+    expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
     fam_file = "{}.fam".format(case)
+    filtered_by_bed_vep_output = "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
 
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
     with open (header_file) as vcf:
@@ -168,5 +169,5 @@ if __name__ == '__main__':
     if (True):
         output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
-    process_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
-                     vcf_header=header, samples=samples, expected=expected_set, case="bgm9001_wgs")
+    process_file("/Users/misha/projects/bgm/cases/bgm9001/", out=output,
+                     vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case))
