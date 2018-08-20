@@ -1,11 +1,13 @@
 import os
 
-from annotations import filters, gnomad, case_utils
+from annotations import filters, case_utils, data_path
+from annotations.gnomad import GnomAD
+from annotations.hgmd import HGMD
 from annotations.record import Variant
 
 
 class Filter:
-    DATA_PATH = "/opt/data/"
+    DATA_PATH = data_path()
     def __init__(self, data_dir = None):
         if (not data_dir):
             data_dir = Filter.DATA_PATH
@@ -55,14 +57,17 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     output1 = out.format("all")
     output2 = out.format("false")
     output3 = out.format("true_pos")
+    gnomAD = GnomAD()
 
-    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3:
+    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3, HGMD() as hgmd:
         while(True):
             line = input.readline()
             if (not line):
                 break
-            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case)
+            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, gnomAD_connection=gnomAD, HGMD_connector=hgmd)
             n += 1
+            if (n%10 == 0):
+                print n
             info = {}
             if (not clinical_filter.accept(v, info)):
                 ## continue
@@ -91,7 +96,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
                 else:
                     key = "UNKNOWN"
             else:
-                rows = gnomad.get_data(v.chr_num(), v.start())
+                rows = gnomAD.get_data(v.chr_num(), v.start())
                 if (rows):
                     pass
                 key = 'Singleton'
@@ -137,13 +142,19 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
 
 if __name__ == '__main__':
+    header_file = "header.vcf"
+    case = "bgm9001"
+    dir = os.getcwd()
+    expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
+    fam_file = "{}.fam".format(case)
+    filtered_by_bed_vep_output = "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
+
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
-    with open ("/Users/misha/projects/bgm/cases/bgm9001/header.vcf") as vcf:
+    with open (header_file) as vcf:
         header = vcf.read()
 
     expected_set = {}
-    dir = "/Users/misha/projects/bgm/cases/bgm9001"
-    with open (os.path.join(dir,"xbrowse_bgm9001_SEQaBOO_filters.txt")) as f1:
+    with open (os.path.join(dir,expected_file)) as f1:
         lines = f1.readlines()
         for line in lines:
             data = line.split('\t')
@@ -153,10 +164,10 @@ if __name__ == '__main__':
             expected_set[(c,p)] = 1
 
 
-    samples = case_utils.parse_fam_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001.fam")
+    samples = case_utils.parse_fam_file(fam_file)
 
     if (True):
-        output = "/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_{}.json"
+        output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
-    process_file("/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_xbrowse.vep.filtered.vep.json", out=output,
-                     vcf_header=header, samples=samples, expected=expected_set, case="bgm9001_wgs")
+    process_file(filtered_by_bed_vep_output, out=output,
+                     vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case))
