@@ -169,5 +169,5 @@ if __name__ == '__main__':
     if (True):
         output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
-    process_file("/Users/misha/projects/bgm/cases/bgm9001/", out=output,
+    process_file(filtered_by_bed_vep_output, out=output,
                      vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case))
