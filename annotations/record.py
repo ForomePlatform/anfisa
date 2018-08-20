@@ -3,6 +3,10 @@ from StringIO import StringIO
 
 import vcf
 
+def link_to_pmid(pmid):
+    return "https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pmid)
+
+
 def unique(list):
     s = set(list)
     s.discard(None)
@@ -65,7 +69,8 @@ class Variant:
         "intron_variant"
     ]
 
-    def __init__(self, json_string, vcf_header = None, case = None, samples = None):
+    def __init__(self, json_string, vcf_header = None, case = None, samples = None, gnomAD_connection = None,
+                 HGMD_connector = None):
         self.original_json = json_string
         self.data = json.loads(json_string)
         self.case = case
@@ -79,6 +84,22 @@ class Variant:
             self.vcf_record = vcf_reader.next()
         else:
             self.vcf_record = None
+        if (gnomAD_connection):
+            gm_af = None
+            em_af = None
+            for alt in self.alt_list():
+                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
+                gm_af = min(gm_af, af) if gm_af else af
+                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
+                em_af = min(em_af, af) if em_af else af
+
+            self.data["gnomad_db_exomes_af"] = em_af
+            self.data["gnomad_db_genomes_af"] = gm_af
+
+        if (HGMD_connector):
+            (phenotypes, pmids) = HGMD_connector.get_data(self.chr_num(), self.start(), self.end())
+            self.data["HGMD_phenotypes"] = phenotypes
+            self.data["HGMD_PIMIDs"] = pmids
 
 
     def same(self,c, p1, p2 = None):
@@ -103,15 +124,21 @@ class Variant:
             return chr_str[3:]
     
     def start(self):
-        return self.data.get("start")
+        return int(self.data.get("start"))
 
     def end(self):
-        return self.data.get("end")
+        return int(self.data.get("end"))
+
+    def lowest_coord(self):
+        return min(self.start(), self.end())
 
     def get_allele(self):
         return self.data.get("allele_string")
 
     def ref(self):
+        return self.vcf_record.REF
+
+    def ref1(self):
         s = self.data.get("allele_string")
         return s.split('/')[0]
 
@@ -119,6 +146,9 @@ class Variant:
         return ",".join(self.alt_list())
 
     def alt_list(self):
+         return [s.sequence for s in self.vcf_record.ALT]
+
+    def alt_list1(self):
         s = self.get_allele()
         return s.split('/')[1:]
 
@@ -290,6 +320,9 @@ class Variant:
                 af = min(af1, af)
             else:
                 af = af1
+
+        if (not af):
+            af = self.data.get("gnomad_db_{}_af".format(exomes_or_genomes))
 
         return af
 
@@ -477,7 +510,11 @@ class Variant:
         tab4["pLI"] = self.get_pLI()
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
-            tab4["HGMD PMIDs"] = ""
+        pmids = self.data.get("HGMD_PIMIDs")
+        tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
+        phenotypes = self.data.get("HGMD_phenotypes")
+        tab4["HGMD Phenotypes"] = phenotypes if phenotypes else None
+
         if (self.data.get("ClinVar") <> None):
             tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
                 format(self.chr_num(), self.start(), self.end())

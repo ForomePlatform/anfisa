@@ -1,6 +1,8 @@
 import os
 
 from annotations import filters, gnomad, case_utils
+from annotations.gnomad import GnomAD
+from annotations.hgmd import HGMD
 from annotations.record import Variant
 
 
@@ -55,14 +57,18 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     output1 = out.format("all")
     output2 = out.format("false")
     output3 = out.format("true_pos")
+    gnomAD = GnomAD()
+    hgmd = HGMD()
 
     with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3:
         while(True):
             line = input.readline()
             if (not line):
                 break
-            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case)
+            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, gnomAD_connection=gnomAD, HGMD_connector=hgmd)
             n += 1
+            if (n%10 == 0):
+                print n
             info = {}
             if (not clinical_filter.accept(v, info)):
                 ## continue
@@ -91,7 +97,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
                 else:
                     key = "UNKNOWN"
             else:
-                rows = gnomad.get_data(v.chr_num(), v.start())
+                rows = gnomAD.get_data(v.chr_num(), v.start())
                 if (rows):
                     pass
                 key = 'Singleton'

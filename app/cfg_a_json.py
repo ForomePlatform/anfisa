@@ -31,14 +31,14 @@ Aspect_Quality = AspectH("quality_samples",     "Quality",
     json_container = None,
     attrs = [
         AttrH("Title"),
-        AttrH("Allelic Depth", is_seq = True),
-        AttrH("Read Depth"),
         AttrH("Quality by Depth"),
-        AttrH("Genotype Quality"),
         AttrH("Mapping Quality"),
         AttrH("Variant Call Quality"),
         AttrH("Strand Odds Ratio"),
-        AttrH("Fisher Strand Bias")
+        AttrH("Fisher Strand Bias"),
+        AttrH("Allelic Depth", is_seq=True),
+        AttrH("Read Depth"),
+        AttrH("Genotype Quality")
     ],
     col_groups = [ColGroupH("quality.samples", None)],
 )
@@ -58,6 +58,8 @@ Aspect_Databases = AspectH("view.Databases",   "Databases",
     attrs = [
         AttrH("pLI", is_seq = True),
         AttrH("HGMD"),
+        AttrH("HGMD Phenotypes", is_seq=True),
+        AttrH("HGMD PMIDs", is_seq=True, kind="link"),
         AttrH("OMIM"),
         AttrH("ClinVar Significance", is_seq=True),
         AttrH("ClinVar", "link")
