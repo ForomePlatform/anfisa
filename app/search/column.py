@@ -56,12 +56,12 @@ class DataColumn(DataPortion):
 
 #===============================================
 class DataColumnSet(DataPortion):
-    def __init__(self, filter_unit, name, variants):
+    def __init__(self, filter_unit, name, variant_set):
         DataPortion.__init__(self, filter_unit, name)
-        self.mVariants = variants
+        self.mVariantSet = variant_set
         self.mColumns = [DataColumn(self.getFilterUnit(),
             "%s/%s" % (name, variant), self.ATOM_DATA_TYPE_BOOL)
-            for variant in variants]
+            for variant in iter(self.mVariantSet)]
 
     def isAtomic(self):
         return False
@@ -98,16 +98,16 @@ class DataCompactColumn(DataColumn):
         return True
 
     @classmethod
-    def makePackKey(cls, variants):
-        return '#'.join(map(str, sorted(variants)))
+    def makePackKey(cls, idx_set):
+        return '#'.join(map(str, sorted(idx_set)))
 
-    def setValues(self, record, variants):
-        key = self.makePackKey(variants)
+    def setValues(self, record, idx_set):
+        key = self.makePackKey(idx_set)
         idx = self.mPackSetDict.get(key)
         if idx is None:
             idx = len(self.mPackSetSeq)
             self.mPackSetDict[key] = idx
-            self.mPackSetSeq.append(list(variants)[:])
+            self.mPackSetSeq.append(sorted(idx_set))
         DataColumn.setValues(self, record, idx)
 
     def getSetByIdx(self, idx):

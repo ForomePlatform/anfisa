@@ -30,22 +30,22 @@ class HotIndex:
         return lambda val: val is None and val <= the_val
 
     @staticmethod
-    def enum_OR(var_list):
-        return lambda variants: len(variants & var_list) > 0
+    def enum_OR(base_idx_set):
+        return lambda idx_set: len(idx_set & base_idx_set) > 0
 
     @staticmethod
-    def enum_AND(var_list):
-        all_len = len(var_list)
-        return lambda variants: len(variants & var_list) == all_len
+    def enum_AND(base_idx_set):
+        all_len = len(base_idx_set)
+        return lambda idx_set: len(idx_set & base_idx_set) == all_len
 
     @staticmethod
-    def enum_NOT(var_list):
-        return lambda variants: len(variants & var_list) == 0
+    def enum_NOT(base_idx_set):
+        return lambda idx_set: len(idx_set & base_idx_set) == 0
 
     @staticmethod
-    def enum_ONLY(var_list):
-        return lambda variants: (len(variants) > 0 and
-            len(variants - var_list) == 0)
+    def enum_ONLY(base_idx_set):
+        return lambda idx_set: (len(idx_set) > 0 and
+            len(idx_set - base_idx_set) == 0)
 
     def _applyCrit(self, rec_no_seq, crit_info):
         if crit_info[0] == "numeric":

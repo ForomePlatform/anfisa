@@ -6,6 +6,7 @@ import val_conv
 from .column import DataPortion, DataColumn
 from .extract import DataExtractor
 from .val_stat import EnumStat
+from .variants import VariantSet
 
 #===============================================
 class FilterUnit:
@@ -48,14 +49,6 @@ class FilterUnit:
     def fillRecord(self, obj, record):
         for extr_h in self.iterExtractors():
             extr_h.extract(obj, record)
-
-    @staticmethod
-    def _prepareIdxSet(base_variants, variants):
-        idx_set = set()
-        for var in variants:
-            if var in base_variants:
-                idx_set.add(base_variants.index(var))
-        return idx_set
 
 #===============================================
 class IntValueUnit(FilterUnit):
@@ -109,8 +102,8 @@ class StatusUnit(FilterUnit):
             variants = None, title = None, default_value = False):
         FilterUnit.__init__(self, legend, name, title)
         self.mExtractor = DataExtractor(self, name, path,
-            val_conv.EnumConvertor(variants, atomic_mode = True,
-                default_value = default_value),
+            val_conv.EnumConvertor(VariantSet.create(variants),
+                atomic_mode = True, default_value = default_value),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
     def iterExtractors(self):
@@ -118,8 +111,8 @@ class StatusUnit(FilterUnit):
 
     def recordCritFunc(self, enum_func, variants):
         col = self.mExtractor.getDataP()
-        idx_set = self._prepareIdxSet(
-            self.mExtractor.getVConv().getVariants(), variants)
+        idx_set = self.mExtractor.getVConv().getVariantSet().makeIdxSet(
+            variants)
         check_func = enum_func(idx_set)
         return lambda data_rec: check_func({col.recordValue(data_rec)})
 
@@ -137,9 +130,11 @@ class PresenceUnit(FilterUnit):
         self.mExtractors = []
         for it_name, it_path in var_info_seq:
             full_name = "%s.%s" % (name, it_name)
-            self.mExtractors.append(DataExtractor(self, full_name,
+            self.mExtractors.append(DataExtractor(self, it_name,
                 it_path, val_conv.BoolConvertor(),
                 DataColumn(self, full_name, DataPortion.ATOM_DATA_TYPE_BOOL)))
+        self.mVariantSet = VariantSet([it_name
+            for it_name, it_path in var_info_seq])
 
     def iterExtractors(self):
         return iter(self.mExtractors)
@@ -152,18 +147,13 @@ class PresenceUnit(FilterUnit):
         return ret
 
     def recordCritFunc(self, enum_func, variants):
-        idx_set = self._prepareIdxSet(
-            [extr.getName() for extr in self.mExtractors], variants)
-        check_func = enum_func(idx_set)
+        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
         return lambda data_rec: check_func(self._recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        variants = []
-        col_seq = []
-        for extr in self.mExtractors:
-            variants.append(extr.getName())
-            col_seq.append(extr.getDataP())
-        stat = EnumStat(variants)
+        col_seq = [extr.getDataP()
+            for extr in self.mExtractors]
+        stat = EnumStat(self.mVariantSet)
         for data_rec in data_records:
             for var_no, col in enumerate(col_seq):
                 if col.recordValue(data_rec):
@@ -177,8 +167,9 @@ class MultiStatusUnit(FilterUnit):
             default_value = False, others_value = False):
         FilterUnit.__init__(self, legend, name, title)
         self.mExtractors = [DataExtractor(self, name, path,
-            val_conv.EnumConvertor(variants, chunker = chunker,
-                default_value = default_value, others_value = others_value),
+            val_conv.EnumConvertor(VariantSet.create(variants),
+                chunker = chunker, default_value = default_value,
+                others_value = others_value),
             compact_mode = compact_mode)]
 
     def iterExtractors(self):
@@ -186,9 +177,8 @@ class MultiStatusUnit(FilterUnit):
 
     def recordCritFunc(self, enum_func, variants):
         datap = self.mExtractors[0].getDataP()
-        idx_set = self._prepareIdxSet(
-            self.mExtractors[0].getVConv().getVariants(), variants)
-        check_func = enum_func(idx_set)
+        check_func = enum_func(self.mExtractors[0].getVConv().
+            getVariantSet().makeIdxSet(variants))
         if datap.isAtomic():
             return lambda data_rec: check_func(
                 set(datap.getSetByIdx(datap.recordValue(data_rec))))

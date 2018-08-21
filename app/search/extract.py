@@ -52,7 +52,7 @@ class DataExtractor:
                     self.mName + ".#compact")
             else:
                 self.mDataP = DataColumnSet(
-                    self.mUnit, self.mName, self.mVConv.getVariants())
+                    self.mUnit, self.mName, self.mVConv.getVariantSet())
 
     def extract(self, obj, record):
         vv = self.mPathF(obj)

@@ -486,7 +486,7 @@ function checkEnumOpMode(mode_idx) {
 
 function getCritDescripton(crit, short_form) {
     if (crit != null && crit[0] == "numeric") {
-        rep_crit = [sOpCriterium[1]];
+        rep_crit = [crit[1]];
         switch (crit[2]) {
             case 0:
                 rep_crit.push("> " + crit[3]);

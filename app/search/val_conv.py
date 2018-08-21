@@ -3,7 +3,7 @@ import abc
 from collections import Counter
 
 from .val_stat import BoolStat, NumDiapStat, EnumStat
-
+from .variants import VariantSet
 #===============================================
 class ValueConvertor:
     def __init__(self):
@@ -159,11 +159,10 @@ class IntConvertor(_NumericConvertor):
 
 #===============================================
 class EnumConvertor(ValueConvertor):
-    def __init__(self, variants = None, atomic_mode = False, chunker = None,
-            default_value = False, others_value = False):
+    def __init__(self, variant_set = None, atomic_mode = False,
+            chunker = None, default_value = False, others_value = False):
         ValueConvertor.__init__(self)
-        self.mVariantNames = None
-        self.mVariantDict = None
+        self.mVariantSet = None
         self.mAtomicMode = atomic_mode
         self.mChunker = chunker
         self.mDefaultValue = default_value
@@ -172,34 +171,34 @@ class EnumConvertor(ValueConvertor):
         self.mOthersVariant = {}
         self.mStat = Counter()
         self.mBadValues = False
-        if variants is not None:
-            self.__initVariants(variants)
+        if variant_set is not None:
+            self.__initVariants(variant_set)
 
     def isAtomic(self):
         return self.mAtomicMode
 
     def newStat(self):
-        return EnumStat(self.mVariantNames)
+        return EnumStat(self.mVariantSet)
 
-    def __initVariants(self, variants):
-        self.mVariantNames = variants
-        self.mVariantDict = {name: idx
-            for idx, name in enumerate(self.mVariantNames)}
-        if (self.mDefaultValue is not False and
-                self.mDefaultValue in variants):
-            self.mDefaultVariant = {variants.index(self.mDefaultValue)}
+    def __initVariants(self, variant_set):
+        self.mVariantSet = variant_set
+        if self.mDefaultValue is not False:
+            idx = self.mVariantSet.indexOf(self.mDefaultValue)
+            if idx is not None:
+                self.mDefaultVariant = {idx}
         else:
             self.mDefaultVariant = {}
-        if (self.mOthersValue is not False and
-                self.mOthersValue in variants):
-            self.mOthersVariant = {variants.index(self.mOthersValue)}
+        if self.mOthersValue is not False:
+            idx = self.mVariantSet.indexOf(self.mOthersValue)
+            if idx is not None:
+                self.mOthersVariant = {idx}
         else:
             self.mOthersVariant = {}
 
     def setup(self, rep_out):
         if self.mBadValues:
             print >> rep_out, "=NOTE: Has bad values!"
-        elif self.mVariantNames is None:
+        elif self.mVariantSet is None:
             variants = []
             for name in self.mStat.keys():
                 if name is not None:
@@ -211,11 +210,11 @@ class EnumConvertor(ValueConvertor):
             if (self.mDefaultValue is not False and
                     self.mDefaultValue not in variants):
                 variants.append(self.mDefaultValue)
-            self.__initVariants(variants)
+            self.__initVariants(VariantSet(variants))
         used_names = set()
-        if self.mVariantNames is not None:
-            print >> rep_out, "=Variants(%d):" % len(self.mVariantNames)
-            for name in self.mVariantNames:
+        if self.mVariantSet is not None:
+            print >> rep_out, "=Variants(%d):" % len(self.mVariantSet)
+            for name in self.mVariantSet:
                 print >> rep_out, "\t%s: %d" % (name, self.mStat[name])
                 used_names.add(name)
         if len(set(self.mStat.keys()) - used_names) > 0:
@@ -224,7 +223,7 @@ class EnumConvertor(ValueConvertor):
                 if name in used_names:
                     continue
                 print >> rep_out, "\t%s: %d" % (str(name), self.mStat[name])
-        return not self.mBadValues and self.mVariantNames is not None
+        return not self.mBadValues and self.mVariantSet is not None
 
     def getVarTypeCode(self):
         return "enum"
@@ -235,8 +234,8 @@ class EnumConvertor(ValueConvertor):
     def hasOthers(self):
         return self.mOthersValue is not False
 
-    def getVariants(self):
-        return self.mVariantNames
+    def getVariantSet(self):
+        return self.mVariantSet
 
     def testValues(self, values):
         try:
@@ -250,10 +249,10 @@ class EnumConvertor(ValueConvertor):
                 return True
             for val in values:
                 self.mStat[val] += 1
-            if (self.mVariantDict is not None and
+            if (self.mVariantSet is not None and
                     self.mOthersValue is not False):
                 for val in values:
-                    if val not in self.mVariantDict:
+                    if self.mVariantSet.indexOf(val) is None:
                         return False
             return True
         except Exception:
@@ -266,12 +265,9 @@ class EnumConvertor(ValueConvertor):
             values = self.mChunker.apply(values)
         if len(values) == 0:
             return self.mDefaultVariant
-        ret = set()
-        for val in values:
-            if val in self.mVariantDict:
-                ret.add(self.mVariantDict[val])
-            if self.mAtomicMode:
-                break
+        ret = self.mVariantSet.makeIdxSet(values)
+        if self.mAtomicMode and len(ret) > 1:
+            return {min(ret)}
         if len(ret) == 0:
             return self.mOthersVariant
         return ret

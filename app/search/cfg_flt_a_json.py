@@ -5,10 +5,6 @@ import flt_unit
 #===============================================
 LEGEND_AJson = FilterLegend("AJson")
 
-flt_unit.StatusUnit(LEGEND_AJson, "color", "/color_code",
-    ["red", "yellow", "green", "undef"],
-    default_value = "undef")
-
 flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
     "chr6", "chr7", "chr8", "chr9", "chr10",
@@ -22,10 +18,43 @@ flt_unit.MultiStatusUnit(LEGEND_AJson, "caller",
     "/view.general/Called by[]")
 
 flt_unit.StatusUnit(LEGEND_AJson, "most_severe_consequence",
-    "/most_severe_consequence", default_value = "undef")
-
-flt_unit.StatusUnit(LEGEND_AJson, "transcript_id",
-    "/transcript_id", default_value = "undef")
+    "/most_severe_consequence", [
+    "transcript_ablation",
+    "splice_acceptor_variant",
+    "splice_donor_variant",
+    "stop_gained",
+    "frameshift_variant",
+    "stop_lost",
+    "start_lost",
+    "transcript_amplification",
+    "inframe_insertion",
+    "inframe_deletion",
+    "missense_variant",
+    "protein_altering_variant",
+    "incomplete_terminal_codon_variant",
+    "stop_retained_variant",
+    "synonymous_variant",
+    "splice_region_variant",
+    "coding_sequence_variant",
+    "mature_miRNA_variant",
+    "5_prime_UTR_variant",
+    "3_prime_UTR_variant",
+    "non_coding_transcript_exon_variant",
+    "intron_variant",
+    "NMD_transcript_variant",
+    "non_coding_transcript_variant",
+    "upstream_gene_variant",
+    "downstream_gene_variant",
+    "TFBS_ablation",
+    "TFBS_amplification",
+    "TF_binding_site_variant",
+    "regulatory_region_ablation",
+    "regulatory_region_amplification",
+    "feature_elongation",
+    "regulatory_region_variant",
+    "feature_truncation",
+    "intergenic_variant",
+    "undefined"], default_value = "undefined")
 
 flt_unit.MultiStatusUnit(LEGEND_AJson, "genes",
     "/view.general/Gene(s)[]", compact_mode = True)
@@ -40,7 +69,7 @@ flt_unit.FloatValueUnit(LEGEND_AJson, "gnomAD_AF",
 flt_unit.PresenceUnit(LEGEND_AJson, "db", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/view.gnomAD/URL"),
-    ("HGMD", "/view.Databases/HGMD"),
+    ("HGMD", "/view.Databases/HGMD PMIDs[]"),
     ("OLIM", "/view.Databases/OLIM")],
     title ="Presence in databases")
 

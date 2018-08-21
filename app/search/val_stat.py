@@ -54,8 +54,8 @@ class NumDiapStat:
 
 #===============================================
 class EnumStat:
-    def __init__(self, variants):
-        self.mVariants = variants
+    def __init__(self, variant_set):
+        self.mVariantSet = variant_set
         self.mStat = Counter()
 
     def isDefined(self):
@@ -66,7 +66,9 @@ class EnumStat:
 
     def regValues(self, values, count = 1):
         for val in values:
-            assert 0 <= val < len(self.mVariants)
+            if not(0 <= val < len(self.mVariantSet)):
+                continue
+            assert 0 <= val < len(self.mVariantSet)
             self.mStat[val] += count
 
     def report(self, rep_out):
@@ -75,7 +77,7 @@ class EnumStat:
 
     def getJSon(self, name, enum_type = None):
         rep_list = []
-        for idx, variant in enumerate(self.mVariants):
+        for idx, variant in enumerate(iter(self.mVariantSet)):
             cnt = self.mStat.get(idx)
             if cnt:
                 rep_list.append([variant, cnt])
