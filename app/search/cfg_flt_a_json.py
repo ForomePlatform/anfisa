@@ -70,7 +70,7 @@ flt_unit.PresenceUnit(LEGEND_AJson, "db", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/view.gnomAD/URL"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),
-    ("OLIM", "/view.Databases/OLIM")],
+    ("OMIM", "/view.Databases/OMIM")],
     title ="Presence in databases")
 
 flt_unit.MultiStatusUnit(LEGEND_AJson, "Polyphen",
