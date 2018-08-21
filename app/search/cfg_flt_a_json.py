@@ -9,7 +9,12 @@ flt_unit.StatusUnit(LEGEND_AJson, "color", "/color_code",
     ["red", "yellow", "green", "undef"],
     default_value = "undef")
 
-flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name")
+flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name",
+    ["chr1", "chr2", "chr3", "chr4", "chr5",
+    "chr6", "chr7", "chr8", "chr9", "chr10",
+    "chr11", "chr12", "chr13", "chr14", "chr15",
+    "chr16", "chr17", "chr18", "chr19", "chr20",
+    "chr21", "chr22", "chr23", "chrX", "chrY"])
 flt_unit.IntValueUnit(LEGEND_AJson, "chr_start", "/start")
 flt_unit.IntValueUnit(LEGEND_AJson, "chr_end", "/end")
 

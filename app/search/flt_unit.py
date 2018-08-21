@@ -49,6 +49,14 @@ class FilterUnit:
         for extr_h in self.iterExtractors():
             extr_h.extract(obj, record)
 
+    @staticmethod
+    def _prepareIdxSet(base_variants, variants):
+        idx_set = set()
+        for var in variants:
+            if var in base_variants:
+                idx_set.add(base_variants.index(var))
+        return idx_set
+
 #===============================================
 class IntValueUnit(FilterUnit):
     def __init__(self, legend, name, path,
@@ -58,8 +66,9 @@ class IntValueUnit(FilterUnit):
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
-    def getColumn(self):
-        return self.mExtractor.getDataP()
+    def recordCritFunc(self, cmp_func):
+        col = self.mExtractor.getDataP()
+        return lambda data_rec: cmp_func(col.recordValue(data_rec))
 
     def iterExtractors(self):
         yield self.mExtractor
@@ -80,8 +89,9 @@ class FloatValueUnit(FilterUnit):
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
 
-    def getColumn(self):
-        return self.mExtractor.getDataP()
+    def recordCritFunc(self, cmp_func):
+        col = self.mExtractor.getDataP()
+        return lambda data_rec: cmp_func(col.recordValue(data_rec))
 
     def iterExtractors(self):
         yield self.mExtractor
@@ -106,6 +116,13 @@ class StatusUnit(FilterUnit):
     def iterExtractors(self):
         yield self.mExtractor
 
+    def recordCritFunc(self, enum_func, variants):
+        col = self.mExtractor.getDataP()
+        idx_set = self._prepareIdxSet(
+            self.mExtractor.getVConv().getVariants(), variants)
+        check_func = enum_func(idx_set)
+        return lambda data_rec: check_func({col.recordValue(data_rec)})
+
     def collectStatJSon(self, data_records):
         col = self.mExtractor.getDataP()
         stat = self.mExtractor.getVConv().newStat()
@@ -126,6 +143,19 @@ class PresenceUnit(FilterUnit):
 
     def iterExtractors(self):
         return iter(self.mExtractors)
+
+    def _recordValues(self, data_rec):
+        ret = set()
+        for idx, extr in enumerate(self.mExtractors):
+            if extr.getDataP().recordValue(data_rec):
+                ret.add(idx)
+        return ret
+
+    def recordCritFunc(self, enum_func, variants):
+        idx_set = self._prepareIdxSet(
+            [extr.getName() for extr in self.mExtractors], variants)
+        check_func = enum_func(idx_set)
+        return lambda data_rec: check_func(self.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
         variants = []
@@ -153,6 +183,16 @@ class MultiStatusUnit(FilterUnit):
 
     def iterExtractors(self):
         return iter(self.mExtractors)
+
+    def recordCritFunc(self, enum_func, variants):
+        datap = self.mExtractors[0].getDataP()
+        idx_set = self._prepareIdxSet(
+            self.mExtractors[0].getVConv().getVariants(), variants)
+        check_func = enum_func(idx_set)
+        if datap.isAtomic():
+            return lambda data_rec: check_func(
+                set(datap.getSetByIdx(datap.recordValue(data_rec))))
+        return lambda data_rec: check_func(datap.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
         col = self.mExtractors[0].getDataP()

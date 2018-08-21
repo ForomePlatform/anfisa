@@ -78,15 +78,15 @@ def formTopPage(output, title, html_base, data_set_name, data_set_names):
                 <div id="cur-crit-enum-mode">
                   <span id="crit-mode-and-span">
                     <input id="crit-mode-and" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mod-and\');"/>AND
+                      onchange="checkCurCrit(\'mode-and\');"/>AND
                   </span><br/>
                   <span id="crit-mode-only-span">
                     <input id="crit-mode-only" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mod-only\');"/>ONLY
+                      onchange="checkCurCrit(\'mode-only\');"/>ONLY
                   </span><br/>
                   <span id="crit-mode-not-span">
                     <input id="crit-mode-not" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mod-not\');"/>NOT
+                      onchange="checkCurCrit(\'mode-not\');"/>NOT
                   </span><br/>
                 </div>
               </div>
