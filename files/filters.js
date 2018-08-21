@@ -1,23 +1,3 @@
-/*
-# Unit functions
-#  - setup(): setup div inner html
-#  - update(data): setup values of contols 
-#  - check(): criterium is good/bad/none 
-#  
-#=====================
-# IntValueUnit
-# FloatValueUnit
-#   * min / max
-#   * count, count_undef
-#   Criterium: cr_min, cr_max, keep_undef
-# StatusUnit
-# PresenceUnit
-# MultiStatusUnit
-#   Static: list of values
-#   * [counts]
-#   Criterium: (set of no), OR/AND
-#=====================*/
-
 var sCurFilter = [];
 var sFilterHistory = [];
 var sFilterRedoStack = [];
