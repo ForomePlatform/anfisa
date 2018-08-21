@@ -575,7 +575,6 @@ function filterDeleteCrit() {
         sCurFilter = sCurFilter.slice();
         sCurFilter.splice(sCurCritNo, 1);
         sFilterRedoStack = [];
-        filterModOff();
         loadList();
     }
 }
@@ -584,7 +583,6 @@ function filterUndoCrit() {
     if (sFilterHistory.length > 0) {
         sFilterRedoStack.push(sCurFilter);
         sCurFilter = sFilterHistory.pop();
-        filterModOff();
         loadList();
     }        
 }
@@ -593,7 +591,6 @@ function filterRedoCrit() {
     if (sFilterRedoStack.length > 0) {
         sFilterHistory.push(sCurFilter);
         sCurFilter = sFilterRedoStack.pop();
-        filterModOff();
         loadList();
     }            
 }

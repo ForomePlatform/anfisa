@@ -9,7 +9,7 @@ class BoolStat:
         return sum(self.mStat.values()) > 0
 
     def regValue(self, val):
-        self.mStat[val] += 1
+        self.mStat[not not val] += 1
 
     def report(self, rep_out):
         print >> rep_out, (

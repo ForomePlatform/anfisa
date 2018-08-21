@@ -155,7 +155,7 @@ class PresenceUnit(FilterUnit):
         idx_set = self._prepareIdxSet(
             [extr.getName() for extr in self.mExtractors], variants)
         check_func = enum_func(idx_set)
-        return lambda data_rec: check_func(self.recordValues(data_rec))
+        return lambda data_rec: check_func(self._recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
         variants = []
