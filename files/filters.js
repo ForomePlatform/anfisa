@@ -28,6 +28,7 @@ var sCurCritNo = null;
 
 var sOpMode = null;
 var sOpNumericInfo = null;
+var sOpEnumList = null;
 var sOpEnumMode = null;
 var sOpCriterium = null;
 var sOpError = null;
@@ -39,6 +40,7 @@ var sDivCurCritNumeric  = null;
 var sDivCurCritEnum     = null;
 var sDivCurCritText     = null;
 var sDivCritList        = null;
+var sDivOpEnumList      = null;
 
 var sBtnAddCrit    = null;
 var sBtnUpdateCrit = null; 
@@ -71,6 +73,7 @@ function initFilters() {
     sDivCurCritEnum     = document.getElementById("cur-crit-enum");
     sDivCurCritText     = document.getElementById("filter-cur-crit-text");
     sDivCritList        = document.getElementById("crit-list");
+    sDivOpEnumList      = document.getElementById("op-enum-list");
     
     sBtnAddCrit    = document.getElementById("filter-add-crit"); 
     sBtnUpdateCrit = document.getElementById("filter-update-crit"); 
@@ -86,17 +89,17 @@ function initFilters() {
     sSpanCurCritSign        = document.getElementById("crit-sign");
     sSpanCurCritUndefCount  = document.getElementById("crit-undef-count");
 
-    sSpanCurCritModOnly     = document.getElementById("crit-mod-only-span");
-    sSpanCurCritModAnd      = document.getElementById("crit-mod-and-span");
-    sSpanCurCritModNot      = document.getElementById("crit-mod-not-span");
+    sSpanCurCritModOnly     = document.getElementById("crit-mode-only-span");
+    sSpanCurCritModAnd      = document.getElementById("crit-mode-and-span");
+    sSpanCurCritModNot      = document.getElementById("crit-mode-not-span");
     
     sInputCurCritMin        = document.getElementById("crit-min-inp");
     sInputCurCritMax        = document.getElementById("crit-max-inp");
     sCheckCurCritUndef      = document.getElementById("crit-undef-check");
 
-    sCheckCurCritModOnly    = document.getElementById("crit-mod-only");
-    sCheckCurCritModAnd     = document.getElementById("crit-mod-and");
-    sCheckCurCritModNot     = document.getElementById("crit-mod-not");
+    sCheckCurCritModOnly    = document.getElementById("crit-mode-only");
+    sCheckCurCritModAnd     = document.getElementById("crit-mode-and");
+    sCheckCurCritModNot     = document.getElementById("crit-mode-not");
 }
 
 /*************************************/
@@ -222,8 +225,10 @@ function findCrit(unit_name, mode) {
 /*************************************/
 function setupStatUnit() {
     sOpMode = null;
+    sOpEnumMode = null;
     sOpNumericInfo = null;
     sOpCriterium = null;
+    sOpEnumList = null;
     sOpError = null;
     sOpAddIdx = null;
     sOpUpdateIdx = null;
@@ -260,6 +265,23 @@ function setupStatUnit() {
             ("undefined:" + cnt_undef) : "";        
     } else {
         sOpMode = "enum";
+        sOpEnumMode = unit_type;
+        sOpEnumList = unit_stat[2];
+        list_val_rep = [];
+        for (j = 0; j < sOpEnumList.length; j++) {
+            var_name = sOpEnumList[j][0];
+            var_count = sOpEnumList[j][1];
+            if (var_count == 0)
+                continue;
+            list_val_rep.push('<div id="el--' + j + '" class="enum-val">' +
+                '<input id="elcheck--' + j + '" type="checkbox" ' + 
+                'onchange="checkCurCrit(\'enum-'+ j + '\');"/>&emsp;' + var_name + 
+                '<span class="enum-cnt">(' + var_count + ')</span></div>');
+        }
+        sDivOpEnumList.innerHTML = list_val_rep.join('\n');
+        sCheckCurCritModAnd.checked = false;
+        sCheckCurCritModOnly.checked = false;
+        sCheckCurCritModNot.checked = false;
     }
     updateCurCritCtrl();
 }
@@ -276,6 +298,13 @@ function updateCurCritCtrl() {
         (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
     sSpanCurCritUndefCount.style.visibility = 
         (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
+
+    sSpanCurCritModAnd.style.visibility = 
+        (sOpEnumMode == "presence" || sOpEnumMode == "enum")? "visible":"hidden";
+    sSpanCurCritModOnly.style.visibility = 
+        (sOpEnumMode == "presence" || sOpEnumMode == "enum")? "visible":"hidden";
+    sSpanCurCritModNot.style.visibility = 
+        (sOpEnumMode == "presence" || sOpEnumMode == "enum")? "visible":"hidden";
         
     sBtnAddCrit.disabled  = (sOpAddIdx == null);
     sBtnUpdateCrit.disabled  = (sOpUpdateIdx == null); 
@@ -413,6 +442,7 @@ function checkNumericOpMax() {
         }
     }
 }
+
 function getCritDescripton(crit, short_form) {
     if (crit != null && crit[0] == "numeric") {
         rep_crit = [sOpCriterium[1]];
