@@ -422,7 +422,7 @@ class Variant:
 
     def is_proband_has_variant(self):
         genotype = self.vcf_record.genotype(self.get_proband()).gt_bases
-        set1 = set(genotype.split['/'])
+        set1 = set(genotype.split('/'))
         set2 = set(self.alt_list())
         if (set1 & set2):
             return True
