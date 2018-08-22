@@ -1,6 +1,8 @@
 #import sys
 import json, codecs, logging, random
 from StringIO import StringIO
+from xml.sax.saxutils import escape
+
 from .data_set import DataSet, DataRecord
 from .form_tab import formAspectTable
 from .cfg_a_json import CONFIG_AJson
@@ -111,7 +113,7 @@ class DataRecord_AJson(DataRecord):
     def getID(self):
         return self.mObj[self.sMainKey]
 
-    def reportIt(self, output):
+    def reportIt(self, output, hot_data):
         print >> output, '<div class="r-tab">'
         for aspect in (CONFIG_AJson["view_tabs"]):
             if aspect.isIgnored():
@@ -120,6 +122,11 @@ class DataRecord_AJson(DataRecord):
                 'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
                 (aspect.getAspectKind(), aspect.getName(),
                 aspect.getName(), aspect.getTitle()))
+        if hot_data is not None:
+            asp_kind, asp_name, asp_title = "tech", "hot_data", "Hot<br/>Data"
+            print >> output, ('<button class="r-tablnk %s" id="la--%s" '
+                'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
+                (asp_kind, asp_name, asp_name, asp_title))
         print >> output, '</div>'
 
         print >> output, '<div id="r-cnt-container">'
@@ -133,6 +140,11 @@ class DataRecord_AJson(DataRecord):
             else:
                 formAspectTable(output, aspect, self.mObj)
             print >> output, '</div>'
+        if hot_data is not None:
+            print >> output, ('<div id="a--%s" class="r-tabcnt">' % asp_name)
+            self.reportHotData(output, hot_data)
+            print >> output, '</div>'
+
         print >> output, '</div>'
 
     def reportInput(self, output):
@@ -170,3 +182,12 @@ class DataRecord_AJson(DataRecord):
         if collect_str:
             print >> output, collect_str[1:]
             collect_str = ""
+
+    def reportHotData(self, output, hot_data):
+        print >> output, '<table id="rec-hot_data">'
+        for data_name, data_value in hot_data:
+            print >> output, (
+                '<tr><td class="title">%s</td>' % escape(data_name))
+            print >> output, (
+                '<td class="norm">%s</td></tr>' % ["no", "yes"][data_value])
+        print >> output, '</table>'

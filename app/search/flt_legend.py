@@ -1,16 +1,17 @@
 #import sys
 from .path_works import AttrFuncPool
-
+from .hot_eval_supp import HotEvalUnit
 #===============================================
 class FilterLegend:
-    def __init__(self, name):
+    def __init__(self, name, hot_list):
         self.mName     = name
         self.mFuncPool = AttrFuncPool()
         self.mColumns  = []
         self.mColDict  = dict()
-        self.mUnits    = []
         self.mUnitDict = dict()
         self.mIsOK     = False
+        self.mUnits    = []
+        HotEvalUnit(self, hot_list)
 
     def _regColumnHandler(self, col_h):
         assert col_h.getName() not in self.mColDict
@@ -60,6 +61,7 @@ class FilterLegend:
     def fillRecord(self, obj, record):
         for unit in self.mUnits:
             unit.fillRecord(obj, record)
+        self.mUnits[0].fillHotPart(obj, record)
 
     def setup(self, rep_out):
         self.mIsOK = True
@@ -75,3 +77,4 @@ class FilterLegend:
     def collectStatJSon(self, data_records):
         return [unit.collectStatJSon(data_records)
             for unit in self.mUnits]
+

@@ -46,3 +46,7 @@ class AnfisaData:
     @classmethod
     def getSetNames(cls):
         return cls.sSets.keys()
+
+    @classmethod
+    def getRecHotData(cls, set_name, rec_no):
+        return cls.sFilters[set_name].getRecHotData(rec_no)
