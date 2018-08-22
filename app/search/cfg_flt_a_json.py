@@ -60,8 +60,17 @@ flt_unit.StatusUnit(LEGEND_AJson, "most_severe_consequence",
 flt_unit.MultiStatusUnit(LEGEND_AJson, "genes",
     "/view.general/Gene(s)[]", compact_mode = True)
 
-flt_unit.StatusUnit(LEGEND_AJson, "proband_genotype",
-    "/view.general/Proband Genotype", default_value = "undef")
+flt_unit.StatusUnit(LEGEND_AJson, "Proband_has_Variant",
+    "/_filters.Proband_has_Variant")
+
+flt_unit.StatusUnit(LEGEND_AJson, "Proband GQ",
+    "/_filters.Proband_GQ")
+
+flt_unit.StatusUnit(LEGEND_AJson, "Min GQ",
+    "/_filters.Min_GQ")
+
+flt_unit.StatusUnit(LEGEND_AJson, "Rare Variant",
+    "/_filters.RareVariantFilter")
 
 flt_unit.FloatValueUnit(LEGEND_AJson, "gnomAD_AF",
     "/view.gnomAD/AF", diap = (0., 1.), default_value = 0.,

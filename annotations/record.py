@@ -19,6 +19,32 @@ def hgvcs_pos(str, type, with_pattern = True):
     if (not pattern in str):
         return None
     x = str.split(pattern)[1]
+    if (type == 'p'):
+        x1 = []
+        x2 = []
+        x3 = []
+        state = 0
+        for c in x:
+            if (state == 0):
+                x1.append(c)
+                state = 1
+                continue
+            elif (state == 1):
+                if (c.isalpha()):
+                    continue
+                state = 2
+            if (state == 2):
+                if (c.isdigit()):
+                    x2.append(c)
+                    continue
+                state = 3
+            if (state == 3):
+                x3.append(c)
+                state = 4
+            else:
+                break
+        x = ''.join(x1 + x2 + x3)
+
     if (with_pattern):
         return "{}{}".format(pattern[1:], x)
     return x
@@ -56,11 +82,15 @@ def get_distance_hgvsc(hgvsc):
     return d
 
 class Variant:
-    consequences = [
+    csq_damaging = [
         "frameshift_variant",
         "inframe_insertion",
-        "inframe_deletion",
-        "missense_variant",
+        "inframe_deletion"
+    ]
+    csq_missense = [
+        "missense_variant"
+    ]
+    csq_benign = [
         "splice_region_variant",
         "synonymous_variant",
         "5_prime_UTR_variant",
@@ -68,6 +98,7 @@ class Variant:
         "non_coding_transcript_exon_variant",
         "intron_variant"
     ]
+    consequences = csq_damaging + csq_missense + csq_benign
 
     def __init__(self, json_string, vcf_header = None, case = None, samples = None, gnomAD_connection = None,
                  HGMD_connector = None):
@@ -101,7 +132,7 @@ class Variant:
             self.data["_private.HGMD_phenotypes"] = phenotypes
             self.data["_private.HGMD_PIMIDs"] = pmids
 
-        self.data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else None
+        self.data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
@@ -402,6 +433,12 @@ class Variant:
         elif (best or worst):
             code = 'yellow'
 
+        csq = self.get_msq()
+        if (csq in self.csq_damaging):
+            code = 'red-cross'
+        elif (csq in self.csq_missense):
+            code = 'yellow-cross'
+
         return code
 
     def get_pLI(self):
@@ -422,6 +459,8 @@ class Variant:
 
     def is_proband_has_variant(self):
         genotype = self.vcf_record.genotype(self.get_proband()).gt_bases
+        if (not genotype):
+            return False
         set1 = set(genotype.split('/'))
         set2 = set(self.alt_list())
         if (set1 & set2):
