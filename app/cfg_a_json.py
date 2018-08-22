@@ -116,11 +116,11 @@ Aspect_TechMainData = AspectH("_main", "VEP<br/>Data", json_container = None,
         AttrH("most_severe_consequence"),
         AttrH("ClinVar"),
         AttrH("HGMD"),
-        AttrH("HGMD_PIMIDs", "json", is_seq = True),
-        AttrH("HGMD_phenotypes", "json", is_seq = True),
+        AttrH("_private.HGMD_PIMIDs", "json", is_seq = True),
+        AttrH("_private.HGMD_phenotypes", "json", is_seq = True),
         AttrH("EXPECTED"),
-        AttrH("gnomad_db_genomes_af"),
-        AttrH("gnomad_db_exomes_af"),
+        AttrH("_private.gnomad_db_genomes_af"),
+        AttrH("_private._private.gnomad_db_exomes_af"),
         AttrH("SEQaBOO")], kind = "tech")
 
 #===============================================

@@ -93,13 +93,18 @@ class Variant:
                 af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
                 em_af = min(em_af, af) if em_af else af
 
-            self.data["gnomad_db_exomes_af"] = em_af
-            self.data["gnomad_db_genomes_af"] = gm_af
+            self.data["_private.gnomad_db_exomes_af"] = em_af
+            self.data["_private.gnomad_db_genomes_af"] = gm_af
 
         if (HGMD_connector):
             (phenotypes, pmids) = HGMD_connector.get_data(self.chr_num(), self.start(), self.end())
-            self.data["HGMD_phenotypes"] = phenotypes
-            self.data["HGMD_PIMIDs"] = pmids
+            self.data["_private.HGMD_phenotypes"] = phenotypes
+            self.data["_private.HGMD_PIMIDs"] = pmids
+
+        self.data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else None
+        self.data['_filters.Min_GQ'] = self.get_min_GQ()
+        self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
+        self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
 
 
     def same(self,c, p1, p2 = None):
@@ -322,7 +327,7 @@ class Variant:
                 af = af1
 
         if (not af):
-            af = self.data.get("gnomad_db_{}_af".format(exomes_or_genomes))
+            af = self.data.get("_private.gnomad_db_{}_af".format(exomes_or_genomes))
 
         return af
 
@@ -404,6 +409,24 @@ class Variant:
         if (len(list) > 0):
             return list
         return None
+
+    def get_proband_GQ(self):
+        return self.vcf_record.genotype(self.get_proband()).data.GQ
+
+    def get_min_GQ(self):
+        GQ = None
+        for s in self.samples:
+            genotype = self.vcf_record.genotype(s)
+            GQ = min(genotype.data.GQ, GQ) if GQ else genotype.data.GQ
+        return GQ
+
+    def is_proband_has_variant(self):
+        genotype = self.vcf_record.genotype(self.get_proband()).gt_bases
+        set1 = set(genotype.split['/'])
+        set2 = set(self.alt_list())
+        if (set1 & set2):
+            return True
+        return False
 
     def get_view_json(self):
         data = self.data.copy()
@@ -510,9 +533,9 @@ class Variant:
         tab4["pLI"] = self.get_pLI()
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
-        pmids = self.data.get("HGMD_PIMIDs")
+        pmids = self.data.get("_private.HGMD_PIMIDs")
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
-        phenotypes = self.data.get("HGMD_phenotypes")
+        phenotypes = self.data.get("_private.HGMD_phenotypes")
         tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
         if (self.data.get("ClinVar") <> None):

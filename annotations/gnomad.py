@@ -42,7 +42,7 @@ class GnomAD:
         else:
             rows = []
 
-        if ('e' in from_what):
+        if ('g' in from_what):
             c = self.connection_to_genomes.cursor()
             rows += [row for row in c.execute(sql, args)]
             c.close()
@@ -58,7 +58,7 @@ class GnomAD:
 
 
     def get_af(self, chr, pos, ref, alt, from_what = 'e,g'):
-        rows = self.get_data(chr, pos, None, None)
+        rows = self.get_data(chr, pos, None, None, from_what)
         if (len(rows) == 0):
             return None
 
