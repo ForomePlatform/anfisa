@@ -85,6 +85,9 @@ class AttrH:
     def isSeq(self):
         return self.mIsSeq
 
+    def getKind(self):
+        return self.mKind
+
     def _feedAttrPath(self, path, registry):
         if self.mName is None:
             self.mPath = "None"
@@ -97,7 +100,7 @@ class AttrH:
         registry.add(a_path)
         if self.mIsSeq:
             registry.add(a_path + "[]")
-        if self.mKind == "json":
+        if self.mKind in ("json", "hidden"):
             registry.add(a_path + "*")
             return
 
