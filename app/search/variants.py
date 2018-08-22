@@ -26,10 +26,7 @@ class VariantSet:
         return idx_set
 
     def makeStringSet(self, idx_set):
-        ret = {self.mVarDict.get(pos) for pos in idx_set}
-        if None in ret:
-            ret.remove(None)
-        return ret
+        return {self.mVariants[pos] for pos in idx_set}
 
     def indexOf(self, variant):
         return self.mVarDict.get(variant)
