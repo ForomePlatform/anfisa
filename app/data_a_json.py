@@ -17,7 +17,7 @@ SAMPLE_LIST_SIZE = 100
 class DataSet_AJson(DataSet):
     sMainKey = CONFIG_AJson["main_key"]
     sColorCode = CONFIG_AJson["color_code"]
-    sColors = {"red", "yellow", "green"}
+    sColors = {"red", "ref-cross", "yellow", "yellow-cross", "green"}
     sDefaultColor = "grey"
 
     def __init__(self, name, fname):

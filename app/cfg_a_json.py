@@ -252,6 +252,6 @@ CONFIG_AJson = {
         Aspect_Genetics, Aspect_Inheritance,
         Aspect_Consequences, Aspect_ColocatedVars,
         Aspect_TechMainData, Aspect_VCF],
-    "attrs_to_ignore": ["/view", "/_no"],
+    "attrs_to_ignore": ["/view"],
     "color_code": "color_code"
 }
