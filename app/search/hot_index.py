@@ -94,3 +94,7 @@ class HotIndex:
         ret = self.mDataSet.makeJSonReport(sorted(rec_no_seq))
         ret["stats"] = self._makeStat(rec_no_seq)
         return ret
+
+    def getRecHotData(self, rec_no):
+        return self.mLegend.getUnit("hot").getTabData(
+            self.mRecords[rec_no])

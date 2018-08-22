@@ -84,14 +84,16 @@ class AnfisaService:
     def formRec(self, rq_args):
         output = StringIO()
         data_set = AnfisaData.getSet(rq_args.get("data"))
-        record = data_set.getRecord(rq_args.get("rec"))
+        rec_no = int(rq_args.get("rec"))
+        record = data_set.getRecord(rec_no)
         print >> output, HTML_Setup.START
         print >> output, '<html>'
         self._formHtmlHead(output,
             css_files = ["a_rec.css"], js_files = ["a_rec.js"])
         print >> output, ('<body onload="init_r(\'%s\');">' %
             data_set.getFirstAspectID())
-        record.reportIt(output)
+        record.reportIt(output, AnfisaData.getRecHotData(
+            data_set.getName(), rec_no))
         print >> output, '</body>'
         print >> output, '</html>'
         return output.getvalue()

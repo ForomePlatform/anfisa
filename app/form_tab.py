@@ -37,6 +37,8 @@ def formAspectTable(output, aspect, rec_obj):
     for attr in aspect.getAttrs():
         if attr.getName() is None:
             continue
+        if attr.getKind() == "hidden":
+            continue
         values = [attr.getHtmlRepr(obj) for obj in objects]
         if not all([vv == ('-', "none") for vv in values]):
             fld_data[attr.getName()] = values

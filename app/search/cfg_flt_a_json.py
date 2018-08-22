@@ -1,9 +1,10 @@
 from .flt_legend import FilterLegend
 from .chunker import AttrChunker
+from .hot_eval import HOT_LIST
 import flt_unit
 
 #===============================================
-LEGEND_AJson = FilterLegend("AJson")
+LEGEND_AJson = FilterLegend("AJson", HOT_LIST)
 
 flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
