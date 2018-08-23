@@ -615,8 +615,13 @@ class Variant:
         q_all['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
         q_all['Mapping Quality'] = self.vcf_record.INFO["MQ"]
         q_all['Variant Call Quality'] = self.vcf_record.QUAL
+
         q_all['Quality by Depth'] = self.vcf_record.INFO.get("QD")
+        data['_filters.QD'] = self.vcf_record.INFO.get("QD")
         q_all['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
+        data['_filters.FS'] = self.vcf_record.INFO.get("FS")
+
+
         tab2.append(q_all)
 
         for s in self.samples:

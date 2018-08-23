@@ -69,11 +69,11 @@ flt_unit.IntValueUnit(LEGEND_AJson, "Proband GQ",
 flt_unit.IntValueUnit(LEGEND_AJson, "Min GQ",
     "/_filters.Min_GQ", default_value = "undefined")
 
-flt_unit.IntValueUnit(LEGEND_AJson, "DP",
-    "/view.Quality/Quality by Depth", default_value = "undefined")
+flt_unit.IntValueUnit(LEGEND_AJson, "QD",
+    "/_filters.QD", default_value = "undefined")
 
 flt_unit.IntValueUnit(LEGEND_AJson, "FS",
-    "/view.Quality/Fisher Strand Bias", default_value = "undefined")
+    "/_filters.FS", default_value = "undefined")
 
 flt_unit.StatusUnit(LEGEND_AJson, "Rare Variant",
     "/_filters.RareVariantFilter")
