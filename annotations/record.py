@@ -166,7 +166,6 @@ class Variant:
             self.data["_private.HGMD_phenotypes"] = phenotypes
             self.data["_private.HGMD_PIMIDs"] = pmids
 
-        self.data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
@@ -547,6 +546,7 @@ class Variant:
 
     def get_view_json(self):
         data = self.data.copy()
+        data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
         data['label'] = self.get_label()
         data['color_code'] = self.get_color_code()
         view = dict()
