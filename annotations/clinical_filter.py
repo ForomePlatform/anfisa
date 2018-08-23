@@ -60,6 +60,8 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     output3 = out.format("true_pos")
     gnomAD = GnomAD()
 
+    csq_set = set()
+
     with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3, HGMD() as hgmd:
         while(True):
             line = input.readline()
@@ -70,6 +72,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             if (n%10 == 0):
                 print n
             info = {}
+            csq_set.add(v.get_msq())
             if (not clinical_filter.accept(v, info)):
                 ## continue
                 pass
@@ -131,8 +134,8 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             # if (msq in ["frameshift_variant", "missense_variant"] and key == 'Singleton'):
             #     print "{}: {}, {}:{}".format(v.get('id'), msq, v.get("seq_region_name"), v.get('start'))
 
-
     print "{}: {}/{}/{}".format(n, n_accepted, n1, n2)
+    print csq_set
 
     format = "{:40} "
     for key in KEYs:
