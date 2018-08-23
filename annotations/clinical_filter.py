@@ -1,4 +1,5 @@
 import os
+import sys
 
 from annotations import filters, case_utils, data_path
 from annotations.gnomad import GnomAD
@@ -45,7 +46,7 @@ class Filter:
         return ok
 
 
-def process_file(f, out = None, vcf_header = None, samples = None, expected = None, case = None):
+def process_file(f, out = None, vcf_header = None, samples = None, expected = None, case = None, limit = None):
     n = 0
     n_accepted = 0
     n1 = 0
@@ -125,6 +126,8 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             elif (v.data.get("EXPECTED") and v.data.get("SEQaBOO")):
                 out3.write(v.get_view_json() + '\n')
 
+            if (limit and n >= limit):
+                break
             # if (msq in ["frameshift_variant", "missense_variant"] and key == 'Singleton'):
             #     print "{}: {}, {}:{}".format(v.get('id'), msq, v.get("seq_region_name"), v.get('start'))
 
@@ -148,6 +151,8 @@ if __name__ == '__main__':
     expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
     fam_file = "{}.fam".format(case)
     filtered_by_bed_vep_output = "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
+    limit = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    print "limit = {}".format(limit)
 
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
     with open (header_file) as vcf:
@@ -170,4 +175,4 @@ if __name__ == '__main__':
         output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
     process_file(filtered_by_bed_vep_output, out=output,
-                     vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case))
+                     vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case), limit =limit)

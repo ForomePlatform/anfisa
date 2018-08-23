@@ -7,8 +7,13 @@ def link_to_pmid(pmid):
     return "https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pmid)
 
 
-def unique(list):
-    s = set(list)
+def unique(lst):
+    s = set()
+    for element in lst:
+        if (isinstance(element, list)):
+            s.update(element)
+        else:
+            s.add(element)
     s.discard(None)
     list2 = []
     list2.extend(s)
@@ -81,6 +86,17 @@ def get_distance_hgvsc(hgvsc):
                 d = p2
     return d
 
+## TO-DO:
+## Remove CALLED_BY and CMPD-HET
+## Beside Worst Annotation add canonical annotation
+## cPos: break into worst/canonical/rest
+## gnomAD AF: CLCNKB, 0.003*??
+## Move pLI to gnomAD
+## No popmax?
+## Explore SPlicing, add MaxEntTool
+## HGMD put "NO"
+## Add LoFTool
+
 class Variant:
     csq_damaging = [
         "frameshift_variant",
@@ -99,6 +115,13 @@ class Variant:
         "intron_variant"
     ]
     consequences = csq_damaging + csq_missense + csq_benign
+
+    @classmethod
+    def most_severe(cls, csq):
+        for i in range(0, len(cls.consequences)):
+            if (cls.consequences[i] in csq):
+                return cls.consequences[i]
+        return None
 
     def __init__(self, json_string, vcf_header = None, case = None, samples = None, gnomAD_connection = None,
                  HGMD_connector = None):
@@ -227,7 +250,24 @@ class Variant:
                 raise Exception("Inconsistent values for {} in transcripts: {} != {} in self.data {}".
                                 format(key, value, v, str(self)))
             return value
-    
+
+    def get_max_ent(self):
+        transcripts = self.get_transcripts()
+        x = set()
+        for transcript in transcripts:
+            m1 = transcript.get("maxentscan_ref")
+            m2 = transcript.get("maxentscan_alt")
+            m3 = transcript.get("maxentscan_diff")
+            if (m1 and m2 and m3):
+                v = "{}={}-{}".format(m3, m1, m2)
+                x.add(v)
+        if (x):
+            ret = []
+            ret.extend(x)
+            return ret
+        else:
+            return None
+
     def get_most_severe_transcripts(self):
         msq = self.get_msq()
         return [t for t in self.get_transcripts() if (msq in t.get("consequence_terms"))]
@@ -271,6 +311,20 @@ class Variant:
         pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
         return pos_list
 
+    def get_pos_tpl(self, type):
+        c_worst = self.get_pos(type, "worst")
+        c_canonical = self.get_pos(type, "canonical")
+        ss = set()
+        if (c_worst):
+            ss.update(c_worst)
+        if (c_canonical):
+            ss.update(c_canonical)
+        c_other = self.get_pos(type)
+        if (c_other):
+            ss = ss - set(c_other)
+            c_other = [].extend(ss)
+        return (c_worst, c_canonical, c_other)
+
     def get_distance_from_exon(self, kind):
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
 
@@ -295,6 +349,14 @@ class Variant:
                 else:
                     raise Exception("Unrecognized key: {}".format(key))
                 ancestries[a] = tpl
+            if (v.has_key("frequencies")):
+                array = v["frequencies"]
+                for allele in array:
+                    frequencies = array[allele]
+                    for a in frequencies:
+                        f = float(frequencies[a])
+                        ancestries[a] = (allele, f)
+
 
         pop_max_a_1 = None
         pop_max_f_1 = None
@@ -319,6 +381,8 @@ class Variant:
         gm_af = None
         alt_alleles = set(self.alt_list())
         collocated_variants = self.get_colocated_variants()
+        # if (self.start() == 16378047):
+        #     pass
         for v in collocated_variants:
             alts = set(v.get("allele_string").split('/')[1:])
             if (not alts.intersection(alt_alleles)):
@@ -433,6 +497,9 @@ class Variant:
         elif (best or worst):
             code = 'yellow'
 
+        if (code):
+            return code
+
         csq = self.get_msq()
         if (csq in self.csq_damaging):
             code = 'red-cross'
@@ -492,13 +559,27 @@ class Variant:
         callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
                    'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
         tab1['Called by'] = [caller for caller in callers if (self.vcf_record.INFO.has_key(caller))]
-        tab1['cPos'] = self.get_pos('c')
-        tab1['pPos'] = self.get_pos('p')
+
+        (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
+        tab1['cPos (Worst)'] = c_worst
+        tab1['cPos (Canonical)'] = c_canonical
+        tab1['cPos (Other)'] = c_other
+
+        (c_worst,  c_canonical, c_other) = self.get_pos_tpl('p')
+        tab1['pPos (Worst)'] = c_worst
+        tab1['pPos (Canonical)'] = c_canonical
+        tab1['pPos (Other)'] = c_other
+
         tab1['Proband Genotype'] = proband_genotype.gt_bases
         tab1['Maternal Genotype'] = self.vcf_record.genotype(mother).gt_bases
         tab1['Paternal Genotype'] = self.vcf_record.genotype(father).gt_bases
 
         tab1['Worst Annotation'] = self.get_msq()
+        consequence_terms = self.get_from_canonical_transcript("consequence_terms")
+        tab1['Canonical Annotation'] = self.most_severe(consequence_terms)
+
+        tab1["Splice Region"] = self.get_from_transcripts("spliceregion")
+        tab1["GeneSplicer"] = self.get_from_transcripts("genesplicer")
 
         transcripts = self.get_most_severe_transcripts()
         tab1['RefSeq Transcript (Worst)'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
@@ -548,6 +629,7 @@ class Variant:
             tab3 = dict()
             #view['gnomAD'] = tab3
             data["view.gnomAD"] = tab3
+            tab3["pLI"] = self.get_pLI()
             tab3["AF"] = self.get_gnomad_af()
             tab3["Genome AF"] = self.get_gnomad_split_af("genomes")
             tab3["Exome AF"] = self.get_gnomad_split_af("exomes")
@@ -569,9 +651,10 @@ class Variant:
         #view['Databases'] = tab4
         data["view.Databases"] = tab4
         tab4["OMIM"] = ""
-        tab4["pLI"] = self.get_pLI()
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
+        else:
+            tab4["HGMD"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("_private.HGMD_phenotypes")
@@ -586,6 +669,15 @@ class Variant:
         tab5 = dict()
         #view['Predictions'] = tab5
         data["view.Predictions"] = tab5
+        lof_score = self.get_from_transcripts("loftool")
+        lof_score.sort(reverse=True)
+        tab5["LoF Score"] = lof_score
+        lof_score = self.get_from_canonical_transcript("loftool")
+        lof_score.sort(reverse=True)
+        tab5["LoF Score (Canonical)"] = lof_score
+
+        tab5["MaxEntScan"] = self.get_max_ent()
+
         tab5['Polyphen'] = unique(self.get_from_transcripts_list("polyphen_prediction"))
         tab5['Polyphen 2 HVAR'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_pred".lower()))
         tab5['Polyphen 2 HDIV'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_pred".lower()))

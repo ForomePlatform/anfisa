@@ -186,6 +186,8 @@ class DataRecord_AJson(DataRecord):
     def reportHotData(self, output, hot_data):
         print >> output, '<table id="rec-hot_data">'
         for data_name, data_value in hot_data:
+            if (not data_value):
+                continue
             print >> output, (
                 '<tr><td class="title">%s</td>' % escape(data_name))
             print >> output, (
