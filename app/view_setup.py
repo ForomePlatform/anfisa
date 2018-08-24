@@ -1,4 +1,6 @@
-from .cfg_data import AspectH, AttrH, ColGroupH
+from view.aspect import AspectH
+from view.attr   import AttrH
+from view.colgrp import ColGroupH
 
 #===============================================
 Aspect_General = AspectH("view.general",     "General",
@@ -260,14 +262,44 @@ Aspect_VCF = AspectH("input", "VCF",
     kind = "tech")
 
 #===============================================
-CONFIG_AJson = {
-    "main_key": "label",
-    "view_tabs": [
+#===============================================
+class ViewSetup:
+    sTextMessages = {
+        "aspect.hot.title": "Hot<br/>Data" }
+
+    sConfigOptions = {
+        "main.key":         "label",
+        "color.code":       "color_code",
+        "aspect.hot.name":  "hot_data",
+        "attrs.to.ignore":  ["/view"],
+        "rand.seed":        179,
+        "rand.min.size":    100,
+        "rand.sample.size": 100}
+
+    @classmethod
+    def textMessage(cls, key):
+        return cls.sTextMessages[key]
+
+    @classmethod
+    def configOption(cls, key):
+        return cls.sConfigOptions[key]
+
+    @classmethod
+    def normalizeColorCode(cls, color_code):
+        if color_code in {"red", "red-cross",
+                "yellow", "yellow-cross", "green"}:
+            return color_code
+        return "grey"
+
+    sAspects = [
         Aspect_General, Aspect_Quality, Aspect_gnomAD,
         Aspect_Databases, Aspect_Predictions,
         Aspect_Genetics, Aspect_Inheritance,
         Aspect_Consequences, Aspect_ColocatedVars,
-        Aspect_TechMainData, Aspect_VCF],
-    "attrs_to_ignore": ["/view"],
-    "color_code": "color_code"
-}
+        Aspect_TechMainData, Aspect_VCF]
+
+    @classmethod
+    def getAspects(cls):
+        return cls.sAspects
+
+#===============================================

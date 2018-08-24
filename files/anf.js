@@ -37,7 +37,7 @@ function loadList() {
 function setupList(info) {
     sCurDataSet = info["data-set"]; 
     document.getElementById("data_set").value = sCurDataSet;
-    window.document.title = sTitlePrefix + ": " + sCurDataSet;
+    document.title = sTitlePrefix + ": " + sCurDataSet;
     var el = document.getElementById("list-report");
     var el_p = document.getElementById("list-rand-portion");
     var rep = "Records: <b>" + info["filtered"] + "<b>";
@@ -96,8 +96,8 @@ function changeRec(rec_idx) {
     sCurRecIdx = rec_idx;
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    document.getElementById("record").src = 
-        "rec?data=" + sCurDataSet + "&rec=" + sViewRecNoSeq[sCurRecIdx];
+    window.frames['record'].location.replace(
+        "rec?data=" + sCurDataSet + "&rec=" + sViewRecNoSeq[sCurRecIdx]);
 }
 
 function onKey(event_key) {

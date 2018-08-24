@@ -1,58 +1,6 @@
 import numbers, traceback, logging
 from StringIO import StringIO
 from xml.sax.saxutils import escape
-#===============================================
-class AspectH:
-    def __init__(self, name, title, json_container = False, attrs = None,
-            ignored = False, kind = None, col_groups = None):
-        self.mName     = name
-        self.mTitle    = title
-        self.mJsonContainer = (self.mName
-            if json_container is False else json_container)
-        self.mAttrs = (attrs if attrs else [])
-        self.mIgnored  = ignored
-        self.mKind = kind if kind else "norm"
-        self.mColGroups = col_groups
-
-    def getName(self):
-        return self.mName
-
-    def getTitle(self):
-        return self.mTitle
-
-    def getJsonContainer(self):
-        return self.mJsonContainer
-
-    def getAttrs(self):
-        return self.mAttrs
-
-    def getColGroups(self):
-        return self.mColGroups
-
-    def isIgnored(self):
-        return self.mIgnored
-
-    def getAspectKind(self):
-        return self.mKind
-
-    def _feedAttrPath(self, registry):
-        path = self.mJsonContainer
-        if path is None:
-            path = ""
-        else:
-            path = "/" + path
-            registry.add(path)
-        if self.mColGroups is not None:
-            for grp in self.mColGroups:
-                grp_path = path + '/' + grp.getAttr()
-                registry.add(grp_path)
-                grp_path += "[]"
-                registry.add(grp_path)
-                for attr in self.mAttrs:
-                    attr._feedAttrPath(grp_path, registry)
-        else:
-            for attr in self.mAttrs:
-                attr._feedAttrPath(path, registry)
 
 #===============================================
 def _not_empty(val):
@@ -61,6 +9,7 @@ def _not_empty(val):
 def _not_none(val):
     return val is not None
 
+#===============================================
 class AttrH:
     def __init__(self, name, kind = None, title = None,
             attrs = None, is_seq = False):
@@ -192,67 +141,3 @@ class AttrH:
         else:
             return self._htmlEscape(value)
 
-#===============================================
-class ColGroupH:
-    def __init__(self, attr, title):
-        self.mAttr  = attr
-        self.mTitle = title
-
-    def getAttr(self):
-        return self.mAttr
-
-    def getTitle(self):
-        return self.mTitle
-
-#===============================================
-class ObjectAttributeChecker:
-    def __init__(self, aspects, ignore_attrs):
-        self.mGoodAttrs = set()
-        self.mBadAttrs = set()
-        for attr in ignore_attrs:
-            self.mGoodAttrs.add(attr)
-        for asp in aspects:
-            asp._feedAttrPath(self.mGoodAttrs)
-
-    def checkObj(self, obj, path = ""):
-        if path and path not in self.mGoodAttrs:
-            self.mBadAttrs.add(path)
-            return
-        if obj is None:
-            return
-        if isinstance(obj, basestring) or isinstance(obj, numbers.Number):
-            return
-        elif isinstance(obj, dict):
-            for a_name, sub_obj in obj.items():
-                self.checkObj(sub_obj, path + '/' + a_name)
-        elif isinstance(obj, list):
-            for sub_obj in obj:
-                self.checkObj(sub_obj, path + "[]")
-        else:
-            logging.error("BAD:path=%s: %r" % (path, obj))
-            self.mBadAttrs.add(path + "?")
-
-    def finishUp(self):
-        if len(self.mBadAttrs) > 0:
-            good_path_heads = set()
-            for path in self.mGoodAttrs:
-                if path.endswith('*'):
-                    good_path_heads.add(path[:-1])
-            ign_path_set = set()
-            for bad_path in self.mBadAttrs:
-                if bad_path.startswith('/_'):
-                    ign_path_set.add(bad_path);
-                    continue
-                for path in good_path_heads:
-                    if (bad_path.startswith(path) and
-                            bad_path[len(path):][:1] in '/['):
-                        ign_path_set.add(bad_path)
-                        break
-            self.mBadAttrs -= ign_path_set
-        return len(self.mBadAttrs) == 0
-
-    def reportBadAttributes(self, output):
-        print >> output, ("Bad attribute path list(%d):" %
-            len(self.mBadAttrs))
-        for path in sorted(self.mBadAttrs):
-            print >> output, "\t%s" % path

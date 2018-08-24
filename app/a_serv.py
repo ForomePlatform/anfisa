@@ -2,7 +2,7 @@
 import json
 from StringIO import StringIO
 from .anf_data import AnfisaData
-from .html_top import formTopPage, emptyPage
+from view.gen_html import formTopPage, emptyPage
 
 #===============================================
 class HTML_Setup:

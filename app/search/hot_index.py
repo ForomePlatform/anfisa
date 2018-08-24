@@ -4,7 +4,7 @@ class HotIndex:
         self.mDataSet = data_set
         self.mLegend  = legend
         self.mRecords = []
-        for rec_no in range(self.mDataSet.getNRecords()):
+        for rec_no in range(self.mDataSet.getSize()):
             rec = self.mLegend.getColCount() * [None]
             self.mLegend.fillRecord(
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
@@ -86,7 +86,7 @@ class HotIndex:
         return self.mLegend.collectStatJSon(self._iterRecords(rec_no_seq))
 
     def makeJSonReport(self, filter_seq):
-        rec_no_seq = range(self.mDataSet.getNRecords())[:]
+        rec_no_seq = range(self.mDataSet.getSize())[:]
         for crit_info in filter_seq:
             rec_no_seq = self._applyCrit(rec_no_seq, crit_info)
             if len(rec_no_seq) == 0:

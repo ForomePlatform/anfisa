@@ -1,8 +1,9 @@
 import logging
 from StringIO import StringIO
 
-from .data_a_json import DataSet_AJson
-from search.cfg_flt_a_json import LEGEND_AJson
+from .view_setup import ViewSetup
+from view.dataset import DataSet
+from .search_setup import MainLegend
 from search.hot_index import HotIndex
 
 #===============================================
@@ -18,18 +19,19 @@ class AnfisaData:
             if cls.sDefaultSetName is None:
                 cls.sDefaultSetName = set_name
             if descr["kind"] == "a-json":
-                cls.sSets[set_name] = DataSet_AJson(set_name, descr["file"])
+                cls.sSets[set_name] = DataSet(
+                    ViewSetup, set_name, descr["file"])
             else:
                 assert False
         for data_set in cls.sSets.values():
-            data_set.testLegend(LEGEND_AJson)
+            data_set.testLegend(MainLegend)
         rep_out = StringIO()
-        LEGEND_AJson.setup(rep_out)
-        if not LEGEND_AJson.isOK():
+        MainLegend.setup(rep_out)
+        if not MainLegend.isOK():
             logging.fatal("FILTER LEGEND FAILED\n" + rep_out.gevalue())
         for name, data_set in cls.sSets.items():
-            cls.sFilters[name] = HotIndex(data_set, LEGEND_AJson)
-        logging.warning(LEGEND_AJson.getStatusInfo())
+            cls.sFilters[name] = HotIndex(data_set, MainLegend)
+        logging.warning(MainLegend.getStatusInfo())
 
     @classmethod
     def getSet(cls, set_name = None):

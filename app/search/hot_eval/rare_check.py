@@ -3,10 +3,10 @@ def evalRec(rec, af = 0.01, af_in_db = 0.05, gq = 20, fs = 30, qd = 4):
         return False
     if rec.Proband_GQ < gq:
         return False
-    if rec.FS > fs:
-        return False
-    if rec.QD < qd:
-        return False
+    #if rec.FS > fs:
+    #    return False
+    #if rec.QD < qd:
+    #    return False
     if rec.gnomAD_AF < af:
         return True
     if rec.gnomAD_AF < af_in_db:

@@ -1,24 +1,24 @@
-from .flt_legend import FilterLegend
-from .chunker import AttrChunker
-from .hot_eval import HOT_LIST
-import flt_unit
+from .search.flt_legend import FilterLegend
+from .search.chunker import AttrChunker
+from .search.hot_eval import HOT_LIST
+import app.search.flt_unit as flt_unit
 
 #===============================================
-LEGEND_AJson = FilterLegend("AJson", HOT_LIST)
+MainLegend = FilterLegend("AJson", HOT_LIST)
 
-flt_unit.StatusUnit(LEGEND_AJson, "chr", "/seq_region_name",
+flt_unit.StatusUnit(MainLegend, "chr", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
     "chr6", "chr7", "chr8", "chr9", "chr10",
     "chr11", "chr12", "chr13", "chr14", "chr15",
     "chr16", "chr17", "chr18", "chr19", "chr20",
     "chr21", "chr22", "chr23", "chrX", "chrY"])
-flt_unit.IntValueUnit(LEGEND_AJson, "chr_start", "/start")
-flt_unit.IntValueUnit(LEGEND_AJson, "chr_end", "/end")
+flt_unit.IntValueUnit(MainLegend, "chr_start", "/start")
+flt_unit.IntValueUnit(MainLegend, "chr_end", "/end")
 
-flt_unit.MultiStatusUnit(LEGEND_AJson, "caller",
+flt_unit.MultiStatusUnit(MainLegend, "caller",
     "/view.general/Called by[]")
 
-flt_unit.StatusUnit(LEGEND_AJson, "most_severe_consequence",
+flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
     "/most_severe_consequence", [
     "transcript_ablation",
     "splice_acceptor_variant",
@@ -57,48 +57,42 @@ flt_unit.StatusUnit(LEGEND_AJson, "most_severe_consequence",
     "intergenic_variant",
     "undefined"], default_value = "undefined")
 
-flt_unit.MultiStatusUnit(LEGEND_AJson, "genes",
+flt_unit.MultiStatusUnit(MainLegend, "genes",
     "/view.general/Gene(s)[]", compact_mode = True)
 
-flt_unit.StatusUnit(LEGEND_AJson, "Proband_has_Variant",
+flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
     "/_filters.Proband_has_Variant")
 
-flt_unit.IntValueUnit(LEGEND_AJson, "Proband GQ",
+flt_unit.StatusUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ", default_value = "undefined")
 
-flt_unit.IntValueUnit(LEGEND_AJson, "Min GQ",
+flt_unit.StatusUnit(MainLegend, "Min_GQ",
     "/_filters.Min_GQ", default_value = "undefined")
 
-flt_unit.IntValueUnit(LEGEND_AJson, "QD",
-    "/_filters.QD", default_value = "undefined")
-
-flt_unit.IntValueUnit(LEGEND_AJson, "FS",
-    "/_filters.FS", default_value = "undefined")
-
-flt_unit.StatusUnit(LEGEND_AJson, "Rare Variant",
+flt_unit.StatusUnit(MainLegend, "Rare_Variant",
     "/_filters.RareVariantFilter")
 
-flt_unit.FloatValueUnit(LEGEND_AJson, "gnomAD_AF",
+flt_unit.FloatValueUnit(MainLegend, "gnomAD_AF",
     "/view.gnomAD/AF", diap = (0., 1.), default_value = 0.,
     title = "gnomAD Allele Frequency")
 
-flt_unit.PresenceUnit(LEGEND_AJson, "db", [
+flt_unit.PresenceUnit(MainLegend, "db", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/view.gnomAD/URL"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),
     ("OMIM", "/view.Databases/OMIM")],
     title ="Presence in databases")
 
-flt_unit.MultiStatusUnit(LEGEND_AJson, "Polyphen",
+flt_unit.MultiStatusUnit(MainLegend, "Polyphen",
     "/view.Predictions/Polyphen[]")
 
-flt_unit.MultiStatusUnit(LEGEND_AJson, "SIFT",
+flt_unit.MultiStatusUnit(MainLegend, "SIFT",
     "/view.Predictions/SIFT[]")
 
-flt_unit.MultiStatusUnit(LEGEND_AJson, "Polyphen_2_HVAR",
+flt_unit.MultiStatusUnit(MainLegend, "Polyphen_2_HVAR",
     "/view.Predictions/Polyphen 2 HVAR[]",
     chunker = AttrChunker("[\s\,]"), default_value = "undef")
-flt_unit.MultiStatusUnit(LEGEND_AJson, "Polyphen_2_HDIV",
+flt_unit.MultiStatusUnit(MainLegend, "Polyphen_2_HDIV",
     "/view.Predictions/Polyphen 2 HDIV[]",
     chunker = AttrChunker("[\s\,]"), default_value = "undef")
 
