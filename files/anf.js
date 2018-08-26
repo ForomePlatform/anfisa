@@ -6,12 +6,14 @@ var sCurRandPortion = 1;
 var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
+var sAppModes = null;
 
 var sNodeModalBack    = null;
 
-function initWin(data_set_name) {
+function initWin(data_set_name, app_modes) {
     sTitlePrefix = window.document.title;
     sCurDataSet = data_set_name; 
+    sAppModes = app_modes;
     sNodeModalBack  = document.getElementById("modal-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
@@ -30,7 +32,8 @@ function loadList() {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("data=" + sCurDataSet + "&filter="+ 
+    xhttp.send("data=" + sCurDataSet + 
+        "&m=" + encodeURIComponent(sAppModes) + "&filter="+ 
         encodeURIComponent(JSON.stringify(sCurFilter))); 
 }
 
@@ -97,7 +100,8 @@ function changeRec(rec_idx) {
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['record'].location.replace(
-        "rec?data=" + sCurDataSet + "&rec=" + sViewRecNoSeq[sCurRecIdx]);
+        "rec?data=" + sCurDataSet + "&m=" + sAppModes + 
+        "&rec=" + sViewRecNoSeq[sCurRecIdx]);
 }
 
 function onKey(event_key) {

@@ -1,6 +1,5 @@
 import json, codecs, random
 from .record import DataRecord
-from .checker import ObjectAttributeChecker
 
 #===============================================
 class DataSet:
@@ -16,8 +15,6 @@ class DataSet:
                 obj = json.loads(line)
                 self.mDataObjects.append(obj)
                 self.mRecDict[obj[self.mMainKey]] = obj
-        ObjectAttributeChecker.check(self.mViewSetup,
-            self.mDataObjects, self.mName)
         r_h = random.WichmannHill(self.mViewSetup.configOption("rand.seed"))
         hashes = range(len(self.mDataObjects))[:]
         r_h.shuffle(hashes)
@@ -51,9 +48,8 @@ class DataSet:
     def getRecord(self, rec_no):
         return DataRecord(self, self.mDataObjects[int(rec_no)])
 
-    def testLegend(self, legend):
-        for rec_no in range(self.getSize()):
-            legend.testObj(self.getRecord(rec_no).getObj())
+    def iterDataObjects(self):
+        return iter(self.mDataObjects)
 
     def _prepareList(self, rec_no_seq):
         ret = []
@@ -63,23 +59,22 @@ class DataSet:
                 self.mViewSetup.normalizeColorCode(rec.get(self.mColorCode))])
         return ret
 
-    def makeJSonReport(self, rec_no_seq):
+    def makeJSonReport(self, rec_no_seq, random_mode):
         ret = {
             "data-set": self.getName(),
             "total": len(self.mDataObjects) }
         ret["filtered"] = len(rec_no_seq)
-        min_rand_size = self.mViewSetup.configOption("rand.min.size")
-        sample_rand_size = self.mViewSetup.configOption("rand.sample.size")
 
-        if len(rec_no_seq) <= min_rand_size:
-            ret["records"] = self._prepareList(rec_no_seq)
-            ret["list-mode"] = "complete"
-        else:
+        if (random_mode and len(rec_no_seq) >
+                self.mViewSetup.configOption("rand.min.size")):
             sheet = [(self.mRecHash[rec_no], rec_no)
                 for rec_no in rec_no_seq]
             sheet.sort()
-            sheet = sheet[:sample_rand_size]
+            sheet = sheet[:self.mViewSetup.configOption("rand.sample.size")]
             ret["records"] = self._prepareList(
                 [rec_no for hash, rec_no in sheet])
             ret["list-mode"] = "samples"
+        else:
+            ret["records"] = self._prepareList(rec_no_seq)
+            ret["list-mode"] = "complete"
         return ret

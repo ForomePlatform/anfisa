@@ -21,8 +21,14 @@ function getCritDescripton(crit, short_form) {
                 rep_crit.push("< " + crit[3]);
                 break;
         }
-        if (crit[4]) 
-            rep_crit.push("with undef");
+        switch (crit[4]) {
+            case true:
+                rep_crit.push("with undef");
+                break
+            case false:
+                rep_crit.push("w/o undef");
+                break;
+        }
         return rep_crit.join(" ");
     }
     if (crit != null && crit[0] == "enum") {

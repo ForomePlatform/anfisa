@@ -388,3 +388,19 @@ span.enum-cnt {
     font-style: italic;
     margin: 10px;
 }
+
+span.stat-count, span.stat-comment {
+    font-style: italic;
+}
+
+span.stat-undef-count {
+    color: grey;
+    font-style: italic;
+}
+span.stat-ok {
+    font-weight: bold;
+}
+span.stat-bad {
+    color: red;
+    font-style: italic;
+}

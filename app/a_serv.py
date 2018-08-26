@@ -75,15 +75,17 @@ class AnfisaService:
     #===============================================
     def formTop(self, rq_args):
         data_set = AnfisaData.getSet(rq_args.get("data"))
+        modes = rq_args.get("m", "")
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
-            data_set.getName(), AnfisaData.getSetNames())
+            data_set.getName(), AnfisaData.getSetNames(), modes)
         return output.getvalue()
 
     #===============================================
     def formRec(self, rq_args):
         output = StringIO()
         data_set = AnfisaData.getSet(rq_args.get("data"))
+        modes = rq_args.get("m", "")
         rec_no = int(rq_args.get("rec"))
         record = data_set.getRecord(rec_no)
         print >> output, HTML_Setup.START
@@ -93,7 +95,7 @@ class AnfisaService:
         print >> output, ('<body onload="init_r(\'%s\');">' %
             data_set.getFirstAspectID())
         record.reportIt(output, AnfisaData.getRecHotData(
-            data_set.getName(), rec_no))
+            data_set.getName(), rec_no, 'X' in modes), "X" in modes)
         print >> output, '</body>'
         print >> output, '</html>'
         return output.getvalue()
@@ -108,6 +110,8 @@ class AnfisaService:
     def formList(self, rq_args):
         output = StringIO()
         data_index = AnfisaData.getIndex(rq_args.get("data"))
+        modes = rq_args.get("m", "")
         filter = json.loads(rq_args.get("filter"))
-        output.write(json.dumps(data_index.makeJSonReport(filter)))
+        output.write(json.dumps(data_index.makeJSonReport(filter,
+            'R' in modes, 'X' in modes)))
         return output.getvalue()

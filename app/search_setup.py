@@ -1,10 +1,10 @@
 from .search.flt_legend import FilterLegend
 from .search.chunker import AttrChunker
-from .search.hot_eval import HOT_LIST
+from .search.hot_eval import HOT_SETUP
 import app.search.flt_unit as flt_unit
 
 #===============================================
-MainLegend = FilterLegend("AJson", HOT_LIST)
+MainLegend = FilterLegend("AJson", HOT_SETUP)
 
 flt_unit.StatusUnit(MainLegend, "chr", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
@@ -16,7 +16,7 @@ flt_unit.IntValueUnit(MainLegend, "chr_start", "/start")
 flt_unit.IntValueUnit(MainLegend, "chr_end", "/end")
 
 flt_unit.MultiStatusUnit(MainLegend, "caller",
-    "/view.general/Called by[]")
+    "/view.general/Called by[]", expert_only = True)
 
 flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
     "/most_severe_consequence", [
@@ -63,11 +63,17 @@ flt_unit.MultiStatusUnit(MainLegend, "genes",
 flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
     "/_filters.Proband_has_Variant")
 
-flt_unit.StatusUnit(MainLegend, "Proband_GQ",
-    "/_filters.Proband_GQ", default_value = "undefined")
+flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
+    "/_filters.Proband_GQ")
 
-flt_unit.StatusUnit(MainLegend, "Min_GQ",
-    "/_filters.Min_GQ", default_value = "undefined")
+flt_unit.IntValueUnit(MainLegend, "Min_GQ",
+    "/_filters.Min_GQ")
+
+flt_unit.IntValueUnit(MainLegend, "QD",
+    "/_filters.QD")
+
+flt_unit.IntValueUnit(MainLegend, "FS",
+    "/_filters.FS")
 
 flt_unit.StatusUnit(MainLegend, "Rare_Variant",
     "/_filters.RareVariantFilter")

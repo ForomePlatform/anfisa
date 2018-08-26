@@ -3,7 +3,7 @@ from .path_works import AttrFuncPool
 from .hot_eval_supp import HotEvalUnit
 #===============================================
 class FilterLegend:
-    def __init__(self, name, hot_list):
+    def __init__(self, name, hot_setup):
         self.mName     = name
         self.mFuncPool = AttrFuncPool()
         self.mColumns  = []
@@ -11,7 +11,7 @@ class FilterLegend:
         self.mUnitDict = dict()
         self.mIsOK     = False
         self.mUnits    = []
-        HotEvalUnit(self, hot_list)
+        HotEvalUnit(self, hot_setup)
 
     def _regColumnHandler(self, col_h):
         assert col_h.getName() not in self.mColDict
@@ -54,9 +54,10 @@ class FilterLegend:
     def isOK(self):
         return self.mIsOK
 
-    def testObj(self, obj):
-        for unit in self.mUnits:
-            unit.testValues(obj)
+    def testDataSet(self, data_set):
+        for obj in data_set.iterDataObjects():
+            for unit in self.mUnits:
+                unit.testValues(obj)
 
     def fillRecord(self, obj, record):
         for unit in self.mUnits:
@@ -74,7 +75,10 @@ class FilterLegend:
             (self.mName, ["with problems", "successfuly"][self.mIsOK],
             len(self.mUnits), len(self.mColumns)))
 
-    def collectStatJSon(self, data_records):
-        return [unit.collectStatJSon(data_records)
-            for unit in self.mUnits]
+    def collectStatJSon(self, data_records, expert_mode):
+        ret = []
+        for unit in self.mUnits:
+            if not unit.checkExpertBlock(expert_mode):
+                ret.append(unit.collectStatJSon(data_records))
+        return ret
 

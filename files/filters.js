@@ -111,7 +111,7 @@ function setupStatList(stat_list) {
                     list_stat_rep.push('<span class="stat-ok">' + val_min + ' =< ...<= ' +
                         val_max + ' </span>');
                 }
-                list_stat_rep.push('<span class="stat-count">' + count + ' records</span>');
+                list_stat_rep.push(': <span class="stat-count">' + count + ' records</span>');
                 if (cnt_undef > 0) 
                     list_stat_rep.push('<span class="stat-undef-count">+' + cnt_undef + 
                         ' undefined</span>');
@@ -122,12 +122,13 @@ function setupStatList(stat_list) {
             for (j = 0; j < Math.min(4, var_list.length); j++) {
                 var_name = var_list[j][0];
                 var_count = var_list[j][1];
-                list_stat_rep.push('<li><b>' + var_name + '</b>: <span class="count">' +
+                list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
+                    '<span class="stat-count">' +
                     var_count + ' records</span></li>');
             }
             list_stat_rep.push('</ul>');
             if (var_list.length > 4) {
-                list_stat_rep.push('<p>...and ' + (var_list.length - 4) + ' more...</p>');
+                list_stat_rep.push('<p><span class="stat-comment">...and ' + (var_list.length - 4) + ' variants more...</span></p>');
             }
         }
         list_stat_rep.push('</div>')
@@ -222,7 +223,7 @@ function setupStatUnit() {
             sOpNumericInfo = [-1, cnt_undef];
         else
             sOpNumericInfo = [0, cnt_undef, val_min, val_max, val_min, 
-                cnt_undef > 0, unit_type];
+                (cnt_undef > 0)? true : null, unit_type];
         
         sSpanCurCritMin.innerHTML = val_min;
         sSpanCurCritMax.innerHTML = val_max;
@@ -337,6 +338,11 @@ function checkCurCrit(option) {
                 return;
             sOpNumericInfo[5] = !sOpNumericInfo[5];
             sCheckCurCritUndef.checked = sOpNumericInfo[5];
+            if (sOpNumericInfo[0] == 0) {
+                checkNumericOpMin();
+            } else if (sOpNumericInfo[0] == 1) {
+                checkNumericOpMax();
+            }
             break;
         case "mode-and":
             if (!checkEnumOpMode(0))
@@ -364,15 +370,23 @@ function checkCurCrit(option) {
                 }
                 break;
             case 0:
-                if ((sOpNumericInfo[2] != sOpNumericInfo[4] || sOpNumericInfo[5])) {
+                if (sOpNumericInfo[2] != sOpNumericInfo[4]) {
                     sOpCriterium = ["numeric", sCurStatUnit, 0, sOpNumericInfo[4],
                         sOpNumericInfo[5]];
+                } else {
+                    if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
+                        sOpCriterium = ["numeric", sCurStatUnit, -1, null, false];
+                    }
                 }
                 break;
             case 1:
-                if ((sOpNumericInfo[3] != sOpNumericInfo[4] || sOpNumericInfo[5])) {
+                if (sOpNumericInfo[3] != sOpNumericInfo[4]) {
                     sOpCriterium = ["numeric", sCurStatUnit, 1, sOpNumericInfo[4],
                         sOpNumericInfo[5]];
+                } else {
+                    if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
+                        sOpCriterium = ["numeric", sCurStatUnit, -1, null, false];
+                    }
                 }
                 break;
         }

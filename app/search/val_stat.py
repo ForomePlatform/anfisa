@@ -46,7 +46,7 @@ class NumDiapStat:
         print >> rep_out, "Min: %s, Max: %s" % (
             str(self.mMin), str(self.mMax))
         if self.mCntUndef > 0:
-            print >> rep_out, "Undef: %d" % self.mStat[2]
+            print >> rep_out, "Undef: %d" % self.mCntDef
 
     def getJSon(self, name):
         return [self.mTypeName, name,

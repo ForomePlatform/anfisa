@@ -2,22 +2,23 @@ import numbers, logging
 from StringIO import StringIO
 
 #===============================================
-class ObjectAttributeChecker:
+class ViewDataChecker:
 
     @classmethod
-    def check(cls, view_setup, data_objects, dataset_name):
+    def check(cls, view_setup, data_set):
         checker = cls(view_setup.getAspects(),
                 view_setup.configOption("attrs.to.ignore"))
-        for obj in data_objects:
+        for obj in data_set.iterDataObjects():
             checker.checkObj(obj)
         if not checker.finishUp():
             report = StringIO()
-            print >> report, "Errors in DataRecord_AJson %s" % dataset_name
+            print >> report, ("Errors in DataRecord_AJson %s" %
+                data_set.getName())
             checker.reportBadAttributes(report)
             logging.error(report.getvalue())
         else:
             logging.warning("Attrs are all set for DataRecord_AJson %s"
-                % dataset_name)
+                % data_set.getName())
 
     def __init__(self, aspects, ignore_attrs):
         self.mGoodAttrs = set()

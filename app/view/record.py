@@ -1,7 +1,5 @@
 from xml.sax.saxutils import escape
 
-from .form_tab import formAspectTable
-
 #===============================================
 class DataRecord:
     def __init__(self, dataset, json_obj):
@@ -11,11 +9,16 @@ class DataRecord:
     def getObj(self):
         return self.mObj
 
-    def reportIt(self, output, hot_data):
+    def reportIt(self, output, hot_data, expert_mode):
         print >> output, '<div class="r-tab">'
+
+        aspects_to_show = []
         for aspect in self.mDataset.getViewSetup().getAspects():
             if aspect.isIgnored():
                 continue
+            if aspect.checkExpertBlock(expert_mode):
+                continue
+            aspects_to_show.append(aspect)
             print >> output, ('<button class="r-tablnk %s" id="la--%s" '
                 'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
                 (aspect.getAspectKind(), aspect.getName(),
@@ -30,15 +33,13 @@ class DataRecord:
         print >> output, '</div>'
 
         print >> output, '<div id="r-cnt-container">'
-        for aspect in self.mDataset.getViewSetup().getAspects():
-            if aspect.isIgnored():
-                continue
+        for aspect in aspects_to_show:
             print >> output, ('<div id="a--%s" class="r-tabcnt">' %
                 aspect.getName())
             if aspect.getName() == "input":
                 self.reportInput(output)
             else:
-                formAspectTable(output, aspect, self.mObj)
+                aspect.formTable(output, self.mObj, expert_mode)
             print >> output, '</div>'
         if hot_data is not None:
             print >> output, ('<div id="a--%s" class="r-tabcnt">' %

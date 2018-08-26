@@ -74,6 +74,8 @@ class _NumericConvertor(ValueConvertor):
         ValueConvertor.__init__(self)
         self.mNumType = num_type
         self.mNumName = num_name
+        assert (default_value is None or
+            num_type(default_value) == default_value)
         self.mDefaultValue = default_value
         if diap is not None:
             self.mMinValue, self.mMaxValue = diap

@@ -14,6 +14,10 @@ class HotIndex:
         return self.mRecNoSeq[:]
 
     @staticmethod
+    def not_NONE(val):
+        return val is not None
+
+    @staticmethod
     def numeric_LE(the_val):
         return lambda val: val is not None and val >= the_val
 
@@ -27,7 +31,7 @@ class HotIndex:
 
     @staticmethod
     def numeric_GE_U(the_val):
-        return lambda val: val is None and val <= the_val
+        return lambda val: val is None or val <= the_val
 
     @staticmethod
     def enum_OR(base_idx_set):
@@ -50,12 +54,14 @@ class HotIndex:
     def _applyCrit(self, rec_no_seq, crit_info):
         if crit_info[0] == "numeric":
             unit_name, ge_mode, the_val, use_undef = crit_info[1:]
-            if ge_mode:
+            if ge_mode > 0:
                 cmp_func = (self.numeric_GE_U(the_val) if use_undef
                     else self.numeric_GE(the_val))
-            else:
+            elif ge_mode == 0:
                 cmp_func = (self.numeric_LE_U(the_val) if use_undef
                     else self.numeric_LE(the_val))
+            elif use_undef is False:
+                cmp_func = self.not_NONE
             crit_f = self.mLegend.getUnit(unit_name).recordCritFunc(
                 cmp_func)
         elif crit_info[0] == "enum":
@@ -82,19 +88,21 @@ class HotIndex:
         return [self.mRecords[rec_no]
             for rec_no in rec_no_seq]
 
-    def _makeStat(self, rec_no_seq):
-        return self.mLegend.collectStatJSon(self._iterRecords(rec_no_seq))
+    def _makeStat(self, rec_no_seq, expert_mode):
+        return self.mLegend.collectStatJSon(
+            self._iterRecords(rec_no_seq), expert_mode)
 
-    def makeJSonReport(self, filter_seq):
+    def makeJSonReport(self, filter_seq, random_mode, expert_mode):
         rec_no_seq = range(self.mDataSet.getSize())[:]
         for crit_info in filter_seq:
             rec_no_seq = self._applyCrit(rec_no_seq, crit_info)
             if len(rec_no_seq) == 0:
                 break
-        ret = self.mDataSet.makeJSonReport(sorted(rec_no_seq))
-        ret["stats"] = self._makeStat(rec_no_seq)
+        ret = self.mDataSet.makeJSonReport(
+            sorted(rec_no_seq), random_mode)
+        ret["stats"] = self._makeStat(rec_no_seq, expert_mode)
         return ret
 
-    def getRecHotData(self, rec_no):
+    def getRecHotData(self, rec_no, expert_mode):
         return self.mLegend.getUnit("hot").getTabData(
-            self.mRecords[rec_no])
+            self.mRecords[rec_no], expert_mode)

@@ -1,8 +1,10 @@
 #===============================================
-def formTopPage(output, title, html_base, data_set_name, data_set_names):
+def formTopPage(output, title, html_base,
+        data_set_name, data_set_names, modes):
     params = {
         "title": title,
         "data-set": data_set_name,
+        "modes": modes,
         "data-set-list": '\n'.join(
             ['<option value="%s">%s</option>' % (set_name, set_name)
             for set_name in sorted(data_set_names)]),
@@ -21,7 +23,7 @@ def formTopPage(output, title, html_base, data_set_name, data_set_names):
     <script type="text/javascript" src="filters.js"></script>
     <script type="text/javascript" src="criteria.js"></script>
   </head>
-  <body onload="initWin(\'%(data-set)s\');">
+  <body onload="initWin(\'%(data-set)s\', \'%(modes)s\');">
     <div id="modal-back">
       <div id="filter-mod">
         <div id="filter-stat">

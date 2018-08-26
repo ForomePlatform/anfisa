@@ -20,6 +20,7 @@ class AttrH:
         assert attrs is None or kind != "json"
         self.mAttrs = attrs
         self.mIsSeq = is_seq
+        self.mExpertOnly = kind and "expert" in kind
         self.mPath = None
 
     def getName(self):
@@ -37,11 +38,15 @@ class AttrH:
     def getKind(self):
         return self.mKind
 
+    def checkExpertBlock(self, expert_mode):
+        return (not expert_mode) and self.mExpertOnly
+
     def _feedAttrPath(self, path, registry):
         if self.mName is None:
             self.mPath = "None"
             return
-        self.mPath = a_path = path + '/' + self.mName
+        a_path = path + '/' + self.mName
+        self.mPath = a_path
         if self.mAttrs is not None:
             for a_name in self.mAttrs:
                 registry.add(path + '/' + a_name)
@@ -88,7 +93,6 @@ class AttrH:
     def _htmlEscape(val):
         if val is None or val == "":
             return val
-        #return escape(str(val).replace('_', ' '))
         return escape(str(val))
 
     @classmethod
