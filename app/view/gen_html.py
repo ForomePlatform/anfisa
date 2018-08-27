@@ -19,12 +19,33 @@ def formTopPage(output, title, html_base,
     <title>%(title)s</title>
     %(html-base)s
     <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="filters.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="hot_eval.css" type="text/css" media="all"/>
     <script type="text/javascript" src="anf.js"></script>
     <script type="text/javascript" src="filters.js"></script>
     <script type="text/javascript" src="criteria.js"></script>
+    <script type="text/javascript" src="hot_eval.js"></script>
   </head>
   <body onload="initWin(\'%(data-set)s\', \'%(modes)s\');">
-    <div id="modal-back">
+    <div id="top">
+      <div id="top-left">
+        <div id="data-sets">
+          <select id="data_set" onchange="changeDataSet();">
+            %(data-set-list)s
+          </select>
+          <button onclick="filterModOn();">Filter</button>
+          <span id="list-report"></span>
+          <input id="list-rand-portion" type="number" min="1" max="5"
+            onchange="listRandPortion();"/>
+        </div>
+        <div id="rec-list">
+        </div>
+      </div>
+      <div id="top-right">
+        <iframe id="record" name="record" src="norecords"></iframe>
+      </div>
+    </div>
+    <div id="filter-back">
       <div id="filter-mod">
         <div id="filter-stat">
           <div id="stat-list">
@@ -102,22 +123,59 @@ def formTopPage(output, title, html_base,
         </div>
       </div>
     </div>
-    <div id="top">
-      <div id="top-left">
-        <div id="data-sets">
-          <select id="data_set" onchange="changeDataSet();">
-            %(data-set-list)s
-          </select>
-          <button id="open-filter" onclick="filterModOn();">Filter</button>
-          <span id="list-report"></span>
-          <input id="list-rand-portion" type="number" min="1" max="5"
-            onchange="listRandPortion();"/>
+    <div id="hot-eval-back">
+      <div id="hot-eval-mod">
+        <div id="hot-eval-top">
+            <p id="hot-eval-title">Hot evaluation setup
+              <span id="close-hot-eval" onclick="hotEvalModOff();">&times;</span>
+            </p>
         </div>
-        <div id="rec-list">
+        <div id="hot-eval-main">
+          <div id="hot-eval-left">
+            <div id="hot-eval-ws">
+              Workspace: <select id="hot-ws-sel" onchange="hotWsChange();">
+                  <option value="base" selected>base</option>
+              </select>
+              <button id="hot-ws-det" onclick="hotWsDetails();">
+                Details...
+              </button>
+              <div id="hot-ws-details">
+                <input id="hot-ws-name" type="text"/><br/>
+                <button id="hot-ws-clone" onclick="hotWsClone();">
+                  Clone Workspace
+                </button>
+                <button id="hot-ws-delete" onclick="hotWsDelete();">
+                  Delete Workspace
+                </button>
+              </div>
+            </div>
+            <div id="hot-eval-wrap-columns">
+              <div id="hot-eval-columns">
+              </div>
+            </div>
+            <div id="hot-eval-wrap-param">
+              <div id="hi----param"
+                class="hot-eval-item" onclick="hotItemSel(\'--param\');">
+                  Parameters
+              </div>
+            </div>
+          </div>
+          <div id="hot-eval-right">
+            <div id="hot-eval-wrap-content">
+                <textarea id="hot-eval-item-content"></textarea>
+            </div>
+            <div id="hot-eval-item-ctrl">
+                <button id="hot-item-modify" onclick="hotItemModify();">
+                  Apply changes
+                </button>
+                <button id="hot-item-reset" onclick="hotItemReset();">
+                  Reset changes
+                </button>
+            </div>
+            <div id="hot-eval-item-errors">
+            </div"
+          </div>
         </div>
-      </div>
-      <div id="top-right">
-        <iframe id="record" name="record" src="norecords"></iframe>
       </div>
     </div>
   </body>
@@ -133,5 +191,9 @@ def emptyPage(output):
   </head>
   <body>
     <h3>No records available</h3>
+    <p>
+          <button onclick="parent.filterModOn();">Filter</button>
+          <button onclick="parent.hotEvalModOn();">Hot Evaluations</button>
+    </p>
   </body>
 </html>'''

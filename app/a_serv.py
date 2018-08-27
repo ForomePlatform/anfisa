@@ -41,6 +41,12 @@ class AnfisaService:
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
+        if rq_path == "/hot_eval_data":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formHotEvalData(rq_args))
+        if rq_path == "/hot_eval_modify":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formHotEvalModify(rq_args))
 
         return serv_h.makeResponse(error = 404)
 
@@ -115,3 +121,24 @@ class AnfisaService:
         output.write(json.dumps(data_index.makeJSonReport(filter,
             'R' in modes, 'X' in modes)))
         return output.getvalue()
+
+    #===============================================
+    def formHotEvalData(self, rq_args):
+        output = StringIO()
+        workspace = rq_args.get("ws")
+        modes = rq_args.get("m", "")
+        output.write(json.dumps(AnfisaData.getHotEvalData(
+            workspace, 'X' in modes)))
+        return output.getvalue()
+
+    #===============================================
+    def formHotEvalModify(self, rq_args):
+        output = StringIO()
+        workspace = rq_args.get("ws")
+        modes = rq_args.get("m", "")
+        item = rq_args.get("it")
+        content = rq_args.get("cnt")
+        output.write(json.dumps(AnfisaData.modifyHotEvalData(
+            workspace, 'X' in modes, item, content)))
+        return output.getvalue()
+

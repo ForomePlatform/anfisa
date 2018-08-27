@@ -45,6 +45,9 @@ class DataRecord:
             print >> output, ('<div id="a--%s" class="r-tabcnt">' %
                 hot_asp_name)
             self.reportHotData(output, hot_data)
+            print >> output, '<p></p>'
+            print >> output, ('<button onclick="parent.hotEvalModOn();"' +
+                '>Hot Evaluations</button>')
             print >> output, '</div>'
 
         print >> output, '</div>'

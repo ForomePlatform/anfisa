@@ -51,6 +51,9 @@ class FilterLegend:
     def iterUnits(self):
         return iter(self.mUnits)
 
+    def getHotUnit(self):
+        return self.mUnits[0]
+
     def isOK(self):
         return self.mIsOK
 
@@ -62,6 +65,9 @@ class FilterLegend:
     def fillRecord(self, obj, record):
         for unit in self.mUnits:
             unit.fillRecord(obj, record)
+        self.mUnits[0].fillHotPart(obj, record)
+
+    def updateHotRecordPart(self, obj, record):
         self.mUnits[0].fillHotPart(obj, record)
 
     def setup(self, rep_out):
@@ -81,4 +87,3 @@ class FilterLegend:
             if not unit.checkExpertBlock(expert_mode):
                 ret.append(unit.collectStatJSon(data_records))
         return ret
-

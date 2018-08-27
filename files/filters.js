@@ -131,6 +131,10 @@ function setupStatList(stat_list) {
                 list_stat_rep.push('<p><span class="stat-comment">...and ' + (var_list.length - 4) + ' variants more...</span></p>');
             }
         }
+        if (unit_name == "hot") {
+            list_stat_rep.push('<button onclick="hotEvalModOn();"' +
+                '>Hot Evaluations</button>')
+        }
         list_stat_rep.push('</div>')
     }
     sDivStatList.innerHTML = list_stat_rep.join('\n');

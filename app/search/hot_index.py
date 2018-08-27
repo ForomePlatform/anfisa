@@ -10,6 +10,12 @@ class HotIndex:
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
             self.mRecords.append(rec)
 
+    def updateHotColumns(self):
+        for rec_no, rec in enumerate(self.mRecords):
+            self.mLegend.updateHotRecordPart(
+                self.mDataSet.getRecord(rec_no).getObj(), rec)
+
+
     def getRecNoSeq(self):
         return self.mRecNoSeq[:]
 

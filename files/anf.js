@@ -8,13 +8,15 @@ var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModes = null;
 
-var sNodeModalBack    = null;
+var sNodeFilterBack  = null;
+var sNodeHotEvalBack = null;
 
 function initWin(data_set_name, app_modes) {
     sTitlePrefix = window.document.title;
     sCurDataSet = data_set_name; 
     sAppModes = app_modes;
-    sNodeModalBack  = document.getElementById("modal-back");
+    sNodeFilterBack  = document.getElementById("filter-back");
+    sNodeHotEvalBack = document.getElementById("hot-eval-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
@@ -112,8 +114,10 @@ function onKey(event_key) {
 }
 
 function onClick(event_ms) {
-    if (event_ms.target == sNodeModalBack)
+    if (event_ms.target == sNodeFilterBack)
         filterModOff();
+    if (event_ms.target == sNodeHotEvalBack)
+        hotEvalModOff();
 }
 
 function softScroll(nd) {
@@ -132,11 +136,22 @@ function softScroll(nd) {
 }
 
 function filterModOn() {
-    sNodeModalBack.style.display = "block";
+    sNodeHotEvalBack.style.display = "none";
+    sNodeFilterBack.style.display = "block";
 }
 
 function filterModOff() {
-    sNodeModalBack.style.display = "none";
+    sNodeFilterBack.style.display = "none";
+}
+
+function hotEvalModOn() {
+    sNodeFilterBack.style.display = "none";
+    setupHotEvalCtrl();
+    sNodeHotEvalBack.style.display = "block";
+}
+
+function hotEvalModOff() {
+    sNodeHotEvalBack.style.display = "none";
 }
 
 function changeDataSet() {

@@ -55,3 +55,17 @@ class AnfisaData:
     @classmethod
     def getRecHotData(cls, set_name, rec_no, expert_mode):
         return cls.sFilters[set_name].getRecHotData(rec_no, expert_mode)
+
+    @classmethod
+    def getHotEvalData(cls, workspace, expert_mode):
+        return MainLegend.getHotUnit().getJSonData(
+            workspace, expert_mode)
+
+    @classmethod
+    def modifyHotEvalData(cls, workspace, expert_mode, item, content):
+        report = MainLegend.getHotUnit().modifyHotData(
+            workspace, expert_mode, item, content)
+        if report["status"] == "OK":
+            for hot_index in cls.sFilters.values():
+                hot_index.updateHotColumns()
+        return report
