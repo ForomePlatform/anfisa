@@ -46,12 +46,12 @@ CONFIG_ATTRS = {
     ],
     "view_gnomAD": [
         AttrH("pLI", is_seq = True),
-        AttrH("AF"),
+        AttrH("AF", "expert"),
         AttrH("Genome AF"),
         AttrH("Exome AF"),
         AttrH("URL", kind = "link", is_seq = True),
-        AttrH("PopMax #1"),
-        AttrH("PopMax #2"),
+        AttrH("PopMax #1", "expert"),
+        AttrH("PopMax #2", "expert"),
     ],
     "view_db": [
         AttrH("HGMD"),
