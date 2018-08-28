@@ -25,8 +25,11 @@ class VariantSet:
                 idx_set.add(pos)
         return idx_set
 
-    def makeStringSet(self, idx_set):
+    def makeValueSet(self, idx_set):
         return {self.mVariants[pos] for pos in idx_set}
 
     def indexOf(self, variant):
         return self.mVarDict.get(variant)
+
+    def getValue(self, idx_no):
+        return self.mVariants[idx_no]

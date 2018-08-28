@@ -133,7 +133,7 @@ class StatusUnit(FilterUnit):
 
     def hotValue(self, data_rec):
         idx = self.mExtractor.getDataP().recordValue(data_rec)
-        return self.mExtractor.getVConv().getVariantSet().makeStringSet({idx})
+        return self.mExtractor.getVConv().getVariantSet().getValue(idx)
 
     def collectStatJSon(self, data_records):
         col = self.mExtractor.getDataP()
@@ -163,7 +163,8 @@ class BoolSetUnit(FilterUnit):
         return ret
 
     def hotValue(self, data_rec):
-        return self.mVariantSet.makeStringSet(self._recordValues(data_rec))
+        idxs = self._recordValues(data_rec)
+        return self.mVariantSet.makeValueSet(idxs)
 
     def recordCritFunc(self, enum_func, variants):
         check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
@@ -224,7 +225,7 @@ class MultiStatusUnit(FilterUnit):
             idx_set = col.getSetByIdx(col.recordValue(data_rec))
         else:
             idx_set = col.recordValues(data_rec)
-        return self.mExtractors[0].getVConv().getVariantSet().makeStringSet(
+        return self.mExtractors[0].getVConv().getVariantSet().makeValueSet(
             idx_set)
 
     def collectStatJSon(self, data_records):
