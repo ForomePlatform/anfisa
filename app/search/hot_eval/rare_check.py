@@ -1,5 +1,5 @@
 def evalRec(env, rec):
-    if not rec.Proband_has_Variant:
+    if True not in rec.Proband_has_Variant:
         return False
     if rec.Proband_GQ < env.gq:
         return False

@@ -11,6 +11,7 @@ class ViewSetup:
         "main.key":         "label",
         "color.code":       "color_code",
         "aspect.hot.name":  "hot_data",
+        "uniq.keys":        ("seq_region_name", "start", "end"),
         "attrs.to.ignore":  ["/view"],
         "rand.seed":        179,
         "rand.min.size":    100,

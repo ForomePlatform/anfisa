@@ -1,4 +1,4 @@
-import json, codecs, random
+import json, codecs
 from .record import DataRecord
 
 #===============================================
@@ -7,19 +7,18 @@ class DataSet:
         self.mViewSetup  = view_setup
         self.mName      = name
         self.mDataObjects   = []
-        self.mRecDict   = dict()
         self.mMainKey   = self.mViewSetup.configOption("main.key")
         self.mColorCode = self.mViewSetup.configOption("color.code")
         with codecs.open(fname, "r", encoding = "utf-8") as inp:
             for line in inp:
                 obj = json.loads(line)
                 self.mDataObjects.append(obj)
-                self.mRecDict[obj[self.mMainKey]] = obj
-        r_h = random.WichmannHill(self.mViewSetup.configOption("rand.seed"))
-        hashes = range(len(self.mDataObjects))[:]
-        r_h.shuffle(hashes)
-        self.mRecHash = {idx: hash
-            for idx, hash in enumerate(hashes)}
+        uniq_keys = self.mViewSetup.configOption("uniq.keys")
+        seed = self.mViewSetup.configOption("rand.seed")
+        self.mRecHash = []
+        for obj in self.mDataObjects:
+            uniq_tag = tuple([seed] + [obj[key] for key in uniq_keys])
+            self.mRecHash.append(hash(uniq_tag))
 
     def getName(self):
         return self.mName
