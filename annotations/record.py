@@ -3,6 +3,9 @@ from StringIO import StringIO
 
 import vcf
 
+from annotations import liftover
+
+
 def link_to_pmid(pmid):
     return "https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pmid)
 
@@ -140,6 +143,8 @@ class Variant:
         self.data = json.loads(json_string)
         self.case = case
         self.samples = samples
+        self.hg38_start = None
+        self.hg38_end = None
         if (not vcf_header):
             vcf_header = "#"
         vcf_string = "{}\n{}\n".format(vcf_header, self.data.get("input"))
@@ -162,13 +167,19 @@ class Variant:
             self.data["_private.gnomad_db_genomes_af"] = gm_af
 
         if (HGMD_connector):
-            (phenotypes, pmids) = HGMD_connector.get_data(self.chr_num(), self.start(), self.end())
-            self.data["_private.HGMD_phenotypes"] = phenotypes
-            self.data["_private.HGMD_PIMIDs"] = pmids
+            accession_numbers = HGMD_connector.get_acc_num(self.chr_num(), self.start(), self.end())
+            if (len(accession_numbers) > 0):
+                (phenotypes, pmids) = HGMD_connector.get_data_for_accession_numbers(accession_numbers)
+                self.data["_private.HGMD_phenotypes"] = phenotypes
+                self.data["_private.HGMD_PIMIDs"] = pmids
+                self.data['HGMD'] = ','.join(accession_numbers)
+                hg_38 = HGMD_connector.get_hg38(accession_numbers)
+                self.data['HGMD_HG38'] = ', '.join(['-'.join(str(c)) for c in hg_38])
 
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
+
 
 
     def same(self,c, p1, p2 = None):
@@ -470,6 +481,18 @@ class Variant:
             pss = ""
         return "{}{}[{}] {}".format(exp, pss, gene, vstr)
 
+    def get_hg38_coordinates(self):
+        if (self.hg38_start == None or self.hg38_end == None):
+            lo = liftover.Converter()
+            c = self.chr_num()
+            self.hg38_start = lo.hg38(c, self.start())
+            self.hg38_end = lo.hg38(c, self.hg38_end)
+        if (self.hg38_start == self.hg38_end):
+            str = "{}:{}".format(self.chromosome(), self.hg38_start)
+        else:
+            str = "{}:{}-{}".format(self.chromosome(), self.hg38_start, self.hg38_end)
+        return str
+
     def get_proband(self):
         if (not self.samples):
             return None
@@ -535,7 +558,7 @@ class Variant:
         return GQ
 
     def is_proband_has_variant(self):
-        genotype = self.vcf_record.genotype(self.get_proband()).gt_bases
+        genotype = self.get_genotypes()[0]
         if (not genotype):
             return False
         set1 = set(genotype.split('/'))
@@ -543,6 +566,88 @@ class Variant:
         if (set1 & set2):
             return True
         return False
+
+    def proband_sex(self):
+        proband = self.get_proband()
+        return self.samples[proband]['sex']
+
+
+    def get_genotypes(self):
+        proband = self.get_proband()
+        proband_genotype = self.vcf_record.genotype(proband).gt_bases
+        mother = self.samples[proband]['mother']
+        father = self.samples[proband]['father']
+        maternal_genotype = self.vcf_record.genotype(mother).gt_bases
+        paternal_genotype = self.vcf_record.genotype(father).gt_bases
+
+        genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples}
+        other_genotypes = genotypes.difference({proband_genotype, maternal_genotype, paternal_genotype})
+
+        return proband_genotype, maternal_genotype, paternal_genotype, other_genotypes
+
+    def get_zygosity(self):
+        genotype = self.get_genotypes()[0]
+        if (not genotype):
+            return None
+        set1 = set(genotype.split('/'))
+        if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
+            return "X-linked"
+        if (len(set1) == 1):
+            return "Homozygous"
+        if (len(set1) == 2):
+            return "Heterozygous"
+        return "Unknown"
+
+    def inherited_from(self):
+        proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
+        if (maternal_genotype == paternal_genotype):
+            if (proband_genotype == maternal_genotype):
+                return "Both parents"
+            else:
+                return "Both parents"
+        if (proband_genotype == maternal_genotype):
+            return "Mother"
+        if (proband_genotype == paternal_genotype):
+            return "Father"
+        return "Inconclusive"
+
+    def get_callers(self):
+        bgm_callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
+                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
+        callers = [caller for caller in bgm_callers if (self.vcf_record.INFO.has_key(caller))]
+
+        # GATK callers
+        proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
+        if (not proband_genotype or not maternal_genotype or not paternal_genotype):
+            return callers
+
+        ref = self.ref()
+        alt_set = set(self.alt_list())
+        p_set = set(proband_genotype.split('/'))
+        m_set = set(maternal_genotype.split('/'))
+        f_set = set(paternal_genotype.split('/'))
+
+        for alt in alt_set:
+            if (alt in p_set and not (alt in (m_set | f_set))):
+                callers.append('GATK_DE_NOVO')
+                break
+
+        if (len(p_set) == 1 and len(alt_set&p_set) > 0):
+            if (len(m_set) == 2 and len(f_set) == 2 and len(alt_set&m_set) > 0 and len(alt_set&f_set) > 0):
+                callers.append('GATK_HOMO_REC')
+
+        if (len(p_set) == 1 and ref in p_set):
+            if (len(m_set) == 2 and len(f_set) == 2 and ref in (m_set&f_set)):
+                callers.append('GATK_HOMOZYGOUS')
+
+        if (len(callers) == 0):
+            inheritance = self.inherited_from()
+            if (inheritance == "De-Novo"):
+                raise Exception("Inconsistent inheritance")
+            if (inheritance != "Inconclusive"):
+                callers.append("INHERITED_FROM: {}".format(inheritance))
+
+        return callers
 
     def get_view_json(self):
         data = self.data.copy()
@@ -552,24 +657,18 @@ class Variant:
         view = dict()
         data["view"] = view
 
-        proband = self.get_proband()
-        proband_genotype = self.vcf_record.genotype(proband)
-        mother = self.samples[proband]['mother']
-        father = self.samples[proband]['father']
-        genotypes = [self.vcf_record.genotype(s) for s in self.samples]
-
+        proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
         tab1 = dict()
         #view['general'] = tab1
         data["view.general"] = tab1
         tab1['Gene(s)'] = self.get_genes()
         tab1['header'] = str(self)
+        tab1['hg38'] = self.get_hg38_coordinates()
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
             tab1["Alt"] = self.alt_string()
         tab1['BGM_CMPD_HET'] = self.vcf_record.INFO.get("BGM_CMPD_HET")
-        callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
-                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
-        tab1['Called by'] = [caller for caller in callers if (self.vcf_record.INFO.has_key(caller))]
+        tab1['Called by'] = self.get_callers()
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
         tab1['cPos (Worst)'] = c_worst
@@ -581,9 +680,9 @@ class Variant:
         tab1['pPos (Canonical)'] = c_canonical
         tab1['pPos (Other)'] = c_other
 
-        tab1['Proband Genotype'] = proband_genotype.gt_bases
-        tab1['Maternal Genotype'] = self.vcf_record.genotype(mother).gt_bases
-        tab1['Paternal Genotype'] = self.vcf_record.genotype(father).gt_bases
+        tab1['Proband Genotype'] = proband_genotype
+        tab1['Maternal Genotype'] = maternal_genotype
+        tab1['Paternal Genotype'] = paternal_genotype
 
         tab1['Worst Annotation'] = self.get_msq()
         consequence_terms = self.get_from_canonical_transcript("consequence_terms")
@@ -624,6 +723,9 @@ class Variant:
 
         tab2.append(q_all)
 
+        proband = self.get_proband()
+        mother = self.samples[proband]['mother']
+        father = self.samples[proband]['father']
         for s in self.samples:
             genotype = self.vcf_record.genotype(s)
             q_s = dict()
@@ -669,6 +771,7 @@ class Variant:
         tab4["OMIM"] = ""
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
+            tab4["HGMD (HG38)"] = self.data.get("HGMD_HG38")
         else:
             tab4["HGMD"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
@@ -681,6 +784,8 @@ class Variant:
                 format(self.chr_num(), self.start(), self.end())
         tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig') +
                                               self.get_from_transcripts_list('clin_sig'))
+        tab4['GeneCards'] = \
+            ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in self.get_genes()]
 
         tab5 = dict()
         #view['Predictions'] = tab5
@@ -711,6 +816,8 @@ class Variant:
         tab6 = dict()
         #view['Genetics'] = tab6
         data["view.Genetics"] = tab6
+        tab6["Zygosity"] = self.get_zygosity()
+        tab6["Inherited from"] = self.inherited_from()
         tab6["Distance From Intron/Exon Boundary (Worst)"] = self.get_distance_from_exon("worst")
         tab6["Distance From Intron/Exon Boundary (Canonical)"] = self.get_distance_from_exon("canonical")
         tab6["Conservation"] = unique(self.get_from_transcripts_list("conservation"))

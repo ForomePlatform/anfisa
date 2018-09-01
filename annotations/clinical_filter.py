@@ -1,7 +1,7 @@
 import os
 import sys
 
-from annotations import filters, case_utils, data_path
+from annotations import filters, case_utils, data_path, liftover
 from annotations.gnomad import GnomAD
 from annotations.hgmd import HGMD
 from annotations.record import Variant
@@ -14,8 +14,8 @@ class Filter:
             data_dir = Filter.DATA_PATH
         self.hgmd_filter = filters.Filter_HGMD(data_dir)
         self.clinvar_filter = filters.Filter_ClinVar(data_dir)
-        self.gnomad_filter1 = filters.Filter_gnomAD_AF_local(0.01)
-        self.gnomad_filter5 = filters.Filter_gnomAD_AF_local(0.05)
+        self.gnomad_filter1 = filters.Filter_gnomAD_AF(0.01)
+        self.gnomad_filter5 = filters.Filter_gnomAD_AF(0.05)
         self.quality_filter = filters.Filter_Quality()
 
     def accept(self, vcf_record, info = dict()):
@@ -59,6 +59,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     output2 = out.format("false")
     output3 = out.format("true_pos")
     gnomAD = GnomAD()
+    hg19_to_38_converter = liftover.Converter()
 
     csq_set = set()
 
@@ -69,10 +70,12 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
                 break
             v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, gnomAD_connection=gnomAD, HGMD_connector=hgmd)
             n += 1
-            if (n%10 == 0):
+            if (n%100 == 0):
                 print n
             info = {}
             csq_set.add(v.get_msq())
+            v.hg38_start = hg19_to_38_converter.hg38(v.chr_num(), v.start())
+            v.hg38_end = hg19_to_38_converter.hg38(v.chr_num(), v.end())
             if (not clinical_filter.accept(v, info)):
                 ## continue
                 pass
@@ -111,9 +114,6 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
             if (info['ClinVar']):
                 v.data["ClinVar"] = ""
-
-            if (info['HGMD']):
-                v.data["HGMD"] = ""
 
             if (not key in KEYs):
                 KEYs.append(key)

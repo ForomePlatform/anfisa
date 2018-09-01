@@ -25,6 +25,7 @@ class HGMD:
     SQL_PHEN = "SELECT distinct phenotype " + \
                "FROM hgmd_phenbase.hgmd_mutation as m join hgmd_phenbase.hgmd_phenotype as p on p.phen_id = m.phen_id " + \
                "WHERE acc_num = %s"
+    SQL_HG38 = "SELECT coordSTART, coordEND FROM `hgmd_pro`.`hg38_coords` WHERE acc_num = %s"
 
     def __init__(self):
         self.tunnel = None
@@ -53,12 +54,24 @@ class HGMD:
     def get_acc_num(self, chromosome, pos_start, pos_end):
         cursor = self.connection.cursor()
         cursor.execute(HGMD.SQL_ACC_NUM, (chromosome, pos_start, pos_end))
-        rows = [row for row in cursor]
+        rows = [row[0] for row in cursor]
+        cursor.close()
+        return rows
+
+    def get_hg38(self, acc_numbers):
+        cursor = self.connection.cursor()
+        rows = []
+        for acc_num in acc_numbers:
+            cursor.execute(HGMD.SQL_HG38, [acc_num])
+            rows += [row for row in cursor]
         cursor.close()
         return rows
 
     def get_data(self, chromosome, pos_start, pos_end):
         acc_numbers = self.get_acc_num(chromosome, pos_start, pos_end)
+        return self.get_data_for_accession_numbers(acc_numbers)
+
+    def get_data_for_accession_numbers(self, acc_numbers):
         cursor1 = self.connection.cursor()
         cursor2 = self.connection.cursor()
 
@@ -66,9 +79,9 @@ class HGMD:
         pmids = []
         for acc_num in acc_numbers:
             # print acc_num
-            cursor1.execute(HGMD.SQL_PMID, acc_num)
+            cursor1.execute(HGMD.SQL_PMID, [acc_num])
             pmids += [row for row in cursor1]
-            cursor2.execute(HGMD.SQL_PHEN, acc_num)
+            cursor2.execute(HGMD.SQL_PHEN, [acc_num])
             phenotypes += [row for row in cursor2]
 
         cursor1.close()

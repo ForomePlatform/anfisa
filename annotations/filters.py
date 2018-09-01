@@ -118,10 +118,13 @@ class Filter_gnomAD_AF(Filter):
     def __init__(self, threshold):
         Filter.__init__(self)
         self.threshold = threshold
-        self.gnomAD = gnomad.gnomAD()
+        self.gnomAD = gnomad.GnomAD()
 
     def accept_variant(self, variant):
-        return self.gnomAD.less_than(variant.chromosome, variant.pos, variant.ref, variant.alt, self.threshold)
+        for alt in variant.alt_list():
+            if self.gnomAD.less_than(variant.chr_num(), variant.start(), variant.ref(), alt, self.threshold):
+                return True
+        return False
 
 
 def process_header(line, output, columns):

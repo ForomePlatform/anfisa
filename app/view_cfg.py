@@ -6,13 +6,14 @@ CONFIG_ATTRS = {
     "view_gen": [
         AttrH("Gene(s)", is_seq = True),
         AttrH("header"),
+        AttrH("hg38"),
         AttrH("Ref"),
         AttrH("Alt"),
         AttrH("IGV", kind = "link"),
         AttrH("Proband Genotype"),
         AttrH("Maternal Genotype"),
         AttrH("Paternal Genotype"),
-        AttrH("Called by", "expert", is_seq = True),
+        AttrH("Called by", is_seq = True),
         AttrH("BGM_CMPD_HET", "expert"),
         AttrH("Worst Annotation"),
         AttrH("Canonical Annotation"),
@@ -55,11 +56,13 @@ CONFIG_ATTRS = {
     ],
     "view_db": [
         AttrH("HGMD"),
+        AttrH("HGMD (HG38)"),
         AttrH("HGMD Phenotypes", is_seq = True),
         AttrH("HGMD PMIDs", is_seq = True, kind = "link"),
         AttrH("OMIM"),
         AttrH("ClinVar Significance", is_seq = True),
         AttrH("ClinVar", "link"),
+        AttrH("GeneCards", kind="link", is_seq=True),
     ],
     "view_pred": [
         AttrH("LoF Score", is_seq = True),
@@ -80,6 +83,8 @@ CONFIG_ATTRS = {
         AttrH("Polyphen 2 HDIV score", is_seq = True),
     ],
     "view_genetics": [
+        AttrH("Zygosity"),
+        AttrH("Inherited from"),
         AttrH("Distance From Intron/Exon Boundary (Worst)", is_seq = True),
         AttrH("Distance From Intron/Exon Boundary (Canonical)", is_seq = True),
         AttrH("Conservation", is_seq = True),

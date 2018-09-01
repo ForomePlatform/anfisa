@@ -28,12 +28,11 @@ class GnomAD:
 
     def get_data(self, chr, pos, ref=None, alt=None, from_what = 'e,g'):
         from_what = from_what.lower()
+        args = (chr, pos)
         if (ref and alt):
-            sql = '''SELECT CHROM, POS, ID, REF, ALT, MAX_AF, AFs FROM AF WHERE CHROM = ? and POS = ? and REF LIKE %?% and ALT = ?'''
-            args = (chr, pos, ref, alt)
+            sql = "SELECT CHROM, POS, ID, REF, ALT, MAX_AF, AFs FROM AF WHERE CHROM = ? and POS = ? and REF LIKE '%{}%' and ALT LIKE '%{}%'".format(ref, alt)
         else:
             sql = '''SELECT CHROM, POS, ID, REF, ALT, MAX_AF, AFs FROM AF WHERE CHROM = ? and POS = ?'''
-            args = (chr, pos)
 
         if ('e' in from_what):
             c = self.connection_to_exomes.cursor()
@@ -77,8 +76,7 @@ class GnomAD:
         for row in rows:
             (CHROM, POS, ID, REF, ALT, MAX_AF, AFs) = row
             af1 = get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs)
-            if (not af or (af < af1)):
-                af = af1
+            af = max(af,af1)
 
         if (not af):
             return True
