@@ -600,6 +600,13 @@ class Variant:
 
     def inherited_from(self):
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
+
+        if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
+            if (proband_genotype == maternal_genotype):
+                return "Mother"
+            else:
+                return "Inconclusive"
+
         if (maternal_genotype == paternal_genotype):
             if (proband_genotype == maternal_genotype):
                 return "Both parents"
@@ -610,6 +617,12 @@ class Variant:
         if (proband_genotype == paternal_genotype):
             return "Father"
         return "Inconclusive"
+
+    def affected_alt_list(self):
+        genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples if self.samples[s]['affected']}
+        alt_set = set(self.alt_list())
+        alt_set &= genotypes
+        return [a for a in alt_set]
 
     def get_callers(self):
         bgm_callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',

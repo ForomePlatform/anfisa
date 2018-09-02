@@ -121,7 +121,7 @@ class Filter_gnomAD_AF(Filter):
         self.gnomAD = gnomad.GnomAD()
 
     def accept_variant(self, variant):
-        for alt in variant.alt_list():
+        for alt in variant.affected_alt_list():
             if self.gnomAD.less_than(variant.chr_num(), variant.start(), variant.ref(), alt, self.threshold):
                 return True
         return False
