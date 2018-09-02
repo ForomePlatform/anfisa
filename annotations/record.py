@@ -174,7 +174,7 @@ class Variant:
                 self.data["_private.HGMD_PIMIDs"] = pmids
                 self.data['HGMD'] = ','.join(accession_numbers)
                 hg_38 = HGMD_connector.get_hg38(accession_numbers)
-                self.data['HGMD_HG38'] = ', '.join(['-'.join(str(c)) for c in hg_38])
+                self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
 
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
