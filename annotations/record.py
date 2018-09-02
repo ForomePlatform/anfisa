@@ -486,7 +486,7 @@ class Variant:
             lo = liftover.Converter()
             c = self.chr_num()
             self.hg38_start = lo.hg38(c, self.start())
-            self.hg38_end = lo.hg38(c, self.hg38_end)
+            self.hg38_end = lo.hg38(c, self.end())
         if (self.hg38_start == self.hg38_end):
             str = "{}:{}".format(self.chromosome(), self.hg38_start)
         else:

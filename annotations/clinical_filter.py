@@ -154,8 +154,16 @@ if __name__ == '__main__':
     expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
     fam_file = "{}.fam".format(case)
     filtered_by_bed_vep_output = "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
-    limit = int(sys.argv[1]) if len(sys.argv) > 1 else None
+    #filtered_by_bed_vep_output = "chr17.vep.json"
+    arg1 = sys.argv[1] if len(sys.argv) > 1 else None
+    limit = None
+    if (arg1):
+        if (arg1.isdigit()):
+            limit = int(arg1)
+        else:
+            filtered_by_bed_vep_output = arg1
     print "limit = {}".format(limit)
+    print "file: {}".format(filtered_by_bed_vep_output)
 
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
     with open (header_file) as vcf:

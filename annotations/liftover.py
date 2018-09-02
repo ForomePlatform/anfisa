@@ -6,16 +6,18 @@ class Converter:
         self.lo = LiftOver('hg19', 'hg38')
 
     def hg38(self, ch, pos):
-        ch = str(ch).lower()
-        if (ch.isdigit() or ch == 'x' or ch == 'y'):
+        ch = str(ch).upper()
+        if (ch.isdigit() or ch == 'X' or ch == 'Y'):
             ch = "chr{}".format(ch)
         try:
             coord  = self.lo.convert_coordinate(ch, pos - 1)
         except:
             print "WARNING: HG38 conversion at {}:{}".format(ch, pos)
             coord = None
-        if (not coord or len(coord) == 0):
+        if (not coord):
             return None
+        if (len(coord) == 0):
+            return "No Match"
         r = coord[0][1] + 1
         if (len(coord) == 1):
             return r
@@ -24,10 +26,12 @@ class Converter:
 
 if __name__ == '__main__':
     coordinates = [
+        (17,72913072),
         (3,164777814),
         (22,51064480),
         (16,2376465),
-        (4,55594075)
+        (4,55594075),
+        ('x',9503085)
     ]
 
     converter = Converter()
