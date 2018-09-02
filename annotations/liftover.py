@@ -9,7 +9,11 @@ class Converter:
         ch = str(ch).lower()
         if (ch.isdigit() or ch == 'x' or ch == 'y'):
             ch = "chr{}".format(ch)
-        coord  = self.lo.convert_coordinate(ch, pos - 1)
+        try:
+            coord  = self.lo.convert_coordinate(ch, pos - 1)
+        except:
+            print "WARNING: HG38 conversion at {}:{}".format(ch, pos)
+            coord = None
         if (not coord or len(coord) == 0):
             return None
         r = coord[0][1] + 1
