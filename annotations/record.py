@@ -622,7 +622,8 @@ class Variant:
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples if self.samples[s]['affected']}
         alleles_affected = set()
         for g in genotypes:
-            alleles_affected.update(g.split('/'))
+            if (g):
+                alleles_affected.update(g.split('/'))
         alleles_alt = set(self.alt_list())
         alt_set = alleles_affected & alleles_alt
         return [a for a in alt_set]
