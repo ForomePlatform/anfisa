@@ -434,13 +434,14 @@ class Variant:
     def get_gnomad_split_af(self, exomes_or_genomes):
         transcripts = self.get_transcripts()
         af = None
-        for t in transcripts:
-            af1_str = t.get("gnomad_{}_af".format(exomes_or_genomes))
-            af1 = float(af1_str) if (af1_str) else None
-            if (af):
-                af = min(af1, af)
-            else:
-                af = af1
+        if (False):
+            for t in transcripts:
+                af1_str = t.get("gnomad_{}_af".format(exomes_or_genomes))
+                af1 = float(af1_str) if (af1_str) else None
+                if (af):
+                    af = min(af1, af)
+                else:
+                    af = af1
 
         if (not af):
             af = self.data.get("_private.gnomad_db_{}_af".format(exomes_or_genomes))
