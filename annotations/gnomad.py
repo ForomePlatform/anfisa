@@ -5,7 +5,13 @@ from annotations import gnomAD_path
 
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
     try:
-        i1 = REF.split(',').index(ref)
+        if (ref != REF):
+            if (ref in REF):
+                s = REF.split(ref)
+                alt = alt.join(s)
+            else:
+                return None
+
         alts = ALT.split(',')
         l = len(alts)
         if (l == 1 and ALT == alt):
