@@ -562,7 +562,7 @@ class Variant:
     def get_pLI_by_allele(self, allele):
         transcripts = self.get_transcripts()
         key = "exacpli"
-        list = [unique([t.get(key) for t in transcripts if (t.has_key(key) and allele == t.get("variant_allele"))])]
+        list = unique([t.get(key) for t in transcripts if (t.has_key(key) and allele == t.get("variant_allele"))])
         if (len(list) > 0):
             return list
         return None
@@ -787,11 +787,10 @@ class Variant:
             q_s['Genotype Quality'] = genotype.data.GQ
             tab2.append(q_s)
 
+        tab3 = list()
+        # view['gnomAD'] = tab3
+        data["view.gnomAD"] = tab3
         if (self.get_gnomad_af()):
-            tab3 = list()
-            #view['gnomAD'] = tab3
-            data["view.gnomAD"] = tab3
-
             alt_list = self.alt_list()
             for allele in alt_list:
                 gr = dict()
@@ -810,9 +809,6 @@ class Variant:
 
                 gr["URL"] = \
                     "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
-
-        else:
-            data["view.gnomAD"] = None
 
         tab4 = dict()
         #view['Databases'] = tab4

@@ -49,7 +49,7 @@ CONFIG_ATTRS = {
         AttrH("Allele"),
         AttrH("Proband"),
         AttrH("pLI", is_seq = True),
-        AttrH("AF", "expert"),
+        AttrH("Proband AF", "expert"),
         AttrH("Genome AF"),
         AttrH("Exome AF"),
         AttrH("URL", kind = "link"),
