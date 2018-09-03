@@ -159,12 +159,17 @@ class Variant:
             em_af = None
             for alt in self.alt_list():
                 af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
-                gm_af = min(gm_af, af) if gm_af else af
+                self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
+                if (self.is_proband_has_allele(alt)):
+                    gm_af = min(gm_af, af) if gm_af else af
                 af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
-                em_af = min(em_af, af) if em_af else af
+                self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
+                if (self.is_proband_has_allele(alt)):
+                    em_af = min(em_af, af) if em_af else af
 
             self.data["_private.gnomad_db_exomes_af"] = em_af
             self.data["_private.gnomad_db_genomes_af"] = gm_af
+            self.data['_filters.gnomaAD_AF'] = max(em_af, gm_af)
 
         if (HGMD_connector):
             accession_numbers = HGMD_connector.get_acc_num(self.chr_num(), self.start(), self.end())
@@ -349,11 +354,13 @@ class Variant:
     def get_distance_from_exon(self, kind):
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
 
-    def get_gnomad_pop_max(self):
+    def get_gnomad_pop_max(self, allele = None):
         ancestries = dict()
         collocated_variants = self.get_colocated_variants()
         for v in collocated_variants:
             if (v.get("somatic")):
+                continue
+            if (allele and v.get("minor_allele") != allele):
                 continue
             for key in v.keys():
                 if (not 'gnomad' in key):
@@ -446,6 +453,10 @@ class Variant:
         if (not af):
             af = self.data.get("_private.gnomad_db_{}_af".format(exomes_or_genomes))
 
+        return af
+
+    def get_gnomad_split_af_by_alt(self, exomes_or_genomes, alt):
+        af = self.data.get("_private.gnomad_db_{}_{}_af".format(exomes_or_genomes, alt))
         return af
 
     def get_igv_url(self):
@@ -548,6 +559,14 @@ class Variant:
             return list
         return None
 
+    def get_pLI_by_allele(self, allele):
+        transcripts = self.get_transcripts()
+        key = "exacpli"
+        list = [unique([t.get(key) for t in transcripts if (t.has_key(key) and allele == t.get("variant_allele"))])]
+        if (len(list) > 0):
+            return list
+        return None
+
     def get_proband_GQ(self):
         return self.vcf_record.genotype(self.get_proband()).data.GQ
 
@@ -567,6 +586,13 @@ class Variant:
         if (set1 & set2):
             return True
         return False
+
+    def is_proband_has_allele(self, allele):
+        genotype = self.get_genotypes()[0]
+        if (not genotype):
+            return False
+        set1 = set(genotype.split('/'))
+        return (allele in set1)
 
     def proband_sex(self):
         proband = self.get_proband()
@@ -762,24 +788,29 @@ class Variant:
             tab2.append(q_s)
 
         if (self.get_gnomad_af()):
-            tab3 = dict()
+            tab3 = list()
             #view['gnomAD'] = tab3
             data["view.gnomAD"] = tab3
-            tab3["pLI"] = self.get_pLI()
-            tab3["AF"] = self.get_gnomad_af()
-            tab3["Genome AF"] = self.get_gnomad_split_af("genomes")
-            tab3["Exome AF"] = self.get_gnomad_split_af("exomes")
-            pop_max = self.get_gnomad_pop_max()
-            if (pop_max[0]):
-                tab3["PopMax #1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
-            if (pop_max[3]):
-                tab3["PopMax #2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
 
-            alt_list = self.alt_string().split(',')
-            tab3["URL"] = [
-                "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), alt)
-                for alt in alt_list
-            ]
+            alt_list = self.alt_list()
+            for allele in alt_list:
+                gr = dict()
+                tab3.append(gr)
+                gr["Allele"] = allele
+                gr["Proband"] = "Yes" if (self.is_proband_has_allele(allele)) else "No"
+                gr["pLI"] = self.get_pLI_by_allele(allele)
+                gr["Proband AF"] = self.get_gnomad_af()
+                gr["Genome AF"] = self.get_gnomad_split_af_by_alt("genomes", allele)
+                gr["Exome AF"] = self.get_gnomad_split_af_by_alt("exomes", allele)
+                pop_max = self.get_gnomad_pop_max(allele=allele)
+                if (pop_max[0]):
+                    gr["PopMax #1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
+                if (pop_max[3]):
+                    gr["PopMax #2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
+
+                gr["URL"] = \
+                    "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
+
         else:
             data["view.gnomAD"] = None
 

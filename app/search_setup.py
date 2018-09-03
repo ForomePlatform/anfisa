@@ -79,12 +79,12 @@ flt_unit.StatusUnit(MainLegend, "Rare_Variant",
     "/_filters.RareVariantFilter")
 
 flt_unit.FloatValueUnit(MainLegend, "gnomAD_AF",
-    "/view.gnomAD/AF", diap = (0., 1.), default_value = 0.,
+    "/_filters.gnomaAD_AF", diap = (0., 1.), default_value = 0.,
     title = "gnomAD Allele Frequency")
 
 flt_unit.PresenceUnit(MainLegend, "db", [
     ("ClinVar", "/view.Databases/ClinVar"),
-    ("GnomAD", "/view.gnomAD/URL"),
+    ("GnomAD", "/_filters.gnomaAD_AF"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),
     ("OMIM", "/view.Databases/OMIM")],
     title ="Presence in databases")
