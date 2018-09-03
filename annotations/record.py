@@ -158,11 +158,11 @@ class Variant:
             gm_af = None
             em_af = None
             for alt in self.alt_list():
-                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
+                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
                 self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
                 if (self.is_proband_has_allele(alt)):
                     gm_af = min(gm_af, af) if gm_af else af
-                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
+                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
                 self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
                 if (self.is_proband_has_allele(alt)):
                     em_af = min(em_af, af) if em_af else af
@@ -484,14 +484,16 @@ class Variant:
             gene = "..."
 
         vstr = str(self)
-        exp = ""
-        if (self.data.get("EXPECTED")):
-            exp = '+ '
-        if (self.data.get("SEQaBOO")):
-            pss = "* "
-        else:
-            pss = ""
-        return "{}{}[{}] {}".format(exp, pss, gene, vstr)
+        if (False):
+            exp = ""
+            if (self.data.get("EXPECTED")):
+                exp = '+ '
+            if (self.data.get("SEQaBOO")):
+                pss = "* "
+            else:
+                pss = ""
+            return "{}{}[{}] {}".format(exp, pss, gene, vstr)
+        return "[{}] {}".format(gene, vstr)
 
     def get_hg38_coordinates(self):
         if (self.hg38_start == None or self.hg38_end == None):
