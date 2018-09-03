@@ -124,7 +124,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             cube[(msq, key)] = f + 1
 
             out1.write(v.get_view_json() + '\n')
-            if (v.data.get("EXPECTED") <> v.data.get("SEQaBOO")):
+            if (v.data.get("SEQaBOO")):
                 out2.write(v.get_view_json() + '\n')
             elif (v.data.get("EXPECTED") and v.data.get("SEQaBOO")):
                 out3.write(v.get_view_json() + '\n')
