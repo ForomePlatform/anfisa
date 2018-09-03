@@ -57,7 +57,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     clinical_filter = Filter()
     output1 = out.format("all")
     output2 = out.format("false")
-    output3 = out.format("true_pos")
+    output3 = out.format("candidates")
     gnomAD = GnomAD()
     hg19_to_38_converter = liftover.Converter()
 
