@@ -119,7 +119,6 @@ function checkInputs() {
     sInpTagValue.disabled = !sTagCntMode;
     
     sBtnNewTag.disabled     = (sCurTagIdx == null);
-    sBtnModifyTag.disabled  = !(sCurTagIdx != null && !sTagCntMode);
     sBtnSaveTag.disabled    = !(sTagCntMode && sTagNameOK && 
         (sCurTagIdx == null || sTagCntChanged));
     sBtnCancelTag.disabled  = (!sTagCntChanged) || 
@@ -173,6 +172,7 @@ function tagEnvDelete() {
         tags_to_update = sTagsInfo["tags"];
         delete tags_to_update[tag_name];
         sPrevTag = null;
+        sCurTagIdx = null;
         loadTags(tags_to_update);
     }
 }

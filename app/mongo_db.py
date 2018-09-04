@@ -24,12 +24,14 @@ class MongoConnector:
     def setRecData(self, rec_key, pairs):
         data = pairs.copy()
         data["_key"] = rec_key
-        update_instr = {"$set":
-            {key: value for key, value in pairs.items()}}
+        update_instr = dict()
+        if len(pairs) > 0:
+            update_instr["$set"] = {key: value
+                for key, value in pairs.items()}
         unset_keys = set(self.getRecData(rec_key).keys())
         unset_keys -= set(pairs.keys())
         if len(unset_keys) > 0:
             update_instr["$unset"] = {key: "" for key in unset_keys}
-        self.mMongo[self.mPath].rec_data.update(
-            {"_key": rec_key}, update_instr, upsert = True)
-
+        if len(update_instr) > 0:
+            self.mMongo[self.mPath].rec_data.update(
+                {"_key": rec_key}, update_instr, upsert = True)
