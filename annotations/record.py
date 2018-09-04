@@ -870,7 +870,7 @@ class Variant:
         tab6["Conservation"] = unique(self.get_from_transcripts_list("conservation"))
         tab6["Species with variant"] = ""
         tab6["Species with other variants"] = ""
-        tab6["MaxEntScan"] = ""
+        tab6["MaxEntScan"] = self.get_max_ent()
         tab6["NNSplice"] = ""
         tab6["Human Splicing Finder"] = ""
 
