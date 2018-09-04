@@ -1,13 +1,10 @@
 #===============================================
 def formTopPage(output, title, html_base,
-        data_set_name, data_set_names, modes):
+        workspace_name, modes):
     params = {
         "title": title,
-        "data-set": data_set_name,
+        "workspace": workspace_name,
         "modes": modes,
-        "data-set-list": '\n'.join(
-            ['<option value="%s">%s</option>' % (set_name, set_name)
-            for set_name in sorted(data_set_names)]),
         "html-base": (' <base href="%s" />' % html_base)
             if html_base else ""}
 
@@ -26,23 +23,42 @@ def formTopPage(output, title, html_base,
     <script type="text/javascript" src="criteria.js"></script>
     <script type="text/javascript" src="hot_eval.js"></script>
   </head>
-  <body onload="initWin(\'%(data-set)s\', \'%(modes)s\');">
-    <div id="top">
-      <div id="top-left">
-        <div id="data-sets">
-          <select id="data_set" onchange="changeDataSet();">
-            %(data-set-list)s
-          </select>
-          <button onclick="filterModOn();">Filter</button>
-          <span id="list-report"></span>
-          <input id="list-rand-portion" type="number" min="1" max="5"
-            onchange="listRandPortion();"/>
-        </div>
-        <div id="rec-list">
-        </div>
+  <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">
+    <div id="all">
+      <div id="top">
+         <div id="top-ws">
+           Workspace: <span id="ws-name"></span><br/>
+           <span id="list-report"></span>
+           <input id="list-rand-portion" type="number" min="1" max="5"
+             onchange="listRandPortion();"/>
+         </div>
+         <div  id="top-filters">
+            <input id="cur-filters-check" type="checkbox"
+                onchange="checkCurFilters();"/>
+            <button onclick="filterModOn();">Filter</button>
+            <button onclick="hotEvalModOn();">Hot Evaluations</button>
+         </div>
+         <div id="top-tags">
+            Tags:
+            <input id="cur-tag-check" type="checkbox"
+                onchange="checkCurTag();"/>
+            <select id="cur-tag" onchange="changeDataSet();">
+            </select>
+         </div>
       </div>
-      <div id="top-right">
-        <iframe id="record" name="record" src="norecords"></iframe>
+      <div id="bottom">
+        <div id="bottom-left">
+          <div id="wrap-rec-list">
+            <div id="rec-list">
+            </div>
+          </div>
+        </div>
+        <div id="bottom-right">
+            <iframe id="rec-frame1" name="rec-frame1" src="norecords">
+            </iframe>
+            <iframe id="rec-frame2" name="rec-frame2" src="norecords">
+            </iframe>
+        </div>
       </div>
     </div>
     <div id="filter-back">
@@ -181,7 +197,8 @@ def formTopPage(output, title, html_base,
   </body>
 </html>''' % params
 
-def emptyPage(output):
+#===============================================
+def noRecords(output):
     print >> output, '''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -191,9 +208,64 @@ def emptyPage(output):
   </head>
   <body>
     <h3>No records available</h3>
-    <p>
-          <button onclick="parent.filterModOn();">Filter</button>
-          <button onclick="parent.hotEvalModOn();">Hot Evaluations</button>
-    </p>
   </body>
 </html>'''
+
+#===============================================
+def tagsBlock(output):
+    print >> output, '''
+<div id="tg-all">
+  <div id="tg-wrap-filters">
+    <div id="tg-filters">
+        Filters: <span id="tg-filters-list"></span>
+    </div>
+  </div>
+  <div id="tg-tags">
+    <div id="tg-title">
+        Tags:
+    </div>
+    <div id="tg-tags-left">
+      <div id="tg-tags-wrap-list">
+        <div id="tg-tags-list">
+        </div>
+      </div>
+    </div>
+    <div id="tg-tags-right">
+      <div id="tg-tags-ctrl">
+        <div class="combobox">
+          <select id="tg-tags-tag-list" onchange="tagEnvTagSel();">
+            <option value=""></option>
+          </select>
+          <input id="tg-tag-name" type="text" />
+        </div>
+        <button id="tg-tag-new" class="op-button" onclick="tagEnvNew();">
+          Add
+        </button>
+        <button id="tg-tag-save" class="op-button" onclick="tagEnvSave();">
+          Save
+        </button>
+        <button id="tg-tag-cancel" class="op-button" onclick="tagEnvCancel();">
+          Cancel
+        </button>
+        <button id="tg-tag-delete"
+            title="Delete tag" class="op-button" onclick="tagEnvDelete();">
+          &times;
+        </button>
+        <button id="tg-tag-undo" class="op-button" title="Undo" onclick="tagEnvUndo();">
+          &#8630;
+        </button>
+        <button id="tg-tag-redo" class="op-button"  title="Redo" onclick="tagEnvRedo();">
+          &#8631;
+        </button>
+      </div>
+      <div id="tg-tag-wrap-value">
+        <div id="tg-tag-value">
+        </div>
+        <div id="tg-tag-edit">
+          <textarea id="tg-tag-value-content" />
+          </textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>'''

@@ -110,6 +110,7 @@ CONFIG_ATTRS = {
         AttrH("most_severe_consequence"),
         AttrH("ClinVar"),
         AttrH("HGMD"),
+        AttrH("HGMD_HG38"),
         AttrH("HGMD_PIMIDs", "hidden", is_seq = True),
         AttrH("HGMD_phenotypes", "hidden", is_seq = True),
         AttrH("EXPECTED"),

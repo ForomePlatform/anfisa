@@ -1,5 +1,4 @@
-from xml.sax.saxutils import escape
-
+from .gen_html import tagsBlock
 #===============================================
 class DataRecord:
     def __init__(self, dataset, json_obj):
@@ -9,9 +8,10 @@ class DataRecord:
     def getObj(self):
         return self.mObj
 
-    def reportIt(self, output, hot_data, expert_mode):
+    def reportIt(self, output, expert_mode):
         print >> output, '<div class="r-tab">'
-
+        print >> output, ('<span class="img-wrap" onclick="tabCfgChange();">'
+            '<img id="img-tab2" src="images/tab2-exp.png"/></span>')
         aspects_to_show = []
         for aspect in self.mDataset.getViewSetup().getAspects():
             if aspect.isIgnored():
@@ -20,16 +20,15 @@ class DataRecord:
                 continue
             aspects_to_show.append(aspect)
             print >> output, ('<button class="r-tablnk %s" id="la--%s" '
-                'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
+                'onclick="pickAspect(\'%s\')">%s</button>' %
                 (aspect.getAspectKind(), aspect.getName(),
                 aspect.getName(), aspect.getTitle()))
-        if hot_data is not None:
-            hot_asp_name = self.mDataset.getViewSetup().configOption(
-                "aspect.hot.name")
-            print >> output, ('<button class="r-tablnk %s" id="la--%s" '
-                'onclick="chooseAspect(event, \'a--%s\')">%s</button>' %
-                ("tech",  hot_asp_name, hot_asp_name,
-                self.mDataset.getViewSetup().textMessage("aspect.hot.title")))
+        hot_asp_name = self.mDataset.getViewSetup().configOption(
+            "aspect.hot.name")
+        print >> output, ('<button class="r-tablnk %s" id="la--%s" '
+            'onclick="pickAspect(\'%s\')">%s</button>' %
+            ("tech",  hot_asp_name, hot_asp_name,
+            self.mDataset.getViewSetup().textMessage("aspect.hot.title")))
         print >> output, '</div>'
 
         print >> output, '<div id="r-cnt-container">'
@@ -41,14 +40,10 @@ class DataRecord:
             else:
                 aspect.formTable(output, self.mObj, expert_mode)
             print >> output, '</div>'
-        if hot_data is not None:
-            print >> output, ('<div id="a--%s" class="r-tabcnt">' %
-                hot_asp_name)
-            self.reportHotData(output, hot_data)
-            print >> output, '<p></p>'
-            print >> output, ('<button onclick="parent.hotEvalModOn();"' +
-                '>Hot Evaluations</button>')
-            print >> output, '</div>'
+        print >> output, ('<div id="a--%s" class="r-tabcnt">' %
+            hot_asp_name)
+        tagsBlock(output)
+        print >> output, '</div>'
 
         print >> output, '</div>'
 
@@ -87,14 +82,3 @@ class DataRecord:
         if collect_str:
             print >> output, collect_str[1:]
             collect_str = ""
-
-    def reportHotData(self, output, hot_data):
-        print >> output, '<table id="rec-hot_data">'
-        for data_name, data_value in hot_data:
-            if not data_value:
-                continue
-            print >> output, (
-                '<tr><td class="title">%s</td>' % escape(data_name))
-            print >> output, (
-                '<td class="norm">%s</td></tr>' % ["no", "yes"][data_value])
-        print >> output, '</table>'

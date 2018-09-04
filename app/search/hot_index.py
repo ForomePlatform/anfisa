@@ -109,6 +109,6 @@ class HotIndex:
         ret["stats"] = self._makeStat(rec_no_seq, expert_mode)
         return ret
 
-    def getRecHotData(self, rec_no, expert_mode):
-        return self.mLegend.getUnit("hot").getTabData(
+    def getRecFilters(self, rec_no, expert_mode):
+        return self.mLegend.getUnit("hot").getRecFilters(
             self.mRecords[rec_no], expert_mode)

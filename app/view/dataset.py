@@ -1,24 +1,26 @@
 import json, codecs
-from .record import DataRecord
+from xml.sax.saxutils import escape
 
+from .record import DataRecord
 #===============================================
 class DataSet:
     def __init__(self, view_setup, name, fname):
         self.mViewSetup  = view_setup
         self.mName      = name
         self.mDataObjects   = []
-        self.mMainKey   = self.mViewSetup.configOption("main.key")
+        self.mLabelKey  = self.mViewSetup.configOption("label.key")
         self.mColorCode = self.mViewSetup.configOption("color.code")
+        self.mDataKeys  = []
+        uniq_keys = self.mViewSetup.configOption("uniq.keys")
         with codecs.open(fname, "r", encoding = "utf-8") as inp:
             for line in inp:
                 obj = json.loads(line)
                 self.mDataObjects.append(obj)
-        uniq_keys = self.mViewSetup.configOption("uniq.keys")
-        seed = self.mViewSetup.configOption("rand.seed")
-        self.mRecHash = []
-        for obj in self.mDataObjects:
-            uniq_tag = tuple([seed] + [obj[key] for key in uniq_keys])
-            self.mRecHash.append(hash(uniq_tag))
+                self.mDataKeys.append(
+                    '-'.join([str(obj[key]) for key in uniq_keys]))
+        seed = str(self.mViewSetup.configOption("rand.seed"))
+        self.mRecHash = [hash(seed + rec_key)
+            for rec_key in self.mDataKeys]
 
     def getName(self):
         return self.mName
@@ -26,12 +28,9 @@ class DataSet:
     def getViewSetup(self):
         return self.mViewSetup
 
-    def getFirstAspectID(self):
-        return "a--" + self.mViewSetup.getAspects()[0].getName()
-
     def reportList(self, output):
         for idx, rec in enumerate(self.mDataObjects):
-            rec_key = rec[self.mMainKey]
+            rec_key = rec[self.mLabelKey]
             rec_color = self.mViewSetup.normalizeColorCode(
                 rec.get(self.mColorCode))
             print >> output, ('<div id="li--%d" class="rec-label %s" '
@@ -42,7 +41,7 @@ class DataSet:
         return len(self.mDataObjects)
 
     def getRecKey(self, rec_no):
-        return self.mDataObjects[rec_no][self.mMainKey]
+        return self.mDataKeys[rec_no]
 
     def getRecord(self, rec_no):
         return DataRecord(self, self.mDataObjects[int(rec_no)])
@@ -50,11 +49,14 @@ class DataSet:
     def iterDataObjects(self):
         return iter(self.mDataObjects)
 
+    def enumDataKeys(self):
+        return enumerate(self.mDataKeys)
+
     def _prepareList(self, rec_no_seq):
         ret = []
         for rec_no in rec_no_seq:
             rec = self.mDataObjects[rec_no]
-            ret.append([rec_no, rec[self.mMainKey],
+            ret.append([rec_no, escape(rec[self.mLabelKey]),
                 self.mViewSetup.normalizeColorCode(rec.get(self.mColorCode))])
         return ret
 

@@ -20,23 +20,24 @@ class HotEvalUnit(BoolSetUnit):
             if unit is not self:
                 value_dict[unit.getName()] = unit.hotValue(data_record)
         pre_rec = PresentationObj(value_dict)
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             val = self.mHotSetup.FUNCTIONS[idx][1](
                 self.mEnv, pre_rec)
             col.setValues(data_record, val)
 
-    def getTabData(self, data_record, expert_mode):
+    def getRecFilters(self, data_record, expert_mode):
         ret = []
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
                 continue
-            ret.append((col.getName(), col.recordValue(data_record)))
+            if col.recordValue(data_record):
+                ret.append(col.getName())
         return ret
 
-    def getJSonData(self, workspace, expert_mode):
-        ret = {"workspace": "base"}
+    def getJSonData(self, expert_mode):
+        ret = {"setup": "base"}
         columns = []
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
                 continue
             col_name = self.mHotSetup.FUNCTIONS[idx][0]
@@ -51,7 +52,7 @@ class HotEvalUnit(BoolSetUnit):
         ret["params"] = param_rep.getvalue()
         return ret
 
-    def modifyHotData(self, workspace, expert_mode, item, content):
+    def modifyHotData(self, hot_setup, expert_mode, item, content):
         if item == "--param":
             param_list = []
             for key, val, expert_only in self.mHotSetup.ATTRIBUTES:

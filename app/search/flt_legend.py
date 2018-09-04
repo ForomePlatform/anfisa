@@ -39,8 +39,8 @@ class FilterLegend:
     def getColumn(self, col_name):
         return self.mColDict.get(col_name)
 
-    def iterColumns(self):
-        return iter(self.mColumns)
+    def enumColumns(self):
+        return enumerate(self.mColumns)
 
     def getUnitCount(self):
         return len(self.mUnits)
