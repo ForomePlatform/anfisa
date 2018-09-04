@@ -4,13 +4,13 @@
     "files": "files", 
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
-    "datasets": [
-        {"name": "BGM9001: Candidates", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_candidates.json"},
-        {"name": "BGM9001: All Variants", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_all.json"},
-        {"name": "bgm9001_wgs_false", "kind": "a-json",
-            "file": "../a-data/bgm9001_wgs_false.json"}],
+    "workspaces": [
+        {
+            "name": "BGM9001", 
+            "mongo": "Anfisa_bgm9001_wgs",
+            "file": "../a-data/bgm9001_wgs_all.json"
+        }
+    ],
     "logging": { 
         "version": 1,
         "disable_existing_loggers": false,

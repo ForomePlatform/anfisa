@@ -1,7 +1,7 @@
+var sWorkspaceName = null;
 var sTitlePrefix = null;
-var sCurRecIdx = null;
-var sCurRecTab = null;
-var sCurDataSet = null;
+var sCurRecNo = null;
+var sTabPortData = [false, null, null];
 var sCurRandPortion = 1;
 var sRecList = null;
 var sRecSamples = null;
@@ -11,9 +11,9 @@ var sAppModes = null;
 var sNodeFilterBack  = null;
 var sNodeHotEvalBack = null;
 
-function initWin(data_set_name, app_modes) {
+function initWin(workspace_name, app_modes) {
     sTitlePrefix = window.document.title;
-    sCurDataSet = data_set_name; 
+    sWorkspaceName = workspace_name; 
     sAppModes = app_modes;
     sNodeFilterBack  = document.getElementById("filter-back");
     sNodeHotEvalBack = document.getElementById("hot-eval-back");
@@ -34,15 +34,15 @@ function loadList() {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("data=" + sCurDataSet + 
+    xhttp.send("ws=" + sWorkspaceName + 
         "&m=" + encodeURIComponent(sAppModes) + "&filter="+ 
         encodeURIComponent(JSON.stringify(sCurFilter))); 
 }
 
 function setupList(info) {
-    sCurDataSet = info["data-set"]; 
-    document.getElementById("data_set").value = sCurDataSet;
-    document.title = sTitlePrefix + ": " + sCurDataSet;
+    sWorkspaceName = info["workspace"]; 
+    document.getElementById("ws-name").innerHTML = sWorkspaceName;
+    document.title = sTitlePrefix + ": " + sWorkspaceName;
     var el = document.getElementById("list-report");
     var el_p = document.getElementById("list-rand-portion");
     var rep = "Records: <b>" + info["filtered"] + "<b>";
@@ -78,39 +78,44 @@ function refreshRecList() {
         sViewRecNoSeq.push(rec_no);
         rep.push('<div id="li--' + rec_no + '" class="rec-label ' +
             sRecList[idx][2] + '" onclick="changeRec(' + (idx - idx_from) + 
-            ')";">' + sRecList[idx][1] + '</div>');
+            ');">' + sRecList[idx][1] + '</div>');
     }
     document.getElementById("rec-list").innerHTML = rep.join('\n');
-    sCurRecIdx = null;
-    if (sViewRecNoSeq.length == 0) 
-        document.getElementById("record").src = "norecords";
-    else 
+    sCurRecNo = null;
+    if (sViewRecNoSeq.length == 0) {
+        window.frames['rec-frame1'].location.replace("norecords");
+        window.frames['rec-frame2'].location.replace("norecords");
+    } else {
         changeRec(0);
+    }
 }
 
 function changeRec(rec_idx) {
-    if (sCurRecIdx == rec_idx) 
+    if (sCurRecNo == rec_idx) 
         return;
     var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_idx]);
     if (new_rec_el == null) 
         return;
-    if (sCurRecIdx != null) {
-        var prev_el = document.getElementById("li--" + sViewRecNoSeq[sCurRecIdx]);
+    if (sCurRecNo != null) {
+        var prev_el = document.getElementById("li--" + sViewRecNoSeq[sCurRecNo]);
         prev_el.className = prev_el.className.replace(" press", "");
     }
-    sCurRecIdx = rec_idx;
+    sCurRecNo = rec_idx;
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    window.frames['record'].location.replace(
-        "rec?data=" + sCurDataSet + "&m=" + sAppModes + 
-        "&rec=" + sViewRecNoSeq[sCurRecIdx]);
+    window.frames['rec-frame1'].location.replace(
+        "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
+        "&rec=" + sViewRecNoSeq[sCurRecNo] + "&port=1");
+    window.frames['rec-frame2'].location.replace(
+        "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
+        "&rec=" + sViewRecNoSeq[sCurRecNo] + "&port=2");
 }
 
 function onKey(event_key) {
-    if (event_key.code == "ArrowUp" && sCurRecIdx > 0)
-        changeRec(sCurRecIdx - 1);
+    if (event_key.code == "ArrowUp" && sCurRecNo > 0)
+        changeRec(sCurRecNo - 1);
     if (event_key.code == "ArrowDown") 
-        changeRec(sCurRecIdx + 1);
+        changeRec(sCurRecNo + 1);
 }
 
 function onClick(event_ms) {
@@ -154,14 +159,6 @@ function hotEvalModOff() {
     sNodeHotEvalBack.style.display = "none";
 }
 
-function changeDataSet() {
-    new_data_set = document.getElementById("data_set").value;
-    if (sCurDataSet != new_data_set) {
-        sCurDataSet = new_data_set;
-        loadList();
-    }
-}
-
 function listRandPortion() {
     new_rand_p = (document.getElementById("list-rand-portion").value);
     if (sCurRandPortion != new_rand_p) {
@@ -169,4 +166,25 @@ function listRandPortion() {
         refreshRecList();
     }
 }
+
 //=====================================
+function updateTabCfg() {
+    document.getElementById("rec-frame1").style.display =
+            sTabPortData[0]? "block": "none";
+    if (sTabPortData[0] && sTabPortData[1] == sTabPortData[2]) {
+        for (idx = 1; idx <3; idx++) {
+            frame = window.frames['rec-frame' + idx];
+            if (frame.sStarted) 
+                frame.resetTabPort();
+        }
+    }
+    for (idx = 1; idx <3; idx++) {
+        frame = window.frames['rec-frame' + idx];
+        if (frame.sStarted) 
+            frame.updateCfg();
+    }
+}
+
+//=====================================
+function checkCurTag() {
+}

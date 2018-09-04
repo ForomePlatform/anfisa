@@ -1,4 +1,4 @@
-var sCurWS = "base";
+var sCurSetup = "base";
 var sEvalData = null;
 var sCurItem = null;
 var sItemsContents = null;
@@ -28,11 +28,11 @@ function loadEvalData() {
     xhttp.open("POST", "hot_eval_data", true);
     xhttp.setRequestHeader("Content-type", 
         "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sCurWS + "&m=" + encodeURIComponent(sAppModes)); 
+    xhttp.send("ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes)); 
 }
 
 function setupHotEvalData(info) {
-    sCurWS = info["workspace"];
+    sCurSetup = info["setup"];
     var col_rep = [];
     sItemsContents = {};
     columns = info["columns"];
@@ -96,7 +96,8 @@ function hotItemModify() {
     xhttp.open("POST", "hot_eval_modify", true);
     xhttp.setRequestHeader("Content-type", 
         "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sCurWS + "&m=" + encodeURIComponent(sAppModes) + 
+    xhttp.send("ws=" + sWorkspaceName + "&setup=" + sCurSetup + 
+        "&m=" + encodeURIComponent(sAppModes) + 
         "&it=" + encodeURIComponent(sCurItem) + 
         "&cnt=" + encodeURIComponent(new_content));
 }

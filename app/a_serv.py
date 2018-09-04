@@ -2,7 +2,7 @@
 import json
 from StringIO import StringIO
 from .anf_data import AnfisaData
-from view.gen_html import formTopPage, emptyPage
+from view.gen_html import formTopPage, noRecords
 
 #===============================================
 class HTML_Setup:
@@ -37,10 +37,13 @@ class AnfisaService:
                 content = cls.sMain.formRec(rq_args))
         if rq_path == "/norecords":
             return serv_h.makeResponse(
-                content = cls.sMain.formNoRec(rq_args))
+                content = cls.sMain.formNoRecords(rq_args))
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
+        if rq_path == "/tags":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formTags(rq_args))
         if rq_path == "/hot_eval_data":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formHotEvalData(rq_args))
@@ -80,65 +83,88 @@ class AnfisaService:
 
     #===============================================
     def formTop(self, rq_args):
-        data_set = AnfisaData.getSet(rq_args.get("data"))
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
-            data_set.getName(), AnfisaData.getSetNames(), modes)
+            workspace.getName(), modes)
         return output.getvalue()
 
     #===============================================
     def formRec(self, rq_args):
         output = StringIO()
-        data_set = AnfisaData.getSet(rq_args.get("data"))
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        data_set = workspace.getDataSet()
         modes = rq_args.get("m", "")
         rec_no = int(rq_args.get("rec"))
         record = data_set.getRecord(rec_no)
+        port = rq_args.get("port")
         print >> output, HTML_Setup.START
         print >> output, '<html>'
         self._formHtmlHead(output,
-            css_files = ["a_rec.css"], js_files = ["a_rec.js"])
-        print >> output, ('<body onload="init_r(\'%s\');">' %
-            data_set.getFirstAspectID())
-        record.reportIt(output, AnfisaData.getRecHotData(
-            data_set.getName(), rec_no, 'X' in modes), "X" in modes)
+            css_files = ["a_rec.css", "tags.css"],
+            js_files = ["a_rec.js", "tags.js"])
+        if port == "2":
+            print >> output, ('<body onload="init_r(2, \'%s\');">' %
+                workspace.getFirstAspectID())
+        else:
+            print >> output, ('<body onload="init_r(1, \'%s\');">' %
+                workspace.getLastAspectID())
+        record.reportIt(output, "X" in modes)
         print >> output, '</body>'
         print >> output, '</html>'
         return output.getvalue()
 
     #===============================================
-    def formNoRec(self, rq_args):
+    def formNoRecords(self, rq_args):
         output = StringIO()
-        emptyPage(output)
+        noRecords(output)
         return output.getvalue()
 
     #===============================================
     def formList(self, rq_args):
         output = StringIO()
-        data_index = AnfisaData.getIndex(rq_args.get("data"))
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        data_index = workspace.getIndex()
         modes = rq_args.get("m", "")
         filter = json.loads(rq_args.get("filter"))
-        output.write(json.dumps(data_index.makeJSonReport(filter,
-            'R' in modes, 'X' in modes)))
+        report = data_index.makeJSonReport(filter,
+            'R' in modes, 'X' in modes)
+        report["workspace"] = workspace.getName();
+        output.write(json.dumps(report))
+        return output.getvalue()
+
+    #===============================================
+    def formTags(self, rq_args):
+        output = StringIO()
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        modes = rq_args.get("m", "")
+        rec_no = int(rq_args.get("rec"))
+        tags_to_update = rq_args.get("tags")
+        if tags_to_update is not None:
+            tags_to_update = json.loads(tags_to_update)
+        report = workspace.makeTagsJSonReport(rec_no,
+            'X' in modes, tags_to_update)
+        output.write(json.dumps(report))
         return output.getvalue()
 
     #===============================================
     def formHotEvalData(self, rq_args):
         output = StringIO()
-        workspace = rq_args.get("ws")
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
-        output.write(json.dumps(AnfisaData.getHotEvalData(
-            workspace, 'X' in modes)))
+        output.write(json.dumps(workspace.getHotEvalData('X' in modes)))
         return output.getvalue()
 
     #===============================================
     def formHotEvalModify(self, rq_args):
         output = StringIO()
-        workspace = rq_args.get("ws")
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
+        hot_setup = rq_args["setup"]
         item = rq_args.get("it")
         content = rq_args.get("cnt")
-        output.write(json.dumps(AnfisaData.modifyHotEvalData(
-            workspace, 'X' in modes, item, content)))
+        output.write(json.dumps(workspace.modifyHotEvalData(
+            hot_setup, 'X' in modes, item, content)))
         return output.getvalue()
 
