@@ -232,18 +232,30 @@ def tagsBlock(output):
     </div>
     <div id="tg-tags-right">
       <div id="tg-tags-ctrl">
-        <input id="tg-tag-name" type="text" />
-        <button id="tg-tag-new" onclick="tagEnvNew();">
+        <div class="combobox">
+          <select id="tg-tags-tag-list" onchange="tagEnvTagSel();">
+            <option value=""></option>
+          </select>
+          <input id="tg-tag-name" type="text" />
+        </div>
+        <button id="tg-tag-new" class="op-button" onclick="tagEnvNew();">
           Add
         </button>
-        <button id="tg-tag-save" onclick="tagEnvSave();">
+        <button id="tg-tag-save" class="op-button" onclick="tagEnvSave();">
           Save
         </button>
-        <button id="tg-tag-cancel" onclick="tagEnvCancel();">
+        <button id="tg-tag-cancel" class="op-button" onclick="tagEnvCancel();">
           Cancel
         </button>
-        <button id="tg-tag-delete" onclick="tagEnvDelete();">
-          Delete
+        <button id="tg-tag-delete"
+            title="Delete tag" class="op-button" onclick="tagEnvDelete();">
+          &times;
+        </button>
+        <button id="tg-tag-undo" class="op-button" title="Undo" onclick="tagEnvUndo();">
+          &#8630;
+        </button>
+        <button id="tg-tag-redo" class="op-button"  title="Redo" onclick="tagEnvRedo();">
+          &#8631;
         </button>
       </div>
       <div id="tg-tag-wrap-value">

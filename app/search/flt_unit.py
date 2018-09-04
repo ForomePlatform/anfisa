@@ -152,7 +152,7 @@ class BoolSetUnit(FilterUnit):
         self.mEnumType = enum_type
         self.mVariantSet = VariantSet(variants)
 
-    def iterColumns(self):
+    def enumColumns(self):
         return enumerate(self.mColumns)
 
     def _recordValues(self, data_rec):
@@ -186,7 +186,7 @@ class PresenceUnit(BoolSetUnit):
             [it_name for it_name, it_path in var_info_seq],
             title, expert_only = expert_only)
         self.mExtractors = []
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             it_name, it_path = var_info_seq[idx]
             self.mExtractors.append(DataExtractor(self, it_name,
                 it_path, val_conv.BoolConvertor(), col))

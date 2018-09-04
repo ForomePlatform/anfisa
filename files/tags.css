@@ -9,6 +9,11 @@ div#tg-all {
     height: 100%
 }
 
+button.op-button {
+    padding: 0px !important;
+    margin-left: 5px;
+}
+
 /********************Tags area*****************************/
 div#tg-wrap-filters {
     margin: 0px;
@@ -56,9 +61,11 @@ div#tg-tags-right {
 
 /********************Details*****************************/
 div#tg-tags-ctrl {
-    height: 35px;
-    vertical-align: middle;
+    height: 30px;
+    vertical-align: bottom;
     margin: 0px;
+    display: flex;
+    margin-bottom: 10px;
 }
 
 
@@ -131,3 +138,37 @@ div.tag-label.cur {
     cursor: pointer;
     color: white;
 }
+
+
+/********************Combobox*****************************/
+ .combobox {
+     position:relative;
+     background-color:white;
+     border:solid grey 1px;
+     width: 200px;
+     height: 25px;
+     display: inline;
+ }
+ .combobox select {
+     position: absolute;
+     top: 3px;
+     left: 0px;
+     font-size: 12px;
+     border: none;
+     width: 200px;
+     margin: 0;
+ }
+ .combobox input {
+     position: absolute;
+     top: 0px;
+     left: 0px;
+     width: 180px;
+     padding: 1px;
+     font-size: 14px;
+     border: none;
+     height: 23px;
+ }
+ .combobox select:focus, .combobox input:focus {
+     outline:none;
+ }
+ 

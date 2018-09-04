@@ -20,14 +20,14 @@ class HotEvalUnit(BoolSetUnit):
             if unit is not self:
                 value_dict[unit.getName()] = unit.hotValue(data_record)
         pre_rec = PresentationObj(value_dict)
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             val = self.mHotSetup.FUNCTIONS[idx][1](
                 self.mEnv, pre_rec)
             col.setValues(data_record, val)
 
     def getRecFilters(self, data_record, expert_mode):
         ret = []
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
                 continue
             if col.recordValue(data_record):
@@ -37,7 +37,7 @@ class HotEvalUnit(BoolSetUnit):
     def getJSonData(self, expert_mode):
         ret = {"setup": "base"}
         columns = []
-        for idx, col in self.iterColumns():
+        for idx, col in self.enumColumns():
             if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
                 continue
             col_name = self.mHotSetup.FUNCTIONS[idx][0]

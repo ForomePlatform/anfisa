@@ -11,8 +11,11 @@ var sBtnNewTag    = null;
 var sBtnSaveTag   = null;
 var sBtnCancelTag = null;
 var sBtnDeleteTag = null;
+var sBtnUndoTag   = null;
+var sBtnRedoTag   = null;
 var sInpTagName   = null;
 var sInpTagValue  = null;
+var sInpTagNameList = null;
 
 function initTagsEnv() {
     sBtnNewTag      = document.getElementById("tg-tag-new"); 
@@ -20,8 +23,11 @@ function initTagsEnv() {
     sBtnSaveTag     = document.getElementById("tg-tag-save"); 
     sBtnCancelTag   = document.getElementById("tg-tag-cancel"); 
     sBtnDeleteTag   = document.getElementById("tg-tag-delete"); 
+    sBtnUndoTag     = document.getElementById("tg-tag-undo"); 
+    sBtnRedoTag     = document.getElementById("tg-tag-redo"); 
     sInpTagName     = document.getElementById("tg-tag-name"); 
     sInpTagValue    = document.getElementById("tg-tag-value-content");
+    sInpTagNameList = document.getElementById("tg-tags-tag-list");
     loadTags(null);
 }
 
@@ -74,7 +80,26 @@ function setupTags(info) {
         pickTag((idx >=0)? idx: 0);
     }
     
+    sBtnUndoTag.disabled = !info["can_undo"];
+    sBtnRedoTag.disabled = !info["can_redo"];
+
     updateTagsState(true);
+    
+    for (idx = sInpTagNameList.length - 1; idx > 0; idx--) {
+        sInpTagNameList.remove(idx);
+    }
+    
+    all_tags = info["all-tags"];
+    for (idx = 0; idx < all_tags.length; idx++) {
+        tag_name = all_tags[idx];
+        if (sTagOrder.indexOf(tag_name) < 0) {
+            var option = document.createElement('option');
+            option.innerHTML = tag_name;
+            option.value = tag_name;
+            sInpTagNameList.append(option)
+        }
+    }
+    sInpTagNameList.selectedIndex = 0;
 }
 
 function updateTagsState(set_content) {
@@ -100,7 +125,7 @@ function updateTagsState(set_content) {
 function checkInputs() {    
     if (sCurTagIdx == null) {
         tag_name = sInpTagName.value.trim();
-        sTagNameOK = /^[A-Za-z_]+$/i.test(tag_name) && tag_name[0] != '_'
+        sTagNameOK = /^[A-Za-z0-9_]+$/i.test(tag_name) && tag_name[0] != '_'
             && sTagOrder.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
         
@@ -117,6 +142,7 @@ function checkInputs() {
     sInpTagName.className = (sTagNameOK == false)? "bad": "";
     sInpTagName.disabled  = sCurTagIdx != null;
     sInpTagValue.disabled = !sTagCntMode;
+    sInpTagNameList.disabled = (sCurTagIdx != null);
     
     sBtnNewTag.disabled     = (sCurTagIdx == null);
     sBtnSaveTag.disabled    = !(sTagCntMode && sTagNameOK && 
@@ -124,7 +150,7 @@ function checkInputs() {
     sBtnCancelTag.disabled  = (!sTagCntChanged) || 
         (sCurTagIdx != null || sInpTagName.value.trim() != "");
     sBtnDeleteTag.disabled  = (sCurTagIdx == null);
-    
+        
     if (sTagCntMode) {
         if (sTimeH == null) 
             sTimeH = setInterval(checkInputs, 200);
@@ -177,6 +203,22 @@ function tagEnvDelete() {
     }
 }
 
+function tagEnvUndo() {
+    if (sTagsInfo["can_undo"]) {
+        sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
+        sCurTagIdx = null;
+        loadTags("UNDO");
+    }
+}
+
+function tagEnvRedo() {
+    if (sTagsInfo["can_redo"]) {
+        sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
+        sCurTagIdx = null;
+        loadTags("REDO");
+    }
+}
+
 function pickTag(idx) {
     if (idx != sCurTagIdx) {
         dropCurTag();
@@ -184,5 +226,11 @@ function pickTag(idx) {
         el = document.getElementById("tag--" + sCurTagIdx);
         el.className = el.className + " cur";
         updateTagsState(true);
+    }
+}
+
+function tagEnvTagSel() {
+    if (sCurTagIdx == null) {
+        sInpTagName.value = sInpTagNameList.value;
     }
 }

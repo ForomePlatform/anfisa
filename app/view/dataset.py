@@ -49,6 +49,9 @@ class DataSet:
     def iterDataObjects(self):
         return iter(self.mDataObjects)
 
+    def enumDataKeys(self):
+        return enumerate(self.mDataKeys)
+
     def _prepareList(self, rec_no_seq):
         ret = []
         for rec_no in rec_no_seq:

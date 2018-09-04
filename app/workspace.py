@@ -1,6 +1,6 @@
 from search.hot_index import HotIndex
 from mongo_db import MongoConnector
-
+from tags_man import TagsManager
 #===============================================
 class Workspace:
     def __init__(self, name, legend, data_set, mongo_path,
@@ -11,13 +11,14 @@ class Workspace:
         self.mMongoConn = MongoConnector(mongo_path,
             mongo_host, mongo_port)
         self.mViewSetup = self.mDataSet.getViewSetup()
+        self.mTagsMan = TagsManager(self)
         self.mIndex  = HotIndex(self.mDataSet, self.mLegend)
 
     def getName(self):
         return self.mName
 
-    def getMongoPath(self):
-        return self.mMongoPath
+    def getMongoConn(self):
+        return self.mMongoConn
 
     def getDataSet(self):
         return self.mDataSet
@@ -43,10 +44,8 @@ class Workspace:
 
     def makeTagsJSonReport(self, rec_no,
             expert_mode, tags_to_update = None):
-        rec_key = self.mDataSet.getRecKey(rec_no)
-        if tags_to_update is not None:
-            self.mMongoConn.setRecData(rec_key, tags_to_update)
-        return {
-            "filters": self.mIndex.getRecFilters(rec_no, expert_mode),
-            "tags": self.mMongoConn.getRecData(rec_key)}
+        report = self.mTagsMan.makeRecReport(rec_no, tags_to_update)
+        report["filters"] = self.mIndex.getRecFilters(
+            rec_no, expert_mode),
+        return report
 
