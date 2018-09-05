@@ -1,7 +1,8 @@
 var sCurTag = null;
-var sCurFilter = null;
+var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
+var sAllFilters = null;
 
 var sCheckFltNamed   = null;
 var sCheckFltCurrent = null;
@@ -15,7 +16,7 @@ var sSeqElNavigation = null;
 var sSeqElNavCount   = null;
 
 function initMonitor() {
-    sCheckFltNamed   = document.getElementById("flt-named");
+    sCheckFltNamed   = document.getElementById("flt-check-named");
     sCheckFltCurrent = document.getElementById("flt-check-current");
     sSelectFltNamed  = document.getElementById("flt-named-select");
     sElFltCurState   = document.getElementById("flt-current-state");
@@ -87,13 +88,15 @@ function updateTagNavigation() {
         sElCurTagCount.innerHTML = "";
         return;
     }
-    
-    sElCurTagNav.style.visibility = (sCurTag)? "visible" : "hidden";
+    if (sRecSamples && sCurTag) {
+        sElCurTagNav.style.visibility = "hidden";
+        sElCurTagCount.innerHTML = 'In total: <b>' + sTagRecList.length + '</b>';
+        return;
+    }
     if (!sCurTag) {
         sElCurTagCount.innerHTML = "";
         return;
     }
-    
     sNavSheet = [-1, -1, -1, -1, -1];
     cnt = [0, 0, 0];
     j = 0; k = 0;
@@ -133,7 +136,11 @@ function updateTagNavigation() {
     cnt_tag = cnt[0] + cnt[1] + cnt[2];
     rep_cnt = [];
     rep_cnt.push(((cnt_tag == sTagRecList.length))? "In total:":"In filter:");
-    rep_cnt.push((cnt[0] + 1) + "/<b>" + cnt_tag + "</b>");
+    if (cnt_tag > 0) {
+        rep_cnt.push((cnt[0] + 1) + "/<b>" + cnt_tag + "</b>");
+    } else {
+        rep_cnt.push("<b>" + cnt_tag + "</b>");
+    }
     if (cnt_tag != sTagRecList.length)
         rep_cnt.push("Total: " + sTagRecList.length);
     sElCurTagCount.innerHTML = rep_cnt.join(" ");
@@ -166,15 +173,18 @@ function setupNamedFilters(info) {
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
         sSelectFltNamed.remove(idx);
     }
-    filters = info["filters"];
-    for (idx = 0; idx < filters.length; idx++) {
-        flt_name = filters[idx];
+    sAllFilters = info["filters"];
+    for (idx = 0; idx < sAllFilters.length; idx++) {
+        flt_name = sAllFilters[idx];
         var option = document.createElement('option');
         option.innerHTML = flt_name;
         option.value = flt_name;
         sSelectFltNamed.append(option)
     }
-    sSelectFltNamed.selectedIndex = 0;
+    if (sCurFilterName == null)
+        updateCurFilter("");
+    else    
+        sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
 }
 
 function checkTabNavigation(tag_name) {
@@ -183,9 +193,34 @@ function checkTabNavigation(tag_name) {
     }
 }
 
-function checkCurFilters(mode_cur_filter) {
+function checkCurFilters(mode_filter) {
+    if (mode_filter == 0) {
+        updateCurFilter((sCheckFltCurrent.checked)?sSelectFltNamed.value:"");
+    } else {
+        updateCurFilter((sCurFilterSeq)? "_current_":"");
+    }
 }
 
 function pickNamedFilter() {
+    updateCurFilter(sSelectFltNamed.value);
 }
 
+function updateCurFilter(filter_name, force_it) {
+    if (!force_it && filter_name == sCurFilterName)
+        return;
+    sCurFilterName = filter_name;
+    if (filter_name == "_current_" && !sCurFilterSeq)
+        filter_name = "";
+    loadList(filter_name);
+    sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
+    if (sCurFilterSeq.length > 0) {
+        sElFltCurState.innerHTML = sCurFilterSeq.length + " rules";
+        sCheckFltCurrent.disabled = false;
+        sCheckFltCurrent.checked = (sCurFilterName == "_current_");
+    } else {
+        sElFltCurState.innerHTML = "no rules";
+        sCheckFltCurrent.disabled = true;
+        sCheckFltCurrent.checked = false;
+    }
+    sCheckFltNamed.checked = (sCurFilterName != "_current_");
+}

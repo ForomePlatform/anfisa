@@ -4,6 +4,7 @@ class HotIndex:
         self.mDataSet = data_set
         self.mLegend  = legend
         self.mRecords = []
+        self.mFilterCache = dict()
         for rec_no in range(self.mDataSet.getSize()):
             rec = self.mLegend.getColCount() * [None]
             self.mLegend.fillRecord(
@@ -14,10 +15,6 @@ class HotIndex:
         for rec_no, rec in enumerate(self.mRecords):
             self.mLegend.updateHotRecordPart(
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
-
-
-    def getRecNoSeq(self):
-        return self.mRecNoSeq[:]
 
     @staticmethod
     def not_NONE(val):
@@ -58,6 +55,7 @@ class HotIndex:
             len(idx_set - base_idx_set) == 0)
 
     def _applyCrit(self, rec_no_seq, crit_info):
+        print("cr:", crit_info);
         if crit_info[0] == "numeric":
             unit_name, ge_mode, the_val, use_undef = crit_info[1:]
             if ge_mode > 0:
@@ -94,20 +92,26 @@ class HotIndex:
         return [self.mRecords[rec_no]
             for rec_no in rec_no_seq]
 
-    def _makeStat(self, rec_no_seq, expert_mode):
-        return self.mLegend.collectStatJSon(
-            self._iterRecords(rec_no_seq), expert_mode)
-
-    def makeJSonReport(self, filter_seq, random_mode, expert_mode):
+    def cacheFilter(self, filter_name, filter_seq):
+        print("f:", filter_seq);
         rec_no_seq = range(self.mDataSet.getSize())[:]
         for crit_info in filter_seq:
             rec_no_seq = self._applyCrit(rec_no_seq, crit_info)
             if len(rec_no_seq) == 0:
                 break
-        ret = self.mDataSet.makeJSonReport(
-            sorted(rec_no_seq), random_mode)
-        ret["stats"] = self._makeStat(rec_no_seq, expert_mode)
-        return ret
+        self.mFilterCache[filter_name] = (filter_seq, rec_no_seq);
+
+    def makeStatReport(self, filter_name, expert_mode,
+            filter_seq = None):
+        if filter_seq is not None:
+            self.cacheFilter(filter_name, filter_seq)
+        return self.mLegend.collectStatJSon(self._iterRecords(
+            self.getRecNoSeq(filter_name)), expert_mode)
+
+    def getRecNoSeq(self, filter_name = None):
+        if filter_name in self.mFilterCache:
+            return self.mFilterCache[filter_name][1]
+        return range(self.mDataSet.getSize())[:]
 
     def getRecFilters(self, rec_no, expert_mode):
         return self.mLegend.getUnit("hot").getRecFilters(

@@ -1,4 +1,4 @@
-var sCurFilter = [];
+var sCurFilterSeq = [];
 var sFilterHistory = [];
 var sFilterRedoStack = [];
 
@@ -81,6 +81,27 @@ function initFilters() {
     sCheckCurCritModOnly    = document.getElementById("crit-mode-only");
     sCheckCurCritModAnd     = document.getElementById("crit-mode-and");
     sCheckCurCritModNot     = document.getElementById("crit-mode-not");
+    loadStat();
+}
+
+function loadStat(filter_seq, filter_name){
+    if (!filter_name) 
+        filter_name = "_current_";
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var info = JSON.parse(this.responseText);
+            setupStatList(info);
+        }
+    };
+    xhttp.open("POST", "stat", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    args = "ws=" + parent.window.sWorkspaceName + 
+        "&m=" + encodeURIComponent(parent.window.sAppModes) + 
+        "&filter=" + encodeURIComponent(filter_name);
+    if (filter_seq != null) 
+        args += "&criteria=" + encodeURIComponent(JSON.stringify(filter_seq)); 
+    xhttp.send(args); 
 }
 
 /*************************************/
@@ -112,13 +133,14 @@ function setupStatList(stat_list) {
                 if (val_min == val_max) {
                     list_stat_rep.push('<span class="stat-ok">' + val_min + '</span>');
                 } else {
-                    list_stat_rep.push('<span class="stat-ok">' + val_min + ' =< ...<= ' +
-                        val_max + ' </span>');
+                    list_stat_rep.push('<span class="stat-ok">' + val_min + 
+                        ' =< ...<= ' + val_max + ' </span>');
                 }
-                list_stat_rep.push(': <span class="stat-count">' + count + ' records</span>');
+                list_stat_rep.push(': <span class="stat-count">' + count + 
+                    ' records</span>');
                 if (cnt_undef > 0) 
-                    list_stat_rep.push('<span class="stat-undef-count">+' + cnt_undef + 
-                        ' undefined</span>');
+                    list_stat_rep.push('<span class="stat-undef-count">+' + 
+                        cnt_undef + ' undefined</span>');
             }
         } else {
             var_list = unit_stat[2];
@@ -140,8 +162,8 @@ function setupStatList(stat_list) {
     sDivStatList.innerHTML = list_stat_rep.join('\n');
     
     list_crit_rep = [];
-    for (idx = 0; idx < sCurFilter.length; idx++) {
-        crit = sCurFilter[idx];
+    for (idx = 0; idx < sCurFilterSeq.length; idx++) {
+        crit = sCurFilterSeq[idx];
         list_crit_rep.push('<div id="crit--' + idx + '" class="crit-descr" ' +
           'onclick="selectCrit(\'' + idx + '\');">');
         list_crit_rep.push('&bull;&emsp;' + getCritDescripton(crit, false));
@@ -151,8 +173,8 @@ function setupStatList(stat_list) {
     
     sCurStatUnit = null;
     sCurCritNo = null;
-    if (sCurFilter.length > 0) 
-        selectCrit(sCurFilter.length - 1);
+    if (sCurFilterSeq.length > 0) 
+        selectCrit(sCurFilterSeq.length - 1);
     else
         selectStat(stat_list[0][1]);
 }
@@ -170,7 +192,7 @@ function selectStat(stat_unit){
     }
     sCurStatUnit = stat_unit;
     new_unit_el.className = new_unit_el.className + " cur";
-    if (sCurCritNo == null || sCurFilter[sCurCritNo][1] != sCurStatUnit)
+    if (sCurCritNo == null || sCurFilterSeq[sCurCritNo][1] != sCurStatUnit)
         selectCrit(findCrit(sCurStatUnit));
     setupStatUnit();
 }
@@ -193,7 +215,7 @@ function selectCrit(crit_no){
     sCurCritNo = crit_no;
     if (new_crit_el != null) {
         new_crit_el.className = new_crit_el.className + " cur";
-        selectStat(sCurFilter[crit_no][1]);
+        selectStat(sCurFilterSeq[crit_no][1]);
     }
 }
 
@@ -418,7 +440,7 @@ function checkCurCrit(option) {
                 sel_names.push(sOpEnumList[j][0]);
         }
         if (sel_names.length > 0) {
-            sOpAddIdx = (sOpUpdateIdx == null)? sCurFilter.length:sOpUpdateIdx + 1;
+            sOpAddIdx = (sOpUpdateIdx == null)? sCurFilterSeq.length:sOpUpdateIdx + 1;
             sOpCriterium = ["enum", sCurStatUnit, enum_mode, sel_names];
         } else {
             sOpUpdateIdx = null;
@@ -443,7 +465,7 @@ function checkNumericOpMin() {
                 sOpError = "Lower bound is above minimal value";
             } else {
                 idx = findCrit(sCurStatUnit);
-                sOpAddIdx = (idx == null)? sCurFilter.length:idx + 1;
+                sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
             }
         } else {
             selectCrit(sOpUpdateIdx);
@@ -466,7 +488,7 @@ function checkNumericOpMax() {
                 sOpError = "Upper bound is below maximum value";
             } else {
                 idx = findCrit(sCurStatUnit);
-                sOpAddIdx = (idx == null)? sCurFilter.length:idx + 1;
+                sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
             }
         } else {
             selectCrit(sOpUpdateIdx);

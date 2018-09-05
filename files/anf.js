@@ -22,10 +22,9 @@ function initWin(workspace_name, app_modes) {
     document.getElementById("list-rand-portion").value = sCurRandPortion;
     initMonitor();
     initFilters();
-    loadList();
 }
 
-function loadList() {
+function loadList(filter_name) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -35,9 +34,10 @@ function loadList() {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + 
-        "&m=" + encodeURIComponent(sAppModes) + "&filter="+ 
-        encodeURIComponent(JSON.stringify(sCurFilter))); 
+    args = "ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes);
+    if (filter_name)
+        args += "&filter=" + encodeURIComponent(filter_name);
+    xhttp.send(args); 
 }
 
 function setupList(info) {
@@ -47,9 +47,8 @@ function setupList(info) {
     var el = document.getElementById("list-report");
     var el_p = document.getElementById("list-rand-portion");
     var rep = "Records: <b>" + info["filtered"] + "<b>";
-    if (sCurFilter.length > 0) {
-        rep += "/" + info["total"] + " [" + sCurFilter.length + "]";
-    }
+    if (info["total"] != info["filtered"]) 
+        rep += "/" + info["total"];
     if (info["list-mode"] == "samples") {
         rep += " Samples:";
         el_p.style.visibility = "visible";
@@ -61,7 +60,6 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
-    setupStatList(info["stats"]);
 }
 
 function refreshRecList() {
@@ -82,12 +80,13 @@ function refreshRecList() {
             ');">' + sRecList[idx][1] + '</div>');
     }
     document.getElementById("rec-list").innerHTML = rep.join('\n');
-    sCurRecNo = null;
     if (sViewRecNoSeq.length == 0) {
         window.frames['rec-frame1'].location.replace("norecords");
         window.frames['rec-frame2'].location.replace("norecords");
     } else {
-        changeRec(0);
+        idx = sViewRecNoSeq.indexOf(sCurRecNo)
+        sCurRecNo = null;
+        changeRec((idx >=0)? idx:0);
     }
 }
 

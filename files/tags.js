@@ -77,6 +77,8 @@ function setupTags(info) {
     document.getElementById("tg-tags-list").innerHTML = rep.join('\n');
     if (sTagOrder.length > 0) {
         idx = sTagOrder.indexOf(sPrevTag);
+        if (idx < 0)
+            idx = sTagOrder.indexOf(window.parent.sCurTag);
         pickTag((idx >=0)? idx: 0);
     }
     

@@ -1,8 +1,8 @@
 /*************************************/
 function findCrit(unit_name, mode) {
-    for (idx = 0; idx < sCurFilter.length; idx++) {
-        if (sCurFilter[idx][1] == unit_name) {
-            if (mode == undefined || sCurFilter[idx][2] == mode)
+    for (idx = 0; idx < sCurFilterSeq.length; idx++) {
+        if (sCurFilterSeq[idx][1] == unit_name) {
+            if (mode == undefined || sCurFilterSeq[idx][2] == mode)
                 return idx;
         }
     }
@@ -50,49 +50,54 @@ function getCritDescripton(crit, short_form) {
 /*************************************/
 function filterAddCrit() {
     if (sOpCriterium != null && sOpAddIdx != null) {
-        sFilterHistory.push(sCurFilter);
-        sCurFilter = sCurFilter.slice();
-        sCurFilter.splice(sOpAddIdx, 0, sOpCriterium);
+        sFilterHistory.push(sCurFilterSeq);
+        sCurFilterSeq = sCurFilterSeq.slice();
+        sCurFilterSeq.splice(sOpAddIdx, 0, sOpCriterium);
         sFilterRedoStack = [];
         filterModOff();
-        loadList();
+        loadStat(sCurFilterSeq);
+        updateCurFilter("_current_", true);
     }
 }
 
 function filterUpdateCrit() {
     if (sOpCriterium != null && sOpUpdateIdx != null) {
-        sFilterHistory.push(sCurFilter);
-        sCurFilter = sCurFilter.slice();
-        sCurFilter[sOpUpdateIdx] = sOpCriterium;
+        sFilterHistory.push(sCurFilterSeq);
+        sCurFilterSeq = sCurFilterSeq.slice();
+        sCurFilterSeq[sOpUpdateIdx] = sOpCriterium;
         sFilterRedoStack = [];
         filterModOff();
-        loadList();
+        loadStat(sCurFilterSeq);
+        updateCurFilter("_current_", true);
     }
 }
 
 function filterDeleteCrit() {
     if (sCurCritNo != null) {
-        sFilterHistory.push(sCurFilter);
-        sCurFilter = sCurFilter.slice();
-        sCurFilter.splice(sCurCritNo, 1);
+        sFilterHistory.push(sCurFilterSeq);
+        sCurFilterSeq = sCurFilterSeq.slice();
+        sCurFilterSeq.splice(sCurCritNo, 1);
         sFilterRedoStack = [];
-        loadList();
+        loadStat(sCurFilterSeq);
+        updateCurFilter("_current_", true);
     }
 }
 
 function filterUndoCrit() {
     if (sFilterHistory.length > 0) {
-        sFilterRedoStack.push(sCurFilter);
-        sCurFilter = sFilterHistory.pop();
-        loadList();
+        sFilterRedoStack.push(sCurFilterSeq);
+        sCurFilterSeq = sFilterHistory.pop();
+        loadStat(sCurFilterSeq);
+        updateCurFilter("_current_", true);
     }        
 }
 
 function filterRedoCrit() {
     if (sFilterRedoStack.length > 0) {
-        sFilterHistory.push(sCurFilter);
-        sCurFilter = sFilterRedoStack.pop();
-        loadList();
+        sFilterHistory.push(sCurFilterSeq);
+        sCurFilterSeq = sFilterRedoStack.pop();
+        loadStat(sCurFilterSeq);
+        updateCurFilter("_current_", true);
     }            
 }
 

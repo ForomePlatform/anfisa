@@ -41,6 +41,9 @@ class AnfisaService:
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
+        if rq_path == "/stat":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formStat(rq_args))
         if rq_path == "/tags":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTags(rq_args))
@@ -129,12 +132,25 @@ class AnfisaService:
     def formList(self, rq_args):
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
-        data_index = workspace.getIndex()
         modes = rq_args.get("m", "")
-        filter = json.loads(rq_args.get("filter"))
-        report = data_index.makeJSonReport(filter,
-            'R' in modes, 'X' in modes)
+        rec_no_seq = workspace.getIndex().getRecNoSeq(
+            rq_args.get("filter"))
+        report = workspace.mDataSet.makeJSonReport(
+            sorted(rec_no_seq), 'R' in modes)
         report["workspace"] = workspace.getName();
+        output.write(json.dumps(report))
+        return output.getvalue()
+
+    #===============================================
+    def formStat(self, rq_args):
+        output = StringIO()
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        modes = rq_args.get("m", "")
+        criteria = rq_args.get("criteria")
+        if criteria is not None:
+            criteria = json.loads(criteria)
+        report = workspace.getIndex().makeStatReport(
+            rq_args.get("filter"), 'X' in modes, criteria)
         output.write(json.dumps(report))
         return output.getvalue()
 

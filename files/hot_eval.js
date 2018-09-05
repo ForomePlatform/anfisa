@@ -111,7 +111,8 @@ function hotItemReset() {
 function setupItemChange(info) {
     if (info["status"] == "OK") {
         hotEvalModOff();
-        loadList();
+        updateCurFilter(sCurFilterName, true);
+        loadStat();
     } else {
         document.getElementById("hot-eval-item-errors").innerHTML =
             info["error"]; 
