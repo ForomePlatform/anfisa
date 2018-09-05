@@ -19,6 +19,7 @@ def formTopPage(output, title, html_base,
     <link rel="stylesheet" href="filters.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="hot_eval.css" type="text/css" media="all"/>
     <script type="text/javascript" src="anf.js"></script>
+    <script type="text/javascript" src="monitor.js"></script>
     <script type="text/javascript" src="filters.js"></script>
     <script type="text/javascript" src="criteria.js"></script>
     <script type="text/javascript" src="hot_eval.js"></script>
@@ -27,23 +28,57 @@ def formTopPage(output, title, html_base,
     <div id="all">
       <div id="top">
          <div id="top-ws">
-           Workspace: <span id="ws-name"></span><br/>
+          <div id="ws-info">
+           Workspace:
+           <span id="ws-name"></span><br/>
+          </div>
+          <div id="list-info">
            <span id="list-report"></span>
            <input id="list-rand-portion" type="number" min="1" max="5"
              onchange="listRandPortion();"/>
+          </div>
          </div>
          <div  id="top-filters">
-            <input id="cur-filters-check" type="checkbox"
-                onchange="checkCurFilters();"/>
-            <button onclick="filterModOn();">Filter</button>
-            <button onclick="hotEvalModOn();">Hot Evaluations</button>
+          Filters:
+          <div id="flt-ctrl">
+            <div id="flt-named">
+              <input id="flt-check-named" type="checkbox"
+                onchange="checkCurFilters(0);"/>
+              <select id="flt-named-select" onchange="pickNamedFilter();">
+                <option value=""></option>
+              </select>
+            </div>
+            <div id="flt-cur">
+              <input id="flt-check-current" type="checkbox"
+                onchange="checkCurFilters(1);"/>
+              <span id="flt-cur-setup" title="Setup filter"
+                onclick="filterModOn();">&#9660;</span>
+              <span id="flt-current-state" onclick="filterModOn();">
+              </span>
+            </div>
+          </div>
          </div>
          <div id="top-tags">
-            Tags:
-            <input id="cur-tag-check" type="checkbox"
-                onchange="checkCurTag();"/>
-            <select id="cur-tag" onchange="changeDataSet();">
-            </select>
+            <div id="tags-ctrl">
+              Tags:
+              <select id="cur-tag" onchange="pickTag();">
+                <option value=""></option>
+              </select>
+              <span id="cur-tag-count"></span>
+            </div>
+            <div id="cur-tag-nav">
+              <span id="cur-tag-nav-first" class="tags-nav"
+                onclick="tagNav(0);">|&#9664;</span>
+              <span id="cur-tag-count-prev" class="tags-count"></span>
+              <span id="cur-tag-nav-prev" class="tags-nav"
+                onclick="tagNav(1);">&#9664;</span>
+              <span id="cur-tag-here">&#11044;</span>
+              <span id="cur-tag-nav-next" class="tags-nav"
+                onclick="tagNav(3);">&#9654;</span>
+              <span id="cur-tag-count-next" class="tags-count"></span>
+              <span id="cur-tag-nav-last" class="tags-nav"
+                onclick="tagNav(4);">&#9654;|</span>
+            </div>
          </div>
       </div>
       <div id="bottom">
@@ -54,9 +89,9 @@ def formTopPage(output, title, html_base,
           </div>
         </div>
         <div id="bottom-right">
-            <iframe id="rec-frame1" name="rec-frame1" src="norecords">
-            </iframe>
             <iframe id="rec-frame2" name="rec-frame2" src="norecords">
+            </iframe>
+            <iframe id="rec-frame1" name="rec-frame1" src="norecords">
             </iframe>
         </div>
       </div>
@@ -218,6 +253,8 @@ def tagsBlock(output):
   <div id="tg-wrap-filters">
     <div id="tg-filters">
         Filters: <span id="tg-filters-list"></span>
+        <span id="run-hot-eval" title="Hot evaluations"
+            onclick="window.parent.hotEvalModOn();">&#11085;</span>
     </div>
   </div>
   <div id="tg-tags">

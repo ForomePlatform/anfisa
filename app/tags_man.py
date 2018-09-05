@@ -14,9 +14,8 @@ class TagsManager:
                     if self._goodKey(tag):
                         self.mTagSets[tag].add(rec_no)
 
-    def getTagReport(self):
-        return sorted([(tag, len(tag_set))
-            for tag, tag_set in self.mTagSets.items()])
+    def getTagRecordList(self, tag):
+        return sorted(self.mTagSets[tag])
 
     def getTagList(self):
         return sorted(self.mTagSets.keys())

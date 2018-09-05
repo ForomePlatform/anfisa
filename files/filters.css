@@ -262,3 +262,10 @@ span.stat-bad {
     color: red;
     font-style: italic;
 }
+
+span#run-hot-eval{
+    cursor: pointer;
+    border: 1px solid black;
+    float: right;
+    margin-right: 10px;
+}

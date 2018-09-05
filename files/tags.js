@@ -184,6 +184,7 @@ function tagEnvSave() {
         tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
         sPrevTag = sInpTagName.value;
         loadTags(tags_to_update);
+        window.parent.checkTabNavigation(sPrevTag);
     }
 }
 
@@ -200,6 +201,7 @@ function tagEnvDelete() {
         sPrevTag = null;
         sCurTagIdx = null;
         loadTags(tags_to_update);
+        window.parent.checkTabNavigation(tag_name);
     }
 }
 
@@ -208,6 +210,7 @@ function tagEnvUndo() {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("UNDO");
+        window.parent.checkTabNavigation(null);
     }
 }
 
@@ -216,6 +219,7 @@ function tagEnvRedo() {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("REDO");
+        window.parent.checkTabNavigation(null);
     }
 }
 

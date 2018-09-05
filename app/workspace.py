@@ -26,6 +26,9 @@ class Workspace:
     def getIndex(self):
         return self.mIndex
 
+    def getTagsMan(self):
+        return self.mTagsMan
+
     def getFirstAspectID(self):
         return self.mViewSetup.getAspects()[0].getName()
 

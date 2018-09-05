@@ -96,6 +96,10 @@ function setupStatList(stat_list) {
         list_stat_rep.push('<div id="stat--' + unit_name + '" class="stat-unit" ' +
           'onclick="selectStat(\'' + unit_name + '\');">');
         list_stat_rep.push('<span class="stat-unit-name">' + unit_name + '</span>');
+        if (unit_name == "hot") {
+            list_stat_rep.push('<span id="run-hot-eval" title="Hot evaluations" ' +
+                ' onclick="hotEvalModOn();">&#11085;</span>')
+        }
         if (unit_type == "int" || unit_type == "float") {
             list_stat_rep.push('<br/>');
             val_min   = unit_stat[2];
@@ -130,10 +134,6 @@ function setupStatList(stat_list) {
             if (var_list.length > 4) {
                 list_stat_rep.push('<p><span class="stat-comment">...and ' + (var_list.length - 4) + ' variants more...</span></p>');
             }
-        }
-        if (unit_name == "hot") {
-            list_stat_rep.push('<button onclick="hotEvalModOn();"' +
-                '>Hot Evaluations</button>')
         }
         list_stat_rep.push('</div>')
     }

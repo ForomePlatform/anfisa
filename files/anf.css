@@ -90,17 +90,19 @@ span#ws-name {
 }
 
 #top-filters {
-   flex-grow: 1;
+   flex-grow: 2;
    margin: 5px;
    border: none;
-   text-align: center;
+   text-align: left;
+   display: flex;
+   margin-right: 15px;
 }
 
 #top-tags{
    flex-grow: 1;
    margin: 5px;
    border: none;
-   text-align: right;
+   text-align: left;
 }
 
 /********************Left area*****************************/
@@ -197,4 +199,62 @@ div.rec-label.press {
     padding: 0px;
     margin: 0px;
     display: block;
+}
+
+/********************Top filters*****************************/
+div#flt-ctrl {
+  display: block;
+  flex-grow: 1;
+}
+
+div#list-info {
+  display: flex;
+  vertical-align: bottom;
+}
+
+div#flt-cur {
+    display: flex;
+}
+
+span#list-report {
+  vertical-align: bottom;
+}
+
+span#flt-current-state {
+    margin-left: 10px;
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+span#cur-tag-count{
+    font-size: 10px;
+    width: 150px;
+}
+
+span#cur-tag-here.tags-nav {
+    cursor: inherit;
+}
+
+span.tags-nav {
+    cursor: pointer;
+}
+
+span.tags-nav-disable {
+    cursor: inherit;
+    color: grey;
+}
+
+
+span.tags-count {
+    cursor: inherit;
+    font-size: 9px;
+    vertical-align: top;
+}
+
+span#flt-cur-setup {
+    margin-left: 6px;
+    cursor: pointer;
+    color: black;
+    padding: 1px;
+    background-color: white;
 }

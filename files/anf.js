@@ -20,6 +20,7 @@ function initWin(workspace_name, app_modes) {
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
+    initMonitor();
     initFilters();
     loadList();
 }
@@ -50,7 +51,7 @@ function setupList(info) {
         rep += "/" + info["total"] + " [" + sCurFilter.length + "]";
     }
     if (info["list-mode"] == "samples") {
-        rep += "<br/>Samples:";
+        rep += " Samples:";
         el_p.style.visibility = "visible";
         sRecSamples = true;
     } else {
@@ -90,17 +91,17 @@ function refreshRecList() {
     }
 }
 
-function changeRec(rec_idx) {
-    if (sCurRecNo == rec_idx) 
+function changeRec(rec_no) {
+    if (sCurRecNo == rec_no) 
         return;
-    var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_idx]);
+    var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_no]);
     if (new_rec_el == null) 
         return;
     if (sCurRecNo != null) {
         var prev_el = document.getElementById("li--" + sViewRecNoSeq[sCurRecNo]);
         prev_el.className = prev_el.className.replace(" press", "");
     }
-    sCurRecNo = rec_idx;
+    sCurRecNo = rec_no;
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace(
@@ -109,6 +110,7 @@ function changeRec(rec_idx) {
     window.frames['rec-frame2'].location.replace(
         "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
         "&rec=" + sViewRecNoSeq[sCurRecNo] + "&port=2");
+    updateTagNavigation();
 }
 
 function onKey(event_key) {
