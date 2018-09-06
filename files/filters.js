@@ -1,6 +1,7 @@
 var sCurFilterSeq = [];
 var sFilterHistory = [];
 var sFilterRedoStack = [];
+var sBaseFilterName = "_current_";
 
 var sStatList = null;
 var sStatUnitIdxs = null;
@@ -81,12 +82,11 @@ function initFilters() {
     sCheckCurCritModOnly    = document.getElementById("crit-mode-only");
     sCheckCurCritModAnd     = document.getElementById("crit-mode-and");
     sCheckCurCritModNot     = document.getElementById("crit-mode-not");
+    initCriteria();
     loadStat();
 }
 
-function loadStat(filter_seq, filter_name){
-    if (!filter_name) 
-        filter_name = "_current_";
+function loadStat(add_instr){
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -98,19 +98,25 @@ function loadStat(filter_seq, filter_name){
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     args = "ws=" + parent.window.sWorkspaceName + 
         "&m=" + encodeURIComponent(parent.window.sAppModes) + 
-        "&filter=" + encodeURIComponent(filter_name);
-    if (filter_seq != null) 
-        args += "&criteria=" + encodeURIComponent(JSON.stringify(filter_seq)); 
+        "&filter=" + encodeURIComponent(sBaseFilterName);
+    if (sBaseFilterName == "_current_") 
+        args += "&criteria=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
+    if (add_instr)
+        args += "&instr=" + encodeURIComponent(add_instr);
     xhttp.send(args); 
 }
 
 /*************************************/
-function setupStatList(stat_list) {
-    sStatList = stat_list;
+function setupStatList(info) {
+    sStatList = info["stat-list"];
+    sBaseFilterName = info["filter"];
     sStatUnitIdxs = {}
+    if (sCurFilterSeq == null) 
+        sCurFilterSeq = info["criteria"];
+    _checkNamedFilters(info["all-filters"]);
     var list_stat_rep = [];
-    for (idx = 0; idx < stat_list.length; idx++) {
-        unit_stat = stat_list[idx];
+    for (idx = 0; idx < sStatList.length; idx++) {
+        unit_stat = sStatList[idx];
         unit_type = unit_stat[0];
         unit_name = unit_stat[1];
         sStatUnitIdxs[unit_name] = idx;
@@ -176,9 +182,27 @@ function setupStatList(stat_list) {
     if (sCurFilterSeq.length > 0) 
         selectCrit(sCurFilterSeq.length - 1);
     else
-        selectStat(stat_list[0][1]);
+        selectStat(sStatList[0][1]);
+    updateFilterOpMode();
 }
 
+function _checkNamedFilters(all_filters) {
+    setupNamedFilters(all_filters);
+    for (idx = 0; idx < sFilterHistory.length; idx++) {
+        hinfo = sFilterHistory[idx];
+        if (hinfo[0] != "_current_" && all_filters.indexOf(hinfo[0]) < 0)
+            hinfo[0] = "_current_";
+    }
+    for (idx = 0; idx < sFilterRedoStack.length; idx++) {
+        hinfo = sFilterRedoStack[idx];
+        if (hinfo[0] != "_current_" && all_filters.indexOf(hinfo[0]) < 0)
+            hinfo[0] = "_current_";
+    }
+    if (sBaseFilterName != "_current_" && 
+            all_filters.indexOf(sBaseFilterName) < 0)
+        sBaseFilterName = "_current_";
+}
+    
 /*************************************/
 function selectStat(stat_unit){
     if (sCurStatUnit == stat_unit) 

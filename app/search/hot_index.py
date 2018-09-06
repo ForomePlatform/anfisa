@@ -11,10 +11,18 @@ class HotIndex:
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
             self.mRecords.append(rec)
 
-    def updateHotColumns(self):
+    def updateHotEnv(self):
         for rec_no, rec in enumerate(self.mRecords):
             self.mLegend.updateHotRecordPart(
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
+        to_update = []
+        for filter_name, filter_info in self.mFilterCache.items():
+            if any([crit_info[1] == "hot"
+                    for crit_info in  filter_info[0]]):
+                to_update.append(filter_name)
+        for filter_name in to_update:
+            self.cacheFilter(filter_name,
+                self.mFilterCache[filter_name][0])
 
     @staticmethod
     def not_NONE(val):
@@ -55,7 +63,6 @@ class HotIndex:
             len(idx_set - base_idx_set) == 0)
 
     def _applyCrit(self, rec_no_seq, crit_info):
-        print("cr:", crit_info);
         if crit_info[0] == "numeric":
             unit_name, ge_mode, the_val, use_undef = crit_info[1:]
             if ge_mode > 0:
@@ -93,7 +100,6 @@ class HotIndex:
             for rec_no in rec_no_seq]
 
     def cacheFilter(self, filter_name, filter_seq):
-        print("f:", filter_seq);
         rec_no_seq = range(self.mDataSet.getSize())[:]
         for crit_info in filter_seq:
             rec_no_seq = self._applyCrit(rec_no_seq, crit_info)
@@ -101,12 +107,30 @@ class HotIndex:
                 break
         self.mFilterCache[filter_name] = (filter_seq, rec_no_seq);
 
+    def dropFilter(self, filter_name):
+        if filter_name in self.mFilterCache:
+            del self.mFilterCache[filter_name]
+
+    def getFilterList(self):
+        ret = []
+        for filter_name in self.mFilterCache.keys():
+            if not filter_name.startswith('_'):
+                ret.append(filter_name)
+        return sorted(ret)
+
     def makeStatReport(self, filter_name, expert_mode,
             filter_seq = None):
         if filter_seq is not None:
             self.cacheFilter(filter_name, filter_seq)
-        return self.mLegend.collectStatJSon(self._iterRecords(
-            self.getRecNoSeq(filter_name)), expert_mode)
+        all_filters = self.getFilterList()
+        report = {
+            "stat-list": self.mLegend.collectStatJSon(self._iterRecords(
+                self.getRecNoSeq(filter_name)), expert_mode),
+            "all-filters": all_filters,
+            "filter": filter_name}
+        if (filter_name in all_filters):
+            report["criteria"] = self.mFilterCache[filter_name][0]
+        return report
 
     def getRecNoSeq(self, filter_name = None):
         if filter_name in self.mFilterCache:

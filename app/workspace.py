@@ -13,6 +13,8 @@ class Workspace:
         self.mViewSetup = self.mDataSet.getViewSetup()
         self.mTagsMan = TagsManager(self)
         self.mIndex  = HotIndex(self.mDataSet, self.mLegend)
+        for filter_name, criteria in self.mMongoConn.getFilters():
+            self.mIndex.cacheFilter(filter_name, criteria)
 
     def getName(self):
         return self.mName
@@ -42,7 +44,7 @@ class Workspace:
         report = self.mLegend.getHotUnit().modifyHotData(
             hot_setup, expert_mode, item, content)
         if report["status"] == "OK":
-            self.mIndex.updateHotColumns()
+            self.mIndex.updateHotEnv()
         return report
 
     def makeTagsJSonReport(self, rec_no,
@@ -51,4 +53,19 @@ class Workspace:
         report["filters"] = self.mIndex.getRecFilters(
             rec_no, expert_mode),
         return report
+
+    def makeStatReport(self, filter_name, expert_mode, criteria, instr):
+        if instr:
+            op, q, flt_name = instr.partition('/')
+            if op == "UPDATE":
+                self.mMongoConn.setFilter(flt_name, criteria)
+                self.mIndex.cacheFilter(flt_name, criteria)
+                filter_name = flt_name
+            elif op == "DROP":
+                self.mMongoConn.dropFilter(flt_name)
+                self.mIndex.dropFilter(flt_name)
+            else:
+                assert False
+        return self.mIndex.makeStatReport(
+            filter_name, expert_mode, criteria)
 

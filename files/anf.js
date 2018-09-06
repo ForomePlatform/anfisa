@@ -117,6 +117,10 @@ function onKey(event_key) {
         changeRec(sCurRecNo - 1);
     if (event_key.code == "ArrowDown") 
         changeRec(sCurRecNo + 1);
+    if (event_key.code == "ArrowLeft") 
+        tagNav(1);
+    if (event_key.code == "ArrowRight") 
+        tagNav(3);
 }
 
 function onClick(event_ms) {
@@ -142,11 +146,13 @@ function softScroll(nd) {
 }
 
 function filterModOn() {
+    clearFilterOpMode();
     sNodeHotEvalBack.style.display = "none";
     sNodeFilterBack.style.display = "block";
 }
 
 function filterModOff() {
+    clearFilterOpMode();
     sNodeFilterBack.style.display = "none";
 }
 

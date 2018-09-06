@@ -111,14 +111,17 @@ def formTopPage(output, title, html_base,
             <button id="filter-update-crit" onclick="filterUpdateCrit();">
               Update
             </button>
-            <button id="filter-delete-crit" onclick="filterDeleteCrit();">
-              Delete
+            <button id="filter-delete-crit"
+                onclick="filterDeleteCrit();">
+              &times;
             </button>
-            <button id="filter-undo-crit" onclick="filterUndoCrit();">
-              Undo
+            <button id="filter-undo-crit" title="Undo"
+                onclick="filterUndoCrit();">
+              &#8630;
             </button>
-            <button id="filter-redo-crit" onclick="filterRedoCrit();">
-              Redo
+            <button id="filter-redo-crit" title="Delete"
+                onclick="filterRedoCrit();">
+              &#8631;
             </button>
             <span id="close-filter" onclick="filterModOff();">&times;</span>
           </div>
@@ -167,9 +170,39 @@ def formTopPage(output, title, html_base,
               </div>
             </div>
           </div>
-          <div id="filter-list-criteria">
-            <div id="crit-list">
+          <div id="filter-wrap-list-criteria">
+            <div id="filter-list-criteria">
+              <div id="crit-list">
+              </div>
             </div>
+          </div>
+          <div id="filters-ctrl">
+            <button id="filter-filters-on" onclick="filterFiltersSwitch();">
+              Filters...
+            </button>
+            <button id="filter-load-flt" class="op-button"
+                onclick="filterLoadFilter();">
+              Load
+            </button>
+            <div id="filter-name-combo" class="combobox">
+              <select id="filter-name-filter-list"
+                  onchange="fltFilterListSel();">
+                <option value=""></option>
+              <input id="filter-name-filter" type="text" />
+              </select>
+            </div>
+            <button id="filter-create-flt" class="op-button"
+                onclick="filterUpdateFilter(0);">
+              Create
+            </button>
+            <button id="filter-modify-flt" class="op-button"
+                onclick="filterUpdateFilter(1);">
+              Modify
+            </button>
+            <button id="filter-delete-flt" class="op-button"
+                onclick="filterDeleteFilter();">
+              Delete
+            </button>
           </div>
         </div>
       </div>

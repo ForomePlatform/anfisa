@@ -90,7 +90,6 @@ div#filter-cur-crit {
 }
 
 div#filter-list-criteria {
-    flex-grow: 1;
     margin: 0px;
     padding: 0px;
     display: block;
@@ -221,10 +220,12 @@ span#crit-sign {
 div#crit-list {
     margin: 0px;
     padding: 0px;
-    overflow-y: auto;
+    overflow: auto;
     font-size: 12px;
     vertical-align: top;
     height: auto !important;
+    max-height: 100%;
+    max-width: 100%;
 }
 
 div.crit-descr {
@@ -232,8 +233,9 @@ div.crit-descr {
     border: 2px solid brown;
     cursor: hand;
     margin: 3px;
-    padding: 10px;
+    padding: 5px;
     text-align: justify;
+    white-space: normal;
 }
 
 div.crit-descr.cur {
@@ -268,4 +270,27 @@ span#run-hot-eval{
     border: 1px solid black;
     float: right;
     margin-right: 10px;
+}
+
+div#filters-ctrl {
+    height: 30px;
+    vertical-align: bottom;
+    margin: 5px 10px 10px 5px;
+    display: flex;
+}
+
+div#filter-wrap-list-criteria {
+    flex-grow: 1;
+    width: 100%;
+    display: grid;
+    overflow: hidden;
+}
+
+select#filter-name-filter {
+    font-size: 14px;
+}
+
+input#filter-name-filter.bad {
+    background-color: #fff0f0;
+    color: red;
 }

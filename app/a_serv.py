@@ -53,9 +53,6 @@ class AnfisaService:
         if rq_path == "/hot_eval_modify":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formHotEvalModify(rq_args))
-        if rq_path == "/filter_names":
-            return serv_h.makeResponse(mode = "json",
-                content = cls.sMain.formFilterNames(rq_args))
         if rq_path == "/tag_select":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTagSelect(rq_args))
@@ -146,11 +143,13 @@ class AnfisaService:
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
+        filter_name = rq_args.get("filter")
         criteria = rq_args.get("criteria")
-        if criteria is not None:
+        if criteria:
             criteria = json.loads(criteria)
-        report = workspace.getIndex().makeStatReport(
-            rq_args.get("filter"), 'X' in modes, criteria)
+        instr = rq_args.get("instr")
+        report = workspace.makeStatReport(filter_name,
+            'X' in modes, criteria, instr)
         output.write(json.dumps(report))
         return output.getvalue()
 
@@ -173,7 +172,8 @@ class AnfisaService:
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
-        output.write(json.dumps(workspace.getHotEvalData('X' in modes)))
+        output.write(json.dumps(
+            workspace.getHotEvalData('X' in modes)))
         return output.getvalue()
 
     #===============================================
@@ -186,12 +186,6 @@ class AnfisaService:
         content = rq_args.get("cnt")
         output.write(json.dumps(workspace.modifyHotEvalData(
             hot_setup, 'X' in modes, item, content)))
-        return output.getvalue()
-
-    #===============================================
-    def formFilterNames(self, rq_args):
-        output = StringIO()
-        output.write(json.dumps({"filters": []}))
         return output.getvalue()
 
     #===============================================

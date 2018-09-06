@@ -2,7 +2,7 @@ var sCurTag = null;
 var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
-var sAllFilters = null;
+var sAllFilters = [];
 
 var sCheckFltNamed   = null;
 var sCheckFltCurrent = null;
@@ -33,7 +33,7 @@ function initMonitor() {
     sSeqElNavCount = [
         document.getElementById("cur-tag-count-prev"),
         document.getElementById("cur-tag-count-next")]
-    loadNamedFilters();
+    updateCurFilter("");
     loadTagSelection(null);
 }
 
@@ -133,6 +133,14 @@ function updateTagNavigation() {
             cnt[2]++;            
         }
     }
+    if (cnt[0] == 1) {
+        sNavSheet[1] = sNavSheet[0];
+        sNavSheet[0] = -1;
+    }
+    if (cnt[2] == 1) {
+        sNavSheet[3] = sNavSheet[4];
+        sNavSheet[4] = -1;
+    }
     cnt_tag = cnt[0] + cnt[1] + cnt[2];
     rep_cnt = [];
     rep_cnt.push(((cnt_tag == sTagRecList.length))? "In total:":"In filter:");
@@ -154,26 +162,23 @@ function updateTagNavigation() {
     }
 }
 
-function loadNamedFilters() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupNamedFilters(info);
+function setupNamedFilters(all_filters) {
+    clearFilterOpMode();
+    if (all_filters.length == sAllFilters.length) {
+        q_same = true;
+        for (idx = 0; idx < all_filters.length; idx++) {
+            if (all_filters[idx] != sAllFilters[idx]) {
+                q_same = false;
+                break;
+            }
         }
-    };
-    xhttp.open("POST", "filter_names", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + parent.window.sWorkspaceName + 
-        "&m=" + encodeURIComponent(parent.window.sAppModes);
-    xhttp.send(args); 
-}
-
-function setupNamedFilters(info) {
+        if (q_same)
+            return;
+    }
+    sAllFilters = all_filters;
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
         sSelectFltNamed.remove(idx);
     }
-    sAllFilters = info["filters"];
     for (idx = 0; idx < sAllFilters.length; idx++) {
         flt_name = sAllFilters[idx];
         var option = document.createElement('option');
@@ -181,10 +186,8 @@ function setupNamedFilters(info) {
         option.value = flt_name;
         sSelectFltNamed.append(option)
     }
-    if (sCurFilterName == null)
-        updateCurFilter("");
-    else    
-        sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
+    sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
+    checkFiltersAllFilters();
 }
 
 function checkTabNavigation(tag_name) {
@@ -195,9 +198,9 @@ function checkTabNavigation(tag_name) {
 
 function checkCurFilters(mode_filter) {
     if (mode_filter == 0) {
-        updateCurFilter((sCheckFltCurrent.checked)?sSelectFltNamed.value:"");
+        updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
     } else {
-        updateCurFilter((sCurFilterSeq)? "_current_":"");
+        updateCurFilter((sCheckFltCurrent.checked)? "_current_":"");
     }
 }
 
@@ -209,18 +212,22 @@ function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
     sCurFilterName = filter_name;
-    if (filter_name == "_current_" && !sCurFilterSeq)
+    cur_flt_problems = checkCurCriteriaProblem();
+    if (filter_name == "_current_" && cur_flt_problems)
         filter_name = "";
     loadList(filter_name);
     sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
-    if (sCurFilterSeq.length > 0) {
-        sElFltCurState.innerHTML = sCurFilterSeq.length + " rules";
-        sCheckFltCurrent.disabled = false;
-        sCheckFltCurrent.checked = (sCurFilterName == "_current_");
-    } else {
-        sElFltCurState.innerHTML = "no rules";
+    if (cur_flt_problems) {
+        sElFltCurState.innerHTML = cur_flt_problems;
+        sElFltCurState.className = "problems";
         sCheckFltCurrent.disabled = true;
         sCheckFltCurrent.checked = false;
-    }
+    } else {
+        sElFltCurState.innerHTML = sCurFilterSeq.length + " rule" +
+            ((sCurFilterSeq.length>1)? "s":"");
+        sElFltCurState.className = "";
+        sCheckFltCurrent.disabled = false;
+        sCheckFltCurrent.checked = (sCurFilterName == "_current_");
+    } 
     sCheckFltNamed.checked = (sCurFilterName != "_current_");
 }

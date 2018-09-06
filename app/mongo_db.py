@@ -30,3 +30,16 @@ class MongoConnector:
         if len(update_instr) > 0:
             self.mMongo[self.mPath].rec_data.update(
                 {"_id": rec_key}, update_instr, upsert = True)
+
+    def getFilters(self):
+        return [(it["_id"], it["seq"])
+            for it in self.mMongo[self.mPath].filters.find()]
+
+    def setFilter(self, filter_name, criteria):
+        self.mMongo[self.mPath].filters.update(
+            {"_id": filter_name},
+            {"$set": {"seq": criteria}}, upsert = True)
+
+    def dropFilter(self, filter_name):
+        self.mMongo[self.mPath].filters.remove(
+            {"_id": filter_name})
