@@ -200,7 +200,7 @@ function checkFilterName() {
         if (q_named) {
             q_ok = true;
         } else {
-            q_ok = /^[A-Za-z0-9_]+$/i.test(filter_name) && filter_name[0] != '_';
+            q_ok = /^[A-Za-z0-9_\-]+$/i.test(filter_name) && filter_name[0] != '_';
         }
     }
     sInpFilters_Name.className = (q_ok)? "": "bad";

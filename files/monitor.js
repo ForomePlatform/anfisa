@@ -94,6 +94,7 @@ function updateTagNavigation() {
         return;
     }
     if (!sCurTag) {
+        sElCurTagNav.style.visibility = "hidden";
         sElCurTagCount.innerHTML = "";
         return;
     }
@@ -137,13 +138,14 @@ function updateTagNavigation() {
         sNavSheet[1] = sNavSheet[0];
         sNavSheet[0] = -1;
     }
-    if (cnt[2] == 1) {
+    if (cnt[2] == 1 && sNavSheet[4] >= 0) {
         sNavSheet[3] = sNavSheet[4];
         sNavSheet[4] = -1;
     }
     cnt_tag = cnt[0] + cnt[1] + cnt[2];
     rep_cnt = [];
     rep_cnt.push(((cnt_tag == sTagRecList.length))? "In total:":"In filter:");
+    sElCurTagNav.style.visibility = (cnt_tag > 0)? "visible": "hidden";
     if (cnt_tag > 0) {
         rep_cnt.push((cnt[0] + 1) + "/<b>" + cnt_tag + "</b>");
     } else {

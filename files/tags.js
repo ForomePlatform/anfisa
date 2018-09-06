@@ -127,7 +127,7 @@ function updateTagsState(set_content) {
 function checkInputs() {    
     if (sCurTagIdx == null) {
         tag_name = sInpTagName.value.trim();
-        sTagNameOK = /^[A-Za-z0-9_]+$/i.test(tag_name) && tag_name[0] != '_'
+        sTagNameOK = /^[A-Za-z0-9_\-]+$/i.test(tag_name) && tag_name[0] != '_'
             && sTagOrder.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
         
