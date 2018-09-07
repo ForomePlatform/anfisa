@@ -32,8 +32,17 @@ function initTagsEnv() {
 }
 
 function loadTags(tags_to_update){
-    if (parent.window.sCurRecNo == null)
-        return;
+    if (sViewPort > 0) {
+        if (parent.window.sCurRecID == null)
+            return;
+        ws_name = parent.window.sWorkspaceName;
+        rec_id = parent.window.sCurRecID;
+        app_modes = parent.window.sAppModes;
+    } else {
+        ws_name = sAloneWS;
+        rec_id = sAloneRecID;
+        app_modes = "";
+    }
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -43,9 +52,8 @@ function loadTags(tags_to_update){
     };
     xhttp.open("POST", "tags", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + parent.window.sWorkspaceName + 
-        "&m=" + encodeURIComponent(parent.window.sAppModes) + 
-        "&rec=" + parent.window.sCurRecNo;
+    args = "ws=" + ws_name +  "&m=" + encodeURIComponent(app_modes) + 
+        "&rec=" + rec_id;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
     xhttp.send(args); 
@@ -77,13 +85,13 @@ function setupTags(info) {
     document.getElementById("tg-tags-list").innerHTML = rep.join('\n');
     if (sTagOrder.length > 0) {
         idx = sTagOrder.indexOf(sPrevTag);
-        if (idx < 0)
+        if (idx < 0 && sViewPort > 0)
             idx = sTagOrder.indexOf(window.parent.sCurTag);
         pickTag((idx >=0)? idx: 0);
     }
     
-    sBtnUndoTag.disabled = !info["can_undo"];
-    sBtnRedoTag.disabled = !info["can_redo"];
+    sBtnUndoTag.disabled = (sViewPort < 1) || !info["can_undo"];
+    sBtnRedoTag.disabled = (sViewPort < 1) || !info["can_redo"];
 
     updateTagsState(true);
     
@@ -142,16 +150,16 @@ function checkInputs() {
         }
     }
     sInpTagName.className = (sTagNameOK == false)? "bad": "";
-    sInpTagName.disabled  = sCurTagIdx != null;
-    sInpTagValue.disabled = !sTagCntMode;
-    sInpTagNameList.disabled = (sCurTagIdx != null);
+    sInpTagName.disabled  = (sViewPort < 1) || sCurTagIdx != null;
+    sInpTagValue.disabled = (sViewPort < 1) || !sTagCntMode;
+    sInpTagNameList.disabled = (sViewPort < 1) || (sCurTagIdx != null);
     
-    sBtnNewTag.disabled     = (sCurTagIdx == null);
-    sBtnSaveTag.disabled    = !(sTagCntMode && sTagNameOK && 
+    sBtnNewTag.disabled     = (sViewPort < 1) || (sCurTagIdx == null);
+    sBtnSaveTag.disabled    = (sViewPort < 1) || !(sTagCntMode && sTagNameOK && 
         (sCurTagIdx == null || sTagCntChanged));
-    sBtnCancelTag.disabled  = (!sTagCntChanged) || 
+    sBtnCancelTag.disabled  = (sViewPort < 1) || (!sTagCntChanged) || 
         (sCurTagIdx != null || sInpTagName.value.trim() != "");
-    sBtnDeleteTag.disabled  = (sCurTagIdx == null);
+    sBtnDeleteTag.disabled  = (sViewPort < 1) || (sCurTagIdx == null);
         
     if (sTagCntMode) {
         if (sTimeH == null) 
@@ -173,6 +181,8 @@ function dropCurTag() {
 }
 
 function tagEnvNew() {
+    if (sViewPort < 1)
+        return;
     if (sCurTagIdx != null) {
         dropCurTag();
         updateTagsState(true);
@@ -180,6 +190,8 @@ function tagEnvNew() {
 }
 
 function tagEnvSave() {
+    if (sViewPort < 1)
+        return;
     checkInputs();
     if (sTagCntMode && sTagNameOK) {
         tags_to_update = sTagsInfo["tags"];
@@ -191,10 +203,14 @@ function tagEnvSave() {
 }
 
 function tagEnvCancel() {
+    if (sViewPort < 1)
+        return;
     updateTagsState(true);
 }
 
 function tagEnvDelete() {
+    if (sViewPort < 1)
+        return;
     checkInputs();
     if (sCurTagIdx != null) {
         tag_name = sTagOrder[sCurTagIdx];
@@ -208,6 +224,8 @@ function tagEnvDelete() {
 }
 
 function tagEnvUndo() {
+    if (sViewPort < 1)
+        return;
     if (sTagsInfo["can_undo"]) {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
@@ -217,6 +235,8 @@ function tagEnvUndo() {
 }
 
 function tagEnvRedo() {
+    if (sViewPort < 1)
+        return;
     if (sTagsInfo["can_redo"]) {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;

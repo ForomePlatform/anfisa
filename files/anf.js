@@ -1,6 +1,7 @@
 var sWorkspaceName = null;
 var sTitlePrefix = null;
 var sCurRecNo = null;
+var sCurRecID = null;
 var sTabPortData = [false, null, null];
 var sCurRandPortion = 1;
 var sRecList = null;
@@ -84,7 +85,7 @@ function refreshRecList() {
         window.frames['rec-frame1'].location.replace("norecords");
         window.frames['rec-frame2'].location.replace("norecords");
     } else {
-        idx = sViewRecNoSeq.indexOf(sCurRecNo)
+        idx = sViewRecNoSeq.indexOf(sCurRecNo);
         sCurRecNo = null;
         changeRec((idx >=0)? idx:0);
     }
@@ -97,18 +98,19 @@ function changeRec(rec_no) {
     if (new_rec_el == null) 
         return;
     if (sCurRecNo != null) {
-        var prev_el = document.getElementById("li--" + sViewRecNoSeq[sCurRecNo]);
+        var prev_el = document.getElementById("li--" + sCurRecID);
         prev_el.className = prev_el.className.replace(" press", "");
     }
     sCurRecNo = rec_no;
+    sCurRecID = sViewRecNoSeq[sCurRecNo];
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace(
         "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
-        "&rec=" + sViewRecNoSeq[sCurRecNo] + "&port=1");
+        "&rec=" + sCurRecID + "&port=1");
     window.frames['rec-frame2'].location.replace(
         "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
-        "&rec=" + sViewRecNoSeq[sCurRecNo] + "&port=2");
+        "&rec=" + sCurRecID + "&port=2");
     updateTagNavigation();
 }
 

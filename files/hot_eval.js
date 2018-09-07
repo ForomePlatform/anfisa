@@ -1,17 +1,14 @@
-var sCurSetup = "base";
 var sEvalData = null;
 var sCurItem = null;
 var sItemsContents = null;
 var sCurItemNode = null;
 
-var sNodeHotEvalDetails = null;
 var sNodeItemParam = null;
 
 /*************************************/
 function setupHotEvalCtrl() {
-    if (sNodeHotEvalDetails != null)
+    if (sNodeItemParam != null)
         return;
-    sNodeHotEvalDetails = document.getElementById("hot-ws-details");
     sNodeItemParam = document.getElementById("hi----param");
     loadEvalData();
 }
@@ -32,7 +29,6 @@ function loadEvalData() {
 }
 
 function setupHotEvalData(info) {
-    sCurSetup = info["setup"];
     var col_rep = [];
     sItemsContents = {};
     columns = info["columns"];
@@ -48,9 +44,6 @@ function setupHotEvalData(info) {
         col_rep.join('\n');
     sNodeItemParam.className = "hot-eval-item";
 
-    /* temporary */
-    document.getElementById("hot-ws-det").disabled = true;
-    
     sCurItem = null;
     sCurItemNode = null;
     hotItemSel("--param");
@@ -96,7 +89,7 @@ function hotItemModify() {
     xhttp.open("POST", "hot_eval_modify", true);
     xhttp.setRequestHeader("Content-type", 
         "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + "&setup=" + sCurSetup + 
+    xhttp.send("ws=" + sWorkspaceName + 
         "&m=" + encodeURIComponent(sAppModes) + 
         "&it=" + encodeURIComponent(sCurItem) + 
         "&cnt=" + encodeURIComponent(new_content));
@@ -120,23 +113,3 @@ function setupItemChange(info) {
 }
 
 /*************************************/
-function hotWsChange() {
-}
-
-function hotWsClone() {
-}
-
-function hotWsDelete() {
-}
-
-function hotWsDetails() {
-    if (sNodeHotEvalDetails.style.display == "none") 
-        sNodeHotEvalDetails.style.display = "block";
-    else
-        sNodeHotEvalDetails.style.display = "none";
-}
-
-function hideWsDetails() {
-    sNodeHotEvalDetails.style.display = "none";
-}
-

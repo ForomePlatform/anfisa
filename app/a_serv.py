@@ -111,9 +111,14 @@ class AnfisaService:
         if port == "2":
             print >> output, ('<body onload="init_r(2, \'%s\');">' %
                 workspace.getFirstAspectID())
-        else:
+        elif port == "1":
             print >> output, ('<body onload="init_r(1, \'%s\');">' %
                 workspace.getLastAspectID())
+        else:
+            print >> output, (
+                '<body onload="init_r(0, \'%s\', \'%s\', %d);">' %
+                (workspace.getFirstAspectID(), workspace.getName(), rec_no))
+
         record.reportIt(output, "X" in modes)
         print >> output, '</body>'
         print >> output, '</html>'
@@ -181,11 +186,10 @@ class AnfisaService:
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
-        hot_setup = rq_args["setup"]
         item = rq_args.get("it")
         content = rq_args.get("cnt")
         output.write(json.dumps(workspace.modifyHotEvalData(
-            hot_setup, 'X' in modes, item, content)))
+            'X' in modes, item, content)))
         return output.getvalue()
 
     #===============================================

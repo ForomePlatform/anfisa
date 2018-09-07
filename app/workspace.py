@@ -40,9 +40,9 @@ class Workspace:
     def getHotEvalData(self, expert_mode):
         return self.mLegend.getHotUnit().getJSonData(expert_mode)
 
-    def modifyHotEvalData(self, hot_setup, expert_mode, item, content):
+    def modifyHotEvalData(self, expert_mode, item, content):
         report = self.mLegend.getHotUnit().modifyHotData(
-            hot_setup, expert_mode, item, content)
+            expert_mode, item, content)
         if report["status"] == "OK":
             self.mIndex.updateHotEnv()
         return report
@@ -50,8 +50,7 @@ class Workspace:
     def makeTagsJSonReport(self, rec_no,
             expert_mode, tags_to_update = None):
         report = self.mTagsMan.makeRecReport(rec_no, tags_to_update)
-        report["filters"] = self.mIndex.getRecFilters(
-            rec_no, expert_mode),
+        report["filters"] = self.mIndex.getRecFilters(rec_no)
         return report
 
     def makeStatReport(self, filter_name, expert_mode, criteria, instr):

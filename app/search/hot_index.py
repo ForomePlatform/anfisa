@@ -137,6 +137,10 @@ class HotIndex:
             return self.mFilterCache[filter_name][1]
         return range(self.mDataSet.getSize())[:]
 
-    def getRecFilters(self, rec_no, expert_mode):
-        return self.mLegend.getUnit("hot").getRecFilters(
-            self.mRecords[rec_no], expert_mode)
+    def getRecFilters(self, rec_no):
+        ret = []
+        for filter_name, flt_info in self.mFilterCache.items():
+            if (not filter_name.startswith('_') and
+                    rec_no in flt_info[1]):
+                ret.append(filter_name)
+        return sorted(ret)

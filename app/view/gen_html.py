@@ -216,23 +216,6 @@ def formTopPage(output, title, html_base,
         </div>
         <div id="hot-eval-main">
           <div id="hot-eval-left">
-            <div id="hot-eval-ws">
-              Workspace: <select id="hot-ws-sel" onchange="hotWsChange();">
-                  <option value="base" selected>base</option>
-              </select>
-              <button id="hot-ws-det" onclick="hotWsDetails();">
-                Details...
-              </button>
-              <div id="hot-ws-details">
-                <input id="hot-ws-name" type="text"/><br/>
-                <button id="hot-ws-clone" onclick="hotWsClone();">
-                  Clone Workspace
-                </button>
-                <button id="hot-ws-delete" onclick="hotWsDelete();">
-                  Delete Workspace
-                </button>
-              </div>
-            </div>
             <div id="hot-eval-wrap-columns">
               <div id="hot-eval-columns">
               </div>
@@ -285,14 +268,14 @@ def tagsBlock(output):
 <div id="tg-all">
   <div id="tg-wrap-filters">
     <div id="tg-filters">
-        Filters: <span id="tg-filters-list"></span>
+        <i>Filters:</i> <span id="tg-filters-list"></span>
         <span id="run-hot-eval" title="Hot evaluations"
             onclick="window.parent.hotEvalModOn();">&#11085;</span>
     </div>
   </div>
   <div id="tg-tags">
     <div id="tg-title">
-        Tags:
+        <i>Tags:</i>
     </div>
     <div id="tg-tags-left">
       <div id="tg-tags-wrap-list">

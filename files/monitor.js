@@ -83,7 +83,7 @@ function setupTagSelection(info) {
 }
 
 function updateTagNavigation() {
-    if (sCurRecNo == null || sRecList == null) {
+    if (sCurRecID == null || sRecList == null) {
         sElCurTagNav.style.visibility = "hidden";
         sElCurTagCount.innerHTML = "";
         return;
@@ -110,13 +110,13 @@ function updateTagNavigation() {
             break;
         if (sRecList[j][0] != rec_no)
             continue;
-        if (rec_no == sCurRecNo) {
+        if (rec_no == sCurRecID) {
             sNavSheet[2] = 0;
             cnt[1] = 1;
             k = 3;
             continue;
         }
-        if (rec_no < sCurRecNo) {
+        if (rec_no < sCurRecID) {
             if (k == 0) {
                 sNavSheet[0] = rec_no;
                 k = 1;

@@ -35,7 +35,7 @@ class HotEvalUnit(BoolSetUnit):
         return ret
 
     def getJSonData(self, expert_mode):
-        ret = {"setup": "base"}
+        ret = dict()
         columns = []
         for idx, col in self.enumColumns():
             if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
@@ -52,7 +52,7 @@ class HotEvalUnit(BoolSetUnit):
         ret["params"] = param_rep.getvalue()
         return ret
 
-    def modifyHotData(self, hot_setup, expert_mode, item, content):
+    def modifyHotData(self, expert_mode, item, content):
         if item == "--param":
             param_list = []
             for key, val, expert_only in self.mHotSetup.ATTRIBUTES:

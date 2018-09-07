@@ -70,8 +70,8 @@ div#tg-tags-ctrl {
 
 
 span#tg-filters-list {
-    font-weight: bold;
     flex-grow: 1;
+    padding-left: 10px;
 }
 
 span#tg-filters-list.empty {
