@@ -116,9 +116,11 @@ class Variant:
     csq_missense = [
         "missense_variant"
     ]
-    csq_benign = [
+    csq_benign1 = [
         "splice_region_variant",
         "synonymous_variant",
+    ]
+    csq_benign2 = [
         "5_prime_UTR_variant",
         "3_prime_UTR_variant",
         'non_coding_transcript_exon_variant',
@@ -128,7 +130,12 @@ class Variant:
         'downstream_gene_variant',
         'regulatory_region_variant'
     ]
-    consequences = csq_damaging + csq_missense + csq_benign
+
+    severity = [
+        csq_damaging, csq_missense, csq_benign1, csq_benign2
+    ]
+
+    consequences = sum(severity)
 
     @classmethod
     def most_severe(cls, csq):
@@ -184,6 +191,7 @@ class Variant:
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
+        self.data['_filters.Severity'] = self.get_severity()
 
 
 
@@ -257,8 +265,11 @@ class Variant:
     def get_variant_class(self):
         return self.data.get("variant_class")
 
-    def get_transcripts(self):
-        return self.data.get("transcript_consequences", [])
+    def get_transcripts(self, biotype = "protein_coding"):
+        transcripts = self.data.get("transcript_consequences", [])
+        if (biotype == None or biotype.upper() == "ALL"):
+            return transcripts
+        return [t for t in transcripts if t.get('biotype') == biotype]
 
     def get_colocated_variants(self):
         return self.data.get("colocated_variants", [])
@@ -301,6 +312,9 @@ class Variant:
     def get_from_transcripts_list(self, key):
         return unique([t.get(key) for t in self.get_transcripts() if (t.has_key(key))])
 
+    def get_from_transcripts_by_biotype(self, key, biotype):
+        return unique([t.get(key) for t in self.get_transcripts(biotype = biotype) if (t.has_key(key))])
+
     def get_from_worst_transcript(self, key):
         return unique([t.get(key) for t in self.get_most_severe_transcripts() if (t.has_key(key))])
 
@@ -312,6 +326,14 @@ class Variant:
 
     def get_genes(self):
         return unique(self.get_from_transcripts_list("gene_symbol"))
+
+    def get_other_genes(self):
+        genes = set(self.get_genes())
+        all_genes = set(self.get_from_transcripts_by_biotype("gene_symbol", "all"))
+        other_genes = all_genes - genes
+        l = []
+        l.extend(other_genes)
+        return l
 
     def get_from_transcripts(self, key, type = "all"):
         if (type == "all"):
@@ -559,6 +581,14 @@ class Variant:
         list = self.get_from_transcripts_list("exacpli")
         if (len(list) > 0):
             return list
+        return None
+
+    def get_severity(self):
+        csq = self.get_msq()
+        n = len(self.severity)
+        for s in range(0,n):
+            if (csq in self.severity[s]):
+                return n - s
         return None
 
     def get_pLI_by_allele(self, allele):
@@ -873,6 +903,7 @@ class Variant:
         tab6["MaxEntScan"] = self.get_max_ent()
         tab6["NNSplice"] = ""
         tab6["Human Splicing Finder"] = ""
+        tab6["other_genes"] = self.get_other_genes()
 
         tab7 = dict()
         #view['Inheritance'] = tab7

@@ -11,10 +11,11 @@ class HOT_SETUP:
 
     FUNCTIONS = [
         # name, function, expert_mode
-        ("acmg59", acmg59_evalRec, False),
+        ("ACMG59", acmg59_evalRec, False),
+        ("Candidates", rare_check_evalRec, False),
         ("af_check", af_check_evalRec, False),
-        ("rare_check", rare_check_evalRec, False),
-        ("polyphen_check", polyphen_check_evalRec, False)]
+        ("polyphen_check", polyphen_check_evalRec, False)
+    ]
 
     ATTRIBUTES = [
         ("af", 0.01, False),
