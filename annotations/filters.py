@@ -1,9 +1,7 @@
 import os
 import abc
 
-# from pipeline.annotations import gnomad
 from annotations import gnomad
-from annotations.record import Variant
 
 
 class Filter:

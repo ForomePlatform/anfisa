@@ -95,6 +95,7 @@ CONFIG_ATTRS = {
         AttrH("MaxEntScan"),
         AttrH("NNSplice"),
         AttrH("Human Splicing Finder"),
+        AttrH("other_genes", title="Gene symbols from other transcripts", is_seq=True),
     ],
     "_main": [
         AttrH("label"),

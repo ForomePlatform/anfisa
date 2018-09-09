@@ -6,17 +6,17 @@ import app.search.flt_unit as flt_unit
 #===============================================
 MainLegend = FilterLegend("AJson", HOT_SETUP)
 
-flt_unit.StatusUnit(MainLegend, "chr", "/seq_region_name",
+flt_unit.StatusUnit(MainLegend, "Chromosome", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
     "chr6", "chr7", "chr8", "chr9", "chr10",
     "chr11", "chr12", "chr13", "chr14", "chr15",
     "chr16", "chr17", "chr18", "chr19", "chr20",
     "chr21", "chr22", "chr23", "chrX", "chrY"])
-flt_unit.IntValueUnit(MainLegend, "chr_start", "/start")
-flt_unit.IntValueUnit(MainLegend, "chr_end", "/end")
+flt_unit.IntValueUnit(MainLegend, "Start Position", "/start")
+flt_unit.IntValueUnit(MainLegend, "End Position", "/end")
 
 flt_unit.MultiStatusUnit(MainLegend, "caller",
-    "/view.general/Called by[]", expert_only = True)
+    "/view.general/Called by[]", expert_only = False)
 
 flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
     "/most_severe_consequence", [
@@ -65,6 +65,9 @@ flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
 
 flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ")
+
+flt_unit.IntValueUnit(MainLegend, "Severity",
+    "/_filters.Severity", expert_only=True, default_value=5)
 
 flt_unit.IntValueUnit(MainLegend, "Min_GQ",
     "/_filters.Min_GQ")
