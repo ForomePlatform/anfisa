@@ -13,7 +13,7 @@ class ViewSetup:
         "aspect.hot.name":  "hot_data",
         "uniq.keys":        ("seq_region_name", "start", "end"),
         "zones":            [
-            ("chromosome", "chr"),
+            ("chromosome", "Chromosome"),
             ("gene",       "genes"),
             ("tag",        "_tags")],
         "attrs.to.ignore":  ["/view"],
