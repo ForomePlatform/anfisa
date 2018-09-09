@@ -25,24 +25,15 @@ class HotEvalUnit(BoolSetUnit):
                 self.mEnv, pre_rec)
             col.setValues(data_record, val)
 
-    def getRecFilters(self, data_record, expert_mode):
-        ret = []
-        for idx, col in self.enumColumns():
-            if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
-                continue
-            if col.recordValue(data_record):
-                ret.append(col.getName())
-        return ret
-
     def getJSonData(self, expert_mode):
         ret = dict()
         columns = []
         for idx, col in self.enumColumns():
-            if not expert_mode and self.mHotSetup.FUNCTIONS[idx][2]:
+            if not expert_mode and self.mHotSetup.FUNCTIONS[idx][3]:
                 continue
-            col_name = self.mHotSetup.FUNCTIONS[idx][0]
-            columns.append([col_name,
-                self.mHotSetup.getSrcContent(col_name)])
+            col_name = self.mHotSetup.FUNCTIONS[idx][2]
+            columns.append([self.mHotSetup.FUNCTIONS[idx][0],
+                col_name, self.mHotSetup.getSrcContent(col_name)])
         ret["columns"] = columns
         param_rep = StringIO()
         for key, val, expert_only in self.mHotSetup.ATTRIBUTES:

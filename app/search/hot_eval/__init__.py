@@ -2,8 +2,8 @@ import os, codecs
 
 from .acmg59 import evalRec as acmg59_evalRec
 from .af_check import evalRec as af_check_evalRec
-from .candidates_evaluations import evalRec_rare as rare_check_evalRec
-from .candidates_evaluations import evalRec_common as common_check_evalRec
+from .rare_check   import evalRec as rare_check_evalRec
+from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
 
 #===============================================
@@ -11,12 +11,17 @@ class HOT_SETUP:
     sPath = os.path.dirname(os.path.abspath(__file__))
 
     FUNCTIONS = [
-        # name, function, expert_mode
-        ("ACMG59", acmg59_evalRec, False),
-        ("Candidates (Rare)", rare_check_evalRec, False),
-        ("Candidates (Clinical)", common_check_evalRec, False),
-        ("gnomAD Frequency Threshold", af_check_evalRec, False),
-        ("Has Damaging Predictions", polyphen_check_evalRec, False)
+        # title, function, name, expert_mode
+        ("ACMG59", acmg59_evalRec,
+            "acmg59", False),
+        ("Candidates (Rare)", rare_check_evalRec,
+            "rare_check", False),
+        ("Candidates (Clinical)", common_check_evalRec,
+            "common_check", False),
+        ("gnomAD Frequency Threshold", af_check_evalRec,
+            "af_check", False),
+        ("Has Damaging Predictions", polyphen_check_evalRec,
+            "polyphen_check", False)
     ]
 
     ATTRIBUTES = [

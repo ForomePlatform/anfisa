@@ -33,11 +33,12 @@ function setupHotEvalData(info) {
     sItemsContents = {};
     columns = info["columns"];
     for (idx = 0; idx < columns.length; idx++) {
-        col_name = columns[idx][0];
-        sItemsContents[col_name] = columns[idx][1];
+        col_title = columns[idx][0];
+        col_name = columns[idx][1];
+        sItemsContents[col_name] = columns[idx][2];
         col_rep.push('<div id="hi--' + col_name + '" class="hot-eval-item" ' +
           'onclick="hotItemSel(\'' + col_name + '\');">' + 
-          col_name + '</div>');
+          col_title + '</div>');
     }
     sItemsContents["--param"] = info["params"];
     document.getElementById("hot-eval-columns").innerHTML =
@@ -51,7 +52,6 @@ function setupHotEvalData(info) {
 
 /*************************************/
 function hotItemSel(item) {
-    hideWsDetails();
     if (sCurItem == item) 
         return;
     var new_it_el = document.getElementById("hi--" + item);
