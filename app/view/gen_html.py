@@ -15,30 +15,55 @@ def formTopPage(output, title, html_base,
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
     <title>%(title)s</title>
     %(html-base)s
+    <link rel="stylesheet" href="base.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="filters.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="zones.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="hot_eval.css" type="text/css" media="all"/>
     <script type="text/javascript" src="anf.js"></script>
     <script type="text/javascript" src="monitor.js"></script>
     <script type="text/javascript" src="filters.js"></script>
     <script type="text/javascript" src="criteria.js"></script>
+    <script type="text/javascript" src="zones.js"></script>
     <script type="text/javascript" src="hot_eval.js"></script>
   </head>
-  <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">
+  <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">''' % params
+
+    _formMainDiv(output)
+    _formFiltersDiv(output)
+    _formZonesDiv(output)
+    _formHotEvalDiv(output)
+
+    print >> output, '''
+  </body>
+</html>'''
+
+#===============================================
+def _formMainDiv(output):
+    print >> output, '''
     <div id="all">
       <div id="top">
-         <div id="top-ws">
-          <div id="ws-info">
-           Workspace:
-           <span id="ws-name"></span><br/>
+        <div id="top-ws">
+          <div id="ws-dropdown" class="dropdown">
+            <span class="dropbtn"> &#10247; </span>
+             <div id="ws-dropdown-menu" class="dropdown-content">
+                <a onclick="doWsExport();">
+              Export</a>
+            </div>
           </div>
-          <div id="list-info">
-           <span id="list-report"></span>
-           <input id="list-rand-portion" type="number" min="1" max="5"
-             onchange="listRandPortion();"/>
+          <div id="ws-ctrl">
+            <div id="ws-info">
+              Workspace:
+              <span id="ws-name"></span><br/>
+            </div>
+            <div id="list-info">
+              <span id="list-report"></span>
+              <input id="list-rand-portion" type="number" min="1" max="5"
+                onchange="listRandPortion();"/>
+            </div>
           </div>
-         </div>
-         <div  id="top-filters">
+        </div>
+        <div  id="top-filters">
           Filters:
           <div id="flt-ctrl">
             <div id="flt-named">
@@ -51,11 +76,24 @@ def formTopPage(output, title, html_base,
             <div id="flt-cur">
               <input id="flt-check-current" type="checkbox"
                 onchange="checkCurFilters(1);"/>
-              <span id="flt-cur-setup" title="Setup filter"
-                onclick="filterModOn();">&#9660;</span>
-              <span id="flt-current-state" onclick="filterModOn();">
+              <span id="flt-current-state" title="Setup filter"
+                 onclick="filterModOn();">
               </span>
             </div>
+          </div>
+        </div>
+        <div id="top-zones">
+          <div id="zone-ctrl">
+            Zones:
+              <select style="visibility:hidden;">
+                <option value=""></option>
+              </select>
+          </div>
+          <div id="zone-cur">
+            <input id="zone-check" type="checkbox"
+               onchange="checkCurZone();"/>
+            <span id="zone-descr" onclick="zoneModOn();">
+            </span>
           </div>
          </div>
          <div id="top-tags">
@@ -95,7 +133,11 @@ def formTopPage(output, title, html_base,
             </iframe>
         </div>
       </div>
-    </div>
+    </div>'''
+
+#===============================================
+def _formFiltersDiv(output):
+    print >> output, '''
     <div id="filter-back">
       <div id="filter-mod">
         <div id="filter-stat">
@@ -206,11 +248,33 @@ def formTopPage(output, title, html_base,
           </div>
         </div>
       </div>
+    </div>'''
+
+#===============================================
+def _formZonesDiv(output):
+    print >> output, '''
+    <div id="zone-back">
+      <div id="zone-mod">
+        <div id="zone-top">
+            <p id="zone-title">Zone setup
+              <span id="close-zone" onclick="zoneModOff();">&times;</span>
+            </p>
+        </div>
+        <div id="zone-cur">
+          <div id="zone-list">
+          </div>
+        </div>
+      </div>
     </div>
+'''
+
+#===============================================
+def _formHotEvalDiv(output):
+    print >> output, '''
     <div id="hot-eval-back">
       <div id="hot-eval-mod">
         <div id="hot-eval-top">
-            <p id="hot-eval-title">Hot evaluation setup
+            <p id="hot-eval-title">&#9874; Hot evaluation setup
               <span id="close-hot-eval" onclick="hotEvalModOff();">&times;</span>
             </p>
         </div>
@@ -244,9 +308,7 @@ def formTopPage(output, title, html_base,
           </div>
         </div>
       </div>
-    </div>
-  </body>
-</html>''' % params
+    </div>'''
 
 #===============================================
 def noRecords(output):
@@ -270,7 +332,7 @@ def tagsBlock(output):
     <div id="tg-filters">
         <i>Filters:</i> <span id="tg-filters-list"></span>
         <span id="run-hot-eval" title="Hot evaluations"
-            onclick="window.parent.hotEvalModOn();">&#11085;</span>
+            onclick="window.parent.hotEvalModOn();">&#9874;</span>
     </div>
   </div>
   <div id="tg-tags">

@@ -6,14 +6,7 @@ body {
     white-space:nowrap;
     margin: 0px;
     padding: 0px;
-}
-
-a {
-    color: #526ca5;
-    text-decoration: none;
-}
-a:hover {
-    text-decoration: underline;
+    display: block;
 }
 
 table {
@@ -77,12 +70,10 @@ pre {
     padding: 20px;
     font-family: Courier New;
     font-size: 14px;
-    margin-bottom: 45px;
+    margin-bottom: 10px;
     border: solid 1px #dee2e6;
     background-color:#f7f7f7; 
 }
-
-p.error {color: red;}
 
 /********************Tab Bar*****************************/
 .r-tab {
@@ -104,6 +95,7 @@ p.error {color: red;}
     outline: none;
     cursor: pointer;
     margin: 2px 3px;
+    padding: 2px 5px !important;
     border-radius: 5px 5px 0px 0px;
     height: 100%;
     border-top: solid 3px #ffffff;
@@ -145,15 +137,23 @@ p.error {color: red;}
     border-right: solid 3px #e0e0e0;
 }
 
-span.img-wrap {
+span#img-wrap {
     margin: 0px;
     padding: 0px;
     border: none;
-    cursor: pointer;
     display: block;
     vertical-align: center;
+    min-height: 100%;
     float: right;
 }
+
+span#img-wrap.info {
+    margin: 5px 5px 0px 0px;
+    cursor: pointer;
+    font-size: 13px;
+    vertical-align: bottom;
+}
+
 
 /********************Tabbed contents**************************/
 div#r-cnt-container {
@@ -164,9 +164,11 @@ div#r-cnt-container {
     overflow: hidden;
     height: 100%;
     width: 100%;
+    max-height: 100%;
 }
 
 div.r-tabcnt {
+    display: none;
     margin: 0px;
     padding: 0px;
     border-top: none;
@@ -175,5 +177,13 @@ div.r-tabcnt {
     overflow: auto;
     margin-bottom: 45px;
 } 
+
+div#a--hot_data.active {
+    display: grid;
+}
+
+div.r-tabcnt.active {
+    display: block;
+}
 
 

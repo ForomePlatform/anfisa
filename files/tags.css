@@ -115,11 +115,6 @@ div#tg-tag-edit {
 }
 
 
-input#tg-tag-name.bad {
-    background-color: #fff0f0;
-    color: red;
-}
-
 textarea#tg-tag-value-content {
     width: 100%;
     height: auto !important;
@@ -145,35 +140,3 @@ span#run-hot-eval{
     border: 1px solid black;
 }
 
-/********************Combobox*****************************/
- .combobox {
-     position:relative;
-     background-color:white;
-     border:solid grey 1px;
-     width: 200px;
-     height: 25px;
-     display: inline;
- }
- .combobox select {
-     position: absolute;
-     top: 3px;
-     left: 0px;
-     font-size: 12px;
-     border: none;
-     width: 200px;
-     margin: 0;
- }
- .combobox input {
-     position: absolute;
-     top: 0px;
-     left: 0px;
-     width: 180px;
-     padding: 1px;
-     font-size: 14px;
-     border: none;
-     height: 23px;
- }
- .combobox select:focus, .combobox input:focus {
-     outline:none;
- }
- 

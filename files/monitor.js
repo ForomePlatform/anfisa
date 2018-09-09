@@ -3,11 +3,14 @@ var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
 var sAllFilters = [];
+var sCurZone = null;
 
 var sCheckFltNamed   = null;
 var sCheckFltCurrent = null;
 var sSelectFltNamed  = null;
 var sElFltCurState   = null;
+var sCheckZoneCur    = null;
+var sElZoneCurState  = null;
 
 var sSelectCurTag    = null;
 var sElCurTagNav     = null;
@@ -20,6 +23,8 @@ function initMonitor() {
     sCheckFltCurrent = document.getElementById("flt-check-current");
     sSelectFltNamed  = document.getElementById("flt-named-select");
     sElFltCurState   = document.getElementById("flt-current-state");
+    sCheckZoneCur    = document.getElementById("zone-check");
+    sElZoneCurState  = document.getElementById("zone-descr");
     
     sSelectCurTag    = document.getElementById("cur-tag");
     sElCurTagNav     = document.getElementById("cur-tag-nav");
@@ -34,6 +39,7 @@ function initMonitor() {
         document.getElementById("cur-tag-count-prev"),
         document.getElementById("cur-tag-count-next")]
     updateCurFilter("");
+    updateCurZone();
     loadTagSelection(null);
 }
 
@@ -232,4 +238,22 @@ function updateCurFilter(filter_name, force_it) {
         sCheckFltCurrent.checked = (sCurFilterName == "_current_");
     } 
     sCheckFltNamed.checked = (sCurFilterName != "_current_");
+}
+
+function updateCurZone(){
+    cur_zone_problem = checkCurZoneProblem();
+    if (cur_zone_problem) {
+        sElZoneCurState.innerHTML = cur_zone_problem;
+        sElZoneCurState.className = "problems";
+        sCheckZoneCur.disabled = true;
+    } else {
+        sElZoneCurState.innerHTML = sZoneDescr;
+        sElZoneCurState.className = "";
+        sCheckZoneCur.disabled = false;
+    }
+    
+    
+}
+
+function checkCurZone() {
 }

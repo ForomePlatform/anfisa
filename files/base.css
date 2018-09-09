@@ -1,0 +1,116 @@
+div#wrapper {
+    margin: 0px;
+    padding: 0px;
+    border: none;
+    display: inline;
+    height: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+a {
+    color: #526ca5;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+p.error {color: red;}
+
+/****************************************/
+.combobox {
+     position:relative;
+     background-color:white;
+     border:solid grey 1px;
+     width: 200px;
+     height: 25px;
+     display: inline;
+ }
+ .combobox select {
+     position: absolute;
+     top: 3px;
+     left: 0px;
+     font-size: 12px;
+     border: none;
+     width: 200px;
+     margin: 0;
+ }
+ .combobox input {
+     position: absolute;
+     top: 0px;
+     left: 0px;
+     width: 180px;
+     padding: 1px;
+     font-size: 14px;
+     border: none;
+     height: 23px;
+ }
+
+ .combobox select:focus, .combobox input:focus {
+     outline:none;
+ }
+ 
+/****************************************/
+ /* Dropdown Button */
+.dropbtn {
+    color: white;
+    padding: 0px 2px 0px 4px;
+    border: 1px black solid;
+    font-size: 16px;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 4px 8px;
+    text-decoration: none;
+    display: block;
+    border: 1px solid black;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    border: 1px white solid;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    border: 1px white solid;
+} 
+
+/****************************************/
+button.op-button {
+    margin-left: 5px;
+}
+
+button {
+    padding: 0px !important;
+}
+
+input.bad {
+    background-color: #fff0f0;
+    color: red;
+}
+

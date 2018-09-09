@@ -106,7 +106,7 @@ class AnfisaService:
         print >> output, HTML_Setup.START
         print >> output, '<html>'
         self._formHtmlHead(output,
-            css_files = ["a_rec.css", "tags.css"],
+            css_files = ["base.css", "a_rec.css", "tags.css"],
             js_files = ["a_rec.js", "tags.js"])
         if port == "2":
             print >> output, ('<body onload="init_r(2, \'%s\');">' %

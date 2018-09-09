@@ -10,7 +10,7 @@ class DataRecord:
 
     def reportIt(self, output, expert_mode):
         print >> output, '<div class="r-tab">'
-        print >> output, ('<span class="img-wrap" onclick="tabCfgChange();">'
+        print >> output, ('<span id="img-wrap" onclick="tabCfgChange();">'
             '<img id="img-tab2" src="images/tab2-exp.png"/></span>')
         aspects_to_show = []
         for aspect in self.mDataset.getViewSetup().getAspects():

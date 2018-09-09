@@ -125,7 +125,7 @@ function setupStatList(info) {
         list_stat_rep.push('<span class="stat-unit-name">' + unit_name + '</span>');
         if (unit_name == "hot") {
             list_stat_rep.push('<span id="run-hot-eval" title="Hot evaluations" ' +
-                ' onclick="hotEvalModOn();">&#11085;</span>')
+                ' onclick="hotEvalModOn();">&#9874;</span>')
         }
         if (unit_type == "int" || unit_type == "float") {
             list_stat_rep.push('<br/>');

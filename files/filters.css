@@ -290,7 +290,3 @@ select#filter-name-filter {
     font-size: 14px;
 }
 
-input#filter-name-filter.bad {
-    background-color: #fff0f0;
-    color: red;
-}

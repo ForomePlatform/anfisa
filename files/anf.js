@@ -8,8 +8,10 @@ var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModes = null;
+var sWsActShown = null;
 
 var sNodeFilterBack  = null;
+var sNodeZoneBack  = null;
 var sNodeHotEvalBack = null;
 
 function initWin(workspace_name, app_modes) {
@@ -17,12 +19,14 @@ function initWin(workspace_name, app_modes) {
     sWorkspaceName = workspace_name; 
     sAppModes = app_modes;
     sNodeFilterBack  = document.getElementById("filter-back");
+    sNodeZoneBack    = document.getElementById("zone-back");
     sNodeHotEvalBack = document.getElementById("hot-eval-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
     initMonitor();
     initFilters();
+    wsActShow(false);
 }
 
 function loadList(filter_name) {
@@ -128,8 +132,13 @@ function onKey(event_key) {
 function onClick(event_ms) {
     if (event_ms.target == sNodeFilterBack)
         filterModOff();
+    if (event_ms.target == sNodeZoneBack)
+        zoneModOff();
     if (event_ms.target == sNodeHotEvalBack)
         hotEvalModOff();
+    if (sWsActShown && !event_ms.target.matches('.dropbtn')) {
+        wsActShow(false);
+    }
 }
 
 function softScroll(nd) {
@@ -147,25 +156,40 @@ function softScroll(nd) {
     }
 }
 
+function _showModal(cur_mode_node) {
+    sNodeFilterBack.style.display = 
+        (cur_mode_node == sNodeFilterBack)? "block":"none";
+    sNodeZoneBack.style.display    = 
+        (cur_mode_node == sNodeZoneBack)? "block":"none";
+    sNodeHotEvalBack.style.display = 
+        (cur_mode_node == sNodeHotEvalBack)? "block":"none";
+}
+
 function filterModOn() {
     clearFilterOpMode();
-    sNodeHotEvalBack.style.display = "none";
-    sNodeFilterBack.style.display = "block";
+    _showModal(sNodeFilterBack);
 }
 
 function filterModOff() {
     clearFilterOpMode();
-    sNodeFilterBack.style.display = "none";
+    _showModal(null);
+}
+
+function zoneModOn() {
+    _showModal(sNodeZoneBack);
+}
+
+function zoneModOff() {
+    _showModal(null);
 }
 
 function hotEvalModOn() {
-    sNodeFilterBack.style.display = "none";
     setupHotEvalCtrl();
-    sNodeHotEvalBack.style.display = "block";
+    _showModal(sNodeHotEvalBack);
 }
 
 function hotEvalModOff() {
-    sNodeHotEvalBack.style.display = "none";
+    _showModal(null);
 }
 
 function listRandPortion() {
@@ -195,5 +219,15 @@ function updateTabCfg() {
 }
 
 //=====================================
-function checkCurTag() {
+function wsActShow(mode) {
+    if (mode == undefined)
+       sWsActShown = !sWsActShown;
+    else
+        sWsActShown = mode;
+    document.getElementById("ws-dropdown-menu").className = (sWsActShown)? 
+        "dropdown-content show":"dropdown-content";
+}
+
+function doWsExport() {
+    alert("Export will be implemented soon");
 }
