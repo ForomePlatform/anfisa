@@ -1,8 +1,10 @@
-var sZoneDescr = null;
-var sZoneData  = null;
+var sWorkZoneDescr = null;
+var sWorkZoneData  = null;
 
 /*************************************/
 function checkCurZoneProblem() {
-    return "not set";
+    if (sWorkZoneDescr == null)
+        return "not set";
+    return null;
 }
 

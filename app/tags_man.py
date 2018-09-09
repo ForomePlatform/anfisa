@@ -1,14 +1,19 @@
 from collections import defaultdict
 
-class TagsManager:
+from zone import ZoneH
+#===============================================
+class TagsManager(ZoneH):
     def __init__(self, workspace):
-        self.mWS = workspace
+        ZoneH.__init__(self, workspace, "_tags");
         self.mTagSets = defaultdict(set)
         self._loadDataSet()
 
+    def getName(self):
+        return "_tags"
+
     def _loadDataSet(self):
-        for rec_no, rec_key in self.mWS.getDataSet().enumDataKeys():
-            data_obj = self.mWS.getMongoConn().getRecData(rec_key)
+        for rec_no, rec_key in self.getWS().getDataSet().enumDataKeys():
+            data_obj = self.getWS().getMongoConn().getRecData(rec_key)
             if data_obj is not None:
                 for tag, value in data_obj.items():
                     if self._goodKey(tag):
@@ -29,8 +34,8 @@ class TagsManager:
         return key and key[0] != '_'\
 
     def makeRecReport(self, rec_no, tags_to_update):
-        rec_key = self.mWS.getDataSet().getRecKey(rec_no)
-        rec_data = self.mWS.getMongoConn().getRecData(rec_key)
+        rec_key = self.getWS().getDataSet().getRecKey(rec_no)
+        rec_data = self.getWS().getMongoConn().getRecData(rec_key)
         if tags_to_update is not None:
             rec_data = self._changeRecord(
                 rec_no, rec_key, rec_data, tags_to_update)
@@ -88,7 +93,8 @@ class TagsManager:
             new_rec_data['_h'] = [len(h_stack), h_stack]
         if new_rec_data is None:
             return rec_data
-        self.mWS.getMongoConn().setRecData(rec_key, new_rec_data, rec_data)
+        self.getWS().getMongoConn().setRecData(
+            rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())
         for tag_name in tags_prev - tags_new:

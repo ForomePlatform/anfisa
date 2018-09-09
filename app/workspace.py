@@ -1,6 +1,8 @@
 from search.hot_index import HotIndex
 from mongo_db import MongoConnector
 from tags_man import TagsManager
+from zone import FilterZoneH
+
 #===============================================
 class Workspace:
     def __init__(self, name, legend, data_set, mongo_path,
@@ -15,6 +17,15 @@ class Workspace:
         self.mIndex  = HotIndex(self.mDataSet, self.mLegend)
         for filter_name, criteria in self.mMongoConn.getFilters():
             self.mIndex.cacheFilter(filter_name, criteria)
+        self.mZoneHandlers  = []
+        for zone_title, unit_name in self.mViewSetup.configOption("zones"):
+            if (unit_name == "_tags"):
+                zone_h = self.mTagsMan
+                zone_h._setTitle(zone_title)
+            else:
+                zone_h = FilterZoneH(self, zone_title,
+                    self.mLegend.getUnit(unit_name))
+            self.mZoneHandlers.append(zone_h);
 
     def getName(self):
         return self.mName
@@ -31,11 +42,14 @@ class Workspace:
     def getTagsMan(self):
         return self.mTagsMan
 
+    def iterZones(self):
+        return iter(self.mZoneHandlers)
+
     def getFirstAspectID(self):
         return self.mViewSetup.getAspects()[0].getName()
 
     def getLastAspectID(self):
-        return self.mViewSetup().configOption("aspect.hot.name")
+        return self.mViewSetup.configOption("aspect.hot.name")
 
     def getHotEvalData(self, expert_mode):
         return self.mLegend.getHotUnit().getJSonData(expert_mode)
@@ -67,4 +81,3 @@ class Workspace:
                 assert False
         return self.mIndex.makeStatReport(
             filter_name, expert_mode, criteria)
-

@@ -29,7 +29,7 @@ function initWin(workspace_name, app_modes) {
     wsActShow(false);
 }
 
-function loadList(filter_name) {
+function loadList(filter_name, zone_data) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -42,6 +42,8 @@ function loadList(filter_name) {
     args = "ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes);
     if (filter_name)
         args += "&filter=" + encodeURIComponent(filter_name);
+    if (zone_data)
+        args += "&zone=" + encodeURIComponent(JSON.stringify(zone_data));
     xhttp.send(args); 
 }
 

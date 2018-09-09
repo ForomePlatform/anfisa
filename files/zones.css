@@ -17,19 +17,21 @@
     margin: 3% 3% 2% 2%; 
     padding: 00px;
     border: 1px solid black;
+    border-radius: 7px;
     height: 90%; 
     min-height: 90%;
     width: 95%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     overflow: hidden;
     display: flex;
+    flex-direction: column;
     align-items: stretch;
 }
 
 /********************zones top controls*****************************/
 #zone-top {
     width: 100%;
-    height: 25px;
+    height: 55px;
     min-height: 20px;
     margin: 0px;;
     padding: 0px;
@@ -41,6 +43,7 @@
     padding: 5px;
     font-weight: bold;
     font-size: 18px;
+    height: 25px;
 }
 
 #close-zone {
@@ -57,4 +60,41 @@
     cursor: pointer;
 } 
 
-/********************zones top controls*****************************/
+/********************work controls*****************************/
+div#work-zone-area {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;    
+}
+
+div#work-zone-left {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;    
+}
+
+div#work-zone-kind {
+    margin-left: 15px;
+    height: 30px;
+}
+
+div#work-zone-wrap-list {
+    flex-grow: 1;
+    display: grid;
+    margin: 10px;
+    border: 1px solid black;
+}
+
+div#work-zone-list {
+    overflow: auto;
+}
+
+div#zone-right {
+    width: 50%;
+}
+
+div#work-zone-def {
+    width: 100%;
+}

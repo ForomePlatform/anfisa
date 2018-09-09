@@ -91,7 +91,7 @@ class AnfisaService:
         modes = rq_args.get("m", "")
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
-            workspace.getName(), modes)
+            workspace.getName(), modes, workspace.iterZones())
         return output.getvalue()
 
     #===============================================

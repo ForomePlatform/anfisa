@@ -1,13 +1,14 @@
+from xml.sax.saxutils import escape
+
 #===============================================
 def formTopPage(output, title, html_base,
-        workspace_name, modes):
+        workspace_name, modes, zones):
     params = {
         "title": title,
         "workspace": workspace_name,
         "modes": modes,
         "html-base": (' <base href="%s" />' % html_base)
             if html_base else ""}
-
     print >> output, '''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -31,7 +32,7 @@ def formTopPage(output, title, html_base,
 
     _formMainDiv(output)
     _formFiltersDiv(output)
-    _formZonesDiv(output)
+    _formZonesDiv(output, zones)
     _formHotEvalDiv(output)
 
     print >> output, '''
@@ -251,7 +252,13 @@ def _formFiltersDiv(output):
     </div>'''
 
 #===============================================
-def _formZonesDiv(output):
+def _formZonesDiv(output, zones):
+    rep_zones = [('<span id="zn--%s"><input id="zn-check--%s" '
+    'type="checkbox" onchange="checkWorkZone(\'%s\');"/>%s</span>') %
+        (zone.getName(), zone.getName(), zone.getName(),
+        escape(zone.getTitle())) for zone in zones]
+    params = {"zones": "\n".join(rep_zones)}
+
     print >> output, '''
     <div id="zone-back">
       <div id="zone-mod">
@@ -260,13 +267,24 @@ def _formZonesDiv(output):
               <span id="close-zone" onclick="zoneModOff();">&times;</span>
             </p>
         </div>
-        <div id="zone-cur">
-          <div id="zone-list">
+        <div id="work-zone-area">
+          <div id="work-zone-left">
+            <div id="work-zone-kind">
+               %(zones)s
+            </div>
+            <div id="work-zone-wrap-list">
+              <div id="work-zone-list">
+              </div>
+            </div>
+          </div>
+          <div id="zone-right">
+            <div id="work-zone-def">
+            </div>
           </div>
         </div>
       </div>
     </div>
-'''
+''' % params
 
 #===============================================
 def _formHotEvalDiv(output):
@@ -321,6 +339,9 @@ def noRecords(output):
   </head>
   <body>
     <h3>No records available</h3>
+    <p>Try to drop <a onclick='parent.window.updateCurZone(false);'>zone</s>
+        or
+        <a href='parent.window.updateCurFilter("");'>filter</p>.</p>
   </body>
 </html>'''
 

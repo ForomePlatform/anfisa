@@ -24,6 +24,9 @@ class HotIndex:
             self.cacheFilter(filter_name,
                 self.mFilterCache[filter_name][0])
 
+    def getLegend(self):
+        return self.mLegend
+
     @staticmethod
     def not_NONE(val):
         return val is not None

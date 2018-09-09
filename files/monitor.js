@@ -3,7 +3,7 @@ var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
 var sAllFilters = [];
-var sCurZone = null;
+var sCurZoneData = null;
 
 var sCheckFltNamed   = null;
 var sCheckFltCurrent = null;
@@ -223,7 +223,7 @@ function updateCurFilter(filter_name, force_it) {
     cur_flt_problems = checkCurCriteriaProblem();
     if (filter_name == "_current_" && cur_flt_problems)
         filter_name = "";
-    loadList(filter_name);
+    loadList(sCurFilterName, sCurZoneData);
     sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
     if (cur_flt_problems) {
         sElFltCurState.innerHTML = cur_flt_problems;
@@ -240,20 +240,25 @@ function updateCurFilter(filter_name, force_it) {
     sCheckFltNamed.checked = (sCurFilterName != "_current_");
 }
 
-function updateCurZone(){
+function updateCurZone(mode_on){
     cur_zone_problem = checkCurZoneProblem();
+    prev_zone_data = sCurZoneData;
     if (cur_zone_problem) {
         sElZoneCurState.innerHTML = cur_zone_problem;
         sElZoneCurState.className = "problems";
         sCheckZoneCur.disabled = true;
+        sCurZoneData = null;
     } else {
-        sElZoneCurState.innerHTML = sZoneDescr;
+        sElZoneCurState.innerHTML = sWorkZoneDescr;
         sElZoneCurState.className = "";
         sCheckZoneCur.disabled = false;
+        sCheckZoneCur.checked = (mode_on)? true:false;
+        sCurZoneData = (mode_on)? sWorkZoneData: null;
     }
-    
-    
+    if (prev_zone_data != sCurZoneData)
+        loadList(sCurFilterName, sCurZoneData);
 }
 
 function checkCurZone() {
+    updateCurZone(sCheckZoneCur.checked);
 }

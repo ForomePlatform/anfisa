@@ -128,6 +128,7 @@ div#rec-list  {
 input#list-rand-portion {
     width: 40px;
     font-size: 10px;
+    display: none;
 }
 
 div.rec-label {
@@ -233,9 +234,11 @@ span#flt-current-state, span#zone-descr {
     margin-left: 10px;
     flex-grow: 1;
     cursor: pointer;
-    background-color: white;
+    background-color: #f0f0f0;
     color: #333455; 
     padding: 5px;
+    border-radius: 7px;
+    border: 2px solid black;
 }
 
 span#flt-current-state.problems, span#zone-descr.problems {

@@ -12,6 +12,10 @@ class ViewSetup:
         "color.code":       "color_code",
         "aspect.hot.name":  "hot_data",
         "uniq.keys":        ("seq_region_name", "start", "end"),
+        "zones":            [
+            ("chromosome", "chr"),
+            ("gene",       "genes"),
+            ("tag",        "_tags")],
         "attrs.to.ignore":  ["/view"],
         "rand.seed":        179,
         "rand.min.size":    100,
