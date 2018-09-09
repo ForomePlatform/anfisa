@@ -67,7 +67,7 @@ flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ")
 
 flt_unit.IntValueUnit(MainLegend, "Severity",
-    "/_filters.Severity", expert_only=True)
+    "/_filters.Severity", expert_only=True, default_value=5)
 
 flt_unit.IntValueUnit(MainLegend, "Min_GQ",
     "/_filters.Min_GQ")
@@ -85,7 +85,7 @@ flt_unit.FloatValueUnit(MainLegend, "gnomAD_AF",
     "/_filters.gnomaAD_AF", diap = (0., 1.), default_value = 0.,
     title = "gnomAD Allele Frequency")
 
-flt_unit.PresenceUnit(MainLegend, "Present in", [
+flt_unit.PresenceUnit(MainLegend, "db", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/_filters.gnomaAD_AF"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),
