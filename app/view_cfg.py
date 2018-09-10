@@ -5,7 +5,7 @@ from .view_setup import ViewSetup
 CONFIG_ATTRS = {
     "view_gen": [
         AttrH("Gene(s)", is_seq = True),
-        AttrH("header"),
+        AttrH("hg19"),
         AttrH("hg38"),
         AttrH("Worst Annotation"),
         AttrH("Canonical Annotation"),
@@ -29,6 +29,7 @@ CONFIG_ATTRS = {
         AttrH("Variant Exon (Worst Annotation)", is_seq = True),
         AttrH("Variant Intron (Worst Annotation)", is_seq = True),
         AttrH("Variant Intron (Canonical)", is_seq = True),
+        AttrH(None),
         AttrH("Proband Genotype"),
         AttrH("Maternal Genotype"),
         AttrH("Paternal Genotype"),
@@ -61,7 +62,7 @@ CONFIG_ATTRS = {
         AttrH("HGMD (HG38)"),
         AttrH("HGMD Phenotypes", is_seq = True),
         AttrH("HGMD PMIDs", is_seq = True, kind = "link"),
-        AttrH("OMIM"),
+        AttrH("OMIM", is_seq=True, kind="link"),
         AttrH("ClinVar Significance", is_seq = True),
         AttrH("ClinVar", "link"),
         AttrH("GeneCards", kind="link", is_seq=True),

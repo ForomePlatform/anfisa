@@ -63,6 +63,9 @@ flt_unit.MultiStatusUnit(MainLegend, "genes",
 flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
     "/_filters.Proband_has_Variant")
 
+flt_unit.StatusUnit(MainLegend, "Variant_Class",
+    "/variant_class")
+
 flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ")
 
@@ -85,7 +88,7 @@ flt_unit.FloatValueUnit(MainLegend, "gnomAD_AF",
     "/_filters.gnomaAD_AF", diap = (0., 1.), default_value = 0.,
     title = "gnomAD Allele Frequency")
 
-flt_unit.PresenceUnit(MainLegend, "db", [
+flt_unit.PresenceUnit(MainLegend, "Presence_in_Databases", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/_filters.gnomaAD_AF"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),

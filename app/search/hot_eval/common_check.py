@@ -9,7 +9,7 @@ def evalRec(env, rec):
         quality = False
     elif rec.QD < env.qd:
         quality = False
-    known = len(rec.db & {"ClinVar", "HGMD"}) > 0
+    known = len(rec.Presence_in_Databases & {"ClinVar", "HGMD"}) > 0
 
     # "common" variant of check evaluation
     if (not quality):

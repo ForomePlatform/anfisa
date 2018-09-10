@@ -21,7 +21,7 @@ def connect(port = 3306, user = "hgmd", password = "hgmd"):
 
 class HGMD:
     SQL_ACC_NUM = "select acc_num from `hgmd_pro`.`hg19_coords`  where chromosome = %s and coordSTART = %s and coordEND = %s"
-    SQL_PMID = "SELECT distinct disease, PMID from hgmd_pro.mutation where acc_num = %s"
+    SQL_PMID = "SELECT distinct disease, PMID, Tag from hgmd_pro.mutation where acc_num = %s"
     SQL_PHEN = "SELECT distinct phenotype " + \
                "FROM hgmd_phenbase.hgmd_mutation as m join hgmd_phenbase.hgmd_phenotype as p on p.phen_id = m.phen_id " + \
                "WHERE acc_num = %s"

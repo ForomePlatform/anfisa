@@ -135,7 +135,9 @@ class Variant:
         csq_damaging, csq_missense, csq_benign1, csq_benign2
     ]
 
-    consequences = sum(severity)
+    consequences = []
+    for c in severity:
+        consequences += c
 
     @classmethod
     def most_severe(cls, csq):
@@ -251,7 +253,7 @@ class Variant:
         return {}
 
     def __str__(self):
-        str = "{}:{}".format(self.chromosome(), self.start())
+        str = self.get_hg19_coordinates()
         if (self.is_snv()):
             return "{}  {}>{}".format(str, self.ref(), self.alt_string())
         return "{} {}".format(str, self.get_variant_class())
@@ -529,6 +531,13 @@ class Variant:
             str = "{}:{}-{}".format(self.chromosome(), self.hg38_start, self.hg38_end)
         return str
 
+    def get_hg19_coordinates(self):
+        if (self.start() == self.end()):
+            str = "{}:{}".format(self.chromosome(), self.start())
+        else:
+            str = "{}:{}-{}".format(self.chromosome(), self.start(), self.end())
+        return str
+
     def get_proband(self):
         if (not self.samples):
             return None
@@ -588,7 +597,7 @@ class Variant:
         n = len(self.severity)
         for s in range(0,n):
             if (csq in self.severity[s]):
-                return n - s
+                return n - s - 1
         return None
 
     def get_pLI_by_allele(self, allele):
@@ -738,7 +747,7 @@ class Variant:
         #view['general'] = tab1
         data["view.general"] = tab1
         tab1['Gene(s)'] = self.get_genes()
-        tab1['header'] = str(self)
+        tab1['hg19'] = str(self)
         tab1['hg38'] = self.get_hg38_coordinates()
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
@@ -845,13 +854,19 @@ class Variant:
         tab4 = dict()
         #view['Databases'] = tab4
         data["view.Databases"] = tab4
-        tab4["OMIM"] = ""
+        genes = self.get_genes()
+        omim_urls = [
+            "https://omim.org/search/?search=approved_gene_symbol:{}&retrieve=geneMap".format(gene) for gene in genes
+        ]
+        tab4["OMIM"] = omim_urls
+        tab4['GeneCards'] = ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in genes]
         if (self.data.get("HGMD")):
             tab4["HGMD"] = self.data.get("HGMD")
             tab4["HGMD (HG38)"] = self.data.get("HGMD_HG38")
         else:
             tab4["HGMD"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
+        tab4["HGMD TAGs"] = [link_to_pmid(pmid[2]) for pmid in pmids] if pmids else None
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("_private.HGMD_phenotypes")
         tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
@@ -861,8 +876,6 @@ class Variant:
                 format(self.chr_num(), self.start(), self.end())
         tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig') +
                                               self.get_from_transcripts_list('clin_sig'))
-        tab4['GeneCards'] = \
-            ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in self.get_genes()]
 
         tab5 = dict()
         #view['Predictions'] = tab5
