@@ -157,7 +157,7 @@ function dropZoneVal(val_name) {
         }
         idx = sZoneDictCache[sWorkZoneCur][val_name];
         if (idx != undefined) {
-            el_id = 'zn--' + zone_name + '-check--' + idx;
+            el_id = 'zn--' + sWorkZoneCur + '-check--' + idx;
             document.getElementById(el_id).checked = false;
         }
         determineZoneData();

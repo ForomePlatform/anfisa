@@ -231,6 +231,3 @@ function wsActShow(mode) {
         "dropdown-content show":"dropdown-content";
 }
 
-function doWsExport() {
-    alert("Export will be implemented soon");
-}

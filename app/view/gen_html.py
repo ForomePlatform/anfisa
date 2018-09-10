@@ -30,7 +30,7 @@ def formTopPage(output, title, html_base,
   </head>
   <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">''' % params
 
-    _formMainDiv(output)
+    _formMainDiv(output, workspace_name)
     _formFiltersDiv(output)
     _formZonesDiv(output, zones)
     _formHotEvalDiv(output)
@@ -40,22 +40,19 @@ def formTopPage(output, title, html_base,
 </html>'''
 
 #===============================================
-def _formMainDiv(output):
+def _formMainDiv(output, workspace_name):
     print >> output, '''
     <div id="all">
       <div id="top">
         <div id="top-ws">
-          <div id="ws-dropdown" class="dropdown">
-            <span class="dropbtn"> &#10247; </span>
-             <div id="ws-dropdown-menu" class="dropdown-content">
-                <a onclick="doWsExport();">
-              Export</a>
-            </div>
-          </div>
           <div id="ws-ctrl">
             <div id="ws-info">
               Workspace:
               <span id="ws-name"></span><br/>
+              <span id="ws-download" title="Export...">
+                 <a href="download.xls" target="blank"
+                    download="%(ws)s">&#11123;</a>
+              </span>
             </div>
             <div id="list-info">
               <span id="list-report"></span>
@@ -134,7 +131,7 @@ def _formMainDiv(output):
             </iframe>
         </div>
       </div>
-    </div>'''
+    </div>''' % {"ws": workspace_name}
 
 #===============================================
 def _formFiltersDiv(output):
@@ -220,6 +217,10 @@ def _formFiltersDiv(output):
             </div>
           </div>
           <div id="filters-ctrl">
+            <button class="op-button"
+                onclick="filterModOff();">
+                Done
+            </button>
             <button id="filter-filters-on" onclick="filterFiltersSwitch();">
               Filters...
             </button>
@@ -355,9 +356,9 @@ def noRecords(output):
   </head>
   <body>
     <h3>No records available</h3>
-    <p>Try to drop <a onclick='parent.window.updateCurZone(false);'>zone</s>
+    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'>zone</button>
         or
-        <a href='parent.window.updateCurFilter("");'>filter</p>.</p>
+        <button onclick='parent.window.updateCurFilter("");'>filter</button>.</p>
   </body>
 </html>'''
 

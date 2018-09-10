@@ -77,6 +77,17 @@ body {
 span#ws-name {
     font-weight: bold;
     flex-grow: 1;
+    min-width: 50%;
+}
+
+span#ws-download {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+}
+
+span#ws-download a {
+    color: white;
 }
 
 #top-filters {
@@ -137,53 +148,54 @@ div.rec-label {
     font-size: 13px;
     text-align: left;
     vertical-align: middle;
-    padding-bottom: 15px;
-    padding-left: 20px;
+    padding: 10px 0px 10px 20px;
     line-height: 18px;
+    border: none; 
 }
 div.rec-label:hover {
     color: #f6f6f7;
 }
 
 div.rec-label.red { 
-    background: url(images/red.png) no-repeat 5px 3px; 
+    background: url(images/red.png) no-repeat 5px 12px; 
 }
 div.rec-label.red:hover { 
-    background: url(images/red-hover.png) no-repeat 5px 3px; 
+    background: url(images/red-hover.png) no-repeat 5px 12px; 
 }
 div.rec-label.red-cross { 
-    background: url(images/red-cross.png) no-repeat 5px 3px; 
+    background: url(images/red-cross.png) no-repeat 5px 12px; 
 }
 div.rec-label.red-cross:hover { 
-    background: url(images/red-cross-hover.png) no-repeat 5px 3px; 
+    background: url(images/red-cross-hover.png) no-repeat 5px 12px; 
 }
 div.rec-label.green { 
-    background: url(images/green.png) no-repeat 5px 3px; 
+    background: url(images/green.png) no-repeat 5px 12px; 
 }
 div.rec-label.green:hover { 
-    background: url(images/green-hover.png) no-repeat 5px 3px; 
+    background: url(images/green-hover.png) no-repeat 5px 12px; 
 }
 div.rec-label.yellow { 
-    background: url(images/yellow.png) no-repeat 5px 3px; 
+    background: url(images/yellow.png) no-repeat 5px 12px; 
 }
 div.rec-label.yellow:hover { 
-    background: url(images/yellow-hover.png) no-repeat 5px 3px; 
+    background: url(images/yellow-hover.png) no-repeat 5px 12px; 
 }
 div.rec-label.yellow-cross { 
-    background: url(images/yellow-cross.png) no-repeat 5px 3px; 
+    background: url(images/yellow-cross.png) no-repeat 5px 12px; 
 }
 div.rec-label.yellow-cross:hover { 
-    background: url(images/yellow-cross-hover.png) no-repeat 5px 3px; 
+    background: url(images/yellow-cross-hover.png) no-repeat 5px 12px; 
 }
 div.rec-label.grey { 
-    background: url(images/grey.png) no-repeat 6px 5px;     
+    background: url(images/grey.png) no-repeat 5px 12px;     
 }
 div.rec-label.grey:hover { 
-    background: url(images/grey-hover.png) no-repeat 6px 5px; 
+    background: url(images/grey-hover.png) no-repeat 5px 12px; 
 }
 
-div.rec-label.press {
+div.rec-label.press, div.rec-label.press:hover {
     color: #f6f6f7;
+    background-color: #505070; 
 }
 
 /********************Right area*****************************/
@@ -198,9 +210,14 @@ div.rec-label.press {
     border: 2px 3px 3px 1px solid #333455;
     padding: 0px;
     margin: 0px;
-    display: block;
 }
 
+#rec-frame1 {
+    display: none;
+}
+#rec-frame2 {
+    display: block;
+}
 /********************Top filters*****************************/
 div#flt-ctrl, div#ws.ctrl {
   display: block;
