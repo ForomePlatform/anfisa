@@ -135,7 +135,9 @@ class Variant:
         csq_damaging, csq_missense, csq_benign1, csq_benign2
     ]
 
-    consequences = sum(severity)
+    consequences = []
+    for c in severity:
+        consequences += c
 
     @classmethod
     def most_severe(cls, csq):
@@ -595,7 +597,7 @@ class Variant:
         n = len(self.severity)
         for s in range(0,n):
             if (csq in self.severity[s]):
-                return n - s
+                return n - s - 1
         return None
 
     def get_pLI_by_allele(self, allele):
