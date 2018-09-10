@@ -239,6 +239,7 @@ span#flt-current-state, span#zone-descr {
     padding: 5px;
     border-radius: 7px;
     border: 2px solid black;
+    width: 100%;
 }
 
 span#flt-current-state.problems, span#zone-descr.problems {

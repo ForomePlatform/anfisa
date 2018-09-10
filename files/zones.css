@@ -85,16 +85,30 @@ div#work-zone-wrap-list {
     display: grid;
     margin: 10px;
     border: 1px solid black;
-}
-
-div#work-zone-list {
-    overflow: auto;
+    white-space: nowrap;
 }
 
 div#zone-right {
     width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;    
 }
 
 div#work-zone-def {
     width: 100%;
+    text-align: justify;
+    white-space: normal;
+    flex-grow: 1;
+}
+
+div.work-zone-list {
+    overflow: auto;
+    max-height: 100%;
+}
+
+div#work-zone-ctrl {
+    height: 40px;
+    margin: 5px;
+    padding: 5px;
 }

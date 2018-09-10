@@ -124,6 +124,9 @@ class StatusUnit(FilterUnit):
     def iterExtractors(self):
         yield self.mExtractor
 
+    def getVariantSet(self):
+        return self.mExtractor.getVConv().getVariantSet()
+
     def recordCritFunc(self, enum_func, variants):
         col = self.mExtractor.getDataP()
         idx_set = self.mExtractor.getVConv().getVariantSet().makeIdxSet(
@@ -209,6 +212,9 @@ class MultiStatusUnit(FilterUnit):
 
     def iterExtractors(self):
         return iter(self.mExtractors)
+
+    def getVariantSet(self):
+        return self.mExtractors[0].getVConv().getVariantSet()
 
     def recordCritFunc(self, enum_func, variants):
         datap = self.mExtractors[0].getDataP()

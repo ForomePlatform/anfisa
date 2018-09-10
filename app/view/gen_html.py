@@ -85,16 +85,16 @@ def _formMainDiv(output):
         </div>
         <div id="top-zones">
           <div id="zone-ctrl">
-            Zones:
+            Zone:
+              <span id="zone-cur-title"></span>
               <select style="visibility:hidden;">
                 <option value=""></option>
               </select>
           </div>
           <div id="zone-cur">
             <input id="zone-check" type="checkbox"
-               onchange="checkCurZone();"/>
-            <span id="zone-descr" onclick="zoneModOn();">
-            </span>
+                onchange="checkCurZone();"/>
+            <span id="zone-descr" onclick="zoneModOn();"></span>
           </div>
          </div>
          <div id="top-tags">
@@ -253,11 +253,18 @@ def _formFiltersDiv(output):
 
 #===============================================
 def _formZonesDiv(output, zones):
-    rep_zones = [('<span id="zn--%s"><input id="zn-check--%s" '
-    'type="checkbox" onchange="checkWorkZone(\'%s\');"/>%s</span>') %
-        (zone.getName(), zone.getName(), zone.getName(),
-        escape(zone.getTitle())) for zone in zones]
-    params = {"zones": "\n".join(rep_zones)}
+    rep_check_zones, rep_div_zones = [], []
+    for zone in zones:
+        rep_check_zones.append(('<span id="zn--%s">'
+            '<input id="zn-check--%s" class="zone-checkbox" type="checkbox" '
+            'onchange="checkWorkZone(\'%s\');"/>%s</span>') %
+            (zone.getName(), zone.getName(), zone.getName(),
+            escape(zone.getTitle())))
+        rep_div_zones.append('<div class="work-zone-list" '
+            'id="zn-div--%s"></div>' % zone.getName())
+    params = {
+        "check_zones": "\n".join(rep_check_zones),
+        "div_zones": "\n".join(rep_div_zones)}
 
     print >> output, '''
     <div id="zone-back">
@@ -270,15 +277,24 @@ def _formZonesDiv(output, zones):
         <div id="work-zone-area">
           <div id="work-zone-left">
             <div id="work-zone-kind">
-               %(zones)s
+               %(check_zones)s
             </div>
             <div id="work-zone-wrap-list">
-              <div id="work-zone-list">
-              </div>
+                %(div_zones)s
             </div>
           </div>
           <div id="zone-right">
             <div id="work-zone-def">
+            </div>
+            <div id="work-zone-ctrl">
+              <button class="op-button"
+                  onclick="zoneModOff();">
+                Done
+              </button>
+              <button id="work-zone-clear" class="op-button"
+                  onclick="zoneClearSelect();">
+                Clear
+              </button>
             </div>
           </div>
         </div>

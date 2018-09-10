@@ -83,6 +83,7 @@ function setupTagSelection(info) {
         option.value = tag_name;
         sSelectCurTag.append(option)
     }
+    checkTagsIntVersion(info["tags-version"]);
     sSelectCurTag.selectedIndex = tag_list.indexOf(sCurTag) + 1;
     sTagRecList = info["records"];
     updateTagNavigation();
@@ -124,18 +125,18 @@ function updateTagNavigation() {
         }
         if (rec_no < sCurRecID) {
             if (k == 0) {
-                sNavSheet[0] = rec_no;
+                sNavSheet[0] = j;
                 k = 1;
             } else {
-                sNavSheet[1] = rec_no;
+                sNavSheet[1] = j;
             }
             cnt[0]++;
         } else {
-            if (k == 3) {
-                sNavSheet[3] = rec_no;
+            if (k <= 3) {
+                sNavSheet[3] = j;
                 k = 4;
             } else {
-                sNavSheet[4] = rec_no;
+                sNavSheet[4] = j;
             }
             cnt[2]++;            
         }
@@ -243,6 +244,8 @@ function updateCurFilter(filter_name, force_it) {
 function updateCurZone(mode_on){
     cur_zone_problem = checkCurZoneProblem();
     prev_zone_data = sCurZoneData;
+    document.getElementById("zone-cur-title").innerHTML = 
+        (sWorkZoneTitle)? sWorkZoneTitle:"";
     if (cur_zone_problem) {
         sElZoneCurState.innerHTML = cur_zone_problem;
         sElZoneCurState.className = "problems";

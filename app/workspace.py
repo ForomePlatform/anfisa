@@ -45,6 +45,12 @@ class Workspace:
     def iterZones(self):
         return iter(self.mZoneHandlers)
 
+    def getZone(self, name):
+        for zone_h in self.mZoneHandlers:
+            if zone_h.getName() == name:
+                return zone_h
+        return None
+
     def getFirstAspectID(self):
         return self.mViewSetup.getAspects()[0].getName()
 
