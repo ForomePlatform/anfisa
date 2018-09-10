@@ -26,6 +26,7 @@ function initWin(workspace_name, app_modes) {
     document.getElementById("list-rand-portion").value = sCurRandPortion;
     initMonitor();
     initFilters();
+    checkWorkZone(null);
     wsActShow(false);
 }
 

@@ -13,6 +13,11 @@ class ZoneH:
     def getTitle(self):
         return self.mTitle
 
+    def makeValuesReport(self):
+        return {
+            "zone": self.getName(),
+            "title": self.getTitle(),
+            "variants": self.getVariants()}
 
 #===============================================
 class FilterZoneH(ZoneH):
@@ -22,3 +27,10 @@ class FilterZoneH(ZoneH):
 
     def getName(self):
         return self.mUnit.getName()
+
+    def getVariants(self):
+        return [var for var in self.mUnit.getVariantSet()]
+
+    def restrict(self, rec_no_seq, variants):
+        return self.getWS().getIndex()._applyCrit(rec_no_seq,
+            ("enum", self.mUnit.getName(), "OR", variants))

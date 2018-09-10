@@ -1,4 +1,5 @@
 def evalRec(env, rec):
+    # standard part of evaluation
     quality = True
     if not rec.Proband_has_Variant:
         quality = False
@@ -10,6 +11,7 @@ def evalRec(env, rec):
         quality = False
     known = len(rec.Presence_in_Databases & {"ClinVar", "HGMD"}) > 0
 
+    # "common" variant of check evaluation
     if (not quality):
         return False
     if (known):

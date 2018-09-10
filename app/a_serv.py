@@ -47,6 +47,9 @@ class AnfisaService:
         if rq_path == "/tags":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTags(rq_args))
+        if rq_path == "/zone_list":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formZoneList(rq_args))
         if rq_path == "/hot_eval_data":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formHotEvalData(rq_args))
@@ -137,6 +140,11 @@ class AnfisaService:
         modes = rq_args.get("m", "")
         rec_no_seq = workspace.getIndex().getRecNoSeq(
             rq_args.get("filter"))
+        zone_data = rq_args.get("zone")
+        if zone_data is not None:
+            zone_name, variants = json.loads(zone_data)
+            rec_no_seq = workspace.getZone(zone_name).restrict(
+                rec_no_seq, variants);
         report = workspace.mDataSet.makeJSonReport(
             sorted(rec_no_seq), 'R' in modes)
         report["workspace"] = workspace.getName();
@@ -173,6 +181,14 @@ class AnfisaService:
         return output.getvalue()
 
     #===============================================
+    def formZoneList(self, rq_args):
+        output = StringIO()
+        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        report = workspace.getZone(rq_args.get("zone")).makeValuesReport()
+        output.write(json.dumps(report))
+        return output.getvalue()
+
+    #===============================================
     def formHotEvalData(self, rq_args):
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
@@ -196,13 +212,15 @@ class AnfisaService:
     def formTagSelect(self, rq_args):
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
-        tag_list = workspace.getTagsMan().getTagList();
+        tags_man = workspace.getTagsMan();
+        tag_list = tags_man.getTagList();
         tag_name = rq_args.get("tag")
         if tag_name and tag_name not in tag_list:
             tag_name = None
-        rep = {"tag-list": tag_list, "tag": tag_name}
+        rep = {"tag-list": tag_list, "tag": tag_name,
+            "tags-version": tags_man.getIntVersion()}
         if tag_name:
-            rep["records"] = workspace.getTagsMan().getTagRecordList(
+            rep["records"] = tags_man.getTagRecordList(
                 tag_name)
         output.write(json.dumps(rep))
         return output.getvalue()

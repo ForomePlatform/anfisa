@@ -6,10 +6,14 @@ class TagsManager(ZoneH):
     def __init__(self, workspace):
         ZoneH.__init__(self, workspace, "_tags");
         self.mTagSets = defaultdict(set)
+        self.mIntVersion = 0
         self._loadDataSet()
 
     def getName(self):
         return "_tags"
+
+    def getIntVersion(self):
+        return self.mIntVersion
 
     def _loadDataSet(self):
         for rec_no, rec_key in self.getWS().getDataSet().enumDataKeys():
@@ -18,12 +22,16 @@ class TagsManager(ZoneH):
                 for tag, value in data_obj.items():
                     if self._goodKey(tag):
                         self.mTagSets[tag].add(rec_no)
+        self.mIntVersion += 1
 
     def getTagRecordList(self, tag):
         return sorted(self.mTagSets[tag])
 
     def getTagList(self):
         return sorted(self.mTagSets.keys())
+
+    def getVariants(self):
+        return self.getTagList()
 
     @staticmethod
     def _goodPair(key_value):
@@ -97,10 +105,24 @@ class TagsManager(ZoneH):
             rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())
+        modified = False
         for tag_name in tags_prev - tags_new:
             if self._goodKey(tag_name):
                 self.mTagSets[tag_name].remove(rec_no)
+                modified = True
         for tag_name in tags_new - tags_prev:
             if self._goodKey(tag_name):
                 self.mTagSets[tag_name].add(rec_no)
+                modified = True
+        if modified:
+            self.mIntVersion += 1
         return new_rec_data
+
+    def restrict(self, rec_no_seq, variants):
+        rec_no_set = set(rec_no_seq)
+        work_set = set()
+        for tag_name in variants:
+            tag_set = self.mTagSets.get(tag_name)
+            if tag_set:
+                work_set |= (tag_set & rec_no_set)
+        return sorted(work_set)
