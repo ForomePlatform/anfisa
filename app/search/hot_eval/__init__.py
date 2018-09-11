@@ -27,7 +27,7 @@ class HOT_SETUP:
     ATTRIBUTES = [
         ("af", 0.01, False),
         ("af_in_db", 0.05, False),
-        ("severity", 0, False),
+        ("severity", 1, False),
         ("gq", 20, False),
         ("fs", 30, False),
         ("qd", 4, False)]

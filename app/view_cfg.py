@@ -101,6 +101,7 @@ CONFIG_ATTRS = {
     "_main": [
         AttrH("label"),
         AttrH("color_code"),
+        AttrH("_filters.Severity", "expert"),
         AttrH("id"),
         AttrH("assembly_name", title = "Assembly"),
         AttrH("seq_region_name"),
