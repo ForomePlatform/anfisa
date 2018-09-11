@@ -1,9 +1,9 @@
 #import sys
 from .path_works import AttrFuncPool
-from .hot_eval_supp import HotEvalUnit
+from .rules_supp import RulesEvalUnit
 #===============================================
 class FilterLegend:
-    def __init__(self, name, hot_setup):
+    def __init__(self, name, rules_setup):
         self.mName     = name
         self.mFuncPool = AttrFuncPool()
         self.mColumns  = []
@@ -11,7 +11,7 @@ class FilterLegend:
         self.mUnitDict = dict()
         self.mIsOK     = False
         self.mUnits    = []
-        HotEvalUnit(self, hot_setup)
+        RulesEvalUnit(self, rules_setup)
 
     def _regColumnHandler(self, col_h):
         assert col_h.getName() not in self.mColDict
@@ -51,7 +51,7 @@ class FilterLegend:
     def iterUnits(self):
         return iter(self.mUnits)
 
-    def getHotUnit(self):
+    def getRulesUnit(self):
         return self.mUnits[0]
 
     def isOK(self):
@@ -65,10 +65,10 @@ class FilterLegend:
     def fillRecord(self, obj, record):
         for unit in self.mUnits:
             unit.fillRecord(obj, record)
-        self.mUnits[0].fillHotPart(obj, record)
+        self.mUnits[0].fillRulesPart(obj, record)
 
-    def updateHotRecordPart(self, obj, record):
-        self.mUnits[0].fillHotPart(obj, record)
+    def updateRulesRecordPart(self, obj, record):
+        self.mUnits[0].fillRulesPart(obj, record)
 
     def setup(self, rep_out):
         self.mIsOK = True

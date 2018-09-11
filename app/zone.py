@@ -32,5 +32,5 @@ class FilterZoneH(ZoneH):
         return [var for var in self.mUnit.getVariantSet()]
 
     def restrict(self, rec_no_seq, variants):
-        return self.getWS().getIndex()._applyCrit(rec_no_seq,
+        return self.getWS().getIndex()._applyCondition(rec_no_seq,
             ("enum", self.mUnit.getName(), "OR", variants))

@@ -20,20 +20,20 @@ def formTopPage(output, title, html_base,
     <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="filters.css" type="text/css" media="all"/>
     <link rel="stylesheet" href="zones.css" type="text/css" media="all"/>
-    <link rel="stylesheet" href="hot_eval.css" type="text/css" media="all"/>
+    <link rel="stylesheet" href="rules.css" type="text/css" media="all"/>
     <script type="text/javascript" src="anf.js"></script>
     <script type="text/javascript" src="monitor.js"></script>
     <script type="text/javascript" src="filters.js"></script>
-    <script type="text/javascript" src="criteria.js"></script>
+    <script type="text/javascript" src="conditions.js"></script>
     <script type="text/javascript" src="zones.js"></script>
-    <script type="text/javascript" src="hot_eval.js"></script>
+    <script type="text/javascript" src="rules.js"></script>
   </head>
   <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">''' % params
 
     _formMainDiv(output, workspace_name)
     _formFiltersDiv(output)
     _formZonesDiv(output, zones)
-    _formHotEvalDiv(output)
+    _formRulesDiv(output)
 
     print >> output, '''
   </body>
@@ -142,77 +142,77 @@ def _formFiltersDiv(output):
           <div id="stat-list">
           </div>
         </div>
-        <div id="filter-criteria">
+        <div id="filter-conditions">
           <div id="filter-ctrl">
-            <span id="crit-title"></span>
-            <button id="filter-add-crit" onclick="filterAddCrit();">
+            <span id="cond-title"></span>
+            <button id="filter-add-cond" onclick="filterAddCond();">
               Add
             </button>
-            <button id="filter-update-crit" onclick="filterUpdateCrit();">
+            <button id="filter-update-cond" onclick="filterUpdateCond();">
               Update
             </button>
-            <button id="filter-delete-crit"
-                onclick="filterDeleteCrit();">
+            <button id="filter-delete-cond"
+                onclick="filterDeleteCond();">
               &times;
             </button>
-            <button id="filter-undo-crit" title="Undo"
-                onclick="filterUndoCrit();">
+            <button id="filter-undo-cond" title="Undo"
+                onclick="filterUndoCond();">
               &#8630;
             </button>
-            <button id="filter-redo-crit" title="Delete"
-                onclick="filterRedoCrit();">
+            <button id="filter-redo-cond" title="Delete"
+                onclick="filterRedoCond();">
               &#8631;
             </button>
             <span id="close-filter" onclick="filterModOff();">&times;</span>
           </div>
-          <div id="filter-cur-crit-text">
-            <span id="crit-text"></span>
-            <span id="crit-error"></span>
+          <div id="filter-cur-cond-text">
+            <span id="cond-text"></span>
+            <span id="cond-error"></span>
           </div>
-          <div id="filter-cur-crit">
-            <div id="cur-crit-numeric">
-              <span id="crit-min" class="num-set"></span>
-              <input id="crit-min-inp" class="num-inp"
-                type="text" onchange="checkCurCrit(\'min\');"/>
-              <span id="crit-sign" class="num-sign"
-                onclick="checkCurCrit(\'sign\');"></span>
-              <input id="crit-max-inp" class="num-inp"
-                type="text" onchange="checkCurCrit(\'max\');"/>
-              <span id="crit-max" class="num-set"></span>
+          <div id="filter-cur-cond">
+            <div id="cur-cond-numeric">
+              <span id="cond-min" class="num-set"></span>
+              <input id="cond-min-inp" class="num-inp"
+                type="text" onchange="checkCurCond(\'min\');"/>
+              <span id="cond-sign" class="num-sign"
+                onclick="checkCurCond(\'sign\');"></span>
+              <input id="cond-max-inp" class="num-inp"
+                type="text" onchange="checkCurCond(\'max\');"/>
+              <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span><br/>
-              <input id="crit-undef-check" class="num-inp"
-                type="checkbox"  onchange="checkCurCrit(\'undef\');"/>
-              <span id="crit-undef-count" class="num-count"
+              <input id="cond-undef-check" class="num-inp"
+                type="checkbox"  onchange="checkCurCond(\'undef\');"/>
+              <span id="cond-undef-count" class="num-count"
                 class="num-count"></span>
             </div>
-            <div id="cur-crit-enum">
-              <div id="wrap-crit-enum">
-                <div id="wrap-crit-enum-list">
-                  <div id="cur-crit-enum-list">
+            <div id="cur-cond-enum">
+              <div id="wrap-cond-enum">
+                <div id="wrap-cond-enum-list">
+                  <div id="cur-cond-enum-list">
                      <div id="op-enum-list">
                      </div>
                   </div>
                 </div>
-                <div id="cur-crit-enum-mode">
-                  <span id="crit-mode-and-span">
-                    <input id="crit-mode-and" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mode-and\');"/>AND
+                <div id="cur-cond-enum-mode">
+                  <span id="cond-mode-and-span">
+                    <input id="cond-mode-and" class="num-inp" type="checkbox"
+                      onchange="checkCurCond(\'mode-and\');"/>AND
                   </span><br/>
-                  <span id="crit-mode-only-span">
-                    <input id="crit-mode-only" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mode-only\');"/>ONLY
+                  <span id="cond-mode-only-span">
+                    <input id="cond-mode-only" class="num-inp" type="checkbox"
+                      onchange="checkCurCond(\'mode-only\');"/>ONLY
                   </span><br/>
-                  <span id="crit-mode-not-span">
-                    <input id="crit-mode-not" class="num-inp" type="checkbox"
-                      onchange="checkCurCrit(\'mode-not\');"/>NOT
+                  <span id="cond-mode-not-span">
+                    <input id="cond-mode-not" class="num-inp" type="checkbox"
+                      onchange="checkCurCond(\'mode-not\');"/>NOT
                   </span><br/>
                 </div>
               </div>
             </div>
           </div>
-          <div id="filter-wrap-list-criteria">
-            <div id="filter-list-criteria">
-              <div id="crit-list">
+          <div id="filter-wrap-list-conditions">
+            <div id="filter-list-conditions">
+              <div id="cond-list">
               </div>
             </div>
           </div>
@@ -304,41 +304,41 @@ def _formZonesDiv(output, zones):
 ''' % params
 
 #===============================================
-def _formHotEvalDiv(output):
+def _formRulesDiv(output):
     print >> output, '''
-    <div id="hot-eval-back">
-      <div id="hot-eval-mod">
-        <div id="hot-eval-top">
-            <p id="hot-eval-title">&#9874; Hot evaluation setup
-              <span id="close-hot-eval" onclick="hotEvalModOff();">&times;</span>
+    <div id="rules-back">
+      <div id="rules-mod">
+        <div id="rules-top">
+            <p id="rules-title">&#9874; Rules evaluation setup
+              <span id="close-rules" onclick="rulesModOff();">&times;</span>
             </p>
         </div>
-        <div id="hot-eval-main">
-          <div id="hot-eval-left">
-            <div id="hot-eval-wrap-columns">
-              <div id="hot-eval-columns">
+        <div id="rules-main">
+          <div id="rules-left">
+            <div id="rules-wrap-columns">
+              <div id="rules-columns">
               </div>
             </div>
-            <div id="hot-eval-wrap-param">
+            <div id="rules-wrap-param">
               <div id="hi----param"
-                class="hot-eval-item" onclick="hotItemSel(\'--param\');">
+                class="rule-item" onclick="rulesItemSel(\'--param\');">
                   Parameters
               </div>
             </div>
           </div>
-          <div id="hot-eval-right">
-            <div id="hot-eval-wrap-content">
-                <textarea id="hot-eval-item-content"></textarea>
+          <div id="rules-right">
+            <div id="rules-wrap-content">
+                <textarea id="rule-item-content"></textarea>
             </div>
-            <div id="hot-eval-item-ctrl">
-                <button id="hot-item-modify" onclick="hotItemModify();">
+            <div id="rule-item-ctrl">
+                <button id="rule-item-modify" onclick="ruleItemModify();">
                   Apply changes
                 </button>
-                <button id="hot-item-reset" onclick="hotItemReset();">
+                <button id="rule-item-reset" onclick="ruleItemReset();">
                   Reset changes
                 </button>
             </div>
-            <div id="hot-eval-item-errors">
+            <div id="rule-item-errors">
             </div"
           </div>
         </div>
@@ -369,8 +369,8 @@ def tagsBlock(output):
   <div id="tg-wrap-filters">
     <div id="tg-filters">
         <i>Filters:</i> <span id="tg-filters-list"></span>
-        <span id="run-hot-eval" title="Hot evaluations"
-            onclick="window.parent.hotEvalModOn();">&#9874;</span>
+        <span id="tg-run-rules" title="Rules evaluation setup"
+            onclick="window.parent.rulesEvalModOn();">&#9874;</span>
     </div>
   </div>
   <div id="tg-tags">

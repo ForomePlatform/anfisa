@@ -5,12 +5,12 @@ from view.colgrp import ColGroupsH
 #===============================================
 class ViewSetup:
     sTextMessages = {
-        "aspect.hot.title": "Tags&nbsp;&amp;<br/>Filters" }
+        "aspect.tags.title": "Tags&nbsp;&amp;<br/>Filters" }
 
     sConfigOptions = {
         "label.key":        "label",
         "color.code":       "color_code",
-        "aspect.hot.name":  "hot_data",
+        "aspect.tags.name": "tags_data",
         "uniq.keys":        ("seq_region_name", "start", "end"),
         "zones":            [
             ("Chromosome", "Chromosome"),

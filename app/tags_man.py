@@ -7,6 +7,7 @@ class TagsManager(ZoneH):
         ZoneH.__init__(self, workspace, "_tags");
         self.mTagSets = defaultdict(set)
         self.mIntVersion = 0
+        self.mMarkedSet = set()
         self._loadDataSet()
 
     def getName(self):
@@ -15,6 +16,9 @@ class TagsManager(ZoneH):
     def getIntVersion(self):
         return self.mIntVersion
 
+    def getMarkedSet(self):
+        return self.mMarkedSet
+
     def _loadDataSet(self):
         for rec_no, rec_key in self.getWS().getDataSet().enumDataKeys():
             data_obj = self.getWS().getMongoConn().getRecData(rec_key)
@@ -22,6 +26,7 @@ class TagsManager(ZoneH):
                 for tag, value in data_obj.items():
                     if self._goodKey(tag):
                         self.mTagSets[tag].add(rec_no)
+                        self.mMarkedSet.add(rec_no)
         self.mIntVersion += 1
 
     def getTagRecordList(self, tag):
@@ -44,10 +49,13 @@ class TagsManager(ZoneH):
     def makeRecReport(self, rec_no, tags_to_update):
         rec_key = self.getWS().getDataSet().getRecKey(rec_no)
         rec_data = self.getWS().getMongoConn().getRecData(rec_key)
+        mark_modified = False
         if tags_to_update is not None:
-            rec_data = self._changeRecord(
+            rec_data, mark_modified = self._changeRecord(
                 rec_no, rec_key, rec_data, tags_to_update)
         ret = {"all-tags": self.getTagList()}
+        if mark_modified:
+            ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
         if rec_data is None:
             ret["tags"] = dict()
             return ret
@@ -69,6 +77,13 @@ class TagsManager(ZoneH):
                 if cls._goodKey(key):
                     new_rec_data[key] = value
         return new_rec_data
+
+    @classmethod
+    def _hasTags(cls, rec_data):
+        for key in rec_data.keys():
+            if cls._goodKey(key):
+                return True
+        return False
 
     def _changeRecord(self, rec_no, rec_key, rec_data, tags_to_update):
         if rec_data and rec_data.get('_h') is not None:
@@ -100,23 +115,32 @@ class TagsManager(ZoneH):
                 h_stack = h_stack[-10:]
             new_rec_data['_h'] = [len(h_stack), h_stack]
         if new_rec_data is None:
-            return rec_data
+            return rec_data, False
         self.getWS().getMongoConn().setRecData(
             rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())
-        modified = False
+        list_modified = False
         for tag_name in tags_prev - tags_new:
             if self._goodKey(tag_name):
                 self.mTagSets[tag_name].remove(rec_no)
-                modified = True
+                list_modified |= not self.mTagSets[tag_name]
         for tag_name in tags_new - tags_prev:
             if self._goodKey(tag_name):
+                list_modified |= not self.mTagSets[tag_name]
                 self.mTagSets[tag_name].add(rec_no)
-                modified = True
-        if modified:
+        if list_modified:
             self.mIntVersion += 1
-        return new_rec_data
+        mark_modified = False
+        if self._hasTags(new_rec_data):
+            if rec_no not in self.mMarkedSet:
+                self.mMarkedSet.add(rec_no)
+                mark_modified = True
+        else:
+            if rec_no in self.mMarkedSet:
+                self.mMarkedSet.remove(rec_no)
+                mark_modified = True
+        return new_rec_data, mark_modified
 
     def restrict(self, rec_no_seq, variants):
         rec_no_set = set(rec_no_seq)
@@ -125,4 +149,5 @@ class TagsManager(ZoneH):
             tag_set = self.mTagSets.get(tag_name)
             if tag_set:
                 work_set |= (tag_set & rec_no_set)
+
         return sorted(work_set)

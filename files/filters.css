@@ -42,7 +42,7 @@
 
 /********************Filter controls*****************************/
 
-div#filter-stat, div#filter-criteria {
+div#filter-stat, div#filter-conditions {
     flex-grow: 1;
     overflow: hidden;
     display: grid;
@@ -54,7 +54,7 @@ div#filter-stat {
     width: 40%;
 }
 
-div#filter-criteria {
+div#filter-conditions {
     width: 60%;
     height: 100%;
     min-height: 100%;
@@ -75,13 +75,13 @@ div#filter-ctrl button {
     margin: 1px;
 }
 
-div#filter-cur-crit-text {
+div#filter-cur-cond-text {
     height: 30px;
     min-height: 30px;
     width: 100%;
     background-color: #fffff0;    
 }
-div#filter-cur-crit {
+div#filter-cur-cond {
     height: 120px;
     min-height: 120px;
     vertical-align: top;
@@ -90,7 +90,7 @@ div#filter-cur-crit {
     padding: 0px;
 }
 
-div#filter-list-criteria {
+div#filter-list-conditions {
     margin: 0px;
     padding: 0px;
     display: block;
@@ -135,28 +135,28 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
-span#crit-text {
+span#cond-text {
     color: magenta;
     font-weight: bold;
     font-size: 13pt;
     margin: 10px;
 }
 
-span#crit-error {
+span#cond-error {
     color: red;
     font-style: italic;
     font-size: 13pt;
     margin: 10px;
 }
 
-span#crit-title {
+span#cond-title {
     font-size: 13px;
     font-weight: bold;
     color: magenta;
     margin-right: 20px;
 }
 
-div#cur-crit-numeric {
+div#cur-cond-numeric {
     margin: 10px;
     padding: 0px;
     text-align: right;
@@ -164,13 +164,13 @@ div#cur-crit-numeric {
     overflow: hidden;
 }
 
-div#cur-crit-enum {
+div#cur-cond-enum {
     padding: 0px;
     margin:  0px;
     overflow: hidden;
 }
 
-div#wrap-crit-enum {
+div#wrap-cond-enum {
     padding: 0px;
     margin: 0px;
     width: 100%;
@@ -180,7 +180,7 @@ div#wrap-crit-enum {
     flex-direction: columns;
 }
 
-div#wrap-crit-enum-list {
+div#wrap-cond-enum-list {
     padding: 5px ;
     margin: 3px;
     width: 100%;
@@ -190,7 +190,7 @@ div#wrap-crit-enum-list {
     border: 1px solid black;
 }
 
-div#cur-crit-enum-list {
+div#cur-cond-enum-list {
     padding: 0px;
     margin: 2px;
     min-width: 300px;
@@ -206,7 +206,7 @@ div#op-enum-list {
     display: block;
 }
 
-div#cur-crit-enum-mode {
+div#cur-cond-enum-mode {
     width: 100px;
     vertical-align: top;
     overflow: auto;
@@ -214,11 +214,11 @@ div#cur-crit-enum-mode {
     padding: 10px;
 }
 
-span#crit-sign {
+span#cond-sign {
     cursor: hand;
 }
 
-div#crit-list {
+div#cond-list {
     margin: 0px;
     padding: 0px;
     overflow: auto;
@@ -229,7 +229,7 @@ div#crit-list {
     max-width: 100%;
 }
 
-div.crit-descr {
+div.cond-descr {
     background-color: #fffff0;
     border: 2px solid brown;
     cursor: hand;
@@ -239,7 +239,7 @@ div.crit-descr {
     white-space: normal;
 }
 
-div.crit-descr.cur {
+div.cond-descr.cur {
     border: 2px solid red;
     cursor: pointer;
 }
@@ -266,7 +266,7 @@ span.stat-bad {
     font-style: italic;
 }
 
-span#run-hot-eval{
+span#flt-run-rules{
     cursor: pointer;
     border: 1px solid black;
     float: right;
@@ -280,7 +280,7 @@ div#filters-ctrl {
     display: flex;
 }
 
-div#filter-wrap-list-criteria {
+div#filter-wrap-list-conditions {
     flex-grow: 1;
     width: 100%;
     display: grid;

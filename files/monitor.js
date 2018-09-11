@@ -221,7 +221,7 @@ function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
     sCurFilterName = filter_name;
-    cur_flt_problems = checkCurCriteriaProblem();
+    cur_flt_problems = checkCurConditionsProblem();
     if (filter_name == "_current_" && cur_flt_problems)
         filter_name = "";
     loadList(sCurFilterName, sCurZoneData);
@@ -232,7 +232,7 @@ function updateCurFilter(filter_name, force_it) {
         sCheckFltCurrent.disabled = true;
         sCheckFltCurrent.checked = false;
     } else {
-        sElFltCurState.innerHTML = sCurFilterSeq.length + " rule" +
+        sElFltCurState.innerHTML = sCurFilterSeq.length + " condition" +
             ((sCurFilterSeq.length>1)? "s":"");
         sElFltCurState.className = "";
         sCheckFltCurrent.disabled = false;

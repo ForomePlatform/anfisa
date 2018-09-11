@@ -35,10 +35,10 @@ class MongoConnector:
         return [(it["_id"], it["seq"])
             for it in self.mMongo[self.mPath].filters.find()]
 
-    def setFilter(self, filter_name, criteria):
+    def setFilter(self, filter_name, conditions):
         self.mMongo[self.mPath].filters.update(
             {"_id": filter_name},
-            {"$set": {"seq": criteria}}, upsert = True)
+            {"$set": {"seq": conditions}}, upsert = True)
 
     def dropFilter(self, filter_name):
         self.mMongo[self.mPath].filters.remove(

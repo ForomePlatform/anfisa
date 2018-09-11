@@ -1,4 +1,4 @@
-from search.hot_index import HotIndex
+from search.index import Index
 from mongo_db import MongoConnector
 from tags_man import TagsManager
 from zone import FilterZoneH
@@ -14,9 +14,9 @@ class Workspace:
             mongo_host, mongo_port)
         self.mViewSetup = self.mDataSet.getViewSetup()
         self.mTagsMan = TagsManager(self)
-        self.mIndex  = HotIndex(self.mDataSet, self.mLegend)
-        for filter_name, criteria in self.mMongoConn.getFilters():
-            self.mIndex.cacheFilter(filter_name, criteria)
+        self.mIndex  = Index(self.mDataSet, self.mLegend)
+        for filter_name, conditions in self.mMongoConn.getFilters():
+            self.mIndex.cacheFilter(filter_name, conditions)
         self.mZoneHandlers  = []
         for zone_title, unit_name in self.mViewSetup.configOption("zones"):
             if (unit_name == "_tags"):
@@ -55,16 +55,16 @@ class Workspace:
         return self.mViewSetup.getAspects()[0].getName()
 
     def getLastAspectID(self):
-        return self.mViewSetup.configOption("aspect.hot.name")
+        return self.mViewSetup.configOption("aspect.tags.name")
 
-    def getHotEvalData(self, expert_mode):
-        return self.mLegend.getHotUnit().getJSonData(expert_mode)
+    def getRulesData(self, expert_mode):
+        return self.mLegend.getRulesUnit().getJSonData(expert_mode)
 
-    def modifyHotEvalData(self, expert_mode, item, content):
-        report = self.mLegend.getHotUnit().modifyHotData(
+    def modifyRulesData(self, expert_mode, item, content):
+        report = self.mLegend.getRulesUnit().modifyHotData(
             expert_mode, item, content)
         if report["status"] == "OK":
-            self.mIndex.updateHotEnv()
+            self.mIndex.updateRulesEnv()
         return report
 
     def makeTagsJSonReport(self, rec_no,
@@ -73,12 +73,12 @@ class Workspace:
         report["filters"] = self.mIndex.getRecFilters(rec_no)
         return report
 
-    def makeStatReport(self, filter_name, expert_mode, criteria, instr):
+    def makeStatReport(self, filter_name, expert_mode, conditions, instr):
         if instr:
             op, q, flt_name = instr.partition('/')
             if op == "UPDATE":
-                self.mMongoConn.setFilter(flt_name, criteria)
-                self.mIndex.cacheFilter(flt_name, criteria)
+                self.mMongoConn.setFilter(flt_name, conditions)
+                self.mIndex.cacheFilter(flt_name, conditions)
                 filter_name = flt_name
             elif op == "DROP":
                 self.mMongoConn.dropFilter(flt_name)
@@ -86,4 +86,4 @@ class Workspace:
             else:
                 assert False
         return self.mIndex.makeStatReport(
-            filter_name, expert_mode, criteria)
+            filter_name, expert_mode, conditions)

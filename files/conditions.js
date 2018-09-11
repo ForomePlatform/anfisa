@@ -10,7 +10,7 @@ var sBtnFilters_Create = null;
 var sBtnFilters_Modify = null;
 var sBtnFilters_Delete = null;
 
-function initCriteria() {
+function initConditions() {
     sBtnFilters_Switch = document.getElementById("filter-filters-on");
     sInpFilters_Name   = document.getElementById("filter-name-filter");
     sSelFilters_Name   = document.getElementById("filter-name-filter-list");
@@ -38,16 +38,16 @@ function checkFiltersAllFilters() {
 }
 
 /*************************************/
-function checkCurCriteriaProblem() {
+function checkCurConditionsProblem() {
     if (!sCurFilterSeq || sCurFilterSeq.length == 0)
-        return "no rules";
+        return "no conditions";
     if (sBaseFilterName != "_current_")
         return sBaseFilterName + " in work";
     return null;
 }
 
 /*************************************/
-function findCrit(unit_name, mode) {
+function findCond(unit_name, mode) {
     for (idx = 0; idx < sCurFilterSeq.length; idx++) {
         if (sCurFilterSeq[idx][1] == unit_name) {
             if (mode == undefined || sCurFilterSeq[idx][2] == mode)
@@ -58,45 +58,45 @@ function findCrit(unit_name, mode) {
 }
 
 /*************************************/
-function getCritDescripton(crit, short_form) {
-    if (crit != null && crit[0] == "numeric") {
-        rep_crit = [crit[1]];
-        switch (crit[2]) {
+function getCondDescripton(cond, short_form) {
+    if (cond != null && cond[0] == "numeric") {
+        rep_cond = [cond[1]];
+        switch (cond[2]) {
             case 0:
-                rep_crit.push("> " + crit[3]);
+                rep_cond.push("> " + cond[3]);
                 break;
             case 1:
-                rep_crit.push("< " + crit[3]);
+                rep_cond.push("< " + cond[3]);
                 break;
         }
-        switch (crit[4]) {
+        switch (cond[4]) {
             case true:
-                rep_crit.push("with undef");
+                rep_cond.push("with undef");
                 break
             case false:
-                rep_crit.push("w/o undef");
+                rep_cond.push("w/o undef");
                 break;
         }
-        return rep_crit.join(" ");
+        return rep_cond.join(" ");
     }
-    if (crit != null && crit[0] == "enum") {
-        rep_crit = [crit[1], "IN"];
-        if (crit[2]) 
-            rep_crit.push(crit[2]);
-        sel_names = crit[3];
+    if (cond != null && cond[0] == "enum") {
+        rep_cond = [cond[1], "IN"];
+        if (cond[2]) 
+            rep_cond.push(cond[2]);
+        sel_names = cond[3];
         if (short_form && sel_names.length > 4) {
-            rep_crit.push(sel_names.slice(0, 4).join(", "));
-            rep_crit.push("...and " + (sel_names.length - 4) + " more")
+            rep_cond.push(sel_names.slice(0, 4).join(", "));
+            rep_cond.push("...and " + (sel_names.length - 4) + " more")
         } else {
-            rep_crit.push(sel_names.join(", "));
+            rep_cond.push(sel_names.join(", "));
         }
-        return rep_crit.join(" ");        
+        return rep_cond.join(" ");        
     }
     return ""
 }
 
 /*************************************/
-function _modifyCrit(new_filter_seq, filter_name) {
+function _modifyCond(new_filter_seq, filter_name) {
     sFilterHistory.push([sBaseFilterName, sCurFilterSeq]);
     sBaseFilterName = (filter_name)? filter_name:"_current_";
     sCurFilterSeq = new_filter_seq;
@@ -105,31 +105,31 @@ function _modifyCrit(new_filter_seq, filter_name) {
     updateCurFilter(sBaseFilterName, true);
 }
 
-function filterAddCrit() {
-    if (sOpCriterium != null && sOpAddIdx != null) {
+function filterAddCond() {
+    if (sOpCondition != null && sOpAddIdx != null) {
         new_filter_seq = sCurFilterSeq.slice();
-        new_filter_seq.splice(sOpAddIdx, 0, sOpCriterium);
-        _modifyCrit(new_filter_seq);
+        new_filter_seq.splice(sOpAddIdx, 0, sOpCondition);
+        _modifyCond(new_filter_seq);
     }
 }
 
-function filterUpdateCrit() {
-    if (sOpCriterium != null && sOpUpdateIdx != null) {
+function filterUpdateCond() {
+    if (sOpCondition != null && sOpUpdateIdx != null) {
         new_filter_seq = sCurFilterSeq.slice();
-        new_filter_seq[sOpUpdateIdx] = sOpCriterium;
-        _modifyCrit(new_filter_seq);
+        new_filter_seq[sOpUpdateIdx] = sOpCondition;
+        _modifyCond(new_filter_seq);
     }
 }
 
-function filterDeleteCrit() {
-    if (sCurCritNo != null) {
+function filterDeleteCond() {
+    if (sCurCondNo != null) {
         new_filter_seq = sCurFilterSeq.slice();
-        new_filter_seq.splice(sCurCritNo, 1);
-        _modifyCrit(new_filter_seq);
+        new_filter_seq.splice(sCurCondNo, 1);
+        _modifyCond(new_filter_seq);
     }
 }
 
-function filterUndoCrit() {
+function filterUndoCond() {
     if (sFilterHistory.length > 0) {
         sFilterRedoStack.push([sBaseFilterName, sCurFilterSeq]);
         hinfo = sFilterHistory.pop();
@@ -140,7 +140,7 @@ function filterUndoCrit() {
     }        
 }
 
-function filterRedoCrit() {
+function filterRedoCond() {
     if (sFilterRedoStack.length > 0) {
         sFilterHistory.push([sBaseFilterName, sCurFilterSeq]);
         hinfo = sFilterRedoStack.pop();
@@ -152,7 +152,7 @@ function filterRedoCrit() {
 }
 
 function filterLoadNamedFilter(filter_name) {
-    _modifyCrit(null, filter_name);    
+    _modifyCond(null, filter_name);    
 }
 
 /*************************************/

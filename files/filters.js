@@ -6,83 +6,83 @@ var sBaseFilterName = "_current_";
 var sStatList = null;
 var sStatUnitIdxs = null;
 var sCurStatUnit = null;
-var sCurCritNo = null;
+var sCurCondNo = null;
 
 var sOpMode = null;
 var sOpNumericInfo = null;
 var sOpEnumList = null;
 var sOpEnumModeInfo = null;
-var sOpCriterium = null;
+var sOpCondition = null;
 var sOpError = null;
 var sOpAddIdx = null;
 var sOpUpdateIdx = null;
 
 var sDivStatList        = null;
-var sDivCurCritNumeric  = null;
-var sDivCurCritEnum     = null;
-var sDivCurCritText     = null;
-var sDivCritList        = null;
+var sDivCurCondNumeric  = null;
+var sDivCurCondEnum     = null;
+var sDivCurCondText     = null;
+var sDivCondList        = null;
 var sDivOpEnumList      = null;
 
-var sBtnAddCrit    = null;
-var sBtnUpdateCrit = null; 
-var sBtnDeleteCrit = null; 
-var sBtnUndoCrit   = null; 
-var sBtnRedoCrit   = null; 
+var sBtnAddCond    = null;
+var sBtnUpdateCond = null; 
+var sBtnDeleteCond = null; 
+var sBtnUndoCond   = null; 
+var sBtnRedoCond   = null; 
 
-var sSpanCurCritTitle       = null;
-var sSpanCurCritMin         = null;
-var sSpanCurCritMax         = null;
-var sSpanCurCritSign        = null;
-var sSpanCurCritUndefCount  = null;
+var sSpanCurCondTitle       = null;
+var sSpanCurCondMin         = null;
+var sSpanCurCondMax         = null;
+var sSpanCurCondSign        = null;
+var sSpanCurCondUndefCount  = null;
 
-var sSpanCurCritModOnly     = null;
-var sSpanCurCritModAnd      = null;
-var sSpanCurCritModNot      = null;
+var sSpanCurCondModOnly     = null;
+var sSpanCurCondModAnd      = null;
+var sSpanCurCondModNot      = null;
 
-var sInputCurCritMin        = null;
-var sInputCurCritMax        = null;
-var sCheckCurCritUndef      = null;
+var sInputCurCondMin        = null;
+var sInputCurCondMax        = null;
+var sCheckCurCondUndef      = null;
 
-var sCheckCurCritModOnly    = null;
-var sCheckCurCritModAnd     = null;
-var sCheckCurCritModNot     = null;
+var sCheckCurCondModOnly    = null;
+var sCheckCurCondModAnd     = null;
+var sCheckCurCondModNot     = null;
 
 /*************************************/
 function initFilters() {
     sDivStatList        = document.getElementById("stat-list");
-    sDivCurCritNumeric  = document.getElementById("cur-crit-numeric");
-    sDivCurCritEnum     = document.getElementById("cur-crit-enum");
-    sDivCurCritText     = document.getElementById("filter-cur-crit-text");
-    sDivCritList        = document.getElementById("crit-list");
+    sDivCurCondNumeric  = document.getElementById("cur-cond-numeric");
+    sDivCurCondEnum     = document.getElementById("cur-cond-enum");
+    sDivCurCondText     = document.getElementById("filter-cur-cond-text");
+    sDivCondList        = document.getElementById("cond-list");
     sDivOpEnumList      = document.getElementById("op-enum-list");
     
-    sBtnAddCrit    = document.getElementById("filter-add-crit"); 
-    sBtnUpdateCrit = document.getElementById("filter-update-crit"); 
-    sBtnDeleteCrit = document.getElementById("filter-delete-crit"); 
-    sBtnUndoCrit   = document.getElementById("filter-undo-crit"); 
-    sBtnRedoCrit   = document.getElementById("filter-redo-crit"); 
+    sBtnAddCond    = document.getElementById("filter-add-cond"); 
+    sBtnUpdateCond = document.getElementById("filter-update-cond"); 
+    sBtnDeleteCond = document.getElementById("filter-delete-cond"); 
+    sBtnUndoCond   = document.getElementById("filter-undo-cond"); 
+    sBtnRedoCond   = document.getElementById("filter-redo-cond"); 
     
-    sSpanCurCritTitle       = document.getElementById("crit-title");
-    sSpanCurCritText        = document.getElementById("crit-text");
-    sSpanCurCritError       = document.getElementById("crit-error");
-    sSpanCurCritMin         = document.getElementById("crit-min");
-    sSpanCurCritMax         = document.getElementById("crit-max");
-    sSpanCurCritSign        = document.getElementById("crit-sign");
-    sSpanCurCritUndefCount  = document.getElementById("crit-undef-count");
+    sSpanCurCondTitle       = document.getElementById("cond-title");
+    sSpanCurCondText        = document.getElementById("cond-text");
+    sSpanCurCondError       = document.getElementById("cond-error");
+    sSpanCurCondMin         = document.getElementById("cond-min");
+    sSpanCurCondMax         = document.getElementById("cond-max");
+    sSpanCurCondSign        = document.getElementById("cond-sign");
+    sSpanCurCondUndefCount  = document.getElementById("cond-undef-count");
 
-    sSpanCurCritModOnly     = document.getElementById("crit-mode-only-span");
-    sSpanCurCritModAnd      = document.getElementById("crit-mode-and-span");
-    sSpanCurCritModNot      = document.getElementById("crit-mode-not-span");
+    sSpanCurCondModOnly     = document.getElementById("cond-mode-only-span");
+    sSpanCurCondModAnd      = document.getElementById("cond-mode-and-span");
+    sSpanCurCondModNot      = document.getElementById("cond-mode-not-span");
     
-    sInputCurCritMin        = document.getElementById("crit-min-inp");
-    sInputCurCritMax        = document.getElementById("crit-max-inp");
-    sCheckCurCritUndef      = document.getElementById("crit-undef-check");
+    sInputCurCondMin        = document.getElementById("cond-min-inp");
+    sInputCurCondMax        = document.getElementById("cond-max-inp");
+    sCheckCurCondUndef      = document.getElementById("cond-undef-check");
 
-    sCheckCurCritModOnly    = document.getElementById("crit-mode-only");
-    sCheckCurCritModAnd     = document.getElementById("crit-mode-and");
-    sCheckCurCritModNot     = document.getElementById("crit-mode-not");
-    initCriteria();
+    sCheckCurCondModOnly    = document.getElementById("cond-mode-only");
+    sCheckCurCondModAnd     = document.getElementById("cond-mode-and");
+    sCheckCurCondModNot     = document.getElementById("cond-mode-not");
+    initConditions();
     loadStat();
 }
 
@@ -100,7 +100,7 @@ function loadStat(add_instr){
         "&m=" + encodeURIComponent(parent.window.sAppModes) + 
         "&filter=" + encodeURIComponent(sBaseFilterName);
     if (sBaseFilterName == "_current_") 
-        args += "&criteria=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
+        args += "&conditions=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
     if (add_instr)
         args += "&instr=" + encodeURIComponent(add_instr);
     xhttp.send(args); 
@@ -112,7 +112,7 @@ function setupStatList(info) {
     sBaseFilterName = info["filter"];
     sStatUnitIdxs = {}
     if (sCurFilterSeq == null) 
-        sCurFilterSeq = info["criteria"];
+        sCurFilterSeq = info["conditions"];
     _checkNamedFilters(info["all-filters"]);
     var list_stat_rep = [];
     for (idx = 0; idx < sStatList.length; idx++) {
@@ -123,9 +123,10 @@ function setupStatList(info) {
         list_stat_rep.push('<div id="stat--' + unit_name + '" class="stat-unit" ' +
           'onclick="selectStat(\'' + unit_name + '\');">');
         list_stat_rep.push('<span class="stat-unit-name">' + unit_name + '</span>');
-        if (unit_name == "hot") {
-            list_stat_rep.push('<span id="run-hot-eval" title="Hot evaluations" ' +
-                ' onclick="hotEvalModOn();">&#9874;</span>')
+        if (unit_name == "rules") {
+            list_stat_rep.push(
+                '<span id="flt-run-rules" title="Rules evaluation setup" ' +
+                ' onclick="rulesModOn();">&#9874;</span>')
         }
         if (unit_type == "int" || unit_type == "float") {
             list_stat_rep.push('<br/>');
@@ -167,20 +168,20 @@ function setupStatList(info) {
     }
     sDivStatList.innerHTML = list_stat_rep.join('\n');
     
-    list_crit_rep = [];
+    list_cond_rep = [];
     for (idx = 0; idx < sCurFilterSeq.length; idx++) {
-        crit = sCurFilterSeq[idx];
-        list_crit_rep.push('<div id="crit--' + idx + '" class="crit-descr" ' +
-          'onclick="selectCrit(\'' + idx + '\');">');
-        list_crit_rep.push('&bull;&emsp;' + getCritDescripton(crit, false));
-        list_crit_rep.push('</div>')
+        cond = sCurFilterSeq[idx];
+        list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
+          'onclick="selectCond(\'' + idx + '\');">');
+        list_cond_rep.push('&bull;&emsp;' + getCondDescripton(cond, false));
+        list_cond_rep.push('</div>')
     }
-    sDivCritList.innerHTML = list_crit_rep.join('\n');
+    sDivCondList.innerHTML = list_cond_rep.join('\n');
     
     sCurStatUnit = null;
-    sCurCritNo = null;
+    sCurCondNo = null;
     if (sCurFilterSeq.length > 0) 
-        selectCrit(sCurFilterSeq.length - 1);
+        selectCond(sCurFilterSeq.length - 1);
     else
         selectStat(sStatList[0][1]);
     updateFilterOpMode();
@@ -216,30 +217,30 @@ function selectStat(stat_unit){
     }
     sCurStatUnit = stat_unit;
     new_unit_el.className = new_unit_el.className + " cur";
-    if (sCurCritNo == null || sCurFilterSeq[sCurCritNo][1] != sCurStatUnit)
-        selectCrit(findCrit(sCurStatUnit));
+    if (sCurCondNo == null || sCurFilterSeq[sCurCondNo][1] != sCurStatUnit)
+        selectCond(findCond(sCurStatUnit));
     setupStatUnit();
 }
 
 /*************************************/
-function selectCrit(crit_no){
-    if (sCurCritNo == crit_no) 
+function selectCond(cond_no){
+    if (sCurCondNo == cond_no) 
         return;
-    if (crit_no != null) {
-        new_crit_el = document.getElementById("crit--" + crit_no);
-        if (new_crit_el == null) 
+    if (cond_no != null) {
+        new_cond_el = document.getElementById("cond--" + cond_no);
+        if (new_cond_el == null) 
             return;
     } else {
-        new_crit_el = null;
+        new_cond_el = null;
     }
-    if (sCurCritNo != null) {
-        var prev_el = document.getElementById("crit--" + sCurCritNo);
+    if (sCurCondNo != null) {
+        var prev_el = document.getElementById("cond--" + sCurCondNo);
         prev_el.className = prev_el.className.replace(" cur", "");
     }
-    sCurCritNo = crit_no;
-    if (new_crit_el != null) {
-        new_crit_el.className = new_crit_el.className + " cur";
-        selectStat(sCurFilterSeq[crit_no][1]);
+    sCurCondNo = cond_no;
+    if (new_cond_el != null) {
+        new_cond_el.className = new_cond_el.className + " cur";
+        selectStat(sCurFilterSeq[cond_no][1]);
     }
 }
 
@@ -248,18 +249,18 @@ function setupStatUnit() {
     sOpMode = null;
     sOpEnumModeInfo = null;
     sOpNumericInfo = null;
-    sOpCriterium = null;
+    sOpCondition = null;
     sOpEnumList = null;
     sOpError = null;
     sOpAddIdx = null;
     sOpUpdateIdx = null;
-    updateOpCritText();
+    updateOpCondText();
     if (sCurStatUnit == null) {
-        sSpanCurCritTitle.innerHTML = "";
-        updateCurCritCtrl();
+        sSpanCurCondTitle.innerHTML = "";
+        updateCurCondCtrl();
         return;
     } 
-    sSpanCurCritTitle.innerHTML = sCurStatUnit;
+    sSpanCurCondTitle.innerHTML = sCurStatUnit;
     unit_stat = sStatList[sStatUnitIdxs[sCurStatUnit]];
     unit_type = unit_stat[0];
     if (unit_type == "int" || unit_type == "float") {
@@ -275,14 +276,14 @@ function setupStatUnit() {
             sOpNumericInfo = [0, cnt_undef, val_min, val_max, val_min, 
                 (cnt_undef > 0)? true : null, unit_type];
         
-        sSpanCurCritMin.innerHTML = val_min;
-        sSpanCurCritMax.innerHTML = val_max;
-        sSpanCurCritSign.innerHTML = (val_min == val_max)? "=":"<";
-        sInputCurCritMin.value = val_min;
-        sInputCurCritMax.value = val_max;
+        sSpanCurCondMin.innerHTML = val_min;
+        sSpanCurCondMax.innerHTML = val_max;
+        sSpanCurCondSign.innerHTML = (val_min == val_max)? "=":"<";
+        sInputCurCondMin.value = val_min;
+        sInputCurCondMax.value = val_max;
         
-        sCheckCurCritUndef.checked = (cnt_undef > 0)
-        sSpanCurCritUndefCount.innerHTML = (cnt_undef > 0)?
+        sCheckCurCondUndef.checked = (cnt_undef > 0)
+        sSpanCurCondUndefCount.innerHTML = (cnt_undef > 0)?
             ("undefined:" + cnt_undef) : "";        
     } else {
         sOpMode = "enum";
@@ -298,42 +299,42 @@ function setupStatUnit() {
                 continue;
             list_val_rep.push('<div class="enum-val">' +
                 '<input id="elcheck--' + j + '" type="checkbox" ' + 
-                'onchange="checkCurCrit(\'enum-el\');"/>&emsp;' + var_name + 
+                'onchange="checkCurCond(\'enum-el\');"/>&emsp;' + var_name + 
                 '<span class="enum-cnt">(' + var_count + ')</span></div>');
         }
         sDivOpEnumList.innerHTML = list_val_rep.join('\n');
-        sCheckCurCritModAnd.checked = false;
-        sCheckCurCritModOnly.checked = false;
-        sCheckCurCritModNot.checked = false;
+        sCheckCurCondModAnd.checked = false;
+        sCheckCurCondModOnly.checked = false;
+        sCheckCurCondModNot.checked = false;
     }
-    updateCurCritCtrl();
+    updateCurCondCtrl();
 }
 
-function updateCurCritCtrl() {
-    sDivCurCritNumeric.style.display = (sOpMode == "numeric")? "block":"none";
-    sDivCurCritEnum.style.display    = (sOpMode == "enum")? "block":"none";
+function updateCurCondCtrl() {
+    sDivCurCondNumeric.style.display = (sOpMode == "numeric")? "block":"none";
+    sDivCurCondEnum.style.display    = (sOpMode == "enum")? "block":"none";
 
-    sInputCurCritMin.style.visibility = 
+    sInputCurCondMin.style.visibility = 
         (sOpNumericInfo && sOpNumericInfo[0] == 0)? "visible":"hidden";
-    sInputCurCritMax.style.visibility = 
+    sInputCurCondMax.style.visibility = 
         (sOpNumericInfo && sOpNumericInfo[0] == 1)? "visible":"hidden";
-    sCheckCurCritUndef.style.visibility = 
+    sCheckCurCondUndef.style.visibility = 
         (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
-    sSpanCurCritUndefCount.style.visibility = 
+    sSpanCurCondUndefCount.style.visibility = 
         (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
 
-    sSpanCurCritModAnd.style.visibility = 
+    sSpanCurCondModAnd.style.visibility = 
         (sOpEnumModeInfo && sOpEnumModeInfo[0] != null)? "visible":"hidden";
-    sSpanCurCritModOnly.style.visibility = 
+    sSpanCurCondModOnly.style.visibility = 
         (sOpEnumModeInfo && sOpEnumModeInfo[1] != null)? "visible":"hidden";
-    sSpanCurCritModNot.style.visibility = 
+    sSpanCurCondModNot.style.visibility = 
         (sOpEnumModeInfo && sOpEnumModeInfo[2] != null)? "visible":"hidden";
         
-    sBtnAddCrit.disabled  = (sOpAddIdx == null);
-    sBtnUpdateCrit.disabled  = (sOpUpdateIdx == null); 
-    sBtnDeleteCrit.disabled = (sCurCritNo == null);
-    sBtnUndoCrit.disabled = (sFilterHistory.length == 0);
-    sBtnRedoCrit.disabled = (sFilterRedoStack.length == 0);
+    sBtnAddCond.disabled  = (sOpAddIdx == null);
+    sBtnUpdateCond.disabled  = (sOpUpdateIdx == null); 
+    sBtnDeleteCond.disabled = (sCurCondNo == null);
+    sBtnUndoCond.disabled = (sFilterHistory.length == 0);
+    sBtnRedoCond.disabled = (sFilterRedoStack.length == 0);
 }
 
 
@@ -360,7 +361,7 @@ function toNumeric(tp, x) {
 }
 
 /*************************************/
-function checkCurCrit(option) {
+function checkCurCond(option) {
     switch(option) {
         case "min":
             if (sOpNumericInfo == null || sOpNumericInfo[0] != 0)
@@ -387,7 +388,7 @@ function checkCurCrit(option) {
             if (sOpNumericInfo == null || sOpNumericInfo[1] == 0)
                 return;
             sOpNumericInfo[5] = !sOpNumericInfo[5];
-            sCheckCurCritUndef.checked = sOpNumericInfo[5];
+            sCheckCurCondUndef.checked = sOpNumericInfo[5];
             if (sOpNumericInfo[0] == 0) {
                 checkNumericOpMin();
             } else if (sOpNumericInfo[0] == 1) {
@@ -412,30 +413,30 @@ function checkCurCrit(option) {
             return;
     }
     if (sOpNumericInfo != null) {
-        sOpCriterium = null;
+        sOpCondition = null;
         switch (sOpNumericInfo[0]) {
             case -1:
                 if (sOpNumericInfo[1] > 0 && sOpNumericInfo[5]) {
-                    sOpCriterium = ["numeric", sCurStatUnit, -1, null, true];
+                    sOpCondition = ["numeric", sCurStatUnit, -1, null, true];
                 }
                 break;
             case 0:
                 if (sOpNumericInfo[2] != sOpNumericInfo[4]) {
-                    sOpCriterium = ["numeric", sCurStatUnit, 0, sOpNumericInfo[4],
+                    sOpCondition = ["numeric", sCurStatUnit, 0, sOpNumericInfo[4],
                         sOpNumericInfo[5]];
                 } else {
                     if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
-                        sOpCriterium = ["numeric", sCurStatUnit, -1, null, false];
+                        sOpCondition = ["numeric", sCurStatUnit, -1, null, false];
                     }
                 }
                 break;
             case 1:
                 if (sOpNumericInfo[3] != sOpNumericInfo[4]) {
-                    sOpCriterium = ["numeric", sCurStatUnit, 1, sOpNumericInfo[4],
+                    sOpCondition = ["numeric", sCurStatUnit, 1, sOpNumericInfo[4],
                         sOpNumericInfo[5]];
                 } else {
                     if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
-                        sOpCriterium = ["numeric", sCurStatUnit, -1, null, false];
+                        sOpCondition = ["numeric", sCurStatUnit, -1, null, false];
                     }
                 }
                 break;
@@ -453,10 +454,10 @@ function checkCurCrit(option) {
                 }
             }
         }
-        sOpUpdateIdx = findCrit(sCurStatUnit, enum_mode);
+        sOpUpdateIdx = findCond(sCurStatUnit, enum_mode);
         if (sOpUpdateIdx == null) 
-            sOpUpdateIdx = findCrit(sCurStatUnit);
-        selectCrit(sOpUpdateIdx);
+            sOpUpdateIdx = findCond(sCurStatUnit);
+        selectCond(sOpUpdateIdx);
         
         sel_names = [];
         for (j=0; j < sOpEnumList.length; j++) {
@@ -465,34 +466,34 @@ function checkCurCrit(option) {
         }
         if (sel_names.length > 0) {
             sOpAddIdx = (sOpUpdateIdx == null)? sCurFilterSeq.length:sOpUpdateIdx + 1;
-            sOpCriterium = ["enum", sCurStatUnit, enum_mode, sel_names];
+            sOpCondition = ["enum", sCurStatUnit, enum_mode, sel_names];
         } else {
             sOpUpdateIdx = null;
         }
     }
-    updateOpCritText();
-    updateCurCritCtrl();
+    updateOpCondText();
+    updateCurCondCtrl();
 }
 
 function checkNumericOpMin() {
     sOpAddIdx = null;
     sOpUpdateIdx = null;
     sOpError = null;
-    val = toNumeric(sOpNumericInfo[6], sInputCurCritMin.value);
+    val = toNumeric(sOpNumericInfo[6], sInputCurCondMin.value);
     if (val == null) {
         sOpError = "Bad numeric value";
     } else {
         sOpNumericInfo[4] = val;
-        sOpUpdateIdx = findCrit(sCurStatUnit, 0);
+        sOpUpdateIdx = findCond(sCurStatUnit, 0);
         if (sOpUpdateIdx == null) {
             if (val < sOpNumericInfo[2]) {
                 sOpError = "Lower bound is above minimal value";
             } else {
-                idx = findCrit(sCurStatUnit);
+                idx = findCond(sCurStatUnit);
                 sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
             }
         } else {
-            selectCrit(sOpUpdateIdx);
+            selectCond(sOpUpdateIdx);
         }
     }
 }
@@ -501,21 +502,21 @@ function checkNumericOpMax() {
     sOpAddIdx = null;
     sOpUpdateIdx = null;
     sOpError = null;
-    val = toNumeric(sOpNumericInfo[6], sInputCurCritMax.value);
+    val = toNumeric(sOpNumericInfo[6], sInputCurCondMax.value);
     if (val == null) {
         sOpError = "Bad numeric value";
     } else {
         sOpNumericInfo[4] = val;
-        sOpUpdateIdx = findCrit(sCurStatUnit, 1);
+        sOpUpdateIdx = findCond(sCurStatUnit, 1);
         if (sOpUpdateIdx == null) {
             if (val < sOpNumericInfo[2]) {
                 sOpError = "Upper bound is below maximum value";
             } else {
-                idx = findCrit(sCurStatUnit);
+                idx = findCond(sCurStatUnit);
                 sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
             }
         } else {
-            selectCrit(sOpUpdateIdx);
+            selectCond(sOpUpdateIdx);
         }
     }
 }
@@ -525,27 +526,27 @@ function checkEnumOpMode(mode_idx) {
         return false;
     if (sOpEnumModeInfo[0] != null) {
         sOpEnumModeInfo[0] = (mode_idx == 0);
-        sCheckCurCritModAnd.checked = (mode_idx == 0);
+        sCheckCurCondModAnd.checked = (mode_idx == 0);
     }
     if (sOpEnumModeInfo[1] != null) {
         sOpEnumModeInfo[1] = (mode_idx == 1);
-        sCheckCurCritModOnly.checked = (mode_idx == 1);
+        sCheckCurCondModOnly.checked = (mode_idx == 1);
     }
     if (sOpEnumModeInfo[2] != null) {
         sOpEnumModeInfo[2] = (mode_idx == 2);
-        sCheckCurCritModNot.checked = (mode_idx == 2);
+        sCheckCurCondModNot.checked = (mode_idx == 2);
     }
     return true;
 }
 
-function updateOpCritText() {
+function updateOpCondText() {
     if (sOpAddIdx != null || sOpUpdateIdx != null) 
-        sSpanCurCritText.innerHTML = getCritDescripton(sOpCriterium, true);
+        sSpanCurCondText.innerHTML = getCondDescripton(sOpCondition, true);
     else
-        sSpanCurCritText.innerHTML = "";
+        sSpanCurCondText.innerHTML = "";
     if (sOpError != null)
-        sSpanCurCritError.innerHTML = sOpError;
+        sSpanCurCondError.innerHTML = sOpError;
     else
-        sSpanCurCritError.innerHTML = "";
+        sSpanCurCondError.innerHTML = "";
 }
 

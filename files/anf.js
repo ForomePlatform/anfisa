@@ -12,7 +12,7 @@ var sWsActShown = null;
 
 var sNodeFilterBack  = null;
 var sNodeZoneBack  = null;
-var sNodeHotEvalBack = null;
+var sNodeRulesBack = null;
 
 function initWin(workspace_name, app_modes) {
     sTitlePrefix = window.document.title;
@@ -20,7 +20,7 @@ function initWin(workspace_name, app_modes) {
     sAppModes = app_modes;
     sNodeFilterBack  = document.getElementById("filter-back");
     sNodeZoneBack    = document.getElementById("zone-back");
-    sNodeHotEvalBack = document.getElementById("hot-eval-back");
+    sNodeRulesBack = document.getElementById("rules-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
@@ -81,20 +81,41 @@ function refreshRecList() {
     sViewRecNoSeq = [];
     var rep = [];
     for (idx = idx_from; idx < idx_to; idx++) {
-        rec_no = sRecList[idx][0];
-        sViewRecNoSeq.push(rec_no);
-        rep.push('<div id="li--' + rec_no + '" class="rec-label ' +
-            sRecList[idx][2] + '" onclick="changeRec(' + (idx - idx_from) + 
-            ');">' + sRecList[idx][1] + '</div>');
+        rec_id = sRecList[idx][0];
+        label  = sRecList[idx][1];
+        color  = sRecList[idx][2];
+        marked = sRecList[idx][3];
+        rec_no = idx - idx_from;
+        class_name = 'rec-label ' + color;
+        if (marked) 
+            class_name += ' marked';
+        sViewRecNoSeq.push(rec_id);
+        rep.push('<div id="li--' + rec_id + '" class="' + class_name + 
+            '" onclick="changeRec(' + rec_no + ');">' + label + '</div>');
     }
     document.getElementById("rec-list").innerHTML = rep.join('\n');
     if (sViewRecNoSeq.length == 0) {
         window.frames['rec-frame1'].location.replace("norecords");
         window.frames['rec-frame2'].location.replace("norecords");
     } else {
-        idx = sViewRecNoSeq.indexOf(sCurRecNo);
+        idx = sViewRecNoSeq.indexOf(sCurRecID);
         sCurRecNo = null;
         changeRec((idx >=0)? idx:0);
+    }
+}
+
+function updateRecordMark(rec_id, rec_marked) {
+    el = document.getElementById('li--' + rec_id);
+    if (el) {
+        class_seq = el.className.split(' ');
+        if (rec_marked) {
+            if (class_seq[2] != "marked")
+                class_seq.splice(2, 0, "marked");
+        } else {
+            if (class_seq[2] == "marked")
+                class_seq.splice(2, 1);
+        }
+        el.className = class_seq.join(' ');
     }
 }
 
@@ -137,8 +158,8 @@ function onClick(event_ms) {
         filterModOff();
     if (event_ms.target == sNodeZoneBack)
         zoneModOff();
-    if (event_ms.target == sNodeHotEvalBack)
-        hotEvalModOff();
+    if (event_ms.target == sNodeRulesBack)
+        rulesModOff();
     if (sWsActShown && !event_ms.target.matches('.dropbtn')) {
         wsActShow(false);
     }
@@ -164,8 +185,8 @@ function _showModal(cur_mode_node) {
         (cur_mode_node == sNodeFilterBack)? "block":"none";
     sNodeZoneBack.style.display    = 
         (cur_mode_node == sNodeZoneBack)? "block":"none";
-    sNodeHotEvalBack.style.display = 
-        (cur_mode_node == sNodeHotEvalBack)? "block":"none";
+    sNodeRulesBack.style.display = 
+        (cur_mode_node == sNodeRulesBack)? "block":"none";
 }
 
 function filterModOn() {
@@ -186,12 +207,12 @@ function zoneModOff() {
     _showModal(null);
 }
 
-function hotEvalModOn() {
-    setupHotEvalCtrl();
-    _showModal(sNodeHotEvalBack);
+function rulesModOn() {
+    setupRulesCtrl();
+    _showModal(sNodeRulesBack);
 }
 
-function hotEvalModOff() {
+function rulesModOff() {
     _showModal(null);
 }
 
@@ -227,7 +248,5 @@ function wsActShow(mode) {
        sWsActShown = !sWsActShown;
     else
         sWsActShown = mode;
-    document.getElementById("ws-dropdown-menu").className = (sWsActShown)? 
-        "dropdown-content show":"dropdown-content";
 }
 

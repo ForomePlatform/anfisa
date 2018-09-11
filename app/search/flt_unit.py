@@ -42,7 +42,7 @@ class FilterUnit:
         return None
 
     @abc.abstractmethod
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         return None
 
     def testValues(self, obj):
@@ -68,14 +68,14 @@ class IntValueUnit(FilterUnit):
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
-    def recordCritFunc(self, cmp_func):
+    def recordCondFunc(self, cmp_func):
         col = self.mExtractor.getDataP()
         return lambda data_rec: cmp_func(col.recordValue(data_rec))
 
     def iterExtractors(self):
         yield self.mExtractor
 
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         return self.mExtractor.getDataP().recordValue(data_rec)
 
     def collectStatJSon(self, data_records):
@@ -94,14 +94,14 @@ class FloatValueUnit(FilterUnit):
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
 
-    def recordCritFunc(self, cmp_func):
+    def recordCondFunc(self, cmp_func):
         col = self.mExtractor.getDataP()
         return lambda data_rec: cmp_func(col.recordValue(data_rec))
 
     def iterExtractors(self):
         yield self.mExtractor
 
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         return self.mExtractor.getDataP().recordValue(data_rec)
 
     def collectStatJSon(self, data_records):
@@ -127,14 +127,14 @@ class StatusUnit(FilterUnit):
     def getVariantSet(self):
         return self.mExtractor.getVConv().getVariantSet()
 
-    def recordCritFunc(self, enum_func, variants):
+    def recordCondFunc(self, enum_func, variants):
         col = self.mExtractor.getDataP()
         idx_set = self.mExtractor.getVConv().getVariantSet().makeIdxSet(
             variants)
         check_func = enum_func(idx_set)
         return lambda data_rec: check_func({col.recordValue(data_rec)})
 
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         idx = self.mExtractor.getDataP().recordValue(data_rec)
         return self.mExtractor.getVConv().getVariantSet().getValue(idx)
 
@@ -165,11 +165,11 @@ class BoolSetUnit(FilterUnit):
                 ret.add(idx)
         return ret
 
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         idxs = self._recordValues(data_rec)
         return self.mVariantSet.makeValueSet(idxs)
 
-    def recordCritFunc(self, enum_func, variants):
+    def recordCondFunc(self, enum_func, variants):
         check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
         return lambda data_rec: check_func(self._recordValues(data_rec))
 
@@ -216,7 +216,7 @@ class MultiStatusUnit(FilterUnit):
     def getVariantSet(self):
         return self.mExtractors[0].getVConv().getVariantSet()
 
-    def recordCritFunc(self, enum_func, variants):
+    def recordCondFunc(self, enum_func, variants):
         datap = self.mExtractors[0].getDataP()
         check_func = enum_func(self.mExtractors[0].getVConv().
             getVariantSet().makeIdxSet(variants))
@@ -225,7 +225,7 @@ class MultiStatusUnit(FilterUnit):
                 set(datap.getSetByIdx(datap.recordValue(data_rec))))
         return lambda data_rec: check_func(datap.recordValues(data_rec))
 
-    def hotValue(self, data_rec):
+    def ruleValue(self, data_rec):
         col = self.mExtractors[0].getDataP()
         if col.isAtomic():
             idx_set = col.getSetByIdx(col.recordValue(data_rec))

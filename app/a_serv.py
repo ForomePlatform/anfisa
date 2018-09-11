@@ -50,12 +50,12 @@ class AnfisaService:
         if rq_path == "/zone_list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formZoneList(rq_args))
-        if rq_path == "/hot_eval_data":
+        if rq_path == "/rules_data":
             return serv_h.makeResponse(mode = "json",
-                content = cls.sMain.formHotEvalData(rq_args))
-        if rq_path == "/hot_eval_modify":
+                content = cls.sMain.formRulesData(rq_args))
+        if rq_path == "/rules_modify":
             return serv_h.makeResponse(mode = "json",
-                content = cls.sMain.formHotEvalModify(rq_args))
+                content = cls.sMain.formRulesModify(rq_args))
         if rq_path == "/tag_select":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTagSelect(rq_args))
@@ -146,7 +146,8 @@ class AnfisaService:
             rec_no_seq = workspace.getZone(zone_name).restrict(
                 rec_no_seq, variants);
         report = workspace.mDataSet.makeJSonReport(
-            sorted(rec_no_seq), 'R' in modes)
+            sorted(rec_no_seq), 'R' in modes,
+            workspace.getTagsMan().getMarkedSet())
         report["workspace"] = workspace.getName();
         output.write(json.dumps(report))
         return output.getvalue()
@@ -157,12 +158,12 @@ class AnfisaService:
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         filter_name = rq_args.get("filter")
-        criteria = rq_args.get("criteria")
-        if criteria:
-            criteria = json.loads(criteria)
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
         instr = rq_args.get("instr")
         report = workspace.makeStatReport(filter_name,
-            'X' in modes, criteria, instr)
+            'X' in modes, conditions, instr)
         output.write(json.dumps(report))
         return output.getvalue()
 
@@ -189,22 +190,22 @@ class AnfisaService:
         return output.getvalue()
 
     #===============================================
-    def formHotEvalData(self, rq_args):
+    def formRulesData(self, rq_args):
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         output.write(json.dumps(
-            workspace.getHotEvalData('X' in modes)))
+            workspace.getRulesData('X' in modes)))
         return output.getvalue()
 
     #===============================================
-    def formHotEvalModify(self, rq_args):
+    def formRulesModify(self, rq_args):
         output = StringIO()
         workspace = AnfisaData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         item = rq_args.get("it")
         content = rq_args.get("cnt")
-        output.write(json.dumps(workspace.modifyHotEvalData(
+        output.write(json.dumps(workspace.modifyRulesData(
             'X' in modes, item, content)))
         return output.getvalue()
 

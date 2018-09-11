@@ -135,7 +135,7 @@ div.tag-label.cur {
     color: white;
 }
 
-span#run-hot-eval{
+span#tg-run-rules{
     cursor: pointer;
     border: 1px solid black;
 }

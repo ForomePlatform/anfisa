@@ -1,5 +1,5 @@
 /********************Modal Filter*****************************/
-#hot-eval-back {
+#rules-back {
     display: none;
     position: fixed;
     z-index: 30;
@@ -12,7 +12,7 @@
     background-color: rgba(0,0,0,0.4);
 }
 
-#hot-eval-mod {
+#rules-mod {
     background-color: #fffafa;
     margin: 3% 3% 2% 2%; 
     padding: 00px;
@@ -27,7 +27,7 @@
 }
 
 /********************Top controls*****************************/
-#hot-eval-top {
+#rules-top {
     width: 100%;
     height: 25px;
     min-height: 20px;
@@ -35,7 +35,7 @@
     padding: 0px;
 }
 
-#hot-eval-title {
+#rules-title {
     margin-left: 30px;
     margin-right: 30px;
     padding: 5px;
@@ -43,7 +43,7 @@
     font-size: 18px;
 }
 
-#close-hot-eval {
+#close-rules {
     color: #aaa;
     font-size: 28px;
     font-weight: bold;
@@ -51,14 +51,14 @@
     float: right;
 }
 
-#close-hot-eval:hover, #close-hot-eval:focus {
+#close-rules:hover, #close-rules:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
 } 
 
 /********************Main area*****************************/
-#hot-eval-main {
+#rules-main {
     width: 100%;
     height: 100%;
     display: flex;
@@ -68,14 +68,14 @@
     padding: 0px;
 }
 
-#hot-eval-left {
+#rules-left {
     width: 30%;
     margin: 0px;
     padding: 0px;
     display: grid;
 }
 
-#hot-eval-right {
+#rules-right {
     width: 70%;
     margin: 0px;
     padding: 0px;
@@ -83,7 +83,7 @@
 }
 
 /********************Main area*****************************/
-#hot-eval-ws {
+#rules-ws {
     height: 50px;
     min-height: 50px;
     margin: 10px;
@@ -91,19 +91,19 @@
     vertical-align: top;
 }
 
-#hot-eval-wrap-columns {
+#rules-wrap-columns {
     border: 1px solid black;
     margin: 10px;
     padding: 10px
     display: block;
 }
 
-#hot-eval-wrap-param {
+#rules-wrap-param {
     margin: 10px;
     padding: 10px
 }
 
-div.hot-eval-item {
+div.rule-item {
     border: 1px solid brown;
     cursor: hand;
     background-color: #fffdfd;
@@ -112,7 +112,7 @@ div.hot-eval-item {
     padding: 3px;
 }
 
-div.hot-eval-item.cur {
+div.rule-item.cur {
     border: 1px solid yellow;
     cursor: pointer;
     color: yellow;
@@ -121,21 +121,21 @@ div.hot-eval-item.cur {
     background-color: brown;
 }
 
-#hot-eval-wrap-content {
+#rules-wrap-content {
     margin: 10px;
     padding: 10px;
     min-height: 250px;
     height: 250px;
     display: block;
 }
-textarea#hot-eval-item-content {
+textarea#rule-item-content {
     width: 100%;
     height: 100%;
     overflow: auto;
     font-size: 16px;
 }
 
-div#hot-eval-item-ctrl {
+div#rule-item-ctrl {
     height: 30px;
     min-height: 30px;
     margin: 10px;
@@ -143,7 +143,7 @@ div#hot-eval-item-ctrl {
     vertical-align: top;
 }
 
-div#hot-eval-item-errors {
+div#rule-item-errors {
     color: red;
     height: 30px;
     min-height: 30px;

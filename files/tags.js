@@ -110,6 +110,11 @@ function setupTags(info) {
         }
     }
     sInpTagNameList.selectedIndex = 0;
+    
+    if (info["marker"]) {
+        parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
+    }
+    
 }
 
 function updateTagsState(set_content) {

@@ -151,7 +151,13 @@ div.rec-label {
     padding: 10px 0px 10px 20px;
     line-height: 18px;
     border: none; 
+    font-weight: bold;
 }
+
+div.rec-label.marked {
+    font-weight: normal;
+}
+
 div.rec-label:hover {
     color: #f6f6f7;
 }

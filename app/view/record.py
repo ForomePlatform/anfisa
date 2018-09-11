@@ -23,12 +23,12 @@ class DataRecord:
                 'onclick="pickAspect(\'%s\')">%s</button>' %
                 (aspect.getAspectKind(), aspect.getName(),
                 aspect.getName(), aspect.getTitle()))
-        hot_asp_name = self.mDataset.getViewSetup().configOption(
-            "aspect.hot.name")
+        tags_asp_name = self.mDataset.getViewSetup().configOption(
+            "aspect.tags.name")
         print >> output, ('<button class="r-tablnk %s" id="la--%s" '
             'onclick="pickAspect(\'%s\')">%s</button>' %
-            ("tech",  hot_asp_name, hot_asp_name,
-            self.mDataset.getViewSetup().textMessage("aspect.hot.title")))
+            ("tech",  tags_asp_name, tags_asp_name,
+            self.mDataset.getViewSetup().textMessage("aspect.tags.title")))
         print >> output, '</div>'
 
         print >> output, '<div id="r-cnt-container">'
@@ -41,7 +41,7 @@ class DataRecord:
                 aspect.formTable(output, self.mObj, expert_mode)
             print >> output, '</div>'
         print >> output, ('<div id="a--%s" class="r-tabcnt">' %
-            hot_asp_name)
+            tags_asp_name)
         tagsBlock(output)
         print >> output, '</div>'
 

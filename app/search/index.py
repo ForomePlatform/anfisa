@@ -1,5 +1,5 @@
 #===============================================
-class HotIndex:
+class Index:
     def __init__(self, data_set, legend):
         self.mDataSet = data_set
         self.mLegend  = legend
@@ -11,14 +11,14 @@ class HotIndex:
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
             self.mRecords.append(rec)
 
-    def updateHotEnv(self):
+    def updateRulesEnv(self):
         for rec_no, rec in enumerate(self.mRecords):
-            self.mLegend.updateHotRecordPart(
+            self.mLegend.updateRulesRecordPart(
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
-            if any([crit_info[1] == "hot"
-                    for crit_info in  filter_info[0]]):
+            if any([cond_info[1] == "rules"
+                    for cond_info in  filter_info[0]]):
                 to_update.append(filter_name)
         for filter_name in to_update:
             self.cacheFilter(filter_name,
@@ -65,9 +65,9 @@ class HotIndex:
         return lambda idx_set: (len(idx_set) > 0 and
             len(idx_set - base_idx_set) == 0)
 
-    def _applyCrit(self, rec_no_seq, crit_info):
-        if crit_info[0] == "numeric":
-            unit_name, ge_mode, the_val, use_undef = crit_info[1:]
+    def _applyCondition(self, rec_no_seq, cond_info):
+        if cond_info[0] == "numeric":
+            unit_name, ge_mode, the_val, use_undef = cond_info[1:]
             if ge_mode > 0:
                 cmp_func = (self.numeric_GE_U(the_val) if use_undef
                     else self.numeric_GE(the_val))
@@ -76,10 +76,10 @@ class HotIndex:
                     else self.numeric_LE(the_val))
             elif use_undef is False:
                 cmp_func = self.not_NONE
-            crit_f = self.mLegend.getUnit(unit_name).recordCritFunc(
+            cond_f = self.mLegend.getUnit(unit_name).recordCondFunc(
                 cmp_func)
-        elif crit_info[0] == "enum":
-            unit_name, filter_mode, variants = crit_info[1:]
+        elif cond_info[0] == "enum":
+            unit_name, filter_mode, variants = cond_info[1:]
             if filter_mode == "AND":
                 enum_func = self.enum_AND
             elif filter_mode == "ONLY":
@@ -88,13 +88,13 @@ class HotIndex:
                 enum_func = self.enum_NOT
             else:
                 enum_func = self.enum_OR
-            crit_f = self.mLegend.getUnit(unit_name).recordCritFunc(
+            cond_f = self.mLegend.getUnit(unit_name).recordCondFunc(
                 enum_func, variants)
         else:
             assert False
         flt_rec_no_seq = []
         for rec_no in rec_no_seq:
-            if crit_f(self.mRecords[rec_no]):
+            if cond_f(self.mRecords[rec_no]):
                 flt_rec_no_seq.append(rec_no)
         return flt_rec_no_seq
 
@@ -104,8 +104,8 @@ class HotIndex:
 
     def cacheFilter(self, filter_name, filter_seq):
         rec_no_seq = range(self.mDataSet.getSize())[:]
-        for crit_info in filter_seq:
-            rec_no_seq = self._applyCrit(rec_no_seq, crit_info)
+        for cond_info in filter_seq:
+            rec_no_seq = self._applyCondition(rec_no_seq, cond_info)
             if len(rec_no_seq) == 0:
                 break
         self.mFilterCache[filter_name] = (filter_seq, rec_no_seq);
@@ -132,7 +132,7 @@ class HotIndex:
             "all-filters": all_filters,
             "filter": filter_name}
         if (filter_name in all_filters):
-            report["criteria"] = self.mFilterCache[filter_name][0]
+            report["conditions"] = self.mFilterCache[filter_name][0]
         return report
 
     def getRecNoSeq(self, filter_name = None):

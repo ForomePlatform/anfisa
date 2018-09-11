@@ -52,15 +52,16 @@ class DataSet:
     def enumDataKeys(self):
         return enumerate(self.mDataKeys)
 
-    def _prepareList(self, rec_no_seq):
+    def _prepareList(self, rec_no_seq, marked_set):
         ret = []
         for rec_no in rec_no_seq:
             rec = self.mDataObjects[rec_no]
             ret.append([rec_no, escape(rec[self.mLabelKey]),
-                self.mViewSetup.normalizeColorCode(rec.get(self.mColorCode))])
+                self.mViewSetup.normalizeColorCode(rec.get(self.mColorCode)),
+                rec_no in marked_set])
         return ret
 
-    def makeJSonReport(self, rec_no_seq, random_mode):
+    def makeJSonReport(self, rec_no_seq, random_mode, marked_set):
         ret = {
             "data-set": self.getName(),
             "total": len(self.mDataObjects) }
@@ -73,9 +74,9 @@ class DataSet:
             sheet.sort()
             sheet = sheet[:self.mViewSetup.configOption("rand.sample.size")]
             ret["records"] = self._prepareList(
-                [rec_no for hash, rec_no in sheet])
+                [rec_no for hash, rec_no in sheet], marked_set)
             ret["list-mode"] = "samples"
         else:
-            ret["records"] = self._prepareList(rec_no_seq)
+            ret["records"] = self._prepareList(rec_no_seq, marked_set)
             ret["list-mode"] = "complete"
         return ret
