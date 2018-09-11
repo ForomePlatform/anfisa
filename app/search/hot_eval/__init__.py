@@ -68,7 +68,7 @@ class HOT_SETUP:
     PARAMETERS = [
         RuleParamH("af", 0.01),
         RuleParamH("af_in_db", 0.05),
-        RuleParamH("severity", 0),
+        RuleParamH("severity", 1),
         RuleParamH("gq", 20),
         RuleParamH("fs", 30),
         RuleParamH("qd", 4)]
