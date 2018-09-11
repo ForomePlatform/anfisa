@@ -11,6 +11,7 @@ class FilterLegend:
         self.mUnitDict = dict()
         self.mIsOK     = False
         self.mUnits    = []
+        self.mFilters  = dict()
         RulesEvalUnit(self, rules_setup)
 
     def _regColumnHandler(self, col_h):
@@ -26,6 +27,9 @@ class FilterLegend:
         self.mUnitDict[unit.getName()] = unit
         self.mUnits.append(unit)
         return unit_idx
+
+    def regFilter(self, flt_name, conditions):
+        self.mFilters[flt_name] = conditions
 
     def getName(self):
         return self.mName
@@ -87,3 +91,12 @@ class FilterLegend:
             if not unit.checkExpertBlock(expert_mode):
                 ret.append(unit.collectStatJSon(data_records))
         return ret
+
+    def getFilterNames(self):
+        return self.mFilters.keys()
+
+    def hasFilter(self, flt_name):
+        return flt_name in self.mFilters
+
+    def getFilterConditions(self, flt_name):
+        return self.mFilters.get(flt_name)

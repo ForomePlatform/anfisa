@@ -16,7 +16,8 @@ class Workspace:
         self.mTagsMan = TagsManager(self)
         self.mIndex  = Index(self.mDataSet, self.mLegend)
         for filter_name, conditions in self.mMongoConn.getFilters():
-            self.mIndex.cacheFilter(filter_name, conditions)
+            if not self.mLegend.hasFilter(filter_name):
+                self.mIndex.cacheFilter(filter_name, conditions)
         self.mZoneHandlers  = []
         for zone_title, unit_name in self.mViewSetup.configOption("zones"):
             if (unit_name == "_tags"):
@@ -76,14 +77,15 @@ class Workspace:
     def makeStatReport(self, filter_name, expert_mode, conditions, instr):
         if instr:
             op, q, flt_name = instr.partition('/')
-            if op == "UPDATE":
-                self.mMongoConn.setFilter(flt_name, conditions)
-                self.mIndex.cacheFilter(flt_name, conditions)
-                filter_name = flt_name
-            elif op == "DROP":
-                self.mMongoConn.dropFilter(flt_name)
-                self.mIndex.dropFilter(flt_name)
-            else:
-                assert False
+            if not self.mLegend.hasFilter(flt_name):
+                if op == "UPDATE":
+                    self.mMongoConn.setFilter(flt_name, conditions)
+                    self.mIndex.cacheFilter(flt_name, conditions)
+                    filter_name = flt_name
+                elif op == "DROP":
+                    self.mMongoConn.dropFilter(flt_name)
+                    self.mIndex.dropFilter(flt_name)
+                else:
+                    assert False
         return self.mIndex.makeStatReport(
             filter_name, expert_mode, conditions)

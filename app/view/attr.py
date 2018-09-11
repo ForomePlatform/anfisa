@@ -15,12 +15,12 @@ class AttrH:
             attrs = None, is_seq = False):
         self.mName = name
         self.mTitle = (title if title is not None else name)
-        self.mKind = kind if kind else "norm"
+        self.mKinds = kind.split() if kind else ["norm"]
         assert attrs is None or not is_seq
-        assert attrs is None or kind != "json"
+        assert attrs is None or "json" not in self.mKinds
         self.mAttrs = attrs
         self.mIsSeq = is_seq
-        self.mExpertOnly = kind and "expert" in kind
+        self.mExpertOnly = "expert" in self.mKinds
         self.mPath = None
 
     def getName(self):
@@ -35,8 +35,8 @@ class AttrH:
     def isSeq(self):
         return self.mIsSeq
 
-    def getKind(self):
-        return self.mKind
+    def hasKind(self, kind):
+        return kind in self.mKinds
 
     def checkExpertBlock(self, expert_mode):
         return (not expert_mode) and self.mExpertOnly
@@ -54,7 +54,7 @@ class AttrH:
         registry.add(a_path)
         if self.mIsSeq:
             registry.add(a_path + "[]")
-        if self.mKind in ("json", "hidden"):
+        if "json" in self.mKinds or "hidden" in self.mKinds:
             registry.add(a_path + "*")
             return
 
@@ -73,13 +73,13 @@ class AttrH:
             elif self.mIsSeq and val_obj:
                 repr_text = ', '.join(filter(_not_empty,
                     [self._htmlRepr(it_obj) for it_obj in val_obj]))
-            elif val_obj:
+            elif val_obj or val_obj is 0:
                 repr_text = self._htmlRepr(val_obj)
             if repr_text is None:
                 return ("-", "none")
             if not repr_text:
                 return ("&emsp;", "none")
-            return (repr_text, self.mKind)
+            return (repr_text, self.mKinds[0])
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep, limit = 10)
@@ -132,16 +132,15 @@ class AttrH:
         return '???'
 
     def _htmlRepr(self, it_obj):
-        if not it_obj:
+        if not it_obj and it_obj is not 0:
             return None
-        if self.mKind == "json":
+        if "json" in self.mKinds:
             return self._jsonRepr(it_obj)
         value = it_obj
         if not value:
             return None
-        if self.mKind == "link":
+        if "link" in self.mKinds:
             return ('<span title="%s"><a href="%s" target="blank">'
                 'link</a></span>' % (value, value))
         else:
             return self._htmlEscape(value)
-

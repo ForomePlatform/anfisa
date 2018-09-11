@@ -192,11 +192,13 @@ function checkFilterName() {
     filter_name = sInpFilters_Name.value;
     if (filter_name == sBaseFilterName) {
         q_named = false;
-        q_ok = false;
-        q_delete = sAllFilters.indexOf(filter_name) >= 0;
+        q_create = sAllFilters.indexOf(filter_name) < 0;
+        q_modify = (!q_create && sPreFilters.indexOf(filter_name) < 0);
+        q_ok = q_modify;
     } else {
-        q_delete = false;
+        q_modify = false;
         q_named = sAllFilters.indexOf(filter_name) >= 0;
+        q_create = !q_named;
         if (q_named) {
             q_ok = true;
         } else {
@@ -205,9 +207,9 @@ function checkFilterName() {
     }
     sInpFilters_Name.className = (q_ok)? "": "bad";
     sBtnFilters_Load.disabled = !q_named;  
-    sBtnFilters_Create.disabled = q_named || (!q_ok) || (sCurFilterSeq.length == 0);  
-    sBtnFilters_Modify.disabled = !q_named;   
-    sBtnFilters_Delete.disabled = !q_delete;
+    sBtnFilters_Create.disabled = (!q_create) || (sCurFilterSeq.length == 0);  
+    sBtnFilters_Modify.disabled = (!q_modify) || (sCurFilterSeq.length == 0);
+    sBtnFilters_Delete.disabled = !q_modify;
     
     if (sFiltersTimeH == null) 
         sFiltersTimeH = setInterval(checkFilterName, 100);

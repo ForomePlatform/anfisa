@@ -2,6 +2,7 @@ from .search.flt_legend import FilterLegend
 from .search.chunker import AttrChunker
 from .search.hot_eval import HOT_SETUP
 import app.search.flt_unit as flt_unit
+from .search.condition import ConditionMaker
 
 #===============================================
 MainLegend = FilterLegend("AJson", HOT_SETUP)
@@ -109,3 +110,8 @@ flt_unit.MultiStatusUnit(MainLegend, "Polyphen_2_HDIV",
     chunker = AttrChunker("[\s\,]"), default_value = "undef")
 
 #===============================================
+MainLegend.regFilter("Candidates",
+    [ConditionMaker.condEnum("Rules", ["Candidates"])])
+MainLegend.regFilter("Candidates-Rare",
+    [ConditionMaker.condEnum("Rules", ["Candidates-Rare"])])
+

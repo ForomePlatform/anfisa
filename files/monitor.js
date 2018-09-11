@@ -2,6 +2,7 @@ var sCurTag = null;
 var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
+var sPreFilters = [];
 var sAllFilters = [];
 var sCurZoneData = null;
 
@@ -171,8 +172,9 @@ function updateTagNavigation() {
     }
 }
 
-function setupNamedFilters(all_filters) {
+function setupNamedFilters(pre_filters, all_filters) {
     clearFilterOpMode();
+    sPreFilters = pre_filters;
     if (all_filters.length == sAllFilters.length) {
         q_same = true;
         for (idx = 0; idx < all_filters.length; idx++) {

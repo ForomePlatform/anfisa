@@ -113,7 +113,7 @@ function setupStatList(info) {
     sStatUnitIdxs = {}
     if (sCurFilterSeq == null) 
         sCurFilterSeq = info["conditions"];
-    _checkNamedFilters(info["all-filters"]);
+    _checkNamedFilters(info["pre-filters"], info["op-filters"]);
     var list_stat_rep = [];
     for (idx = 0; idx < sStatList.length; idx++) {
         unit_stat = sStatList[idx];
@@ -187,8 +187,9 @@ function setupStatList(info) {
     updateFilterOpMode();
 }
 
-function _checkNamedFilters(all_filters) {
-    setupNamedFilters(all_filters);
+function _checkNamedFilters(pre_filters, op_filters) {
+    var all_filters = pre_filters.concat(op_filters);
+    setupNamedFilters(pre_filters, all_filters);
     for (idx = 0; idx < sFilterHistory.length; idx++) {
         hinfo = sFilterHistory[idx];
         if (hinfo[0] != "_current_" && all_filters.indexOf(hinfo[0]) < 0)
@@ -278,7 +279,7 @@ function setupStatUnit() {
         
         sSpanCurCondMin.innerHTML = val_min;
         sSpanCurCondMax.innerHTML = val_max;
-        sSpanCurCondSign.innerHTML = (val_min == val_max)? "=":"<";
+        sSpanCurCondSign.innerHTML = (val_min == val_max)? "=":"&le;";
         sInputCurCondMin.value = val_min;
         sInputCurCondMax.value = val_max;
         

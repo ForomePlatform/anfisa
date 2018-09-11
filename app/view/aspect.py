@@ -69,7 +69,7 @@ class AspectH:
         for attr in self.mAttrs:
             if (attr.getName() is None or
                     attr.checkExpertBlock(expert_mode) or
-                    attr.getKind() == "hidden"):
+                    attr.hasKind("hidden")):
                 continue
             values = [attr.getHtmlRepr(obj) for obj in objects]
             if not all([vv == ('-', "none") for vv in values]):

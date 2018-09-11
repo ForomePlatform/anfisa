@@ -10,6 +10,9 @@ class Index:
             self.mLegend.fillRecord(
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
             self.mRecords.append(rec)
+        for filter_name in self.mLegend.getFilterNames():
+            self.cacheFilter(filter_name,
+                self.mLegend.getFilterConditions(filter_name))
 
     def updateRulesEnv(self):
         for rec_no, rec in enumerate(self.mRecords):
@@ -17,7 +20,7 @@ class Index:
                 self.mDataSet.getRecord(rec_no).getObj(), rec)
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
-            if any([cond_info[1] == "rules"
+            if any([cond_info[1] == "Rules"
                     for cond_info in  filter_info[0]]):
                 to_update.append(filter_name)
         for filter_name in to_update:
@@ -114,24 +117,28 @@ class Index:
         if filter_name in self.mFilterCache:
             del self.mFilterCache[filter_name]
 
-    def getFilterList(self):
-        ret = []
+    def getFilterLists(self):
+        ret0, ret1 = [], []
         for filter_name in self.mFilterCache.keys():
             if not filter_name.startswith('_'):
-                ret.append(filter_name)
-        return sorted(ret)
+                if self.mLegend.hasFilter(filter_name):
+                    ret0.append(filter_name)
+                else:
+                    ret1.append(filter_name)
+        return sorted(ret0), sorted(ret1)
 
     def makeStatReport(self, filter_name, expert_mode,
             filter_seq = None):
         if filter_seq is not None:
             self.cacheFilter(filter_name, filter_seq)
-        all_filters = self.getFilterList()
+        pre_filters, op_filters = self.getFilterLists()
         report = {
             "stat-list": self.mLegend.collectStatJSon(self._iterRecords(
                 self.getRecNoSeq(filter_name)), expert_mode),
-            "all-filters": all_filters,
+            "pre-filters": pre_filters,
+            "op-filters": op_filters,
             "filter": filter_name}
-        if (filter_name in all_filters):
+        if (filter_name in pre_filters or filter_name in op_filters):
             report["conditions"] = self.mFilterCache[filter_name][0]
         return report
 
@@ -141,9 +148,12 @@ class Index:
         return range(self.mDataSet.getSize())[:]
 
     def getRecFilters(self, rec_no):
-        ret = []
+        ret0, ret1 = [], []
         for filter_name, flt_info in self.mFilterCache.items():
             if (not filter_name.startswith('_') and
                     rec_no in flt_info[1]):
-                ret.append(filter_name)
-        return sorted(ret)
+                if self.mLegend.hasFilter(filter_name):
+                    ret0.append(filter_name)
+                else:
+                    ret1.append(filter_name)
+        return sorted(ret0) + sorted(ret1)

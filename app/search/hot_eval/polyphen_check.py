@@ -1,4 +1,6 @@
 def evalRec(env, rec):
+    """Has Damaging Predictions"""
+
     if len(rec.Polyphen &
             {"possibly_damaging", "probably_damaging"}) > 0:
         return True

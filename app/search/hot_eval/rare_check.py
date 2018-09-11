@@ -1,4 +1,6 @@
 def evalRec(env, rec):
+    """Candidates (Rare)"""
+
     # standard part of evaluation
     quality = True
     if not rec.Proband_has_Variant:

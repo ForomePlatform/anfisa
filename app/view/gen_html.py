@@ -153,13 +153,13 @@ def _formFiltersDiv(output):
             </button>
             <button id="filter-delete-cond"
                 onclick="filterDeleteCond();">
-              &times;
+              Delete;
             </button>
             <button id="filter-undo-cond" title="Undo"
                 onclick="filterUndoCond();">
               &#8630;
             </button>
-            <button id="filter-redo-cond" title="Delete"
+            <button id="filter-redo-cond" title="Redo"
                 onclick="filterRedoCond();">
               &#8631;
             </button>
@@ -370,7 +370,7 @@ def tagsBlock(output):
     <div id="tg-filters">
         <i>Filters:</i> <span id="tg-filters-list"></span>
         <span id="tg-run-rules" title="Rules evaluation setup"
-            onclick="window.parent.rulesEvalModOn();">&#9874;</span>
+            onclick="window.parent.rulesModOn();">&#9874;</span>
     </div>
   </div>
   <div id="tg-tags">
@@ -402,7 +402,7 @@ def tagsBlock(output):
         </button>
         <button id="tg-tag-delete"
             title="Delete tag" class="op-button" onclick="tagEnvDelete();">
-          &times;
+          Delete
         </button>
         <button id="tg-tag-undo" class="op-button" title="Undo" onclick="tagEnvUndo();">
           &#8630;

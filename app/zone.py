@@ -1,3 +1,5 @@
+from search.condition import ConditionMaker
+
 #===============================================
 class ZoneH:
     def __init__(self, workspace, title):
@@ -33,4 +35,4 @@ class FilterZoneH(ZoneH):
 
     def restrict(self, rec_no_seq, variants):
         return self.getWS().getIndex()._applyCondition(rec_no_seq,
-            ("enum", self.mUnit.getName(), "OR", variants))
+            ConditionMaker.condEnum(self.mUnit.getName(), variants, "OR"))

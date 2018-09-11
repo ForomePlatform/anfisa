@@ -33,12 +33,11 @@ function setupRulesData(info) {
     sItemsContents = {};
     columns = info["columns"];
     for (idx = 0; idx < columns.length; idx++) {
-        col_title = columns[idx][0];
-        col_name = columns[idx][1];
-        sItemsContents[col_name] = columns[idx][2];
+        col_name = columns[idx][0];
+        sItemsContents[col_name] = columns[idx][1];
         col_rep.push('<div id="hi--' + col_name + '" class="rule-item" ' +
           'onclick="ruleItemSel(\'' + col_name + '\');">' + 
-          col_title + '</div>');
+          col_name + '</div>');
     }
     sItemsContents["--param"] = info["params"];
     document.getElementById("rules-columns").innerHTML =
