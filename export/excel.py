@@ -24,19 +24,13 @@ def read_mapping(path):
         raise Exception("Mapping column is not found in Worksheet key of file {}".format(path))
 
     mapping = dict()
-    gap = 0
     idx = 0
-    for r in range(2, 1000):
+    for r in range(2, ws.max_row):
         cell = ws.cell(r, key_column)
         key = cell.value
         if (not key):
-            gap += 1
-            if (gap > 3):
-                break
-            else:
-                continue
+           continue
 
-        gap = 0
         key = key.strip()
         style = dict()
         style["fill"] = copy(cell.fill)
