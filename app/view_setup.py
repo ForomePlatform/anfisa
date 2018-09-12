@@ -1,11 +1,11 @@
 from app.view.aspect import AspectH
-from app.view.attr   import AttrH
+from app.view.attr import AttrH
 from app.view.colgrp import ColGroupsH
 
 #===============================================
 class ViewSetup:
     sTextMessages = {
-        "aspect.tags.title": "Tags&nbsp;&amp;<br/>Filters" }
+        "aspect.tags.title": "Tags&nbsp;&amp;<br/>Filters"}
 
     sConfigOptions = {
         "label.key":        "label",

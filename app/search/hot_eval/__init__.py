@@ -3,7 +3,7 @@ import os, codecs
 from .acmg59 import evalRec as acmg59_evalRec
 from .quality_check import evalRec as quality_check_evalRec
 from .af_check import evalRec as af_check_evalRec
-from .rare_check   import evalRec as rare_check_evalRec
+from .rare_check import evalRec as rare_check_evalRec
 from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
 

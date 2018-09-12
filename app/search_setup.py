@@ -1,7 +1,7 @@
-from   app.search.flt_legend import FilterLegend
-from   app.search.chunker import AttrChunker
-from   app.search.hot_eval import HOT_SETUP
-from   app.search.condition import ConditionMaker
+from app.search.flt_legend import FilterLegend
+from app.search.chunker import AttrChunker
+from app.search.hot_eval import HOT_SETUP
+from app.search.condition import ConditionMaker
 import app.search.flt_unit as flt_unit
 
 #===============================================
@@ -20,8 +20,8 @@ flt_unit.MultiStatusUnit(MainLegend, "caller",
     "/view.general/Called by[]", expert_only = True)
 
 flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
-    "/most_severe_consequence", [
-    "transcript_ablation",
+    "/most_severe_consequence",
+    ["transcript_ablation",
     "splice_acceptor_variant",
     "splice_donor_variant",
     "stop_gained",
@@ -114,4 +114,3 @@ MainLegend.regFilter("Candidates",
     [ConditionMaker.condEnum("Rules", ["Candidates"])])
 MainLegend.regFilter("Candidates-Rare",
     [ConditionMaker.condEnum("Rules", ["Candidates-Rare"])])
-

@@ -145,11 +145,11 @@ class AnfisaService:
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
             rec_no_seq = workspace.getZone(zone_name).restrict(
-                rec_no_seq, variants);
+                rec_no_seq, variants)
         report = workspace.mDataSet.makeJSonReport(
             sorted(rec_no_seq), 'R' in modes,
             workspace.getTagsMan().getMarkedSet())
-        report["workspace"] = workspace.getName();
+        report["workspace"] = workspace.getName()
         output.write(json.dumps(report))
         return output.getvalue()
 
@@ -214,7 +214,7 @@ class AnfisaService:
     def formTagSelect(self, rq_args):
         output = StringIO()
         workspace = self.sData.getWS(rq_args.get("ws"))
-        tags_man = workspace.getTagsMan();
+        tags_man = workspace.getTagsMan()
         tag_list = tags_man.getTagList();
         tag_name = rq_args.get("tag")
         if tag_name and tag_name not in tag_list:

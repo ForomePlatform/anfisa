@@ -1,7 +1,6 @@
 import json
-from copy import copy
 import openpyxl
-from openpyxl.cell import Cell
+from copy import copy
 
 def cell_value(ws, row, column):
     v = ws.cell(row, column).value
@@ -10,18 +9,20 @@ def cell_value(ws, row, column):
     return v.strip()
 
 def read_mapping(path):
-    wb = openpyxl.load_workbook(path, read_only=False)
+    wb = openpyxl.load_workbook(path, read_only = False)
     ws = wb["key"]
     if (cell_value(ws, 1, 1) != "Column"):
-        raise Exception('First column must be called "Column". Worksheet "key" of file {}'.format(path))
+        raise Exception('First column must be called "Column". '
+            'Worksheet "key" of file {}'.format(path))
     key_column = 1
     map_column = None
-    for c in range(1,100):
+    for c in range(1, 100):
         if (cell_value(ws, 1, c) == "Mapping"):
             map_column = c
             break
     if (not map_column):
-        raise Exception("Mapping column is not found in Worksheet key of file {}".format(path))
+        raise Exception('Mapping column is not found in Worksheet key '
+            'of file {}'.format(path))
 
     mapping = dict()
     idx = 0
@@ -29,7 +30,7 @@ def read_mapping(path):
         cell = ws.cell(r, key_column)
         key = cell.value
         if (not key):
-           continue
+            continue
 
         key = key.strip()
         style = dict()
@@ -45,7 +46,6 @@ def read_mapping(path):
         mapping[idx] = (key, value, style)
 
     return mapping
-
 
 def find_value(array, key):
     if (array.get(key)):
@@ -67,9 +67,10 @@ def find_value(array, key):
 
     return None
 
-
-class Export:
-    def __init__(self, mapping,):
+class ExcelExport:
+    def __init__(self, fname = None, mapping = None):
+        if fname:
+            self.mapping = read_mapping(fname)
         self.mapping = mapping
         self.workbook = None
         self.column_widths = {}
@@ -87,8 +88,7 @@ class Export:
             for s in style:
                 setattr(cell, s, style[s])
 
-    def add_variant(self, json_string):
-        data = json.loads(json_string)
+    def add_variant(self, data):
         ws = self.workbook.active
         row = ws.max_row + 1
         for column in self.mapping:
@@ -98,30 +98,31 @@ class Export:
             value = find_value(data, key)
             cell = ws.cell(row=row, column=column, value=value)
             if (isinstance(value, basestring)):
-                self.column_widths[cell.column] = max(self.column_widths[cell.column], len(value))
+                self.column_widths[cell.column] = max(
+                    self.column_widths[cell.column], len(value))
             for s in style:
                 setattr(cell, s, style[s])
-
 
     def save(self, file):
         ws = self.workbook.active
         for column, width in self.column_widths.iteritems():
             ws.column_dimensions[column].width = width + 3
-        self.workbook.save(filename=file)
+        self.workbook.save(filename = file)
 
 
 if __name__ == '__main__':
-    mapping = read_mapping("/Users/misha/Dropbox/bgm/CLIA/SEQaBOO_output_template_0730.xlsx")
+    mapping = read_mapping('/Users/misha/Dropbox/'
+        'bgm/CLIA/SEQaBOO_output_template_0730.xlsx')
     for key in mapping:
         print "{}: {}".format(key, mapping[key])
 
-    export = Export(mapping)
+    export = ExcelExport(mapping = mapping)
     export.new()
     n = 30
-    i = 0
-    with open("/Users/misha/projects/bgm/cases/bgm9001/bgm9001_wgs_candidates.json") as json_file:
-        for i in range(0,n):
+    with open('/Users/misha/projects/bgm/cases/'
+            'bgm9001/bgm9001_wgs_candidates.json') as json_file:
+        for i in range(0, n):
             line = json_file.readline()
-            export.add_variant(line)
+            export.add_variant(json.loads(line))
 
     export.save("/Users/misha/projects/bgm/cases/bgm9001/test.xlsx")

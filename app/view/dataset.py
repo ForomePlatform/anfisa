@@ -64,7 +64,7 @@ class DataSet:
     def makeJSonReport(self, rec_no_seq, random_mode, marked_set):
         ret = {
             "data-set": self.getName(),
-            "total": len(self.mDataObjects) }
+            "total": len(self.mDataObjects)}
         ret["filtered"] = len(rec_no_seq)
 
         if (random_mode and len(rec_no_seq) >

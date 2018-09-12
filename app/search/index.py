@@ -21,7 +21,7 @@ class Index:
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
             if any([cond_info[1] == "Rules"
-                    for cond_info in  filter_info[0]]):
+                    for cond_info in filter_info[0]]):
                 to_update.append(filter_name)
         for filter_name in to_update:
             self.cacheFilter(filter_name,
@@ -111,7 +111,7 @@ class Index:
             rec_no_seq = self._applyCondition(rec_no_seq, cond_info)
             if len(rec_no_seq) == 0:
                 break
-        self.mFilterCache[filter_name] = (filter_seq, rec_no_seq);
+        self.mFilterCache[filter_name] = (filter_seq, rec_no_seq)
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:

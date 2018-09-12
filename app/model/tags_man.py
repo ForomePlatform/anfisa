@@ -4,7 +4,7 @@ from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):
     def __init__(self, workspace, check_tag_list):
-        ZoneH.__init__(self, workspace, "_tags");
+        ZoneH.__init__(self, workspace, "_tags")
         self.mTagSets = defaultdict(set)
         self.mIntVersion = 0
         self.mMarkedSet = set()
@@ -49,7 +49,7 @@ class TagsManager(ZoneH):
 
     @staticmethod
     def _goodKey(key):
-        return key and key[0] != '_'\
+        return key and key[0] != '_'
 
     def makeRecReport(self, rec_no, tags_to_update):
         rec_key = self.getWS().getDataSet().getRecKey(rec_no)

@@ -55,7 +55,7 @@ class ViewDataChecker:
             ign_path_set = set()
             for bad_path in self.mBadAttrs:
                 if bad_path.startswith('/_'):
-                    ign_path_set.add(bad_path);
+                    ign_path_set.add(bad_path)
                     continue
                 for path in good_path_heads:
                     if (bad_path.startswith(path) and

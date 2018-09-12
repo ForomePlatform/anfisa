@@ -7,8 +7,7 @@ def formTopPage(output, title, html_base,
         "title": title,
         "workspace": workspace_name,
         "modes": modes,
-        "html-base": (' <base href="%s" />' % html_base)
-            if html_base else ""}
+        "html-base": (' <base href="%s" />' % html_base) if html_base else ""}
     print >> output, '''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
@@ -356,9 +355,11 @@ def noRecords(output):
   </head>
   <body>
     <h3>No records available</h3>
-    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'>zone</button>
+    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
+            >zone</button>
         or
-        <button onclick='parent.window.updateCurFilter("");'>filter</button>.</p>
+        <button onclick='parent.window.updateCurFilter("");'
+            >filter</button>.</p>
   </body>
 </html>'''
 
@@ -406,10 +407,12 @@ def tagsBlock(output):
             title="Delete tag" class="op-button" onclick="tagEnvDelete();">
           Delete
         </button>
-        <button id="tg-tag-undo" class="op-button" title="Undo" onclick="tagEnvUndo();">
+        <button id="tg-tag-undo" class="op-button" title="Undo"
+            onclick="tagEnvUndo();">
           &#8630;
         </button>
-        <button id="tg-tag-redo" class="op-button"  title="Redo" onclick="tagEnvRedo();">
+        <button id="tg-tag-redo" class="op-button"  title="Redo"
+            onclick="tagEnvRedo();">
           &#8631;
         </button>
       </div>

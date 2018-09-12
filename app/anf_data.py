@@ -1,11 +1,11 @@
 import logging
 from StringIO import StringIO
 
-from app.model.workspace  import Workspace
-from app.view.dataset     import DataSet
-from app.view.checker     import ViewDataChecker
-from .view_setup   import ViewSetup
-from .view_cfg     import setupRecommended
+from app.model.workspace import Workspace
+from app.view.dataset import DataSet
+from app.view.checker import ViewDataChecker
+from .view_setup import ViewSetup
+from .view_cfg import setupRecommended
 from .search_setup import MainLegend
 from app.model.a_serv import AnfisaService
 
@@ -40,12 +40,11 @@ class AnfisaData:
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
 
-        sService = AnfisaService.start(cls, config, in_container)
-        return sService
+        cls.sService = AnfisaService.start(cls, config, in_container)
+        return cls.sService
 
     @classmethod
     def getWS(cls, name):
         if not name:
             return cls.sDefaultWS
         return cls.sWorkspaces[name]
-

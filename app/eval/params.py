@@ -28,7 +28,7 @@ def parseParams(text, param_list):
                 isinstance(instr.value, ast.Num)):
             if instr.targets[0].id != param_list[len(ret)]:
                 error = "Parameter %s assignment expected" % param_list[idx]
-                break;
+                break
             ret.append((instr.targets[0].id, instr.value.n))
         else:
             error = "Parameter assignment expected"

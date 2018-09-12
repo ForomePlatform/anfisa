@@ -92,7 +92,8 @@ class AspectH:
             if attr.getName() not in fld_data:
                 continue
             print >> output, '<tr>'
-            print >> output, '<td class="title">%s</td>' % escape(attr.getTitle())
+            print >> output, '<td class="title">%s</td>' % escape(
+                attr.getTitle())
             for val, class_name in fld_data[attr.getName()]:
                 print >> output, '<td class="%s">%s</td>' % (class_name, val)
             print >> output, '</tr>'

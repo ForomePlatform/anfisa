@@ -27,7 +27,7 @@ class Workspace:
             else:
                 zone_h = FilterZoneH(self, zone_title,
                     self.mLegend.getUnit(unit_name))
-            self.mZoneHandlers.append(zone_h);
+            self.mZoneHandlers.append(zone_h)
 
     def getName(self):
         return self.mName
