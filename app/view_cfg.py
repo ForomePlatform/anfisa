@@ -60,6 +60,7 @@ CONFIG_ATTRS = {
     "view_db": [
         AttrH("HGMD"),
         AttrH("HGMD (HG38)"),
+        AttrH("HGMD TAGs", is_seq = True),
         AttrH("HGMD Phenotypes", is_seq = True),
         AttrH("HGMD PMIDs", is_seq = True, kind = "link"),
         AttrH("OMIM", is_seq=True, kind="link"),

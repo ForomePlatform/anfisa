@@ -866,7 +866,7 @@ class Variant:
         else:
             tab4["HGMD"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
-        tab4["HGMD TAGs"] = [link_to_pmid(pmid[2]) for pmid in pmids] if pmids else None
+        tab4["HGMD TAGs"] = [pmid[2] for pmid in pmids] if pmids else None
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("_private.HGMD_phenotypes")
         tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
