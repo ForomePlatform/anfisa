@@ -12,12 +12,12 @@ flt_unit.StatusUnit(MainLegend, "Chromosome", "/seq_region_name",
     "chr6", "chr7", "chr8", "chr9", "chr10",
     "chr11", "chr12", "chr13", "chr14", "chr15",
     "chr16", "chr17", "chr18", "chr19", "chr20",
-    "chr21", "chr22", "chr23", "chrX", "chrY"])
-flt_unit.IntValueUnit(MainLegend, "Start Position", "/start")
-flt_unit.IntValueUnit(MainLegend, "End Position", "/end")
+    "chr21", "chr22", "chr23", "chrX", "chrY"], expert_only=True)
+flt_unit.IntValueUnit(MainLegend, "Start Position", "/start", expert_only=True)
+flt_unit.IntValueUnit(MainLegend, "End Position", "/end", expert_only=True)
 
 flt_unit.MultiStatusUnit(MainLegend, "caller",
-    "/view.general/Called by[]", expert_only = False)
+    "/view.general/Called by[]", expert_only = True)
 
 flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
     "/most_severe_consequence", [
@@ -71,7 +71,7 @@ flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ")
 
 flt_unit.IntValueUnit(MainLegend, "Severity",
-    "/_filters.Severity", expert_only=True, default_value=5)
+    "/_filters.Severity", expert_only=True, default_value=-1)
 
 flt_unit.IntValueUnit(MainLegend, "Min_GQ",
     "/_filters.Min_GQ")
