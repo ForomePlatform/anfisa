@@ -3,7 +3,7 @@ from StringIO import StringIO
 from urlparse import parse_qs
 import logging.config
 
-from app.a_serv import AnfisaService
+from app.anf_data import AnfisaData
 
 #========================================
 class HServResponse:
@@ -53,10 +53,12 @@ class HServResponse:
 #========================================
 class HServHandler:
     sInstance = None
+    sService  = None
 
     @classmethod
     def init(cls, config, in_container):
         cls.sInstance = cls(config, in_container)
+        cls.sService  = AnfisaData.setup(config, in_container)
 
     @classmethod
     def request(cls, environ, start_response):
@@ -122,7 +124,7 @@ class HServHandler:
                 ret = self.fileResponse(resp_h, path, True)
                 if ret is not False:
                     return ret
-            return AnfisaService.request(resp_h, path, query_args)
+            return self.sService.request(resp_h, path, query_args)
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep)
@@ -144,7 +146,6 @@ def setupHServer(config_file, in_container):
     if logging_config:
         logging.config.dictConfig(logging_config)
         logging.basicConfig(level = 0)
-    AnfisaService.start(config, in_container)
     HServHandler.init(config, in_container)
     if not in_container:
         return (config["host"], int(config["port"]))

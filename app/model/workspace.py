@@ -1,7 +1,7 @@
-from search.index import Index
-from mongo_db import MongoConnector
-from tags_man import TagsManager
-from zone import FilterZoneH
+from app.search.index import Index
+from .mongo_db import MongoConnector
+from .tags_man import TagsManager
+from .zone import FilterZoneH
 
 #===============================================
 class Workspace:

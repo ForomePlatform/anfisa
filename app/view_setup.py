@@ -1,6 +1,6 @@
-from view.aspect import AspectH
-from view.attr   import AttrH
-from view.colgrp import ColGroupsH
+from app.view.aspect import AspectH
+from app.view.attr   import AttrH
+from app.view.colgrp import ColGroupsH
 
 #===============================================
 class ViewSetup:

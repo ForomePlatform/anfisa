@@ -1,19 +1,22 @@
 import logging
 from StringIO import StringIO
 
+from app.model.workspace  import Workspace
+from app.view.dataset     import DataSet
+from app.view.checker     import ViewDataChecker
 from .view_setup   import ViewSetup
-from .workspace    import Workspace
-from .search_setup import MainLegend
 from .view_cfg     import setupRecommended
-from view.dataset     import DataSet
-from view.checker     import ViewDataChecker
+from .search_setup import MainLegend
+from app.model.a_serv import AnfisaService
+
 #===============================================
 class AnfisaData:
     sWorkspaces = {}
     sDefaultWS = None
+    sService = None
 
     @classmethod
-    def setup(cls, config):
+    def setup(cls, config, in_container):
         setupRecommended()
         ws_seq = []
         for ws_descr in config["workspaces"]:
@@ -36,6 +39,9 @@ class AnfisaData:
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
+
+        sService = AnfisaService.start(cls, config, in_container)
+        return sService
 
     @classmethod
     def getWS(cls, name):

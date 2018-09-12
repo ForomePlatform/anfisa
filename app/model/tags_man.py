@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from zone import ZoneH
+from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):
     def __init__(self, workspace):

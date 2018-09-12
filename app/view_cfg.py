@@ -1,4 +1,4 @@
-from view.attr   import AttrH
+from app.view.attr   import AttrH
 from .view_setup import ViewSetup
 
 #===============================================

@@ -1,9 +1,7 @@
-# import sys
 import json
 from StringIO import StringIO
-from .anf_data import AnfisaData
-from view.gen_html import formTopPage, noRecords
 
+from app.view.gen_html import formTopPage, noRecords
 #===============================================
 class HTML_Setup:
 
@@ -20,12 +18,15 @@ class HTML_Setup:
 
 #===============================================
 class AnfisaService:
+    sData = None
     sMain = None
 
     @classmethod
-    def start(cls, config, in_container):
+    def start(cls, a_data, config, in_container):
         assert cls.sMain is None
+        cls.sData = a_data
         cls.sMain = cls(config, in_container)
+        return cls.sMain
 
     @classmethod
     def request(cls, serv_h, rq_path, rq_args):
@@ -60,11 +61,11 @@ class AnfisaService:
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTagSelect(rq_args))
         return serv_h.makeResponse(error = 404)
+
     #===============================================
     def __init__(self, config, in_container):
         self.mConfig = config
         self.mInContainer = in_container
-        AnfisaData.setup(config)
         self.mHtmlTitle = self.mConfig["html-title"]
         self.mHtmlBase = (self.mConfig["html-base"]
             if self.mInContainer else None)
@@ -90,7 +91,7 @@ class AnfisaService:
 
     #===============================================
     def formTop(self, rq_args):
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
@@ -100,7 +101,7 @@ class AnfisaService:
     #===============================================
     def formRec(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         data_set = workspace.getDataSet()
         modes = rq_args.get("m", "")
         rec_no = int(rq_args.get("rec"))
@@ -136,7 +137,7 @@ class AnfisaService:
     #===============================================
     def formList(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         rec_no_seq = workspace.getIndex().getRecNoSeq(
             rq_args.get("filter"))
@@ -155,7 +156,7 @@ class AnfisaService:
     #===============================================
     def formStat(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         filter_name = rq_args.get("filter")
         conditions = rq_args.get("conditions")
@@ -170,7 +171,7 @@ class AnfisaService:
     #===============================================
     def formTags(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         rec_no = int(rq_args.get("rec"))
         tags_to_update = rq_args.get("tags")
@@ -184,7 +185,7 @@ class AnfisaService:
     #===============================================
     def formZoneList(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         report = workspace.getZone(rq_args.get("zone")).makeValuesReport()
         output.write(json.dumps(report))
         return output.getvalue()
@@ -192,7 +193,7 @@ class AnfisaService:
     #===============================================
     def formRulesData(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         output.write(json.dumps(
             workspace.getRulesData('X' in modes)))
@@ -201,7 +202,7 @@ class AnfisaService:
     #===============================================
     def formRulesModify(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
         item = rq_args.get("it")
         content = rq_args.get("cnt")
@@ -212,7 +213,7 @@ class AnfisaService:
     #===============================================
     def formTagSelect(self, rq_args):
         output = StringIO()
-        workspace = AnfisaData.getWS(rq_args.get("ws"))
+        workspace = self.sData.getWS(rq_args.get("ws"))
         tags_man = workspace.getTagsMan();
         tag_list = tags_man.getTagList();
         tag_name = rq_args.get("tag")
