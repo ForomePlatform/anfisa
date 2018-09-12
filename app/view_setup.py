@@ -16,6 +16,7 @@ class ViewSetup:
             ("Chromosome", "Chromosome"),
             ("Gene",       "genes"),
             ("Tag",        "_tags")],
+        "check.tags":       ["Done"],
         "attrs.to.ignore":  ["/view"],
         "rand.seed":        179,
         "rand.min.size":    100,

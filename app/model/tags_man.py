@@ -3,11 +3,12 @@ from collections import defaultdict
 from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):
-    def __init__(self, workspace):
+    def __init__(self, workspace, check_tag_list):
         ZoneH.__init__(self, workspace, "_tags");
         self.mTagSets = defaultdict(set)
         self.mIntVersion = 0
         self.mMarkedSet = set()
+        self.mCheckTags = check_tag_list
         self._loadDataSet()
 
     def getName(self):
@@ -32,15 +33,19 @@ class TagsManager(ZoneH):
     def getTagRecordList(self, tag):
         return sorted(self.mTagSets[tag])
 
+    def getOpTagList(self):
+        return sorted(set(self.mTagSets.keys()) - set(self.mCheckTags))
+
     def getTagList(self):
-        return sorted(self.mTagSets.keys())
+        return self.getOpTagList() + self.mCheckTags
 
     def getVariants(self):
         return self.getTagList()
 
     @staticmethod
     def _goodPair(key_value):
-        return key_value[0] and key_value[0][0] != '_'
+        return (key_value[0] and key_value[0][0] != '_' and
+            key_value[1] not in (None, False))
 
     @staticmethod
     def _goodKey(key):
@@ -53,13 +58,14 @@ class TagsManager(ZoneH):
         if tags_to_update is not None:
             rec_data, mark_modified = self._changeRecord(
                 rec_no, rec_key, rec_data, tags_to_update)
-        ret = {"all-tags": self.getTagList()}
+        ret = {"check-tags": self.mCheckTags[:],
+            "op-tags": self.getOpTagList()}
         if mark_modified:
             ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
         if rec_data is None:
-            ret["tags"] = dict()
+            ret["rec-tags"] = dict()
             return ret
-        ret["tags"] = dict(filter(self._goodPair, rec_data.items()))
+        ret["rec-tags"] = dict(filter(self._goodPair, rec_data.items()))
         history = rec_data.get('_h')
         if history is not None:
             idx_h, len_h = history[0], len(history[1])
@@ -74,7 +80,7 @@ class TagsManager(ZoneH):
         new_rec_data = {"_id": rec_key}
         if data is not None:
             for key, value in data.items():
-                if cls._goodKey(key):
+                if cls._goodKey(key) and value not in (None, False):
                     new_rec_data[key] = value
         return new_rec_data
 

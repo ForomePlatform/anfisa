@@ -13,7 +13,8 @@ class Workspace:
         self.mMongoConn = MongoConnector(mongo_path,
             mongo_host, mongo_port)
         self.mViewSetup = self.mDataSet.getViewSetup()
-        self.mTagsMan = TagsManager(self)
+        self.mTagsMan = TagsManager(self,
+            self.mViewSetup.configOption("check.tags"))
         self.mIndex  = Index(self.mDataSet, self.mLegend)
         for filter_name, conditions in self.mMongoConn.getFilters():
             if not self.mLegend.hasFilter(filter_name):

@@ -378,8 +378,10 @@ def tagsBlock(output):
         <i>Tags:</i>
     </div>
     <div id="tg-tags-left">
+      <div id="tg-check-tags-list">
+      </div>
       <div id="tg-tags-wrap-list">
-        <div id="tg-tags-list">
+        <div id="tg-op-tags-list">
         </div>
       </div>
     </div>

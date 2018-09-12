@@ -1,4 +1,4 @@
-var sTagsInfo      = null;
+var sRecTags      = null;
 var sTagOrder      = null;
 var sCurTagIdx     = null;
 var sTagNameOK     = null;
@@ -60,29 +60,42 @@ function loadTags(tags_to_update){
 }
 
 function setupTags(info) {
-    sTagsInfo  = info;
+    sRecTags  = info["rec-tags"];
     sCurTagIdx = null;
     
     var el = document.getElementById("tg-filters-list");
-    if (sTagsInfo["filters"]) {
-        el.innerHTML = sTagsInfo["filters"].join(' ');
+    if (info["filters"]) {
+        el.innerHTML = info["filters"].join(' ');
         el.className = "";
     } else {
         el.innerHTML = "none";
         el.className = "empty";
     }
 
-    sTagOrder = [];
-    for(var tag in info["tags"]) {
-        sTagOrder.push(tag);
-    }
-    sTagOrder.sort();
+    check_tags = info["check-tags"]
     var rep = [];
-    for (idx = 0; idx < sTagOrder.length; idx++) {
-        rep.push('<div id="tag--' + idx + '" class="tag-label" ' +
-            'onclick="pickTag(' + idx + ');">' + sTagOrder[idx] + '</div>');
+    for (j=0; j< check_tags.length; j++) {
+        tag_name = check_tags[j];
+        rep.push('<div class="tag-check"><input id="check-tag--' + tag_name + '" ' +
+            ((sRecTags[tag_name])?"checked ":"") + 
+            'type="checkbox" onclick="checkTagCheck(\'' + tag_name + '\');"/>&nbsp;' +
+            tag_name + '</div>');
     }
-    document.getElementById("tg-tags-list").innerHTML = rep.join('\n');
+    document.getElementById("tg-check-tags-list").innerHTML = rep.join('\n');
+    
+    op_tags = info["op-tags"];
+    sTagOrder = [];
+    rep = [];
+    for (j = 0; j < op_tags.length; j++) {
+        tag_name = op_tags[j];
+        if (!sRecTags[tag_name])
+            continue
+        idx = sTagOrder.length;
+        sTagOrder.push(tag_name);
+        rep.push('<div id="tag--' + idx + '" class="tag-label" ' +
+            'onclick="pickTag(' + idx + ');">' + tag_name + '</div>');
+    }
+    document.getElementById("tg-op-tags-list").innerHTML = rep.join('\n');
     if (sTagOrder.length > 0) {
         idx = sTagOrder.indexOf(sPrevTag);
         if (idx < 0 && sViewPort > 0)
@@ -99,9 +112,9 @@ function setupTags(info) {
         sInpTagNameList.remove(idx);
     }
     
-    all_tags = info["all-tags"];
-    for (idx = 0; idx < all_tags.length; idx++) {
-        tag_name = all_tags[idx];
+    op_tags = info["op-tags"];
+    for (idx = 0; idx < op_tags.length; idx++) {
+        tag_name = op_tags[idx];
         if (sTagOrder.indexOf(tag_name) < 0) {
             var option = document.createElement('option');
             option.innerHTML = tag_name;
@@ -110,11 +123,9 @@ function setupTags(info) {
         }
     }
     sInpTagNameList.selectedIndex = 0;
-    
     if (info["marker"]) {
         parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
     }
-    
 }
 
 function updateTagsState(set_content) {
@@ -128,7 +139,7 @@ function updateTagsState(set_content) {
         } else {
             tag_name = sTagOrder[sCurTagIdx];
             sInpTagName.value = tag_name;
-            sInpTagValue.value = sTagsInfo["tags"][tag_name].trim();
+            sInpTagValue.value = sRecTags[tag_name].trim();
             sTagNameOK = true;
             sTagCntMode = true;
             sTagCntChanged = false;
@@ -149,7 +160,7 @@ function checkInputs() {
         if (sTagCntMode) {
             tag_name = sTagOrder[sCurTagIdx];
             sTagCntChanged = (sInpTagValue.value.trim() != 
-                sTagsInfo["tags"][tag_name].trim());            
+                sRecTags[tag_name].trim());            
         } else {
             sTagCntChanged = false;
         }
@@ -194,17 +205,19 @@ function tagEnvNew() {
     }
 }
 
-function tagEnvSave() {
+function tagEnvSave(force_it) {
     if (sViewPort < 1)
         return;
-    checkInputs();
-    if (sTagCntMode && sTagNameOK) {
-        tags_to_update = sTagsInfo["tags"];
-        tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
-        sPrevTag = sInpTagName.value;
-        loadTags(tags_to_update);
-        window.parent.checkTabNavigation(sPrevTag);
+    if (!force_it) {
+        checkInputs();
+        if (!(sTagCntMode && sTagNameOK))
+            return;
     }
+    tags_to_update = sRecTags;
+    tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
+    sPrevTag = sInpTagName.value;
+    loadTags(tags_to_update);
+    window.parent.checkTabNavigation(sPrevTag);
 }
 
 function tagEnvCancel() {
@@ -219,7 +232,7 @@ function tagEnvDelete() {
     checkInputs();
     if (sCurTagIdx != null) {
         tag_name = sTagOrder[sCurTagIdx];
-        tags_to_update = sTagsInfo["tags"];
+        tags_to_update = sRecTags;
         delete tags_to_update[tag_name];
         sPrevTag = null;
         sCurTagIdx = null;
@@ -231,7 +244,7 @@ function tagEnvDelete() {
 function tagEnvUndo() {
     if (sViewPort < 1)
         return;
-    if (sTagsInfo["can_undo"]) {
+    if (!sBtnUndoTag.disabled) {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("UNDO");
@@ -242,7 +255,7 @@ function tagEnvUndo() {
 function tagEnvRedo() {
     if (sViewPort < 1)
         return;
-    if (sTagsInfo["can_redo"]) {
+    if (!sBtnRedoTag.disabled) {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("REDO");
@@ -264,4 +277,9 @@ function tagEnvTagSel() {
     if (sCurTagIdx == null) {
         sInpTagName.value = sInpTagNameList.value;
     }
+}
+
+function checkTagCheck(tag_name) {
+    sRecTags[tag_name] = document.getElementById("check-tag--" + tag_name).checked;
+    tagEnvSave(true);
 }

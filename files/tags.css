@@ -41,7 +41,7 @@ div#tg-tags-left {
     overflow: hidden;
     display: flex;
     align-items: stretch;
-    flex-direction: row;
+    flex-direction: column;
     margin:  0px;
     padding: 0px;
     border: none;
@@ -93,7 +93,7 @@ div#tg-tags-wrap-list {
     margin-bottom: 5px;
 }
 
-div#tg-tags-list {
+div#tg-op-tags-list {
     margin-top: 2px;
     overflow-y: scroll;
     overflow-x: hidden;
