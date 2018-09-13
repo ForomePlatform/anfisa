@@ -19,6 +19,13 @@ a:hover {
 
 p.error {color: red;}
 
+div.wide {
+    margin: 0px;
+    padding: 0px;
+    width: 100%;
+    display: flex;
+}
+
 /****************************************/
 .combobox {
      position:relative;

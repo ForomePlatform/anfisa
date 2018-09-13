@@ -14,9 +14,12 @@ class FilterUnit:
             title = None, expert_only = False):
         self.mLegend = legend
         self.mName = name
-        self.mTitle = title if title else name
+        self.mTitle = title
         self.mUnitIdx = self.mLegend._regUnit(self)
         self.mExpertOnly = expert_only
+        self.mVGroup = self.mLegend._getCurVGroup()
+        if self.mVGroup:
+            self.mVGroup._regUnit(self)
 
     def getLegend(self):
         return self.mLegend
@@ -29,6 +32,15 @@ class FilterUnit:
 
     def getUnitIdx(self):
         return self.mUnitIdx
+
+    def getVGroup(self):
+        return self.mVGroup
+
+    def getNames(self):
+        return {
+            "name": self.mName,
+            "title": self.mTitle,
+            "vgroup": self.mVGroup.getTitle() if self.mVGroup else None}
 
     def checkExpertBlock(self, expert_mode):
         return (not expert_mode) and self.mExpertOnly
@@ -83,7 +95,7 @@ class IntValueUnit(FilterUnit):
         stat = self.mExtractor.getVConv().newStat()
         for data_rec in data_records:
             stat.regValue(col.recordValue(data_rec))
-        return stat.getJSon(self.getName())
+        return stat.getJSon(self.getNames())
 
 #===============================================
 class FloatValueUnit(FilterUnit):
@@ -109,7 +121,7 @@ class FloatValueUnit(FilterUnit):
         stat = self.mExtractor.getVConv().newStat()
         for data_rec in data_records:
             stat.regValue(col.recordValue(data_rec))
-        return stat.getJSon(self.getName())
+        return stat.getJSon(self.getNames())
 
 #===============================================
 class StatusUnit(FilterUnit):
@@ -143,7 +155,7 @@ class StatusUnit(FilterUnit):
         stat = self.mExtractor.getVConv().newStat()
         for data_rec in data_records:
             stat.regValues([col.recordValue(data_rec)])
-        return stat.getJSon(self.getName(), enum_type = "status")
+        return stat.getJSon(self.getNames(), enum_type = "status")
 
 #===============================================
 class BoolSetUnit(FilterUnit):
@@ -179,7 +191,7 @@ class BoolSetUnit(FilterUnit):
             for var_no, col in enumerate(self.mColumns):
                 if col.recordValue(data_rec):
                     stat.regValues([var_no])
-        return stat.getJSon(self.getName(), enum_type = self.mEnumType)
+        return stat.getJSon(self.getNames(), enum_type = self.mEnumType)
 
 #===============================================
 class PresenceUnit(BoolSetUnit):
@@ -246,4 +258,4 @@ class MultiStatusUnit(FilterUnit):
         else:
             for data_rec in data_records:
                 stat.regValues(col.recordValues(data_rec))
-        return stat.getJSon(self.getName())
+        return stat.getJSon(self.getNames())

@@ -14,7 +14,7 @@ class ViewSetup:
         "uniq.keys":        ("seq_region_name", "start", "end"),
         "zones":            [
             ("Chromosome", "Chromosome"),
-            ("Gene",       "genes"),
+            ("Gene",       "Genes"),
             ("Tag",        "_tags")],
         "check.tags":       ["Done"],
         "attrs.to.ignore":  ["/view"],

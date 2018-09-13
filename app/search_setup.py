@@ -7,19 +7,23 @@ import app.search.flt_unit as flt_unit
 #===============================================
 MainLegend = FilterLegend("AJson", HOT_SETUP)
 
+
 flt_unit.StatusUnit(MainLegend, "Chromosome", "/seq_region_name",
     ["chr1", "chr2", "chr3", "chr4", "chr5",
     "chr6", "chr7", "chr8", "chr9", "chr10",
     "chr11", "chr12", "chr13", "chr14", "chr15",
     "chr16", "chr17", "chr18", "chr19", "chr20",
     "chr21", "chr22", "chr23", "chrX", "chrY"], expert_only=True)
+
+MainLegend._startViewGroup("Chromosome positions")
 flt_unit.IntValueUnit(MainLegend, "Start Position", "/start", expert_only=True)
 flt_unit.IntValueUnit(MainLegend, "End Position", "/end", expert_only=True)
+MainLegend._endViewGroup()
 
-flt_unit.MultiStatusUnit(MainLegend, "caller",
+flt_unit.MultiStatusUnit(MainLegend, "Caller",
     "/view.general/Called by[]", expert_only = True)
 
-flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
+flt_unit.StatusUnit(MainLegend, "Most_Severe_Consequence",
     "/most_severe_consequence",
     ["transcript_ablation",
     "splice_acceptor_variant",
@@ -58,7 +62,7 @@ flt_unit.StatusUnit(MainLegend, "most_severe_consequence",
     "intergenic_variant",
     "undefined"], default_value = "undefined")
 
-flt_unit.MultiStatusUnit(MainLegend, "genes",
+flt_unit.MultiStatusUnit(MainLegend, "Genes",
     "/view.general/Gene(s)[]", compact_mode = True)
 
 flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
@@ -67,17 +71,19 @@ flt_unit.StatusUnit(MainLegend, "Proband_has_Variant",
 flt_unit.StatusUnit(MainLegend, "Variant_Class",
     "/variant_class")
 
+MainLegend._startViewGroup("Quality")
 flt_unit.IntValueUnit(MainLegend, "Proband_GQ",
     "/_filters.Proband_GQ")
 
 flt_unit.IntValueUnit(MainLegend, "Severity",
-    "/_filters.Severity", expert_only=True, default_value=-1)
+    "/_filters.Severity", expert_only = True, default_value = -1)
 
 flt_unit.IntValueUnit(MainLegend, "Min_GQ",
     "/_filters.Min_GQ")
 
 flt_unit.IntValueUnit(MainLegend, "QD",
     "/_filters.QD")
+MainLegend._endViewGroup()
 
 flt_unit.IntValueUnit(MainLegend, "FS",
     "/_filters.FS")
@@ -93,8 +99,7 @@ flt_unit.PresenceUnit(MainLegend, "Presence_in_Databases", [
     ("ClinVar", "/view.Databases/ClinVar"),
     ("GnomAD", "/_filters.gnomaAD_AF"),
     ("HGMD", "/view.Databases/HGMD PMIDs[]"),
-    ("OMIM", "/view.Databases/OMIM")],
-    title ="Presence in databases")
+    ("OMIM", "/view.Databases/OMIM")])
 
 flt_unit.MultiStatusUnit(MainLegend, "Polyphen",
     "/view.Predictions/Polyphen[]")

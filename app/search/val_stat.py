@@ -15,8 +15,8 @@ class BoolStat:
         print >> rep_out, (
             "True: %d, False: %d" % (self.mStat[True], self.mStat[False]))
 
-    def getJSon(self, name):
-        return ["bool", name, self.mStat[True], self.mStat[False]]
+    def getJSon(self, names):
+        return ["bool", names, self.mStat[True], self.mStat[False]]
 
 #===============================================
 class NumDiapStat:
@@ -48,8 +48,8 @@ class NumDiapStat:
         if self.mCntUndef > 0:
             print >> rep_out, "Undef: %d" % self.mCntDef
 
-    def getJSon(self, name):
-        return [self.mTypeName, name,
+    def getJSon(self, names):
+        return [self.mTypeName, names,
             self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
 
 #===============================================
@@ -75,10 +75,11 @@ class EnumStat:
         #TRF: write it later
         assert False
 
-    def getJSon(self, name, enum_type = None):
+    def getJSon(self, names, enum_type = None):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             cnt = self.mStat.get(idx)
             if cnt:
                 rep_list.append([variant, cnt])
-        return ["enum" if enum_type is None else enum_type, name, rep_list]
+        return ["enum" if enum_type is None else enum_type,
+            names, rep_list]

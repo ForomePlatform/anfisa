@@ -12,7 +12,23 @@ class FilterLegend:
         self.mIsOK     = False
         self.mUnits    = []
         self.mFilters  = dict()
+        self.mVGroups  = dict()
+        self.mCurVGroup = None
         RulesEvalUnit(self, rules_setup)
+
+    def _startViewGroup(self, view_group_title):
+        assert view_group_title not in self.mVGroups
+        self.mCurVGroup = ViewGroup(view_group_title)
+        self.mVGroups[view_group_title] = self.mCurVGroup
+
+    def _endViewGroup(self):
+        self.mCurVGroup = None
+
+    def _closeViewGroup(self):
+        self.mCurVGroup = None
+
+    def _getCurVGroup(self):
+        return self.mCurVGroup
 
     def _regColumnHandler(self, col_h):
         assert col_h.getName() not in self.mColDict
@@ -100,3 +116,21 @@ class FilterLegend:
 
     def getFilterConditions(self, flt_name):
         return self.mFilters.get(flt_name)
+
+    def getVGroups(self):
+        return self.mVGroups
+
+#===============================================
+class ViewGroup:
+    def __init__(self, title):
+        self.mTitle = title
+        self.mUnits = []
+
+    def _regUnit(self, unit):
+        self.mUnits.append(unit)
+
+    def getTitle(self):
+        return self.mTitle
+
+    def getUnits(self):
+        return self.mUnits

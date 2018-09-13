@@ -115,21 +115,38 @@ function setupStatList(info) {
         sCurFilterSeq = info["conditions"];
     _checkNamedFilters(info["pre-filters"], info["op-filters"]);
     var list_stat_rep = [];
+    var group_title = false;
     for (idx = 0; idx < sStatList.length; idx++) {
         unit_stat = sStatList[idx];
         unit_type = unit_stat[0];
-        unit_name = unit_stat[1];
+        unit_names = unit_stat[1];
+        unit_name = unit_names["name"];
+        if (group_title != unit_names["vgroup"] || unit_names["vgroup"] == null) {
+            if (group_title != false) {
+                list_stat_rep.push('</div>');
+            }
+            group_title = unit_names["vgroup"];
+            list_stat_rep.push('<div class="stat-group">');
+            if (group_title != null) {
+                list_stat_rep.push('<div class="stat-group-title">' + 
+                    group_title + '</div>');
+            }
+        }
         sStatUnitIdxs[unit_name] = idx;
         list_stat_rep.push('<div id="stat--' + unit_name + '" class="stat-unit" ' +
           'onclick="selectStat(\'' + unit_name + '\');">');
-        list_stat_rep.push('<span class="stat-unit-name">' + unit_name + '</span>');
+        list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
+            unit_name + '</span>');
+        if (unit_names["title"])
+            list_stat_rep.push('<span class="stat-unit-title">' + 
+                unit_names["title"] + '</span>');
+        list_stat_rep.push('</div>')
         if (unit_name == "rules") {
             list_stat_rep.push(
                 '<span id="flt-run-rules" title="Rules evaluation setup" ' +
                 ' onclick="rulesModOn();">&#9874;</span>')
         }
         if (unit_type == "int" || unit_type == "float") {
-            list_stat_rep.push('<br/>');
             val_min   = unit_stat[2];
             val_max   = unit_stat[3];
             count     = unit_stat[4];
@@ -152,7 +169,8 @@ function setupStatList(info) {
         } else {
             var_list = unit_stat[2];
             list_stat_rep.push('<ul>');
-            for (j = 0; j < Math.min(4, var_list.length); j++) {
+            count = (var_list.length > 6)? 4: var_list.length; 
+            for (j = 0; j < count; j++) {
                 var_name = var_list[j][0];
                 var_count = var_list[j][1];
                 list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
@@ -160,10 +178,13 @@ function setupStatList(info) {
                     var_count + ' records</span></li>');
             }
             list_stat_rep.push('</ul>');
-            if (var_list.length > 4) {
-                list_stat_rep.push('<p><span class="stat-comment">...and ' + (var_list.length - 4) + ' variants more...</span></p>');
+            if (var_list.length > count) {
+                list_stat_rep.push('<p><span class="stat-comment">...and ' + (var_list.length - count) + ' variants more...</span></p>');
             }
         }
+        list_stat_rep.push('</div>')
+    }
+    if (group_title != false) {
         list_stat_rep.push('</div>')
     }
     sDivStatList.innerHTML = list_stat_rep.join('\n');
@@ -183,7 +204,7 @@ function setupStatList(info) {
     if (sCurFilterSeq.length > 0) 
         selectCond(sCurFilterSeq.length - 1);
     else
-        selectStat(sStatList[0][1]);
+        selectStat(sStatList[0][1]["name"]);
     updateFilterOpMode();
 }
 

@@ -107,24 +107,48 @@ div#stat-list {
     font-size: 12px;
 }
 
-div.stat-unit.cur {
-    border: 1px solid magenta;
-    cursor: pointer;
+div.stat-group {
+    border: 1px solid #333455;
+    margin: 0px;
+    padding: 0px;
 }
 
 div.stat-unit {
-    border: 1px solid #c0c0ff;
+    border: 1px solid white;
+    cursor: pointer;
+}
+
+div.stat-unit.cur {
+    border: 1px solid magenta;
     cursor: hand;
+}
+
+div.stat-unit.cur span.stat-unit-name {
+    color: magenta;
+}
+
+
+div.stat-group-title {
+    font-size: 12px;
+    font-weight: bold;
+    font-style: italic;
+    color: #333455;
+    margin: 1px 5px 1px 15px;
 }
 
 span.stat-unit-name {
     font-size: 13px;
     font-weight: bold;
-    color: blue;
+    color: #333455;
+    margin: 1px 5px 1px 5px;
 }
 
-div.stat-unit.cur span.stat-unit-name {
-    color: magenta;
+span.stat-unit-title {
+    flex-grow: 1;
+    font-size: 13px;
+    color: #333455;
+    text-align: right;
+    margin: 1px 5px 1px 5px;
 }
 
 div.stat-unit ul {
@@ -260,10 +284,12 @@ span.stat-undef-count {
 }
 span.stat-ok {
     font-weight: bold;
+    margin: 1px 5px 1px 5px;
 }
 span.stat-bad {
     color: red;
     font-style: italic;
+    margin: 1px 5px 1px 5px;
 }
 
 span#flt-run-rules{

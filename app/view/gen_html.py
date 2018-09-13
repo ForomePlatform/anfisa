@@ -156,7 +156,7 @@ def _formFiltersDiv(output):
             </button>
             <button id="filter-delete-cond"
                 onclick="filterDeleteCond();">
-              Delete;
+              Delete
             </button>
             <button id="filter-undo-cond" title="Undo"
                 onclick="filterUndoCond();">
