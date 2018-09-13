@@ -24,8 +24,7 @@ def read_mapping(path):
         raise Exception('Mapping column is not found in Worksheet key '
             'of file {}'.format(path))
 
-    mapping = dict()
-    idx = 0
+    mapping = []
     for r in range(2, ws.max_row):
         cell = ws.cell(r, key_column)
         key = cell.value
@@ -42,8 +41,7 @@ def read_mapping(path):
         value = cell_value(ws, r, map_column)
         if (not value):
             continue
-        idx += 1
-        mapping[idx] = (key, value, style)
+        mapping.append((len(mapping)+1, key, value, style))
 
     return mapping
 
@@ -71,7 +69,8 @@ class ExcelExport:
     def __init__(self, fname = None, mapping = None):
         if fname:
             self.mapping = read_mapping(fname)
-        self.mapping = mapping
+        else:
+            self.mapping = mapping
         self.workbook = None
         self.column_widths = {}
 
@@ -79,11 +78,10 @@ class ExcelExport:
         self.workbook = openpyxl.Workbook()
         ws = self.workbook.active
         ws.title = title if title else "Variants"
-        for column in self.mapping:
-            (key, value, style) = mapping[column]
+        for column, key, value, style in self.mapping:
             if (not value):
                 continue
-            cell = ws.cell(row=1, column=column, value=key)
+            cell = ws.cell(row = 1, column = column, value = key)
             self.column_widths[cell.column] = len(key)
             for s in style:
                 setattr(cell, s, style[s])
@@ -91,8 +89,7 @@ class ExcelExport:
     def add_variant(self, data):
         ws = self.workbook.active
         row = ws.max_row + 1
-        for column in self.mapping:
-            (_, key, style) = mapping[column]
+        for column, _, key, style in self.mapping:
             if (not key):
                 continue
             value = find_value(data, key)
@@ -113,8 +110,8 @@ class ExcelExport:
 if __name__ == '__main__':
     mapping = read_mapping('/Users/misha/Dropbox/'
         'bgm/CLIA/SEQaBOO_output_template_0730.xlsx')
-    for key in mapping:
-        print "{}: {}".format(key, mapping[key])
+    for column in range(len(mapping)):
+        print "{}: {}".format(column, mapping[column])
 
     export = ExcelExport(mapping = mapping)
     export.new()

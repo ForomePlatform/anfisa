@@ -267,3 +267,23 @@ function updateCurZone(mode_on){
 function checkCurZone() {
     updateCurZone(sCheckZoneCur.checked);
 }
+
+//=====================================
+function doExport() {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var info = JSON.parse(this.responseText);
+            setupExport(info);
+        }
+    };
+    xhttp.open("POST", "export", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    args = "ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes);
+    if (sCurFilterName)
+        args += "&filter=" + encodeURIComponent(sCurFilterName);
+    if (sCurZoneData)
+        args += "&zone=" + encodeURIComponent(JSON.stringify(sCurZoneData));
+    xhttp.send(args); 
+}
+

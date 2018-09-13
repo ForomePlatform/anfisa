@@ -48,9 +48,13 @@ def _formMainDiv(output, workspace_name):
             <div id="ws-info">
               Workspace:
               <span id="ws-name"></span><br/>
-              <span id="ws-download" title="Export...">
-                 <a href="download.xls" target="blank"
-                    download="%(ws)s">&#11123;</a>
+              <span id="ws-export-wrap" title="Export..." class="drop">
+                <span id="ws-export-open" class="drop"
+                    onclick="openExport()";>&#11123;</span>
+                <div id="ws-export" class="drop">
+                    <div id="ws-export-descr" class="drop"></div>
+                    <div id="ws-export-result" class="drop"></div>
+                </div>
               </span>
             </div>
             <div id="list-info">

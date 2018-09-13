@@ -1,7 +1,6 @@
 {
     "host": "0.0.0.0",
     "port": 8090,
-    "files": "files", 
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
     "workspaces": [
@@ -11,6 +10,13 @@
             "file": "../a-data/bgm9001_wgs_all.json"
         }
     ],
+    "files": {
+        "files": [".css", ".js", ".png", ".gif"],
+        "../a-export":  [".xlsx"]}, 
+    "export": {
+        "excel-template": "../a-export/SEQaBOO_output_template_0730.xlsx",
+        "work-dir": "../a-export/work"
+    },
     "logging": { 
         "version": 1,
         "disable_existing_loggers": false,

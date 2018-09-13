@@ -60,6 +60,9 @@ class AnfisaService:
         if rq_path == "/tag_select":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formTagSelect(rq_args))
+        if rq_path == "/export":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formExport(rq_args))
         return serv_h.makeResponse(error = 404)
 
     #===============================================
@@ -224,5 +227,24 @@ class AnfisaService:
         if tag_name:
             rep["records"] = tags_man.getTagRecordList(
                 tag_name)
+        output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formExport(self, rq_args):
+        output = StringIO()
+        workspace = self.sData.getWS(rq_args.get("ws"))
+        rec_no_seq = workspace.getIndex().getRecNoSeq(
+            rq_args.get("filter"))
+        zone_data = rq_args.get("zone")
+        if zone_data is not None:
+            zone_name, variants = json.loads(zone_data)
+            rec_no_seq = workspace.getZone(zone_name).restrict(
+                rec_no_seq, variants)
+        fname = workspace.getDataSet().makeExportFile(
+            workspace.getName(), rec_no_seq, self.sData.makeExcelExport)
+        rep = {
+            "kind": "excel",
+            "fname": fname}
         output.write(json.dumps(rep))
         return output.getvalue()

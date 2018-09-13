@@ -80,16 +80,6 @@ span#ws-name {
     min-width: 50%;
 }
 
-span#ws-download {
-    border: 1px solid white;
-    padding: 0px 5px;
-    font-size: 16px;
-}
-
-span#ws-download a {
-    color: white;
-}
-
 #top-filters {
    width: 35%;
    margin: 5px;
@@ -298,4 +288,33 @@ span.tags-count {
 div#ws-dropdown {
     margin: 0px;
     padding: 0px;
+}
+
+span#ws-export-open {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+div#ws-export {
+    display: none;
+    padding: 20px;
+    position: absolute;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 7px;
+}
+
+div#ws-export-descr {
+    text-align: center;
+}
+
+div#ws-export-result {
+    text-align: center;
+}
+
+span#ws-export-result.problems {
+    color: red;
 }

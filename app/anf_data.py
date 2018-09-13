@@ -1,22 +1,25 @@
-import logging
+import logging, os
 from StringIO import StringIO
 
+from app.model.a_serv import AnfisaService
 from app.model.workspace import Workspace
 from app.view.dataset import DataSet
 from app.view.checker import ViewDataChecker
 from .view_setup import ViewSetup
 from .view_cfg import setupRecommended
 from .search_setup import MainLegend
-from app.model.a_serv import AnfisaService
+from export.excel import ExcelExport
 
 #===============================================
 class AnfisaData:
-    sWorkspaces = {}
+    sConfig = None
     sDefaultWS = None
     sService = None
+    sWorkspaces = {}
 
     @classmethod
     def setup(cls, config, in_container):
+        cls.sConfig = config
         setupRecommended()
         ws_seq = []
         for ws_descr in config["workspaces"]:
@@ -48,3 +51,28 @@ class AnfisaData:
         if not name:
             return cls.sDefaultWS
         return cls.sWorkspaces[name]
+
+    @classmethod
+    def makeExcelExport(cls, prefix, json_seq):
+        export_setup = cls.sConfig["export"]
+        dir_name = export_setup["work-dir"]
+        if not os.path.dirname(dir_name):
+            return None
+        if dir_name.endswith('/'):
+            dir_name = dir_name[:-1]
+        loc_dir = dir_name.rpartition('/')[2]
+        dir_name += '/'
+        for no in range(10000):
+            fname = "%s_%04d.xlsx" % (prefix, no)
+            if os.path.exists(dir_name + fname):
+                fname = None
+            else:
+                break
+        if fname is None:
+            return None
+        export_h = ExcelExport(export_setup["excel-template"])
+        export_h.new()
+        for obj in json_seq:
+            export_h.add_variant(obj)
+        export_h.save(dir_name + fname)
+        return loc_dir + '/' + fname

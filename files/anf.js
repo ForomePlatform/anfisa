@@ -8,7 +8,8 @@ var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModes = null;
-var sWsActShown = null;
+var sExportFormed = null;
+var sWsDropShown = null;
 
 var sNodeFilterBack  = null;
 var sNodeZoneBack  = null;
@@ -27,10 +28,11 @@ function initWin(workspace_name, app_modes) {
     initMonitor();
     initFilters();
     checkWorkZone(null);
-    wsActShow(false);
+    wsDropShow(false);
 }
 
 function loadList(filter_name, zone_data) {
+    wsDropShow(false);
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -68,6 +70,7 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
+    initExportForm();
 }
 
 function refreshRecList() {
@@ -160,8 +163,8 @@ function onClick(event_ms) {
         zoneModOff();
     if (event_ms.target == sNodeRulesBack)
         rulesModOff();
-    if (sWsActShown && !event_ms.target.matches('.dropbtn')) {
-        wsActShow(false);
+    if (sWsDropShown && !event_ms.target.matches('.drop')) {
+        wsDropShow(false);
     }
 }
 
@@ -243,10 +246,44 @@ function updateTabCfg() {
 }
 
 //=====================================
-function wsActShow(mode) {
+function initExportForm() {
+    wsDropShow(false);
+    document.getElementById("ws-export-descr").innerHTML = 
+        'Export ' + sRecList.length + ' records';
+    document.getElementById("ws-export-result").innerHTML = 
+        '<button class="drop" onclick="doExport();">Export</button>';
+    sExportFormed = false;
+}
+
+
+function openExport() {
+    wsDropShow();
+    if (sWsDropShown)
+        document.getElementById("ws-export").style.display = 
+            (sWsDropShown)? "block":"none";
+}
+
+function setupExport(info) {
+    res_el = document.getElementById("ws-export-result");
+    if (info["fname"]) {
+        res_el.className = "drop";
+        res_el.innerHTML = '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
+    } else {
+        res_el.className = "drop problems";
+        res_el.innerHTML = 'Bad configuration';
+    }
+    sExportFormed = true;
+    wsDropShow(true);
+}
+
+//=====================================
+function wsDropShow(mode) {
     if (mode == undefined)
-       sWsActShown = !sWsActShown;
+       sWsDropShown = !sWsDropShown;
     else
-        sWsActShown = mode;
+        sWsDropShown = mode;
+    if (!sWsDropShown) {
+        document.getElementById("ws-export").style.display = "none";
+    }
 }
 

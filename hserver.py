@@ -14,7 +14,11 @@ class HServResponse:
         "css":    "text/css",
         "js":     "application/javascript",
         "png":    "image/png",
-        "json":   "application/json"}
+        "json":   "application/json",
+        "xlsx":   (
+            "application/application/"
+            "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    }
 
     sErrorCodes = {
         202: "202 Accepted",
@@ -65,11 +69,18 @@ class HServHandler:
         return cls.sInstance.processRq(environ, start_response)
 
     def __init__(self, config, in_container):
-        self.mFileDir = config["files"]
+        self.mFiles = config["files"]
         self.mHtmlBase = (config["html-base"]
             if in_container else None)
         if self.mHtmlBase and self.mHtmlBase.endswith('/'):
             self.mHtmlBase = self.mHtmlBase[:-1]
+
+    def checkFileDir(self, path):
+        for dirname, extensions in self.mFiles.items():
+            for ext in extensions:
+                if path.endswith(ext):
+                    return dirname
+        return None
 
     #===============================================
     def parseRequest(self, environ):
@@ -101,27 +112,40 @@ class HServHandler:
         return path, query_args
 
     #===============================================
-    def fileResponse(self, resp_h, fname,  without_decoding):
-        fpath = self.mFileDir + fname
+    def fileResponse(self, resp_h, dirname, fname,
+            query_args, without_decoding):
+        fpath = dirname + fname
         if not os.path.exists(fpath):
             return False
         if without_decoding:
-            inp = open(fpath, "r")
+            inp = open(fpath, "rb")
             content = inp.read()
         else:
             with codecs.open(fpath, "r", encoding = "utf-8") as inp:
                 content = inp.read()
         inp.close()
-        return resp_h.makeResponse(mode = fname.rpartition('.')[2],
-            content = content,  without_decoding = without_decoding)
+
+        file_ext  = fname.rpartition('.')[2]
+        add_headers = None
+
+        if file_ext == ".xslx":
+            add_headers = [("content-disposition",
+                "attachment; filename=%s" %
+                query_args.get("disp", fname.rpartition('/')[2]))]
+
+        return resp_h.makeResponse(mode = file_ext,
+            content = content, add_headers = add_headers,
+            without_decoding = without_decoding)
 
     #===============================================
     def processRq(self, environ, start_response):
         resp_h = HServResponse(start_response)
         try:
             path, query_args = self.parseRequest(environ)
-            if path.find('.') != -1:
-                ret = self.fileResponse(resp_h, path, True)
+            dirname = self.checkFileDir(path)
+            if dirname is not None:
+                ret = self.fileResponse(resp_h,
+                    dirname, path, query_args, True)
                 if ret is not False:
                     return ret
             return self.sService.request(resp_h, path, query_args)
