@@ -6,6 +6,7 @@ var sTagCntMode    = null;
 var sTagCntChanged = null;
 var sTimeH         = null;
 var sPrevTag       = null;
+var sHasTags       = null;
 
 var sBtnNewTag    = null;
 var sBtnSaveTag   = null;
@@ -13,6 +14,7 @@ var sBtnCancelTag = null;
 var sBtnDeleteTag = null;
 var sBtnUndoTag   = null;
 var sBtnRedoTag   = null;
+var sBtnClearTags = null;
 var sInpTagName   = null;
 var sInpTagValue  = null;
 var sInpTagNameList = null;
@@ -25,6 +27,7 @@ function initTagsEnv() {
     sBtnDeleteTag   = document.getElementById("tg-tag-delete"); 
     sBtnUndoTag     = document.getElementById("tg-tag-undo"); 
     sBtnRedoTag     = document.getElementById("tg-tag-redo"); 
+    sBtnClearTags   = document.getElementById("tg-tag-clear-all"); 
     sInpTagName     = document.getElementById("tg-tag-name"); 
     sInpTagValue    = document.getElementById("tg-tag-value-content");
     sInpTagNameList = document.getElementById("tg-tags-tag-list");
@@ -62,6 +65,7 @@ function loadTags(tags_to_update){
 function setupTags(info) {
     sRecTags  = info["rec-tags"];
     sCurTagIdx = null;
+    sHasTags   = false;
     
     var el = document.getElementById("tg-filters-list");
     if (info["filters"]) {
@@ -80,6 +84,7 @@ function setupTags(info) {
             ((sRecTags[tag_name])?"checked ":"") + 
             'type="checkbox" onclick="checkTagCheck(\'' + tag_name + '\');"/>&nbsp;' +
             tag_name + '</div>');
+        sHasTags |= !!sRecTags[tag_name];
     }
     document.getElementById("tg-check-tags-list").innerHTML = rep.join('\n');
     
@@ -94,6 +99,7 @@ function setupTags(info) {
         sTagOrder.push(tag_name);
         rep.push('<div id="tag--' + idx + '" class="tag-label" ' +
             'onclick="pickTag(' + idx + ');">' + tag_name + '</div>');
+        sHasTags = true;
     }
     document.getElementById("tg-op-tags-list").innerHTML = rep.join('\n');
     if (sTagOrder.length > 0) {
@@ -129,6 +135,7 @@ function setupTags(info) {
 }
 
 function updateTagsState(set_content) {
+    sBtnClearTags.disabled  = (sViewPort < 1) || (!sHasTags);
     if (set_content) {
         if (sCurTagIdx == null) {
             sInpTagName.value = "";
@@ -238,6 +245,17 @@ function tagEnvDelete() {
         sCurTagIdx = null;
         loadTags(tags_to_update);
         window.parent.checkTabNavigation(tag_name);
+    }
+}
+
+function tagEnvClearAll() {
+    if (sViewPort < 1)
+        return;
+    if (sHasTags) {
+        sPrevTag = null;
+        sCurTagIdx = null;
+        loadTags({});
+        window.parent.checkTabNavigation(null);       
     }
 }
 

@@ -68,6 +68,13 @@ div#tg-tags-ctrl {
     margin-bottom: 10px;
 }
 
+div#tg-tags-ctrl-tags {
+    height: 30px;
+    vertical-align: bottom;
+    margin: 0px;
+    display: flex;
+    margin-bottom: 10px;
+}
 
 span#tg-filters-list {
     flex-grow: 1;
@@ -103,6 +110,7 @@ div#tg-op-tags-list {
 div#tg-tag-wrap-value{
     margin: 0px;
     padding: 0px;
+    flex-grow: 1;
 }
 
 div#tg-tag-value {

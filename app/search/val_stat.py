@@ -78,8 +78,6 @@ class EnumStat:
     def getJSon(self, names, enum_type = None):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
-            cnt = self.mStat.get(idx)
-            if cnt:
-                rep_list.append([variant, cnt])
+            rep_list.append([variant, self.mStat.get(idx, 0)])
         return ["enum" if enum_type is None else enum_type,
             names, rep_list]

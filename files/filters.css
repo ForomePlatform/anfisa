@@ -13,7 +13,7 @@
 }
 
 #filter-mod {
-    background-color: #fffefe;
+    background-color: white;
     margin: 3% 3% 2% 2%; 
     padding: 00px;
     border: 1px solid black;
@@ -76,13 +76,12 @@ div#filter-ctrl button {
 }
 
 div#filter-cur-cond-text {
-    height: 30px;
-    min-height: 30px;
-    width: 100%;
-    background-color: #fffff0;    
+    height: 17px;
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;    
 }
 div#filter-cur-cond {
-    height: 120px;
+    height: 150px;
     min-height: 120px;
     vertical-align: top;
     overflow: hidden;
@@ -96,7 +95,7 @@ div#filter-list-conditions {
     display: block;
     width: 100%;
     overflow: hidden;
-    border: 1px solid brown;
+    border: none;
 }
 
 div#stat-list {
@@ -119,12 +118,12 @@ div.stat-unit {
 }
 
 div.stat-unit.cur {
-    border: 1px solid magenta;
-    cursor: hand;
+    border: 1px solid #8F00E0;
+    cursor: inherit;
 }
 
 div.stat-unit.cur span.stat-unit-name {
-    color: magenta;
+    color: #8F00E0;
 }
 
 
@@ -160,30 +159,28 @@ div.stat-unit ul {
 }
 
 span#cond-text {
-    color: magenta;
+    color: #8F00E0;
     font-weight: bold;
-    font-size: 13pt;
-    margin: 10px;
+    font-size: 15px;
 }
 
 span#cond-error {
     color: red;
     font-style: italic;
-    font-size: 13pt;
-    margin: 10px;
+    font-size: 13px;
 }
 
 span#cond-title {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: bold;
-    color: magenta;
-    margin-right: 20px;
+    color: #8F00E0;
+    margin: 8px 5px 1px 10px;
+    float: left;
 }
 
 div#cur-cond-numeric {
     margin: 10px;
-    padding: 0px;
-    text-align: right;
+    padding: 0px 10px 0px 30px;
     vertical-align: top;
     overflow: hidden;
 }
@@ -205,8 +202,8 @@ div#wrap-cond-enum {
 }
 
 div#wrap-cond-enum-list {
-    padding: 5px ;
-    margin: 3px;
+    padding: 0px 5px 0px 5px;
+    margin: 0px;
     width: 100%;
     min-width: 300px;
     display: grid;
@@ -217,7 +214,7 @@ div#wrap-cond-enum-list {
 div#cur-cond-enum-list {
     padding: 0px;
     margin: 2px;
-    min-width: 300px;
+    min-width: 250px;
     display: grid;
     vertical-align: top;
     overflow: hidden;
@@ -230,16 +227,34 @@ div#op-enum-list {
     display: block;
 }
 
-div#cur-cond-enum-mode {
+div#cur-cond-enum-ctrl {
     width: 100px;
     vertical-align: top;
-    overflow: auto;
+    overflow: hidden;
     margin: 10px;
     padding: 10px;
 }
 
+div#cur-cond-enum-zeros {
+    font-size: 9px;
+    font-style: italic;
+    margin-bottom: 15px;
+}
+
+div#op-enum-list.no-zeros div.zero {
+    display: none;
+}
+
+input.num-inp {
+    width: 50px;
+}
+
 span#cond-sign {
     cursor: hand;
+}
+
+#cond-undef-check {
+    margin-left: 150px;
 }
 
 div#cond-list {
@@ -254,18 +269,22 @@ div#cond-list {
 }
 
 div.cond-descr {
-    background-color: #fffff0;
-    border: 2px solid brown;
-    cursor: hand;
-    margin: 3px;
-    padding: 5px;
+    background-color: #f0f0ff;
+    border: 2px solid #333455;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 5px 10px 5px 10px ;
+    padding: 7px;
     text-align: justify;
     white-space: normal;
 }
 
 div.cond-descr.cur {
-    border: 2px solid red;
-    cursor: pointer;
+    color: #333455;
+    font-weight: bold;
+    border: 2px solid #8F00E0;
+    cursor: inherit;
+    box-shadow: 0 4px 8px 0 rgba(0.5,0.5,0,0.2),0 6px 20px 0 rgba(0.5,0.5,0,0.19);
 }
 
 span.enum-cnt {
@@ -287,7 +306,7 @@ span.stat-ok {
     margin: 1px 5px 1px 5px;
 }
 span.stat-bad {
-    color: red;
+    color: #0f000f;
     font-style: italic;
     margin: 1px 5px 1px 5px;
 }

@@ -9,6 +9,7 @@ var sBtnFilters_Load   = null;
 var sBtnFilters_Create = null;
 var sBtnFilters_Modify = null;
 var sBtnFilters_Delete = null;
+var sBtnFilters_Clear  = null;
 
 function initConditions() {
     sBtnFilters_Switch = document.getElementById("filter-filters-on");
@@ -19,6 +20,7 @@ function initConditions() {
     sBtnFilters_Create = document.getElementById("filter-create-flt");
     sBtnFilters_Modify = document.getElementById("filter-modify-flt");
     sBtnFilters_Delete = document.getElementById("filter-delete-flt");
+    sBtnFilters_Clear  = document.getElementById("filter-clear-all");
     checkFiltersAllFilters();
 }
 
@@ -59,14 +61,14 @@ function findCond(unit_name, mode) {
 
 /*************************************/
 function getCondDescripton(cond, short_form) {
+    rep_cond = (short_form)? []:[cond[1]];
     if (cond != null && cond[0] == "numeric") {
-        rep_cond = [cond[1]];
         switch (cond[2]) {
             case 0:
-                rep_cond.push("> " + cond[3]);
+                rep_cond.push("&ge; " + cond[3]);
                 break;
             case 1:
-                rep_cond.push("< " + cond[3]);
+                rep_cond.push("&le; " + cond[3]);
                 break;
         }
         switch (cond[4]) {
@@ -80,17 +82,25 @@ function getCondDescripton(cond, short_form) {
         return rep_cond.join(" ");
     }
     if (cond != null && cond[0] == "enum") {
-        rep_cond = [cond[1], "IN"];
+        rep_cond.push("IN");
         if (cond[2]) 
-            rep_cond.push(cond[2]);
+            rep_cond.push('[' + cond[2] + ']');
         sel_names = cond[3];
-        if (short_form && sel_names.length > 4) {
-            rep_cond.push(sel_names.slice(0, 4).join(", "));
-            rep_cond.push("...and " + (sel_names.length - 4) + " more")
-        } else {
-            rep_cond.push(sel_names.join(", "));
+        if (sel_names.length > 0)
+            rep_cond.push(sel_names[0]);
+        else
+            rep_cond.push("&lt;?&gt;")
+        rep_cond = [rep_cond.join(' ')];        
+        rep_len = rep_cond[0].length;
+        for (j=1; j<sel_names.length; j++) {
+            if (short_form && rep_len > 45) {
+                rep_cond.push('<i>+ ' + (sel_names.length - j) + ' more</i>');
+                break;
+            }
+            rep_len += 2 + sel_names[j].length;
+            rep_cond.push(sel_names[j]);
         }
-        return rep_cond.join(" ");        
+        return rep_cond.join(', ');
     }
     return ""
 }
@@ -129,6 +139,16 @@ function filterDeleteCond() {
     }
 }
 
+function filterClearAll() {
+    if (sCurFilterSeq.length > 0) {
+        sFilterHistory.push([sBaseFilterName, sCurFilterSeq]);
+        sBaseFilterName = "_current_";
+        sCurFilterSeq = [];
+        loadStat();
+        updateCurFilter(sBaseFilterName, true);
+    }            
+}
+
 function filterUndoCond() {
     if (sFilterHistory.length > 0) {
         sFilterRedoStack.push([sBaseFilterName, sCurFilterSeq]);
@@ -162,6 +182,7 @@ function updateFilterOpMode() {
     sBtnFilters_Create.style.display = disp;  
     sBtnFilters_Modify.style.display = disp;   
     sBtnFilters_Delete.style.display = disp;
+    sBtnFilters_Clear.disabled = (sCurFilterSeq.length == 0);
 
     if (!sFiltersOpMode) {
         if (sFiltersTimeH != null) {

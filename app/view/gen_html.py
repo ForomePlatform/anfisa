@@ -182,7 +182,7 @@ def _formFiltersDiv(output):
               <input id="cond-max-inp" class="num-inp"
                 type="text" onchange="checkCurCond(\'max\');"/>
               <span id="cond-max" class="num-set"></span>
-              <span id="num-count" class="num-count"></span><br/>
+              <span id="num-count" class="num-count"></span>
               <input id="cond-undef-check" class="num-inp"
                 type="checkbox"  onchange="checkCurCond(\'undef\');"/>
               <span id="cond-undef-count" class="num-count"
@@ -196,19 +196,25 @@ def _formFiltersDiv(output):
                      </div>
                   </div>
                 </div>
-                <div id="cur-cond-enum-mode">
-                  <span id="cond-mode-and-span">
-                    <input id="cond-mode-and" class="num-inp" type="checkbox"
-                      onchange="checkCurCond(\'mode-and\');"/>AND
-                  </span><br/>
-                  <span id="cond-mode-only-span">
-                    <input id="cond-mode-only" class="num-inp" type="checkbox"
-                      onchange="checkCurCond(\'mode-only\');"/>ONLY
-                  </span><br/>
-                  <span id="cond-mode-not-span">
-                    <input id="cond-mode-not" class="num-inp" type="checkbox"
-                      onchange="checkCurCond(\'mode-not\');"/>NOT
-                  </span><br/>
+                <div id="cur-cond-enum-ctrl">
+                  <div id="cur-cond-enum-zeros">
+                    Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
+                        onchange="checkCurEnumZeros();"/>
+                  </div>
+                  <div id="cur-cond-enum-mode">
+                    <span id="cond-mode-and-span">
+                      <input id="cond-mode-and" class="num-inp" type="checkbox"
+                        onchange="checkCurCond(\'mode-and\');"/>&nbsp;AND
+                    </span><br/>
+                    <span id="cond-mode-only-span">
+                      <input id="cond-mode-only" class="num-inp" type="checkbox"
+                        onchange="checkCurCond(\'mode-only\');"/>&nbsp;ONLY
+                    </span><br/>
+                    <span id="cond-mode-not-span">
+                      <input id="cond-mode-not" class="num-inp" type="checkbox"
+                        onchange="checkCurCond(\'mode-not\');"/>&nbsp;NOT
+                    </span><br/>
+                  </div>
                 </div>
               </div>
             </div>
@@ -223,6 +229,10 @@ def _formFiltersDiv(output):
             <button class="op-button"
                 onclick="filterModOff();">
                 Done
+            </button>
+            <button id="filter-clear-all" class="op-button"
+                onclick="filterClearAll();">
+                Clear
             </button>
             <button id="filter-filters-on" onclick="filterFiltersSwitch();">
               Filters...
@@ -291,10 +301,6 @@ def _formZonesDiv(output, zones):
             <div id="work-zone-def">
             </div>
             <div id="work-zone-ctrl">
-              <button class="op-button"
-                  onclick="zoneModOff();">
-                Done
-              </button>
               <button id="work-zone-clear" class="op-button"
                   onclick="zoneClearSelect();">
                 Clear
@@ -411,14 +417,6 @@ def tagsBlock(output):
             title="Delete tag" class="op-button" onclick="tagEnvDelete();">
           Delete
         </button>
-        <button id="tg-tag-undo" class="op-button" title="Undo"
-            onclick="tagEnvUndo();">
-          &#8630;
-        </button>
-        <button id="tg-tag-redo" class="op-button"  title="Redo"
-            onclick="tagEnvRedo();">
-          &#8631;
-        </button>
       </div>
       <div id="tg-tag-wrap-value">
         <div id="tg-tag-value">
@@ -427,6 +425,20 @@ def tagsBlock(output):
           <textarea id="tg-tag-value-content" />
           </textarea>
         </div>
+      </div>
+      <div id="tg-tags-ctrl-tags">
+        <button id="tg-tag-clear-all" class="op-button"
+            onclick="tagEnvClearAll();">
+          Clear
+        </button>
+        <button id="tg-tag-undo" class="op-button" title="Undo"
+            onclick="tagEnvUndo();">
+          &#8630;
+        </button>
+        <button id="tg-tag-redo" class="op-button"  title="Redo"
+            onclick="tagEnvRedo();">
+          &#8631;
+        </button>
       </div>
     </div>
   </div>
