@@ -335,3 +335,6 @@ select#filter-name-filter {
     font-size: 14px;
 }
 
+#filter-name-combo {
+    margin: 0px 5px 0px 10px;
+}
