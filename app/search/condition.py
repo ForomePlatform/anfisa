@@ -9,6 +9,6 @@ class ConditionMaker:
         return ["numeric", unit_name, False, bound, use_undef]
 
     @staticmethod
-    def condEnum(unit_name, variants, join_mode = "AND"):
+    def condEnum(unit_name, variants, join_mode = "OR"):
         assert join_mode in {"AND", "OR", "ONLY", "NOT"}
         return ["enum", unit_name, join_mode, variants]

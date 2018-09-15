@@ -223,7 +223,7 @@ function setupStatList(info) {
         selectCond(sCurFilterSeq.length - 1);
     else
         selectStat(sStatList[0][1]["name"]);
-    updateFilterOpMode();
+    prepareFilterOperations();
 }
 
 function _checkNamedFilters(pre_filters, op_filters) {

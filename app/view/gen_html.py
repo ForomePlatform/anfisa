@@ -203,25 +203,19 @@ def _formFiltersDiv(output):
                   </div>
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
-                      <input id="cond-mode-and" class="num-inp" type="checkbox"
+                      <input id="cond-mode-and" type="checkbox"
                         onchange="checkCurCond(\'mode-and\');"/>&nbsp;AND
                     </span><br/>
                     <span id="cond-mode-only-span">
-                      <input id="cond-mode-only" class="num-inp" type="checkbox"
+                      <input id="cond-mode-only" type="checkbox"
                         onchange="checkCurCond(\'mode-only\');"/>&nbsp;ONLY
                     </span><br/>
                     <span id="cond-mode-not-span">
-                      <input id="cond-mode-not" class="num-inp" type="checkbox"
+                      <input id="cond-mode-not" type="checkbox"
                         onchange="checkCurCond(\'mode-not\');"/>&nbsp;NOT
                     </span><br/>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-          <div id="filter-wrap-list-conditions">
-            <div id="filter-list-conditions">
-              <div id="cond-list">
               </div>
             </div>
           </div>
@@ -234,13 +228,22 @@ def _formFiltersDiv(output):
                 onclick="filterClearAll();">
                 Clear
             </button>
-            <button id="filter-filters-on" onclick="filterFiltersSwitch();">
-              Filters...
-            </button>
-            <button id="filter-load-flt" class="op-button"
-                onclick="filterLoadFilter();">
-              Load
-            </button>
+            <div class="dropdown">
+              <button id="filter-filters-operations" class="op-button drop"
+                    onclick="filtersOpMenu();">
+                Filters...
+              </button>
+              <div id="filters-op-list" class="dropdown-content drop">
+                <a class="drop" id="filters-op-load"
+                    onclick="filterOpStartLoad();">Load</a>
+                <a class="drop" id="filters-op-create"
+                    onclick="filterOpStartCreate();">Create</a>
+                <a class="drop"  id="filters-op-modify"
+                    onclick="filterOpStartModify();">Modify</a>
+                <a class="drop"  id="filters-op-delete"
+                    onclick="filterOpDelete();">Delete</a>
+              </div>
+            </div>
             <div id="filter-name-combo" class="combobox">
               <select id="filter-name-filter-list"
                   onchange="fltFilterListSel();">
@@ -248,18 +251,16 @@ def _formFiltersDiv(output):
               <input id="filter-name-filter" type="text" />
               </select>
             </div>
-            <button id="filter-create-flt" class="op-button"
-                onclick="filterUpdateFilter(0);">
-              Create
+            <button id="filter-flt-op" class="op-button"
+                onclick="filterFiltersOperation();">
+              ...
             </button>
-            <button id="filter-modify-flt" class="op-button"
-                onclick="filterUpdateFilter(1);">
-              Modify
-            </button>
-            <button id="filter-delete-flt" class="op-button"
-                onclick="filterDeleteFilter();">
-              Delete
-            </button>
+          </div>
+          <div id="filter-wrap-list-conditions">
+            <div id="filter-list-conditions">
+              <div id="cond-list">
+              </div>
+            </div>
           </div>
         </div>
       </div>

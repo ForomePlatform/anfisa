@@ -198,7 +198,7 @@ function setupNamedFilters(pre_filters, all_filters) {
         sSelectFltNamed.append(option)
     }
     sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
-    checkFiltersAllFilters();
+    clearFilterOpMode();
 }
 
 function checkTabNavigation(tag_name) {

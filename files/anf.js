@@ -284,6 +284,7 @@ function wsDropShow(mode) {
         sWsDropShown = mode;
     if (!sWsDropShown) {
         document.getElementById("ws-export").style.display = "none";
+        document.getElementById("filters-op-list").style.display = "none";
     }
 }
 
