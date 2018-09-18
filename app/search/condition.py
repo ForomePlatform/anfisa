@@ -5,7 +5,9 @@ class ConditionMaker:
         return ["numeric", unit_name, True, bound, use_undef]
 
     @staticmethod
-    def condNumLE(unit_name, ge_mode, bound, use_undef = False):
+    # commented by MB to remove ge_mode
+    # def condNumLE(unit_name, ge_mode, bound, use_undef = False):
+    def condNumLE(unit_name, bound, use_undef=False):
         return ["numeric", unit_name, False, bound, use_undef]
 
     @staticmethod

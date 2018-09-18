@@ -3,7 +3,7 @@ def evalRec(env, rec):
 
     known = len(rec.Presence_in_Databases & {"ClinVar", "HGMD"}) > 0
 
-    if ("Quality-Check" not in rec.Rules):
+    if ("Quality-PASS" not in rec.Rules):
         return False
     if (known):
         return True

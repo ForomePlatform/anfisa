@@ -94,7 +94,7 @@ CONFIG_ATTRS = {
         AttrH("Conservation", is_seq = True),
         AttrH("Species with variant"),
         AttrH("Species with other variants"),
-        AttrH("MaxEntScan"),
+        AttrH("MaxEntScan", is_seq=True),
         AttrH("NNSplice"),
         AttrH("Human Splicing Finder"),
         AttrH("other_genes",

@@ -12,11 +12,18 @@ class ViewSetup:
         "color.code":       "color_code",
         "aspect.tags.name": "tags_data",
         "uniq.keys":        ("seq_region_name", "start", "end"),
-        "zones":            [
-            ("Chromosome", "Chromosome"),
-            ("Gene",       "Genes"),
-            ("Tag",        "_tags")],
-        "check.tags":       ["Done"],
+        # "zones":            [
+        #     ("Chromosome", "Chromosome"),
+        #     ("Gene",       "Genes"),
+        #     ("Tag",        "_tags")],
+        "zones":[("Gene",       "Genes")],
+        "check.tags":       [
+            "Previously categorized",
+            "Previously Triaged",
+            "Not categorized",
+            "Benign/Likely benign",
+            "False positives"
+        ],
         "attrs.to.ignore":  ["/view"],
         "rand.seed":        179,
         "rand.min.size":    100,
