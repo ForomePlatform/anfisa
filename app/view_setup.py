@@ -16,7 +16,10 @@ class ViewSetup:
         #     ("Chromosome", "Chromosome"),
         #     ("Gene",       "Genes"),
         #     ("Tag",        "_tags")],
-        "zones":[("Gene",       "Genes")],
+        "zones":[
+            ("Gene",       "Genes"),
+            ("Tag", "_tags")
+        ],
         "check.tags":       [
             "Previously categorized",
             "Previously Triaged",
