@@ -75,6 +75,7 @@ body {
 }
 
 span#ws-name {
+    font-size: 12px;
     font-weight: bold;
     flex-grow: 1;
     min-width: 50%;

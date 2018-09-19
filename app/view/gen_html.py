@@ -46,7 +46,7 @@ def _formMainDiv(output, workspace_name):
         <div id="top-ws">
           <div id="ws-ctrl">
             <div id="ws-info">
-              Workspace:
+              Ws:
               <span id="ws-name"></span><br/>
               <span id="ws-export-wrap" title="Export..." class="drop">
                 <span id="ws-export-open" class="drop"
