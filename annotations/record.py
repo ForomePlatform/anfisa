@@ -644,9 +644,14 @@ class Variant:
         proband = self.get_proband()
         proband_genotype = self.vcf_record.genotype(proband).gt_bases
         mother = self.samples[proband]['mother']
+        if (mother == '0'):
+            mother = None
         father = self.samples[proband]['father']
-        maternal_genotype = self.vcf_record.genotype(mother).gt_bases
-        paternal_genotype = self.vcf_record.genotype(father).gt_bases
+        if (father == '0'):
+            father = None
+
+        maternal_genotype = self.vcf_record.genotype(mother).gt_bases if mother else None
+        paternal_genotype = self.vcf_record.genotype(father).gt_bases if father else None
 
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples}
         other_genotypes = genotypes.difference({proband_genotype, maternal_genotype, paternal_genotype})
@@ -797,7 +802,7 @@ class Variant:
         q_all = dict()
         q_all["Title"] = "All"
         q_all['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
-        q_all['Mapping Quality'] = self.vcf_record.INFO["MQ"]
+        q_all['Mapping Quality'] = self.vcf_record.INFO.get("MQ")
         q_all['Variant Call Quality'] = self.vcf_record.QUAL
 
         q_all['Quality by Depth'] = self.vcf_record.INFO.get("QD")

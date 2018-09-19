@@ -1,3 +1,4 @@
+import argparse
 import os
 import sys
 
@@ -124,7 +125,7 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             cube[(msq, key)] = f + 1
 
             out1.write(v.get_view_json() + '\n')
-            if (v.data.get("EXPECTED") <> v.data.get("SEQaBOO")):
+            if (len(expected) > 0 and v.data.get("EXPECTED") != v.data.get("SEQaBOO")):
                 out2.write(v.get_view_json() + '\n')
             if (v.data.get("SEQaBOO")):
                 out3.write(v.get_view_json() + '\n')
@@ -148,20 +149,29 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
 
 if __name__ == '__main__':
-    header_file = "header.vcf"
-    case = "bgm9001"
-    dir = os.getcwd()
-    expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
+    parser = argparse.ArgumentParser(description="Annotate VCF file with VEP and output results as JSON")
+    parser.add_argument("-i", "--input", dest = "input", help="Input JSON file, with VEP annotations")
+    parser.add_argument("-o", "--output", dest="output", help="Output file")
+    parser.add_argument("-c", "--case", dest="case", help="Case name, default is determined from directory name")
+    parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
+    parser.add_argument("-e", "--expected", dest="expected", help="CSV file containing a set of expected variants")
+    parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants top process")
+    parser.add_argument("--header", help="VCF Header file", default="header.vcf")
+
+    args = parser.parse_args()
+    print args
+
+    header_file = args.header
+    dir =  args.dir
+
+    case = args.case if args.case else os.path.basename(dir).split('_')[0]
+
+    #expected_file = "xbrowse_{}_SEQaBOO_filters.txt".format(case)
+    expected_file = args.expected
+
     fam_file = "{}.fam".format(case)
-    filtered_by_bed_vep_output = "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
-    #filtered_by_bed_vep_output = "chr17.vep.json"
-    arg1 = sys.argv[1] if len(sys.argv) > 1 else None
-    limit = None
-    if (arg1):
-        if (arg1.isdigit()):
-            limit = int(arg1)
-        else:
-            filtered_by_bed_vep_output = arg1
+    filtered_by_bed_vep_output = args.input if args.input else "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
+    limit = args.limit
     print "limit = {}".format(limit)
     print "file: {}".format(filtered_by_bed_vep_output)
 
@@ -170,20 +180,20 @@ if __name__ == '__main__':
         header = vcf.read()
 
     expected_set = {}
-    with open (os.path.join(dir,expected_file)) as f1:
-        lines = f1.readlines()
-        for line in lines:
-            data = line.split('\t')
-            ch = data[2].strip()
-            c = ch[3:]
-            p = int (data[3].strip())
-            expected_set[(c,p)] = 1
+    if (expected_file):
+        with open (os.path.join(dir,expected_file)) as f1:
+            lines = f1.readlines()
+            for line in lines:
+                data = line.split('\t')
+                ch = data[2].strip()
+                c = ch[3:]
+                p = int (data[3].strip())
+                expected_set[(c,p)] = 1
 
 
     samples = case_utils.parse_fam_file(fam_file)
 
-    if (True):
-        output = "{}/{}_wgs_{}.json".format(dir, case, "{}")
+    output = args.output if args.output else "{}/{}_wgs_{}.json".format(dir, case, "{}")
 
     process_file(filtered_by_bed_vep_output, out=output,
                      vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case), limit =limit)
