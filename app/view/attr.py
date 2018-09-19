@@ -155,7 +155,6 @@ class AttrH:
             return None
         if "link" in self.mKinds:
             value = self.normLink(value)
-            print "L:", value
             return ('<span title="%s"><a href="%s" target="blank">'
                 'link</a></span>' % (value, value))
         else:
