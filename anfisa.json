@@ -17,6 +17,7 @@
         "excel-template": "../a-export/SEQaBOO_output_template_0730.xlsx",
         "work-dir": "../a-export/work"
     },
+    "link-base": ["anfisa.forome.org", "Local"],
     "logging": { 
         "version": 1,
         "disable_existing_loggers": false,

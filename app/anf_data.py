@@ -9,7 +9,7 @@ from .view_setup import ViewSetup
 from .view_cfg import setupRecommended
 from .search_setup import MainLegend
 from export.excel import ExcelExport
-
+from app.view.attr import AttrH
 #===============================================
 class AnfisaData:
     sConfig = None
@@ -42,6 +42,9 @@ class AnfisaData:
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
+
+        if config.get("link-base") is not None:
+            AttrH.setupBaseHostReplacement(*config["link-base"])
 
         cls.sService = AnfisaService.start(cls, config, in_container)
         return cls.sService

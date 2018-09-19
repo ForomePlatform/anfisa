@@ -11,6 +11,20 @@ def _not_none(val):
 
 #===============================================
 class AttrH:
+    sBaseHostFrom = None
+    sBaseHostTo   = None
+
+    @classmethod
+    def setupBaseHostReplacement(cls, host_from, host_to):
+        cls.sBaseHostFrom = host_from
+        cls.sBaseHostTo   = host_to
+
+    @classmethod
+    def normLink(cls, str):
+        if cls.sBaseHostFrom and str:
+            return str.replace(cls.sBaseHostFrom, cls.sBaseHostTo)
+        return str
+
     def __init__(self, name, kind = None, title = None,
             attrs = None, is_seq = False):
         self.mName = name
@@ -140,6 +154,8 @@ class AttrH:
         if not value:
             return None
         if "link" in self.mKinds:
+            value = self.normLink(value)
+            print "L:", value
             return ('<span title="%s"><a href="%s" target="blank">'
                 'link</a></span>' % (value, value))
         else:
