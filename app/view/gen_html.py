@@ -331,7 +331,7 @@ def _formRulesDiv(output):
             </div>
             <div id="rules-wrap-param">
               <div id="hi----param"
-                class="rule-item" onclick="rulesItemSel(\'--param\');">
+                class="rule-item" onclick="ruleItemSel(\'--param\');">
                   Parameters
               </div>
             </div>

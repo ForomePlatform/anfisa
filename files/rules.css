@@ -105,7 +105,7 @@
 
 div.rule-item {
     border: 1px solid brown;
-    cursor: hand;
+    cursor: pointer;
     background-color: #fffdfd;
     color: brown;
     margin: 3px;
@@ -114,8 +114,8 @@ div.rule-item {
 
 div.rule-item.cur {
     border: 1px solid yellow;
-    cursor: pointer;
     color: yellow;
+    cursor: inherit;
     margin: 3px;
     padding: 3px;
     background-color: brown;

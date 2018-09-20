@@ -146,7 +146,7 @@ function updateTagsState(set_content) {
         } else {
             tag_name = sTagOrder[sCurTagIdx];
             sInpTagName.value = tag_name;
-            sInpTagValue.value = sRecTags[tag_name].trim();
+            sInpTagValue.value = ("" + sRecTags[tag_name]).trim();
             sTagNameOK = true;
             sTagCntMode = true;
             sTagCntChanged = false;
@@ -167,7 +167,7 @@ function checkInputs() {
         if (sTagCntMode) {
             tag_name = sTagOrder[sCurTagIdx];
             sTagCntChanged = (sInpTagValue.value.trim() != 
-                sRecTags[tag_name].trim());            
+                ("" + sRecTags[tag_name]).trim());            
         } else {
             sTagCntChanged = false;
         }
