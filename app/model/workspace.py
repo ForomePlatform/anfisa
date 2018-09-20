@@ -63,7 +63,7 @@ class Workspace:
         return self.mLegend.getRulesUnit().getJSonData(expert_mode)
 
     def modifyRulesData(self, expert_mode, item, content):
-        report = self.mLegend.getRulesUnit().modifyHotData(
+        report = self.mLegend.getRulesUnit().modifyRulesData(
             expert_mode, item, content)
         if report["status"] == "OK":
             self.mIndex.updateRulesEnv()
