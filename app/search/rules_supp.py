@@ -47,6 +47,10 @@ class RulesEvalUnit(BoolSetUnit):
         ret["params"] = param_rep.getvalue()
         return ret
 
+    def changeParamEnv(self, par_data):
+        for key, value in par_data:
+            self.mEnv.set(key, value)
+
     def modifyRulesData(self, expert_mode, item, content):
         if item == "--param":
             param_list = []
@@ -60,8 +64,8 @@ class RulesEvalUnit(BoolSetUnit):
         if result is not None:
             for key, value in result:
                 self.mEnv.set(key, value)
-            return {"status": "OK"}
-        return {"status": "FAILED", "error": error}
+            return {"status": "OK"}, result
+        return {"status": "FAILED", "error": error}, None
 
 #===============================================
 class PresentationObj:

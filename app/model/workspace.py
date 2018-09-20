@@ -28,6 +28,9 @@ class Workspace:
                 zone_h = FilterZoneH(self, zone_title,
                     self.mLegend.getUnit(unit_name))
             self.mZoneHandlers.append(zone_h)
+        par_data = self.mMongoConn.getRulesParamValues()
+        if par_data is not None:
+            self.mLegend.getRulesUnit().changeParamEnv(par_data)
 
     def getName(self):
         return self.mName
@@ -63,10 +66,12 @@ class Workspace:
         return self.mLegend.getRulesUnit().getJSonData(expert_mode)
 
     def modifyRulesData(self, expert_mode, item, content):
-        report = self.mLegend.getRulesUnit().modifyRulesData(
+        report, par_data = self.mLegend.getRulesUnit().modifyRulesData(
             expert_mode, item, content)
         if report["status"] == "OK":
             self.mIndex.updateRulesEnv()
+            if par_data is not None:
+                self.mMongoConn.setRulesParamValues(par_data)
         return report
 
     def makeTagsJSonReport(self, rec_no,

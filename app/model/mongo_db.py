@@ -43,3 +43,14 @@ class MongoConnector:
     def dropFilter(self, filter_name):
         self.mMongo[self.mPath].filters.remove(
             {"_id": filter_name})
+
+    def getRulesParamValues(self):
+        for it in self.mMongo[self.mPath].common.find():
+            if it["_id"] == "_params":
+                return it["params"]
+        return None
+
+    def setRulesParamValues(self, param_values):
+        self.mMongo[self.mPath].common.update(
+            {"_id": "_params"},
+            {"$set": {"params": param_values}}, upsert = True)

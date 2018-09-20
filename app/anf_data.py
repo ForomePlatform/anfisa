@@ -7,7 +7,7 @@ from app.view.dataset import DataSet
 from app.view.checker import ViewDataChecker
 from .view_setup import ViewSetup
 from .view_cfg import setupRecommended
-from .search_setup import MainLegend
+from .search_setup import prepareLegend
 from export.excel import ExcelExport
 from app.view.attr import AttrH
 #===============================================
@@ -21,22 +21,19 @@ class AnfisaData:
     def setup(cls, config, in_container):
         cls.sConfig = config
         setupRecommended()
-        ws_seq = []
         for ws_descr in config["workspaces"]:
             ws_name = ws_descr["name"]
             data_set = DataSet(ViewSetup, ws_name, ws_descr["file"])
             ViewDataChecker.check(ViewSetup, data_set)
-            MainLegend.testDataSet(data_set)
-            ws_seq.append((ws_name, data_set, ws_descr))
-
-        rep_out = StringIO()
-        MainLegend.setup(rep_out)
-        if not MainLegend.isOK():
-            logging.fatal("FILTER LEGEND FAILED\n" + rep_out.gevalue())
-        logging.warning(MainLegend.getStatusInfo())
-
-        for ws_name, data_set, ws_descr in ws_seq:
-            ws = Workspace(ws_name, MainLegend, data_set,
+            legend = prepareLegend(ws_name)
+            legend.testDataSet(data_set)
+            rep_out = StringIO()
+            legend.setup(rep_out)
+            if not legend.isOK():
+                logging.fatal(("FILTER LEGEND for %s FAILED\n" % ws_name) +
+                    rep_out.gevalue())
+            logging.warning(legend.getStatusInfo())
+            ws = Workspace(ws_name, legend, data_set,
                 ws_descr["mongo"],
                 ws_descr.get("mongo-host"), ws_descr.get("mongo-port"))
             cls.sWorkspaces[ws_name] = ws
