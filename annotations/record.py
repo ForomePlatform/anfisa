@@ -217,6 +217,7 @@ class Variant:
         chr_str = self.chromosome()
         if (chr_str.startswith('chr')):
             return chr_str[3:]
+        return chr_str.upper()
     
     def start(self):
         return int(self.data.get("start"))
@@ -663,7 +664,7 @@ class Variant:
         if (not genotype):
             return None
         set1 = set(genotype.split('/'))
-        if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
+        if (self.chr_num() == 'X' and self.proband_sex() == 1):
             return "X-linked"
         if (len(set1) == 1):
             return "Homozygous"
