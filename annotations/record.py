@@ -703,8 +703,9 @@ class Variant:
 
     def get_callers(self):
         bgm_callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
-                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
-        callers = [caller for caller in bgm_callers if (self.vcf_record.INFO.has_key(caller))]
+                    'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
+                    'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM','SANGER']
+        callers = [caller for caller in bgm_callers if (self.info().has_key(caller))]
 
         # GATK callers
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
@@ -757,7 +758,7 @@ class Variant:
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
             tab1["Alt"] = self.alt_string()
-        tab1['BGM_CMPD_HET'] = self.vcf_record.INFO.get("BGM_CMPD_HET")
+        tab1['BGM_CMPD_HET'] = self.info().get("BGM_CMPD_HET")
         tab1['Called by'] = self.get_callers()
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
@@ -801,14 +802,14 @@ class Variant:
         data["quality.samples"] = tab2
         q_all = dict()
         q_all["Title"] = "All"
-        q_all['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
-        q_all['Mapping Quality'] = self.vcf_record.INFO.get("MQ")
+        q_all['Strand Odds Ratio'] = self.info().get("SOR")
+        q_all['Mapping Quality'] = self.info().get("MQ")
         q_all['Variant Call Quality'] = self.vcf_record.QUAL
 
-        q_all['Quality by Depth'] = self.vcf_record.INFO.get("QD")
-        data['_filters.QD'] = self.vcf_record.INFO.get("QD")
-        q_all['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
-        data['_filters.FS'] = self.vcf_record.INFO.get("FS")
+        q_all['Quality by Depth'] = self.info().get("QD")
+        data['_filters.QD'] = self.info().get("QD")
+        q_all['Fisher Strand Bias'] = self.info().get("FS")
+        data['_filters.FS'] = self.info().get("FS")
 
 
         tab2.append(q_all)
