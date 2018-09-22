@@ -277,5 +277,8 @@ class EnumConvertor(ValueConvertor):
     def convert(self, values):
         ret = self._convert(values)
         if self.mAtomicMode:
-            return list(ret)[0]
+            try:
+                return list(ret)[0]
+            except:
+                return "?"
         return ret

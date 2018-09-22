@@ -15,8 +15,6 @@ CONFIG_ATTRS = {
         AttrH("Ensembl Transcripts (Worst)", is_seq = True),
         AttrH("Ref"),
         AttrH("Alt"),
-        AttrH("Called by", "expert", is_seq = True),
-        AttrH("BGM_CMPD_HET", "expert"),
         AttrH("Splice Region", is_seq = True),
         AttrH("GeneSplicer", is_seq = True),
         AttrH("cPos (Worst)", is_seq = True),
@@ -99,6 +97,8 @@ CONFIG_ATTRS = {
         AttrH("Human Splicing Finder"),
         AttrH("other_genes",
             title="Gene symbols from other transcripts", is_seq = True),
+        AttrH("Called by", is_seq=True),
+        AttrH("CALLER DATA"),
     ],
     "_main": [
         AttrH("label"),

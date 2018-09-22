@@ -126,11 +126,11 @@ class FloatValueUnit(FilterUnit):
 #===============================================
 class StatusUnit(FilterUnit):
     def __init__(self, legend, name, path, variants = None,
-            title = None, default_value = False, expert_only = False):
+            title = None, default_value = False, expert_only = False, accept_wrong_values = False):
         FilterUnit.__init__(self, legend, name, title, expert_only)
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.EnumConvertor(VariantSet.create(variants),
-                atomic_mode = True, default_value = default_value),
+                atomic_mode = True, default_value = default_value, others_value=accept_wrong_values),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
     def iterExtractors(self):
