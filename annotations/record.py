@@ -831,7 +831,8 @@ class Variant:
                 q_s["Title"] = s
 
             q_s['Allelic Depth'] = genotype.data.AD
-            q_s['Read Depth'] = genotype.data.DP
+            if (genotype.data._asdict().has_key('DP')):
+                q_s['Read Depth'] = genotype.data.DP
             q_s['Genotype Quality'] = genotype.data.GQ
             tab2.append(q_s)
 
