@@ -139,6 +139,11 @@ class Variant:
     for c in severity:
         consequences += c
 
+    callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
+                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
+                   'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM', 'SANGER']
+
+
     @classmethod
     def most_severe(cls, csq):
         for i in range(0, len(cls.consequences)):
@@ -609,14 +614,20 @@ class Variant:
             return list
         return None
 
+    @classmethod
+    def get_from_genotype(cls, genotype, field):
+        return genotype.data._asdict().get(field)
+
     def get_proband_GQ(self):
-        return self.vcf_record.genotype(self.get_proband()).data.GQ
+        return self.get_from_genotype(self.vcf_record.genotype(self.get_proband()), 'GQ')
 
     def get_min_GQ(self):
         GQ = None
         for s in self.samples:
             genotype = self.vcf_record.genotype(s)
-            GQ = min(genotype.data.GQ, GQ) if GQ else genotype.data.GQ
+            gq = self.get_from_genotype(genotype, 'GQ')
+            if (gq):
+                GQ = min(gq, GQ) if GQ else gq
         return GQ
 
     def is_proband_has_variant(self):
@@ -702,11 +713,11 @@ class Variant:
         alt_set = alleles_affected & alleles_alt
         return [a for a in alt_set]
 
+    def get_raw_callers(self):
+        return [caller for caller in self.callers if (self.info().has_key(caller))]
+
     def get_callers(self):
-        bgm_callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
-                    'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
-                    'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM','SANGER']
-        callers = [caller for caller in bgm_callers if (self.info().has_key(caller))]
+        callers = self.get_raw_callers()
 
         # GATK callers
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
@@ -741,6 +752,15 @@ class Variant:
 
         return callers
 
+    def get_callers_data(self):
+        callers = self.get_raw_callers()
+        data = dict()
+        for c in callers:
+            v = self.info().get(c)
+            if (v):
+                data[c] = v
+        return data
+
     def get_view_json(self):
         data = self.data.copy()
         data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
@@ -759,8 +779,6 @@ class Variant:
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
             tab1["Alt"] = self.alt_string()
-        tab1['BGM_CMPD_HET'] = self.info().get("BGM_CMPD_HET")
-        tab1['Called by'] = self.get_callers()
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
         tab1['cPos (Worst)'] = c_worst
@@ -830,11 +848,9 @@ class Variant:
             else:
                 q_s["Title"] = s
 
-            q_s['Allelic Depth'] = genotype.data.AD
-            if (genotype.data._asdict().has_key('DP')):
-                q_s['Read Depth'] = genotype.data.DP
-            if (genotype.data._asdict().has_key('GQ')):
-                q_s['Genotype Quality'] = genotype.data.GQ
+            q_s['Allelic Depth'] = self.get_from_genotype(genotype, 'AD')
+            q_s['Read Depth'] = self.get_from_genotype(genotype, 'DP')
+            q_s['Genotype Quality'] = self.get_from_genotype(genotype, 'GQ')
             tab2.append(q_s)
 
         tab3 = list()
@@ -926,6 +942,8 @@ class Variant:
         tab6["NNSplice"] = ""
         tab6["Human Splicing Finder"] = ""
         tab6["other_genes"] = self.get_other_genes()
+        tab6['Called by'] = self.get_callers()
+        tab6['CALLER DATA'] = self.get_callers_data()
 
         tab7 = dict()
         #view['Inheritance'] = tab7
