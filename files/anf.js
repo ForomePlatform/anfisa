@@ -42,9 +42,7 @@ function loadList(filter_name, zone_data) {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes);
-    if (filter_name)
-        args += "&filter=" + encodeURIComponent(filter_name);
+    args = formFilterRequestArgs();
     if (zone_data)
         args += "&zone=" + encodeURIComponent(JSON.stringify(zone_data));
     xhttp.send(args); 

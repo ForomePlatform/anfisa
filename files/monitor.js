@@ -222,10 +222,10 @@ function pickNamedFilter() {
 function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
-    sCurFilterName = filter_name;
     cur_flt_problems = checkCurConditionsProblem();
     if (filter_name == "_current_" && cur_flt_problems)
         filter_name = "";
+    sCurFilterName = filter_name;
     loadList(sCurFilterName, sCurZoneData);
     sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
     if (cur_flt_problems) {

@@ -105,13 +105,17 @@ class Index:
         return [self.mRecords[rec_no]
             for rec_no in rec_no_seq]
 
-    def cacheFilter(self, filter_name, filter_seq):
+    def evalConditions(self, conditions):
         rec_no_seq = range(self.mDataSet.getSize())[:]
-        for cond_info in filter_seq:
+        for cond_info in conditions:
             rec_no_seq = self._applyCondition(rec_no_seq, cond_info)
             if len(rec_no_seq) == 0:
                 break
-        self.mFilterCache[filter_name] = (filter_seq, rec_no_seq)
+        return rec_no_seq
+
+    def cacheFilter(self, filter_name, conditions):
+        self.mFilterCache[filter_name] = (
+            conditions, self.evalConditions(conditions))
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
@@ -128,13 +132,12 @@ class Index:
         return sorted(ret0), sorted(ret1)
 
     def makeStatReport(self, filter_name, expert_mode,
-            filter_seq = None):
-        if filter_seq is not None:
-            self.cacheFilter(filter_name, filter_seq)
+            conditions = None):
+        rec_no_seq = self.getRecNoSeq(filter_name, conditions)
         pre_filters, op_filters = self.getFilterLists()
         report = {
             "stat-list": self.mLegend.collectStatJSon(self._iterRecords(
-                self.getRecNoSeq(filter_name)), expert_mode),
+                rec_no_seq), expert_mode),
             "pre-filters": pre_filters,
             "op-filters": op_filters,
             "filter": filter_name}
@@ -142,7 +145,9 @@ class Index:
             report["conditions"] = self.mFilterCache[filter_name][0]
         return report
 
-    def getRecNoSeq(self, filter_name = None):
+    def getRecNoSeq(self, filter_name = None, conditions = None):
+        if filter_name is None and conditions:
+            return self.evalConditions(conditions)
         if filter_name in self.mFilterCache:
             return self.mFilterCache[filter_name][1]
         return range(self.mDataSet.getSize())[:]

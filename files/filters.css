@@ -245,7 +245,7 @@ div#op-enum-list.no-zeros div.zero {
 }
 
 input.num-inp {
-    width: 50px;
+    width: 100px;
 }
 
 span#cond-sign {

@@ -90,6 +90,19 @@ function initFilters() {
     loadStat();
 }
 
+
+function formFilterRequestArgs(add_instr) {
+    args = "ws=" + parent.window.sWorkspaceName + 
+        "&m=" + encodeURIComponent(parent.window.sAppModes);
+    if (sBaseFilterName == "_current_") 
+        args += "&conditions=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
+    else
+        args += "&filter=" + encodeURIComponent(sBaseFilterName);
+    if (add_instr)
+        args += "&instr=" + encodeURIComponent(add_instr);
+    return args;
+}
+
 function loadStat(add_instr){
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -100,14 +113,7 @@ function loadStat(add_instr){
     };
     xhttp.open("POST", "stat", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + parent.window.sWorkspaceName + 
-        "&m=" + encodeURIComponent(parent.window.sAppModes) + 
-        "&filter=" + encodeURIComponent(sBaseFilterName);
-    if (sBaseFilterName == "_current_") 
-        args += "&conditions=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
-    if (add_instr)
-        args += "&instr=" + encodeURIComponent(add_instr);
-    xhttp.send(args); 
+    xhttp.send(formFilterRequestArgs(add_instr)); 
 }
 
 /*************************************/
@@ -245,8 +251,8 @@ function _checkNamedFilters(pre_filters, op_filters) {
 }
     
 /*************************************/
-function selectStat(stat_unit){
-    if (sCurStatUnit == stat_unit) 
+function selectStat(stat_unit, force_it){
+    if (sCurStatUnit == stat_unit && !force_it) 
         return;
     var new_unit_el = document.getElementById("stat--" + stat_unit);
     if (new_unit_el == null) 
@@ -280,7 +286,7 @@ function selectCond(cond_no){
     sCurCondNo = cond_no;
     if (new_cond_el != null) {
         new_cond_el.className = new_cond_el.className + " cur";
-        selectStat(sCurFilterSeq[cond_no][1]);
+        selectStat(sCurFilterSeq[sCurCondNo][1], true);
     }
 }
 

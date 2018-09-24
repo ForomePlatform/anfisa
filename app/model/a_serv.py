@@ -142,8 +142,11 @@ class AnfisaService:
         output = StringIO()
         workspace = self.sData.getWS(rq_args.get("ws"))
         modes = rq_args.get("m", "")
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
         rec_no_seq = workspace.getIndex().getRecNoSeq(
-            rq_args.get("filter"))
+            rq_args.get("filter"), conditions)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
