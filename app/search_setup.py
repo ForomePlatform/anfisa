@@ -9,12 +9,17 @@ def prepareLegend(ws_name):
     legend = FilterLegend(ws_name, HOT_SETUP)
 
     legend._startViewGroup("Coordinates")
+    # flt_unit.StatusUnit(legend, "Chromosome", "/seq_region_name",
+    #     ["chr1", "chr2", "chr3", "chr4", "chr5",
+    #     "chr6", "chr7", "chr8", "chr9", "chr10",
+    #     "chr11", "chr12", "chr13", "chr14", "chr15",
+    #     "chr16", "chr17", "chr18", "chr19", "chr20",
+    #     "chr21", "chr22", "chr23", "chrX", "chrY", "?"], expert_only=True, accept_wrong_values=True)
+
     flt_unit.StatusUnit(legend, "Chromosome", "/seq_region_name",
-        ["chr1", "chr2", "chr3", "chr4", "chr5",
-        "chr6", "chr7", "chr8", "chr9", "chr10",
-        "chr11", "chr12", "chr13", "chr14", "chr15",
-        "chr16", "chr17", "chr18", "chr19", "chr20",
-        "chr21", "chr22", "chr23", "chrX", "chrY"], expert_only=True)
+        expert_only=True, accept_wrong_values=True)
+
+
     flt_unit.IntValueUnit(legend, "Start Position", "/start", expert_only=True)
     flt_unit.IntValueUnit(legend, "End Position", "/end", expert_only=True)
     legend._endViewGroup()
@@ -82,7 +87,7 @@ def prepareLegend(ws_name):
         "/variant_class")
 
     flt_unit.MultiStatusUnit(legend, "Called by",
-        "/view.general/Called by[]", expert_only = True)
+        "/view.Genetics/Called by[]", expert_only = True)
 
     flt_unit.StatusUnit(legend, "Proband_has_Variant",
         "/_filters.Proband_has_Variant")

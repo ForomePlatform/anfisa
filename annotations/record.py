@@ -139,6 +139,11 @@ class Variant:
     for c in severity:
         consequences += c
 
+    callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
+                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
+                   'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM', 'SANGER']
+
+
     @classmethod
     def most_severe(cls, csq):
         for i in range(0, len(cls.consequences)):
@@ -217,6 +222,7 @@ class Variant:
         chr_str = self.chromosome()
         if (chr_str.startswith('chr')):
             return chr_str[3:]
+        return chr_str.upper()
     
     def start(self):
         return int(self.data.get("start"))
@@ -608,14 +614,20 @@ class Variant:
             return list
         return None
 
+    @classmethod
+    def get_from_genotype(cls, genotype, field):
+        return genotype.data._asdict().get(field)
+
     def get_proband_GQ(self):
-        return self.vcf_record.genotype(self.get_proband()).data.GQ
+        return self.get_from_genotype(self.vcf_record.genotype(self.get_proband()), 'GQ')
 
     def get_min_GQ(self):
         GQ = None
         for s in self.samples:
             genotype = self.vcf_record.genotype(s)
-            GQ = min(genotype.data.GQ, GQ) if GQ else genotype.data.GQ
+            gq = self.get_from_genotype(genotype, 'GQ')
+            if (gq):
+                GQ = min(gq, GQ) if GQ else gq
         return GQ
 
     def is_proband_has_variant(self):
@@ -663,7 +675,7 @@ class Variant:
         if (not genotype):
             return None
         set1 = set(genotype.split('/'))
-        if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
+        if (self.chr_num() == 'X' and self.proband_sex() == 1):
             return "X-linked"
         if (len(set1) == 1):
             return "Homozygous"
@@ -701,10 +713,11 @@ class Variant:
         alt_set = alleles_affected & alleles_alt
         return [a for a in alt_set]
 
+    def get_raw_callers(self):
+        return [caller for caller in self.callers if (self.info().has_key(caller))]
+
     def get_callers(self):
-        bgm_callers = ['BGM_AUTO_DOM', 'BGM_DE_NOVO', 'BGM_HOM_REC', 'BGM_CMPD_HET',
-                   'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC']
-        callers = [caller for caller in bgm_callers if (self.vcf_record.INFO.has_key(caller))]
+        callers = self.get_raw_callers()
 
         # GATK callers
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
@@ -739,6 +752,15 @@ class Variant:
 
         return callers
 
+    def get_callers_data(self):
+        callers = self.get_raw_callers()
+        data = dict()
+        for c in callers:
+            v = self.info().get(c)
+            if (v):
+                data[c] = v
+        return data
+
     def get_view_json(self):
         data = self.data.copy()
         data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
@@ -757,8 +779,6 @@ class Variant:
         if (not self.is_snv()):
             tab1["Ref"] = self.ref()
             tab1["Alt"] = self.alt_string()
-        tab1['BGM_CMPD_HET'] = self.vcf_record.INFO.get("BGM_CMPD_HET")
-        tab1['Called by'] = self.get_callers()
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
         tab1['cPos (Worst)'] = c_worst
@@ -801,14 +821,14 @@ class Variant:
         data["quality.samples"] = tab2
         q_all = dict()
         q_all["Title"] = "All"
-        q_all['Strand Odds Ratio'] = self.vcf_record.INFO.get("SOR")
-        q_all['Mapping Quality'] = self.vcf_record.INFO.get("MQ")
+        q_all['Strand Odds Ratio'] = self.info().get("SOR")
+        q_all['Mapping Quality'] = self.info().get("MQ")
         q_all['Variant Call Quality'] = self.vcf_record.QUAL
 
-        q_all['Quality by Depth'] = self.vcf_record.INFO.get("QD")
-        data['_filters.QD'] = self.vcf_record.INFO.get("QD")
-        q_all['Fisher Strand Bias'] = self.vcf_record.INFO.get("FS")
-        data['_filters.FS'] = self.vcf_record.INFO.get("FS")
+        q_all['Quality by Depth'] = self.info().get("QD")
+        data['_filters.QD'] = self.info().get("QD")
+        q_all['Fisher Strand Bias'] = self.info().get("FS")
+        data['_filters.FS'] = self.info().get("FS")
 
 
         tab2.append(q_all)
@@ -828,9 +848,9 @@ class Variant:
             else:
                 q_s["Title"] = s
 
-            q_s['Allelic Depth'] = genotype.data.AD
-            q_s['Read Depth'] = genotype.data.DP
-            q_s['Genotype Quality'] = genotype.data.GQ
+            q_s['Allelic Depth'] = self.get_from_genotype(genotype, 'AD')
+            q_s['Read Depth'] = self.get_from_genotype(genotype, 'DP')
+            q_s['Genotype Quality'] = self.get_from_genotype(genotype, 'GQ')
             tab2.append(q_s)
 
         tab3 = list()
@@ -922,6 +942,8 @@ class Variant:
         tab6["NNSplice"] = ""
         tab6["Human Splicing Finder"] = ""
         tab6["other_genes"] = self.get_other_genes()
+        tab6['Called by'] = self.get_callers()
+        tab6['CALLER DATA'] = self.get_callers_data()
 
         tab7 = dict()
         #view['Inheritance'] = tab7
