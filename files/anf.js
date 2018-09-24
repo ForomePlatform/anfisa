@@ -42,7 +42,7 @@ function loadList(filter_name, zone_data) {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = formFilterRequestArgs();
+    args = formFilterRequestArgs(filter_name);
     if (zone_data)
         args += "&zone=" + encodeURIComponent(JSON.stringify(zone_data));
     xhttp.send(args); 

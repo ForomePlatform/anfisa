@@ -91,13 +91,13 @@ function initFilters() {
 }
 
 
-function formFilterRequestArgs(add_instr) {
+function formFilterRequestArgs(filter_name, add_instr) {
     args = "ws=" + parent.window.sWorkspaceName + 
         "&m=" + encodeURIComponent(parent.window.sAppModes);
-    if (sBaseFilterName == "_current_") 
+    if (filter_name == "_current_") 
         args += "&conditions=" + encodeURIComponent(JSON.stringify(sCurFilterSeq)); 
     else
-        args += "&filter=" + encodeURIComponent(sBaseFilterName);
+        args += "&filter=" + encodeURIComponent(filter_name);
     if (add_instr)
         args += "&instr=" + encodeURIComponent(add_instr);
     return args;
@@ -113,7 +113,7 @@ function loadStat(add_instr){
     };
     xhttp.open("POST", "stat", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(formFilterRequestArgs(add_instr)); 
+    xhttp.send(formFilterRequestArgs(sBaseFilterName, add_instr)); 
 }
 
 /*************************************/
