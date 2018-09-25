@@ -56,15 +56,13 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     KEYs = ['HGMD only', 'ClinVar only', 'HGMD & ClinVar', 'gnomAD: AF<1%', 'Singleton']
 
     clinical_filter = Filter()
-    output1 = out.format("all")
-    output2 = out.format("false")
-    output3 = out.format("candidates")
+    output1 = out
     gnomAD = GnomAD()
     hg19_to_38_converter = liftover.Converter()
 
     csq_set = set()
 
-    with open(f) as input, open(output1, "w") as out1, open(output2, "w") as out2, open(output3, "w") as out3, HGMD() as hgmd:
+    with open(f) as input, open(output1, "w") as out1, HGMD() as hgmd:
         while(True):
             line = input.readline()
             if (not line):
@@ -125,10 +123,6 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
             cube[(msq, key)] = f + 1
 
             out1.write(v.get_view_json() + '\n')
-            if (len(expected) > 0 and v.data.get("EXPECTED") != v.data.get("SEQaBOO")):
-                out2.write(v.get_view_json() + '\n')
-            if (v.data.get("SEQaBOO")):
-                out3.write(v.get_view_json() + '\n')
 
             if (limit and n >= limit):
                 break
@@ -193,7 +187,7 @@ if __name__ == '__main__':
 
     samples = case_utils.parse_fam_file(fam_file)
 
-    output = args.output if args.output else "{}/{}_wgs_{}.json".format(dir, case, "{}")
+    output = args.output if args.output else "{}/{}_wgs.json".format(dir, case)
 
     process_file(filtered_by_bed_vep_output, out=output,
                      vcf_header=header, samples=samples, expected=expected_set, case="{}_wgs".format(case), limit =limit)
