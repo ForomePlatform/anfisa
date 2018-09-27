@@ -133,6 +133,8 @@ class Connection:
     def close(self):
         if (self.tunnel):
             self.tunnel.stop()
+        if (self.is_connected()):
+            self.connection.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

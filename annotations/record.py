@@ -272,11 +272,12 @@ class Variant:
             (phenotypes, pmids) = connection.get_data_for_accession_numbers(accession_numbers)
             self.data["_private.HGMD_phenotypes"] = phenotypes
             self.data["_private.HGMD_PIMIDs"] = pmids
-            self.data["_private.HGMD_TAGs"] = [pmid[2] for pmid in pmids] if pmids else None
+            tags = [pmid[2] for pmid in pmids] if pmids else None
+            self.data["_private.HGMD_TAGs"] = tags
             self.data['HGMD'] = ','.join(accession_numbers)
             hg_38 = connection.get_hg38(accession_numbers)
             self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
-            self.data["_filters.hgmd_benign"] = len([t for t in self.data["_private.HGMD_TAGs"] if t])
+            self.data["_filters.hgmd_benign"] = len([t for t in tags if t]) == 0 if tags else True
 
     def call_clinvar(self):
         connection = self.connectors.clinvar
