@@ -3,7 +3,8 @@ import os, codecs
 from .acmg59 import evalRec as acmg59_evalRec
 from .quality_check import evalRec as quality_check_evalRec
 from .af_check import evalRec as af_check_evalRec
-from .rare_check import evalRec as rare_check_evalRec
+from .bgm_rule import evalRec as bgm_rule_evalRec
+from .seq_a_boo_rule import evalRec as seq_a_boo_rule_evalRec
 from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
 
@@ -56,7 +57,9 @@ class HOT_SETUP:
         RuleFuncH("Quality-PASS",
             "quality_check", quality_check_evalRec),
         RuleFuncH("Candidates_BGM",
-            "rare_check", rare_check_evalRec),
+            "bgm_rule", bgm_rule_evalRec),
+        RuleFuncH("Candidates_SEQaBOO",
+            "seq_a_boo_rule", seq_a_boo_rule_evalRec),
         RuleFuncH("Candidates_Including_Common",
             "common_check", common_check_evalRec),
         RuleFuncH("gnomAD_Frequency_Threshold",

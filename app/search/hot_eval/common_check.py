@@ -5,6 +5,9 @@ def evalRec(env, rec):
 
     if ("Quality-PASS" not in rec.Rules):
         return False
+
+
+
     if (known):
         return True
     if (rec.Severity < env.severity):
