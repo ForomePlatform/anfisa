@@ -10,7 +10,41 @@ def link_to_pmid(pmid):
     return "https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pmid)
 
 
+def vstr(c, s, e):
+    if (s == e):
+        strng = "{}:{}".format(c, s)
+    else:
+        strng = "{}:{}-{}".format(c, s, e)
+    return strng
+
+
+proteins_3_to_1 = {
+ "Ala":"A",
+ "Arg":"R",
+ "Asn":"N",
+ "Asp":"D",
+ "Cys":"C",
+ "Gln":"Q",
+ "Glu":"E",
+ "Gly":"G",
+ "His":"H",
+ "Ile":"I",
+ "Leu":"L",
+ "Lys":"K",
+ "Met":"M",
+ "Phe":"F",
+ "Pro":"P",
+ "Ser":"S",
+ "Thr":"T",
+ "Trp":"W",
+ "Tyr":"Y",
+ "Val":"V",
+}
+
+
 def unique(lst):
+    if (not lst):
+        return lst
     s = set()
     for element in lst:
         if (isinstance(element, list)):
@@ -22,36 +56,44 @@ def unique(lst):
     list2.extend(s)
     return list2
 
+
+def convert_p(x):
+    protein1 = []
+    pos = []
+    protein2 = []
+    state = 0
+    for c in x:
+        if (state == 0):
+            if (c.isalpha()):
+                protein1.append(c)
+                continue
+            state = 2
+        if (state == 2):
+            if (c.isdigit()):
+                pos.append(c)
+                continue
+            state = 3
+        if (state == 3):
+            protein2.append(c)
+        else:
+            break
+
+    p1 = ''.join(protein1)
+    p2 = ''.join(protein2)
+    pos = ''.join(pos)
+    protein1 = proteins_3_to_1.get(p1, p1)
+    protein2 = proteins_3_to_1.get(p2, p2)
+    x = "{}{}{}".format(protein1, pos, protein2)
+    return x
+
+
 def hgvcs_pos(str, type, with_pattern = True):
     pattern = ":{}.".format(type)
     if (not pattern in str):
         return None
     x = str.split(pattern)[1]
     if (type == 'p'):
-        x1 = []
-        x2 = []
-        x3 = []
-        state = 0
-        for c in x:
-            if (state == 0):
-                x1.append(c)
-                state = 1
-                continue
-            elif (state == 1):
-                if (c.isalpha()):
-                    continue
-                state = 2
-            if (state == 2):
-                if (c.isdigit()):
-                    x2.append(c)
-                    continue
-                state = 3
-            if (state == 3):
-                x3.append(c)
-                state = 4
-            else:
-                break
-        x = ''.join(x1 + x2 + x3)
+        x = convert_p(x)
 
     if (with_pattern):
         return "{}{}".format(pattern[1:], x)
@@ -99,6 +141,15 @@ def get_distance_hgvsc(hgvsc):
 ## Explore SPlicing, add MaxEntTool
 ## HGMD put "NO"
 ## Add LoFTool
+
+class DBConnectors:
+    def __init__(self, array):
+        if not array:
+            array = dict()
+        self.gnomAD = array.get("gnomAD")
+        self.hgmd = array.get("hgmd")
+        self.clinvar = array.get("clinvar")
+        self.liftover = array.get("liftover")
 
 class Variant:
     csq_damaging = [
@@ -151,14 +202,14 @@ class Variant:
                 return cls.consequences[i]
         return None
 
-    def __init__(self, json_string, vcf_header = None, case = None, samples = None, gnomAD_connection = None,
-                 HGMD_connector = None):
+    def __init__(self, json_string, vcf_header = None, case = None, samples = None, connectors = None):
         self.original_json = json_string
         self.data = json.loads(json_string)
         self.case = case
         self.samples = samples
         self.hg38_start = None
         self.hg38_end = None
+        self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
         vcf_string = "{}\n{}\n".format(vcf_header, self.data.get("input"))
@@ -168,38 +219,105 @@ class Variant:
             self.vcf_record = vcf_reader.next()
         else:
             self.vcf_record = None
-        if (gnomAD_connection):
-            gm_af = None
-            em_af = None
-            for alt in self.alt_list():
-                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
-                self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
-                if (self.is_proband_has_allele(alt)):
-                    gm_af = min(gm_af, af) if gm_af else af
-                af = gnomAD_connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
-                self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
-                if (self.is_proband_has_allele(alt)):
-                    em_af = min(em_af, af) if em_af else af
 
-            self.data["_private.gnomad_db_exomes_af"] = em_af
-            self.data["_private.gnomad_db_genomes_af"] = gm_af
-            self.data['_filters.gnomaAD_AF'] = max(em_af, gm_af)
-
-        if (HGMD_connector):
-            accession_numbers = HGMD_connector.get_acc_num(self.chr_num(), self.start(), self.end())
-            if (len(accession_numbers) > 0):
-                (phenotypes, pmids) = HGMD_connector.get_data_for_accession_numbers(accession_numbers)
-                self.data["_private.HGMD_phenotypes"] = phenotypes
-                self.data["_private.HGMD_PIMIDs"] = pmids
-                self.data['HGMD'] = ','.join(accession_numbers)
-                hg_38 = HGMD_connector.get_hg38(accession_numbers)
-                self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
+        self.call_liftover()
+        self.call_gnomAD()
+        self.call_hgmd()
+        self.call_clinvar()
 
         self.data['_filters.Min_GQ'] = self.get_min_GQ()
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
         self.data['_filters.Severity'] = self.get_severity()
 
+    def call_liftover(self):
+        connection = self.connectors.liftover
+        if (not connection):
+            return
+        self.hg38_start = connection.hg38(self.chr_num(), self.start())
+        self.hg38_end = connection.hg38(self.chr_num(), self.end())
+
+
+    def call_gnomAD(self):
+        connection = self.connectors.gnomAD
+        if (not connection):
+            return
+        gm_af = None
+        em_af = None
+        gm_af_pb = None
+        em_af_pb = None
+        for alt in self.alt_list():
+            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
+            self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
+            gm_af = min(gm_af, af) if gm_af else af
+            if (self.is_proband_has_allele(alt)):
+                gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
+            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
+            self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
+            em_af = min(em_af, af) if em_af else af
+            if (self.is_proband_has_allele(alt)):
+                em_af_pb = min(em_af_pb, af) if em_af_pb else af
+
+        self.data["_private.gnomad_db_exomes_af"] = em_af
+        self.data["_private.gnomad_db_genomes_af"] = gm_af
+        self.data['_filters.gnomaAD_AF_Fam'] = max(em_af, gm_af)
+        self.data['_filters.gnomaAD_AF_Pb'] = max(em_af_pb, gm_af_pb)
+
+    def call_hgmd(self):
+        connection = self.connectors.hgmd
+        if (not connection):
+            return
+        accession_numbers = connection.get_acc_num(self.chr_num(), self.start(), self.end())
+        if (len(accession_numbers) > 0):
+            (phenotypes, pmids) = connection.get_data_for_accession_numbers(accession_numbers)
+            self.data["_private.HGMD_phenotypes"] = phenotypes
+            self.data["_private.HGMD_PIMIDs"] = pmids
+            self.data["_private.HGMD_TAGs"] = [pmid[2] for pmid in pmids] if pmids else None
+            self.data['HGMD'] = ','.join(accession_numbers)
+            hg_38 = connection.get_hg38(accession_numbers)
+            self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
+            self.data["_filters.hgmd_benign"] = len([t for t in self.data["_private.HGMD_TAGs"] if t])
+
+    def call_clinvar(self):
+        connection = self.connectors.clinvar
+        if (not connection):
+            return
+        if (self.is_snv()):
+            rows = connection.get_data(self.chr_num(), self.start(), self.end(), self.alt_list())
+        else:
+            rows = connection.get_expanded_data(self.chr_num(), self.start())
+        if (len(rows) == 0):
+            return
+
+        variants = [
+            "{} {}>{}".format(vstr(self.chromosome(), row[0], row[1]), self.ref(), row[2])
+            for row in rows
+        ]
+        significance = []
+        ids = dict()
+        for row in rows:
+            significance.extend(row[4].split('/'))
+            id_list = [row[5].split(',') + row[7].split(',')  for row in rows]
+            for id in id_list:
+                if (not ':' in id):
+                    continue
+                x = id.split(':')
+                if (not x[0] in ids):
+                    ids[x[0]] = x[1]
+                else:
+                    ids[x[0]] = ids[x[0]].append(x[1])
+
+        self.data["ClinVar"] = "True"
+        self.data["clinvar_variants"] = variants
+        self.data["clinvar_phenotypes"] = [row[6] for row in rows]
+        self.data["clinvar_significance"] = significance
+        self.data["_private.clinvar_other_ids"] = ids
+        benign = True
+        for prediction in significance:
+            if not "benign" in prediction.lower():
+                benign = False
+                break
+        self.data["_filters.clinvar_benign"] = benign
 
 
     def same(self,c, p1, p2 = None):
@@ -232,6 +350,9 @@ class Variant:
 
     def lowest_coord(self):
         return min(self.start(), self.end())
+
+    def highest_coord(self):
+        return max(self.start(), self.end())
 
     def get_allele(self):
         return self.data.get("allele_string")
@@ -538,11 +659,7 @@ class Variant:
         return str
 
     def get_hg19_coordinates(self):
-        if (self.start() == self.end()):
-            str = "{}:{}".format(self.chromosome(), self.start())
-        else:
-            str = "{}:{}-{}".format(self.chromosome(), self.start(), self.end())
-        return str
+        return vstr(self.chromosome(), self.start(), self.end())
 
     def get_proband(self):
         if (not self.samples):
@@ -880,9 +997,17 @@ class Variant:
         #view['Databases'] = tab4
         data["view.Databases"] = tab4
         genes = self.get_genes()
-        omim_urls = [
-            "https://omim.org/search/?search=approved_gene_symbol:{}&retrieve=geneMap".format(gene) for gene in genes
-        ]
+        clinvar_ids = self.data.get("_private.clinvar_other_ids")
+        omim_ids = None
+        if (clinvar_ids):
+            omim_ids = clinvar_ids.get("OMIM")
+
+        if (omim_ids):
+            omim_urls = ["https://www.omim.org/entry/{}".format(omim_id) for omim_id in omim_ids]
+        else:
+            omim_urls = [
+                "https://omim.org/search/?search=approved_gene_symbol:{}&retrieve=geneMap".format(gene) for gene in genes
+            ]
         tab4["OMIM"] = omim_urls
         tab4['GeneCards'] = ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in genes]
         if (self.data.get("HGMD")):
@@ -891,7 +1016,7 @@ class Variant:
         else:
             tab4["HGMD"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
-        tab4["HGMD TAGs"] = [pmid[2] for pmid in pmids] if pmids else None
+        tab4["HGMD TAGs"] = self.data.get("_private.HGMD_TAGs")
         tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("_private.HGMD_phenotypes")
         tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
@@ -899,8 +1024,9 @@ class Variant:
         if (self.data.get("ClinVar") <> None):
             tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
                 format(self.chr_num(), self.start(), self.end())
-        tab4['ClinVar Significance'] = unique(self.get_from_transcripts_list('clinvar_clnsig') +
-                                              self.get_from_transcripts_list('clin_sig'))
+        tab4['ClinVar Variants'] = unique(self.data.get("clinvar_variants"))
+        tab4['ClinVar Significance'] = unique(self.data.get("clinvar_significance"))
+        tab4['ClinVar Phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
 
         tab5 = dict()
         #view['Predictions'] = tab5

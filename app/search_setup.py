@@ -68,8 +68,11 @@ def prepareLegend(ws_name):
 
     legend._startViewGroup("Databases")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF",
-        "/_filters.gnomaAD_AF", diap = (0., 1.), default_value = 0.,
-        title = "gnomAD Allele Frequency")
+        "/_filters.gnomaAD_AF_Fam", diap = (0., 1.), default_value = 0.,
+        title = "gnomAD Allele Frequency (family)")
+    flt_unit.FloatValueUnit(legend, "gnomAD_AF_Proband",
+        "/_filters.gnomaAD_AF_Pb", diap = (0., 1.), default_value = 0.,
+        title = "gnomAD Allele Frequency (proband)")
 
     flt_unit.StatusUnit(legend, "BGM_Rare_Variant",
         "/_filters.RareVariantFilter", expert_only=True)
@@ -109,6 +112,12 @@ def prepareLegend(ws_name):
     legend._endViewGroup()
 
     legend._startViewGroup("Predictions")
+
+    flt_unit.StatusUnit(legend, "Clinvar_Benign",
+        "/_filters.clinvar_benign", default_value="Not in ClinVar")
+    flt_unit.StatusUnit(legend, "HGMD_Benign",
+        "/_filters.hgmd_benign", default_value="Not in HGMD")
+
     flt_unit.MultiStatusUnit(legend, "Polyphen",
         "/view.Predictions/Polyphen[]")
 

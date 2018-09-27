@@ -3,6 +3,7 @@ import os
 import sys
 
 from annotations import filters, case_utils, data_path, liftover
+from annotations.clinvar import ClinVar
 from annotations.gnomad import GnomAD
 from annotations.hgmd import HGMD
 from annotations.record import Variant
@@ -14,7 +15,7 @@ class Filter:
         if (not data_dir):
             data_dir = Filter.DATA_PATH
         self.hgmd_filter = filters.Filter_HGMD(data_dir)
-        self.clinvar_filter = filters.Filter_ClinVar(data_dir)
+        self.clinvar_filter = filters.Filter_ClinVar()
         self.gnomad_filter1 = filters.Filter_gnomAD_AF(0.01)
         self.gnomad_filter5 = filters.Filter_gnomAD_AF(0.05)
         self.quality_filter = filters.Filter_Quality()
@@ -62,19 +63,24 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
 
     csq_set = set()
 
-    with open(f) as input, open(output1, "w") as out1, HGMD() as hgmd:
+    with open(f) as input, open(output1, "w") as out1, HGMD() as hgmd, \
+            ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar:
         while(True):
             line = input.readline()
             if (not line):
                 break
-            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, gnomAD_connection=gnomAD, HGMD_connector=hgmd)
+            cns = {
+                "hgmd": hgmd,
+                "gnomAD": gnomAD,
+                "liftover": hg19_to_38_converter,
+                "clinvar": clinvar
+            }
+            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, connectors=cns)
             n += 1
             if (n%100 == 0):
                 print n
             info = {}
             csq_set.add(v.get_msq())
-            v.hg38_start = hg19_to_38_converter.hg38(v.chr_num(), v.start())
-            v.hg38_end = hg19_to_38_converter.hg38(v.chr_num(), v.end())
             if (not clinical_filter.accept(v, info)):
                 ## continue
                 pass
@@ -110,9 +116,6 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
                     key = "{} & HGMD".format(key)
                 if (info['ClinVar']):
                     key = "{} & ClinVar".format(key)
-
-            if (info['ClinVar']):
-                v.data["ClinVar"] = ""
 
             if (not key in KEYs):
                 KEYs.append(key)

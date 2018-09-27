@@ -2,6 +2,7 @@ import os
 import abc
 
 from annotations import gnomad
+from annotations.clinvar import ClinVar
 
 
 class Filter:
@@ -48,7 +49,7 @@ class Filter_HGMD (DBFilter):
         return (self.hgmd.has_key(variant.key()))
 
 
-class Filter_ClinVar(DBFilter):
+class Filter_ClinVar_local(DBFilter):
     def __init__(self, data_dir):
         DBFilter.__init__(self, data_dir)
         clinvar_dir = os.path.join(data_dir, "clinvar")
@@ -123,6 +124,14 @@ class Filter_gnomAD_AF(Filter):
             if self.gnomAD.less_than(variant.chr_num(), variant.lowest_coord(), variant.ref(), alt, self.threshold):
                 return True
         return False
+
+class Filter_ClinVar(Filter):
+    def __init__(self):
+        Filter.__init__(self)
+        self.clinvar = ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local")
+
+    def accept_variant(self, variant):
+        return self.clinvar.exists(variant.chr_num(), variant.start())
 
 
 def process_header(line, output, columns):
