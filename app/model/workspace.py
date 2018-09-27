@@ -18,7 +18,10 @@ class Workspace:
         self.mIndex  = Index(self.mDataSet, self.mLegend)
         for filter_name, conditions in self.mMongoConn.getFilters():
             if not self.mLegend.hasFilter(filter_name):
-                self.mIndex.cacheFilter(filter_name, conditions)
+                try:
+                    self.mIndex.cacheFilter(filter_name, conditions)
+                except Exception as ex:
+                    print str(ex)
         self.mZoneHandlers  = []
         for zone_title, unit_name in self.mViewSetup.configOption("zones"):
             if (unit_name == "_tags"):
