@@ -378,6 +378,9 @@ class Variant:
             genotypes = {self.vcf_record.genotype(s) for s in self.samples}
             for g in genotypes:
                 ad = g.data.AD
+                if (not ad):
+                    self.alt_alleles = alt_allels
+                    return self.alt_alleles
                 for i in range(0, len(alleles)):
                     a = alleles[i]
                     n = ad[i]
