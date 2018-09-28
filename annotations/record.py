@@ -377,7 +377,7 @@ class Variant:
             #.gt_bases
             genotypes = {self.vcf_record.genotype(s) for s in self.samples}
             for g in genotypes:
-                ad = g.data.AD
+                ad = g.data.AD if 'AD' in g.data._asdict() else None
                 if (not ad):
                     self.alt_alleles = alt_allels
                     return self.alt_alleles
