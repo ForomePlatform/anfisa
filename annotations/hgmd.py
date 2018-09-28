@@ -88,9 +88,14 @@ class HGMD:
         cursor2.close()
         return (phenotypes, pmids)
 
+    def is_connected(self):
+       return self.connection and self.connection.is_connected()
+
     def close(self):
         if (self.tunnel):
             self.tunnel.stop()
+        if (self.is_connected()):
+            self.connection.close()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

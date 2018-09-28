@@ -47,6 +47,13 @@ class Filter:
 
         return ok
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.clinvar_filter.close()
+
+    def __enter__(self):
+        return self
+
+
 
 def process_file(f, out = None, vcf_header = None, samples = None, expected = None, case = None, limit = None):
     n = 0
@@ -56,7 +63,6 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     cube = dict()
     KEYs = ['HGMD only', 'ClinVar only', 'HGMD & ClinVar', 'gnomAD: AF<1%', 'Singleton']
 
-    clinical_filter = Filter()
     output1 = out
     gnomAD = GnomAD()
     hg19_to_38_converter = liftover.Converter()
@@ -64,7 +70,8 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     csq_set = set()
 
     with open(f) as input, open(output1, "w") as out1, HGMD() as hgmd, \
-            ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar:
+            ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar, \
+            Filter() as clinical_filter:
         while(True):
             line = input.readline()
             if (not line):

@@ -20,6 +20,15 @@ class Filter:
             return True
         return False
 
+    def close(self):
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
+    def __enter__(self):
+        return self
+
 
 class DBFilter(Filter):
     def __init__(self, data_dir):
@@ -132,6 +141,10 @@ class Filter_ClinVar(Filter):
 
     def accept_variant(self, variant):
         return self.clinvar.exists(variant.chr_num(), variant.start())
+
+    def close(self):
+        self.clinvar.close()
+        Filter.close(self)
 
 
 def process_header(line, output, columns):

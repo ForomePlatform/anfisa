@@ -44,10 +44,10 @@ def default_port(dbms):
 
 
 def resolve_host(host):
-    hosts = host.split(':')
+    hosts = host.lower().split(':')
     if (len(hosts) < 2):
         return host
-    hostname = host_name()
+    hostname = host_name().lower()
     if (hostname in hosts[1:]):
         return "localhost"
     return hosts[0]

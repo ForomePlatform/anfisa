@@ -209,6 +209,7 @@ class Variant:
         self.samples = samples
         self.hg38_start = None
         self.hg38_end = None
+        self.alt_alleles = None
         self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
@@ -369,7 +370,22 @@ class Variant:
         return ",".join(self.alt_list())
 
     def alt_list(self):
-         return [s.sequence for s in self.vcf_record.ALT]
+        if (self.alt_alleles == None):
+            alleles = [str(s) for s in self.vcf_record.alleles]
+            alt_allels = [s.sequence for s in self.vcf_record.ALT]
+            counts = dict()
+            #.gt_bases
+            genotypes = {self.vcf_record.genotype(s) for s in self.samples}
+            for g in genotypes:
+                ad = g.data.AD
+                for i in range(0, len(alleles)):
+                    a = alleles[i]
+                    n = ad[i]
+                    counts[a] = counts.get(a, 0) + n
+
+            self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+
+        return self.alt_alleles
 
     def alt_list1(self):
         s = self.get_allele()
