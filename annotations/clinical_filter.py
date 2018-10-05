@@ -180,8 +180,16 @@ if __name__ == '__main__':
     print "file: {}".format(filtered_by_bed_vep_output)
 
     ##process_file("/Users/misha/projects/bgm/cases/bgm9001/tmp/f1.json")
-    with open (header_file) as vcf:
-        header = vcf.read()
+    if (header_file == "header.vcf" and not os.path.exists(header_file)):
+        if (filtered_by_bed_vep_output.endswith("vep.json")):
+            f = filtered_by_bed_vep_output.split('.')
+            ff = f[:-2] + ["vcf"]
+            header_file = '.'.join(ff)
+        with open (header_file) as vcf:
+            header = [h for h in vcf.read() if h.startswith('#')]
+    else:
+        with open (header_file) as vcf:
+            header = vcf.read()
 
     expected_set = {}
     if (expected_file):

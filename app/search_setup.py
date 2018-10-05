@@ -89,8 +89,8 @@ def prepareLegend(ws_name):
     flt_unit.StatusUnit(legend, "Variant_Class",
         "/variant_class")
 
-    flt_unit.MultiStatusUnit(legend, "Called by",
-        "/view.Genetics/Called by[]", expert_only = False)
+    flt_unit.MultiStatusUnit(legend, "Callers",
+        "/view.Genetics/Called by[]", title="Called by", expert_only = False)
 
     flt_unit.StatusUnit(legend, "Proband_has_Variant",
         "/_filters.Proband_has_Variant")
@@ -118,6 +118,9 @@ def prepareLegend(ws_name):
     flt_unit.StatusUnit(legend, "HGMD_Benign",
         "/_filters.hgmd_benign", default_value="Not in HGMD")
 
+    flt_unit.MultiStatusUnit(legend, "HGMD_Tags",
+        "/view.Databases/HGMD TAGs[]", default_value="None")
+
     flt_unit.MultiStatusUnit(legend, "ClinVar_Significance",
         "/clinvar_significance[]")
 
@@ -143,8 +146,15 @@ def prepareLegend(ws_name):
     #===============================================
     legend.regFilter("Candidates_BGM",
         [ConditionMaker.condEnum("Rules", ["Candidates_BGM"])])
-    legend.regFilter("Candidates_SEQaBOO",
-        [ConditionMaker.condEnum("Rules", ["Candidates_SEQaBOO"])])
+    legend.regFilter("SEQaBOO_Hearing_Loss",
+        [
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss"]),
+            ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
+        ])
+    legend.regFilter("SEQaBOO_ACMG59",
+        [
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_ACMG59", "ACMG59"])
+        ])
     legend.regFilter("Candidates_Including_Common",
         [ConditionMaker.condEnum("Rules", ["Candidates_Including_Common"])])
     legend.regFilter("Candidates_Rare_and_Damaging",
