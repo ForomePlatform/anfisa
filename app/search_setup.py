@@ -20,8 +20,8 @@ def prepareLegend(ws_name):
         expert_only=True, accept_wrong_values=True)
 
 
-    flt_unit.IntValueUnit(legend, "Start Position", "/start", expert_only=True)
-    flt_unit.IntValueUnit(legend, "End Position", "/end", expert_only=True)
+    flt_unit.IntValueUnit(legend, "Start_Pos", "/start", title="Start Position", expert_only=True)
+    flt_unit.IntValueUnit(legend, "End_Pos", "/end", title="End Position", expert_only=True)
     legend._endViewGroup()
 
     flt_unit.MultiStatusUnit(legend, "Genes",
@@ -70,6 +70,12 @@ def prepareLegend(ws_name):
     flt_unit.FloatValueUnit(legend, "gnomAD_AF",
         "/_filters.gnomaAD_AF_Fam", diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (family)")
+    flt_unit.FloatValueUnit(legend, "gnomAD_AF_Exomes",
+        "/_private.gnomad_db_exomes_af", diap = (0., 1.), default_value = 0.,
+        title = "gnomAD Exome Allele Frequency (family)")
+    flt_unit.FloatValueUnit(legend, "gnomAD_AF_Genomes",
+        "/_private.gnomad_db_genomes_af", diap = (0., 1.), default_value = 0.,
+        title = "gnomAD Genome Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Proband",
         "/_filters.gnomaAD_AF_Pb", diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (proband)")

@@ -5,6 +5,7 @@ from .quality_check import evalRec as quality_check_evalRec
 from .af_check import evalRec as af_check_evalRec
 from .bgm_rule import evalRec as bgm_rule_evalRec
 from .seq_a_boo_hearing_loss import evalRec as seq_a_boo_hearing_loss_evalRec
+from .seq_a_boo_hearing_loss_2 import evalRec as seq_a_boo_hearing_loss_2_evalRec
 from .seq_a_boo_acmg59 import evalRec as seq_a_boo_acmg59_evalRec
 from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
@@ -61,6 +62,8 @@ class HOT_SETUP:
             "bgm_rule", bgm_rule_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss",
             "seq_a_boo_hearing_loss", seq_a_boo_hearing_loss_evalRec),
+        RuleFuncH("SEQaBOO_Hearing_Loss_2",
+            "seq_a_boo_hearing_loss_2", seq_a_boo_hearing_loss_2_evalRec),
         RuleFuncH("SEQaBOO_ACMG59",
             "seq_a_boo_acmg59", seq_a_boo_acmg59_evalRec),
         RuleFuncH("Candidates_Including_Common",

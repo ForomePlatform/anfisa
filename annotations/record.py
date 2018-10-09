@@ -250,17 +250,18 @@ class Variant:
         for alt in self.alt_list():
             af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
             self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
-            gm_af = min(gm_af, af) if gm_af else af
-            if (self.is_proband_has_allele(alt)):
-                gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
-            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
-            self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
             em_af = min(em_af, af) if em_af else af
             if (self.is_proband_has_allele(alt)):
                 em_af_pb = min(em_af_pb, af) if em_af_pb else af
 
-        self.data["_private.gnomad_db_exomes_af"] = em_af
-        self.data["_private.gnomad_db_genomes_af"] = gm_af
+            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
+            self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
+            gm_af = min(gm_af, af) if gm_af else af
+            if (self.is_proband_has_allele(alt)):
+                gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
+
+        self.data["_filters.gnomad_db_exomes_af"] = em_af
+        self.data["_filters.gnomad_db_genomes_af"] = gm_af
         self.data['_filters.gnomaAD_AF_Fam'] = max(em_af, gm_af)
         self.data['_filters.gnomaAD_AF_Pb'] = max(em_af_pb, gm_af_pb)
 
