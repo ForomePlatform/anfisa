@@ -2,6 +2,21 @@ from app.view.attr import AttrH
 from .view_setup import ViewSetup
 
 #===============================================
+
+ancestries = [
+    "AA",
+    "AFR",
+    "AMR",
+    "EA",
+    "EAS",
+    "EUR",
+    "SAS",
+    "ASJ",
+    "FIN",
+    "NFE",
+    "OTH"
+]
+
 CONFIG_ATTRS = {
     "view_gen": [
         AttrH("Gene(s)", is_seq = True),
@@ -89,8 +104,8 @@ CONFIG_ATTRS = {
     "view_genetics": [
         AttrH("Zygosity"),
         AttrH("Inherited from"),
-        AttrH("Distance From Intron/Exon Boundary (Worst)", is_seq = True),
-        AttrH("Distance From Intron/Exon Boundary (Canonical)", is_seq = True),
+        AttrH("Dist_from_Exon_worst",title="Distance From Intron/Exon Boundary (Worst)", is_seq = True),
+        AttrH("Dist_from_Exon_canonical", title="Distance From Intron/Exon Boundary (Canonical)", is_seq = True),
         AttrH("Conservation", is_seq = True),
         AttrH("Species with variant"),
         AttrH("Species with other variants"),
@@ -100,7 +115,7 @@ CONFIG_ATTRS = {
         AttrH("other_genes",
             title="Gene symbols from other transcripts", is_seq = True),
         AttrH("Called by", is_seq=True),
-        AttrH("CALLER DATA"),
+        AttrH("CALLER DATA", kind="json"),
     ],
     "_main": [
         AttrH("label"),
@@ -115,9 +130,9 @@ CONFIG_ATTRS = {
         AttrH("variant_class"),
         AttrH("most_severe_consequence"),
         AttrH("ClinVar"),
-        AttrH("clinvar_variants"),
-        AttrH("clinvar_phenotypes"),
-        AttrH("clinvar_significance"),
+        AttrH("clinvar_variants", is_seq = True),
+        AttrH("clinvar_phenotypes", is_seq = True),
+        AttrH("clinvar_significance", is_seq = True),
         AttrH("HGMD"),
         AttrH("HGMD_HG38"),
         AttrH("HGMD_PIMIDs", "hidden", is_seq = True),
@@ -216,19 +231,15 @@ CONFIG_ATTRS = {
         AttrH("strand"),
         AttrH("pubmed", is_seq = True),
         AttrH("somatic"),
-        AttrH("AA"),
-        AttrH("AFR"),
-        AttrH("AMR"),
-        AttrH("EA"),
-        AttrH("EAS"),
-        AttrH("EUR"),
-        AttrH("SAS"),
+        AttrH("gnomAD"),
         AttrH("frequencies", "json"),
         AttrH("phenotype_or_disease"),
         AttrH("seq_region_name"),
         AttrH("clin_sig", is_seq = True),
         AttrH("minor", attrs = ["minor_allele", "minor_allele_freq"]),
     ]
+    + [AttrH("gnomAD_{}".format(ancestry)) for ancestry in ancestries]
+    + [AttrH(ancestry) for ancestry in ancestries]
 }
 
 #===============================================

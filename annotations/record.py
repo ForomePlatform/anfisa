@@ -102,6 +102,7 @@ def hgvcs_pos(str, type, with_pattern = True):
 def get_from_transcripts(transcripts, key, source):
     return unique([t.get(key) for t in transcripts if (t.get("source") == source)])
 
+hgvs_signs = ['-', '+', '*']
 def get_distance_hgvsc(hgvsc):
     coord = hgvsc.split(':')[1]
     xx = coord.split('.')
@@ -111,20 +112,21 @@ def get_distance_hgvsc(hgvsc):
         sign = None
         p1 = None
         p2 = None
-        while (not x[0].isdigit()):
+        while (not x[0].isdigit() and not x[0] in hgvs_signs):
             x = x[1:]
         end = len(x)
         for i in range(0, end):
             c = x[i]
             if (c.isdigit()):
                 continue
-            if (c in ['-', '+']):
-                p1 = int(x[0:i])
+            if (c in hgvs_signs):
+                p0 = 0 if (sign == None) else sign + 1
+                p1 = int(x[p0:i]) if i>0 else 0
                 sign = i
             if (c.isalpha()):
                 end = i
                 break
-        if (p1 and sign):
+        if (p1 != None and sign != None):
             p2 = int(x[sign + 1:end])
         if (p2):
             if (not d or d > p2):
@@ -230,6 +232,9 @@ class Variant:
         self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
         self.data['_filters.Severity'] = self.get_severity()
+
+        d = self.get_distance_from_exon("canonical")
+        self.data['_filters.Dist_from_Exon'] = min(d) if (len(d) > 0) else 0
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -496,17 +501,17 @@ class Variant:
             raise Exception("Unknown type: {}".format(type))
         return v
 
-    def get_hgvs_list(self, kind):
-        if (kind == 'c'):
+    def get_hgvs_list(self, type, kind):
+        if (type == 'c'):
             hgvs_list = self.get_from_transcripts("hgvsc", kind)
-        elif (kind == 'p'):
+        elif (type == 'p'):
             hgvs_list = self.get_from_transcripts("hgvsp", kind)
         else:
             hgvs_list = self.get_from_transcripts("hgvsc", kind) + self.get_from_transcripts("hgvsp", kind)
         return hgvs_list
 
     def get_pos(self, type, kind = "all"):
-        pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
+        pos_list = unique([hgvcs_pos(hgvcs, type) for hgvcs in self.get_hgvs_list(type, kind) if hgvcs])
         return pos_list
 
     def get_pos_tpl(self, type):
@@ -524,7 +529,7 @@ class Variant:
         return (c_worst, c_canonical, c_other)
 
     def get_distance_from_exon(self, kind):
-        return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list(kind) if hgvcs])
+        return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs])
 
     def get_gnomad_pop_max(self, allele = None):
         ancestries = dict()
@@ -1077,11 +1082,11 @@ class Variant:
 
         tab6 = dict()
         #view['Genetics'] = tab6
-        data["view.Genetics"] = tab6
+        data["view.Bioinformatics"] = tab6
         tab6["Zygosity"] = self.get_zygosity()
         tab6["Inherited from"] = self.inherited_from()
-        tab6["Distance From Intron/Exon Boundary (Worst)"] = self.get_distance_from_exon("worst")
-        tab6["Distance From Intron/Exon Boundary (Canonical)"] = self.get_distance_from_exon("canonical")
+        tab6["Dist_from_Exon_worst"] = self.get_distance_from_exon("worst")
+        tab6["Dist_from_Exon_canonical"] = self.get_distance_from_exon("canonical")
         tab6["Conservation"] = unique(self.get_from_transcripts_list("conservation"))
         tab6["Species with variant"] = ""
         tab6["Species with other variants"] = ""

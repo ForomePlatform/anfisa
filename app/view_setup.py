@@ -55,7 +55,7 @@ class ViewSetup:
                 "", col_groups = ColGroupsH(attr = "view.gnomAD")),
         AspectH("view_db", "Databases", "/view.Databases"),
         AspectH("view_pred", "Predictions", "/view.Predictions"),
-        AspectH("view_genetics", "Bioinformatics", "/view.Genetics"),
+        AspectH("view_genetics", "Bioinformatics", "/view.Bioinformatics"),
         AspectH("view_inheritance", "Inheritance", "/view.Inheritance",
             ignored = True),
         AspectH("_main", "VEP<br/>Data", "", kind = "tech"),

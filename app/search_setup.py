@@ -22,6 +22,8 @@ def prepareLegend(ws_name):
 
     flt_unit.IntValueUnit(legend, "Start_Pos", "/start", title="Start Position", expert_only=True)
     flt_unit.IntValueUnit(legend, "End_Pos", "/end", title="End Position", expert_only=True)
+    flt_unit.IntValueUnit(legend, "Dist_from_Exon", "/_filters.Dist_from_Exon",
+                          title="Distance From Intron/Exon Boundary (Canonical)", expert_only=False, default_value=0)
     legend._endViewGroup()
 
     flt_unit.MultiStatusUnit(legend, "Genes",
@@ -96,7 +98,7 @@ def prepareLegend(ws_name):
         "/variant_class")
 
     flt_unit.MultiStatusUnit(legend, "Callers",
-        "/view.Genetics/Called by[]", title="Called by", expert_only = False)
+        "/view.Bioinformatics/Called by[]", title="Called by", expert_only = False)
 
     flt_unit.StatusUnit(legend, "Proband_has_Variant",
         "/_filters.Proband_has_Variant")
@@ -155,6 +157,11 @@ def prepareLegend(ws_name):
     legend.regFilter("SEQaBOO_Hearing_Loss",
         [
             ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss"]),
+            ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
+        ])
+    legend.regFilter("SEQaBOO_Hearing_Loss_v2",
+        [
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_2"]),
             ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
         ])
     legend.regFilter("SEQaBOO_ACMG59",
