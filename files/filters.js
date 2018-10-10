@@ -99,7 +99,7 @@ function formFilterRequestArgs(filter_name, add_instr) {
     else
         args += "&filter=" + encodeURIComponent(filter_name);
     if (add_instr)
-        args += "&instr=" + encodeURIComponent(add_instr);
+        args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
     return args;
 }
 

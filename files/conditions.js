@@ -293,7 +293,7 @@ function filterOpDelete() {
         return;
     wsDropShow(false);
     sBaseFilterName = "_current_";
-    loadStat("DROP/" + sInpFilters_Name.value);
+    loadStat(["instr", "DROP/" + sInpFilters_Name.value]);
     updateCurFilter(sBaseFilterName, true);
 }
 
@@ -305,13 +305,13 @@ function filterFiltersOperation() {
     switch (sFilterCurOp) {
         case "create":
             if (!q_all && checkFilterAsIdent(filter_name)) {
-                loadStat("UPDATE/" + filter_name);
+                loadStat(["instr", "UPDATE/" + filter_name]);
                 updateCurFilter(sBaseFilterName, true);
             }
             break;
         case "modify":
             if (q_all && !q_pre && filter_name != sBaseFilterName) {
-                loadStat("UPDATE/" + filter_name);
+                loadStat(["instr", "UPDATE/" + filter_name]);
                 updateCurFilter(sBaseFilterName, true);
             }
             break;

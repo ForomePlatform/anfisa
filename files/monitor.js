@@ -277,13 +277,11 @@ function doExport() {
             setupExport(info);
         }
     };
+    add_instr = null;
+    if (sCurZoneData)
+        add_instr = ["zone", JSON.stringify(sCurZoneData)];    
     xhttp.open("POST", "export", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes);
-    if (sCurFilterName)
-        args += "&filter=" + encodeURIComponent(sCurFilterName);
-    if (sCurZoneData)
-        args += "&zone=" + encodeURIComponent(JSON.stringify(sCurZoneData));
-    xhttp.send(args); 
+    xhttp.send(formFilterRequestArgs(sBaseFilterName, add_instr)); 
 }
 
