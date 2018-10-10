@@ -6,7 +6,7 @@ def evalRec(env, rec):
         return False
 
     # Discard common variants
-    if (rec.gnomAD_AF_Genomes > env.af_in_db):
+    if (rec.gnomAD_AF_Exomes > env.af_in_db):
         return False
 
     # ========== Always want ===============:

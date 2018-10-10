@@ -73,10 +73,10 @@ def prepareLegend(ws_name):
         "/_filters.gnomaAD_AF_Fam", diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Exomes",
-        "/_private.gnomad_db_exomes_af", diap = (0., 1.), default_value = 0.,
+        "/_filters.gnomad_db_exomes_af", diap = (0., 1.), default_value = 0.,
         title = "gnomAD Exome Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Genomes",
-        "/_private.gnomad_db_genomes_af", diap = (0., 1.), default_value = 0.,
+        "/_filters.gnomad_db_genomes_af", diap = (0., 1.), default_value = 0.,
         title = "gnomAD Genome Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Proband",
         "/_filters.gnomaAD_AF_Pb", diap = (0., 1.), default_value = 0.,
