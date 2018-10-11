@@ -62,19 +62,20 @@ class HOT_SETUP:
             "bgm_rule", bgm_rule_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss",
             "seq_a_boo_hearing_loss", seq_a_boo_hearing_loss_evalRec),
-        RuleFuncH("SEQaBOO_Hearing_Loss_2",
-            "seq_a_boo_hearing_loss_2", seq_a_boo_hearing_loss_2_evalRec),
         RuleFuncH("SEQaBOO_ACMG59",
             "seq_a_boo_acmg59", seq_a_boo_acmg59_evalRec),
-        RuleFuncH("Candidates_Including_Common",
-            "common_check", common_check_evalRec),
         RuleFuncH("gnomAD_Frequency_Threshold",
             "af_check", af_check_evalRec),
         RuleFuncH("Has_Damaging_Predictions",
             "polyphen_check", polyphen_check_evalRec)
+        # RuleFuncH("SEQaBOO_Hearing_Loss_2",
+        #           "seq_a_boo_hearing_loss_2", seq_a_boo_hearing_loss_2_evalRec),
+        # RuleFuncH("Candidates_Including_Common",
+        #           "common_check", common_check_evalRec)
     ]
 
     PARAMETERS = [
+        RuleParamH("exon_dist", 5),
         RuleParamH("af", 0.01),
         RuleParamH("af_seq_a_boo", 0.0007),
         RuleParamH("af_in_db", 0.05),

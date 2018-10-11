@@ -42,7 +42,7 @@ proteins_3_to_1 = {
 }
 
 
-def unique(lst):
+def unique(lst, replace_None=None):
     if (not lst):
         return lst
     s = set()
@@ -51,10 +51,13 @@ def unique(lst):
             s.update(element)
         else:
             s.add(element)
-    s.discard(None)
-    list2 = []
-    list2.extend(s)
-    return list2
+    if (replace_None == None):
+        s.discard(None)
+    elif None in s:
+        s.discard(None)
+        s.add(replace_None)
+
+    return list(s)
 
 
 def convert_p(x):
@@ -233,8 +236,8 @@ class Variant:
         self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
         self.data['_filters.Severity'] = self.get_severity()
 
-        d = self.get_distance_from_exon("canonical")
-        self.data['_filters.Dist_from_Exon'] = min(d) if (len(d) > 0) else 0
+        d = self.get_distance_from_exon("worst", none_replacement=0)
+        self.data['_filters.Dist_from_Exon'] = min(d)
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -468,7 +471,7 @@ class Variant:
         return unique([t.get(key) for t in self.get_transcripts() if (t.has_key(key))])
 
     def get_from_transcripts_by_biotype(self, key, biotype):
-        return unique([t.get(key) for t in self.get_transcripts(biotype = biotype) if (t.has_key(key))])
+        return unique([t.get(key) for t in self.get_transcripts(biotype=biotype) if (t.has_key(key))])
 
     def get_from_worst_transcript(self, key):
         return unique([t.get(key) for t in self.get_most_severe_transcripts() if (t.has_key(key))])
@@ -528,8 +531,9 @@ class Variant:
             c_other = [].extend(ss)
         return (c_worst, c_canonical, c_other)
 
-    def get_distance_from_exon(self, kind):
-        return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs])
+    def get_distance_from_exon(self, kind, none_replacement = "Exonic"):
+        return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs],
+                      replace_None=none_replacement)
 
     def get_gnomad_pop_max(self, allele = None):
         ancestries = dict()
@@ -939,7 +943,11 @@ class Variant:
 
         tab1['Worst Annotation'] = self.get_msq()
         consequence_terms = self.get_from_canonical_transcript("consequence_terms")
-        tab1['Canonical Annotation'] = self.most_severe(consequence_terms)
+        canonical_annotation = self.most_severe(consequence_terms)
+        if (len(consequence_terms) > 1):
+            other_terms = list(set(consequence_terms) - {canonical_annotation})
+            canonical_annotation = "{} [{}]".format(canonical_annotation, ', '.join(other_terms))
+        tab1['Canonical Annotation'] = canonical_annotation
 
         tab1["Splice Region"] = self.get_from_transcripts("spliceregion")
         tab1["GeneSplicer"] = self.get_from_transcripts("genesplicer")
