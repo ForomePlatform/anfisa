@@ -237,7 +237,7 @@ class Variant:
         self.data['_filters.Severity'] = self.get_severity()
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
-        self.data['_filters.Dist_from_Exon'] = min(d)
+        self.data['_filters.Dist_from_Exon'] = min(d) if (len(d)> 0) else 0
 
     def call_liftover(self):
         connection = self.connectors.liftover
