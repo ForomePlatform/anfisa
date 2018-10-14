@@ -70,11 +70,24 @@ class Connection:
             self.port = port
         else:
             self.port = default_port(dbms)
+        if (self.dbms.startswith('jdbc')):
+            wrapper = "jdbc"
+        else:
+            wrapper = None
+        if (self.dbms == "IRIS"):
+            wrapper = "jdbc"
+            if (not driver):
+                driver = IRIS[0]
+            if (not java_class_path):
+                java_class_path = IRIS[1]
+
         if (self.dbms == "MySQL"):
             self.connect_dbms = connect_mysql
-        elif (self.dbms.startswith('jdbc')):
+        elif (wrapper == "jdbc"):
             self.connect_dbms = lambda port, user, password, database: \
-                connect_jdbc(driver, java_class_path, self.port, self.user, self.password, self.database)
+                connect_jdbc(driver, java_class_path, self.dbms, self.port, self.user, self.password, self.database)
+        else:
+            raise Exception("Unsupported DBMS: {}".format(self.dbms))
         self.connect()
 
     def connect(self):
@@ -102,14 +115,21 @@ class Connection:
         # print connection.is_connected()
         return connection
 
-    def is_table_exist(self, schema, table):
+    def is_table_exist(self, table):
         c = self.connection.cursor()
 
         p = self.parameter()
+        schema = self.database
         if (self.dbms == 'MySQL'):
             sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = {} AND table_name = {}"
-        else:
+        elif (self.dbms == "IRIS"):
             sql = "SELECT SqlTableName FROM %Dictionary.CompiledClass WHERE SqlSchemaName = {} AND SqlTableName = {}"
+            t = table.split('.')
+            if (len(t)> 1):
+                table = t[1]
+                schema = t[0]
+            else:
+                schema = "SQLUser"
 
         sql = sql.format(p, p)
         c.execute(sql, (schema, table))
