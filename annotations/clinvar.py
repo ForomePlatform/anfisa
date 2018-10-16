@@ -23,7 +23,7 @@ class ClinVar(Connection):
     QUERY_NA = QUERY_0 + " AND AlternateAllele = 'na'"
 
     def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96"):
-        Connection.__init__(self, host, database="clinvar", user="hgmd", password='hgmd')
+        Connection.__init__(self, host, database="clinvar", user="hgmd", password='hgmd', connect_now=True)
         n = len(self.QUERY.split("{}")) - 1
         p = self.parameter()
         args = [p for i in range(0, n)]

@@ -225,6 +225,7 @@ if __name__ == '__main__':
     parser.add_argument("--port", help="DBMS port, defualt depends on DBMS type")
     parser.add_argument("--user", "-u", help="DBMS user, defualt depends on DBMS type")
     parser.add_argument("--password", "-p", help="DBMS password, defualt depends on DBMS type")
+    parser.add_argument("--options", "-o", help="Options to pass to database driver", nargs='*')
 
     args = parser.parse_args()
     print args
@@ -245,6 +246,11 @@ if __name__ == '__main__':
         raise Exception("Unsupported DBMS type: {}".format(args.dbms))
 
     connector = GnomAD(args.host, dbms=args.dbms, database=args.database, port=args.port, user=args.user, password=args.password)
+    if (args.options):
+        for key in args.options:
+            option = key.split(':')
+            connector.set_option(option[0], option[1])
+    connector.connect()
     connector.initialize()
     for file in files:
         connector.ingest(file)

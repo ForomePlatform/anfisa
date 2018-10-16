@@ -17,21 +17,27 @@ def host_name():
     return socket.gethostname().lower()
 
 
-def connect_mysql(port, user, password, database):
+def connect_mysql(port, user, password, database, driver_options):
     connection = mysql.connector.connect(
         host="localhost",
         user=user,
         passwd=password,
         database=database,
-        port = port
+        port = port, **driver_options
     )
     return connection
 
 
-def connect_jdbc(driver, classpath, dbms, port, user, password, database):
+def connect_jdbc(driver, classpath, dbms, port, user, password, database, driver_options):
     url = "jdbc:{dbms}://{host}:{port}/{database}".\
         format(dbms=dbms, host="localhost", port=port, database=database)
-    connection = jaydebeapi.connect(driver, url, [user, password], classpath)
+    options = {
+        "user": user,
+        "password": password
+    }
+    if (driver_options):
+        options.update(driver_options)
+    connection = jaydebeapi.connect(driver, url, options, classpath)
     return connection
 
 
@@ -55,13 +61,14 @@ def resolve_host(host):
 
 class Connection:
     def __init__(self, host = "localhost", database = None, port = None, user = None,
-                 password = None, dbms = 'MySQL', ssh_user = None, driver = None, java_class_path = None):
+                 password = None, dbms = 'MySQL', ssh_user = None, driver = None, java_class_path = None, connect_now = False):
         self.tunnel = None
         self.database = database
         self.host = resolve_host(host)
         self.user = user
         self.password = password
         self.dbms = dbms
+        self.options = dict()
         if (ssh_user):
             self.ssh_user = ssh_user
         else:
@@ -84,15 +91,19 @@ class Connection:
         if (self.dbms == "MySQL"):
             self.connect_dbms = connect_mysql
         elif (wrapper == "jdbc"):
-            self.connect_dbms = lambda port, user, password, database: \
-                connect_jdbc(driver, java_class_path, self.dbms, self.port, self.user, self.password, self.database)
+            self.connect_dbms = lambda po, u, pswd, db, opt: \
+                connect_jdbc(driver, java_class_path, dbms, po, u, pswd, db, opt)
         else:
             raise Exception("Unsupported DBMS: {}".format(self.dbms))
-        self.connect()
+        if (connect_now):
+            self.connect()
+
+    def set_option(self, key, value):
+        self.options[key] = value
 
     def connect(self):
         if (self.host == "localhost" or self.host == "127.0.0.1"):
-            self.connection = self.connect_dbms(self.port, self.user, self.password, self.database)
+            self.connection = self.connect_dbms(self.port, self.user, self.password, self.database, self.options)
         else:
             self.connection = self.connect_via_tunnel()
         self.connection.autocommit = True
@@ -119,16 +130,19 @@ class Connection:
         c = self.connection.cursor()
 
         p = self.parameter()
-        schema = self.database
+        t = table.split('.')
+        if (len(t) > 1):
+            table = t[1]
+            schema = t[0]
+        else:
+            schema = None
         if (self.dbms == 'MySQL'):
             sql = "SELECT table_name FROM information_schema.tables WHERE table_schema = {} AND table_name = {}"
+            if (not schema):
+                schema = self.database
         elif (self.dbms == "IRIS"):
             sql = "SELECT SqlTableName FROM %Dictionary.CompiledClass WHERE SqlSchemaName = {} AND SqlTableName = {}"
-            t = table.split('.')
-            if (len(t)> 1):
-                table = t[1]
-                schema = t[0]
-            else:
+            if (schema == None):
                 schema = "SQLUser"
 
         sql = sql.format(p, p)
