@@ -6,7 +6,9 @@ from annotations import gnomAD_path
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
     try:
         if (ref != REF):
-            if (ref in REF):
+            if (REF[0] == ref):
+                alt = alt + REF[1:]
+            elif (ref in REF):
                 s = REF.split(ref)
                 alt = alt.join(s)
             else:
@@ -91,5 +93,6 @@ class GnomAD:
 
 if __name__ == '__main__':
     gnomAD = GnomAD()
+    print gnomAD.get_af(2, 73675844, 'C', 'T')
     print gnomAD.get_af(1, 16360424, 'G', 'C')
     print gnomAD.get_af(1, 6484880, 'A', 'G')
