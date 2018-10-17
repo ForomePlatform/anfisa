@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 [ ! -d "data" ] && mkdir data
-[ ! -d "export/work" ] && mkdir -p export/work
+[ ! -d "tmp/export/work" ] && mkdir -p tmp/export/work
 [ ! -d "logs" ] && mkdir logs
 
 cd data
