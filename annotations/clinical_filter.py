@@ -186,7 +186,7 @@ if __name__ == '__main__':
             ff = f[:-2] + ["vcf"]
             header_file = '.'.join(ff)
         with open (header_file) as vcf:
-            header = [h for h in vcf.read() if h.startswith('#')]
+            header = ''.join([h for h in vcf if h.startswith('#')])
     else:
         with open (header_file) as vcf:
             header = vcf.read()

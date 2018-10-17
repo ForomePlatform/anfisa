@@ -122,7 +122,8 @@ class Connection:
         connection = self.connect_dbms(port=self.tunnel.local_bind_port,
                                        user = self.user,
                                        password = self.password,
-                                       database = self.database)
+                                       database = self.database,
+                                       driver_options=self.options)
         # print connection.is_connected()
         return connection
 
