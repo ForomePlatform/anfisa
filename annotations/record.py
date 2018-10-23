@@ -485,6 +485,16 @@ class Variant:
     def get_genes(self):
         return unique(self.get_from_transcripts_list("gene_symbol"))
 
+    def get_hgnc_ids(self):
+        return unique(self.get_from_transcripts_list("hgnc_id"))
+
+    def get_tenwise_link(self):
+        hgnc_ids = self.get_hgnc_ids()
+        return [
+            "https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_{}_variant_report.html".format(id)
+            for id in hgnc_ids
+        ]
+
     def get_other_genes(self):
         genes = set(self.get_genes())
         all_genes = set(self.get_from_transcripts_by_biotype("gene_symbol", "all"))
@@ -587,6 +597,7 @@ class Variant:
         return (a1, pop_max_a_1, pop_max_f_1, a2, pop_max_a_2, pop_max_f_2)
 
     def get_gnomad_af(self):
+        return self.data.get('_filters.gnomaAD_AF_Fam')
         gm_af = None
         alt_alleles = set(self.alt_list())
         collocated_variants = self.get_colocated_variants()
@@ -1061,6 +1072,8 @@ class Variant:
         tab4['ClinVar Variants'] = unique(self.data.get("clinvar_variants"))
         tab4['ClinVar Significance'] = unique(self.data.get("clinvar_significance"))
         tab4['ClinVar Phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
+
+        tab4["PubMed_Search"] = self.get_tenwise_link()
 
         tab5 = dict()
         #view['Predictions'] = tab5

@@ -8,10 +8,10 @@ def host_name():
 def data_path():
     path_to_data = None
     hostname = host_name()
-    if ("partners.org" in hostname):
-        path_to_data = "/net/bgm/resources/"
-    elif ("misha" in hostname):
+    if ("misha" in hostname):
         path_to_data = "/opt/data/"
+    elif ("partners.org" in hostname):
+        path_to_data = "/net/bgm/resources/"
     else:
         uname = os.uname()
         if ('aws' in uname[2].lower()):

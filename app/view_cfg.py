@@ -82,6 +82,7 @@ CONFIG_ATTRS = {
         AttrH("ClinVar Phenotypes", is_seq = True),
         AttrH("ClinVar", "link"),
         AttrH("GeneCards", kind="link", is_seq=True),
+        AttrH("PubMed_Search", kind="link", is_seq=True, title="PubMed Search Results"),
     ],
     "view_pred": [
         AttrH("LoF Score", is_seq = True),
