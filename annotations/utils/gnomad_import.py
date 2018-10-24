@@ -5,14 +5,13 @@ import time
 
 import vcf as pyvcf
 
-from annotations.db_connect import Connection
+from annotations.gnomad import GnomAD
 
-
-class GnomAD(Connection):
+class GnomAD_Import(GnomAD):
     TABLE = "VARIANTS"
     INFO_LEN = 1048576
     def __init__(self, *args, **kvargs):
-        Connection.__init__(self, *args, **kvargs)
+        GnomAD.__init__(self, *args, **kvargs)
         self.store_info = kvargs.get("store_info", False)
         if (self.dbms == "IRIS"):
             self.table = "gnomad.{}".format(self.TABLE)
@@ -53,19 +52,7 @@ class GnomAD(Connection):
             "Hom":"INT"
         }
 
-        ancestries = [
-            "AFR",
-            "AMR",
-            "ASJ",
-            "EAS",
-            "FIN",
-            "NFE",
-            "OTH",
-            "Male",
-            "Female",
-            "raw",
-            "POPMAX"
-        ]
+        ancestries = self.POP_GROUPS
 
         self.info_columns = {}
         for field in fields:
@@ -245,7 +232,7 @@ if __name__ == '__main__':
     else:
         raise Exception("Unsupported DBMS type: {}".format(args.dbms))
 
-    connector = GnomAD(args.host, dbms=args.dbms, database=args.database, port=args.port, user=args.user, password=args.password)
+    connector = GnomAD_Import(args.host, dbms=args.dbms, database=args.database, port=args.port, user=args.user, password=args.password)
     if (args.options):
         for key in args.options:
             option = key.split(':')
