@@ -13,7 +13,7 @@
     ],
     "files": {
         "files": [".css", ".js", ".png", ".gif"],
-        "../a-export":  [".xlsx"]}, 
+        "${WORK}/export":  [".xlsx"]}, 
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
         "work-dir": "${WORK}/export/work"
