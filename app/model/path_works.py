@@ -70,40 +70,41 @@ class SeqF(_AttrFunc):
 
 #===============================================
 class AttrFuncPool:
-    def __init__(self):
-        self.mPoolF = {"": RootF()}
+    sPoolF = {"": RootF()}
 
-    def _makeF(self, path):
+    @classmethod
+    def _makeF(cls, path):
         path_str = ''.join(path)
-        if path_str in self.mPoolF:
-            return self.mPoolF[path_str]
+        if path_str in cls.sPoolF:
+            return cls.sPoolF[path_str]
         path_parent = ''.join(path[:-1])
-        parent_f = self.mPoolF[path_parent]
+        parent_f = cls.sPoolF[path_parent]
         if path[-1] == "[]":
             ret_f = SeqF(path, parent_f)
         elif path[-1].startswith('/'):
             ret_f = KeyF(path, parent_f)
         else:
             assert False
-        self.mPoolF[path_str] = ret_f
+        cls.sPoolF[path_str] = ret_f
         return ret_f
 
     sPatt = re.compile('[\[\/]')
 
-    def makeFunc(self, path_str):
-        ret_func = self.mPoolF[""]
+    @classmethod
+    def makeFunc(cls, path_str):
+        ret_func = cls.sPoolF[""]
         idx = 0
         path = []
         try:
             while idx is not None:
-                q = self.sPatt.search(path_str, idx + 1)
+                q = cls.sPatt.search(path_str, idx + 1)
                 if q is not None:
                     path.append(path_str[idx:q.start()])
                     idx = q.start()
                 else:
                     path.append(path_str[idx:])
                     idx = None
-                ret_func = self._makeF(path)
+                ret_func = cls._makeF(path)
                 if path_str[idx:].startswith("[]"):
                     path
         except Exception:

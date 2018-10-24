@@ -1,4 +1,5 @@
 {
+    "file-path-def": {"WORK": "../a-setup"},
     "host": "0.0.0.0",
     "port": 8090,
     "html-base": "/anfisa/",
@@ -6,16 +7,16 @@
     "workspaces": [
         {
             "name": "Personal_Genome_3140",
-            "mongo": "PGP3140",
-            "file": "data/PGP3140.json"
+            "mongo": "Anfisa_bgm9001_wgs",
+            "file": "${WORK}/data/bgm9001_wgs.json"
         }
     ],
     "files": {
         "files": [".css", ".js", ".png", ".gif"],
         "../a-export":  [".xlsx"]}, 
     "export": {
-        "excel-template": "export/SEQaBOO_output_template_0730.xlsx",
-        "work-dir": "tmp/export/work"
+        "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
+        "work-dir": "${WORK}/export/work"
     },
     "link-base": ["anfisa.forome.org", "Local"],
     "logging": { 
@@ -31,7 +32,7 @@
                 "level": "INFO",
                 "formatter": "standard",
                 "class": "logging.FileHandler",
-                "filename": "logs/anfisa.log"
+                "filename": "${WORK}/logs/anfisa.log"
             }
         },
         "loggers": { 

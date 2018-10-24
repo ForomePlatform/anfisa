@@ -28,19 +28,19 @@ class RulesEvalUnit(BoolSetUnit):
             if val:
                 rules_set.add(func_h.getName())
 
-    def getJSonData(self, expert_mode):
+    def getJSonData(self, research_mode):
         ret = dict()
         columns = []
         for idx, col in self.enumColumns():
             func_h = self.mRulesSetup.FUNCTIONS[idx]
-            if (not expert_mode and func_h.isExpert()):
+            if (not research_mode and func_h.isResearch()):
                 continue
             columns.append([func_h.getName(),
                 self.mRulesSetup.getSrcContent(func_h.getFileName())])
         ret["columns"] = columns
         param_rep = StringIO()
         for param_h in self.mRulesSetup.PARAMETERS:
-            if not expert_mode and param_h.isExpert():
+            if not research_mode and param_h.isResearch():
                 continue
             print >> param_rep, ("%s=%s" % (param_h.getName(),
                 str(self.mEnv.get(param_h.getName()))))
@@ -51,11 +51,11 @@ class RulesEvalUnit(BoolSetUnit):
         for key, value in par_data:
             self.mEnv.set(key, value)
 
-    def modifyRulesData(self, expert_mode, item, content):
+    def modifyRulesData(self, research_mode, item, content):
         if item == "--param":
             param_list = []
             for param_h in self.mRulesSetup.PARAMETERS:
-                if not expert_mode and param_h.isExpert():
+                if not research_mode and param_h.isResearch():
                     continue
                 param_list.append(param_h.getName())
             result, error = parseParams(content, param_list)

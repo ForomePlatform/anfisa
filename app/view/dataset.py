@@ -1,6 +1,7 @@
 import json, codecs
 from xml.sax.saxutils import escape
 
+from app.model.path_works import AttrFuncPool
 from .record import DataRecord
 #===============================================
 class DataSet:
@@ -8,16 +9,19 @@ class DataSet:
         self.mViewSetup  = view_setup
         self.mName      = name
         self.mDataObjects   = []
-        self.mLabelKey  = self.mViewSetup.configOption("label.key")
-        self.mColorCode = self.mViewSetup.configOption("color.code")
+        self.mLabelKeyF  =  AttrFuncPool.makeFunc(
+            self.mViewSetup.configOption("label.key"))
+        self.mColorCodeF = AttrFuncPool.makeFunc(
+            self.mViewSetup.configOption("color.code"))
         self.mDataKeys  = []
-        uniq_keys = self.mViewSetup.configOption("uniq.keys")
+        uniq_keys_f = [AttrFuncPool.makeFunc(fpath)
+            for fpath in self.mViewSetup.configOption("uniq.keys")]
         with codecs.open(fname, "r", encoding = "utf-8") as inp:
             for line in inp:
                 obj = json.loads(line)
                 self.mDataObjects.append(obj)
-                self.mDataKeys.append(
-                    '-'.join([str(obj[key]) for key in uniq_keys]))
+                keys = [str(path_f(obj)[0]) for path_f in uniq_keys_f]
+                self.mDataKeys.append('-'.join(keys))
         seed = str(self.mViewSetup.configOption("rand.seed"))
         self.mRecHash = [hash(seed + rec_key)
             for rec_key in self.mDataKeys]
@@ -30,9 +34,9 @@ class DataSet:
 
     def reportList(self, output):
         for idx, rec in enumerate(self.mDataObjects):
-            rec_key = rec[self.mLabelKey]
+            rec_key = self.mLabelKeyF(rec)[0]
             rec_color = self.mViewSetup.normalizeColorCode(
-                rec.get(self.mColorCode))
+                self.mColorCodeF(rec)[0])
             print >> output, ('<div id="li--%d" class="rec-label %s" '
                 'onclick="changeRec(%d)";">%s</div>' %
                 (idx, rec_color, idx, rec_key))
@@ -56,8 +60,9 @@ class DataSet:
         ret = []
         for rec_no in rec_no_seq:
             rec = self.mDataObjects[rec_no]
-            ret.append([rec_no, escape(rec[self.mLabelKey]),
-                self.mViewSetup.normalizeColorCode(rec.get(self.mColorCode)),
+            color_code = self.mLabelKeyF(rec)[0]
+            ret.append([rec_no, escape(color_code),
+                self.mViewSetup.normalizeColorCode(color_code),
                 rec_no in marked_set])
         return ret
 

@@ -12,11 +12,11 @@ from .polyphen_check import evalRec as polyphen_check_evalRec
 
 #===============================================
 class RuleFuncH:
-    def __init__(self, name, filename, function, expert_mode = False):
+    def __init__(self, name, filename, function, research_mode = False):
         self.mName      = name
         self.mFileName  = filename
         self.mFunc      = function
-        self.mIsExpert  = expert_mode
+        self.mIsResearch  = research_mode
 
     def getFileName(self):
         return self.mFileName
@@ -27,15 +27,15 @@ class RuleFuncH:
     def getFunc(self):
         return self.mFunc
 
-    def isExpert(self):
-        return self.mIsExpert
+    def isResearch(self):
+        return self.mIsResearch
 
 #===============================================
 class RuleParamH:
-    def __init__(self, name, value, expert_mode = False):
+    def __init__(self, name, value, research_mode = False):
         self.mName      = name
         self.mValue     = value
-        self.mIsExpert  = expert_mode
+        self.mIsResearch  = research_mode
 
     def getName(self):
         return self.mName
@@ -46,8 +46,8 @@ class RuleParamH:
     def setValue(self, value):
         self.mValue = value
 
-    def isExpert(self):
-        return self.mIsExpert
+    def isResearch(self):
+        return self.mIsResearch
 
 #===============================================
 class HOT_SETUP:

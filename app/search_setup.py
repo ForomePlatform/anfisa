@@ -14,23 +14,26 @@ def prepareLegend(ws_name):
     #     "chr6", "chr7", "chr8", "chr9", "chr10",
     #     "chr11", "chr12", "chr13", "chr14", "chr15",
     #     "chr16", "chr17", "chr18", "chr19", "chr20",
-    #     "chr21", "chr22", "chr23", "chrX", "chrY", "?"], expert_only=True, accept_wrong_values=True)
+    #     "chr21", "chr22", "chr23", "chrX", "chrY", "?"], research_only=True, accept_wrong_values=True)
 
-    flt_unit.StatusUnit(legend, "Chromosome", "/seq_region_name",
-        expert_only=True, accept_wrong_values=True)
+    flt_unit.StatusUnit(legend, "Chromosome", "/data/seq_region_name",
+        research_only = True, accept_wrong_values = True)
 
-
-    flt_unit.IntValueUnit(legend, "Start_Pos", "/start", title="Start Position", expert_only=True)
-    flt_unit.IntValueUnit(legend, "End_Pos", "/end", title="End Position", expert_only=True)
-    flt_unit.IntValueUnit(legend, "Dist_from_Exon", "/_filters.Dist_from_Exon",
-                          title="Distance From Intron/Exon Boundary (Canonical)", expert_only=False, default_value=0)
+    flt_unit.IntValueUnit(legend, "Start_Pos", "/data/start",
+        title = "Start Position", research_only = True)
+    flt_unit.IntValueUnit(legend, "End_Pos", "/data/end",
+        title = "End Position", research_only = True)
+    flt_unit.IntValueUnit(legend, "Dist_from_Exon",
+        "/_filters/dist_from_exon",
+        title="Distance From Intron/Exon Boundary (Canonical)",
+        research_only = False, default_value = 0)
     legend._endViewGroup()
 
     flt_unit.MultiStatusUnit(legend, "Genes",
-        "/view.general/Gene(s)[]", compact_mode = True)
+        "/view/general/genes[]", compact_mode = True)
 
     flt_unit.StatusUnit(legend, "Most_Severe_Consequence",
-        "/most_severe_consequence",
+        "/data/most_severe_consequence",
         ["transcript_ablation",
         "splice_acceptor_variant",
         "splice_donor_variant",
@@ -70,85 +73,90 @@ def prepareLegend(ws_name):
 
     legend._startViewGroup("Databases")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF",
-        "/_filters.gnomaAD_AF_Fam", diap = (0., 1.), default_value = 0.,
+        "/_filters/gnomad_af_fam",
+        diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Exomes",
-        "/_filters.gnomad_db_exomes_af", diap = (0., 1.), default_value = 0.,
+        "/_filters/gnomad_db_exomes_af",
+        diap = (0., 1.), default_value = 0.,
         title = "gnomAD Exome Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Genomes",
-        "/_filters.gnomad_db_genomes_af", diap = (0., 1.), default_value = 0.,
+        "/_filters/gnomad_db_genomes_af",
+        diap = (0., 1.), default_value = 0.,
         title = "gnomAD Genome Allele Frequency (family)")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF_Proband",
-        "/_filters.gnomaAD_AF_Pb", diap = (0., 1.), default_value = 0.,
+        "/_filters/gnomad_af_pb",
+        diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (proband)")
 
     flt_unit.StatusUnit(legend, "BGM_Rare_Variant",
-        "/_filters.RareVariantFilter", expert_only=True)
+        "/_filters/rare_variant", research_only = True)
 
     flt_unit.PresenceUnit(legend, "Presence_in_Databases", [
-        ("ClinVar", "/view.Databases/ClinVar"),
-        ("GnomAD", "/_filters.gnomaAD_AF"),
-        ("HGMD", "/view.Databases/HGMD PMIDs[]"),
-        ("OMIM", "/view.Databases/OMIM")])
+        ("ClinVar", "/view/databases/ClinVar"),
+        ("GnomAD", "/filters/gnomad_af"),
+        ("HGMD", "/view/databases/hgmd_pmids[]"),
+        ("OMIM", "/view/databases/omim")])
 
     legend._endViewGroup()
 
     legend._startViewGroup("Call")
     flt_unit.StatusUnit(legend, "Variant_Class",
-        "/variant_class")
+        "/data/variant_class")
 
     flt_unit.MultiStatusUnit(legend, "Callers",
-        "/view.Bioinformatics/Called by[]", title="Called by", expert_only = False)
+        "/view/bioinformatics/called_by[]",
+        title="Called by", research_only = False)
 
     flt_unit.StatusUnit(legend, "Proband_has_Variant",
-        "/_filters.Proband_has_Variant")
+        "/_filters/proband_has_variant")
 
     legend._endViewGroup()
 
     legend._startViewGroup("Call_Quality")
     flt_unit.IntValueUnit(legend, "Proband_GQ",
-        "/_filters.Proband_GQ")
+        "/_filters/proband_gq")
 
     flt_unit.IntValueUnit(legend, "Min_GQ",
-        "/_filters.Min_GQ")
+        "/_filters/min_gq")
 
     flt_unit.IntValueUnit(legend, "QD",
-        "/_filters.QD")
+        "/_filters/qd")
 
     flt_unit.IntValueUnit(legend, "FS",
-        "/_filters.FS")
+        "/_filters/fs")
     legend._endViewGroup()
 
     legend._startViewGroup("Predictions")
 
     flt_unit.StatusUnit(legend, "Clinvar_Benign",
-        "/_filters.clinvar_benign", default_value="Not in ClinVar")
+        "/_filters/clinvar_benign", default_value="Not in ClinVar")
     flt_unit.StatusUnit(legend, "HGMD_Benign",
-        "/_filters.hgmd_benign", default_value="Not in HGMD")
+        "/_filters/hgmd_benign", default_value="Not in HGMD")
 
     flt_unit.MultiStatusUnit(legend, "HGMD_Tags",
-        "/view.Databases/HGMD TAGs[]", default_value="None")
+        "/view/databases/hgmd_tags[]", default_value = "None")
 
     flt_unit.MultiStatusUnit(legend, "ClinVar_Significance",
-        "/clinvar_significance[]")
+        "/data/clinvar_significance[]")
 
     flt_unit.MultiStatusUnit(legend, "Polyphen",
-        "/view.Predictions/Polyphen[]")
+        "/view/predictions/polyphen[]")
 
     flt_unit.MultiStatusUnit(legend, "SIFT",
-        "/view.Predictions/SIFT[]")
+        "/view/predictions/sift[]")
 
     flt_unit.MultiStatusUnit(legend, "Polyphen_2_HVAR",
-        "/view.Predictions/Polyphen 2 HVAR[]",
+        "/view/predictions/polyphen2_hvar[]",
         chunker = AttrChunker("[\s\,]"), default_value = "undef")
     flt_unit.MultiStatusUnit(legend, "Polyphen_2_HDIV",
-        "/view.Predictions/Polyphen 2 HDIV[]",
+        "/view/predictions/polyphen2_hdiv[]",
         chunker = AttrChunker("[\s\,]"), default_value = "undef")
     legend._endViewGroup()
 
     legend._startViewGroup("Debug_Info")
     flt_unit.IntValueUnit(legend, "Severity",
-        "/_filters.Severity", expert_only = True, default_value = -1)
+        "/_filters/severity", research_only = True, default_value = -1)
     legend._endViewGroup()
 
     #===============================================

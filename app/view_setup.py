@@ -1,5 +1,4 @@
 from app.view.aspect import AspectH
-from app.view.attr import AttrH
 from app.view.colgrp import ColGroupsH
 
 #===============================================
@@ -8,10 +7,11 @@ class ViewSetup:
         "aspect.tags.title": "Tags&nbsp;&amp;<br/>Filters"}
 
     sConfigOptions = {
-        "label.key":        "label",
-        "color.code":       "color_code",
+        "label.key":        "/data/label",
+        "color.code":       "/data/color_code",
         "aspect.tags.name": "tags_data",
-        "uniq.keys":        ("seq_region_name", "start", "end"),
+        "uniq.keys":
+            ["/data/seq_region_name", "/data/start", "/data/end"],
         # "zones":            [
         #     ("Chromosome", "Chromosome"),
         #     ("Gene",       "Genes"),
@@ -27,7 +27,7 @@ class ViewSetup:
             "Benign/Likely benign",
             "False positives"
         ],
-        "attrs.to.ignore":  ["/view"],
+        "attrs.to.ignore":  [],
         "rand.seed":        179,
         "rand.min.size":    100,
         "rand.sample.size": 100}
@@ -48,27 +48,27 @@ class ViewSetup:
         return "grey"
 
     sAspects = [
-        AspectH("view_gen", "General", "/view.general"),
-        AspectH("view_qsamples", "Quality", "",
-            col_groups = ColGroupsH(attr = "quality.samples")),
-        AspectH("view_gnomAD", "gnomAD",
-                "", col_groups = ColGroupsH(attr = "view.gnomAD")),
-        AspectH("view_db", "Databases", "/view.Databases"),
-        AspectH("view_pred", "Predictions", "/view.Predictions"),
-        AspectH("view_genetics", "Bioinformatics", "/view.Bioinformatics"),
-        AspectH("view_inheritance", "Inheritance", "/view.Inheritance",
-            ignored = True),
-        AspectH("_main", "VEP<br/>Data", "", kind = "tech"),
-        AspectH("transcripts", "VEP<br/>Transcripts", "", kind = "tech",
+        AspectH("view_gen", "General", "view", field = "general"),
+        AspectH("view_qsamples", "Quality", "view",
+            col_groups = ColGroupsH(attr = "quality_samples")),
+        AspectH("view_gnomAD", "gnomAD", "view",
+                col_groups = ColGroupsH(attr = "gnomAD")),
+        AspectH("view_db", "Databases", "view", field = "databases"),
+        AspectH("view_pred", "Predictions", "view", field = "predictions"),
+        AspectH("view_genetics", "Bioinformatics", "view",
+            field = "bioinformatics"),
+        AspectH("view_inheritance", "Inheritance", "view",
+            field = "inheritance", ignored = True),
+        AspectH("_main", "VEP<br/>Data", "data"),
+        AspectH("transcripts", "VEP<br/>Transcripts", "data",
             col_groups = ColGroupsH([
                 ("intergenic_consequences", "Intergenic"),
                 ("motif_feature_consequences", "Motif"),
                 ("regulatory_feature_consequences", "Regulatory"),
                 ("transcript_consequences", "Transcript")])),
-        AspectH("colocated_v", "Colocated<br/>Variants", "", kind = "tech",
+        AspectH("colocated_v", "Colocated<br/>Variants", "data",
             col_groups = ColGroupsH(attr = "colocated_variants")),
-        AspectH("input", "VCF", "", kind = "tech",
-            attrs = [AttrH("input")])]
+        AspectH("input", "VCF", "data")]
 
     @classmethod
     def setRecomendedAttributes(cls, aspect_name, attrs):

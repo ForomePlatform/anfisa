@@ -158,14 +158,22 @@ class HServHandler:
             return resp_h.makeResponse(error = 500)
 
 #========================================
+def loadJSonConfig(config_file):
+    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
+        content = inp.read()
+    pre_config = json.loads(content)
+    file_path_def = pre_config.get("file-path-def")
+    if file_path_def:
+        for key, value in file_path_def.items():
+            content = content.replace('${%s}' % key, value)
+    return json.loads(content)
+
+#========================================
 def setupHServer(config_file, in_container):
     if not os.path.exists(config_file):
         logging.critical("No config file provided (%s)" % config_file)
         sys.exit(2)
-    config = None
-    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
-        content = inp.read()
-    config = json.loads(content)
+    config = loadJSonConfig(config_file)
     logging_config = config.get("logging")
     if logging_config:
         logging.config.dictConfig(logging_config)

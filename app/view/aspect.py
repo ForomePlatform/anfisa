@@ -2,17 +2,18 @@ from xml.sax.saxutils import escape
 
 #===============================================
 class AspectH:
-    def __init__(self, name, title, path, attrs = None,
-            ignored = False, kind = None, col_groups = None,
-            expert_only = False):
+    def __init__(self, name, title, source, field = "",
+            attrs = None, ignored = False, col_groups = None,
+            research_only = False):
         self.mName     = name
         self.mTitle    = title
-        self.mPath     = path
+        self.mSource   = source
+        self.mField    = field
         self.mAttrs = attrs
         self.mIgnored  = ignored
-        self.mExpertOnly = expert_only
-        self.mKind = kind if kind else "norm"
+        self.mResearchOnly = research_only
         self.mColGroups = col_groups
+        assert self.mSource in ("view", "data")
         if self.mIgnored and self.mAttrs is None:
             self.mAttrs = []
 
@@ -28,37 +29,39 @@ class AspectH:
     def isIgnored(self):
         return self.mIgnored
 
-    def checkExpertBlock(self, expert_mode):
-        return (not expert_mode) and self.mExpertOnly
+    def checkResearchBlock(self, research_mode):
+        return (not research_mode) and self.mResearchOnly
 
     def getAspectKind(self):
-        return self.mKind
+        return {"view": "norm", "data": "tech"}[self.mSource]
 
     def setRecommendedAttrs(self, attrs):
         self.mAttrs = attrs
 
     def _feedAttrPath(self, registry):
-        path_seq = [self.mPath]
-        if self.mPath:
-            registry.add(self.mPath)
+        path_seq = ['/' + self.mSource]
+        registry.add(path_seq[0])
+        if self.mField:
+            path_seq[0] += '/' + self.mField
+            registry.add(path_seq[0])
         if self.mColGroups is not None:
-            path_seq = []
+            grp_path_seq = []
             for idx in range(self.mColGroups.getCount()):
                 grp_attr = self.mColGroups.getAttr(idx)
-                grp_path = self.mPath + '/' + grp_attr
-                registry.add(grp_path)
-                grp_path += "[]"
-                registry.add(grp_path)
-                path_seq.append(grp_path)
+                grp_path_seq.append(path_seq[0][:])
+                grp_path_seq[-1] += '/' + grp_attr
+                registry.add(grp_path_seq[-1])
+                grp_path_seq[-1] += '[]'
+                registry.add(grp_path_seq[-1])
+            path_seq = grp_path_seq
         for path in path_seq:
             for attr in self.mAttrs:
                 attr._feedAttrPath(path, registry)
 
-    def formTable(self, output, rec_obj, expert_mode):
-        if len(self.mPath) > 1:
-            objects = [rec_obj[self.mPath[1:]]]
-        else:
-            objects = [rec_obj]
+    def formTable(self, output, rec_obj, research_mode):
+        objects = [rec_obj[self.mSource]]
+        if self.mField:
+            objects = [objects[0][self.mField]]
         prefix_head = None
         if self.mColGroups:
             objects, prefix_head = self.mColGroups.prepareObjects(objects)
@@ -68,7 +71,7 @@ class AspectH:
         fld_data = dict()
         for attr in self.mAttrs:
             if (attr.getName() is None or
-                    attr.checkExpertBlock(expert_mode) or
+                    attr.checkResearchBlock(research_mode) or
                     attr.hasKind("hidden")):
                 continue
             values = [attr.getHtmlRepr(obj) for obj in objects]

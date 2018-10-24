@@ -1,5 +1,6 @@
 #import sys
 
+from app.model.path_works import AttrFuncPool
 from .column import DataColumnSet, DataCompactColumn
 #===============================================
 class DataExtractor:
@@ -8,7 +9,7 @@ class DataExtractor:
         self.mUnit   = unit
         self.mName   = name
         self.mPath   = path
-        self.mPathF  = self.mUnit.getLegend().getFuncPool().makeFunc(
+        self.mPathF  = AttrFuncPool.makeFunc(
             self.mPath)
         self.mVConv  = val_conv
         self.mDataP  = data_portion

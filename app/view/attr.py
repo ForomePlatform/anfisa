@@ -34,7 +34,7 @@ class AttrH:
         assert attrs is None or "json" not in self.mKinds
         self.mAttrs = attrs
         self.mIsSeq = is_seq
-        self.mExpertOnly = "expert" in self.mKinds
+        self.mResearchOnly = "research" in self.mKinds
         self.mPath = None
 
     def getName(self):
@@ -52,8 +52,8 @@ class AttrH:
     def hasKind(self, kind):
         return kind in self.mKinds
 
-    def checkExpertBlock(self, expert_mode):
-        return (not expert_mode) and self.mExpertOnly
+    def checkResearchBlock(self, research_mode):
+        return (not research_mode) and self.mResearchOnly
 
     def _feedAttrPath(self, path, registry):
         if self.mName is None:

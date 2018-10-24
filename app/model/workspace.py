@@ -65,12 +65,12 @@ class Workspace:
     def getLastAspectID(self):
         return self.mViewSetup.configOption("aspect.tags.name")
 
-    def getRulesData(self, expert_mode):
-        return self.mLegend.getRulesUnit().getJSonData(expert_mode)
+    def getRulesData(self, research_mode):
+        return self.mLegend.getRulesUnit().getJSonData(research_mode)
 
-    def modifyRulesData(self, expert_mode, item, content):
+    def modifyRulesData(self, research_mode, item, content):
         report, par_data = self.mLegend.getRulesUnit().modifyRulesData(
-            expert_mode, item, content)
+            research_mode, item, content)
         if report["status"] == "OK":
             self.mIndex.updateRulesEnv()
             if par_data is not None:
@@ -78,12 +78,12 @@ class Workspace:
         return report
 
     def makeTagsJSonReport(self, rec_no,
-            expert_mode, tags_to_update = None):
+            research_mode, tags_to_update = None):
         report = self.mTagsMan.makeRecReport(rec_no, tags_to_update)
         report["filters"] = self.mIndex.getRecFilters(rec_no)
         return report
 
-    def makeStatReport(self, filter_name, expert_mode, conditions, instr):
+    def makeStatReport(self, filter_name, research_mode, conditions, instr):
         if instr:
             op, q, flt_name = instr.partition('/')
             if not self.mLegend.hasFilter(flt_name):
@@ -97,4 +97,4 @@ class Workspace:
                 else:
                     assert False
         return self.mIndex.makeStatReport(
-            filter_name, expert_mode, conditions)
+            filter_name, research_mode, conditions)

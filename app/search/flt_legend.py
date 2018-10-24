@@ -1,11 +1,9 @@
 #import sys
-from .path_works import AttrFuncPool
 from .rules_supp import RulesEvalUnit
 #===============================================
 class FilterLegend:
     def __init__(self, name, rules_setup):
         self.mName     = name
-        self.mFuncPool = AttrFuncPool()
         self.mColumns  = []
         self.mColDict  = dict()
         self.mUnitDict = dict()
@@ -49,9 +47,6 @@ class FilterLegend:
 
     def getName(self):
         return self.mName
-
-    def getFuncPool(self):
-        return self.mFuncPool
 
     def getColCount(self):
         return len(self.mColumns)
@@ -101,10 +96,10 @@ class FilterLegend:
             (self.mName, ["with problems", "successfuly"][self.mIsOK],
             len(self.mUnits), len(self.mColumns)))
 
-    def collectStatJSon(self, data_records, expert_mode):
+    def collectStatJSon(self, data_records, research_mode):
         ret = []
         for unit in self.mUnits:
-            if not unit.checkExpertBlock(expert_mode):
+            if not unit.checkResearchBlock(research_mode):
                 ret.append(unit.collectStatJSon(data_records))
         return ret
 

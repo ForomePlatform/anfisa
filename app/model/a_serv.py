@@ -93,9 +93,15 @@ class AnfisaService:
         print >> output, '</head>'
 
     #===============================================
+    @classmethod
+    def _stdParams(cls, rq_args):
+        workspace = cls.sData.getWS(rq_args.get("ws"))
+        modes = rq_args.get("m", "").upper()
+        return workspace, modes
+
+    #===============================================
     def formTop(self, rq_args):
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
             workspace.getName(), modes, workspace.iterZones())
@@ -103,13 +109,13 @@ class AnfisaService:
 
     #===============================================
     def formRec(self, rq_args):
-        output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        data_set = workspace.getDataSet()
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         rec_no = int(rq_args.get("rec"))
-        record = data_set.getRecord(rec_no)
+        rec_no = int(rq_args.get("rec"))
         port = rq_args.get("port")
+        data_set = workspace.getDataSet()
+        record = data_set.getRecord(rec_no)
+        output = StringIO()
         print >> output, HTML_Setup.START
         print >> output, '<html>'
         self._formHtmlHead(output,
@@ -139,9 +145,7 @@ class AnfisaService:
 
     #===============================================
     def formList(self, rq_args):
-        output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         conditions = rq_args.get("conditions")
         if conditions:
             conditions = json.loads(conditions)
@@ -156,14 +160,13 @@ class AnfisaService:
             sorted(rec_no_seq), 'R' in modes,
             workspace.getTagsMan().getMarkedSet())
         report["workspace"] = workspace.getName()
+        output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
 
     #===============================================
     def formStat(self, rq_args):
-        output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         filter_name = rq_args.get("filter")
         conditions = rq_args.get("conditions")
         if conditions:
@@ -171,54 +174,51 @@ class AnfisaService:
         instr = rq_args.get("instr")
         report = workspace.makeStatReport(filter_name,
             'X' in modes, conditions, instr)
+        output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
 
     #===============================================
     def formTags(self, rq_args):
-        output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         rec_no = int(rq_args.get("rec"))
         tags_to_update = rq_args.get("tags")
         if tags_to_update is not None:
             tags_to_update = json.loads(tags_to_update)
         report = workspace.makeTagsJSonReport(rec_no,
             'X' in modes, tags_to_update)
+        output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
 
     #===============================================
     def formZoneList(self, rq_args):
-        output = StringIO()
         workspace = self.sData.getWS(rq_args.get("ws"))
         report = workspace.getZone(rq_args.get("zone")).makeValuesReport()
+        output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
 
     #===============================================
     def formRulesData(self, rq_args):
+        workspace, modes = self._stdParams(rq_args)
         output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
         output.write(json.dumps(
             workspace.getRulesData('X' in modes)))
         return output.getvalue()
 
     #===============================================
     def formRulesModify(self, rq_args):
-        output = StringIO()
-        workspace = self.sData.getWS(rq_args.get("ws"))
-        modes = rq_args.get("m", "")
+        workspace, modes = self._stdParams(rq_args)
         item = rq_args.get("it")
         content = rq_args.get("cnt")
+        output = StringIO()
         output.write(json.dumps(workspace.modifyRulesData(
             'X' in modes, item, content)))
         return output.getvalue()
 
     #===============================================
     def formTagSelect(self, rq_args):
-        output = StringIO()
         workspace = self.sData.getWS(rq_args.get("ws"))
         tags_man = workspace.getTagsMan()
         tag_list = tags_man.getTagList();
@@ -230,12 +230,12 @@ class AnfisaService:
         if tag_name:
             rep["records"] = tags_man.getTagRecordList(
                 tag_name)
+        output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()
 
     #===============================================
     def formExport(self, rq_args):
-        output = StringIO()
         workspace = self.sData.getWS(rq_args.get("ws"))
         conditions = rq_args.get("conditions")
         if conditions:
@@ -249,8 +249,7 @@ class AnfisaService:
                 rec_no_seq, variants)
         fname = workspace.getDataSet().makeExportFile(
             workspace.getName(), rec_no_seq, self.sData.makeExcelExport)
-        rep = {
-            "kind": "excel",
-            "fname": fname}
+        rep = {"kind": "excel", "fname": fname}
+        output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()

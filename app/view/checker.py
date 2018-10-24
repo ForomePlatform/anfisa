@@ -38,6 +38,8 @@ class ViewDataChecker:
             return
         elif isinstance(obj, dict):
             for a_name, sub_obj in obj.items():
+                if a_name.startswith('_'):
+                    continue
                 self.checkObj(sub_obj, path + '/' + a_name)
         elif isinstance(obj, list):
             for sub_obj in obj:

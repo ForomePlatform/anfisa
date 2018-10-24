@@ -109,7 +109,6 @@ hgvs_signs = ['-', '+', '*']
 def get_distance_hgvsc(hgvsc):
     coord = hgvsc.split(':')[1]
     xx = coord.split('.')
-    t = xx[0]
     d = None
     for x in xx[1].split('_'):
         sign = None
@@ -210,6 +209,7 @@ class Variant:
     def __init__(self, json_string, vcf_header = None, case = None, samples = None, connectors = None):
         self.original_json = json_string
         self.data = json.loads(json_string)
+        self.filters = dict()
         self.case = case
         self.samples = samples
         self.hg38_start = None
@@ -231,13 +231,13 @@ class Variant:
         self.call_hgmd()
         self.call_clinvar()
 
-        self.data['_filters.Min_GQ'] = self.get_min_GQ()
-        self.data['_filters.Proband_GQ'] = self.get_proband_GQ()
-        self.data['_filters.Proband_has_Variant'] = self.is_proband_has_variant()
-        self.data['_filters.Severity'] = self.get_severity()
+        self.filters['min_gq'] = self.get_min_GQ()
+        self.filters['proband_gq'] = self.get_proband_GQ()
+        self.filters['proband_has_variant'] = self.is_proband_has_variant()
+        self.filters['severity'] = self.get_severity()
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
-        self.data['_filters.Dist_from_Exon'] = min(d) if (len(d)> 0) else 0
+        self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -268,10 +268,10 @@ class Variant:
             if (self.is_proband_has_allele(alt)):
                 gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
 
-        self.data["_filters.gnomad_db_exomes_af"] = em_af
-        self.data["_filters.gnomad_db_genomes_af"] = gm_af
-        self.data['_filters.gnomaAD_AF_Fam'] = max(em_af, gm_af)
-        self.data['_filters.gnomaAD_AF_Pb'] = max(em_af_pb, gm_af_pb)
+        self.filters["gnomad_db_exomes_af"] = em_af
+        self.filters["gnomad_db_genomes_af"] = gm_af
+        self.filters['gnomad_af_fam'] = max(em_af, gm_af)
+        self.filters['gnomad_af_pb'] = max(em_af_pb, gm_af_pb)
 
     def call_hgmd(self):
         connection = self.connectors.hgmd
@@ -287,7 +287,7 @@ class Variant:
             self.data['HGMD'] = ','.join(accession_numbers)
             hg_38 = connection.get_hg38(accession_numbers)
             self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
-            self.data["_filters.hgmd_benign"] = len([t for t in tags if t]) == 0 if tags else True
+            self.filters["hgmd_benign"] = len([t for t in tags if t]) == 0 if tags else True
 
     def call_clinvar(self):
         connection = self.connectors.clinvar
@@ -328,7 +328,7 @@ class Variant:
             if not "benign" in prediction.lower():
                 benign = False
                 break
-        self.data["_filters.clinvar_benign"] = benign
+        self.filters["clinvar_benign"] = benign
 
 
     def same(self,c, p1, p2 = None):
@@ -352,7 +352,7 @@ class Variant:
         if (chr_str.startswith('chr')):
             return chr_str[3:]
         return chr_str.upper()
-    
+
     def start(self):
         return int(self.data.get("start"))
 
@@ -391,9 +391,9 @@ class Variant:
                     self.alt_alleles = alt_allels
                     return self.alt_alleles
                 for i in range(0, len(alleles)):
-                    a = alleles[i]
+                    al = alleles[i]
                     n = ad[i]
-                    counts[a] = counts.get(a, 0) + n
+                    counts[al] = counts.get(al, 0) + n
 
             self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
 
@@ -413,7 +413,7 @@ class Variant:
         if (self.is_snv()):
             return "{}  {}>{}".format(str, self.ref(), self.alt_string())
         return "{} {}".format(str, self.get_variant_class())
-    
+
     def get_msq(self):
         return self.data.get("most_severe_consequence")
 
@@ -490,10 +490,9 @@ class Variant:
 
     def get_tenwise_link(self):
         hgnc_ids = self.get_hgnc_ids()
-        return [
-            "https://www.tenwiseapps.nl/publicdl/variant_report/HGNC_{}_variant_report.html".format(id)
-            for id in hgnc_ids
-        ]
+        return ["https://www.tenwiseapps.nl/publicdl/variant_report/" +
+            "HGNC_{}_variant_report.html".format(id)
+            for id in hgnc_ids]
 
     def get_other_genes(self):
         genes = set(self.get_genes())
@@ -597,7 +596,7 @@ class Variant:
         return (a1, pop_max_a_1, pop_max_f_1, a2, pop_max_a_2, pop_max_f_2)
 
     def get_gnomad_af(self):
-        return self.data.get('_filters.gnomaAD_AF_Fam')
+        return self.filters.get('gnomad_af_fam')
         gm_af = None
         alt_alleles = set(self.alt_list())
         collocated_variants = self.get_colocated_variants()
@@ -920,79 +919,76 @@ class Variant:
         return data
 
     def get_view_json(self):
-        data = self.data.copy()
-        data['_filters.RareVariantFilter'] = "PASS" if (self.data.get("SEQaBOO")) else "False"
-        data['label'] = self.get_label()
-        data['color_code'] = self.get_color_code()
-        view = dict()
-        data["view"] = view
+        data_info = self.data.copy()
+        view_info = dict()
+        filters   = self.filters.copy()
 
-        proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
+        filters['rare_variant'] = ("PASS"
+            if (self.data.get("SEQaBOO")) else "False")
+        data_info['label'] = self.get_label()
+        data_info['color_code'] = self.get_color_code()
+
         tab1 = dict()
-        #view['general'] = tab1
-        data["view.general"] = tab1
-        tab1['Gene(s)'] = self.get_genes()
+        view_info["general"] = tab1
+        tab1['genes'] = self.get_genes()
         tab1['hg19'] = str(self)
         tab1['hg38'] = self.get_hg38_coordinates()
         if (not self.is_snv()):
-            tab1["Ref"] = self.ref()
-            tab1["Alt"] = self.alt_string()
+            tab1["ref"] = self.ref()
+            tab1["alt"] = self.alt_string()
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('c')
-        tab1['cPos (Worst)'] = c_worst
-        tab1['cPos (Canonical)'] = c_canonical
-        tab1['cPos (Other)'] = c_other
+        tab1['cpos_worst'] = c_worst
+        tab1['cpos_canonical'] = c_canonical
+        tab1['cpos_other'] = c_other
 
         (c_worst,  c_canonical, c_other) = self.get_pos_tpl('p')
-        tab1['pPos (Worst)'] = c_worst
-        tab1['pPos (Canonical)'] = c_canonical
-        tab1['pPos (Other)'] = c_other
+        tab1['ppos_worst'] = c_worst
+        tab1['ppos_canonical'] = c_canonical
+        tab1['ppos_other'] = c_other
 
-        tab1['Proband Genotype'] = proband_genotype
-        tab1['Maternal Genotype'] = maternal_genotype
-        tab1['Paternal Genotype'] = paternal_genotype
+        proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
+        tab1['proband_genotype'] = proband_genotype
+        tab1['maternal_genotype'] = maternal_genotype
+        tab1['paternal_genotype'] = paternal_genotype
 
-        tab1['Worst Annotation'] = self.get_msq()
+        tab1['worst_annotation'] = self.get_msq()
         consequence_terms = self.get_from_canonical_transcript("consequence_terms")
         canonical_annotation = self.most_severe(consequence_terms)
         if (len(consequence_terms) > 1):
             other_terms = list(set(consequence_terms) - {canonical_annotation})
             canonical_annotation = "{} [{}]".format(canonical_annotation, ', '.join(other_terms))
-        tab1['Canonical Annotation'] = canonical_annotation
+        tab1['canonical_annotation'] = canonical_annotation
 
-        tab1["Splice Region"] = self.get_from_transcripts("spliceregion")
-        tab1["GeneSplicer"] = self.get_from_transcripts("genesplicer")
+        tab1["splice_region"] = self.get_from_transcripts("spliceregion")
+        tab1["gene_splicer"] = self.get_from_transcripts("genesplicer")
 
         transcripts = self.get_most_severe_transcripts()
-        tab1['RefSeq Transcript (Worst)'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
-        tab1['Ensembl Transcripts (Worst)'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
+        tab1['refseq_transcript_worst'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
+        tab1['ensembl_transcripts_worst'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
 
         transcripts = self.get_canonical_transcripts()
-        tab1['RefSeq Transcript (Canonical)'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
-        tab1['Ensembl Transcripts (Canonical)'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
+        tab1['refseq_transcript_canonical'] = get_from_transcripts(transcripts, "transcript_id", source="RefSeq")
+        tab1['ensembl_transcripts_canonical'] = get_from_transcripts(transcripts, "transcript_id", source="Ensembl")
 
-        tab1['Variant Exon (Worst Annotation)'] = self.get_from_worst_transcript("exon")
-        tab1['Variant Intron (Worst Annotation)'] = self.get_from_worst_transcript("intron")
-        tab1['Variant Exon (Canonical)'] = self.get_from_canonical_transcript("exon")
-        tab1['Variant Intron (Canonical)'] = self.get_from_canonical_transcript("intron")
-        tab1["IGV"] = self.get_igv_url()
+        tab1['variant_exon_worst'] = self.get_from_worst_transcript("exon")
+        tab1['variant_intron_worst'] = self.get_from_worst_transcript("intron")
+        tab1['variant_exon_canonical'] = self.get_from_canonical_transcript("exon")
+        tab1['variant_intron_canonical'] = self.get_from_canonical_transcript("intron")
+        tab1["igv"] = self.get_igv_url()
 
         tab2 = list()
-        #view['quality'] = tab2
-        #data["view.quality"] = tab2
-        data["quality.samples"] = tab2
+        view_info["quality_samples"] = tab2
         q_all = dict()
-        q_all["Title"] = "All"
-        q_all['Strand Odds Ratio'] = self.info().get("SOR")
-        q_all['Mapping Quality'] = self.info().get("MQ")
-        q_all['Variant Call Quality'] = self.vcf_record.QUAL
+        q_all["title"] = "All"
+        q_all['strand_odds_ratio'] = self.info().get("SOR")
+        q_all['mq'] = self.info().get("MQ")
+        q_all['variant_call_quality'] = self.vcf_record.QUAL
 
-        q_all['Quality by Depth'] = self.info().get("QD")
-        data['_filters.QD'] = self.info().get("QD")
-        q_all['Fisher Strand Bias'] = self.info().get("FS")
-        data['_filters.FS'] = self.info().get("FS")
-
-
+        q_all['qd'] = self.info().get("QD")
+        q_all['fs'] = self.info().get("FS")
+        filters['qd'] = self.info().get("QD")
+        filters['fs'] = self.info().get("FS")
         tab2.append(q_all)
 
         proband = self.get_proband()
@@ -1002,45 +998,43 @@ class Variant:
             genotype = self.vcf_record.genotype(s)
             q_s = dict()
             if (s == proband):
-                q_s["Title"] = "Proband: {}".format(s)
+                q_s["title"] = "Proband: %s" % s
             elif (s == mother):
-                q_s["Title"] = "Mother: {}".format(s)
+                q_s["title"] = "Mother: %s" % s
             elif (s == father):
-                q_s["Title"] = "Father: {}".format(s)
+                q_s["title"] = "Father: %s" % s
             else:
-                q_s["Title"] = s
+                q_s["title"] = s
 
-            q_s['Allelic Depth'] = self.get_from_genotype(genotype, 'AD')
-            q_s['Read Depth'] = self.get_from_genotype(genotype, 'DP')
-            q_s['Genotype Quality'] = self.get_from_genotype(genotype, 'GQ')
+            q_s['allelic_depth'] = self.get_from_genotype(genotype, 'AD')
+            q_s['read_depth'] = self.get_from_genotype(genotype, 'DP')
+            q_s['genotype_quality'] = self.get_from_genotype(genotype, 'GQ')
             tab2.append(q_s)
 
         tab3 = list()
-        # view['gnomAD'] = tab3
-        data["view.gnomAD"] = tab3
+        view_info["gnomAD"] = tab3
         if (self.get_gnomad_af()):
             alt_list = self.alt_list()
             for allele in alt_list:
                 gr = dict()
                 tab3.append(gr)
-                gr["Allele"] = allele
-                gr["Proband"] = "Yes" if (self.is_proband_has_allele(allele)) else "No"
-                gr["pLI"] = self.get_pLI_by_allele(allele)
-                gr["Proband AF"] = self.get_gnomad_af()
-                gr["Genome AF"] = self.get_gnomad_split_af_by_alt("genomes", allele)
-                gr["Exome AF"] = self.get_gnomad_split_af_by_alt("exomes", allele)
-                pop_max = self.get_gnomad_pop_max(allele=allele)
+                gr["allele"] = allele
+                gr["proband"] = "Yes" if (self.is_proband_has_allele(allele)) else "No"
+                gr["pli"] = self.get_pLI_by_allele(allele)
+                gr["proband_af"] = self.get_gnomad_af()
+                gr["genome_af"] = self.get_gnomad_split_af_by_alt("genomes", allele)
+                gr["exome_af"] = self.get_gnomad_split_af_by_alt("exomes", allele)
+                pop_max = self.get_gnomad_pop_max(allele = allele)
                 if (pop_max[0]):
-                    gr["PopMax #1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
+                    gr["pop_max_1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
                 if (pop_max[3]):
-                    gr["PopMax #2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
+                    gr["pop_max_2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
 
-                gr["URL"] = \
+                gr["url"] = \
                     "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
 
         tab4 = dict()
-        #view['Databases'] = tab4
-        data["view.Databases"] = tab4
+        view_info["databases"] = tab4
         genes = self.get_genes()
         clinvar_ids = self.data.get("_private.clinvar_other_ids")
         omim_ids = None
@@ -1053,74 +1047,73 @@ class Variant:
             omim_urls = [
                 "https://omim.org/search/?search=approved_gene_symbol:{}&retrieve=geneMap".format(gene) for gene in genes
             ]
-        tab4["OMIM"] = omim_urls
-        tab4['GeneCards'] = ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in genes]
+        tab4["omim"] = omim_urls
+        tab4['gene_cards'] = ["https://www.genecards.org/cgi-bin/carddisp.pl?gene={}".format(g) for g in genes]
         if (self.data.get("HGMD")):
-            tab4["HGMD"] = self.data.get("HGMD")
-            tab4["HGMD (HG38)"] = self.data.get("HGMD_HG38")
+            tab4["hgmd"] = self.data.get("HGMD")
+            tab4["hgmd_hg38"] = self.data.get("HGMD_HG38")
         else:
-            tab4["HGMD"] = "Not Present"
+            tab4["hgmd"] = "Not Present"
         pmids = self.data.get("_private.HGMD_PIMIDs")
-        tab4["HGMD TAGs"] = self.data.get("_private.HGMD_TAGs")
-        tab4["HGMD PMIDs"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
+        tab4["hgmd_tags"] = self.data.get("_private.HGMD_TAGs")
+        tab4["hgmd_pmids"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
         phenotypes = self.data.get("_private.HGMD_phenotypes")
-        tab4["HGMD Phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
+        tab4["hgmd_phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
         if (self.data.get("ClinVar") <> None):
-            tab4["ClinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
+            tab4["clinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
                 format(self.chr_num(), self.start(), self.end())
-        tab4['ClinVar Variants'] = unique(self.data.get("clinvar_variants"))
-        tab4['ClinVar Significance'] = unique(self.data.get("clinvar_significance"))
-        tab4['ClinVar Phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
+        tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
+        tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
+        tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
 
-        tab4["PubMed_Search"] = self.get_tenwise_link()
+        tab4["pubmed_search"] = self.get_tenwise_link()
 
         tab5 = dict()
         #view['Predictions'] = tab5
-        data["view.Predictions"] = tab5
+        view_info["predictions"] = tab5
         lof_score = self.get_from_transcripts("loftool")
         lof_score.sort(reverse=True)
-        tab5["LoF Score"] = lof_score
+        tab5["lof_score"] = lof_score
         lof_score = self.get_from_canonical_transcript("loftool")
         lof_score.sort(reverse=True)
-        tab5["LoF Score (Canonical)"] = lof_score
+        tab5["lof_score_canonical"] = lof_score
 
-        tab5["MaxEntScan"] = self.get_max_ent()
+        tab5["max_ent_scan"] = self.get_max_ent()
 
-        tab5['Polyphen'] = unique(self.get_from_transcripts_list("polyphen_prediction"))
-        tab5['Polyphen 2 HVAR'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_pred".lower()))
-        tab5['Polyphen 2 HDIV'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_pred".lower()))
-        tab5['Polyphen 2 HVAR score'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_score".lower()))
-        tab5['Polyphen 2 HDIV score'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_score".lower()))
-        tab5['SIFT'] = unique(self.get_from_transcripts_list("sift_prediction"))
-        tab5['SIFT score'] = unique(self.get_from_transcripts_list("sift_score"))
-        tab5["REVEL"] = unique(self.get_from_transcripts_list("revel_score"))
-        tab5["Mutation Taster"] = unique(self.get_from_transcripts_list("mutationtaster_pred"))
-        tab5["FATHMM"] = unique(self.get_from_transcripts_list("fathmm_pred"))
-        tab5["CADD (Phred)"] = unique(self.get_from_transcripts_list("cadd_phred"))
-        tab5["CADD (Raw)"] = unique(self.get_from_transcripts_list("cadd_raw"))
-        tab5["Mutation Assessor"] = unique(self.get_from_transcripts_list("mutationassessor_pred"))
+        tab5['polyphen'] = unique(self.get_from_transcripts_list("polyphen_prediction"))
+        tab5['polyphen2_hvar'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_pred".lower()))
+        tab5['polyphen2_hdiv'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_pred".lower()))
+        tab5['polyphen2_hvar_score'] = unique(self.get_from_transcripts_list("Polyphen2_HVAR_score".lower()))
+        tab5['polyphen2_hdiv_score'] = unique(self.get_from_transcripts_list("Polyphen2_HDIV_score".lower()))
+        tab5['sift'] = unique(self.get_from_transcripts_list("sift_prediction"))
+        tab5['sift_score'] = unique(self.get_from_transcripts_list("sift_score"))
+        tab5["revel"] = unique(self.get_from_transcripts_list("revel_score"))
+        tab5["mutation_taster"] = unique(self.get_from_transcripts_list("mutationtaster_pred"))
+        tab5["fathmm"] = unique(self.get_from_transcripts_list("fathmm_pred"))
+        tab5["cadd_phred"] = unique(self.get_from_transcripts_list("cadd_phred"))
+        tab5["cadd_raw"] = unique(self.get_from_transcripts_list("cadd_raw"))
+        tab5["mutation_assessor"] = unique(self.get_from_transcripts_list("mutationassessor_pred"))
 
         tab6 = dict()
-        #view['Genetics'] = tab6
-        data["view.Bioinformatics"] = tab6
-        tab6["Zygosity"] = self.get_zygosity()
-        tab6["Inherited from"] = self.inherited_from()
-        tab6["Dist_from_Exon_worst"] = self.get_distance_from_exon("worst")
-        tab6["Dist_from_Exon_canonical"] = self.get_distance_from_exon("canonical")
-        tab6["Conservation"] = unique(self.get_from_transcripts_list("conservation"))
-        tab6["Species with variant"] = ""
-        tab6["Species with other variants"] = ""
-        tab6["MaxEntScan"] = self.get_max_ent()
-        tab6["NNSplice"] = ""
-        tab6["Human Splicing Finder"] = ""
+        view_info["bioinformatics"] = tab6
+        tab6["zygosity"] = self.get_zygosity()
+        tab6["inherited_from"] = self.inherited_from()
+        tab6["dist_from_exon_worst"] = self.get_distance_from_exon("worst")
+        tab6["dist_from_exon_canonical"] = self.get_distance_from_exon("canonical")
+        tab6["conservation"] = unique(self.get_from_transcripts_list("conservation"))
+        tab6["species_with_variant"] = ""
+        tab6["species_with_others"] = ""
+        tab6["max_ent_scan"] = self.get_max_ent()
+        tab6["nn_splice"] = ""
+        tab6["human_splicing_finder"] = ""
         tab6["other_genes"] = self.get_other_genes()
-        tab6['Called by'] = self.get_callers()
-        tab6['CALLER DATA'] = self.get_callers_data()
+        tab6['called_by'] = self.get_callers()
+        tab6['caller_data'] = self.get_callers_data()
 
         tab7 = dict()
-        #view['Inheritance'] = tab7
-        data["view.Inheritance"] = tab7
+        view_info["inheritance"] = tab7
 
-
-        return json.dumps(data)
+        ret = {"data": data_info,
+            "view": view_info, "_filters": filters}
+        return json.dumps(ret)

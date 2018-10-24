@@ -131,13 +131,13 @@ class Index:
                     ret1.append(filter_name)
         return sorted(ret0), sorted(ret1)
 
-    def makeStatReport(self, filter_name, expert_mode,
+    def makeStatReport(self, filter_name, research_mode,
             conditions = None):
         rec_no_seq = self.getRecNoSeq(filter_name, conditions)
         pre_filters, op_filters = self.getFilterLists()
         report = {
             "stat-list": self.mLegend.collectStatJSon(self._iterRecords(
-                rec_no_seq), expert_mode),
+                rec_no_seq), research_mode),
             "pre-filters": pre_filters,
             "op-filters": op_filters,
             "filter": filter_name}

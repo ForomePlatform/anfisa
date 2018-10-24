@@ -8,7 +8,7 @@ class DataRecord:
     def getObj(self):
         return self.mObj
 
-    def reportIt(self, output, expert_mode):
+    def reportIt(self, output, research_mode):
         print >> output, '<div class="r-tab">'
         print >> output, ('<span id="img-wrap" onclick="tabCfgChange();">'
             '<img id="img-tab2" src="images/tab2-exp.png"/></span>')
@@ -16,7 +16,7 @@ class DataRecord:
         for aspect in self.mDataset.getViewSetup().getAspects():
             if aspect.isIgnored():
                 continue
-            if aspect.checkExpertBlock(expert_mode):
+            if aspect.checkResearchBlock(research_mode):
                 continue
             aspects_to_show.append(aspect)
             print >> output, ('<button class="r-tablnk %s" id="la--%s" '
@@ -38,7 +38,7 @@ class DataRecord:
             if aspect.getName() == "input":
                 self.reportInput(output)
             else:
-                aspect.formTable(output, self.mObj, expert_mode)
+                aspect.formTable(output, self.mObj, research_mode)
             print >> output, '</div>'
         print >> output, ('<div id="a--%s" class="r-tabcnt">' %
             tags_asp_name)
@@ -48,12 +48,12 @@ class DataRecord:
         print >> output, '</div>'
 
     def reportInput(self, output):
-        if "input" not in self.mObj:
+        if "input" not in self.mObj["data"]:
             print >> output, '<p class="error">No input data</p>'
             return
         print >> output, '<pre>'
         collect_str = ""
-        for fld in self.mObj["input"].split('\t'):
+        for fld in self.mObj["data"]["input"].split('\t'):
             if len(fld) < 40:
                 if len(collect_str) < 60:
                     collect_str += "\t" + fld

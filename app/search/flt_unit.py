@@ -11,12 +11,12 @@ from .variants import VariantSet
 #===============================================
 class FilterUnit:
     def __init__(self, legend, name,
-            title = None, expert_only = False):
+            title = None, research_only = False):
         self.mLegend = legend
         self.mName = name
         self.mTitle = title
         self.mUnitIdx = self.mLegend._regUnit(self)
-        self.mExpertOnly = expert_only
+        self.mResearchOnly = research_only
         self.mVGroup = self.mLegend._getCurVGroup()
         if self.mVGroup:
             self.mVGroup._regUnit(self)
@@ -42,8 +42,8 @@ class FilterUnit:
             "title": self.mTitle,
             "vgroup": self.mVGroup.getTitle() if self.mVGroup else None}
 
-    def checkExpertBlock(self, expert_mode):
-        return (not expert_mode) and self.mExpertOnly
+    def checkResearchBlock(self, research_mode):
+        return (not research_mode) and self.mResearchOnly
 
     @abc.abstractmethod
     def iterExtractors(self):
@@ -74,8 +74,8 @@ class FilterUnit:
 #===============================================
 class IntValueUnit(FilterUnit):
     def __init__(self, legend, name, path, title = None,
-            default_value = None, diap = None, expert_only = False):
-        FilterUnit.__init__(self, legend, name, title, expert_only)
+            default_value = None, diap = None, research_only = False):
+        FilterUnit.__init__(self, legend, name, title, research_only)
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
@@ -100,8 +100,8 @@ class IntValueUnit(FilterUnit):
 #===============================================
 class FloatValueUnit(FilterUnit):
     def __init__(self, legend, name, path, title = None,
-            default_value = None, diap = None, expert_only = False):
-        FilterUnit.__init__(self, legend, name, title, expert_only)
+            default_value = None, diap = None, research_only = False):
+        FilterUnit.__init__(self, legend, name, title, research_only)
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
@@ -126,8 +126,8 @@ class FloatValueUnit(FilterUnit):
 #===============================================
 class StatusUnit(FilterUnit):
     def __init__(self, legend, name, path, variants = None,
-            title = None, default_value = False, expert_only = False, accept_wrong_values = False):
-        FilterUnit.__init__(self, legend, name, title, expert_only)
+            title = None, default_value = False, research_only = False, accept_wrong_values = False):
+        FilterUnit.__init__(self, legend, name, title, research_only)
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.EnumConvertor(VariantSet.create(variants),
                 atomic_mode = True, default_value = default_value, others_value=accept_wrong_values),
@@ -160,8 +160,8 @@ class StatusUnit(FilterUnit):
 #===============================================
 class BoolSetUnit(FilterUnit):
     def __init__(self, legend, name, variants, title = None,
-            enum_type = "presence", expert_only = False):
-        FilterUnit.__init__(self, legend, name, title, expert_only)
+            enum_type = "presence", research_only = False):
+        FilterUnit.__init__(self, legend, name, title, research_only)
         self.mColumns = [DataColumn(self, "%s.%s" % (name, variant),
             DataPortion.ATOM_DATA_TYPE_BOOL) for variant in variants]
         self.mEnumType = enum_type
@@ -196,10 +196,10 @@ class BoolSetUnit(FilterUnit):
 #===============================================
 class PresenceUnit(BoolSetUnit):
     def __init__(self, legend, name, var_info_seq,
-            title = None, expert_only = False):
+            title = None, research_only = False):
         BoolSetUnit.__init__(self, legend, name,
             [it_name for it_name, it_path in var_info_seq],
-            title, expert_only = expert_only)
+            title, research_only = research_only)
         self.mExtractors = []
         for idx, col in self.enumColumns():
             it_name, it_path = var_info_seq[idx]
@@ -214,8 +214,8 @@ class MultiStatusUnit(FilterUnit):
     def __init__(self, legend, name, path, variants = None,
             title = None, chunker = None, compact_mode = False,
             default_value = False, others_value = False,
-            expert_only = False):
-        FilterUnit.__init__(self, legend, name, title, expert_only)
+            research_only = False):
+        FilterUnit.__init__(self, legend, name, title, research_only)
         self.mExtractors = [DataExtractor(self, name, path,
             val_conv.EnumConvertor(VariantSet.create(variants),
                 chunker = chunker, default_value = default_value,
