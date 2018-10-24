@@ -132,7 +132,7 @@ class AnfisaService:
                 '<body onload="init_r(0, \'%s\', \'%s\', %d);">' %
                 (workspace.getFirstAspectID(), workspace.getName(), rec_no))
 
-        record.reportIt(output, "X" in modes)
+        record.reportIt(output, "R" in modes)
         print >> output, '</body>'
         print >> output, '</html>'
         return output.getvalue()
@@ -157,7 +157,7 @@ class AnfisaService:
             rec_no_seq = workspace.getZone(zone_name).restrict(
                 rec_no_seq, variants)
         report = workspace.mDataSet.makeJSonReport(
-            sorted(rec_no_seq), 'R' in modes,
+            sorted(rec_no_seq), 'S' in modes,
             workspace.getTagsMan().getMarkedSet())
         report["workspace"] = workspace.getName()
         output = StringIO()
@@ -173,7 +173,7 @@ class AnfisaService:
             conditions = json.loads(conditions)
         instr = rq_args.get("instr")
         report = workspace.makeStatReport(filter_name,
-            'X' in modes, conditions, instr)
+            'R' in modes, conditions, instr)
         output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
@@ -186,7 +186,7 @@ class AnfisaService:
         if tags_to_update is not None:
             tags_to_update = json.loads(tags_to_update)
         report = workspace.makeTagsJSonReport(rec_no,
-            'X' in modes, tags_to_update)
+            'R' in modes, tags_to_update)
         output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
@@ -204,7 +204,7 @@ class AnfisaService:
         workspace, modes = self._stdParams(rq_args)
         output = StringIO()
         output.write(json.dumps(
-            workspace.getRulesData('X' in modes)))
+            workspace.getRulesData('R' in modes)))
         return output.getvalue()
 
     #===============================================
@@ -214,7 +214,7 @@ class AnfisaService:
         content = rq_args.get("cnt")
         output = StringIO()
         output.write(json.dumps(workspace.modifyRulesData(
-            'X' in modes, item, content)))
+            'R' in modes, item, content)))
         return output.getvalue()
 
     #===============================================

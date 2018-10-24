@@ -5,7 +5,7 @@ var sZoneListCache = {};
 var sZoneDictCache = {};
 var sZoneSetCache  = {};
 var sWorkZoneCur   = null;
-var sTagsIntVersion = null;
+var sZoneTagsIntVersion = null;
 
 /*************************************/
 function checkCurZoneProblem() {
@@ -164,11 +164,11 @@ function dropZoneVal(val_name) {
     }
 }
 
-function checkTagsIntVersion(tags_int_version) {
-    if (tags_int_version != sTagsIntVersion) {
+function checkZoneTagsIntVersion(tags_int_version) {
+    if (tags_int_version != sZoneTagsIntVersion) {
         if (sZoneListCache["_tags"]) {
             delete sZoneListCache["_tags"];
         }
-        sTagsIntVersion = tags_int_version;
+        sZoneTagsIntVersion = tags_int_version;
     }
 }

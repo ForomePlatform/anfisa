@@ -12,6 +12,7 @@ var sSelectFltNamed  = null;
 var sElFltCurState   = null;
 var sCheckZoneCur    = null;
 var sElZoneCurState  = null;
+var sTagsIntVersion  = null;
 
 var sSelectCurTag    = null;
 var sElCurTagNav     = null;
@@ -84,10 +85,17 @@ function setupTagSelection(info) {
         option.value = tag_name;
         sSelectCurTag.append(option)
     }
-    checkTagsIntVersion(info["tags-version"]);
+    sTagsIntVersion = info["tags-version"];
+    checkZoneTagsIntVersion(sTagsIntVersion);
     sSelectCurTag.selectedIndex = tag_list.indexOf(sCurTag) + 1;
     sTagRecList = info["records"];
     updateTagNavigation();
+}
+
+function checkTagsIntVersion(tags_int_version) {
+    if (tags_int_version != sTagsIntVersion) {
+        loadTagSelection(sCurTag);
+    }
 }
 
 function updateTagNavigation() {

@@ -22,7 +22,7 @@ class TagsManager(ZoneH):
 
     def _loadDataSet(self):
         for rec_no, rec_key in self.getWS().getDataSet().enumDataKeys():
-            data_obj = self.getWS().getMongoConn().getRecData(rec_key)
+            data_obj = self.getWS().getMongoRecData(rec_key)
             if data_obj is not None:
                 for tag, value in data_obj.items():
                     if self._goodKey(tag):
@@ -53,7 +53,7 @@ class TagsManager(ZoneH):
 
     def makeRecReport(self, rec_no, tags_to_update):
         rec_key = self.getWS().getDataSet().getRecKey(rec_no)
-        rec_data = self.getWS().getMongoConn().getRecData(rec_key)
+        rec_data = self.getWS().getMongoRecData(rec_key)
         mark_modified = False
         if tags_to_update is not None:
             rec_data, mark_modified = self._changeRecord(
@@ -77,7 +77,7 @@ class TagsManager(ZoneH):
 
     @classmethod
     def _makeObj(cls, rec_key, data):
-        new_rec_data = {"_id": rec_key}
+        new_rec_data = dict()
         if data is not None:
             for key, value in data.items():
                 if cls._goodKey(key) and value not in (None, False):
@@ -122,8 +122,7 @@ class TagsManager(ZoneH):
             new_rec_data['_h'] = [len(h_stack), h_stack]
         if new_rec_data is None:
             return rec_data, False
-        self.getWS().getMongoConn().setRecData(
-            rec_key, new_rec_data, rec_data)
+        self.getWS().setMongoRecData(rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())
         list_modified = False

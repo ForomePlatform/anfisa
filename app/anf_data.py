@@ -3,6 +3,7 @@ from StringIO import StringIO
 
 from app.model.a_serv import AnfisaService
 from app.model.workspace import Workspace
+from app.model.mongo_db import MongoConnector
 from app.view.dataset import DataSet
 from app.view.checker import ViewDataChecker
 from .view_setup import ViewSetup
@@ -16,11 +17,16 @@ class AnfisaData:
     sDefaultWS = None
     sService = None
     sWorkspaces = {}
+    sMongoConn = None
 
     @classmethod
     def setup(cls, config, in_container):
         cls.sConfig = config
+        cls.sMongoConn = MongoConnector(config["mongo-db"],
+            config.get("mongo-host"), config.get("mongo-port"))
         setupRecommended()
+        mongo_common = cls.sMongoConn.getCommonAgent()
+
         for ws_descr in config["workspaces"]:
             ws_name = ws_descr["name"]
             data_set = DataSet(ViewSetup, ws_name, ws_descr["file"])
@@ -34,8 +40,8 @@ class AnfisaData:
                     rep_out.gevalue())
             logging.warning(legend.getStatusInfo())
             ws = Workspace(ws_name, legend, data_set,
-                ws_descr["mongo"],
-                ws_descr.get("mongo-host"), ws_descr.get("mongo-port"))
+               cls.sMongoConn.getAgent(ws_descr["mongo-name"]),
+               mongo_common)
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws

@@ -4,10 +4,11 @@
     "port": 8090,
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
+    "mongo-db": "Anfisa",
     "workspaces": [
         {
             "name": "Personal_Genome_3140",
-            "mongo": "Anfisa_bgm9001_wgs",
+            "mongo-name": "bgm9001_wgs",
             "file": "${WORK}/data/bgm9001_wgs.json"
         }
     ],

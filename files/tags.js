@@ -1,8 +1,8 @@
 var sRecTags      = null;
 var sTagOrder      = null;
+var sCheckTags     = null;
 var sCurTagIdx     = null;
 var sTagNameOK     = null;
-var sTagCntMode    = null;
 var sTagCntChanged = null;
 var sTimeH         = null;
 var sPrevTag       = null;
@@ -76,10 +76,10 @@ function setupTags(info) {
         el.className = "empty";
     }
 
-    check_tags = info["check-tags"]
+    sCheckTags = info["check-tags"]
     var rep = [];
-    for (j=0; j< check_tags.length; j++) {
-        tag_name = check_tags[j];
+    for (j=0; j< sCheckTags.length; j++) {
+        tag_name = sCheckTags[j];
         rep.push('<div class="tag-check"><input id="check-tag--' + tag_name + '" ' +
             ((sRecTags[tag_name])?"checked ":"") + 
             'type="checkbox" onclick="checkTagCheck(\'' + tag_name + '\');"/>&nbsp;' +
@@ -93,7 +93,7 @@ function setupTags(info) {
     rep = [];
     for (j = 0; j < op_tags.length; j++) {
         tag_name = op_tags[j];
-        if (!sRecTags[tag_name])
+        if (sRecTags[tag_name] == undefined)
             continue
         idx = sTagOrder.length;
         sTagOrder.push(tag_name);
@@ -112,7 +112,7 @@ function setupTags(info) {
     sBtnUndoTag.disabled = (sViewPort < 1) || !info["can_undo"];
     sBtnRedoTag.disabled = (sViewPort < 1) || !info["can_redo"];
 
-    updateTagsState(true);
+    updateTagsState();
     
     for (idx = sInpTagNameList.length - 1; idx > 0; idx--) {
         sInpTagNameList.remove(idx);
@@ -132,67 +132,49 @@ function setupTags(info) {
     if (info["marker"]) {
         parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
     }
+
+    parent.window.checkTagsIntVersion(info["tags-version"]);    
 }
 
-function updateTagsState(set_content) {
+function updateTagsState() {
     sBtnClearTags.disabled  = (sViewPort < 1) || (!sHasTags);
-    if (set_content) {
-        if (sCurTagIdx == null) {
-            sInpTagName.value = "";
-            sInpTagValue.value = "";
-            sTagNameOK = false;
-            sTagCntMode = true;
-            sTagCntChanged = false;
-        } else {
-            tag_name = sTagOrder[sCurTagIdx];
-            sInpTagName.value = tag_name;
-            sInpTagValue.value = ("" + sRecTags[tag_name]).trim();
-            sTagNameOK = true;
-            sTagCntMode = true;
-            sTagCntChanged = false;
-        }
+    if (sCurTagIdx == null) {
+        sInpTagName.value = "";
+        sInpTagValue.value = "";
+    } else {
+        tag_name = sTagOrder[sCurTagIdx];
+        sInpTagName.value = tag_name;
+        sInpTagValue.value = ("" + sRecTags[tag_name]).trim();
     }
     checkInputs();
 }
 
 function checkInputs() {    
+    tag_name = sInpTagName.value.trim();
+    pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
-        tag_name = sInpTagName.value.trim();
-        sTagNameOK = /^[A-Za-z0-9_\-]+$/i.test(tag_name) && tag_name[0] != '_'
-            && sTagOrder.indexOf(tag_name) < 0;
+        sTagNameOK = tag_name && /^[A-Za-z0-9_\-]+$/i.test(tag_name) && tag_name[0] != '_'
+            && sCheckTags.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
-        
     } else {
         sTagNameOK = true;
-        if (sTagCntMode) {
-            tag_name = sTagOrder[sCurTagIdx];
-            sTagCntChanged = (sInpTagValue.value.trim() != 
-                ("" + sRecTags[tag_name]).trim());            
-        } else {
-            sTagCntChanged = false;
-        }
+        sTagCntChanged = (sInpTagValue.value.trim() != 
+            ("" + sRecTags[tag_name]).trim());            
     }
     sInpTagName.className = (sTagNameOK == false)? "bad": "";
-    sInpTagName.disabled  = (sViewPort < 1) || sCurTagIdx != null;
-    sInpTagValue.disabled = (sViewPort < 1) || !sTagCntMode;
-    sInpTagNameList.disabled = (sViewPort < 1) || (sCurTagIdx != null);
+    sInpTagName.disabled  = (sViewPort < 1);
+    sInpTagValue.disabled = (sViewPort < 1) || !sTagNameOK;
+    sInpTagNameList.disabled = (sViewPort < 1);
     
-    sBtnNewTag.disabled     = (sViewPort < 1) || (sCurTagIdx == null);
-    sBtnSaveTag.disabled    = (sViewPort < 1) || !(sTagCntMode && sTagNameOK && 
-        (sCurTagIdx == null || sTagCntChanged));
+    sBtnNewTag.disabled     = (sViewPort < 1) || !sTagNameOK || (sCurTagIdx != null);
+    sBtnSaveTag.disabled    = (sViewPort < 1) || !(sTagNameOK && 
+        (sCurTagIdx != null) && sTagCntChanged);
     sBtnCancelTag.disabled  = (sViewPort < 1) || (!sTagCntChanged) || 
-        (sCurTagIdx != null || sInpTagName.value.trim() != "");
+        (sCurTagIdx == null);
     sBtnDeleteTag.disabled  = (sViewPort < 1) || (sCurTagIdx == null);
         
-    if (sTagCntMode) {
-        if (sTimeH == null) 
-            sTimeH = setInterval(checkInputs, 200);
-    } else {
-        if (sTimeH != null) {
-            clearInterval(sTimeH);
-            sTimeH = null;
-        }
-    }
+    if (sTimeH == null) 
+        sTimeH = setInterval(checkInputs, 200);
 }
 
 function dropCurTag() {
@@ -208,7 +190,7 @@ function tagEnvNew() {
         return;
     if (sCurTagIdx != null) {
         dropCurTag();
-        updateTagsState(true);
+        updateTagsState();
     }
 }
 
@@ -217,7 +199,7 @@ function tagEnvSave(force_it) {
         return;
     if (!force_it) {
         checkInputs();
-        if (!(sTagCntMode && sTagNameOK))
+        if (!sTagNameOK)
             return;
     }
     tags_to_update = sRecTags;
@@ -230,7 +212,7 @@ function tagEnvSave(force_it) {
 function tagEnvCancel() {
     if (sViewPort < 1)
         return;
-    updateTagsState(true);
+    updateTagsState();
 }
 
 function tagEnvDelete() {
@@ -282,18 +264,24 @@ function tagEnvRedo() {
 }
 
 function pickTag(idx) {
+    if (idx < 0) {
+        idx = null;
+    }
     if (idx != sCurTagIdx) {
         dropCurTag();
         sCurTagIdx = idx;
-        el = document.getElementById("tag--" + sCurTagIdx);
-        el.className = el.className + " cur";
-        updateTagsState(true);
+        if (sCurTagIdx != null) {
+            el = document.getElementById("tag--" + sCurTagIdx);
+            el.className = el.className + " cur";
+        }
+        updateTagsState();
     }
 }
 
 function tagEnvTagSel() {
     if (sCurTagIdx == null) {
         sInpTagName.value = sInpTagNameList.value;
+        checkInputs();
     }
 }
 
