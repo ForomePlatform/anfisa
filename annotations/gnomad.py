@@ -191,14 +191,15 @@ class GnomAD(Connection):
         if (len(rows) == 0):
             return data
 
-        for key, row_set in {"Overall": rows, "Exomes":exomes, "Genomes":genomes}.items():
+        for key, row_set in {"overall": rows, "exomes":exomes, "genomes":genomes}.items():
             if (len(row_set) == 0):
                 continue
             an, ac = self.get_an_and_ac(row_set)
             af = af_(an, ac)
-            data["{}_AN".format(key)] = an
-            data["{}_AC".format(key)] = ac
-            data["{}_AF".format(key)] = af
+            data[key] = dict()
+            data[key]["AN"] = an
+            data[key]["AC"] = ac
+            data[key]["AF"] = af
 
         popmax, popmax_af = self.popmax_from_rows(rows)
         data["popmax"] = popmax

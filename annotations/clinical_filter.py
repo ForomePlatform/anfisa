@@ -64,12 +64,12 @@ def process_file(f, out = None, vcf_header = None, samples = None, expected = No
     KEYs = ['HGMD only', 'ClinVar only', 'HGMD & ClinVar', 'gnomAD: AF<1%', 'Singleton']
 
     output1 = out
-    gnomAD = GnomAD()
     hg19_to_38_converter = liftover.Converter()
 
     csq_set = set()
 
     with open(f) as input, open(output1, "w") as out1, HGMD() as hgmd, \
+            GnomAD() as gnomAD,  \
             ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar, \
             Filter() as clinical_filter:
         while(True):
