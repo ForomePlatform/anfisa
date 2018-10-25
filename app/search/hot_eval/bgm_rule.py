@@ -5,7 +5,7 @@ def evalRec(env, rec):
     if ("Quality-PASS" not in rec.Rules):
         return False
 
-    if (not rec.Proband_has_Variant):
+    if (len(rec.Has_Variant & {"proband"}) == 0):
         return False
 
     known = len(rec.Presence_in_Databases & {"ClinVar", "HGMD"}) > 0

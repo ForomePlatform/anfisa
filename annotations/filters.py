@@ -134,6 +134,11 @@ class Filter_gnomAD_AF(Filter):
                 return True
         return False
 
+    def close(self):
+        self.gnomAD.close()
+        Filter.close(self)
+
+
 class Filter_ClinVar(Filter):
     def __init__(self):
         Filter.__init__(self)

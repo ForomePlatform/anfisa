@@ -165,6 +165,7 @@ class GnomAD(Connection):
     def popmax_from_rows(self, rows):
         popmax = None
         popmax_af = None
+        popmax_an = None
 
         for group in self.ANCESTRIES:
             an, ac = self.get_an_and_ac(rows, group)
@@ -174,8 +175,9 @@ class GnomAD(Connection):
             if (af > popmax_af):
                 popmax = group
                 popmax_af = af
+                popmax_an = an
 
-        return popmax, popmax_af
+        return popmax, popmax_af, popmax_an
 
     def get_popmax(self, chr, pos, ref, alt, from_what = 'e,g'):
         rows = self.get_data(chr, pos, ref, alt, from_what)
@@ -201,9 +203,10 @@ class GnomAD(Connection):
             data[key]["AC"] = ac
             data[key]["AF"] = af
 
-        popmax, popmax_af = self.popmax_from_rows(rows)
+        popmax, popmax_af, popmax_an= self.popmax_from_rows(rows)
         data["popmax"] = popmax
         data["popmax_af"] = popmax_af
+        data["popmax_an"] = popmax_an
 
         return data
 

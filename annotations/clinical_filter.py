@@ -49,6 +49,8 @@ class Filter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.clinvar_filter.close()
+        self.gnomad_filter1.close()
+        self.gnomad_filter5.close()
 
     def __enter__(self):
         return self

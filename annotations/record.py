@@ -210,6 +210,7 @@ class Variant:
         self.original_json = json_string
         self.data = json.loads(json_string)
         self.filters = dict()
+        self.private_data = dict()
         self.case = case
         self.samples = samples
         self.hg38_start = None
@@ -233,8 +234,25 @@ class Variant:
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
-        self.filters['proband_has_variant'] = self.is_proband_has_variant()
         self.filters['severity'] = self.get_severity()
+        self.filters['has_variant'] = list()
+
+        proband = self.get_proband()
+        mother = self.samples[proband]['mother']
+        father = self.samples[proband]['father']
+        for sample in self.samples:
+            if (sample == proband):
+                label = "proband"
+            elif (sample == mother):
+                label = "mother"
+            elif (sample == father):
+                label = "father"
+            else:
+                label = sample
+
+            if (self.sample_has_variant(sample)):
+                self.filters['has_variant'].append(label)
+
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
         self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
@@ -248,30 +266,58 @@ class Variant:
 
 
     def call_gnomAD(self):
-        connection = self.connectors.gnomAD
-        if (not connection):
+        gnomAD = self.connectors.gnomAD
+        if (not gnomAD):
             return
         gm_af = None
         em_af = None
+        _af = None
         gm_af_pb = None
         em_af_pb = None
-        for alt in self.alt_list():
-            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'e')
-            self.data["_private.gnomad_db_exomes_{}_af".format(alt)] = af
-            em_af = min(em_af, af) if em_af else af
-            if (self.is_proband_has_allele(alt)):
-                em_af_pb = min(em_af_pb, af) if em_af_pb else af
+        _af_pb = None
 
-            af = connection.get_af(self.chr_num(), self.lowest_coord(), self.ref(), alt, 'g')
-            self.data["_private.gnomad_db_genomes_{}_af".format(alt)] = af
-            gm_af = min(gm_af, af) if gm_af else af
+        popmax = None
+        popmax_af = None
+        popmax_an = None
+
+        self.private_data["gnomad"] = dict()
+        for alt in self.alt_list():
+            gnomad_data = gnomAD.get_all(self.chr_num(), self.lowest_coord(), self.ref(), alt)
+            if len(gnomad_data) == 0:
+                continue
+            self.private_data["gnomad"][alt] = gnomad_data
+
+            if "exomes" in gnomad_data:
+                af = gnomad_data["exomes"]["AF"]
+                em_af = min(em_af, af) if em_af else af
+                if (self.is_proband_has_allele(alt)):
+                    em_af_pb = min(em_af_pb, af) if em_af_pb else af
+
+            if "genomes" in gnomad_data:
+                af = gnomad_data["genomes"]["AF"]
+                gm_af = min(gm_af, af) if gm_af else af
+                if (self.is_proband_has_allele(alt)):
+                    gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
+
+            af = gnomad_data["overall"]["AF"]
             if (self.is_proband_has_allele(alt)):
-                gm_af_pb = min(gm_af_pb, af) if gm_af_pb else af
+                _af_pb = min(_af_pb, af) if _af_pb else af
+
+            if (af < _af or _af == None):
+                _af = af
+                popmax = gnomad_data.get("popmax")
+                popmax_af = gnomad_data.get("popmax_af")
+                popmax_an = gnomad_data.get("popmax_an")
+
 
         self.filters["gnomad_db_exomes_af"] = em_af
         self.filters["gnomad_db_genomes_af"] = gm_af
-        self.filters['gnomad_af_fam'] = max(em_af, gm_af)
-        self.filters['gnomad_af_pb'] = max(em_af_pb, gm_af_pb)
+        self.filters['gnomad_af_fam'] = _af
+        self.filters['gnomad_af_pb'] = _af_pb
+
+        self.filters['gnomad_popmax'] = popmax
+        self.filters['gnomad_popmax_af'] = popmax_af
+        self.filters['gnomad_popmax_an'] = popmax_an
 
     def call_hgmd(self):
         connection = self.connectors.hgmd
@@ -280,10 +326,10 @@ class Variant:
         accession_numbers = connection.get_acc_num(self.chr_num(), self.start(), self.end())
         if (len(accession_numbers) > 0):
             (phenotypes, pmids) = connection.get_data_for_accession_numbers(accession_numbers)
-            self.data["_private.HGMD_phenotypes"] = phenotypes
-            self.data["_private.HGMD_PIMIDs"] = pmids
+            self.private_data["HGMD_phenotypes"] = phenotypes
+            self.private_data["HGMD_PIMIDs"] = pmids
             tags = [pmid[2] for pmid in pmids] if pmids else None
-            self.data["_private.HGMD_TAGs"] = tags
+            self.private_data["HGMD_TAGs"] = tags
             self.data['HGMD'] = ','.join(accession_numbers)
             hg_38 = connection.get_hg38(accession_numbers)
             self.data['HGMD_HG38'] = ', '.join(["{}-{}".format(c[0],c[1]) for c in hg_38])
@@ -322,7 +368,7 @@ class Variant:
         self.data["clinvar_variants"] = variants
         self.data["clinvar_phenotypes"] = [row[6] for row in rows]
         self.data["clinvar_significance"] = significance
-        self.data["_private.clinvar_other_ids"] = ids
+        self.private_data["clinvar_other_ids"] = ids
         benign = True
         for prediction in significance:
             if not "benign" in prediction.lower():
@@ -544,111 +590,21 @@ class Variant:
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs],
                       replace_None=none_replacement)
 
-    def get_gnomad_pop_max(self, allele = None):
-        ancestries = dict()
-        collocated_variants = self.get_colocated_variants()
-        for v in collocated_variants:
-            if (v.get("somatic")):
-                continue
-            if (allele and v.get("minor_allele") != allele):
-                continue
-            for key in v.keys():
-                if (not 'gnomad' in key):
-                    continue
-                g = key.split('_')
-                if (len(g) <> 3):
-                    continue
-                a = g[1]
-                tpl = ancestries.get(a, [None, None])
-                if (g[2] == 'allele'):
-                    tpl[0] = v[key]
-                elif (g[2] == 'maf'):
-                    tpl[1] = v[key]
-                else:
-                    raise Exception("Unrecognized key: {}".format(key))
-                ancestries[a] = tpl
-            if (v.has_key("frequencies")):
-                array = v["frequencies"]
-                for allele in array:
-                    frequencies = array[allele]
-                    for a in frequencies:
-                        f = float(frequencies[a])
-                        ancestries[a] = (allele, f)
-
-
-        pop_max_a_1 = None
-        pop_max_f_1 = None
-        pop_max_a_2 = None
-        pop_max_f_2 = None
-        a1 = None
-        a2 = None
-        for a in ancestries.keys():
-            f = ancestries[a][1]
-            if (not pop_max_f_1 or f > pop_max_f_1):
-                if (pop_max_f_1):
-                    pop_max_f_2 = pop_max_f_1
-                    pop_max_a_2 = pop_max_a_1
-                    a2 = a1
-                pop_max_f_1 = f
-                pop_max_a_1 = ancestries[a][0]
-                a1 = a
-
-        return (a1, pop_max_a_1, pop_max_f_1, a2, pop_max_a_2, pop_max_f_2)
-
     def get_gnomad_af(self):
         return self.filters.get('gnomad_af_fam')
-        gm_af = None
-        alt_alleles = set(self.alt_list())
-        collocated_variants = self.get_colocated_variants()
-        # if (self.start() == 16378047):
-        #     pass
-        for v in collocated_variants:
-            alts = set(v.get("allele_string").split('/')[1:])
-            if (not alts.intersection(alt_alleles)):
-                continue
-            if (v.get("somatic")):
-                continue
-            af = v.get("gnomad_maf")
-            if (af == None):
-                af = v.get("minor_allele_freq")
-            if (af == None):
-                continue
 
-            if (af):
-                af = float(af)
-            if (gm_af):
-                gm_af = min(gm_af, af)
-            else:
-                gm_af = af
-
-        if (gm_af):
-            return gm_af
-
-        af_e = self.get_gnomad_split_af("exomes")
-        af_g = self.get_gnomad_split_af("genomes")
-
-        return max(af_e, af_g)
-
-    def get_gnomad_split_af(self, exomes_or_genomes):
-        transcripts = self.get_transcripts()
-        af = None
-        if (False):
-            for t in transcripts:
-                af1_str = t.get("gnomad_{}_af".format(exomes_or_genomes))
-                af1 = float(af1_str) if (af1_str) else None
-                if (af):
-                    af = min(af1, af)
-                else:
-                    af = af1
-
-        if (not af):
-            af = self.data.get("_private.gnomad_db_{}_af".format(exomes_or_genomes))
-
-        return af
-
-    def get_gnomad_split_af_by_alt(self, exomes_or_genomes, alt):
-        af = self.data.get("_private.gnomad_db_{}_{}_af".format(exomes_or_genomes, alt))
-        return af
+    def get_gnomad_split_by_alt(self, what, exomes_or_genomes, alt):
+        gnomad_data = self.private_data.get("gnomad")
+        if (not gnomad_data):
+            return None
+        if not exomes_or_genomes:
+            exomes_or_genomes = "overall"
+        data = gnomad_data.get(alt)
+        if (not data):
+            return None
+        if exomes_or_genomes in data:
+            return data[exomes_or_genomes][what.upper()]
+        return None
 
     def get_igv_url(self):
         if (not self.case or not self.samples):
@@ -675,15 +631,6 @@ class Variant:
             gene = "..."
 
         vstr = str(self)
-        if (False):
-            exp = ""
-            if (self.data.get("EXPECTED")):
-                exp = '+ '
-            if (self.data.get("SEQaBOO")):
-                pss = "* "
-            else:
-                pss = ""
-            return "{}{}[{}] {}".format(exp, pss, gene, vstr)
         return "[{}] {}".format(gene, vstr)
 
     def get_hg38_coordinates(self):
@@ -787,8 +734,26 @@ class Variant:
                 GQ = min(gq, GQ) if GQ else gq
         return GQ
 
-    def is_proband_has_variant(self):
-        genotype = self.get_genotypes()[0]
+    def sample_has_variant(self, sample=None):
+        idx = None
+
+        if (isinstance(sample, int)):
+            idx = int(sample)
+        elif (sample.lower() == "proband"):
+            idx = 0
+        elif (sample.lower() == "mother"):
+            idx = 1
+        elif (sample.lower() == "father"):
+            idx = 2
+
+        if (idx == None):
+            genotype = self.vcf_record.genotype(sample).gt_bases
+        else:
+            genotypes = self.get_genotypes()
+            if (len(genotypes) <= idx):
+                return False
+            genotype = genotypes[idx]
+
         if (not genotype):
             return False
         set1 = set(genotype.split('/'))
@@ -923,8 +888,6 @@ class Variant:
         view_info = dict()
         filters   = self.filters.copy()
 
-        filters['rare_variant'] = ("PASS"
-            if (self.data.get("SEQaBOO")) else "False")
         data_info['label'] = self.get_label()
         data_info['color_code'] = self.get_color_code()
 
@@ -1021,14 +984,18 @@ class Variant:
                 gr["allele"] = allele
                 gr["proband"] = "Yes" if (self.is_proband_has_allele(allele)) else "No"
                 gr["pli"] = self.get_pLI_by_allele(allele)
-                gr["proband_af"] = self.get_gnomad_af()
-                gr["genome_af"] = self.get_gnomad_split_af_by_alt("genomes", allele)
-                gr["exome_af"] = self.get_gnomad_split_af_by_alt("exomes", allele)
-                pop_max = self.get_gnomad_pop_max(allele = allele)
-                if (pop_max[0]):
-                    gr["pop_max_1"] = "{}: {}={}".format(pop_max[0], pop_max[1], pop_max[2])
-                if (pop_max[3]):
-                    gr["pop_max_2"] = "{}: {}={}".format(pop_max[3], pop_max[4], pop_max[5])
+
+                gr["af"] = self.get_gnomad_split_by_alt("af", "overall", allele)
+                gr["genome_af"] = self.get_gnomad_split_by_alt("af", "genomes", allele)
+                gr["exome_af"] = self.get_gnomad_split_by_alt("af", "exomes", allele)
+                gr["genome_an"] = self.get_gnomad_split_by_alt("AN", "genomes", allele)
+                gr["exome_an"] = self.get_gnomad_split_by_alt("AN", "exomes", allele)
+                gnomad_data = self.private_data["gnomad"].get(allele)
+                if (gnomad_data):
+                    pop_max = gnomad_data["popmax"]
+                    pop_max_af = gnomad_data["popmax_af"]
+                    pop_max_an = gnomad_data["popmax_an"]
+                    gr["pop_max"] = "{}: {} [{}]".format(pop_max, pop_max_af, pop_max_an)
 
                 gr["url"] = \
                     "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
@@ -1036,7 +1003,7 @@ class Variant:
         tab4 = dict()
         view_info["databases"] = tab4
         genes = self.get_genes()
-        clinvar_ids = self.data.get("_private.clinvar_other_ids")
+        clinvar_ids = self.private_data.get("clinvar_other_ids")
         omim_ids = None
         if (clinvar_ids):
             omim_ids = clinvar_ids.get("OMIM")
@@ -1054,10 +1021,10 @@ class Variant:
             tab4["hgmd_hg38"] = self.data.get("HGMD_HG38")
         else:
             tab4["hgmd"] = "Not Present"
-        pmids = self.data.get("_private.HGMD_PIMIDs")
-        tab4["hgmd_tags"] = self.data.get("_private.HGMD_TAGs")
+        pmids = self.private_data.get("HGMD_PIMIDs")
+        tab4["hgmd_tags"] = self.private_data.get("HGMD_TAGs")
         tab4["hgmd_pmids"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
-        phenotypes = self.data.get("_private.HGMD_phenotypes")
+        phenotypes = self.private_data.get("HGMD_phenotypes")
         tab4["hgmd_phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
         if (self.data.get("ClinVar") <> None):
