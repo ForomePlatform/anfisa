@@ -5,13 +5,13 @@ def evalRec(env, rec):
     if ("Quality-PASS" not in rec.Rules):
         return False
 
-    # 1.	Present in HGMD as "DM" or "DM?"
-    hdmd_clinically_significant = len(set(rec.HGMD_Tags) & {"DM", "DM?"}) > 0
+    # 1.	Present in HGMD as "DM"
+    hdmd_clinically_significant = len(set(rec.HGMD_Tags) & {"DM"}) > 0
     if hdmd_clinically_significant:
         return True
 
     # 2.	AF< 5% AND +/- bases from intronic/exonic border
-    if (rec.gnomAD_AF_Exomes > env.af_in_db):
+    if (rec.gnomAD_AF > env.af_in_db):
         return False
     if (rec.Dist_from_Exon > env.exon_dist):
         return False
@@ -35,7 +35,11 @@ def evalRec(env, rec):
 
     # 3.	AF < 0.0007 (GnomAD Exome) AND +/- 5 bases
     min_frequency = env.af_seq_a_boo
-    return rec.gnomAD_AF_Exomes < min_frequency
+    ok =  rec.gnomAD_AF < min_frequency
+    if (ok and rec.gnomAD_PopMax_AN > env.an_popmax):
+        ok = rec.gnomAD_PopMax_AF < env.af_popmax
+
+    return ok
 
 
 # Inclusion criteria for SEQaBOO gene list:

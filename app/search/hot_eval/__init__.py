@@ -78,6 +78,8 @@ class HOT_SETUP:
         RuleParamH("exon_dist", 5),
         RuleParamH("af", 0.01),
         RuleParamH("af_seq_a_boo", 0.0007),
+        RuleParamH("af_popmax", 0.01),
+        RuleParamH("an_popmax", 2000),
         RuleParamH("af_in_db", 0.05),
         RuleParamH("severity", 1),
         RuleParamH("gq", 20),
