@@ -88,13 +88,21 @@ def prepareLegend(ws_name):
         "/_filters/gnomad_af_pb",
         diap = (0., 1.), default_value = 0.,
         title = "gnomAD Allele Frequency (proband)")
-
-    flt_unit.StatusUnit(legend, "BGM_Rare_Variant",
-        "/_filters/rare_variant", research_only = True)
+    flt_unit.FloatValueUnit(legend, "gnomAD_PopMax_AF",
+        "/_filters/gnomad_popmax_af",
+        diap = (0., 1.), default_value = 0.,
+        title = "gnomAD PopMax Allele Frequency")
+    flt_unit.StatusUnit(legend, "gnomAD_PopMax",
+        "/_filters/gnomad_popmax", default_value= None,
+        title = "gnomAD PopMax Ancestry")
+    flt_unit.IntValueUnit(legend, "gnomAD_PopMax_AN",
+        "/_filters/gnomad_popmax_an",
+        default_value = 0,
+        title = "gnomAD: Number of alleles in PopMax Ancestry")
 
     flt_unit.PresenceUnit(legend, "Presence_in_Databases", [
-        ("ClinVar", "/view/databases/ClinVar"),
-        ("GnomAD", "/filters/gnomad_af"),
+        ("ClinVar", "/view/databases/clinVar"),
+        ("GnomAD", "/filters/gnomad_af_fam"),
         ("HGMD", "/view/databases/hgmd_pmids[]"),
         ("OMIM", "/view/databases/omim")])
 
@@ -108,8 +116,8 @@ def prepareLegend(ws_name):
         "/view/bioinformatics/called_by[]",
         title="Called by", research_only = False)
 
-    flt_unit.StatusUnit(legend, "Proband_has_Variant",
-        "/_filters/proband_has_variant")
+    flt_unit.MultiStatusUnit(legend, "Has_Variant",
+        "/_filters/has_variant[]")
 
     legend._endViewGroup()
 
