@@ -102,7 +102,7 @@ def prepareLegend(ws_name):
 
     flt_unit.PresenceUnit(legend, "Presence_in_Databases", [
         ("ClinVar", "/view/databases/clinVar"),
-        ("GnomAD", "/filters/gnomad_af_fam"),
+        ("GnomAD", "/_filters/gnomad_af_fam"),
         ("HGMD", "/view/databases/hgmd_pmids[]"),
         ("OMIM", "/view/databases/omim")])
 
