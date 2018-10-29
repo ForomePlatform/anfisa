@@ -170,9 +170,14 @@ def prepareLegend(ws_name):
     #===============================================
     legend.regFilter("Candidates_BGM",
         [ConditionMaker.condEnum("Rules", ["Candidates_BGM"])])
-    legend.regFilter("SEQaBOO_Hearing_Loss",
+    legend.regFilter("SEQaBOO_Hearing_Loss_v_01",
         [
-            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss"]),
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_01"]),
+            ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
+        ])
+    legend.regFilter("SEQaBOO_Hearing_Loss_v_02",
+        [
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_02"]),
             ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
         ])
     legend.regFilter("SEQaBOO_ACMG59",

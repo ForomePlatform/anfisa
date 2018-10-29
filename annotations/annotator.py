@@ -1,6 +1,5 @@
 import argparse
 import os
-import joblib
 
 from annotations import case_utils, liftover
 from annotations.clinvar import ClinVar
@@ -78,7 +77,7 @@ if __name__ == '__main__':
 
     samples = case_utils.parse_fam_file(fam_file)
 
-    output = args.output if args.output else "{}/{}_wgs.json".format(dir, case)
+    output = args.output if args.output else "{}/{}_anfisa.json".format(dir, case)
 
     process_file(filtered_by_bed_vep_output, out=output,
                      vcf_header=header, samples=samples, case="{}_wgs".format(case), limit =limit)

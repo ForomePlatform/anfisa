@@ -50,8 +50,9 @@ class ClinVar(Connection):
         for a in alt:
             cursor.execute(self.query_exact, (c, p1, p2, a))
             rows += cursor.fetchall()
-        cursor.execute(self.query_na, (c, p1, p2))
-        rows += cursor.fetchall()
+        if (len(rows) == 0):
+            cursor.execute(self.query_na, (c, p1, p2))
+            rows = cursor.fetchall()
         cursor.close()
         if (len(rows) > len(alt)):
             raise Exception("Ambiguous query: c={}, start = {}, end = {}, alt = {}".format(c, p1, p2, a))
