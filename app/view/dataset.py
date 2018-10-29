@@ -32,15 +32,6 @@ class DataSet:
     def getViewSetup(self):
         return self.mViewSetup
 
-    def reportList(self, output):
-        for idx, rec in enumerate(self.mDataObjects):
-            rec_key = self.mLabelKeyF(rec)[0]
-            rec_color = self.mViewSetup.normalizeColorCode(
-                self.mColorCodeF(rec)[0])
-            print >> output, ('<div id="li--%d" class="rec-label %s" '
-                'onclick="changeRec(%d)";">%s</div>' %
-                (idx, rec_color, idx, rec_key))
-
     def getSize(self):
         return len(self.mDataObjects)
 
@@ -60,9 +51,9 @@ class DataSet:
         ret = []
         for rec_no in rec_no_seq:
             rec = self.mDataObjects[rec_no]
-            color_code = self.mLabelKeyF(rec)[0]
-            ret.append([rec_no, escape(color_code),
-                self.mViewSetup.normalizeColorCode(color_code),
+            label = self.mLabelKeyF(rec)[0]
+            ret.append([rec_no, escape(label),
+                self.mViewSetup.normalizeColorCode(self.mColorCodeF(rec)),
                 rec_no in marked_set])
         return ret
 
