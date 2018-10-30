@@ -290,6 +290,6 @@ function doExport() {
         add_instr = ["zone", JSON.stringify(sCurZoneData)];    
     xhttp.open("POST", "export", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(formFilterRequestArgs(sBaseFilterName, add_instr)); 
+    xhttp.send(formFilterRequestArgs(sCurFilterName, add_instr)); 
 }
 
