@@ -100,3 +100,6 @@ class Workspace:
 
     def setMongoRecData(self, key, data, prev_data = False):
         self.mMongoWS.setRecData(key, data, prev_data)
+
+    def getJSonObj(self):
+        return {"name": self.mName}

@@ -57,6 +57,10 @@ class AnfisaData:
         return cls.sWorkspaces[name]
 
     @classmethod
+    def iterWorkspaces(cls):
+        return iter(cls.sWorkspaces)
+
+    @classmethod
     def makeExcelExport(cls, prefix, json_seq):
         export_setup = cls.sConfig["export"]
         dir_name = export_setup["work-dir"]

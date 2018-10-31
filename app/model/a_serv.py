@@ -42,6 +42,9 @@ class AnfisaService:
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
+        if rq_path == "/wslist":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formWSList(rq_args))
         if rq_path == "/vsetup":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formVSetup(rq_args))
@@ -272,6 +275,14 @@ class AnfisaService:
         workspace = self.sData.getWS(rq_args.get("ws"))
         rec_no = int(rq_args.get("rec"))
         rep = workspace.getDataSet().getRecData(rec_no)
+        output = StringIO()
+        output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formWSList(self, rq_args):
+        rep = [self.sData.getWS(ws).getJSonObj()
+            for ws in self.sData.iterWorkspaces()]
         output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()
