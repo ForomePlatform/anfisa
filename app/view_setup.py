@@ -27,7 +27,6 @@ class ViewSetup:
             "Benign/Likely benign",
             "False positives"
         ],
-        "attrs.to.ignore":  [],
         "rand.seed":        179,
         "rand.min.size":    100,
         "rand.sample.size": 100}
@@ -80,8 +79,13 @@ class ViewSetup:
                 return
         assert False
 
-    @classmethod
-    def getAspects(cls):
-        return cls.sAspects
+    def __init__(self):
+        self.mAspects = [asp_h.copy() for asp_h in self.sAspects]
+
+    def iterAspects(self):
+        return iter(self.mAspects)
+
+    def getFirstAspectID(self):
+        return self.mAspects[0].getName()
 
 #===============================================

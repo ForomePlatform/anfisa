@@ -42,6 +42,12 @@ class AnfisaService:
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
+        if rq_path == "/vsetup":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formVSetup(rq_args))
+        if rq_path == "/recdata":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formRecData(rq_args))
         if rq_path == "/stat":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formStat(rq_args))
@@ -110,7 +116,6 @@ class AnfisaService:
     #===============================================
     def formRec(self, rq_args):
         workspace, modes = self._stdParams(rq_args)
-        rec_no = int(rq_args.get("rec"))
         rec_no = int(rq_args.get("rec"))
         port = rq_args.get("port")
         data_set = workspace.getDataSet()
@@ -250,6 +255,23 @@ class AnfisaService:
         fname = workspace.getDataSet().makeExportFile(
             workspace.getName(), rec_no_seq, self.sData.makeExcelExport)
         rep = {"kind": "excel", "fname": fname}
+        output = StringIO()
+        output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formVSetup(self, rq_args):
+        workspace = self.sData.getWS(rq_args.get("ws"))
+        rep = workspace.getDataSet().getViewSetupJSon()
+        output = StringIO()
+        output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formRecData(self, rq_args):
+        workspace = self.sData.getWS(rq_args.get("ws"))
+        rec_no = int(rq_args.get("rec"))
+        rep = workspace.getDataSet().getRecData(rec_no)
         output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()

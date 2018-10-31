@@ -6,7 +6,6 @@ class ColGroupsH:
         if attr is not None:
             assert self.mATPairs is None
             self.mATPairs  = [(attr, title)]
-            self.mTitles = [title]
         else:
             assert self.mATPairs is not None
 
@@ -18,6 +17,9 @@ class ColGroupsH:
 
     def getTitle(self, idx):
         return self.mATPairs[idx][1]
+
+    def getJSonObj(self):
+        return [[attr, title] for attr, title in self.mATPairs]
 
     def prepareObjects(self, objects):
         assert len(objects) == 1

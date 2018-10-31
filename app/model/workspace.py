@@ -55,7 +55,7 @@ class Workspace:
         return None
 
     def getFirstAspectID(self):
-        return self.mViewSetup.getAspects()[0].getName()
+        return self.mViewSetup.getFirstAspectID()
 
     def getLastAspectID(self):
         return self.mViewSetup.configOption("aspect.tags.name")

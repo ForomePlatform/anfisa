@@ -2,6 +2,8 @@ import json, codecs
 from xml.sax.saxutils import escape
 
 from app.model.path_works import AttrFuncPool
+from .attr import AttrH
+from .checker import ViewDataChecker
 from .record import DataRecord
 #===============================================
 class DataSet:
@@ -25,6 +27,7 @@ class DataSet:
         seed = str(self.mViewSetup.configOption("rand.seed"))
         self.mRecHash = [hash(seed + rec_key)
             for rec_key in self.mDataKeys]
+        ViewDataChecker.check(self.mViewSetup, self)
 
     def getName(self):
         return self.mName
@@ -40,6 +43,9 @@ class DataSet:
 
     def getRecord(self, rec_no):
         return DataRecord(self, self.mDataObjects[int(rec_no)])
+
+    def getRecData(self, rec_no):
+        return self.mDataObjects[int(rec_no)]
 
     def iterDataObjects(self):
         return iter(self.mDataObjects)
@@ -80,3 +86,8 @@ class DataSet:
     def makeExportFile(self, workname, rec_no_seq, export_func):
         return export_func(workname, [self.mDataObjects[rec_no]
             for rec_no in rec_no_seq])
+
+    def getViewSetupJSon(self):
+        return {"aspects": [asp_h.getJSonObj()
+            for asp_h in self.mViewSetup.iterAspects()],
+            "opts": AttrH.getJSonOptions()}
