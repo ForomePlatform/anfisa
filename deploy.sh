@@ -37,5 +37,10 @@ rm *
 wget https://www.dropbox.com/s/duj0r1ccgjj1olv/PGP3140.json
 cd ../tmp/export
 [ ! -f SEQaBOO_output_template_0730.xlsx ] && wget https://www.dropbox.com/s/qvi229bfdtfxyrw/SEQaBOO_output_template_0730.xlsx
-cd ../..
 
+cd ../..
+echo "Updating configuration in anfisa.json"
+sed -i ".orig" "s#../a-setup#$target#" anfisa.json
+
+cd $repo
+echo "Run anfisa: python hserver.py $target/anfisa.json"
