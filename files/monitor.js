@@ -163,7 +163,7 @@ function updateTagNavigation() {
     rep_cnt.push(((cnt_tag == sTagRecList.length))? "In total:":"In filter:");
     sElCurTagNav.style.visibility = (cnt_tag > 0)? "visible": "hidden";
     if (cnt_tag > 0) {
-        rep_cnt.push((cnt[0] + 1) + "/<b>" + cnt_tag + "</b>");
+        rep_cnt.push((Math.min(cnt[0] + 1, cnt_tag)) + "/<b>" + cnt_tag + "</b>");
     } else {
         rep_cnt.push("<b>" + cnt_tag + "</b>");
     }
