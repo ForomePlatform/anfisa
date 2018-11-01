@@ -1,8 +1,9 @@
 #import sys
-import abc
+import abc, logging
 from collections import Counter
 
 import val_conv
+from app.model.types import Types
 from .column import DataPortion, DataColumn
 from .extract import DataExtractor
 from .val_stat import EnumStat
@@ -71,11 +72,21 @@ class FilterUnit:
         for extr_h in self.iterExtractors():
             extr_h.extract(obj, record)
 
+    def _testValue(self, value, kind, msg, add_crit = True):
+        if kind not in Types.detectValTypes(value) or not add_crit:
+            logging.fatal("Unit %s: bad %s %s: %r" %
+                (self.mName, kind, msg, value))
+
 #===============================================
 class IntValueUnit(FilterUnit):
     def __init__(self, legend, name, path, title = None,
             default_value = None, diap = None, research_only = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
+        if default_value is not None:
+            self._testValue(default_value, "int", "default value")
+        if diap is not None:
+            self._testValue(diap[0], "int", "diap min")
+            self._testValue(diap[1], "int", "diap max", diap[0] <= diap[1])
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
@@ -102,6 +113,11 @@ class FloatValueUnit(FilterUnit):
     def __init__(self, legend, name, path, title = None,
             default_value = None, diap = None, research_only = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
+        if default_value is not None:
+            self._testValue(default_value, "numeric", "default value")
+        if diap is not None:
+            self._testValue(diap[0], "numeric", "diap min")
+            self._testValue(diap[1], "numeric", "diap max", diap[0] <= diap[1])
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
@@ -126,11 +142,15 @@ class FloatValueUnit(FilterUnit):
 #===============================================
 class StatusUnit(FilterUnit):
     def __init__(self, legend, name, path, variants = None,
-            title = None, default_value = False, research_only = False, accept_wrong_values = False):
+            title = None, default_value = False,
+            research_only = False, accept_wrong_values = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
+        if default_value not in (None, False):
+            self._testValue(default_value, "string", "default value")
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.EnumConvertor(VariantSet.create(variants),
-                atomic_mode = True, default_value = default_value, others_value=accept_wrong_values),
+                atomic_mode = True, default_value = default_value,
+                others_value = accept_wrong_values),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
     def iterExtractors(self):
@@ -216,6 +236,8 @@ class MultiStatusUnit(FilterUnit):
             default_value = False, others_value = False,
             research_only = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
+        if default_value not in (None, False):
+            self._testValue(default_value, "string", "default value")
         self.mExtractors = [DataExtractor(self, name, path,
             val_conv.EnumConvertor(VariantSet.create(variants),
                 chunker = chunker, default_value = default_value,

@@ -51,13 +51,19 @@ class TagsManager(ZoneH):
     def _goodKey(key):
         return key and key[0] != '_'
 
-    def makeRecReport(self, rec_no, tags_to_update):
+    def updateRec(self, rec_no, tags_to_update):
         rec_key = self.getWS().getDataSet().getRecKey(rec_no)
         rec_data = self.getWS().getMongoRecData(rec_key)
+        return self._changeRecord(
+            rec_no, rec_key, rec_data, tags_to_update)
+
+    def makeRecReport(self, rec_no, update_info = None):
+        rec_key = self.getWS().getDataSet().getRecKey(rec_no)
         mark_modified = False
-        if tags_to_update is not None:
-            rec_data, mark_modified = self._changeRecord(
-                rec_no, rec_key, rec_data, tags_to_update)
+        if update_info is not None:
+            rec_data, mark_modified = update_info
+        else:
+            rec_data = self.getWS().getMongoRecData(rec_key)
         ret = {"check-tags": self.mCheckTags[:],
             "op-tags": self.getOpTagList()}
         if mark_modified:

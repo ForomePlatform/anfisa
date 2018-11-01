@@ -156,7 +156,7 @@ class FloatConvertor(_NumericConvertor):
         _NumericConvertor.__init__(self, float, "float", default_value, diap)
 
 class IntConvertor(_NumericConvertor):
-    def __init__(self, default_value = 0., diap = (0., 1.)):
+    def __init__(self, default_value = 0., diap = (0, 100)):
         _NumericConvertor.__init__(self, int, "int", default_value, diap)
 
 #===============================================

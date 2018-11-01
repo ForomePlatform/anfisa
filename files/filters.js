@@ -119,11 +119,11 @@ function loadStat(add_instr){
 /*************************************/
 function setupStatList(info) {
     sStatList = info["stat-list"];
-    sBaseFilterName = info["filter"];
+    sBaseFilterName = info["cur-filter"];
     sStatUnitIdxs = {}
     if (sCurFilterSeq == null) 
         sCurFilterSeq = info["conditions"];
-    _checkNamedFilters(info["pre-filters"], info["op-filters"]);
+    _checkNamedFilters(info["filter-list"]);
     var list_stat_rep = [];
     var group_title = false;
     for (idx = 0; idx < sStatList.length; idx++) {
@@ -232,9 +232,8 @@ function setupStatList(info) {
     prepareFilterOperations();
 }
 
-function _checkNamedFilters(pre_filters, op_filters) {
-    var all_filters = pre_filters.concat(op_filters);
-    setupNamedFilters(pre_filters, all_filters);
+function _checkNamedFilters(filter_list) {
+    var all_filters = setupNamedFilters(filter_list);
     for (idx = 0; idx < sFilterHistory.length; idx++) {
         hinfo = sFilterHistory[idx];
         if (hinfo[0] != "_current_" && all_filters.indexOf(hinfo[0]) < 0)

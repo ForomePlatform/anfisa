@@ -2,7 +2,7 @@ import numbers, traceback, logging
 from StringIO import StringIO
 from xml.sax.saxutils import escape
 
-from .type_count import ValueTypeCounter
+from app.model.types import Types
 #===============================================
 def _not_empty(val):
     return not not val
@@ -61,7 +61,7 @@ class AttrH:
         return kind in self.mKinds
 
     def getType(self):
-        return ValueTypeCounter.filterTypeKind(self.mKinds)
+        return Types.filterTypeKind(self.mKinds)
 
     def checkResearchBlock(self, research_mode):
         return (not research_mode) and self.mResearchOnly

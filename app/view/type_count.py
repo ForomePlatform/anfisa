@@ -1,5 +1,5 @@
-import numbers, json
-
+import json
+from app.model.types import Types
 #===============================================
 class ValueTypeCounter:
     sMAX_BAD_COUNT = 3
@@ -39,31 +39,10 @@ class ValueTypeCounter:
     def getState(self):
         return self.mState
 
-    @staticmethod
-    def _detectValTypes(value):
-        if value is None:
-            return [1]
-        elif isinstance(value, list):
-            return [2]
-        elif isinstance(value, dict):
-            return [3]
-        elif isinstance(value, basestring):
-            if not value:
-                return [4, 5, 6]
-            elif value.startswith("http"):
-                if value.startswith("https:") or value.startswith("http:"):
-                    return [5, 6]
-            return [6]
-        elif isinstance(value, int):
-            return [6, 7]
-        elif isinstance(value, numbers.Number):
-            return [7]
-        return None
-
     def regValue(self, value):
         if value is None:
             return
-        kind_idxs = self._detectValTypes(value)
+        kind_idxs = Types._detectValTypes(value)
         if len(kind_idxs) == 1 and kind_idxs[0] == 2:
             if self.mSeqCounter is not None:
                 for v in value:
@@ -74,23 +53,6 @@ class ValueTypeCounter:
         if self.mReqType > 0 and self.mReqType not in kind_idxs:
             if len(self.mBadValues) < self.sMAX_BAD_COUNT:
                 self.mBadValues.append(value)
-
-    @classmethod
-    def detectValTypes(cls, value):
-        kind_idxs = cls._detectValTypes()
-        ret = set()
-        if kind_idxs:
-            for idx in kind_idxs:
-                if cls.sTypes[idx]:
-                    ret.add(cls.sTypes[idx])
-        return ret
-
-    @classmethod
-    def filterTypeKind(cls, kinds):
-        for kind in kinds:
-            if kind in cls.sTypes:
-                return kind
-        return None
 
     def _detectType(self):
         if self.mCounts[0] == 0:
