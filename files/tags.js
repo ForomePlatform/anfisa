@@ -188,6 +188,9 @@ function dropCurTag() {
 function tagEnvNew() {
     if (sViewPort < 1)
         return;
+    if (sCurTagIdx == null && sTagNameOK) {
+        tagEnvSave(true);
+    }
     if (sCurTagIdx != null) {
         dropCurTag();
         updateTagsState();
