@@ -40,7 +40,7 @@ pyparsing==2.2.0
 pytz==2018.4
 PyVCF==0.6.8
 PyYAML==3.12
-requests==2.18.4
+requests
 six==1.11.0
 snowballstemmer==1.2.1
 sortedcontainers==2.0.5
