@@ -40,7 +40,8 @@ cd ../tmp/export
 
 cd ../..
 echo "Updating configuration in anfisa.json"
-sed -i ".orig" "s#../a-setup#$target#" anfisa.json
+hostname=`hostname`
+sed  "s#../a-setup#$target#" anfisa.json > anfisa_$hostname.json
 
 cd $repo
-echo "Run anfisa: python hserver.py $target/anfisa.json"
+echo "Run anfisa: python hserver.py $target/anfisa_$hostname.json"
