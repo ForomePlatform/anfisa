@@ -38,6 +38,9 @@ class AnfisaService:
         if rq_path == "/recdata":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formRecData(rq_args))
+        if rq_path == "/reccnt":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formRecContent(rq_args))
         if rq_path == "/stat":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formStat(rq_args))
@@ -231,6 +234,15 @@ class AnfisaService:
         rep = workspace.getDataSet().getRecData(rec_no)
         output = StringIO()
         output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formRecContent(self, rq_args):
+        workspace, modes = self._stdParams(rq_args)
+        rec_no = int(rq_args.get("rec"))
+        output = StringIO()
+        output.write(json.dumps(workspace.getDataSet().getJSonRecRepr(
+            rec_no, 'R' in modes)))
         return output.getvalue()
 
     #===============================================

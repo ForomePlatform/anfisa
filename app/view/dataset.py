@@ -87,3 +87,14 @@ class DataSet:
         return {"aspects": [asp_h.getJSonObj()
             for asp_h in self.mViewSetup.iterAspects()],
             "opts": AttrH.getJSonOptions()}
+
+    def getJSonRecRepr(self, rec_no, research_mode):
+        ret = []
+        rec_data = self.getRecData(rec_no)
+        for aspect in self.mViewSetup.iterAspects():
+            if aspect.isIgnored():
+                continue
+            if aspect.checkResearchBlock(research_mode):
+                continue
+            ret.append(aspect.getJSonRepr(rec_data, research_mode))
+        return ret

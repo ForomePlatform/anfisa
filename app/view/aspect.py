@@ -1,3 +1,7 @@
+from xml.sax.saxutils import escape
+from StringIO import StringIO
+
+from .attr_repr import attrHtmlRepr
 #===============================================
 class AspectH:
     def __init__(self, name, title, source, field = None,
@@ -85,10 +89,90 @@ class AspectH:
 
     def getJSonObj(self):
         ret = {
-            "name": self.mName, "title": self.mTitle, "source": self.mSource,
+            "name": self.mName, "title": self.mTitle,
+            "source": self.mSource,
             "field": self.mField, "ignored": self.mIgnored,
             "research": self.mResearchOnly,
             "attrs": [attr_h.getJSonObj() for attr_h in self.mAttrs]}
         if self.mColGroups is not None:
             ret["col_groups"] = self.mColGroups.getJSonObj()
+        return ret
+
+    #===============================================
+    def getJSonRepr(self, rec_data, research_mode):
+        ret = {
+            "name": self.mName,
+            "title": self.mTitle,
+            "kind": self.getAspectKind(),
+            "title": self.mTitle}
+        if self.mName == "input":
+            return self._getJSonInputRepr(rec_data, ret)
+        objects = [rec_data[self.getSource()]]
+        if self.getField():
+            objects = [objects[0][self.getField()]]
+        prefix_head = None
+        if self.getColGroups():
+            objects, prefix_head = self.getColGroups().prepareObjects(objects)
+        fld_data = dict()
+        for attr in self.getAttrs():
+            if (attr.getName() is None or
+                    attr.checkResearchBlock(research_mode) or
+                    attr.hasKind("hidden")):
+                continue
+            values = [attrHtmlRepr(attr, obj) for obj in objects]
+            if not all([vv == ('-', "none") for vv in values]):
+                fld_data[attr.getName()] = values
+        ret["type"] = "table"
+        ret["columns"] = len(objects)
+        if prefix_head:
+            ret["colhead"] = [[escape(title), count]
+                for title, count in prefix_head]
+        rows = []
+        for attr in self.getAttrs():
+            if attr.getName() is None:
+                rows.append([])
+                continue
+            if attr.getName() not in fld_data:
+                continue
+            rows.append([attr.getName(), escape(attr.getTitle()),
+                [[val, class_name]
+                    for val, class_name in fld_data[attr.getName()]]])
+        ret["rows"] = rows
+        return ret
+
+    def _getJSonInputRepr(self, rec_data, ret):
+        ret["type"] = "pre"
+        if "input" not in rec_data["data"]:
+            return ret
+        output = StringIO()
+        collect_str = ""
+        for fld in rec_data["data"]["input"].split('\t'):
+            if len(fld) < 40:
+                if len(collect_str) < 60:
+                    collect_str += "\t" + fld
+                else:
+                    print >> output, collect_str[1:]
+                    collect_str = "\t" + fld
+                continue
+            if collect_str:
+                print >> output, collect_str[1:]
+                collect_str = ""
+            for vv in fld.split(';'):
+                var, q, val = vv.partition('=')
+                if var == "CSQ":
+                    print >> output, "==v====SCQ======v========"
+                    for idx, dt in enumerate(val.split(',')):
+                        ddd = dt.split('|')
+                        print >> output, "%d:\t%s" % (idx, '|'.join(ddd[:12]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[12:29]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[28:33]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[33:40]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[40:50]))
+                        print >> output, "\t|%s" % ('|'.join(ddd[50:]))
+                    print >> output, "==^====SCQ======^========"
+                else:
+                    print >> output, vv
+        if collect_str:
+            print >> output, collect_str[1:]
+        ret["content"] = output.getvalue()
         return ret

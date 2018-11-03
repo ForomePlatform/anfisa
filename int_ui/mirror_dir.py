@@ -1,4 +1,4 @@
-import os, re, logging
+import re, logging
 from glob import glob
 
 #===============================================
@@ -80,5 +80,3 @@ class MirrorUiDirectory:
     def getVerName(fname, ver):
         nm, q, ext = fname.partition('.')
         return "%s-%03d.%s" % (nm, ver, ext)
-
-
