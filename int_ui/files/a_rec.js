@@ -49,7 +49,7 @@ function updateCfg(reset_port) {
     if (sViewPort == null || tab_port_data[sViewPort] == null)
         return;
     document.getElementById("img-tab2").src = 
-        tab_port_data[0]? "images/tab2-exp.png": "images/tab2-col.png";
+        tab_port_data[0]? "ui/images/tab2-exp.png": "ui/images/tab2-col.png";
     
     var cur_cnt_id = "a--" + tab_port_data[sViewPort];
     tabcontent = document.getElementsByClassName("r-tabcnt");

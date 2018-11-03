@@ -223,13 +223,13 @@ class ViewDataChecker:
         err_counts = [0, 0]
         top_reg.fixUp(report, err_counts)
         if err_counts[0] > 0:
-            print >> report, ("Errors in DataRecord_AJson %s" %
+            print >> report, ("Errors in AJson %s" %
                 data_set.getName())
         elif err_counts[1] > 0:
-            print >> report, ("Warnings in DataRecord_AJson %s" %
+            print >> report, ("Warnings in AJson %s" %
                 data_set.getName())
         else:
-            print >> report, ("Attrs are all set for DataRecord_AJson %s"
+            print >> report, ("Attrs are all set for AJson %s"
                 % data_set.getName())
         if err_counts[0] > 0:
             logging.error(report.getvalue())

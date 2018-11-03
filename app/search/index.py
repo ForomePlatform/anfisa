@@ -8,7 +8,7 @@ class Index:
         for rec_no in range(self.mDataSet.getSize()):
             rec = self.mLegend.getColCount() * [None]
             self.mLegend.fillRecord(
-                self.mDataSet.getRecord(rec_no).getObj(), rec)
+                self.mDataSet.getRecData(rec_no), rec)
             self.mRecords.append(rec)
         for filter_name in self.mLegend.getFilterNames():
             self.cacheFilter(filter_name,
@@ -17,7 +17,7 @@ class Index:
     def updateRulesEnv(self):
         for rec_no, rec in enumerate(self.mRecords):
             self.mLegend.updateRulesRecordPart(
-                self.mDataSet.getRecord(rec_no).getObj(), rec)
+                self.mDataSet.getRecData(rec_no), rec)
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
             if any([cond_info[1] == "Rules"

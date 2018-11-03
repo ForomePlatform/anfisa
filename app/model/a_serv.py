@@ -1,21 +1,8 @@
 import json
 from StringIO import StringIO
 
-from app.view.gen_html import formTopPage, noRecords
-#===============================================
-class HTML_Setup:
-
-    START = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">'
-
-    META_UTF = \
-        '<meta http-equiv="content-type" content="text/html; charset=UTF-8">'
-
-    STYLE_SHEET_REF = \
-        '  <link rel="stylesheet" href="%s" type="text/css" media="all"/>'
-
-    JS_REF = \
-        '  <script type="text/javascript" src="%s">\n </script>'
-
+from int_ui.gen_html import formTopPage, noRecords
+from int_ui.record import reportRecord
 #===============================================
 class AnfisaService:
     sData = None
@@ -85,23 +72,6 @@ class AnfisaService:
             self.mHtmlBase += '/'
 
     #===============================================
-    def _formHtmlHead(self, output, title = None,
-            css_files = None, js_files = None):
-        print >> output, '<head>'
-        print >> output, HTML_Setup.META_UTF
-        if self.mHtmlBase:
-            print >> output, ' <base href="%s" />' % self.mHtmlBase
-        if css_files:
-            for fname in css_files:
-                print >> output, HTML_Setup.STYLE_SHEET_REF % fname
-        if title:
-            print >> output, ' <title>%s</title>' % title
-        if js_files:
-            for fname in js_files:
-                print >> output, HTML_Setup.JS_REF % fname
-        print >> output, '</head>'
-
-    #===============================================
     @classmethod
     def _stdParams(cls, rq_args):
         workspace = cls.sData.getWS(rq_args.get("ws"))
@@ -109,11 +79,13 @@ class AnfisaService:
         return workspace, modes
 
     #===============================================
+    # Internal UI methods
+    #===============================================
     def formTop(self, rq_args):
         workspace, modes = self._stdParams(rq_args)
         output = StringIO()
         formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
-            workspace.getName(), modes, workspace.iterZones())
+            workspace, modes)
         return output.getvalue()
 
     #===============================================
@@ -121,28 +93,8 @@ class AnfisaService:
         workspace, modes = self._stdParams(rq_args)
         rec_no = int(rq_args.get("rec"))
         port = rq_args.get("port")
-        data_set = workspace.getDataSet()
-        record = data_set.getRecord(rec_no)
         output = StringIO()
-        print >> output, HTML_Setup.START
-        print >> output, '<html>'
-        self._formHtmlHead(output,
-            css_files = ["base.css", "a_rec.css", "tags.css"],
-            js_files = ["a_rec.js", "tags.js"])
-        if port == "2":
-            print >> output, ('<body onload="init_r(2, \'%s\');">' %
-                workspace.getFirstAspectID())
-        elif port == "1":
-            print >> output, ('<body onload="init_r(1, \'%s\');">' %
-                workspace.getLastAspectID())
-        else:
-            print >> output, (
-                '<body onload="init_r(0, \'%s\', \'%s\', %d);">' %
-                (workspace.getFirstAspectID(), workspace.getName(), rec_no))
-
-        record.reportIt(output, "R" in modes)
-        print >> output, '</body>'
-        print >> output, '</html>'
+        reportRecord(output, workspace, 'R' in modes, rec_no, port)
         return output.getvalue()
 
     #===============================================
@@ -151,6 +103,8 @@ class AnfisaService:
         noRecords(output)
         return output.getvalue()
 
+    #===============================================
+    # REST methods
     #===============================================
     def formList(self, rq_args):
         workspace, modes = self._stdParams(rq_args)

@@ -4,7 +4,6 @@ from xml.sax.saxutils import escape
 from app.model.path_works import AttrFuncPool
 from .attr import AttrH
 from .checker import ViewDataChecker
-from .record import DataRecord
 #===============================================
 class DataSet:
     def __init__(self, view_setup, name, fname):
@@ -40,9 +39,6 @@ class DataSet:
 
     def getRecKey(self, rec_no):
         return self.mDataKeys[rec_no]
-
-    def getRecord(self, rec_no):
-        return DataRecord(self, self.mDataObjects[int(rec_no)])
 
     def getRecData(self, rec_no):
         return self.mDataObjects[int(rec_no)]

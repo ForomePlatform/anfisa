@@ -69,17 +69,16 @@ class HServHandler:
         return cls.sInstance.processRq(environ, start_response)
 
     def __init__(self, config, in_container):
-        self.mFiles = config["files"]
+        self.mDirFiles = config["dir-files"]
         self.mHtmlBase = (config["html-base"]
             if in_container else None)
         if self.mHtmlBase and self.mHtmlBase.endswith('/'):
             self.mHtmlBase = self.mHtmlBase[:-1]
 
-    def checkFileDir(self, path):
-        for dirname, extensions in self.mFiles.items():
-            for ext in extensions:
-                if path.endswith(ext):
-                    return dirname
+    def checkFilePath(self, path):
+        for path_from, path_to in self.mDirFiles:
+            if path.startswith(path_from):
+                return path_to + path[len(path_from):]
         return None
 
     #===============================================
@@ -112,9 +111,8 @@ class HServHandler:
         return path, query_args
 
     #===============================================
-    def fileResponse(self, resp_h, dirname, fname,
+    def fileResponse(self, resp_h, fpath,
             query_args, without_decoding):
-        fpath = dirname + fname
         if not os.path.exists(fpath):
             return False
         if without_decoding:
@@ -125,13 +123,13 @@ class HServHandler:
                 content = inp.read()
         inp.close()
 
-        file_ext  = fname.rpartition('.')[2]
+        file_ext  = fpath.rpartition('.')[2]
         add_headers = None
 
         if file_ext == ".xslx":
             add_headers = [("content-disposition",
                 "attachment; filename=%s" %
-                query_args.get("disp", fname.rpartition('/')[2]))]
+                query_args.get("disp", fpath.rpartition('/')[2]))]
 
         return resp_h.makeResponse(mode = file_ext,
             content = content, add_headers = add_headers,
@@ -142,10 +140,10 @@ class HServHandler:
         resp_h = HServResponse(start_response)
         try:
             path, query_args = self.parseRequest(environ)
-            dirname = self.checkFileDir(path)
-            if dirname is not None:
+            file_path = self.checkFilePath(path)
+            if file_path is not None:
                 ret = self.fileResponse(resp_h,
-                    dirname, path, query_args, True)
+                    file_path, query_args, True)
                 if ret is not False:
                     return ret
             return self.sService.request(resp_h, path, query_args)
@@ -161,10 +159,16 @@ class HServHandler:
 def loadJSonConfig(config_file):
     with codecs.open(config_file, "r", encoding = "utf-8") as inp:
         content = inp.read()
+    dir_name = os.path.abspath(__file__)
+    for idx in range(2):
+        dir_name = os.path.dirname(dir_name)
+    content = content.replace('${HOME}', dir_name)
     pre_config = json.loads(content)
+
     file_path_def = pre_config.get("file-path-def")
     if file_path_def:
         for key, value in file_path_def.items():
+            assert key != "HOME"
             content = content.replace('${%s}' % key, value)
     return json.loads(content)
 

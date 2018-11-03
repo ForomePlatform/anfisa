@@ -1,42 +1,47 @@
 from xml.sax.saxutils import escape
 
+from .mirror_dir import MirrorUiDirectory
 #===============================================
-def formTopPage(output, title, html_base,
-        workspace_name, modes, zones):
-    params = {
-        "title": title,
-        "workspace": workspace_name,
-        "modes": modes,
-        "html-base": (' <base href="%s" />' % html_base) if html_base else ""}
+def startHtmlPage(output, title = None, html_base = None,
+        css_files = None, js_files = None):
     print >> output, '''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <title>%(title)s</title>
-    %(html-base)s
-    <link rel="stylesheet" href="base.css" type="text/css" media="all"/>
-    <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
-    <link rel="stylesheet" href="filters.css" type="text/css" media="all"/>
-    <link rel="stylesheet" href="zones.css" type="text/css" media="all"/>
-    <link rel="stylesheet" href="rules.css" type="text/css" media="all"/>
-    <script type="text/javascript" src="anf.js"></script>
-    <script type="text/javascript" src="monitor.js"></script>
-    <script type="text/javascript" src="filters.js"></script>
-    <script type="text/javascript" src="conditions.js"></script>
-    <script type="text/javascript" src="zones.js"></script>
-    <script type="text/javascript" src="rules.js"></script>
-  </head>
-  <body onload="initWin(\'%(workspace)s\', \'%(modes)s\');">''' % params
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">'''
+    if title:
+        print >> output, '    <title>%s</title>' % escape(title)
+    if html_base:
+        print >> output, '    <base href="%s" />' % html_base
+    if css_files:
+        for name in css_files:
+            print >> output, ('    <link rel="stylesheet" '
+                'href="ui/%s" type="text/css" media="all"/>' %
+                MirrorUiDirectory.transform(name))
+    if js_files:
+        for name in js_files:
+            print >> output, ('    <script type="text/javascript" '
+                'src="ui/%s"></script>' %
+                MirrorUiDirectory.transform(name))
+    print >> output, '  </head>'
 
-    _formMainDiv(output, workspace_name)
+#===============================================
+def formTopPage(output, title, html_base, workspace, modes):
+    startHtmlPage(output, title, html_base,
+        css_files = ["base.css",
+            "anf.css", "filters.css", "zones.css", "rules.css"],
+        js_files = ["anf.js", "monitor.js", "filters.js",
+            "conditions.js", "zones.js", "rules.js"])
+
+    print >> output, ('  <body onload="initWin(\'%s\', \'%s\');">' %
+        (workspace.getName(), modes))
+    _formMainDiv(output, workspace.getName())
     _formFiltersDiv(output)
-    _formZonesDiv(output, zones)
+    _formZonesDiv(output, workspace.iterZones())
     _formRulesDiv(output)
 
-    print >> output, '''
-  </body>
-</html>'''
+    print >> output, ' </body>'
+    print >> output, '</html>'
 
 #===============================================
 def _formMainDiv(output, workspace_name):
@@ -357,13 +362,8 @@ def _formRulesDiv(output):
 
 #===============================================
 def noRecords(output):
+    startHtmlPage(output, css_files = ["anf"])
     print >> output, '''
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" href="anf.css" type="text/css" media="all"/>
-  </head>
   <body>
     <h3>No records available</h3>
     <p>Try to drop <button onclick='parent.window.updateCurZone(false);'

@@ -1,5 +1,5 @@
 {
-    "file-path-def": {"WORK": "../a-setup"},
+    "file-path-def": {"WORK": "${HOME}/../a-setup"},
     "host": "0.0.0.0",
     "port": 8090,
     "html-base": "/anfisa/",
@@ -12,9 +12,12 @@
             "file": "${WORK}/data/PGP3140.json"
         }
     ],
-    "files": {
-        "files": [".css", ".js", ".png", ".gif"],
-        "${WORK}/export":  [".xlsx"]}, 
+    "dir-files": [
+        ["/ui/images", "${HOME}/int_ui/images"],
+        ["/ui", "${HOME}/int_ui/files"],
+        ["--/ui", "${WORK}/ui"],
+        ["/excel", "${WORK}/export/work"]], 
+    "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
         "work-dir": "${WORK}/export/work"

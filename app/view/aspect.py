@@ -1,5 +1,3 @@
-from xml.sax.saxutils import escape
-
 #===============================================
 class AspectH:
     def __init__(self, name, title, source, field = None,
@@ -94,47 +92,3 @@ class AspectH:
         if self.mColGroups is not None:
             ret["col_groups"] = self.mColGroups.getJSonObj()
         return ret
-
-    def formTable(self, output, rec_obj, research_mode):
-        objects = [rec_obj[self.mSource]]
-        if self.mField:
-            objects = [objects[0][self.mField]]
-        prefix_head = None
-        if self.mColGroups:
-            objects, prefix_head = self.mColGroups.prepareObjects(objects)
-        if len(objects) == 0:
-            return
-
-        fld_data = dict()
-        for attr in self.mAttrs:
-            if (attr.getName() is None or
-                    attr.checkResearchBlock(research_mode) or
-                    attr.hasKind("hidden")):
-                continue
-            values = [attr.getHtmlRepr(obj) for obj in objects]
-            if not all([vv == ('-', "none") for vv in values]):
-                fld_data[attr.getName()] = values
-
-        print >> output, '<table id="rec-%s">' % self.mName
-        if prefix_head:
-            print >> output, '<tr class="head"><td class="title"></td>'
-            for title, count in prefix_head:
-                print >> output, ('<td class="title" colspan="%d">%s</td>' %
-                    (count, escape(title)))
-            print >> output, '</tr>'
-
-        for attr in self.getAttrs():
-            if attr.getName() is None:
-                print >> output, (
-                    '<tr><td colspan="%d" class="title">&emsp;</td></tr>' %
-                    (len(objects) + 1))
-                continue
-            if attr.getName() not in fld_data:
-                continue
-            print >> output, '<tr>'
-            print >> output, '<td class="title">%s</td>' % escape(
-                attr.getTitle())
-            for val, class_name in fld_data[attr.getName()]:
-                print >> output, '<td class="%s">%s</td>' % (class_name, val)
-            print >> output, '</tr>'
-        print >> output, '</table>'

@@ -10,6 +10,7 @@ from .view_cfg import setupRecommended
 from .search_setup import prepareLegend
 from export.excel import ExcelExport
 from app.view.attr import AttrH
+from int_ui.mirror_dir import MirrorUiDirectory
 #===============================================
 class AnfisaData:
     sConfig = None
@@ -21,6 +22,8 @@ class AnfisaData:
     @classmethod
     def setup(cls, config, in_container):
         cls.sConfig = config
+        MirrorUiDirectory.setup(config.get("mirror-ui"))
+
         cls.sMongoConn = MongoConnector(config["mongo-db"],
             config.get("mongo-host"), config.get("mongo-port"))
         setupRecommended()
@@ -68,7 +71,6 @@ class AnfisaData:
             return None
         if dir_name.endswith('/'):
             dir_name = dir_name[:-1]
-        loc_dir = dir_name.rpartition('/')[2]
         dir_name += '/'
         for no in range(10000):
             fname = "%s_%04d.xlsx" % (prefix, no)
@@ -83,4 +85,4 @@ class AnfisaData:
         for obj in json_seq:
             export_h.add_variant(obj)
         export_h.save(dir_name + fname)
-        return loc_dir + '/' + fname
+        return 'excel/' + fname
