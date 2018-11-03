@@ -58,7 +58,7 @@ def _reportAspect(output, rep_data):
             print >> output, '<tr class="head"><td class="title"></td>'
             for title, count in rep_data["colhead"]:
                 print >> output, ('<td class="title" colspan="%d">%s</td>' %
-                (count, escape(title)))
+                (count, title))
         print >> output, '</tr>'
 
         for attr_data in rep_data["rows"]:
