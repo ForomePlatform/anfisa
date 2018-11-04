@@ -110,11 +110,13 @@ function updateRecordMark(rec_id, rec_marked) {
     if (el) {
         class_seq = el.className.split(' ');
         if (rec_marked) {
-            if (class_seq[2] != "marked")
-                class_seq.splice(2, 0, "marked");
-        } else {
             if (class_seq[2] == "marked")
-                class_seq.splice(2, 1);
+                return
+            class_seq.splice(2, 0, "marked");
+        } else {
+            if (class_seq.length == 1)
+                return
+            class_seq.splice(2, 1);
         }
         el.className = class_seq.join(' ');
     }

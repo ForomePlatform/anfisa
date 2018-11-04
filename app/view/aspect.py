@@ -103,8 +103,7 @@ class AspectH:
         ret = {
             "name": self.mName,
             "title": self.mTitle,
-            "kind": self.getAspectKind(),
-            "title": self.mTitle}
+            "kind": self.getAspectKind()}
         if self.mName == "input":
             return self._getJSonInputRepr(rec_data, ret)
         objects = [rec_data[self.getSource()]]

@@ -1,0 +1,357 @@
+ === REST API specification ===
+ 
+1. Methods
+
+===
+Method "/list"
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> filter       (null or name of filter)
+    -> conditions   (null or ConditionList structure)
+    -> zone         (null or Zone structure)
+    <-
+    { * collection of records restricted by filter/conditions/zone
+        "workspace" : <ws name>,
+        "total":  int count of whole list
+        "filtered": int count of list
+        "list-mode": "complete"/"samples"
+        "records": 
+          [ * list of records
+            [  
+                0: int no of record
+                1: label of record
+                2: color
+                3: bool if record has any tag set, "marked", see Notes
+            ]
+          ], ...
+    }
+    
+  Notes: 
+* There is support of special sampling mode in method: 
+    -> m=S, <- "list-mode" = samples and "filtered" might be less than "total"
+    Up to now, there is no need up to now support this mode in external UI
+* In list of records we highlight records with any tag set, so called "marked".
+    This option for record might be changed by "/tags" method.
+
+===
+Method "/wslist"
+    <- 
+    [ * list of workspaces
+        {
+            "name": <ws name>
+        }, ...
+    ]
+    
+===
+Method "/recdata"
+    -> ws           (= ws_default)
+    <- rec          (!required)
+    -> { * source of annotated JSon for record }
+
+===
+Method "/reccnt"
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> rec          (!required)
+    <- 
+    [ * prepared view presentation of record
+        { * aspect/tab presentation data
+            "name":     name (out of use)
+            "title:     title
+            "kind":     "norm"/"tech"
+            "type":     "table"/"pre"
+            
+            ** in case of kind = "table":
+            "columns":  int count of columns
+            "colhead":  none or
+                [ * column groups
+                    [ 
+                        0: title, 
+                        1: int count
+                    ], ...
+                ]
+            "rows": * empty or
+                [ * list ot attribute data
+                    [
+                        0: attr name (out of use)
+                        1: attr title
+                        2: 
+                          [ * cells, count is fixed in "columns"
+                            [
+                                0: content
+                                1: kind (*)
+                            ]
+                          ], ...
+                    ], ...
+                ]
+            
+            ** in case of kind = "pre"
+            "content":  formatted content of VCF record
+        }
+    ]
+  Notes:
+    * in case kind = "pre" field content might be absent, it means no VCF data
+    * in case kind = "table" rows might be empty, it means row separator
+    * cell kind: 
+        if there is no real data inside: "none"
+        otherwise kind of attribute in view config: 
+            "norm" / "link" / "json" (may be updated/extended in future)
+    
+===
+Method "/vsetup"
+    -> ws           (= ws_default)
+    <-
+    [ * accumulated report for data in data set
+        { * data for aspect
+            "name":  name 
+            "title": title
+            "source": "view"/"data"
+            "field": base field or none
+            "ignored": bool if aspect is ignored
+            "research": bool if aspec is research only
+            "col_groups": none or
+                [ * column groups
+                    [ 
+                        0: title, 
+                        1: int count
+                    ], ...
+                ]
+            "attrs":
+            [ * data for attributes
+                [
+                    "name": name
+                    "title": title
+                    "kind": kinds of attrbute, space separated
+                    "is_seq": bool if attribute is sequence 
+                    "path": path of attribute, for debug purposes
+                    "cnt": [ * AttrStat structure ]
+                ], ...
+            ]
+        }
+    ]
+
+===
+Method "/stat"
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> filter       (= null or filter name)
+    -> conditions   (= null or ConditionList structure)
+    -> instr        (null or filter modifying instruction, see Notes)
+    <-
+    { * collection of data to setup "filter" modal window
+        "stat-list": 
+            [ * list of search units
+                [
+                    0: unit type, "int" / "float" / "enum"
+                    1:  {
+                            "name": name of unit
+                            "title": title of unit
+                            "vgroup": null or view group name
+                        }
+                    
+                    * in case of unit type = "int"/"float"
+                    2: int/float minimum value
+                    3: int/float maximum value
+                    4: int count of records with value
+                    5: int count of records woth undefined value
+
+                    * in case of unit type = "enum"
+                    2: [ * statictics for all values in enum
+                          [ * statistics for enum value
+                            0: name (name of value)
+                            1: int count 
+                          ], ...
+                       ]
+                ], ...
+            ]
+        "cur-filter": null or filter name, got from request  
+        "conditions": [ * ConditionList structure, see Notes]
+        "filter-list": 
+            [ * list of all named filters
+                [
+                    0: name of filter
+                    1: bool if filter is common
+                    2: bool if filter is available to load, see Notes
+                ], ...
+            ]
+    }
+    
+  Notes:
+    * Method requires either "filter" argument with corect filter name, or "conditions" argument, the later on might be empty list; the returned ConditionList are either ConditionList from argument, or ConditionList of the filter. 
+    * If mode is not research one, some conditions are unavailable, so it is incorrect to load such conditions and filters based on them. In terms of API, "load" of a filter means to receive its conditions via this very method.
+    
+    * Filter modifying instruction: if it is set as argument, a modification 
+        of a filter is requested (operational one, not common). 
+      Instruction is a string:
+      "UPDATE/<filter name>" - create or update filter with this name 
+                by conditions set  by request
+      "DELETE/<filter name> - delete filter
+      
+===
+Method "/export"
+    -> ws           (= ws_default)
+    -> filter       (= null or filter name)
+    -> conditions   (= null or JSon of conditions, see method "/stat")
+    <- { * prepares Excel files and returns
+            "kind": "excel"
+            "fname": URL for file to download
+       }
+
+===
+Method "/zone_list"
+    -> ws           (= ws_default)
+    -> zone         (zone name, required!)
+    <- { * zone data
+            "zone": name
+            "title": title
+            "variants": [ list of variants ]
+       }
+
+===
+Method "/tags"
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> rec          (!required)
+    -> tags         (null or "UNDO" / "REDO" / TagList structure see Notes)
+    <- {* tags/filters data associated with record
+            "filters":  [ * list of filter names active for record]
+            "check-tags": [ * list of all common tags, checkbox type]
+            "op-tags": [ *list of all operational tags, text type ]
+            "tags-version": int version of tags variety, see Note
+            "rec-tags": TagList structure
+            "can_undo": bool if undo is possible
+            "can_redo": bool if redo is possible
+            "marker":  
+                [ * "marked" state of record, see Notes
+                    0: int rec no
+                    1: bool if record has any tag set
+                ]
+        }
+
+  Notes:
+    * If "tags" argument is set, the request modifies tags for record.
+    Modification of tags state could be made either by TagsList new structure, or instructions "UNDO"/"REDO".
+    This argumend should be jsonified in both cases: string or TagList structure
+    
+    * "tags-version" indicates changes of the whole list of tags available in workspace.
+    It changes when new tag name appears or last tag mark with this name disappears
+    Change of this version should involve "/tag_select" method recall from client.
+    See "/tag_select" method also.
+    
+    * "marked" state or record might change on operation, so we report it.
+    Change of this state should be worked out by client dynamically
+    
+===
+Method "/tag_select"
+    -> ws           (= ws_default)
+    -> tag          (none or tag name)
+    <- 
+        { * data about tags variety and navigation for selected tag
+            "tag-list": [* list of all tags available]
+            "tag": none or tag name, got from request
+            "tags-version": int version of tags variety, see Note to "/tags" method
+            "records": none or 
+                [ * list of int rec no - records with tag set, ordered]
+        }
+        
+===
+Method "/rules_data"
+    -> ws           (= ws_default)
+    <- 
+        { * data for rules
+            "columns":
+                [
+                    [ * data for rule
+                        0: name
+                        1: content
+                    ], ...
+                ]
+            "--param": content of parameters setup
+        }
+
+   Note: In future this stuss should be radically changed. Current implementation
+   works with columns/rules as with some formatted text content of Python style.
+        
+===
+Method "/rules_modify"
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> it           (required! name of "rule", "--param" currently supported)
+    <- 
+        { * result of attempt of modification
+            "status": "OK" / "FAILED"
+            "error": none or error message
+        }
+
+====================================
+2. Compex structures
+
+=== 
+Structure Conditions
+    List of conditions - filter definition
+[
+    [
+        0: "int" / "float", "enum" - type of unit
+        1: name of unit
+        
+        * in case of type = "int" / "float":
+        2: bool if operation is GE, otherwise LE
+        3: int/float bound value
+        4: bool if undefined value is ok
+        
+        * in case of type = "enum"
+        2: "AND" / "OR" / "ONLY" / "NOT" - operation mode
+        3: [ * list of value variants ]
+    ],...
+]
+
+
+=== 
+Structure Zone
+    Handles data for current zone choice
+    [
+        0: zone name
+        1: zone variants
+    ]
+    
+  Note: requires update and complexification soon 
+
+=== 
+Structure TagList
+    Handles data pf tags associated with record
+    [
+        [
+            0: tag name
+            1: true or tag value
+        ], ...
+    ]
+  
+===
+Structure AttrStat
+    Handles data for attribute variety of values
+    {
+        "tp": type of values
+            * variants:
+              "null" / "list" / "dict" / "empty" / "link" / "string" / "int" / "numeric"
+                - "pure" types, "empty" means empty string
+              "undef" 
+                - problem type: means no values, 
+              "json"
+                - problem type, means mixture of pure types
+              "list(null)", "list(list)", ...
+                - in case of "list" base type we detect subtypes
+                
+        "state": "ok"/"?" 
+            * if attribute is strictly registered or added automatically
+        
+        "counts": string presentation of count of values
+            * in case of list it is two counts: "<count of sequences>/<count of items>"
+
+        "req":  null or the registered type of attribute
+
+        "bad_samples": null or 
+            [ * up to 3 first bad value samples 
+               * string of json representation, 
+               * may be truncated to 12 symbols with "...", ...
+            ]
+    }

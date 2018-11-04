@@ -1,7 +1,4 @@
-from xml.sax.saxutils import escape
-
 from .gen_html import tagsBlock, startHtmlPage
-
 #===============================================
 def reportRecord(output, workspace, research_mode, rec_no, port):
     startHtmlPage(output,

@@ -66,8 +66,7 @@ class TagsManager(ZoneH):
             rec_data = self.getWS().getMongoRecData(rec_key)
         ret = {"check-tags": self.mCheckTags[:],
             "op-tags": self.getOpTagList()}
-        if mark_modified:
-            ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
+        ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
         if rec_data is None:
             ret["rec-tags"] = dict()
             return ret
