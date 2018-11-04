@@ -1,4 +1,4 @@
-import re, logging
+import os, re, logging
 from glob import glob
 
 #===============================================
@@ -72,7 +72,7 @@ class MirrorUiDirectory:
         for fname in extra_files:
             full_name = dir_dest + '/' + fname
             logging.warning("Mirror dir EXTRA FILE!: " + full_name)
-            #os.remove(full_name)
+            os.remove(full_name)
         logging.info("Mirror dir started (kept %d, updated %d): %s -> %s" %
             (count_keep, count_update, dir_src, dir_dest))
 
