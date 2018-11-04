@@ -1,6 +1,7 @@
 import os, codecs
 
 from .acmg59 import evalRec as acmg59_evalRec
+from .hl_reportable import evalRec as hl_reportable_evalRec
 from .quality_check import evalRec as quality_check_evalRec
 from .af_check import evalRec as af_check_evalRec
 from .bgm_rule import evalRec as bgm_rule_evalRec
@@ -56,6 +57,8 @@ class HOT_SETUP:
     FUNCTIONS = [
         RuleFuncH("ACMG59",
             "acmg59", acmg59_evalRec),
+        RuleFuncH("HL_Reportable_Genes",
+            "hl_reportable", hl_reportable_evalRec),
         RuleFuncH("Quality-PASS",
             "quality_check", quality_check_evalRec),
         RuleFuncH("Candidates_BGM",
