@@ -54,3 +54,4 @@ uWSGI==2.0.17.1
 virtualenv==15.1.0
 virtualenv-clone==0.2.6
 virtualenvwrapper==4.8.2
+jsonpath_rw
