@@ -44,4 +44,4 @@ hostname=`hostname`
 sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
 
 cd $repo
-echo "Run anfisa: env PYTHONPATH="." python app/hserver.py $target/anfisa_$hostname.json"
+echo "Run anfisa: env PYTHONPATH=. python app/hserver.py $target/anfisa_$hostname.json"
