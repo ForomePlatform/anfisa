@@ -883,20 +883,16 @@ class Variant:
                 data[c] = v
         return data
 
-    def get_view_json(self):
-        data_info = self.data.copy()
-        view_info = dict()
-        filters   = self.filters.copy()
-
-        data_info['label'] = self.get_label()
-        data_info['color_code'] = self.get_color_code()
-
+    def create_general_tab(self, data_info, view_info, filters):
         tab1 = dict()
         view_info["general"] = tab1
         tab1['genes'] = self.get_genes()
         tab1['hg19'] = str(self)
         tab1['hg38'] = self.get_hg38_coordinates()
-        if (not self.is_snv()):
+        if (self.is_snv()):
+            data_info["ref"] = self.ref()
+            data_info["alt"] = self.alt_string()
+        else:
             tab1["ref"] = self.ref()
             tab1["alt"] = self.alt_string()
 
@@ -938,8 +934,23 @@ class Variant:
         tab1['variant_intron_worst'] = self.get_from_worst_transcript("intron")
         tab1['variant_exon_canonical'] = self.get_from_canonical_transcript("exon")
         tab1['variant_intron_canonical'] = self.get_from_canonical_transcript("intron")
+
+        intron_or_exon = tab1['variant_exon_canonical'] if tab1['variant_exon_canonical'] else tab1['variant_intron_canonical']
+        e = intron_or_exon.split('/')
+        data_info["variant_exon_intron_canonical"] = e[0]
+        if (len(e) > 1):
+            data_info["total_exon_intron_canonical"] = e[1]
+
+        intron_or_exon = tab1['variant_exon_worst'] if tab1['variant_exon_worst'] else tab1['variant_intron_worst']
+        e = intron_or_exon.split('/')
+        data_info["variant_exon_intron_worst"] = e[0]
+        if (len(e) > 1):
+            data_info["total_exon_intron_worst"] = e[1]
+
+
         tab1["igv"] = self.get_igv_url()
 
+    def create_quality_tab(self, data_info, view_info, filters):
         tab2 = list()
         view_info["quality_samples"] = tab2
         q_all = dict()
@@ -974,6 +985,7 @@ class Variant:
             q_s['genotype_quality'] = self.get_from_genotype(genotype, 'GQ')
             tab2.append(q_s)
 
+    def create_gnomad_tab(self, data_info, view_info, filters):
         tab3 = list()
         view_info["gnomAD"] = tab3
         if (self.get_gnomad_af()):
@@ -1000,6 +1012,7 @@ class Variant:
                 gr["url"] = \
                     "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
 
+    def create_databases_tab(self, data_info, view_info, filters):
         tab4 = dict()
         view_info["databases"] = tab4
         genes = self.get_genes()
@@ -1010,6 +1023,7 @@ class Variant:
 
         if (omim_ids):
             omim_urls = ["https://www.omim.org/entry/{}".format(omim_id) for omim_id in omim_ids]
+            data_info["omim_ids"] = omim_ids
         else:
             omim_urls = [
                 "https://omim.org/search/?search=approved_gene_symbol:{}&retrieve=geneMap".format(gene) for gene in genes
@@ -1024,6 +1038,7 @@ class Variant:
         pmids = self.private_data.get("HGMD_PIMIDs")
         tab4["hgmd_tags"] = self.private_data.get("HGMD_TAGs")
         tab4["hgmd_pmids"] = [link_to_pmid(pmid[1]) for pmid in pmids] if pmids else None
+        data_info["hgmd_pmids"] = [pmid[1]for pmid in pmids] if pmids else None
         phenotypes = self.private_data.get("HGMD_phenotypes")
         tab4["hgmd_phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
@@ -1036,6 +1051,7 @@ class Variant:
 
         tab4["pubmed_search"] = self.get_tenwise_link()
 
+    def create_predictions_tab(self, data_info, view_info, filters):
         tab5 = dict()
         #view['Predictions'] = tab5
         view_info["predictions"] = tab5
@@ -1062,6 +1078,7 @@ class Variant:
         tab5["cadd_raw"] = unique(self.get_from_transcripts_list("cadd_raw"))
         tab5["mutation_assessor"] = unique(self.get_from_transcripts_list("mutationassessor_pred"))
 
+    def create_bioinformatics_tab(self, data_info, view_info, filters):
         tab6 = dict()
         view_info["bioinformatics"] = tab6
         tab6["zygosity"] = self.get_zygosity()
@@ -1077,6 +1094,22 @@ class Variant:
         tab6["other_genes"] = self.get_other_genes()
         tab6['called_by'] = self.get_callers()
         tab6['caller_data'] = self.get_callers_data()
+
+
+    def get_view_json(self):
+        data_info = self.data.copy()
+        view_info = dict()
+        filters   = self.filters.copy()
+
+        data_info['label'] = self.get_label()
+        data_info['color_code'] = self.get_color_code()
+        self.create_general_tab(data_info, view_info, filters)
+        self.create_quality_tab(data_info, view_info, filters)
+        self.create_gnomad_tab(data_info, view_info, filters)
+        self.create_databases_tab(data_info, view_info, filters)
+        self.create_predictions_tab(data_info, view_info, filters)
+        self.create_bioinformatics_tab(data_info, view_info, filters)
+
 
         tab7 = dict()
         view_info["inheritance"] = tab7
