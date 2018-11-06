@@ -62,6 +62,19 @@ def af_(an, ac):
     af = float(ac) / an if an > 0 else 0
     return af
 
+
+def diff(s1, s2):
+    if (s1 == s2):
+        return ""
+    if (s1 in s2):
+        idx = s2.find(s1)
+        return s2[0:idx] + s2[idx+len(s1):]
+    elif (s2 in s1):
+        return diff(s2, s1)
+    else:
+        return None
+
+
 class GnomAD(Connection):
     ANCESTRIES = [
         "AFR",
@@ -109,7 +122,7 @@ class GnomAD(Connection):
     def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96"):
         Connection.__init__(self, host, database="gnomad", user="hgmd", password='hgmd', connect_now=True)
 
-    def get_data(self, chr, pos, ref=None, alt=None, from_what = None):
+    def get_data(self, chr, pos, ref=None, alt=None, from_what = None, exact = False):
         args = (chr, pos)
         p = self.parameter()
         select_list = ', '.join(self.COLUMNS)
@@ -117,8 +130,12 @@ class GnomAD(Connection):
             format(columns=select_list, table=self.TABLE, chrom=p, pos=p)
 
         if (ref and alt):
-            sql = "{select} and REF LIKE '%{ref}%' and ALT LIKE '%{alt}%'".\
-                format(select=sql, ref=ref, alt=alt)
+            if (exact):
+                sql = "{select} and REF = '{ref}' and ALT = '{alt}'".\
+                    format(select=sql, ref=ref, alt=alt)
+            else:
+                sql = "{select} and REF LIKE '%{ref}%' and ALT LIKE '%{alt}%'".\
+                    format(select=sql, ref=ref, alt=alt)
 
         if (from_what):
             q = from_what.lower().split(',')
@@ -135,6 +152,31 @@ class GnomAD(Connection):
         c = self.connection.cursor()
         c.execute(sql, args)
         rows = c.fetchall()
+
+        if (not exact and len(rows) == 0 and ref and alt):
+            if (len(ref) > len(alt)):
+                if (alt in ref):
+                    idx = ref.find(alt)
+                    if (idx == 0):
+                        new_alt = alt[0]
+                        new_ref = ref[0] + ref[len(alt):]
+                    else:
+                        new_ref = ref
+                        new_alt = alt
+                    return self.get_data(chr, pos + idx - 1, new_ref, new_alt)
+            elif (len(alt) > len(ref)):
+                if (ref in alt):
+                    idx = alt.find(ref)
+                    if (idx == 0):
+                        new_ref = ref[0]
+                        new_alt = alt[0] + alt[len(ref):]
+                    else:
+                        new_ref = ref
+                        new_alt = alt
+                    return self.get_data(chr, pos + idx - 1, new_ref, new_alt)
+
+        if (not exact):
+            rows = [r for r in rows if (diff(ref, alt) == diff(r[3], r[4]))]
 
         return rows
 
@@ -220,6 +262,10 @@ class GnomAD(Connection):
 
 if __name__ == '__main__':
     with GnomAD() as gnomAD:
+        print gnomAD.get_af(1, 103471457, "CCATCAT", "CCAT")
+        print gnomAD.get_af(1, 160009164, "GACACACACACACAC", "GACACACACACACACAC")
+        print gnomAD.get_af(4, 88536543, "AACAGCAGTG", "A")
+
         print gnomAD.get_af(4, 88535832, 'A', 'ATAGCAGTGACAGCAGCAG')
         print gnomAD.get_af(4, 88535832, 'A', 'ATAGCAGTGACAGCAGCAG', group='ASJ')
         print gnomAD.get_af(4, 88535832, 'A', 'ATAGCAGTGACAGCAGCAG', group='Male')
