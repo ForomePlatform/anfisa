@@ -117,7 +117,7 @@ if __name__ == '__main__':
     export.new()
     n = 30
     with open('/Users/misha/projects/bgm/cases/'
-            'bgm9001/bgm9001_wgs_candidates.json') as json_file:
+            'bgm9001/bgm9001_anfisa.json') as json_file:
         for i in range(0, n):
             line = json_file.readline()
             export.add_variant(json.loads(line))

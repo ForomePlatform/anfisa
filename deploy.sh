@@ -7,12 +7,12 @@ if [ -f .inst_dir ] ; then
 fi
 
 read -p "Installation directory: ${target}? (y/n)" response
-if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
+if [ $response != "y" ] && [ $response != "Y" ] ; then
     read -p "Type directory: " target
 fi
 
 read -p "Install Anfisa into ${target}? (y/n)" response
-if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
+if [ $response != "y" ] && [ $response != "Y" ] ; then
     echo "Installation aborted"
     return 1 2> /dev/null || exit 1
 fi
@@ -29,19 +29,19 @@ fi
 
 
 [ ! -d "data" ] && mkdir data
-[ ! -d "export/work" ] && mkdir -p export/work
+[ ! -d "tmp/export/work" ] && mkdir -p tmp/export/work
 [ ! -d "logs" ] && mkdir logs
 
 cd data
 rm *
 wget https://www.dropbox.com/s/duj0r1ccgjj1olv/PGP3140.json
-cd ../export
+cd ../tmp/export
 [ ! -f SEQaBOO_output_template_0730.xlsx ] && wget https://www.dropbox.com/s/qvi229bfdtfxyrw/SEQaBOO_output_template_0730.xlsx
 
-cd ..
+cd ../..
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
-sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
+sed  "s#../a-setup#$target#" anfisa.json > anfisa_$hostname.json
 
 cd $repo
-echo "Run anfisa: env PYTHONPATH=. python app/hserver.py $target/anfisa_$hostname.json"
+echo "Run anfisa: python hserver.py $target/anfisa_$hostname.json"
