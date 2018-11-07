@@ -19,6 +19,7 @@ JayDeBeApi==1.1.1
 jdcal==1.4
 Jinja2==2.9.6
 JPype1==0.6.3
+jsonpath_rw
 lxml==4.2.3
 MarkupSafe==1.0
 mock==2.0.0
@@ -54,3 +55,4 @@ uWSGI==2.0.17.1
 virtualenv==15.1.0
 virtualenv-clone==0.2.6
 virtualenvwrapper==4.8.2
+jsonpath_rw
