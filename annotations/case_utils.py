@@ -1,12 +1,13 @@
 import glob
 import os
+import sortedcontainers
 
 
 def parse_fam_file(fam_file):
 
-    samples = dict()
+    samples = sortedcontainers.SortedDict()
 
-    case_dir, file_name = os.path.split()
+    case_dir, file_name = os.path.split(fam_file)
     case = file_name.split('.')[0]
     map_file = None
     maps = glob.glob(os.path.join(case_dir, "samples*"))
@@ -38,9 +39,7 @@ def parse_fam_file(fam_file):
             try:
                 family, id, father, mother, sex, affected = line.split()
                 sample = dict()
-                id     = sample_map.get(id, id)
-                mother = sample_map.get(mother, mother)
-                father = sample_map.get(father, father)
+                sample["name"]      = sample_map.get(id, id)
                 sample['family']    = family
                 sample['id']        = id
                 sample['father']    = father

@@ -2,7 +2,7 @@ import os
 import sqlite3
 from annotations import gnomAD_path
 from annotations.db_connect import Connection
-
+import difflib
 
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
     try:
@@ -70,7 +70,7 @@ def diff(s1, s2):
         idx = s2.find(s1)
         return s2[0:idx] + s2[idx+len(s1):]
     elif (s2 in s1):
-        return diff(s2, s1)
+        return "-" + diff(s2, s1)
     else:
         return None
 
@@ -122,6 +122,14 @@ class GnomAD(Connection):
     def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96"):
         Connection.__init__(self, host, database="gnomad", user="hgmd", password='hgmd', connect_now=True)
 
+    def fetch_data(self, sql, args, ref=None, alt=None):
+        if (ref or alt):
+            sql = sql.format(ref=ref, alt=alt)
+        c = self.connection.cursor()
+        c.execute(sql, args)
+        rows = c.fetchall()
+        return rows
+
     def get_data(self, chr, pos, ref=None, alt=None, from_what = None, exact = False):
         args = (chr, pos)
         p = self.parameter()
@@ -131,11 +139,9 @@ class GnomAD(Connection):
 
         if (ref and alt):
             if (exact):
-                sql = "{select} and REF = '{ref}' and ALT = '{alt}'".\
-                    format(select=sql, ref=ref, alt=alt)
+                sql = sql + " and REF = '{ref}' and ALT = '{alt}'"
             else:
-                sql = "{select} and REF LIKE '%{ref}%' and ALT LIKE '%{alt}%'".\
-                    format(select=sql, ref=ref, alt=alt)
+                sql = sql + " and REF LIKE '%{ref}%' and ALT LIKE '%{alt}%'"
 
         if (from_what):
             q = from_what.lower().split(',')
@@ -149,9 +155,7 @@ class GnomAD(Connection):
             if not ('e' in q and 'g' in q):
                 sql = "{} and `SOURCE` = '{}'".format(sql, s)
 
-        c = self.connection.cursor()
-        c.execute(sql, args)
-        rows = c.fetchall()
+        rows = self.fetch_data(sql, ref=ref, alt=alt, args=args)
 
         if (not exact and len(rows) == 0 and ref and alt):
             if (len(ref) > len(alt)):
@@ -163,7 +167,7 @@ class GnomAD(Connection):
                     else:
                         new_ref = ref
                         new_alt = alt
-                    return self.get_data(chr, pos + idx - 1, new_ref, new_alt)
+                    rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
             elif (len(alt) > len(ref)):
                 if (ref in alt):
                     idx = alt.find(ref)
@@ -173,7 +177,7 @@ class GnomAD(Connection):
                     else:
                         new_ref = ref
                         new_alt = alt
-                    return self.get_data(chr, pos + idx - 1, new_ref, new_alt)
+                    rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
 
         if (not exact):
             rows = [r for r in rows if (diff(ref, alt) == diff(r[3], r[4]))]
@@ -250,6 +254,40 @@ class GnomAD(Connection):
         data["popmax_af"] = popmax_af
         data["popmax_an"] = popmax_an
 
+        unique_rows = set()
+        for row in rows:
+            chrom = self.get_from_row("CHROM", row)
+            pos = self.get_from_row("POS", row)
+            ref = self.get_from_row("REF", row)
+            alt = self.get_from_row("ALT", row)
+
+            matcher = difflib.SequenceMatcher(a=ref, b=alt)
+            matches = matcher.get_matching_blocks()
+            a = []
+            b = []
+            apos = 0
+            bpos = 0
+            for match in matches:
+                a.append(ref[apos:match.a])
+                apos = match.a + match.size
+                b.append(alt[bpos:match.b])
+                bpos = match.b + match.size
+
+            new_ref = ''.join(a)
+            new_alt = ''.join(b)
+
+            if (not new_ref or not new_alt):
+                first_match = ref[0]
+                new_ref = first_match + new_ref
+                new_alt = first_match + new_alt
+
+            unique_rows.add((chrom, pos, new_ref, new_alt))
+
+        data["url"] = [
+            "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(chrom, pos, ref, alt)
+            for (chrom, pos, ref, alt) in unique_rows
+        ]
+
         return data
 
     def less_than(self, chr, pos, ref, alt, threshold):
@@ -262,7 +300,7 @@ class GnomAD(Connection):
 
 if __name__ == '__main__':
     with GnomAD() as gnomAD:
-        print gnomAD.get_af(1, 103471457, "CCATCAT", "CCAT")
+        print gnomAD.get_all(1, 103471457, "CCATCAT", "CCAT")
         print gnomAD.get_af(1, 160009164, "GACACACACACACAC", "GACACACACACACACAC")
         print gnomAD.get_af(4, 88536543, "AACAGCAGTG", "A")
 

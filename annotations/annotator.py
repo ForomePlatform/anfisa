@@ -43,6 +43,7 @@ def execute_vep(input, output = None, fork = 8):
 
 
 def annotate_json(f, out = None, vcf_header = None, samples = None, case = None, limit = None):
+    n_out = limit / 20 if limit > 0 else 100
     n = 0
     hg19_to_38_converter = liftover.Converter()
 
@@ -61,7 +62,7 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
             }
             v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, connectors=cns)
             n += 1
-            if (n%100 == 0):
+            if (n%n_out == 0):
                 print n
 
             out1.write(v.get_view_json() + '\n')

@@ -241,12 +241,13 @@ class Variant:
         mother = self.samples[proband]['mother']
         father = self.samples[proband]['father']
         for sample in self.samples:
+            name = self.samples[sample]["name"]
             if (sample == proband):
-                label = "proband"
+                label = "proband [{}]".format(name)
             elif (sample == mother):
-                label = "mother"
+                label = "mother [{}]".format(name)
             elif (sample == father):
-                label = "father"
+                label = "father [{}]".format(name)
             else:
                 label = sample
 
@@ -308,7 +309,6 @@ class Variant:
                 popmax = gnomad_data.get("popmax")
                 popmax_af = gnomad_data.get("popmax_af")
                 popmax_an = gnomad_data.get("popmax_an")
-
 
         self.filters["gnomad_db_exomes_af"] = em_af
         self.filters["gnomad_db_genomes_af"] = gm_af
@@ -616,7 +616,7 @@ class Variant:
             "http://{host}{path}{case}/{sample}.hg19.bam".format(host=host,path=path,case=self.case,sample=sample)
                      for sample in self.samples
         ]
-        name = ",".join(self.samples)
+        name = ",".join([sample["name"] for sample in self.samples.values()])
         args = "file={}&genome=hg19&merge=false&name={}&locus={}:{}-{}".\
             format(','.join(file_urls), name, self.chromosome(), self.start()-250, self.end()+250)
         return "{}{}".format(url, args)
@@ -874,6 +874,24 @@ class Variant:
 
         return callers
 
+    def get_intron_or_exon(self, kind):
+        introns = self.get_from_transcripts("intron", kind)
+        exons = self.get_from_transcripts("exon", kind)
+        e = exons if len(exons) > 0 else introns
+        if (not e):
+            return None, None
+        index = []
+        total = []
+        for x in e:
+            if (not x):
+                continue
+            split = x.split('/')
+            index.append(split[0])
+            if (len(split) > 1):
+                total.append(split[1])
+
+        return '.'.join(index), '.'.join(total)
+
     def get_callers_data(self):
         callers = self.get_raw_callers()
         data = dict()
@@ -935,18 +953,8 @@ class Variant:
         tab1['variant_exon_canonical'] = self.get_from_canonical_transcript("exon")
         tab1['variant_intron_canonical'] = self.get_from_canonical_transcript("intron")
 
-        intron_or_exon = tab1['variant_exon_canonical'] if tab1['variant_exon_canonical'] else tab1['variant_intron_canonical']
-        e = intron_or_exon.split('/')
-        data_info["variant_exon_intron_canonical"] = e[0]
-        if (len(e) > 1):
-            data_info["total_exon_intron_canonical"] = e[1]
-
-        intron_or_exon = tab1['variant_exon_worst'] if tab1['variant_exon_worst'] else tab1['variant_intron_worst']
-        e = intron_or_exon.split('/')
-        data_info["variant_exon_intron_worst"] = e[0]
-        if (len(e) > 1):
-            data_info["total_exon_intron_worst"] = e[1]
-
+        data_info["variant_exon_intron_canonical"], data_info["total_exon_intron_canonical"] = self.get_intron_or_exon("canonical")
+        data_info["variant_exon_intron_worst"], data_info["total_exon_intron_worst"] = self.get_intron_or_exon("worst")
 
         tab1["igv"] = self.get_igv_url()
 
@@ -968,14 +976,15 @@ class Variant:
         proband = self.get_proband()
         mother = self.samples[proband]['mother']
         father = self.samples[proband]['father']
-        for s in self.samples:
-            genotype = self.vcf_record.genotype(s)
+        for sample in self.samples:
+            genotype = self.vcf_record.genotype(sample)
+            s = self.samples[sample]["name"]
             q_s = dict()
-            if (s == proband):
+            if (sample == proband):
                 q_s["title"] = "Proband: %s" % s
-            elif (s == mother):
+            elif (sample == mother):
                 q_s["title"] = "Mother: %s" % s
-            elif (s == father):
+            elif (sample == father):
                 q_s["title"] = "Father: %s" % s
             else:
                 q_s["title"] = s
@@ -1009,8 +1018,8 @@ class Variant:
                     pop_max_an = gnomad_data["popmax_an"]
                     gr["pop_max"] = "{}: {} [{}]".format(pop_max, pop_max_af, pop_max_an)
 
-                gr["url"] = \
-                    "http://gnomad.broadinstitute.org/variant/{}-{}-{}-{}".format(self.chr_num(), self.start(), self.ref(), allele)
+                    gr["url"] = gnomad_data["url"]
+
 
     def create_databases_tab(self, data_info, view_info, filters):
         tab4 = dict()
