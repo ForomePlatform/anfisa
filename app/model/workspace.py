@@ -5,12 +5,11 @@ from .zone import FilterZoneH
 
 #===============================================
 class Workspace:
-    def __init__(self, name, legend, data_set, mongo_ws, mongo_common):
+    def __init__(self, name, legend, data_set, mongo_ws):
         self.mName = name
         self.mLegend = legend
         self.mDataSet = data_set
         self.mMongoWS = mongo_ws
-        self.mMongoCommon = mongo_common
         self.mViewSetup = self.mDataSet.getViewSetup()
         self.mLock  = Lock()
         self.mTagsMan = TagsManager(self,
@@ -31,7 +30,7 @@ class Workspace:
                 zone_h = FilterZoneH(self, zone_title,
                     self.mLegend.getUnit(unit_name))
             self.mZoneHandlers.append(zone_h)
-        par_data = self.mMongoCommon.getRulesParamValues()
+        par_data = self.mMongoWS.getRulesParamValues()
         if par_data is not None:
             self.mLegend.getRulesUnit().changeParamEnv(par_data)
 
@@ -79,7 +78,7 @@ class Workspace:
             if report["status"] == "OK":
                 self.mIndex.updateRulesEnv()
                 if par_data is not None:
-                    self.mMongoCommon.setRulesParamValues(par_data)
+                    self.mMongoWS.setRulesParamValues(par_data)
         return report
 
     def makeTagsJSonReport(self, rec_no,

@@ -68,12 +68,6 @@ class MongoCollectionAgent:
     def dropFilter(self, filter_name):
         self.mAgent.remove({"_id": "flt-" + filter_name})
 
-#===============================================
-class MongoCommonAgent:
-    def __init__(self, connector, agent):
-        self.mConnector = connector
-        self.mAgent = agent
-
     def getRulesParamValues(self):
         it = self.mAgent.find_one({"_id": "params"})
         if it is not None:
@@ -84,3 +78,10 @@ class MongoCommonAgent:
         self.mAgent.update(
             {"_id": "params"},
             {"$set": {"params": param_values}}, upsert = True)
+
+#===============================================
+class MongoCommonAgent:
+    def __init__(self, connector, agent):
+        self.mConnector = connector
+        self.mAgent = agent
+

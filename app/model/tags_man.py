@@ -101,7 +101,7 @@ class TagsManager(ZoneH):
             h_idx, h_stack = rec_data['_h']
             h_stack = h_stack[:]
         else:
-            h_idx, h_stack = 0, []
+            h_idx, h_stack = 1, [dict()]
         new_rec_data = None
         if tags_to_update == "UNDO":
             if h_idx > 0:

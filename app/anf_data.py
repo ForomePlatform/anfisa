@@ -27,7 +27,6 @@ class AnfisaData:
         cls.sMongoConn = MongoConnector(config["mongo-db"],
             config.get("mongo-host"), config.get("mongo-port"))
         setupRecommended()
-        mongo_common = cls.sMongoConn.getCommonAgent()
 
         for ws_descr in config["workspaces"]:
             ws_name = ws_descr["name"]
@@ -41,8 +40,7 @@ class AnfisaData:
                     rep_out.gevalue())
             logging.warning(legend.getStatusInfo())
             ws = Workspace(ws_name, legend, data_set,
-               cls.sMongoConn.getAgent(ws_descr["mongo-name"]),
-               mongo_common)
+               cls.sMongoConn.getAgent(ws_descr["mongo-name"]))
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
