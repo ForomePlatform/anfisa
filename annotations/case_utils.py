@@ -26,8 +26,12 @@ def parse_fam_file(fam_file):
                 tokens = line.split()
                 internal_names = [t for t in tokens if case in t.strip()]
                 external_names = [t for t in tokens if "CP" in t.strip()]
-                if (len (internal_names) ==1 and len(external_names) == 1):
+                if (len (internal_names) == 1 and len(external_names) == 1):
                     sample_map[internal_names[0]] = external_names[0]
+                elif (len (internal_names) == 0):
+                    raise Exception("Line {}: missing mapping for sample: {}*".format(line, case))
+                elif (len(external_names) == 0):
+                    raise Exception("Line {}: missing mapping for sample: CP*".format(line))
                 else:
                     raise Exception("Ambiguous sample mapping: {}".format(line))
 
