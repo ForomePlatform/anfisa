@@ -8,8 +8,8 @@
     "workspaces": [
         {
             "name": "Personal_Genome_3140",
-            "mongo-name": "bgm9001_wgs",
-            "file": "${WORK}/data/bgm9001_wgs.json"
+            "mongo-name": "bgm9001",
+            "file": "${WORK}/data/PGP3140.json"
         }
     ],
     "files": {

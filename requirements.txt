@@ -17,10 +17,11 @@ imagesize==1.0.0
 ipaddress==1.0.22
 JayDeBeApi==1.1.1
 jdcal==1.4
-Jinja2==2.9.6
+Jinja2
 JPype1==0.6.3
-lxml==4.2.3
-MarkupSafe==1.0
+jsonpath_rw
+lxml
+MarkupSafe
 mock==2.0.0
 mysql==0.0.1
 mysql-connector==2.1.6
@@ -36,11 +37,11 @@ pyliftover==0.3
 pymongo==3.7.1
 PyNaCl==1.2.1
 PyOpenGL==3.0.2
-pyparsing==2.2.0
+pyparsing
 pytz==2018.4
 PyVCF==0.6.8
-PyYAML==3.12
-requests==2.18.4
+PyYAML
+requests
 six==1.11.0
 snowballstemmer==1.2.1
 sortedcontainers==2.0.5
@@ -54,3 +55,4 @@ uWSGI==2.0.17.1
 virtualenv==15.1.0
 virtualenv-clone==0.2.6
 virtualenvwrapper==4.8.2
+jsonpath_rw
