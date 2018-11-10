@@ -23,6 +23,19 @@ def get(url):
     raise Exception(response.text)
 
 
+def getJson(url):
+    """
+    HTTP GET request
+    :param url: - api url
+    :return: - json object, if response status is OK
+    """
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.text
+
+    raise Exception(response.text)
+
+
 class Beacon:
     """
    Beacon Network API
@@ -38,8 +51,9 @@ class Beacon:
         /references	Lists supported reference genomes.	Go to example
    """
 
-    def __init__(self, baseUrl="https://beacon-network.org/"):
+    def __init__(self, baseUrl="https://beacon-network.org/", resJson=False):
         self.baseUrl = baseUrl + "api"
+        self.resJson = resJson
 
     def search(self, chrom, pos, allele, ref, referenceAllele):
         """
@@ -47,7 +61,10 @@ class Beacon:
         :return:
         """
         beacon = self.getIds(self.beaconList())
-        return self.responses(chrom, pos, allele, ref, referenceAllele, beacon)
+        if self.resJson:
+            return self.responsesJson(chrom, pos, allele, ref, referenceAllele, beacon)
+        else:
+            return self.responses(chrom, pos, allele, ref, referenceAllele, beacon)
 
     def beaconList(self):
         return get(self.baseUrl + "/beacons")
@@ -89,9 +106,12 @@ class Beacon:
                     Optional parameter.
         """
         # https://beacon-network.org/api/responses?chrom=17&pos=41244981&allele=G&ref=GRCh37&beacon=[amplab,brca-exchange]
-        param = "?chrom={}&pos={}&allele={}&ref={}&beacon=[{}]&referenceAllele={}" \
-            .format(chrom, pos, allele, ref, ",".join(beacon), referenceAllele)
+        param = self.__responsesParam(chrom, pos, allele, ref, referenceAllele, beacon)
         return get(self.baseUrl + "/responses" + param)
+
+    def __responsesParam(self, chrom, pos, allele, ref, referenceAllele, beacon):
+        return "?chrom={}&pos={}&allele={}&ref={}&beacon=[{}]&referenceAllele={}" \
+            .format(chrom, pos, allele, ref, ",".join(beacon), referenceAllele)
 
     def responsesBeacon(self, chrom, pos, allele, ref, referenceAllele, beacon):
         """
@@ -101,6 +121,10 @@ class Beacon:
         param = "?chrom={}&pos={}&allele={}&ref={}&referenceAllele={}" \
             .format(chrom, pos, allele, ref, referenceAllele)
         return get(self.baseUrl + "/responses/" + beacon + param)
+
+    def responsesJson(self, chrom, pos, allele, ref, referenceAllele, beacon):
+        param = self.__responsesParam(chrom, pos, allele, ref, referenceAllele, beacon)
+        return getJson(self.baseUrl + "/responses" + param)
 
     def getIds(selfs, obj):
         return list(map(lambda o: o.id, obj))
@@ -145,7 +169,7 @@ class Beacon:
 
 
 def processing(args):
-    beacon = Beacon(args.url__baseUrl) if args.url__baseUrl else Beacon()
+    beacon = Beacon(args.url__baseUrl, True) if args.url__baseUrl else Beacon(resJson=True)
     res = beacon.search(pos=args.pos,
                         chrom=args.chrom,
                         allele=args.allele,
@@ -157,9 +181,14 @@ def processing(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--chrom", help="Chromosome ID. Accepted values: 1-22, X, Y, MT", required=True)
-    parser.add_argument("-p", "--pos", help="Coordinate within a chromosome. Position is a number and is 0-based", required=True)
-    parser.add_argument("-a", "--allele", help="Any string of nucleotides A,C,T,G or D, I for deletion and insertion, respectively", required=True)
-    parser.add_argument("-r", "--ref", help="Genome ID. If not specified, all the genomes supported by the given beacons are queried.", required=True)
+    parser.add_argument("-p", "--pos", help="Coordinate within a chromosome. Position is a number and is 0-based",
+                        required=True)
+    parser.add_argument("-a", "--allele",
+                        help="Any string of nucleotides A,C,T,G or D, I for deletion and insertion, respectively",
+                        required=True)
+    parser.add_argument("-r", "--ref",
+                        help="Genome ID. If not specified, all the genomes supported by the given beacons are queried.",
+                        required=True)
     parser.add_argument("-rs", "--referenceAllele", help="reference allele", required=True)
     parser.add_argument("-url" "--baseUrl", help="base url, default: http://beacon-network.org/")
     args = parser.parse_args()
