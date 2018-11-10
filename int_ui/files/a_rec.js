@@ -102,5 +102,9 @@ function init_r(port, init_aspect, ws_name, rec_id) {
     } else {
         pickAspect(sBaseAspect);
     }
+    window.onclick = onClick;
 }
 
+function onClick(event_ms) {
+    window.parent.onClick(event_ms);
+}

@@ -13,18 +13,31 @@ var sWsDropShown = null;
 
 var sNodeFilterBack  = null;
 var sNodeZoneBack  = null;
+var sNodeNoteBack = null;
 var sNodeRulesBack = null;
 
 function initWin(workspace_name, app_modes) {
-    sTitlePrefix = window.document.title;
+    if (sTitlePrefix == null) 
+        sTitlePrefix = window.document.title;
     sWorkspaceName = workspace_name; 
+    window.name = sTitlePrefix + "/" + sWorkspaceName;
     sAppModes = app_modes;
     sNodeFilterBack  = document.getElementById("filter-back");
     sNodeZoneBack    = document.getElementById("zone-back");
+    sNodeNoteBack    = document.getElementById("note-back");
     sNodeRulesBack = document.getElementById("rules-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
+
+    if (sAppModes.toLowerCase().indexOf('r') >= 0) {
+        document.getElementById("res-mode-check").style.visibility = "visible";
+        document.getElementById("ws-control-open").className = "drop res-mode";
+    } else { 
+        document.getElementById("res-mode-check").style.visibility = "hidden";
+        document.getElementById("ws-control-open").className = "drop";
+    }
+        
     initMonitor();
     initFilters();
     checkWorkZone(null);
@@ -163,6 +176,8 @@ function onClick(event_ms) {
         zoneModOff();
     if (event_ms.target == sNodeRulesBack)
         rulesModOff();
+    if (event_ms.target == sNodeNoteBack)
+        noteModOff();
     if (sWsDropShown && !event_ms.target.matches('.drop')) {
         wsDropShow(false);
     }
@@ -188,6 +203,8 @@ function _showModal(cur_mode_node) {
         (cur_mode_node == sNodeFilterBack)? "block":"none";
     sNodeZoneBack.style.display    = 
         (cur_mode_node == sNodeZoneBack)? "block":"none";
+    sNodeNoteBack.style.display = 
+        (cur_mode_node == sNodeNoteBack)? "block":"none";
     sNodeRulesBack.style.display = 
         (cur_mode_node == sNodeRulesBack)? "block":"none";
 }
@@ -207,6 +224,10 @@ function zoneModOn() {
 }
 
 function zoneModOff() {
+    _showModal(null);
+}
+
+function noteModOff() {
     _showModal(null);
 }
 
@@ -248,32 +269,88 @@ function updateTabCfg() {
 //=====================================
 function initExportForm() {
     wsDropShow(false);
-    document.getElementById("ws-export-descr").innerHTML = 
-        'Export ' + sRecList.length + ' records';
     document.getElementById("ws-export-result").innerHTML = 
+        'Export ' + sRecList.length + ' records?<br>' +
         '<button class="drop" onclick="doExport();">Export</button>';
     sExportFormed = false;
 }
 
 
-function openExport() {
+function openControlMenu() {
     wsDropShow();
     if (sWsDropShown)
-        document.getElementById("ws-export").style.display = 
+        document.getElementById("ws-control-menu").style.display = 
             (sWsDropShown)? "block":"none";
+        
+}
+
+function showExport() {
+    wsDropShow(false);
+    document.getElementById("ws-export-result").style.display = "block";
+    wsDropShow(true);
+}
+
+function goHome() {
+    wsDropShow(false);
+    window.open('dir', sTitlePrefix + ':dir');
+}
+
+function openNote() {
+    wsDropShow(false);
+    loadNote();
+    _showModal(sNodeNoteBack);
+}
+
+function saveNote() {
+    wsDropShow(false);
+    loadNote(document.getElementById("note-content").value);
+    noteModOff();
+}
+
+function switchResMode() {
+    wsDropShow();
+    var idx = sAppModes.toLowerCase().indexOf('r');
+    if ( idx >= 0) {
+        app_modes = sAppModes.substr(0, idx) + sAppModes.substr(idx + 1);
+    } else {
+        app_modes = sAppModes + 'r';
+    }
+    initWin(sWorkspaceName, app_modes);
 }
 
 function setupExport(info) {
     res_el = document.getElementById("ws-export-result");
     if (info["fname"]) {
         res_el.className = "drop";
-        res_el.innerHTML = '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
+        res_el.innerHTML = 'Exported ' + sRecList.length + ' records<br>' +
+        '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
     } else {
         res_el.className = "drop problems";
         res_el.innerHTML = 'Bad configuration';
     }
     sExportFormed = true;
     wsDropShow(true);
+}
+
+function loadNote(content) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var info = JSON.parse(this.responseText);
+            setupNote(info);
+        }
+    };
+    xhttp.open("POST", "wsnote", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    args = "ws=" + sWorkspaceName;
+    if (content)
+        args += "&note=" + encodeURIComponent(content);
+    xhttp.send(args); 
+}
+
+function setupNote(info) {
+    document.getElementById("note-ws-name").innerHTML = info["workspace"];
+    document.getElementById("note-content").value = info["note"];
 }
 
 //=====================================
@@ -283,7 +360,8 @@ function wsDropShow(mode) {
     else
         sWsDropShown = mode;
     if (!sWsDropShown) {
-        document.getElementById("ws-export").style.display = "none";
+        document.getElementById("ws-control-menu").style.display = "none";
+        document.getElementById("ws-export-result").style.display = "none";
         document.getElementById("filters-op-list").style.display = "none";
     }
 }

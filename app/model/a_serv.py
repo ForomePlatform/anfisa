@@ -1,7 +1,7 @@
 import json
 from StringIO import StringIO
 
-from int_ui.gen_html import formTopPage, noRecords
+from int_ui.gen_html import formTopPage, noRecords, dirPage, notFound
 from int_ui.record import reportRecord
 #===============================================
 class AnfisaService:
@@ -18,20 +18,23 @@ class AnfisaService:
     @classmethod
     def request(cls, serv_h, rq_path, rq_args):
         if rq_path == "/":
-            return serv_h.makeResponse(
-                content = cls.sMain.formTop(rq_args))
+            content, error = cls.sMain.formTop(rq_args)
+            return serv_h.makeResponse(content = content, error = error)
         if rq_path == "/rec":
             return serv_h.makeResponse(
                 content = cls.sMain.formRec(rq_args))
+        if rq_path == "/dir":
+            return serv_h.makeResponse(
+                content = cls.sMain.formDir(rq_args))
         if rq_path == "/norecords":
             return serv_h.makeResponse(
                 content = cls.sMain.formNoRecords(rq_args))
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
-        if rq_path == "/wslist":
+        if rq_path == "/dirinfo":
             return serv_h.makeResponse(mode = "json",
-                content = cls.sMain.formWSList(rq_args))
+                content = cls.sMain.formDirInfo(rq_args))
         if rq_path == "/vsetup":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formVSetup(rq_args))
@@ -62,6 +65,9 @@ class AnfisaService:
         if rq_path == "/export":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formExport(rq_args))
+        if rq_path == "/wsnote":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formWSNote(rq_args))
         return serv_h.makeResponse(error = 404)
 
     #===============================================
@@ -85,10 +91,21 @@ class AnfisaService:
     # Internal UI methods
     #===============================================
     def formTop(self, rq_args):
-        workspace, modes = self._stdParams(rq_args)
+        workspace = self.sData.getWS(rq_args.get("ws"))
         output = StringIO()
-        formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
-            workspace, modes)
+        err_code = None
+        if workspace is not None:
+            formTopPage(output, self.mHtmlTitle, self.mHtmlBase,
+                workspace)
+        else:
+            err_code = 404
+            notFound(output, self.mHtmlTitle, self.mHtmlBase)
+        return output.getvalue(), err_code
+
+    #===============================================
+    def formDir(self, rq_args):
+        output = StringIO()
+        dirPage(output, self.mHtmlTitle, self.mHtmlBase)
         return output.getvalue()
 
     #===============================================
@@ -246,9 +263,22 @@ class AnfisaService:
         return output.getvalue()
 
     #===============================================
-    def formWSList(self, rq_args):
-        rep = [self.sData.getWS(ws).getJSonObj()
-            for ws in self.sData.iterWorkspaces()]
+    def formDirInfo(self, rq_args):
+        rep = {
+            "version": self.sData.getVersionCode(),
+            "workspaces": [workspace.getJSonObj()
+                for workspace in self.sData.iterWorkspaces()]}
+        output = StringIO()
+        output.write(json.dumps(rep))
+        return output.getvalue()
+
+    #===============================================
+    def formWSNote(self, rq_args):
+        workspace = self.sData.getWS(rq_args.get("ws"))
+        note = workspace.getWSNote(rq_args.get("note"))
+        rep = {
+            "workspace": workspace.getName(),
+            "note": note}
         output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()

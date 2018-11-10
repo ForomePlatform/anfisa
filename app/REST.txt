@@ -34,13 +34,18 @@ Method "/list"
     This option for record might be changed by "/tags" method.
 
 ===
-Method "/wslist"
+Method "/dirinfo"
     <- 
-    [ * list of workspaces
-        {
-            "name": <ws name>
-        }, ...
-    ]
+    {
+        "version":   version of system,
+        "workspaces": 
+            [ * list of workspaces 
+                {
+                    "name": <ws name>,
+                    "note": <ws notes, string>
+                }, ...
+            ]
+    }
     
 ===
 Method "/recdata"
@@ -281,6 +286,14 @@ Method "/rules_modify"
         { * result of attempt of modification
             "status": "OK" / "FAILED"
             "error": none or error message
+        }
+        
+===
+Method "/wsnote"
+    -> ws           (= ws_default)
+    <-  {
+            "workspace": <ws name>,
+            "note": <ws note>
         }
 
 ====================================

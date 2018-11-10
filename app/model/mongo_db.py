@@ -79,6 +79,17 @@ class MongoCollectionAgent:
             {"_id": "params"},
             {"$set": {"params": param_values}}, upsert = True)
 
+    def getWSNote(self):
+        it = self.mAgent.find_one({"_id": "note"})
+        if it is not None:
+            return it["note"].strip()
+        return None
+
+    def setWSNote(self, note):
+        self.mAgent.update(
+            {"_id": "note"},
+            {"$set": {"note": note.strip()}}, upsert = True)
+
 #===============================================
 class MongoCommonAgent:
     def __init__(self, connector, agent):

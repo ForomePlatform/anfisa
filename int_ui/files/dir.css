@@ -1,0 +1,47 @@
+body {
+    background-color: #f6f6f7;
+}
+
+h2 {
+    margin-left: 40px;
+    color: #333455; 
+}
+
+p#p-version {
+    font-style: italic;
+    text-align: right;
+}
+
+span#span-version{
+    font-style: normal;
+    text-weight: bold;
+}
+
+table {
+    width: 100%;
+}
+
+td {
+    padding: 20px;
+}
+
+td.name {
+    background-color: #333455;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: top;
+    width: 40%;
+}
+
+td.name a {
+    color: #F0F0F0;    
+}
+
+td.note {
+    color: black;
+    background-color: #f6f6f7;
+    font-weight: bold;
+    text-align: left;
+    vertical-align: top;
+    width: 50%;
+}

@@ -26,18 +26,19 @@ def startHtmlPage(output, title = None, html_base = None,
     print >> output, '  </head>'
 
 #===============================================
-def formTopPage(output, title, html_base, workspace, modes):
+def formTopPage(output, title, html_base, workspace):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
         js_files = ["anf.js", "monitor.js", "filters.js",
             "conditions.js", "zones.js", "rules.js"])
 
-    print >> output, ('  <body onload="initWin(\'%s\', \'%s\');">' %
-        (workspace.getName(), modes))
+    print >> output, ('  <body onload="initWin(\'%s\', \'\');">' %
+        (workspace.getName()))
     _formMainDiv(output, workspace.getName())
     _formFiltersDiv(output)
     _formZonesDiv(output, workspace.iterZones())
+    _formNoteDiv(output)
     _formRulesDiv(output)
 
     print >> output, ' </body>'
@@ -53,16 +54,23 @@ def _formMainDiv(output, workspace_name):
             <div id="ws-info">
               Ws:
               <span id="ws-name"></span><br/>
-              <span id="ws-export-wrap" title="Export..." class="drop">
-                <span id="ws-export-open" class="drop"
-                    onclick="openExport()";>&#11123;</span>
-                <div id="ws-export" class="drop">
-                    <div id="ws-export-descr" class="drop"></div>
-                    <div id="ws-export-result" class="drop"></div>
-                </div>
-              </span>
             </div>
             <div id="list-info">
+              <span id="ws-control-wrap" title="Control Menu..." class="drop">
+                <span id="ws-control-open" class="drop"
+                    onclick="openControlMenu()";>&#8285;</span>
+                <div id="ws-control-menu" class="drop">
+                    <div id="ws-ctrl-home" onclick="goHome();"
+                        class="drop ctrl-menu">Home Directory</div>
+                    <div id="ws-ctrl-home" onclick="openNote();"
+                        class="drop ctrl-menu">Workspace Note</div>
+                    <div id="ws-ctrl-research-mode" onclick="switchResMode();"
+                        class="drop ctrl-menu"><span id="res-mode-check">&#10003;</span>Research mode</div>
+                    <div id="ws-ctrl-export"
+                        class="drop ctrl-menu" onclick="showExport();">Export</div>
+                </div>
+                <div id="ws-export-result" class="drop"></div>
+              </span>&emsp;
               <span id="list-report"></span>
               <input id="list-rand-portion" type="number" min="1" max="5"
                 onchange="listRandPortion();"/>
@@ -307,6 +315,10 @@ def _formZonesDiv(output, zones):
             <div id="work-zone-def">
             </div>
             <div id="work-zone-ctrl">
+              <button class="op-button"
+                  onclick="zoneModOff();">
+                Done
+              </button>
               <button id="work-zone-clear" class="op-button"
                   onclick="zoneClearSelect();">
                 Clear
@@ -317,6 +329,36 @@ def _formZonesDiv(output, zones):
       </div>
     </div>
 ''' % params
+
+#===============================================
+def _formNoteDiv(output):
+    print >> output, '''
+    <div id="note-back">
+      <div id="note-mod">
+        <div id="note-top">
+            <p id="note-title">Workspace
+                <span id="note-ws-name"></span> note
+              <span id="close-note" onclick="noteModOff();">&times;</span>
+            </p>
+        </div>
+        <div id="work-note-area">
+            <textarea id="note-content"></textarea>
+        </div>
+        <div id="work-note-ctrl">
+              <button class="op-button"
+                  onclick="saveNote();">
+                Save
+              </button>
+              <button class="op-button"
+                  onclick="noteModOff();">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+'''
 
 #===============================================
 def _formRulesDiv(output):
@@ -359,20 +401,6 @@ def _formRulesDiv(output):
         </div>
       </div>
     </div>'''
-
-#===============================================
-def noRecords(output):
-    startHtmlPage(output, css_files = ["anf"])
-    print >> output, '''
-  <body>
-    <h3>No records available</h3>
-    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
-            >zone</button>
-        or
-        <button onclick='parent.window.updateCurFilter("");'
-            >filter</button>.</p>
-  </body>
-</html>'''
 
 #===============================================
 def tagsBlock(output):
@@ -444,3 +472,42 @@ def tagsBlock(output):
     </div>
   </div>
 </div>'''
+
+#===============================================
+def noRecords(output):
+    startHtmlPage(output, css_files = ["anf.css"])
+    print >> output, '''
+  <body>
+    <h3>No records available</h3>
+    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
+            >zone</button>
+        or
+        <button onclick='parent.window.updateCurFilter("");'
+            >filter</button>.</p>
+  </body>
+</html>'''
+
+#===============================================
+def dirPage(output, title, html_base):
+    startHtmlPage(output, title, html_base,
+        css_files = ["dir.css"], js_files = ["dir.js"])
+    print >> output, '''
+  <body onload="setup();">
+    <h2>Anfisa home directory</h2>
+    <p id="p-version">System version: <span id="span-version"></span></p>
+    <div id="div-main">
+    </div>
+  </body>
+</html>'''
+
+#===============================================
+def notFound(output, title, html_base):
+    startHtmlPage(output, title + ": Page not found", html_base,
+        css_files = ["dir.css"])
+    print >> output, '''
+  <body>
+    <h2>Page not found</h2>
+    <p><a href="dir" target="%s">Anfisa home</a></p>
+  </body>
+</html>''' % (title + "/dir")
+

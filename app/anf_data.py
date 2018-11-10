@@ -1,4 +1,4 @@
-import logging, os
+import logging, os, codecs
 from StringIO import StringIO
 
 from app.model.a_serv import AnfisaService
@@ -17,7 +17,9 @@ class AnfisaData:
     sDefaultWS = None
     sService = None
     sWorkspaces = {}
+    sWsOrdered = []
     sMongoConn = None
+    sVersionCode = None
 
     @classmethod
     def setup(cls, config, in_container):
@@ -44,6 +46,7 @@ class AnfisaData:
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
+            cls.sWsOrdered.append(ws)
 
         if config.get("link-base") is not None:
             AttrH.setupBaseHostReplacement(*config["link-base"])
@@ -55,11 +58,11 @@ class AnfisaData:
     def getWS(cls, name):
         if not name:
             return cls.sDefaultWS
-        return cls.sWorkspaces[name]
+        return cls.sWorkspaces.get(name)
 
     @classmethod
     def iterWorkspaces(cls):
-        return iter(cls.sWorkspaces)
+        return iter(cls.sWsOrdered)
 
     @classmethod
     def makeExcelExport(cls, prefix, json_seq):
@@ -84,3 +87,11 @@ class AnfisaData:
             export_h.add_variant(obj)
         export_h.save(dir_name + fname)
         return 'excel/' + fname
+
+    @classmethod
+    def getVersionCode(cls):
+        if cls.sVersionCode is None:
+            with codecs.open(os.path.dirname(os.path.abspath(__file__)) +
+                "/VERSION", "r", encoding = "utf-8") as inp:
+                cls.sVersionCode = inp.read().strip()
+        return cls.sVersionCode

@@ -115,5 +115,10 @@ class Workspace:
     def setMongoRecData(self, key, data, prev_data = False):
         self.mMongoWS.setRecData(key, data, prev_data)
 
+    def getWSNote(self, note = None):
+        if note is not None:
+            self.mMongoWS.setWSNote(note)
+        return self.mMongoWS.getWSNote()
+
     def getJSonObj(self):
-        return {"name": self.mName}
+        return {"name": self.mName, "note": self.getWSNote()}
