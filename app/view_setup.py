@@ -18,6 +18,7 @@ class ViewSetup:
         #     ("Tag",        "_tags")],
         "zones":[
             ("Gene",       "Genes"),
+            ("Sample",       "Has_Variant"),
             ("Tag", "_tags")
         ],
         "check.tags":       [
