@@ -890,7 +890,7 @@ class Variant:
             if (len(split) > 1):
                 total.append(split[1])
 
-        return '.'.join(index), '.'.join(total)
+        return ','.join(index), ','.join(total)
 
     def get_callers_data(self):
         callers = self.get_raw_callers()
