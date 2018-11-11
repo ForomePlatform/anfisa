@@ -83,7 +83,7 @@ class MongoCollectionAgent:
         it = self.mAgent.find_one({"_id": "note"})
         if it is not None:
             return it["note"].strip()
-        return None
+        return ""
 
     def setWSNote(self, note):
         self.mAgent.update(
