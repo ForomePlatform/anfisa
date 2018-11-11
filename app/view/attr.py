@@ -87,6 +87,8 @@ class AttrH:
     def _checkTpCnt(self):
         rep = None
         tp, sub_tp = self.mTpCnt.detectTypePair()
+        if tp == "undef":
+            return None
         if self.mIsSeq:
             if tp != "list":
                 rep = "Option is_seq dropped"
@@ -109,5 +111,3 @@ class AttrH:
             if len(self.mKinds) == 0:
                 self.mKinds.append("norm")
         return rep
-
-
