@@ -2,8 +2,9 @@ var sCurTag = null;
 var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
-var sPreFilters = [];
 var sAllFilters = [];
+var sOpFilters = [];
+var sLoadFilters = [];
 var sCurZoneData = null;
 
 var sCheckFltNamed   = null;
@@ -180,20 +181,23 @@ function updateTagNavigation() {
     }
 }
 
-function setupNamedFilters(pre_filters, all_filters) {
+function setupNamedFilters(filter_list) {
     clearFilterOpMode();
-    sPreFilters = pre_filters;
-    if (all_filters.length == sAllFilters.length) {
-        q_same = true;
-        for (idx = 0; idx < all_filters.length; idx++) {
-            if (all_filters[idx] != sAllFilters[idx]) {
-                q_same = false;
-                break;
-            }
-        }
-        if (q_same)
-            return;
+    q_same = (filter_list.length == sAllFilters.length)
+    sOpFilters = [];
+    sLoadFilters = [];
+    var all_filters = [];
+    for (idx = 0; idx < filter_list.length; idx++) {
+        flt_name = filter_list[idx][0];
+        all_filters.push(flt_name);
+        q_same &= (flt_name == sAllFilters[idx]);
+        if (!filter_list[idx][1])
+            sOpFilters.push(flt_name);
+        if (filter_list[idx][2])
+            sLoadFilters.push(flt_name);
     }
+    if (q_same)
+        return sAllFilters;
     sAllFilters = all_filters;
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
         sSelectFltNamed.remove(idx);
@@ -207,6 +211,7 @@ function setupNamedFilters(pre_filters, all_filters) {
     }
     sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
     clearFilterOpMode();
+    return sAllFilters;
 }
 
 function checkTabNavigation(tag_name) {

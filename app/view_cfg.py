@@ -2,21 +2,6 @@ from app.view.attr import AttrH
 from .view_setup import ViewSetup
 
 #===============================================
-
-ancestries = [
-    "AA",
-    "AFR",
-    "AMR",
-    "EA",
-    "EAS",
-    "EUR",
-    "SAS",
-    "ASJ",
-    "FIN",
-    "NFE",
-    "OTH"
-]
-
 CONFIG_ATTRS = {
     "view_gen": [
         AttrH("genes", title = "Gene(s)", is_seq = True),
@@ -140,7 +125,7 @@ CONFIG_ATTRS = {
         AttrH("other_genes",
             title="Gene symbols from other transcripts", is_seq = True),
         AttrH("called_by", title = "Called by", is_seq = True),
-        AttrH("caller_data", title = "CALLER DATA", kind = "json"),
+        AttrH("caller_data", title = "CALLER DATA"),
     ],
     "_main": [
         AttrH("label"),
@@ -185,7 +170,7 @@ CONFIG_ATTRS = {
         AttrH("consequence_terms", is_seq = True),
         AttrH("conservation"),
         AttrH("distance"),
-        AttrH("domains", "json"),
+        AttrH("domains", kind = "json"),
         AttrH("exacpli"),
         AttrH("exon"),
         AttrH("fathmm_pred"),
@@ -257,14 +242,12 @@ CONFIG_ATTRS = {
         AttrH("pubmed", is_seq = True),
         AttrH("somatic"),
         AttrH("gnomAD"),
-        AttrH("frequencies", "json"),
+        AttrH("frequencies", kind = "json"),
         AttrH("phenotype_or_disease"),
         AttrH("seq_region_name"),
         AttrH("clin_sig", is_seq = True),
-        AttrH("minor", attrs = ["minor_allele", "minor_allele_freq"]),
-    ]
-    + [AttrH("gnomAD_%s" % ancestry) for ancestry in ancestries]
-    + [AttrH(ancestry) for ancestry in ancestries],
+        AttrH("minor"),
+    ],
     "input": [AttrH("input")]
 }
 

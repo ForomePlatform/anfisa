@@ -1,3 +1,4 @@
+from threading import Lock
 from app.search.index import Index
 from .tags_man import TagsManager
 from .zone import FilterZoneH
@@ -11,6 +12,7 @@ class Workspace:
         self.mMongoWS = mongo_ws
         self.mMongoCommon = mongo_common
         self.mViewSetup = self.mDataSet.getViewSetup()
+        self.mLock  = Lock()
         self.mTagsMan = TagsManager(self,
             self.mViewSetup.configOption("check.tags"))
         self.mIndex  = Index(self.mDataSet, self.mLegend)
@@ -32,6 +34,13 @@ class Workspace:
         par_data = self.mMongoCommon.getRulesParamValues()
         if par_data is not None:
             self.mLegend.getRulesUnit().changeParamEnv(par_data)
+
+    def __enter__(self):
+        self.mLock.acquire()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.mLock.release()
 
     def getName(self):
         return self.mName
@@ -55,7 +64,7 @@ class Workspace:
         return None
 
     def getFirstAspectID(self):
-        return self.mViewSetup.getAspects()[0].getName()
+        return self.mViewSetup.getFirstAspectID()
 
     def getLastAspectID(self):
         return self.mViewSetup.configOption("aspect.tags.name")
@@ -64,17 +73,22 @@ class Workspace:
         return self.mLegend.getRulesUnit().getJSonData(research_mode)
 
     def modifyRulesData(self, research_mode, item, content):
-        report, par_data = self.mLegend.getRulesUnit().modifyRulesData(
-            research_mode, item, content)
-        if report["status"] == "OK":
-            self.mIndex.updateRulesEnv()
-            if par_data is not None:
-                self.mMongoCommon.setRulesParamValues(par_data)
+        with self:
+            report, par_data = self.mLegend.getRulesUnit().modifyRulesData(
+                research_mode, item, content)
+            if report["status"] == "OK":
+                self.mIndex.updateRulesEnv()
+                if par_data is not None:
+                    self.mMongoCommon.setRulesParamValues(par_data)
         return report
 
     def makeTagsJSonReport(self, rec_no,
             research_mode, tags_to_update = None):
-        report = self.mTagsMan.makeRecReport(rec_no, tags_to_update)
+        update_info = None
+        if tags_to_update is not None:
+            with self:
+                update_info = self.mTagsMan.updateRec(rec_no, tags_to_update)
+        report = self.mTagsMan.makeRecReport(rec_no, update_info)
         report["filters"] = self.mIndex.getRecFilters(rec_no)
         report["tags-version"] = self.mTagsMan.getIntVersion()
         return report
@@ -83,15 +97,16 @@ class Workspace:
         if instr:
             op, q, flt_name = instr.partition('/')
             if not self.mLegend.hasFilter(flt_name):
-                if op == "UPDATE":
-                    self.mMongoWS.setFilter(flt_name, conditions)
-                    self.mIndex.cacheFilter(flt_name, conditions)
-                    filter_name = flt_name
-                elif op == "DROP":
-                    self.mMongoWS.dropFilter(flt_name)
-                    self.mIndex.dropFilter(flt_name)
-                else:
-                    assert False
+                with self:
+                    if op == "UPDATE":
+                        self.mMongoWS.setFilter(flt_name, conditions)
+                        self.mIndex.cacheFilter(flt_name, conditions)
+                        filter_name = flt_name
+                    elif op == "DROP":
+                        self.mMongoWS.dropFilter(flt_name)
+                        self.mIndex.dropFilter(flt_name)
+                    else:
+                        assert False
         return self.mIndex.makeStatReport(
             filter_name, research_mode, conditions)
 
@@ -100,3 +115,6 @@ class Workspace:
 
     def setMongoRecData(self, key, data, prev_data = False):
         self.mMongoWS.setRecData(key, data, prev_data)
+
+    def getJSonObj(self):
+        return {"name": self.mName}

@@ -5,7 +5,6 @@ from app.model.a_serv import AnfisaService
 from app.model.workspace import Workspace
 from app.model.mongo_db import MongoConnector
 from app.view.dataset import DataSet
-from app.view.checker import ViewDataChecker
 from .view_setup import ViewSetup
 from .view_cfg import setupRecommended
 from .search_setup import prepareLegend
@@ -29,8 +28,7 @@ class AnfisaData:
 
         for ws_descr in config["workspaces"]:
             ws_name = ws_descr["name"]
-            data_set = DataSet(ViewSetup, ws_name, ws_descr["file"])
-            ViewDataChecker.check(ViewSetup, data_set)
+            data_set = DataSet(ViewSetup(), ws_name, ws_descr["file"])
             legend = prepareLegend(ws_name)
             legend.testDataSet(data_set)
             rep_out = StringIO()
@@ -57,6 +55,10 @@ class AnfisaData:
         if not name:
             return cls.sDefaultWS
         return cls.sWorkspaces[name]
+
+    @classmethod
+    def iterWorkspaces(cls):
+        return iter(cls.sWorkspaces)
 
     @classmethod
     def makeExcelExport(cls, prefix, json_seq):

@@ -2,6 +2,7 @@ import numbers, traceback, logging
 from StringIO import StringIO
 from xml.sax.saxutils import escape
 
+from app.model.types import Types
 #===============================================
 def _not_empty(val):
     return not not val
@@ -20,22 +21,32 @@ class AttrH:
         cls.sBaseHostTo   = host_to
 
     @classmethod
+    def getJSonOptions(cls):
+        return {"link_host": [cls.sBaseHostFrom, cls.sBaseHostTo]}
+
+    @classmethod
     def normLink(cls, str):
         if cls.sBaseHostFrom and str:
             return str.replace(cls.sBaseHostFrom, cls.sBaseHostTo)
         return str
 
     def __init__(self, name, kind = None, title = None,
-            attrs = None, is_seq = False):
+            is_seq = False, tp_cnt = None):
         self.mName = name
         self.mTitle = (title if title is not None else name)
         self.mKinds = kind.split() if kind else ["norm"]
-        assert attrs is None or not is_seq
-        assert attrs is None or "json" not in self.mKinds
-        self.mAttrs = attrs
         self.mIsSeq = is_seq
         self.mResearchOnly = "research" in self.mKinds
         self.mPath = None
+        self.mTpCnt = tp_cnt
+
+    def copy(self):
+        assert self.mTpCnt is None
+        return AttrH(self.mName, " ".join(self.mKinds), self.mTitle,
+            self.mIsSeq)
+
+    def _setTpCnt(self, tp_cnt):
+        self.mTpCnt = tp_cnt
 
     def getName(self):
         return self.mName
@@ -43,17 +54,27 @@ class AttrH:
     def getTitle(self):
         return self.mTitle
 
-    def getAttrs(self):
-        return self.mAttrs
-
     def isSeq(self):
         return self.mIsSeq
 
     def hasKind(self, kind):
         return kind in self.mKinds
 
+    def getType(self):
+        return Types.filterTypeKind(self.mKinds)
+
     def checkResearchBlock(self, research_mode):
         return (not research_mode) and self.mResearchOnly
+
+    def getTpCnt(self):
+        return self.mTpCnt
+
+    def getJSonObj(self):
+        return {
+            "name": self.mName, "kind": " ".join(self.mKinds),
+            "title": self.mTitle, "is_seq": self.mIsSeq,
+            "cnt": self.mTpCnt.repJSon() if self.mName is not None else None,
+            "path": self.mPath}
 
     def _feedAttrPath(self, path, registry):
         if self.mName is None:
@@ -61,10 +82,6 @@ class AttrH:
             return
         a_path = path + '/' + self.mName
         self.mPath = a_path
-        if self.mAttrs is not None:
-            for a_name in self.mAttrs:
-                registry.add(path + '/' + a_name)
-            return
         registry.add(a_path)
         if self.mIsSeq:
             registry.add(a_path + "[]")
@@ -76,15 +93,7 @@ class AttrH:
         repr_text = None
         val_obj = obj.get(self.mName) if obj else None
         try:
-            if self.mAttrs and obj:
-                repr_text = ' '.join(filter(_not_none,
-                    [self._htmlEscape(obj.get(a_name))
-                    for a_name in self.mAttrs]))
-                if not repr_text:
-                    repr_text = None
-                else:
-                    repr_text = repr_text.strip()
-            elif self.mIsSeq and val_obj:
+            if self.mIsSeq and val_obj:
                 repr_text = ', '.join(filter(_not_empty,
                     [self._htmlRepr(it_obj) for it_obj in val_obj]))
             elif val_obj or val_obj is 0:
@@ -100,7 +109,6 @@ class AttrH:
             logging.error(
                 ("Problem with attribute %s: obj = %r Stack:\n" %
                     (self.mPath, val_obj)) + rep.getvalue())
-
             return ("???", "none")
 
     @staticmethod
@@ -148,7 +156,7 @@ class AttrH:
     def _htmlRepr(self, it_obj):
         if not it_obj and it_obj is not 0:
             return None
-        if "json" in self.mKinds:
+        if "json" in self.mKinds or self.mTpCnt.detectType() == "dict":
             return self._jsonRepr(it_obj)
         value = it_obj
         if not value:

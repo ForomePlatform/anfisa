@@ -86,6 +86,8 @@ class FilterLegend:
         self.mUnits[0].fillRulesPart(obj, record)
 
     def setup(self, rep_out):
+        print >> rep_out, "==================="
+        print >> rep_out, "Legend:", self.mName
         self.mIsOK = True
         for unit in self.mUnits:
             self.mIsOK != unit.setup(rep_out)

@@ -175,12 +175,11 @@ function prepareFilterOperations() {
     document.getElementById("filters-op-create").className = 
         (sCurFilterSeq.length == 0)? "disabled":"";
     document.getElementById("filters-op-modify").className = 
-        (sCurFilterSeq.length == 0 || 
-            sBaseFilterName != "_current_" ||
-            (sAllFilters.length - sPreFilters.length) == 0)? "disabled":"";
+        (sCurFilterSeq.length == 0 || sBaseFilterName != "_current_" ||
+            (sOpFilters.length == 0))? "disabled":"";
     document.getElementById("filters-op-delete").className = 
         (sBaseFilterName == "_current_" || 
-            sPreFilters.indexOf(sBaseFilterName) >= 0)? "disabled":"";    
+            sOpFilters.indexOf(sBaseFilterName) < 0)? "disabled":"";
     sBtnFilters_Op.style.display = "none";
     wsDropShow(false);
 }
@@ -195,14 +194,15 @@ function checkFilterName() {
 
     filter_name = sInpFilters_Name.value;
     q_all = sAllFilters.indexOf(filter_name) >= 0;
-    q_pre = sPreFilters.indexOf(filter_name) >= 0;
+    q_op  = sOpFilters.indexOf(filter_name) >= 0;
+    q_load = sLoadFilters.indexOf(filter_name) >= 0;
     
     if (sFilterCurOp == "modify") {
-        sBtnFilters_Op.disabled = q_pre || (!q_all) || filter_name == sBaseFilterName;
+        sBtnFilters_Op.disabled = (!q_op) || filter_name == sBaseFilterName;
         return;
     }
     if (sFilterCurOp == "load") {
-        sBtnFilters_Op.disabled = !q_all || filter_name == sBaseFilterName;
+        sBtnFilters_Op.disabled = (!q_load) || filter_name == sBaseFilterName;
         return;
     }
     
@@ -248,7 +248,7 @@ function filterOpStartLoad() {
     sFilterCurOp = "load";
     sInpFilters_Name.value = "";
     sInpFilters_Name.style.visibility = "hidden";
-    fillSelectFilterNames(false, true);
+    fillSelectFilterNames(false, sLoadFilters);
     sSelFilters_Name.disabled = false;
     sBtnFilters_Op.innerHTML = "Load";
     sBtnFilters_Op.style.display = "block";
@@ -265,7 +265,7 @@ function filterOpStartCreate() {
     sInpFilters_Name.style.visibility = "visible";
     sSelFilters_Name.disabled = false;
     sInpFilters_Name.disabled = false;
-    fillSelectFilterNames(true, true);
+    fillSelectFilterNames(true, sAllFilters);
     sBtnFilters_Op.innerHTML = "Create";
     sBtnFilters_Op.style.display = "block";
     checkFilterName();
@@ -276,7 +276,7 @@ function filterOpStartModify() {
     if (sCurFilterSeq.length == 0 || sBaseFilterName != "_current_")
         return;
     wsDropShow(false);
-    fillSelectFilterNames(false, false);
+    fillSelectFilterNames(false, sOpFilters);
     sFilterCurOp = "modify";
     sInpFilters_Name.value = "";
     sInpFilters_Name.style.visibility = "hidden";
@@ -289,7 +289,7 @@ function filterOpStartModify() {
 
 function filterOpDelete() {
     if (sBaseFilterName == "_current_" || 
-            sPreFilters.indexOf(sBaseFilterName) >= 0)
+            sOpFilters.indexOf(sBaseFilterName) < 0)
         return;
     wsDropShow(false);
     sBaseFilterName = "_current_";
@@ -300,7 +300,8 @@ function filterOpDelete() {
 function filterFiltersOperation() {
     filter_name = sInpFilters_Name.value;
     q_all = sAllFilters.indexOf(filter_name) >= 0;
-    q_pre = sPreFilters.indexOf(filter_name) >= 0;
+    q_op = sOpFilters.indexOf(filter_name) >= 0;
+    q_load = sLoadFilters.indexOf(filter_name) >= 0;
     
     switch (sFilterCurOp) {
         case "create":
@@ -310,13 +311,13 @@ function filterFiltersOperation() {
             }
             break;
         case "modify":
-            if (q_all && !q_pre && filter_name != sBaseFilterName) {
+            if (q_op && filter_name != sBaseFilterName) {
                 loadStat(["instr", "UPDATE/" + filter_name]);
                 updateCurFilter(sBaseFilterName, true);
             }
             break;
         case "load":
-            if (q_all && filter_name != sBaseFilterName) {
+            if (q_load && filter_name != sBaseFilterName) {
                 sBaseFilterName = filter_name;
                 sCurFilterSeq = null;
                 loadStat();
@@ -326,7 +327,7 @@ function filterFiltersOperation() {
     }
 }
 
-function fillSelectFilterNames(with_empty, all_mode) {
+function fillSelectFilterNames(with_empty, filter_list) {
     if (sSelFilters_Name == null || sAllFilters == null)
         return;
     for (idx = sSelFilters_Name.length -1; idx >= 0; idx--) {
@@ -338,10 +339,8 @@ function fillSelectFilterNames(with_empty, all_mode) {
         option.value = "";
         sSelFilters_Name.append(option)
     }
-    for (idx = 0; idx < sAllFilters.length; idx++) {
-        flt_name = sAllFilters[idx];
-        if (!all_mode && sPreFilters.indexOf(flt_name) >= 0)
-            continue;
+    for (idx = 0; idx < filter_list.length; idx++) {
+        flt_name = filter_list[idx];
         var option = document.createElement('option');
         option.innerHTML = flt_name;
         option.value = flt_name;

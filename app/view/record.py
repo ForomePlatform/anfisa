@@ -13,7 +13,7 @@ class DataRecord:
         print >> output, ('<span id="img-wrap" onclick="tabCfgChange();">'
             '<img id="img-tab2" src="images/tab2-exp.png"/></span>')
         aspects_to_show = []
-        for aspect in self.mDataset.getViewSetup().getAspects():
+        for aspect in self.mDataset.getViewSetup().iterAspects():
             if aspect.isIgnored():
                 continue
             if aspect.checkResearchBlock(research_mode):

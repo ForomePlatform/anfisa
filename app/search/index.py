@@ -113,35 +113,40 @@ class Index:
                 break
         return rec_no_seq
 
+    def checkResearchBlock(self, conditions):
+        for cond_info in conditions:
+            if self.mLegend.getUnit(cond_info[1]).checkResearchBlock(False):
+                return True
+        return False
+
     def cacheFilter(self, filter_name, conditions):
         self.mFilterCache[filter_name] = (
-            conditions, self.evalConditions(conditions))
+            conditions, self.evalConditions(conditions),
+            self.checkResearchBlock(conditions))
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
             del self.mFilterCache[filter_name]
 
-    def getFilterLists(self):
-        ret0, ret1 = [], []
-        for filter_name in self.mFilterCache.keys():
-            if not filter_name.startswith('_'):
-                if self.mLegend.hasFilter(filter_name):
-                    ret0.append(filter_name)
-                else:
-                    ret1.append(filter_name)
-        return sorted(ret0), sorted(ret1)
+    def getFilterList(self, research_mode):
+        ret = []
+        for filter_name, flt_info in self.mFilterCache.items():
+            if filter_name.startswith('_'):
+                continue
+            ret.append([filter_name, self.mLegend.hasFilter(filter_name),
+                research_mode or not flt_info[2]])
+        return sorted(ret)
 
     def makeStatReport(self, filter_name, research_mode,
             conditions = None):
         rec_no_seq = self.getRecNoSeq(filter_name, conditions)
-        pre_filters, op_filters = self.getFilterLists()
         report = {
             "stat-list": self.mLegend.collectStatJSon(self._iterRecords(
                 rec_no_seq), research_mode),
-            "pre-filters": pre_filters,
-            "op-filters": op_filters,
-            "filter": filter_name}
-        if (filter_name in pre_filters or filter_name in op_filters):
+            "filter-list": self.getFilterList(research_mode),
+            "cur-filter": filter_name}
+        if (filter_name and filter_name in self.mFilterCache and
+                not filter_name.startswith('_')):
             report["conditions"] = self.mFilterCache[filter_name][0]
         return report
 
