@@ -65,7 +65,7 @@ class DictTypeChecker(BaseTypeChecker):
             attr_h.isSeq(), attr_h.getType())
         attr_h._setTpCnt(attr_tp_h)
         self._addReg(attr_tp_h)
-        self.mAttrs.append(attr_tp_h)
+        self.mAttrs.append(attr_h)
 
     def regValue(self, value):
         self.mOwnCnt.regValue(value)
@@ -82,8 +82,8 @@ class DictTypeChecker(BaseTypeChecker):
         all_names = set(self._getRegNames())
         for reg_h in self._getCheckers():
             all_names -= set(reg_h.getName().split('|'))
-        for attr_tp_h in self.mAttrs:
-            nm = attr_tp_h.getName()
+        for attr_h in self.mAttrs:
+            nm = attr_h.getName()
             if nm in all_names:
                 all_names.remove(nm)
         if not keep_tech:
@@ -99,14 +99,22 @@ class DictTypeChecker(BaseTypeChecker):
         print >> output, self._getKind(), (
             self.mMasterName + '/' + self.getName())
         self.mOwnCnt.report(output, rep_level)
-        for attr_tp_h in self.mAttrs:
-            if rep_level < 2 and attr_tp_h.getName().startswith('_'):
+        for attr_h in self.mAttrs:
+            if rep_level < 2 and attr_h.getName().startswith('_'):
                 continue
-            attr_tp_h.report(output, rep_level)
+            attr_h.getTpCnt().report(output, rep_level)
         for nm in self.getUnexpectedRegs():
             self._getReg(nm).report(output, rep_level)
 
     def fixUp(self, output, counts):
+        for attr_h in self.mAttrs:
+            rep = attr_h._checkTpCnt()
+            if rep is not None:
+                print >> output, (
+                    "JSON-warn: Fix field format for %s: %s" % (
+                        attr_h.getPath(), rep))
+                counts[1] += 1
+
         bad_names = self.getUnexpectedRegs(False)
         if len(bad_names) == 0:
             return

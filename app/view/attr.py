@@ -83,3 +83,31 @@ class AttrH:
         if "json" in self.mKinds or "hidden" in self.mKinds:
             registry.add(a_path + "*")
             return
+
+    def _checkTpCnt(self):
+        rep = None
+        tp, sub_tp = self.mTpCnt.detectTypePair()
+        if self.mIsSeq:
+            if tp != "list":
+                rep = "Option is_seq dropped"
+                self.mIsSeq = False
+            else:
+                tp = sub_tp
+        else:
+            if tp == "list":
+                rep = "Option is_seq set up"
+                self.mIsSeq = True
+                tp = sub_tp
+        if self.hasKind("link") and tp not in (
+                "undef", "null", "link", "empty"):
+            if not rep:
+                rep = ""
+            else:
+                rep += "/ "
+            rep += "Option link dropped"
+            self.mKinds.remove("link")
+            if len(self.mKinds) == 0:
+                self.mKinds.append("norm")
+        return rep
+
+

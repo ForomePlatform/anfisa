@@ -67,6 +67,12 @@ class ValueTypeCounter:
             self.mDetType = self._detectType()
         return self.mDetType
 
+    def detectTypePair(self):
+        tp = self.detectType()
+        if tp == "list":
+            return (tp, self.mSeqCounter.detectType())
+        return (tp, None)
+
     def getBadValues(self):
         return self.mBadValues
 
