@@ -110,29 +110,33 @@ def get_distance_hgvsc(hgvsc):
     coord = hgvsc.split(':')[1]
     xx = coord.split('.')
     d = None
-    for x in xx[1].split('_'):
-        sign = None
-        p1 = None
-        p2 = None
-        while (not x[0].isdigit() and not x[0] in hgvs_signs):
-            x = x[1:]
-        end = len(x)
-        for i in range(0, end):
-            c = x[i]
-            if (c.isdigit()):
-                continue
-            if (c in hgvs_signs):
-                p0 = 0 if (sign == None) else sign + 1
-                p1 = int(x[p0:i]) if i>0 else 0
-                sign = i
-            if (c.isalpha()):
-                end = i
-                break
-        if (p1 != None and sign != None):
-            p2 = int(x[sign + 1:end])
-        if (p2):
-            if (not d or d > p2):
-                d = p2
+    try:
+        for x in xx[1].split('_'):
+            sign = None
+            p1 = None
+            p2 = None
+            while (not x[0].isdigit() and not x[0] in hgvs_signs):
+                x = x[1:]
+            end = len(x)
+            for i in range(0, end):
+                c = x[i]
+                if (c.isdigit()):
+                    continue
+                if (c in hgvs_signs):
+                    p0 = 0 if (sign == None) else sign + 1
+                    p1 = int(x[p0:i]) if i>p0 else 0
+                    sign = i
+                if (c.isalpha()):
+                    end = i
+                    break
+            if (p1 != None and sign != None):
+                p2 = int(x[sign + 1:end])
+            if (p2):
+                if (not d or d > p2):
+                    d = p2
+    except Exception as e:
+        print e
+        d = None
     return d
 
 ## TO-DO:
