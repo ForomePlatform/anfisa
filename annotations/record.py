@@ -626,15 +626,18 @@ class Variant:
         return "{}{}".format(url, args)
 
     def get_label(self):
-        genes = self.get_genes()
-        if (len(genes) == 0):
-            gene = "None"
-        elif (len(genes) < 3):
-            gene = ",".join(genes)
-        else:
-            gene = "..."
+        try:
+            genes = map(lambda g: str(g), self.get_genes())
+            if (len(genes) == 0):
+                gene = "None"
+            elif (len(genes) < 3):
+                gene = ",".join(genes)
+            else:
+                gene = "..."
 
-        vstr = str(self)
+            vstr = str(self)
+        except:
+            raise
         return "[{}] {}".format(gene, vstr)
 
     def get_hg38_coordinates(self):
