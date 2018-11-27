@@ -81,6 +81,8 @@ CONFIG_ATTRS = {
             title = "ClinVar Significance", is_seq = True),
         AttrH("clinVar_phenotypes",
             title = "ClinVar Phenotypes", is_seq = True),
+        AttrH("clinVar_submitters",
+            title = "ClinVar Submitters", is_seq = True),
         AttrH("clinVar", title = "ClinVar", kind = "link"),
         AttrH("gene_cards", title =
             "GeneCards", kind = "link", is_seq = True),

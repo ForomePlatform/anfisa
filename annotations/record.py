@@ -158,6 +158,7 @@ class DBConnectors:
         self.hgmd = array.get("hgmd")
         self.clinvar = array.get("clinvar")
         self.liftover = array.get("liftover")
+        self.beacon = array.get("beacon")
 
 class Variant:
     csq_damaging = [
@@ -235,6 +236,7 @@ class Variant:
         self.call_gnomAD()
         self.call_hgmd()
         self.call_clinvar()
+        self.call_beacon()
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
@@ -269,6 +271,18 @@ class Variant:
         self.hg38_start = connection.hg38(self.chr_num(), self.start())
         self.hg38_end = connection.hg38(self.chr_num(), self.end())
 
+    def call_beacon(self):
+        connection = self.connectors.beacon
+        if (not connection):
+            return
+        self.data["beacon"] = dict()
+        for alt in self.alt_list():
+            beacons = connection.search(pos=self.start(),
+                        chrom=self.chr_num(),
+                        allele=alt,
+                        ref=self.ref(),
+                        referenceAllele="hg19")
+            self.data["beacon"][alt] = beacons
 
     def call_gnomAD(self):
         gnomAD = self.connectors.gnomAD
@@ -372,6 +386,7 @@ class Variant:
         self.data["clinvar_variants"] = variants
         self.data["clinvar_phenotypes"] = [row[6] for row in rows]
         self.data["clinvar_significance"] = significance
+        self.data["clinvar_submitters"] = row[-1]
         self.private_data["clinvar_other_ids"] = ids
         benign = True
         for prediction in significance:
@@ -1064,6 +1079,7 @@ class Variant:
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
         tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
+        tab4['clinVar_submitters'] = unique(self.data.get("clinvar_submitters"))
 
         tab4["pubmed_search"] = self.get_tenwise_link()
 

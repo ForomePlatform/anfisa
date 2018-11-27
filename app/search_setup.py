@@ -106,6 +106,10 @@ def prepareLegend(ws_name):
         ("HGMD", "/view/databases/hgmd_pmids[]"),
         ("OMIM", "/view/databases/omim")])
 
+    flt_unit.MultiStatusUnit(legend, "ClinVar_Submitters",
+        "/data/clinvar_submitters[]",
+        title="ClinVar Submitters")
+
     legend._endViewGroup()
 
     legend._startViewGroup("Call")

@@ -54,13 +54,14 @@ class Beacon:
     def __init__(self, baseUrl="https://beacon-network.org/", resJson=False):
         self.baseUrl = baseUrl + "api"
         self.resJson = resJson
+        self.beacon_list = self.getIds(self.beaconList())
 
     def search(self, chrom, pos, allele, ref, referenceAllele):
         """
         /search?pos=32936732&chrom=13&allele=C&ref=G&rs=GRCh37
         :return:
         """
-        beacon = self.getIds(self.beaconList())
+        beacon = self.beacon_list
         if self.resJson:
             return self.responsesJson(chrom, pos, allele, ref, referenceAllele, beacon)
         else:
