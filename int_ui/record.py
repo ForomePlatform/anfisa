@@ -16,7 +16,7 @@ def reportRecord(output, workspace, research_mode, rec_no, port):
             (workspace.getFirstAspectID(), workspace.getName(), rec_no))
     print >> output, '<div class="r-tab">'
     print >> output, ('<span id="img-wrap" onclick="tabCfgChange();">'
-        '<img id="img-tab2" src="images/tab2-exp.png"/></span>')
+        '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>')
     asp_data_seq = workspace.getDataSet().getJSonRecRepr(rec_no, research_mode)
     for asp_data in asp_data_seq:
         print >> output, ('<button class="r-tablnk %s" id="la--%s" '
