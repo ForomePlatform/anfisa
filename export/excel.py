@@ -111,7 +111,7 @@ class ExcelExport:
             self.column_widths[cell.column] = len(key)
             for s in style:
                 setattr(cell, s, style[s])
-        ws.freeze_panes = 'B2'
+        ws.freeze_panes = 'D2'
         self.__createKeySheet();
 
     def __createKeySheet(self):
@@ -135,7 +135,7 @@ class ExcelExport:
         for column, _, key, style, _ in self.mapping:
             if not key:
                 continue
-            value = find_value(data, key)
+            value = self.__to_excel(find_value(data, key))
             cell = ws.cell(row=row, column=column, value=value)
             if isinstance(value, basestring):
                 self.column_widths[cell.column] = max(
@@ -146,10 +146,17 @@ class ExcelExport:
     def save(self, file):
         ws = self.workbook.active
         for column, width in self.column_widths.iteritems():
-            ws.column_dimensions[column].width = width + 3
+            ws.column_dimensions[column].width = min(12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
         ws.auto_filter.ref = 'A1:' + max_column + str(len(ws['A']))
         self.workbook.save(filename=file)
+
+    def __to_excel(self, value):
+        if isinstance(value, str) and value.startswith("http"):
+            return '=HYPERLINK("{0}","{0}")'.format(value)
+        if isinstance(value, dict):
+            return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
+        return value
 
 
 def processing(args):

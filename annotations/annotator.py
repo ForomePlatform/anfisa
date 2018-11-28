@@ -42,24 +42,28 @@ def execute_vep(input, output = None, fork = 8):
     return output
 
 
-def annotate_json(f, out = None, vcf_header = None, samples = None, case = None, limit = None):
+def annotate_json(f, out = None, vcf_header = None, samples = None, case = None, limit = None, start = 1):
     n_out = limit / 20 if limit > 0 else 100
     n = 0
+    l = 0
     hg19_to_38_converter = liftover.Converter()
 
     with open(f) as input, open(out, "w") as out1, HGMD() as hgmd, \
                     GnomAD() as gnomAD,  \
                     ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar:
+        cns = {
+            "hgmd": hgmd,
+            "gnomAD": gnomAD,
+            "liftover": hg19_to_38_converter,
+            "clinvar": clinvar
+        }
         while(True):
             line = input.readline()
             if (not line):
                 break
-            cns = {
-                "hgmd": hgmd,
-                "gnomAD": gnomAD,
-                "liftover": hg19_to_38_converter,
-                "clinvar": clinvar
-            }
+            l += 1
+            if (l < start):
+                continue
             v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, connectors=cns)
             n += 1
             if (n%n_out == 0):
@@ -82,7 +86,8 @@ if __name__ == '__main__':
     parser.add_argument("--vep", action='store_true', help="Annotate with VEP first")
     parser.add_argument("-c", "--case", dest="case", help="Case name, default is determined from directory name")
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
-    parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants top process")
+    parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants to process")
+    parser.add_argument("-s", "--start", dest="start", type=int, help="Start position: first variant to process", default=1)
     parser.add_argument("--header", help="VCF Header file", default="header.vcf")
     parser.add_argument("--fork", help="Number of parallel processes", default=8, type=int)
 
@@ -121,4 +126,4 @@ if __name__ == '__main__':
     output = args.output if args.output else "{}/{}_anfisa.json".format(dir, case)
 
     annotate_json(filtered_by_bed_vep_output, out=output,
-                  vcf_header=header, samples=samples, case="{}_wgs".format(case), limit =limit)
+                  vcf_header=header, samples=samples, case="{}_wgs".format(case), limit=limit, start=args.start)
