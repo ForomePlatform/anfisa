@@ -8,7 +8,6 @@ from .bgm_rule import evalRec as bgm_rule_evalRec
 from .seq_a_boo_hearing_loss import evalRec as seq_a_boo_hearing_loss_evalRec
 from .seq_a_boo_hearing_loss_2 import evalRec as seq_a_boo_hearing_loss_2_evalRec
 from .seq_a_boo_acmg59 import evalRec as seq_a_boo_acmg59_evalRec
-from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
 
 #===============================================
@@ -64,9 +63,9 @@ class HOT_SETUP:
         RuleFuncH("Candidates_BGM",
             "bgm_rule", bgm_rule_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss_v_02",
-            "seq_a_boo_hearing_loss_v02", seq_a_boo_hearing_loss_evalRec),
+            "seq_a_boo_hearing_loss", seq_a_boo_hearing_loss_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss_v_01",
-            "seq_a_boo_hearing_loss_v01", seq_a_boo_hearing_loss_2_evalRec),
+            "seq_a_boo_hearing_loss_2", seq_a_boo_hearing_loss_2_evalRec),
         RuleFuncH("SEQaBOO_ACMG59",
             "seq_a_boo_acmg59", seq_a_boo_acmg59_evalRec),
         RuleFuncH("gnomAD_Frequency_Threshold",
