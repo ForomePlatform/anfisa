@@ -236,7 +236,7 @@ class Variant:
         self.call_gnomAD()
         self.call_hgmd()
         self.call_clinvar()
-        self.call_beacon()
+        # self.call_beacon()
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
