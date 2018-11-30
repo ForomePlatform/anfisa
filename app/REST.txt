@@ -197,6 +197,7 @@ Method "/export"
     -> ws           (= ws_default)
     -> filter       (= null or filter name)
     -> conditions   (= null or JSon of conditions, see method "/stat")
+    -> zone         (= null or zone name)
     <- { * prepares Excel files and returns
             "kind": "excel"
             "fname": URL for file to download
