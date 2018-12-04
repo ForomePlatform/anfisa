@@ -48,7 +48,7 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
     n = 0
     l = 0
     hg19_to_38_converter = liftover.Converter()
-    beacon = Beacon(resJson=False)
+    beacon = None ## Beacon(resJson=False)
 
     with open(f) as input, open(out, "w") as out1, HGMD() as hgmd, \
                     GnomAD() as gnomAD,  \

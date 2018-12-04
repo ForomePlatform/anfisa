@@ -71,7 +71,7 @@ def prepareLegend(ws_name):
         "intergenic_variant",
         "undefined"], default_value = "undefined")
 
-    legend._startViewGroup("Databases")
+    legend._startViewGroup("gnomAD")
     flt_unit.FloatValueUnit(legend, "gnomAD_AF",
         "/_filters/gnomad_af_fam",
         diap = (0., 1.), default_value = 0.,
@@ -100,8 +100,12 @@ def prepareLegend(ws_name):
         default_value = 0,
         title = "gnomAD: Number of alleles in PopMax Ancestry")
 
+    legend._endViewGroup()
+    legend._startViewGroup("Databases")
     flt_unit.PresenceUnit(legend, "Presence_in_Databases", [
         ("ClinVar", "/view/databases/clinVar"),
+        ("LMM", "/view/databases/lmm"),
+        ("GeneDx", "/view/databases/genedx"),
         ("GnomAD", "/_filters/gnomad_af_fam"),
         ("HGMD", "/view/databases/hgmd_pmids[]"),
         ("OMIM", "/view/databases/omim")])
@@ -109,6 +113,10 @@ def prepareLegend(ws_name):
     flt_unit.MultiStatusUnit(legend, "ClinVar_Submitters",
         "/data/clinvar_submitters[]",
         title="ClinVar Submitters")
+
+    flt_unit.MultiStatusUnit(legend, "beacons",
+        "/data/beacon_names",
+        title="Observed at")
 
     legend._endViewGroup()
 
@@ -143,6 +151,8 @@ def prepareLegend(ws_name):
 
     flt_unit.StatusUnit(legend, "Clinvar_Benign",
         "/_filters/clinvar_benign", default_value="Not in ClinVar")
+    flt_unit.StatusUnit(legend, "Clinvar_Trusted_Benign",
+        "/_filters/clinvar_trusted_benign", default_value="Not in ClinVar", title="Benign by Clinvar Trusted Submitters")
     flt_unit.StatusUnit(legend, "HGMD_Benign",
         "/_filters/hgmd_benign", default_value="Not in HGMD")
 
@@ -151,6 +161,12 @@ def prepareLegend(ws_name):
 
     flt_unit.MultiStatusUnit(legend, "ClinVar_Significance",
         "/data/clinvar_significance[]")
+
+    flt_unit.MultiStatusUnit(legend, "LMM_Significance",
+        "/data/lmm", title="Clinical Significance by LMM")
+
+    flt_unit.MultiStatusUnit(legend, "GeneDx_Significance",
+        "/data/gene_dx", title="Clinical Significance by GeneDx")
 
     flt_unit.MultiStatusUnit(legend, "Polyphen",
         "/view/predictions/polyphen[]")

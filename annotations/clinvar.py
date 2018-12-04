@@ -2,7 +2,7 @@ from annotations.db_connect import Connection
 
 
 class ClinVar(Connection):
-    SUBMITTER_QUERY = "SELECT SubmitterName FROM `clinvar`.`CV_Submitters` NATURAL JOIN `clinvar`.`ClinVar2Sub` WHERE RCVaccession IN ({})"
+    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig` WHERE RCVaccession IN ({})"
 
     QUERY_BASE = "SELECT " \
                 "`Start`," \
@@ -41,7 +41,7 @@ class ClinVar(Connection):
         args = ','.join(["'{}'".format(arg) for arg in rcv_accessions])
         cursor = self.connection.cursor()
         cursor.execute(self.SUBMITTER_QUERY.format(args))
-        submitters = [s[0] for s in cursor.fetchall()]
+        submitters = {s[0]: s[1] for s in cursor.fetchall()}
         return tuple(list(row[0:-1]) + [submitters])
 
     def add_submitters_to_rows(self, rows):
