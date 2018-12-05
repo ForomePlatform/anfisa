@@ -104,8 +104,8 @@ def prepareLegend(ws_name):
     legend._startViewGroup("Databases")
     flt_unit.PresenceUnit(legend, "Presence_in_Databases", [
         ("ClinVar", "/view/databases/clinVar"),
-        ("LMM", "/view/databases/lmm"),
-        ("GeneDx", "/view/databases/genedx"),
+        ("LMM", "/view/databases/lmm_significance"),
+        ("GeneDx", "/view/databases/gene_dx_significance"),
         ("GnomAD", "/_filters/gnomad_af_fam"),
         ("HGMD", "/view/databases/hgmd_pmids[]"),
         ("OMIM", "/view/databases/omim")])
@@ -114,9 +114,9 @@ def prepareLegend(ws_name):
         "/data/clinvar_submitters[]",
         title="ClinVar Submitters")
 
-    flt_unit.MultiStatusUnit(legend, "beacons",
-        "/data/beacon_names",
-        title="Observed at")
+    # flt_unit.MultiStatusUnit(legend, "beacons",
+    #     "/data/beacon_names",
+    #     title="Observed at")
 
     legend._endViewGroup()
 
@@ -152,7 +152,7 @@ def prepareLegend(ws_name):
     flt_unit.StatusUnit(legend, "Clinvar_Benign",
         "/_filters/clinvar_benign", default_value="Not in ClinVar")
     flt_unit.StatusUnit(legend, "Clinvar_Trusted_Benign",
-        "/_filters/clinvar_trusted_benign", default_value="Not in ClinVar", title="Benign by Clinvar Trusted Submitters")
+        "/_filters/clinvar_trusted_benign", default_value="No data", title="Benign by Clinvar Trusted Submitters")
     flt_unit.StatusUnit(legend, "HGMD_Benign",
         "/_filters/hgmd_benign", default_value="Not in HGMD")
 

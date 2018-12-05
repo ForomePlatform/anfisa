@@ -408,7 +408,7 @@ class Variant:
         benign = None
         for submitter in trusted_submitters:
             full_name = trusted_submitters[submitter]
-            if (submitter in submissions):
+            if (full_name in submissions):
                 prediction = submissions[full_name].lower()
                 self.data[submitter] = prediction
                 if not "benign" in prediction:

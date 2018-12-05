@@ -11,7 +11,7 @@ class ExcelExportTest(unittest.TestCase):
         :return:
         """
         beacon = Beacon()
-        res = beacon.search(pos=32936732, chrom=13, allele='C', ref='G', referenceAllele='GRCh37')
+        res = beacon.search(chrom=13, pos=32936732, allele='C', ref='G')
         print res
         self.assertTrue(len(res) > 0)
 
@@ -89,12 +89,7 @@ class ExcelExportTest(unittest.TestCase):
         https://beacon-network.org/api/responses?chrom=17&pos=41244981&allele=G&ref=GRCh37&beacon=[amplab,brca-exchange]
         """
         beacons = Beacon()
-        res = beacons.responses(chrom=17,
-                                pos=41244981,
-                                allele='G',
-                                ref='GRCh37',
-                                referenceAllele='G',
-                                beacon=["amplab", "brca-exchange"])
+        res = beacons.responses(chrom=17, pos=41244981, allele='G', ref='GRCh37', beacon=["amplab", "brca-exchange"])
         print res
         self.assertTrue(len(res) > 0)
 
@@ -104,12 +99,7 @@ class ExcelExportTest(unittest.TestCase):
         https://beacon-network.org/api/responses/brca-exchange?chrom=17&pos=41244981&allele=G&ref=GRCh37
         """
         beacons = Beacon()
-        res = beacons.responsesBeacon(chrom=17,
-                                      pos=41244981,
-                                      allele='G',
-                                      ref='GRCh37',
-                                      referenceAllele='G',
-                                      beacon="brca-exchange")
+        res = beacons.responsesBeacon(chrom=17, pos=41244981, allele='G', ref='GRCh37', beacon="brca-exchange")
         print res
         self.assertTrue(len(res) > 0)
 
