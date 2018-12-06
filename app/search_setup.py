@@ -111,7 +111,7 @@ def prepareLegend(ws_name):
         ("OMIM", "/view/databases/omim")])
 
     flt_unit.MultiStatusUnit(legend, "ClinVar_Submitters",
-        "/data/clinvar_submitters[]",
+        "/view/databases/clinVar_submitters[]",
         title="ClinVar Submitters")
 
     # flt_unit.MultiStatusUnit(legend, "beacons",
