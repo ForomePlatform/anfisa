@@ -42,7 +42,8 @@ proteins_3_to_1 = {
 }
 
 trusted_submitters = {
-    "lmm": "Laboratory for Molecular Medicine,Laboratory for Molecular Medicine (Partners HealthCare Personalized Medicine)",
+    #"lmm": "Laboratory for Molecular Medicine,Laboratory for Molecular Medicine (Partners HealthCare Personalized Medicine)",
+    "lmm": "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine",
     "gene_dx": "GeneDx"
 }
 
@@ -1115,7 +1116,7 @@ class Variant:
                 format(self.chr_num(), self.start(), self.end())
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
-        tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
+        tab4['clinVar_phenotypes'] = unique("{}: {}".format(k,v) for k,v in [self.data.get("clinvar_phenotypes").iteritems])
         tab4['clinVar_submitters'] = unique(self.data.get("clinvar_submitters"))
         for submitter in trusted_submitters:
             tab4["{}_significance".format(submitter)] = self.data.get(submitter)
