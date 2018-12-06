@@ -2,7 +2,7 @@ from annotations.db_connect import Connection
 
 
 class ClinVar(Connection):
-    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig` WHERE RCVaccession IN ({})"
+    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters_A` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN ({})"
 
     QUERY_BASE = "SELECT " \
                 "`Start`," \
