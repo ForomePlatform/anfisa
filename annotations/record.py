@@ -1118,7 +1118,7 @@ class Variant:
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
         tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
         tab4['clinVar_submitters'] = unique([
-                "{}: {}".format(str(k),str(v)) for k,v in self.data["clinvar_submitters"].iteritems()
+                "{}: {}".format(k.encode('ascii','replace'),str(v)) for k,v in self.data["clinvar_submitters"].iteritems()
             ])  if "clinvar_submitters" in self.data else None
         for submitter in trusted_submitters:
             tab4["{}_significance".format(submitter)] = self.data.get(submitter)
