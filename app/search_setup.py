@@ -200,6 +200,11 @@ def prepareLegend(ws_name):
             ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_02"]),
             ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
         ])
+    legend.regFilter("SEQaBOO_Hearing_Loss_v_03",
+        [
+            ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_03"]),
+            ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")
+        ])
     legend.regFilter("SEQaBOO_ACMG59",
         [
             ConditionMaker.condEnum("Rules", ["SEQaBOO_ACMG59"]),
