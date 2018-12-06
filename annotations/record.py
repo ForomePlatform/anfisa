@@ -1116,8 +1116,10 @@ class Variant:
                 format(self.chr_num(), self.start(), self.end())
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
-        tab4['clinVar_phenotypes'] = unique("{}: {}".format(k,v) for k,v in [self.data.get("clinvar_phenotypes").iteritems])
-        tab4['clinVar_submitters'] = unique(self.data.get("clinvar_submitters"))
+        tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
+        tab4['clinVar_submitters'] = unique([
+                "{}: {}".format(k,v) for k,v in self.data["clinvar_submitters"].iteritems()
+            ])  if "clinvar_submitters" in self.data else None
         for submitter in trusted_submitters:
             tab4["{}_significance".format(submitter)] = self.data.get(submitter)
         tab4["pubmed_search"] = self.get_tenwise_link()
