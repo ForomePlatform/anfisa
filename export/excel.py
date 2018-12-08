@@ -10,7 +10,7 @@ from jsonpath_rw import parse
 
 
 def cell_value(ws, row, column):
-    v = ws.cell(row, column).value
+    v = ws.cell(row=row, column=column).value
     if (not v):
         return v
     return v.strip()
