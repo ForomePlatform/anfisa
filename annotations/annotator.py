@@ -7,6 +7,7 @@ from annotations.clinvar import ClinVar
 from annotations.gnomad import GnomAD
 from annotations.hgmd import HGMD
 from annotations.record import Variant
+from beacons.beacon import Beacon
 
 VEP_HOME = "/db/vep-93/ensembl-vep/"
 DB_HOME = "/db/data"
@@ -47,6 +48,7 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
     n = 0
     l = 0
     hg19_to_38_converter = liftover.Converter()
+    beacon = None ## Beacon(resJson=False)
 
     with open(f) as input, open(out, "w") as out1, HGMD() as hgmd, \
                     GnomAD() as gnomAD,  \
@@ -55,7 +57,8 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
             "hgmd": hgmd,
             "gnomAD": gnomAD,
             "liftover": hg19_to_38_converter,
-            "clinvar": clinvar
+            "clinvar": clinvar,
+            "beacon": beacon
         }
         while(True):
             line = input.readline()

@@ -41,6 +41,12 @@ proteins_3_to_1 = {
  "Val":"V",
 }
 
+trusted_submitters = {
+    #"lmm": "Laboratory for Molecular Medicine,Laboratory for Molecular Medicine (Partners HealthCare Personalized Medicine)",
+    "lmm": "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine",
+    "gene_dx": "GeneDx"
+}
+
 
 def unique(lst, replace_None=None):
     if (not lst):
@@ -158,6 +164,7 @@ class DBConnectors:
         self.hgmd = array.get("hgmd")
         self.clinvar = array.get("clinvar")
         self.liftover = array.get("liftover")
+        self.beacon = array.get("beacon")
 
 class Variant:
     csq_damaging = [
@@ -235,6 +242,7 @@ class Variant:
         self.call_gnomAD()
         self.call_hgmd()
         self.call_clinvar()
+        self.call_beacon()
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
@@ -269,6 +277,22 @@ class Variant:
         self.hg38_start = connection.hg38(self.chr_num(), self.start())
         self.hg38_end = connection.hg38(self.chr_num(), self.end())
 
+    def call_beacon(self):
+        connection = self.connectors.beacon
+        if (not connection):
+            return
+        self.data["beacon"] = dict()
+        beacon_names = []
+        for alt in self.alt_list():
+            beacons = connection.search_individually(pos=self.start() - 1,
+                        chrom=self.chr_num(),
+                        allele=alt,
+                        referenceAllele=self.ref(),
+                        ref="hg19")
+
+            self.data["beacon"][alt] = [b for b in beacons if b.response]
+            beacon_names += [b.get("name") for b in self.data["beacon"][alt]]
+        self.data["beacon_names"] = unique(beacon_names)
 
     def call_gnomAD(self):
         gnomAD = self.connectors.gnomAD
@@ -355,6 +379,7 @@ class Variant:
             for row in rows
         ]
         significance = []
+        submissions = dict()
         ids = dict()
         for row in rows:
             significance.extend(row[4].split('/'))
@@ -367,11 +392,13 @@ class Variant:
                     ids[x[0]] = x[1]
                 else:
                     ids[x[0]] = ids[x[0]].append(x[1])
+            submissions.update(row[-1])
 
         self.data["ClinVar"] = "True"
         self.data["clinvar_variants"] = variants
         self.data["clinvar_phenotypes"] = [row[6] for row in rows]
         self.data["clinvar_significance"] = significance
+        self.data["clinvar_submitters"] = submissions
         self.private_data["clinvar_other_ids"] = ids
         benign = True
         for prediction in significance:
@@ -379,6 +406,17 @@ class Variant:
                 benign = False
                 break
         self.filters["clinvar_benign"] = benign
+        benign = None
+        for submitter in trusted_submitters:
+            full_name = trusted_submitters[submitter]
+            if (full_name in submissions):
+                prediction = submissions[full_name].lower()
+                self.data[submitter] = prediction
+                if not "benign" in prediction:
+                    benign = False
+                elif benign == None:
+                    benign = True
+        self.filters["clinvar_trusted_benign"] = benign
 
 
     def same(self,c, p1, p2 = None):
@@ -537,6 +575,21 @@ class Variant:
 
     def get_hgnc_ids(self):
         return unique(self.get_from_transcripts_list("hgnc_id"))
+
+    def get_beacons(self):
+        if not "beacon" in self.data:
+            return None
+        beacons = []
+        for alt in self.alt_list():
+            for beacon in self.data["beacon"][alt]:
+                if (len(self.alt_list()) < 2):
+                    allele = ""
+                else:
+                    allele = "{}: ".format(alt)
+                label = "{}{}: {}".format(allele, beacon.get("organization", ""), beacon.get("name", ""))
+                beacons.append(label)
+        return beacons
+
 
     def get_tenwise_link(self):
         hgnc_ids = self.get_hgnc_ids()
@@ -1064,8 +1117,13 @@ class Variant:
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
         tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
-
+        tab4['clinVar_submitters'] = unique([
+                "{}: {}".format(k.encode('ascii','replace'),str(v)) for k,v in self.data["clinvar_submitters"].iteritems()
+            ])  if "clinvar_submitters" in self.data else None
+        for submitter in trusted_submitters:
+            tab4["{}_significance".format(submitter)] = self.data.get(submitter)
         tab4["pubmed_search"] = self.get_tenwise_link()
+        tab4["beacons"] = self.get_beacons()
 
     def create_predictions_tab(self, data_info, view_info, filters):
         tab5 = dict()

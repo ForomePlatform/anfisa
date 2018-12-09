@@ -2,6 +2,8 @@ from annotations.db_connect import Connection
 
 
 class ClinVar(Connection):
+    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters_A` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN ({})"
+
     QUERY_BASE = "SELECT " \
                 "`Start`," \
                 "`Stop`," \
@@ -10,8 +12,9 @@ class ClinVar(Connection):
                 "ClinicalSignificance," \
                 "PhenotypeIDS," \
                 "PhenotypeList," \
-                "OtherIDs " \
-            "FROM clinvar.variant_summary " \
+                "OtherIDs, " \
+                "RCVaccession " \
+            "FROM clinvar.variant_summary AS v " \
             "WHERE " \
                 "Assembly = 'GRCh37' AND " \
                 "Chromosome={} AND " \
@@ -28,9 +31,23 @@ class ClinVar(Connection):
         p = self.parameter()
         args = [p for i in range(0, n)]
         self.query_exact = self.QUERY_EXACT.format(*args)
+        ## print self.query_exact
         self.query_na = self.QUERY_NA.format(*args[:-1])
         self.query_0 = self.QUERY_0.format(*args[:-1])
         self.query_base = self.QUERY_BASE.format(*args[:-2])
+
+    def get_submitters(self, row):
+        rcv_accessions = row[-1].split(';')
+        args = ','.join(["'{}'".format(arg) for arg in rcv_accessions])
+        cursor = self.connection.cursor()
+        cursor.execute(self.SUBMITTER_QUERY.format(args))
+        submitters = {s[0]: s[1] for s in cursor.fetchall()}
+        return tuple(list(row[0:-1]) + [submitters])
+
+    def add_submitters_to_rows(self, rows):
+        if (len(rows) < 1):
+            return rows
+        return [self.get_submitters(row) for row in rows]
 
     def exists(self, c, p1):
         rows = self.get_expanded_data(c, p1)
@@ -40,7 +57,7 @@ class ClinVar(Connection):
         cursor = self.connection.cursor()
         cursor.execute(self.query_base, (c, p1))
         rows = cursor.fetchall()
-        return rows
+        return self.add_submitters_to_rows(rows)
 
     def get_data(self, c, p1, p2, alt):
         cursor = self.connection.cursor()
@@ -56,11 +73,11 @@ class ClinVar(Connection):
         cursor.close()
         if (len(rows) > len(alt)):
             raise Exception("Ambiguous query: c={}, start = {}, end = {}, alt = {}".format(c, p1, p2, a))
-        return rows
+        return self.add_submitters_to_rows(rows)
 
 
 if __name__ == '__main__':
-    with ClinVar("localhost") as clinvar_connector:  ##anfisa.forome.org
+    with ClinVar() as clinvar_connector:  ##anfisa.forome.org
         data = clinvar_connector.get_data("15", 38614525, 38614525, "A")
         print data
         data = clinvar_connector.get_data("1", 156104292, 156104292, "A")

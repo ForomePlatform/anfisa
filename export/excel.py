@@ -1,6 +1,8 @@
 import argparse
 import json
+import logging
 import time
+import os
 from copy import copy
 
 import openpyxl
@@ -8,13 +10,19 @@ from jsonpath_rw import parse
 
 
 def cell_value(ws, row, column):
-    v = ws.cell(row, column).value
+    v = ws.cell(row=row, column=column).value
     if (not v):
         return v
     return v.strip()
 
 
 def read_mapping(path):
+    if (not os.path.isfile(path)):
+        raise Exception ("No Mapping file: {}".format(path))
+    if (not os.access(path, os.R_OK)):
+        raise Exception("No read access to: {}".format(path))
+
+    logging.info("Reading: {}".format(path))
     wb = openpyxl.load_workbook(path, read_only=False)
     ws = wb["key"]
     if cell_value(ws, 1, 1) != "Column":

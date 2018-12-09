@@ -36,6 +36,15 @@ def getJson(url):
     raise Exception(response.text)
 
 
+def normalize_ref(ref):
+    ref = ref.upper()
+    if (ref == "GRCH37"):
+        return "HG19"
+    if (ref == "GRCH38"):
+        return "HG38"
+    return ref
+
+
 class Beacon:
     """
    Beacon Network API
@@ -51,20 +60,58 @@ class Beacon:
         /references	Lists supported reference genomes.	Go to example
    """
 
-    def __init__(self, baseUrl="https://beacon-network.org/", resJson=False):
+    def __init__(self, baseUrl="https://beacon-network.org/", resJson=False, beacon = None):
         self.baseUrl = baseUrl + "api"
         self.resJson = resJson
+        if (beacon):
+            self.beacon_list = [beacon]
+        else:
+            self.beacon_list = self.getIds(self.beaconList())
+        self.beacons_by_ref = dict()
+        for beacon in self.beacon_list:
+            info = self.beacon(beacon)
+            if (info.aggregator):
+                continue
+            refs = info.supportedReferences
+            for ref in refs:
+                ref = ref.upper()
+                if not ref in self.beacons_by_ref:
+                    self.beacons_by_ref[ref] = []
+                self.beacons_by_ref[ref].append(beacon)
+            pass
 
-    def search(self, chrom, pos, allele, ref, referenceAllele):
+    def search(self, chrom, pos, allele, ref):
         """
         /search?pos=32936732&chrom=13&allele=C&ref=G&rs=GRCh37
         :return:
         """
-        beacon = self.getIds(self.beaconList())
+        ref = normalize_ref(ref)
+        if (not ref in self.beacons_by_ref):
+            raise Exception("Given Beacons do not support reference: {}".format(ref))
+        beacon = self.beacons_by_ref[ref]
         if self.resJson:
-            return self.responsesJson(chrom, pos, allele, ref, referenceAllele, beacon)
+            return self.responsesJson(chrom, pos, allele, ref, beacon)
         else:
-            return self.responses(chrom, pos, allele, ref, referenceAllele, beacon)
+            return self.responses(chrom, pos, allele, ref, beacon)
+
+    def search_individually(self, chrom, pos, allele, ref):
+        """
+        /search?pos=32936732&chrom=13&allele=C&ref=GRCh37
+        :return:
+        """
+        ref = normalize_ref(ref)
+        if (not ref in self.beacons_by_ref):
+            raise Exception("Given Beacons do not support reference: {}".format(ref))
+        responses = []
+        for beacon in self.beacons_by_ref[ref]:
+            try:
+                response = self.responsesBeacon(chrom, pos, allele, ref, beacon)
+                responses.append(response)
+                print "{}: {}".format(response.response, beacon)
+            except:
+                print "ERROR: {}".format(beacon)
+                pass
+        return responses
 
     def beaconList(self):
         return get(self.baseUrl + "/beacons")
@@ -87,7 +134,7 @@ class Beacon:
     def references(self):
         return get(self.baseUrl + "/references")
 
-    def responses(self, chrom, pos, allele, ref, referenceAllele, beacon):
+    def responses(self, chrom, pos, allele, ref, beacon):
         """
         :param chrom: Chromosome ID. Accepted values: 1-22, X, Y, MT.
                     Note: For compatibility with conventions set by some of the existing beacons,
@@ -106,24 +153,24 @@ class Beacon:
                     Optional parameter.
         """
         # https://beacon-network.org/api/responses?chrom=17&pos=41244981&allele=G&ref=GRCh37&beacon=[amplab,brca-exchange]
-        param = self.__responsesParam(chrom, pos, allele, ref, referenceAllele, beacon)
+        param = self.__responsesParam(chrom, pos, allele, ref, beacon)
         return get(self.baseUrl + "/responses" + param)
 
-    def __responsesParam(self, chrom, pos, allele, ref, referenceAllele, beacon):
-        return "?chrom={}&pos={}&allele={}&ref={}&beacon=[{}]&referenceAllele={}" \
-            .format(chrom, pos, allele, ref, ",".join(beacon), referenceAllele)
+    def __responsesParam(self, chrom, pos, allele, ref, beacon):
+        return "?chrom={}&pos={}&allele={}&ref={}&beacon=[{}]" \
+            .format(chrom, pos, allele, ref, ",".join(beacon))
 
-    def responsesBeacon(self, chrom, pos, allele, ref, referenceAllele, beacon):
+    def responsesBeacon(self, chrom, pos, allele, ref, beacon):
         """
         params: see responses
         """
         # https://beacon-network.org/api/responses?chrom=17&pos=41244981&allele=G&ref=GRCh37&beacon=[amplab,brca-exchange]
-        param = "?chrom={}&pos={}&allele={}&ref={}&referenceAllele={}" \
-            .format(chrom, pos, allele, ref, referenceAllele)
+        param = "?chrom={}&pos={}&allele={}&ref={}" \
+            .format(chrom, pos, allele, ref)
         return get(self.baseUrl + "/responses/" + beacon + param)
 
-    def responsesJson(self, chrom, pos, allele, ref, referenceAllele, beacon):
-        param = self.__responsesParam(chrom, pos, allele, ref, referenceAllele, beacon)
+    def responsesJson(self, chrom, pos, allele, ref, beacon):
+        param = self.__responsesParam(chrom, pos, allele, ref, beacon)
         return getJson(self.baseUrl + "/responses" + param)
 
     def getIds(selfs, obj):
@@ -169,12 +216,15 @@ class Beacon:
 
 
 def processing(args):
-    beacon = Beacon(args.url__baseUrl, True) if args.url__baseUrl else Beacon(resJson=True)
-    res = beacon.search(pos=args.pos,
-                        chrom=args.chrom,
-                        allele=args.allele,
-                        ref=args.ref,
-                        referenceAllele=args.referenceAllele)
+    beacon = Beacon(args.url__baseUrl, True, args.beacon) if args.url__baseUrl else Beacon(resJson=True, beacon=args.beacon)
+    try:
+        res = beacon.search(chrom=args.chrom, pos=args.pos, allele=args.allele, ref=args.ref)
+        print res
+        return
+    except:
+        print "Exception for all Beacons "
+
+    res = beacon.search_individually(chrom=args.chrom, pos=args.pos, allele=args.allele, ref=args.ref)
     print res
 
 
@@ -191,5 +241,6 @@ if __name__ == '__main__':
                         required=True)
     parser.add_argument("-rs", "--referenceAllele", help="reference allele", required=True)
     parser.add_argument("-url" "--baseUrl", help="base url, default: http://beacon-network.org/")
+    parser.add_argument("-b", "--beacon", help="beacon id, if ommited all beacons are used")
     args = parser.parse_args()
     processing(args)
