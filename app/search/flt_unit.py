@@ -47,6 +47,10 @@ class FilterUnit:
         return (not research_mode) and self.mResearchOnly
 
     @abc.abstractmethod
+    def getType(self):
+        return None
+
+    @abc.abstractmethod
     def iterExtractors(self):
         pass
 
@@ -91,6 +95,9 @@ class IntValueUnit(FilterUnit):
             val_conv.IntConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
+    def getType(self):
+        return "long"
+
     def recordCondFunc(self, cmp_func):
         col = self.mExtractor.getDataP()
         return lambda data_rec: cmp_func(col.recordValue(data_rec))
@@ -121,6 +128,9 @@ class FloatValueUnit(FilterUnit):
         self.mExtractor = DataExtractor(self, name, path,
             val_conv.FloatConvertor(default_value, diap),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
+
+    def getType(self):
+        return "float"
 
     def recordCondFunc(self, cmp_func):
         col = self.mExtractor.getDataP()
@@ -153,6 +163,9 @@ class StatusUnit(FilterUnit):
                 others_value = accept_wrong_values),
             DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
+    def getType(self):
+        return "status"
+
     def iterExtractors(self):
         yield self.mExtractor
 
@@ -182,13 +195,19 @@ class BoolSetUnit(FilterUnit):
     def __init__(self, legend, name, variants, title = None,
             enum_type = "presence", research_only = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
-        self.mColumns = [DataColumn(self, "%s.%s" % (name, variant),
+        self.mColumns = [DataColumn(self, "%s__%s" % (name, variant),
             DataPortion.ATOM_DATA_TYPE_BOOL) for variant in variants]
         self.mEnumType = enum_type
         self.mVariantSet = VariantSet(variants)
 
+    def getType(self):
+        return "bool-set"
+
     def enumColumns(self):
         return enumerate(self.mColumns)
+
+    def getVariantSet(self):
+        return self.mVariantSet
 
     def _recordValues(self, data_rec):
         ret = set()
@@ -243,6 +262,9 @@ class MultiStatusUnit(FilterUnit):
                 chunker = chunker, default_value = default_value,
                 others_value = others_value),
             compact_mode = compact_mode)]
+
+    def getType(self):
+        return "multi-set"
 
     def iterExtractors(self):
         return iter(self.mExtractors)

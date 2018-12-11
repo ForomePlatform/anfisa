@@ -72,10 +72,13 @@ class FilterLegend:
     def isOK(self):
         return self.mIsOK
 
+    def testDataRec(self, data_rec):
+        for unit in self.mUnits:
+            unit.testValues(data_rec)
+
     def testDataSet(self, data_set):
-        for obj in data_set.iterDataObjects():
-            for unit in self.mUnits:
-                unit.testValues(obj)
+        for data_rec in data_set.iterDataObjects():
+            self.testDataRec(data_rec)
 
     def fillRecord(self, obj, record):
         for unit in self.mUnits:

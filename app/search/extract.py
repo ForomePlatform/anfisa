@@ -59,7 +59,5 @@ class DataExtractor:
         vv = self.mPathF(obj)
         values = self.mVConv.convert(vv)
         self.mDataP.setValues(record, values)
-        #self.mDataP.setValues(record,
-        #    self.mVConv.convert(self.mPathF(obj)))
 
 #===============================================
