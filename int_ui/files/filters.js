@@ -394,9 +394,9 @@ function setupConitionValues(cond) {
             sInputCurCondMax.value = sOpNumericInfo[5];
         }
         sSpanCurCondSign.innerHTML = "&le;";
-        if (sOpNumericInfo[6] != null) {
-            sCheckCurCondUndef.checked = sOpNumericInfo[6];
-            sSpanCurCondUndefCount.innerHTML = "undefined:" + cnt_undef;
+        if (sOpNumericInfo[5] != null) {
+            sCheckCurCondUndef.checked = sOpNumericInfo[5];
+            sSpanCurCondUndefCount.innerHTML = "undefined:" + sOpNumericInfo[1];
         }
     }
 }

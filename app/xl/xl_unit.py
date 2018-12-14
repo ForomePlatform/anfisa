@@ -2,16 +2,16 @@ from .druid import DruidCfg
 
 #===============================================
 class XL_Unit:
-    def __init__(self, xl_legend, descr):
-        self.mLegend = xl_legend
+    def __init__(self, xl_ds, descr):
+        self.mDataset = xl_ds
         self.mType  = descr["type"]
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
         self.mVGroup = descr.get("vgroup")
 
-    def getLegend(self):
-        return self.mLegend
+    def getDS(self):
+        return self.mDataset
 
     def getUnitType(self):
         return self.mType
@@ -32,16 +32,22 @@ class XL_Unit:
         print >> output, "Unit", self.mName, "tp=", self.mType
 
     @staticmethod
-    def create(legend, descr):
+    def create(xl_ds, descr):
         if descr["type"] in {"long", "float"}:
-            return XL_NumUnit(legend, descr)
+            return XL_NumUnit(xl_ds, descr)
         else:
-            return XL_EnumUnit(legend, descr)
+            return XL_EnumUnit(xl_ds, descr)
+
+    def _prepareStat(self):
+        return [self.mType, {
+            "name": self.mName,
+            "title": self.mTitle,
+            "vgroup": self.mVGroup}]
 
 #===============================================
 class XL_NumUnit(XL_Unit):
-    def __init__(self, legend, descr):
-        XL_Unit.__init__(self, legend, descr)
+    def __init__(self, xl_ds, descr):
+        XL_Unit.__init__(self, xl_ds, descr)
 
     def evalStat(self, filter = None):
         name_cnt = "_cnt_%d" % self.getNo()
@@ -49,7 +55,7 @@ class XL_NumUnit(XL_Unit):
         name_max = "_max_%d" % self.getNo()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getLegend().getDataSource(),
+            "dataSource": self.getDS().getDataSource(),
             "granularity": DruidCfg.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -64,22 +70,26 @@ class XL_NumUnit(XL_Unit):
             "intervals": [ DruidCfg.INTERVAL ]}
         if filter is not None:
             query["filter"] = filter
-        rq = self.getLegend().getQueryAgent().call(query)
+        rq = self.getDS().getQueryAgent().call(query)
         assert len(rq) == 1
-        return {key: rq[0]["result"][nm] for key, nm in
-            (("count", name_cnt),
-            ("min", name_min), ("max", name_max))}
+        return [rq[0]["result"][nm] for nm in
+            (name_min, name_max, name_cnt)]
 
     def report(self, output):
         XL_Unit.report(self, output)
-        ret = self.evalStat()
-        print >> output, "\tdiap:", \
-            ret["min"], ret["max"], "count=", ret["count"]
+        vmin, vmax, count = self.evalStat()
+        print >> output, "\tdiap:", vmin, vmax, "count=", count
+
+    def makeStat(self, filter):
+        ret = self._prepareStat();
+        vmin, vmax, count = self.evalStat(filter)
+        #TRF: count_undef!!!
+        return ret + [vmin, vmax, count, 0]
 
 #===============================================
 class XL_EnumUnit(XL_Unit):
-    def __init__(self, legend, descr):
-        XL_Unit.__init__(self, legend, descr)
+    def __init__(self, xl_ds, descr):
+        XL_Unit.__init__(self, xl_ds, descr)
         self.mVariants = descr["variants"]
         self.mVarDict = {var: idx
             for idx, var in enumerate(self.mVariants)}
@@ -93,7 +103,7 @@ class XL_EnumUnit(XL_Unit):
     def evalStat(self, filter = None):
         query = {
             "queryType": "topN",
-            "dataSource": self.getLegend().getDataSource(),
+            "dataSource": self.getDS().getDataSource(),
             "dimension": self.getName(),
             "threshold": len(self.mVariants),
             "metric": "count",
@@ -102,7 +112,7 @@ class XL_EnumUnit(XL_Unit):
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
             "intervals": [ DruidCfg.INTERVAL ]}
-        rq = self.getLegend().getQueryAgent().call(query)
+        rq = self.getDS().getQueryAgent().call(query)
         assert len(rq) == 1
         ret = [[rec[self.getName()], rec["count"]]
             for rec in rq[0]["result"]]
@@ -121,3 +131,7 @@ class XL_EnumUnit(XL_Unit):
         if cnt < len(stat):
             print >> output, "\t\t...and %d more" % (len(stat) - cnt)
 
+    def makeStat(self, filter):
+        ret = self._prepareStat();
+        ret.append(self.evalStat(filter))
+        return ret

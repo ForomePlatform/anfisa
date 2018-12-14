@@ -61,7 +61,7 @@ class XL_Preparator:
        year, month, day = map(int, text.split('-'))
        return datetime(year = year, month = month, day = day)
 
-    def fillRecord(self, rec_data):
+    def procRecord(self, rec_data):
         rec_values = self.mFltLegend.getColCount() * [None]
         self.mFltLegend.fillRecord(rec_data, rec_values)
         out_rec = {

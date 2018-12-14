@@ -5,13 +5,14 @@
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
     "mongo-db": "Anfisa",
-    "workspaces": [
+    "-workspaces": [
         {
             "name": "Personal_Genome_3140",
             "mongo-name": "bgm9001",
             "file": "${WORK}/data/PGP3140.json"
         }
     ],
+    "workspaces": [],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
         ["/ui", "${HOME}/int_ui/files"],
@@ -46,5 +47,14 @@
                 "propagate": true
             }
         } 
-    }      
+    },
+    
+    "xl-sets": [
+        {"title": "XL experimental", "name": "exp", "file": "${WORK}/xl-set.js"}],
+    "druid": {
+        "url_index": "http://localhost:8090/druid/indexer/v1/task",
+        "url_query": "http://localhost:8082/druid/v2",
+        "url_sql":   "http://localhost:8082/druid/v2/sql",
+        "url_coord": "http://localhost:8081/druid/coordinator/v1"
+    }
 }

@@ -11,6 +11,7 @@ from .search_setup import prepareLegend
 from export.excel import ExcelExport
 from app.view.attr import AttrH
 from int_ui.mirror_dir import MirrorUiDirectory
+from app.xl.xl_dataset import XL_Dataset
 #===============================================
 class AnfisaData:
     sConfig = None
@@ -20,6 +21,9 @@ class AnfisaData:
     sWsOrdered = []
     sMongoConn = None
     sVersionCode = None
+    sXL_Datasets = {}
+    sXlOrdered = []
+    sDefaultDS = None
 
     @classmethod
     def setup(cls, config, in_container):
@@ -44,12 +48,22 @@ class AnfisaData:
             ws = Workspace(ws_name, legend, data_set,
                cls.sMongoConn.getAgent(ws_descr["mongo-name"]))
             cls.sWorkspaces[ws_name] = ws
-            if cls.sDefaultWS is None:
-                cls.sDefaultWS = ws
+            if cls.sDefaultDS is None:
+                cls.sDefaultDS = ws
             cls.sWsOrdered.append(ws)
 
         if config.get("link-base") is not None:
             AttrH.setupBaseHostReplacement(*config["link-base"])
+
+        if config.get("xl-sets"):
+            for descr in config["xl-sets"]:
+                xl_ds = XL_Dataset(descr["file"],
+                    descr["name"], descr["title"],
+                    config["druid"]["url_query"])
+                cls.sXL_Datasets[xl_ds.getName()] = xl_ds
+                cls.sXlOrdered.append(xl_ds)
+                if cls.sDefaultDS is None:
+                    cls.sDefaultDS = xl_ds
 
         cls.sService = AnfisaService.start(cls, config, in_container)
         return cls.sService
@@ -63,6 +77,16 @@ class AnfisaData:
     @classmethod
     def iterWorkspaces(cls):
         return iter(cls.sWsOrdered)
+
+    @classmethod
+    def getDS(cls, name):
+        if not name:
+            return cls.sDefaultDS
+        return cls.sXL_Datasets.get(name)
+
+    @classmethod
+    def iterXLDatasets(cls):
+        return iter(cls.sXlOrdered)
 
     @classmethod
     def makeExcelExport(cls, prefix, json_seq):

@@ -2,6 +2,7 @@ import json
 from StringIO import StringIO
 
 from int_ui.gen_html import formTopPage, noRecords, dirPage, notFound
+from int_ui.html_xl import formXLPage
 from int_ui.record import reportRecord
 #===============================================
 class AnfisaService:
@@ -29,6 +30,11 @@ class AnfisaService:
         if rq_path == "/norecords":
             return serv_h.makeResponse(
                 content = cls.sMain.formNoRecords(rq_args))
+        if rq_path == "/xl":
+            content, error = cls.sMain.formXLPanel(rq_args)
+            return serv_h.makeResponse(content = content, error = error)
+
+
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
@@ -68,6 +74,9 @@ class AnfisaService:
         if rq_path == "/wsnote":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formWSNote(rq_args))
+        if rq_path == "/xl_filters":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formXLFilters(rq_args))
         return serv_h.makeResponse(error = 404)
 
     #===============================================
@@ -122,6 +131,17 @@ class AnfisaService:
         output = StringIO()
         noRecords(output)
         return output.getvalue()
+
+    def formXLPanel(self, rq_args):
+        xl_ds = self.sData.getDS(rq_args.get("ds"))
+        output = StringIO()
+        err_code = None
+        if xl_ds is not None:
+            formXLPage(output, self.mHtmlTitle, self.mHtmlBase, xl_ds)
+        else:
+            err_code = 404
+            notFound(output, self.mHtmlTitle, self.mHtmlBase)
+        return output.getvalue(), err_code
 
     #===============================================
     # REST methods
@@ -282,3 +302,18 @@ class AnfisaService:
         output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()
+
+    #===============================================
+    def formXLFilters(self, rq_args):
+        xl_ds = self.sData.getDS(rq_args.get("ds"))
+        filter_name = rq_args.get("filter")
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
+        instr = rq_args.get("instr")
+        report = xl_ds.makeStatReport(
+            filter_name, conditions, instr)
+        output = StringIO()
+        output.write(json.dumps(report))
+        return output.getvalue()
+
