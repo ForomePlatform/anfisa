@@ -23,6 +23,9 @@ class Converter:
             return r
         return r, coord
 
+    def close(self):
+        return
+
 
 if __name__ == '__main__':
     coordinates = [

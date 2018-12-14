@@ -145,16 +145,6 @@ def get_distance_hgvsc(hgvsc):
         d = None
     return d
 
-## TO-DO:
-## Remove CALLED_BY and CMPD-HET
-## Beside Worst Annotation add canonical annotation
-## cPos: break into worst/canonical/rest
-## gnomAD AF: CLCNKB, 0.003*??
-## Move pLI to gnomAD
-## No popmax?
-## Explore SPlicing, add MaxEntTool
-## HGMD put "NO"
-## Add LoFTool
 
 class DBConnectors:
     def __init__(self, array):
@@ -218,8 +208,12 @@ class Variant:
         return None
 
     def __init__(self, json_string, vcf_header = None, case = None, samples = None, connectors = None):
-        self.original_json = json_string
-        self.data = json.loads(json_string)
+        if (isinstance(json_string, str)):
+            self.original_json = json_string
+            self.data = json.loads(json_string)
+        else:
+            self.original_json = None
+            self.data = json_string
         self.filters = dict()
         self.private_data = dict()
         self.case = case
@@ -230,7 +224,11 @@ class Variant:
         self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
-        vcf_string = "{}\n{}\n".format(vcf_header, self.data.get("input"))
+        vcf_string = None
+        if "input" in self.data:
+            row = self.data.get("input")
+            if (len(row.split()) > 5):
+                vcf_string = "{}\n{}\n".format(vcf_header, row)
         if vcf_string:
             fsock = StringIO(vcf_string)
             vcf_reader = vcf.Reader(fsock)
@@ -250,21 +248,22 @@ class Variant:
         self.filters['has_variant'] = list()
 
         proband = self.get_proband()
-        mother = self.samples[proband]['mother']
-        father = self.samples[proband]['father']
-        for sample in self.samples:
-            name = self.samples[sample]["name"]
-            if (sample == proband):
-                label = "proband [{}]".format(name)
-            elif (sample == mother):
-                label = "mother [{}]".format(name)
-            elif (sample == father):
-                label = "father [{}]".format(name)
-            else:
-                label = sample
+        if (proband):
+            mother = self.samples[proband]['mother']
+            father = self.samples[proband]['father']
+            for sample in self.samples:
+                name = self.samples[sample]["name"]
+                if (sample == proband):
+                    label = "proband [{}]".format(name)
+                elif (sample == mother):
+                    label = "mother [{}]".format(name)
+                elif (sample == father):
+                    label = "father [{}]".format(name)
+                else:
+                    label = sample
 
-            if (self.sample_has_variant(sample)):
-                self.filters['has_variant'].append(label)
+                if (self.sample_has_variant(sample)):
+                    self.filters['has_variant'].append(label)
 
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
@@ -457,7 +456,10 @@ class Variant:
         return self.data.get("allele_string")
 
     def ref(self):
-        return self.vcf_record.REF
+        if (self.vcf_record):
+            return self.vcf_record.REF
+        else:
+            return self.ref1()
 
     def ref1(self):
         s = self.data.get("allele_string")
@@ -468,22 +470,25 @@ class Variant:
 
     def alt_list(self):
         if (self.alt_alleles == None):
-            alleles = [str(s) for s in self.vcf_record.alleles]
-            alt_allels = [s.sequence for s in self.vcf_record.ALT]
-            counts = dict()
-            #.gt_bases
-            genotypes = {self.vcf_record.genotype(s) for s in self.samples}
-            for g in genotypes:
-                ad = g.data.AD if 'AD' in g.data._asdict() else None
-                if (not ad):
-                    self.alt_alleles = alt_allels
-                    return self.alt_alleles
-                for i in range(0, len(alleles)):
-                    al = alleles[i]
-                    n = ad[i]
-                    counts[al] = counts.get(al, 0) + n
+            if (self.vcf_record):
+                alleles = [str(s) for s in self.vcf_record.alleles]
+                alt_allels = [s.sequence for s in self.vcf_record.ALT]
+                counts = dict()
+                #.gt_bases
+                genotypes = {self.vcf_record.genotype(s) for s in self.samples}
+                for g in genotypes:
+                    ad = g.data.AD if 'AD' in g.data._asdict() else None
+                    if (not ad):
+                        self.alt_alleles = alt_allels
+                        return self.alt_alleles
+                    for i in range(0, len(alleles)):
+                        al = alleles[i]
+                        n = ad[i]
+                        counts[al] = counts.get(al, 0) + n
 
-            self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+            else:
+                self.alt_alleles = self.alt_list1()
 
         return self.alt_alleles
 
@@ -780,13 +785,19 @@ class Variant:
 
     @classmethod
     def get_from_genotype(cls, genotype, field):
+        if (not genotype):
+            return None
         return genotype.data._asdict().get(field)
 
     def get_proband_GQ(self):
+        if (not self.vcf_record):
+            return None
         return self.get_from_genotype(self.vcf_record.genotype(self.get_proband()), 'GQ')
 
     def get_min_GQ(self):
         GQ = None
+        if (not self.samples or not self.vcf_record):
+            return None
         for s in self.samples:
             genotype = self.vcf_record.genotype(s)
             gq = self.get_from_genotype(genotype, 'GQ')
@@ -795,6 +806,8 @@ class Variant:
         return GQ
 
     def sample_has_variant(self, sample=None):
+        if (not self.vcf_record):
+            return False
         idx = None
 
         if (isinstance(sample, int)):
@@ -823,6 +836,8 @@ class Variant:
         return False
 
     def is_proband_has_allele(self, allele):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotype = self.get_genotypes()[0]
         if (not genotype):
             return False
@@ -830,12 +845,16 @@ class Variant:
         return (allele in set1)
 
     def proband_sex(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         proband = self.get_proband()
         return self.samples[proband]['sex']
 
 
     def get_genotypes(self):
         proband = self.get_proband()
+        if (not proband):
+            return None, None, None, None
         proband_genotype = self.vcf_record.genotype(proband).gt_bases
         mother = self.samples[proband]['mother']
         if (mother == '0'):
@@ -853,6 +872,8 @@ class Variant:
         return proband_genotype, maternal_genotype, paternal_genotype, other_genotypes
 
     def get_zygosity(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotype = self.get_genotypes()[0]
         if (not genotype):
             return None
@@ -866,6 +887,8 @@ class Variant:
         return "Unknown"
 
     def inherited_from(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
 
         if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
@@ -886,6 +909,8 @@ class Variant:
         return "Inconclusive"
 
     def affected_alt_list(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples if self.samples[s]['affected']}
         alleles_affected = set()
         for g in genotypes:
@@ -899,6 +924,8 @@ class Variant:
         return [caller for caller in self.callers if (self.info().has_key(caller))]
 
     def get_callers(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         callers = self.get_raw_callers()
 
         # GATK callers
@@ -1021,6 +1048,8 @@ class Variant:
     def create_quality_tab(self, data_info, view_info, filters):
         tab2 = list()
         view_info["quality_samples"] = tab2
+        if (not self.vcf_record):
+            return
         q_all = dict()
         q_all["title"] = "All"
         q_all['strand_odds_ratio'] = self.info().get("SOR")
