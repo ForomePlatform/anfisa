@@ -1,6 +1,7 @@
 import codecs, json
 from .rest import RestAgent
 from .xl_unit import XL_Unit
+from .xl_filters import XL_Filter
 
 #===============================================
 class XL_Dataset:
@@ -35,39 +36,45 @@ class XL_Dataset:
             unit.report(output)
 
     def _evalInstr(self, filter_name, conditions, instr):
-        #TRF: rewrite it
         op, q, flt_name = instr.partition('/')
-        if not self.mLegend.hasFilter(flt_name):
-            with self:
-                if op == "UPDATE":
-                    self.mMongoWS.setFilter(flt_name, conditions)
-                    self.mIndex.cacheFilter(flt_name, conditions)
-                    filter_name = flt_name
-                elif op == "DROP":
-                    self.mMongoWS.dropFilter(flt_name)
-                    self.mIndex.dropFilter(flt_name)
-                else:
-                    assert False
+        #if not self.mLegend.hasFilter(flt_name):
+        #    with self:
+        if op == "UPDATE":
+            #self.mMongoWS.setFilter(flt_name, conditions)
+            self.cacheFilter(flt_name, conditions)
+            filter_name = flt_name
+        elif op == "DROP":
+            #self.mMongoWS.dropFilter(flt_name)
+            self.dropFilter(flt_name)
+        else:
+            assert False
         return filter_name
-
-    def _getFilterList(self):
-        #TRF: write it!!!
-        return []
-
-    def _prepareFilter(self, filter_name, conditions):
-        #TRF: write it!!!
-        return None
 
     def makeStatReport(self, filter_name, conditions, instr):
         if instr is not None:
-            filter_name = self._evalInstr(filter_name, conditions, instr)
-        filter_data = self._prepareFilter(filter_name, conditions)
+            filter_name = self._evalInstr(
+                filter_name, conditions, instr)
+        conditions = self.mFilterCache.get(filter_name, conditions)
+        filter_data = XL_Filter.makeFilter(conditions)
         report = {
             "stat-list": [unit.makeStat(filter_data)
                 for unit in self.mUnits],
-            "filter-list": self._getFilterList(),
-            "cur-filter": filter_name}
-        if (filter_name and filter_name in self.mFilterCache and
-                not filter_name.startswith('_')):
-            report["conditions"] = self.mFilterCache[filter_name][0]
+            "filter-list": self.getFilterList(),
+            "cur-filter": filter_name,
+            "conditions": conditions}
         return report
+
+    def cacheFilter(self, filter_name, conditions):
+        self.mFilterCache[filter_name] = conditions
+
+    def dropFilter(self, filter_name):
+        if filter_name in self.mFilterCache:
+            del self.mFilterCache[filter_name]
+
+    def getFilterList(self):
+        ret = []
+        for filter_name, flt_info in self.mFilterCache.items():
+            if filter_name.startswith('_'):
+                continue
+            ret.append([filter_name, False, True])
+        return sorted(ret)

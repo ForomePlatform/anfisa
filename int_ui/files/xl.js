@@ -147,7 +147,7 @@ var sUnitsH = {
                 if (var_count == 0)
                     continue;
                 view_count -= 1;
-                list_count --;
+                list_count--;
                 list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
                     '<span class="stat-count">' +
                     var_count + ' records</span></li>');
@@ -197,7 +197,7 @@ var sOpFilterH = {
     mRedoStack: [],
 
     update: function(filter_name, filter_list) {
-        this.mCurFilter = filter_name;
+        this.mCurFilter = (filter_name)? filter_name:"";
         var all_filters = sFiltersH.setup(filter_list)
         for (idx = 0; idx < this.mHistory.length; idx++) {
             hinfo = this.mHistory[idx];
@@ -218,6 +218,7 @@ var sOpFilterH = {
     },
     
     getCurFilterName: function() {
+        return this.mCurFilter;
     },
     
     availableActions: function() {
@@ -499,43 +500,47 @@ var sOpNumH = {
     },
     
     updateUnit: function(unit_stat) {
-        val_min   = unit_stat[2];
-        val_max   = unit_stat[3];
-        count     = unit_stat[4];
-        cnt_undef = unit_stat[5];
-        
-        if (val_min == val_max) 
-            this.mInfo = [-1, cnt_undef, val_min, val_max, 
-                null, null, unit_type, false];
-        else
-            this.mInfo = [0, cnt_undef, val_min, val_max, 
-                val_min,  (cnt_undef > 0)? true : null, unit_type, false];
-        
-        document.getElementById("cond-min").innerHTML = val_min;
-        document.getElementById("cond-max").innerHTML = val_max;
+        this.mInfo = {
+            op:         0,
+            val_cur:    null,
+            updating:   false,
+            with_undef: null,
+            unit_type:  unit_stat[0],
+            val_min:    unit_stat[2],
+            val_max:    unit_stat[3],
+            count:      unit_stat[4],
+            cnt_undef:  unit_stat[5]}
+            
+        if (this.mInfo.cnt_undef > 0) 
+            this.mInfo.with_undef = true;
+        if (this.mInfo.val_min == this.mInfo.val_max) 
+            this.mInfo.op = -1;
+
+        document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
+        document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
         document.getElementById("cond-sign").innerHTML = 
-            (val_min == val_max)? "=":"&le;";
-        this.mInputMin.value = val_min;
-        this.mInputMax.value = val_max;
-        this.mCheckUndef.checked = (cnt_undef > 0);
-        this.mSpanUndefCount.innerHTML = (cnt_undef > 0)?
-            ("undefined:" + cnt_undef) : "";
+            (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
+        this.mInputMin.value = this.mInfo.val_min;
+        this.mInputMax.value = this.mInfo.val_max;
+        this.mCheckUndef.checked = (this.mInfo.cnt_undef > 0);
+        this.mSpanUndefCount.innerHTML = (this.mInfo.cnt_undef > 0)?
+            ("undefined:" + this.mInfo.cnt_undef) : "";
     },
 
     updateCondition: function(cond) {
-        this.mInfo[0] = cond[2];
-        this.mInfo[5] = cond[3];
-        this.mInfo[6] = cond[4];
-        this.mInfo[7] = true;
-        if (this.mInfo[0] == 0) {
-            this.mInputMin.value = this.mInfo[5];
+        this.mInfo.op           = cond[2];
+        this.mInfo.val_cur      = cond[3];
+        this.mInfo.with_undef   = cond[4];
+        this.mInfo.updating     = true;
+        if (this.mInfo.op == 0) {
+            this.mInputMin.value = this.mInfo.val_cur;
         } else {
-            this.mInputMax.value = this.mInfo[5];
+            this.mInputMax.value = this.mInfo.val_cur;
         }
         document.getElementById("cond-sign").innerHTML = "&le;";
-        if (this.mInfo[5] != null) {
-            this.mCheckUndef.checked = this.mInfo[5];
-            this.mSpanUndefCount.innerHTML = "undefined:" + this.mInfo[1];
+        if (this.mInfo.with_undef != null) {
+            this.mCheckUndef.checked = this.mInfo.with_undef;
+            this.mSpanUndefCount.innerHTML = "undefined:" + this.mInfo.cnt_undef;
         }
     },
 
@@ -543,51 +548,51 @@ var sOpNumH = {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
         this.mInputMin.style.visibility = 
-            (this.mInfo && this.mInfo[0] == 0)? "visible":"hidden";
+            (this.mInfo && this.mInfo.op == 0)? "visible":"hidden";
         this.mInputMax.style.visibility = 
-            (this.mInfo && this.mInfo[0] == 1)? "visible":"hidden";
+            (this.mInfo && this.mInfo.op == 1)? "visible":"hidden";
         this.mCheckUndef.style.visibility = 
-            (this.mInfo && this.mInfo[1] > 0)? "visible":"hidden";
+            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
         this.mSpanUndefCount.style.visibility = 
-            (this.mInfo && this.mInfo[1] > 0)? "visible":"hidden";
+            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
     },
 
     checkControls: function(opt) {
         if (this.mInfo == null) 
             return;
         var error_msg = null;
-        if (opt == true && this.mInfo[0] >= 0) {
-            this.mInfo[0] = 1 - this.mInfo[0];
+        if (opt == true && this.mInfo.op >= 0) {
+            this.mInfo.op = 1 - this.mInfo.op;
         }
-        if (this.mInfo[5] != null) {
-            this.mInfo[5] = this.mCheckUndef.checked;
+        if (this.mInfo.with_undef != null) {
+            this.mInfo.with_undef = this.mCheckUndef.checked;
         }
-        if (this.mInfo[0] == 0) {
-            val = toNumeric(this.mInfo[6], this.mInputMin.value);
+        if (this.mInfo.op == 0) {
+            val = toNumeric(this.mInfo.unit_type, this.mInputMin.value);
             if (val != null) {
-                if (val < this.mInfo[2]) {
-                    if (!this.mInfo[7])
+                if (val < this.mInfo.val_min) {
+                    if (!this.mInfo.updating)
                         error_msg = "Lower bound is above minimal value";
                     else
                         error_msg = "";
                 }
-                this.mInfo[4] = val;
+                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
             }
             this.mInputMin.className = (error_msg == null)? "num-inp":"num-inp bad";
         } 
-        if (this.mInfo[0] == 1) {
-            val = toNumeric(this.mInfo[6], this.mInputMax.value);
+        if (this.mInfo.op == 1) {
+            val = toNumeric(this.mInfo.unit_type, this.mInputMax.value);
             if (val != null) {
-                if (val > this.mInfo[3]) {
-                    if (!this.mInfo[7])
+                if (val > this.mInfo.val_max) {
+                    if (!this.mInfo.updating)
                         error_msg = "Upper bound is below maximum value";
                     else
                         error_msg = "";
                 }
-                this.mInfo[4] = val;
+                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
@@ -601,30 +606,30 @@ var sOpNumH = {
                 error = "";
         }
         sOpCondH.formCondition(
-            condition_data, error_msg, this.mInfo[0], false);
+            condition_data, error_msg, this.mInfo.op, false);
         this.careControls();
     },
 
     formConditionData: function() {
-        if (this.mInfo[0] == -1) {
-            if (this.mInfo[1] > 0 && this.mInfo[5]) {
+        if (this.mInfo.op == -1) {
+            if (this.mInfo.cnt_undef > 0 && this.mInfo.with_undef) {
                 return [-1, null, true];
             }
-        } else if (this.mInfo[0] == 0) {
-            if (this.mInfo[4] != null && (this.mInfo[7] ||
-                    (this.mInfo[2] != this.mInfo[4]))) {
-                return [0, this.mInfo[4], this.mInfo[5]];
+        } else if (this.mInfo.op == 0) {
+            if (this.mInfo.val_cur != null && (this.mInfo.updating ||
+                    (this.mInfo.val_min != this.mInfo.val_cur))) {
+                return [0, this.mInfo.val_cur, this.mInfo.with_undef];
             } else {
-                if (this.mInfo[1] > 0 && !this.mInfo[5]) {
+                if (this.mInfo.cnt_undef > 0 && !this.mInfo.with_undef) {
                     return [-1, null, false];
                 }
             }
         } else {
-            if (this.mInfo[4] != null && (this.mInfo[7] ||
-                (this.mInfo[3] != this.mInfo[4]))) {
-                return [1, this.mInfo[4], this.mInfo[5]];
+            if (this.mInfo.val_cur != null && (this.mInfo.updating ||
+                (this.mInfo.val_max != this.mInfo.val_cur))) {
+                return [1, this.mInfo.val_cur, this.mInfo.with_undef];
             } else {
-                if (this.mInfo[1] > 0 && !this.mInfo[5]) {
+                if (this.mInfo.cnt_undef > 0 && !this.mInfo.with_undef) {
                     return [-1, null, false];
                 }
             }
@@ -743,6 +748,10 @@ var sOpEnumH = {
 };
 
 /*************************************/
+function _filter_check_name() {
+    sFiltersH.checkName();
+}
+
 var sFiltersH = {
     mTimeH: null,
     mCurOp: null,
@@ -835,7 +844,7 @@ var sFiltersH = {
         this.mBtnOp.disabled = !q_ok;
         
         if (this.mTimeH == null) 
-            this.mTimeH = setInterval(this.checkName, 100);
+            this.mTimeH = setInterval(_filter_check_name, 100);
     },
     
     clearOpMode: function() {

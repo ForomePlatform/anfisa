@@ -91,14 +91,6 @@ class XL_EnumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
         self.mVariants = descr["variants"]
-        self.mVarDict = {var: idx
-            for idx, var in enumerate(self.mVariants)}
-
-    def _recKeyOrd(self, rec):
-        return self.mVarDict.get(rec[0])
-
-    def _recKeyTop(self, rec):
-        return -rec[1]
 
     def evalStat(self, filter = None):
         query = {
@@ -112,11 +104,15 @@ class XL_EnumUnit(XL_Unit):
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
             "intervals": [ DruidCfg.INTERVAL ]}
+        if filter is not None:
+            query["filter"] = filter
         rq = self.getDS().getQueryAgent().call(query)
         assert len(rq) == 1
-        ret = [[rec[self.getName()], rec["count"]]
-            for rec in rq[0]["result"]]
-        return sorted(ret, key = self._recKeyTop)
+        counts = dict()
+        for rec in rq[0]["result"]:
+            counts[rec[self.getName()]] = rec["count"]
+        return [[var, counts.get(var, 0)]
+            for var in self.mVariants]
 
     def report(self, output):
         XL_Unit.report(self, output)
