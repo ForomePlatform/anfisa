@@ -64,7 +64,7 @@ if args.mode == "create":
 
     print >> sys.stderr, "Storing XL dataset descriptor:", args.datadescr
     with codecs.open(args.datadescr, "w", encoding = "utf-8") as outp:
-        print >> outp, json.dumps(xl_prep.getIntSchema())
+        print >> outp, json.dumps(xl_prep.makeIntSchema())
 
     print >> sys.stderr, "Done:", json.dumps(ret)
 

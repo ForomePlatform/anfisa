@@ -1,5 +1,6 @@
 import codecs, json
 from .rest import RestAgent
+from .druid import DruidCfg
 from .xl_unit import XL_Unit
 from .xl_filters import XL_Filter
 
@@ -14,8 +15,10 @@ class XL_Dataset:
         self.mDataSource = self.mDescr["datasource"]
         self.mUnits = []
         for descr in self.mDescr["units"]:
-            self.mUnits.append(XL_Unit.create(self, descr))
-
+            xl_unit = XL_Unit.create(self, descr)
+            if xl_unit is not None:
+                self.mUnits.append(xl_unit)
+        self.mTotal = self.evalTotalCount()
         self.mFilterCache = dict()
 
     def getName(self):
@@ -57,6 +60,8 @@ class XL_Dataset:
         conditions = self.mFilterCache.get(filter_name, conditions)
         filter_data = XL_Filter.makeFilter(conditions)
         report = {
+            "total": self.mTotal,
+            "count": self.evalTotalCount(filter_data),
             "stat-list": [unit.makeStat(filter_data)
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
@@ -78,3 +83,19 @@ class XL_Dataset:
                 continue
             ret.append([filter_name, False, True])
         return sorted(ret)
+
+    def evalTotalCount(self, filter = None):
+        query = {
+            "queryType": "timeseries",
+            "dataSource": self.mDataSource,
+            "granularity": DruidCfg.GRANULARITY,
+            "descending": "true",
+            "aggregations": [
+                { "type": "count", "name": "count",
+                    "fieldName": "_ord"}],
+            "intervals": [ DruidCfg.INTERVAL ]}
+        if filter is not None:
+            query["filter"] = filter
+        rq = self.mQueryAgent.call(query)
+        assert len(rq) == 1
+        return rq[0]["result"]["count"]

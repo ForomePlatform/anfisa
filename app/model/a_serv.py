@@ -84,6 +84,8 @@ class AnfisaService:
         self.mConfig = config
         self.mInContainer = in_container
         self.mHtmlTitle = self.mConfig["html-title"]
+        self.mHtmlTitleXL = self.mConfig.get(
+            "html-title-xl", self.mHtmlTitle)
         self.mHtmlBase = (self.mConfig["html-base"]
             if self.mInContainer else None)
         if self.mHtmlBase and not self.mHtmlBase.endswith('/'):
@@ -137,7 +139,8 @@ class AnfisaService:
         output = StringIO()
         err_code = None
         if xl_ds is not None:
-            formXLPage(output, self.mHtmlTitle, self.mHtmlBase, xl_ds)
+            formXLPage(output, self.mHtmlTitleXL,
+                self.mHtmlBase, xl_ds)
         else:
             err_code = 404
             notFound(output, self.mHtmlTitle, self.mHtmlBase)

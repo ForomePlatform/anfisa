@@ -11,9 +11,6 @@ class RulesEvalUnit(BoolSetUnit):
         self.mEnv = PresentationObj({param_h.getName(): param_h.getValue()
             for param_h in rules_setup.PARAMETERS})
 
-    def iterExtractors(self):
-        return iter([])
-
     def fillRulesPart(self, obj, data_record):
         rules_set = set()
         value_dict = {"Rules": rules_set}

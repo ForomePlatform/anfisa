@@ -48,8 +48,8 @@ class AnfisaData:
             ws = Workspace(ws_name, legend, data_set,
                cls.sMongoConn.getAgent(ws_descr["mongo-name"]))
             cls.sWorkspaces[ws_name] = ws
-            if cls.sDefaultDS is None:
-                cls.sDefaultDS = ws
+            if cls.sDefaultWS is None:
+                cls.sDefaultWS = ws
             cls.sWsOrdered.append(ws)
 
         if config.get("link-base") is not None:

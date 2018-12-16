@@ -1,3 +1,4 @@
+import logging
 from .druid import DruidCfg
 
 #===============================================
@@ -33,6 +34,10 @@ class XL_Unit:
 
     @staticmethod
     def create(xl_ds, descr):
+        if descr["type"].startswith("dummy"):
+            logging.error("XL dataset %s: %s %s, ignored" %
+                (xl_ds.getName(), descr["type"], descr["name"]))
+            return None
         if descr["type"] in {"long", "float"}:
             return XL_NumUnit(xl_ds, descr)
         else:

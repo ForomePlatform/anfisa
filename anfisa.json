@@ -5,14 +5,14 @@
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
     "mongo-db": "Anfisa",
-    "-workspaces": [
+    "workspaces": [
         {
             "name": "Personal_Genome_3140",
             "mongo-name": "bgm9001",
             "file": "${WORK}/data/PGP3140.json"
         }
     ],
-    "workspaces": [],
+    "-workspaces": [],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
         ["/ui", "${HOME}/int_ui/files"],
@@ -49,6 +49,7 @@
         } 
     },
     
+    "html-title-xl": "Anfisa-XL",
     "xl-sets": [
         {"title": "XL experimental", "name": "exp", "file": "${WORK}/xl-set.js"}],
     "druid": {

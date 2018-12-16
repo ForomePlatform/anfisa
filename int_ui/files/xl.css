@@ -1,44 +1,40 @@
 /********************Modal Filter*****************************/
-#filter-back {
-    display: none;
-    position: fixed;
-    z-index: 30;
-    left: 0;
-    top: 0;
-    width: 100%;
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    white-space: nowrap;
     height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
+    margin: 0px; 
+    padding: 0px;
 }
 
+#xl-title {
+    width: 100%;
+    background-color: #333455; 
+    color: white;
+    height: 50px;
+}
+    
 #filter-mod {
     background-color: white;
-    margin: 3% 3% 2% 2%; 
-    padding: 00px;
-    border: 1px solid black;
-    border-radius: 7px;
-    height: 90%; 
-    min-height: 90%;
-    width: 95%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    margin: 0px; 
+    padding: 0px;
+    width: 100%;
     overflow: hidden;
     display: flex;
     align-items: stretch;
+    flex-grow: 1;
 }
 
-#close-filter {
-    color: #aaa;
-    font-size: 28px;
+/********************Top controls*****************************/
+div#xl-info {
+    padding: 3px 10px;
+}
+
+span#xl-name, span#list-report {
     font-weight: bold;
-    margin: 0px 10px 0px 10px;
 }
-
-#close-filter:hover, #close-filter:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
 
 /********************Filter controls*****************************/
 

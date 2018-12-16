@@ -5,14 +5,12 @@ from collections import Counter
 import val_conv
 from app.model.types import Types
 from .column import DataPortion, DataColumn
-from .extract import DataExtractor
+from .extract import DataExtractor, DataGroupExtractor
 from .val_stat import EnumStat
-from .variants import VariantSet
 
 #===============================================
 class FilterUnit:
-    def __init__(self, legend, name,
-            title = None, research_only = False):
+    def __init__(self, legend, name, title, research_only):
         self.mLegend = legend
         self.mName = name
         self.mTitle = title
@@ -21,12 +19,19 @@ class FilterUnit:
         self.mVGroup = self.mLegend._getCurVGroup()
         if self.mVGroup:
             self.mVGroup._regUnit(self)
+        self.mExtractor = None
+
+    def _initExtractor(self, extractor):
+        self.mExtractor = extractor
 
     def getLegend(self):
         return self.mLegend
 
     def getName(self):
         return self.mName
+
+    def getExtractor(self):
+        return self.mExtractor
 
     def getTitle(self):
         return self.mTitle
@@ -51,10 +56,6 @@ class FilterUnit:
         return None
 
     @abc.abstractmethod
-    def iterExtractors(self):
-        pass
-
-    @abc.abstractmethod
     def collectStatJSon(self, data_records):
         return None
 
@@ -63,18 +64,13 @@ class FilterUnit:
         return None
 
     def testValues(self, obj):
-        is_ok = True
-        for extr_h in self.iterExtractors():
-            is_ok |= extr_h.testValues(obj)
-        return is_ok
+        return self.mExtractor.testValues(obj)
 
     def setup(self, rep_out):
-        for extr_h in self.iterExtractors():
-            extr_h.setup(rep_out)
+        self.mExtractor.setup(rep_out)
 
     def fillRecord(self, obj, record):
-        for extr_h in self.iterExtractors():
-            extr_h.extract(obj, record)
+        self.mExtractor.extract(obj, record)
 
     def _testValue(self, value, kind, msg, add_crit = True):
         if kind not in Types.detectValTypes(value) or not add_crit:
@@ -82,72 +78,60 @@ class FilterUnit:
                 (self.mName, kind, msg, value))
 
 #===============================================
-class IntValueUnit(FilterUnit):
-    def __init__(self, legend, name, path, title = None,
-            default_value = None, diap = None, research_only = False):
+class _NumericValueUnit(FilterUnit):
+    def __init__(self, legend, name, path, title,
+            research_only, convertor, atom_type):
         FilterUnit.__init__(self, legend, name, title, research_only)
-        if default_value is not None:
-            self._testValue(default_value, "int", "default value")
-        if diap is not None:
-            self._testValue(diap[0], "int", "diap min")
-            self._testValue(diap[1], "int", "diap max", diap[0] <= diap[1])
-        self.mExtractor = DataExtractor(self, name, path,
-            val_conv.IntConvertor(default_value, diap),
-            DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
+        self._initExtractor(DataExtractor(self, name, path,
+            convertor, DataColumn(self, name, atom_type)))
 
-    def getType(self):
-        return "long"
+    def _testSetup(self, default_value, diap, test_type):
+        if default_value is not None:
+            self._testValue(default_value, test_type, "default value")
+        if diap is not None:
+            self._testValue(diap[0], test_type, "diap min")
+            self._testValue(diap[1], test_type, "diap max",
+                diap[0] <= diap[1])
 
     def recordCondFunc(self, cmp_func):
-        col = self.mExtractor.getDataP()
+        col = self.getExtractor().getDataP()
         return lambda data_rec: cmp_func(col.recordValue(data_rec))
 
-    def iterExtractors(self):
-        yield self.mExtractor
-
     def ruleValue(self, data_rec):
-        return self.mExtractor.getDataP().recordValue(data_rec)
+        return self.getExtractor().getDataP().recordValue(data_rec)
 
     def collectStatJSon(self, data_records):
-        col = self.mExtractor.getDataP()
-        stat = self.mExtractor.getVConv().newStat()
+        col = self.getExtractor().getDataP()
+        stat = self.getExtractor().getVConv().newStat()
         for data_rec in data_records:
             stat.regValue(col.recordValue(data_rec))
         return stat.getJSon(self.getNames())
 
 #===============================================
-class FloatValueUnit(FilterUnit):
+class IntValueUnit(_NumericValueUnit):
     def __init__(self, legend, name, path, title = None,
             default_value = None, diap = None, research_only = False):
-        FilterUnit.__init__(self, legend, name, title, research_only)
-        if default_value is not None:
-            self._testValue(default_value, "numeric", "default value")
-        if diap is not None:
-            self._testValue(diap[0], "numeric", "diap min")
-            self._testValue(diap[1], "numeric", "diap max", diap[0] <= diap[1])
-        self.mExtractor = DataExtractor(self, name, path,
+        _NumericValueUnit.__init__(self,
+            legend, name, path, title, research_only,
+            val_conv.IntConvertor(default_value, diap),
+            DataPortion.ATOM_DATA_TYPE_INT)
+        self._testSetup(default_value, diap, "int")
+
+    def getType(self):
+        return "long"
+
+#===============================================
+class FloatValueUnit(_NumericValueUnit):
+    def __init__(self, legend, name, path, title = None,
+            default_value = None, diap = None, research_only = False):
+        _NumericValueUnit.__init__(self,
+            legend, name, path, title, research_only,
             val_conv.FloatConvertor(default_value, diap),
-            DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_FLOAT))
+            DataPortion.ATOM_DATA_TYPE_FLOAT)
+        self._testSetup(default_value, diap, "numeric")
 
     def getType(self):
         return "float"
-
-    def recordCondFunc(self, cmp_func):
-        col = self.mExtractor.getDataP()
-        return lambda data_rec: cmp_func(col.recordValue(data_rec))
-
-    def iterExtractors(self):
-        yield self.mExtractor
-
-    def ruleValue(self, data_rec):
-        return self.mExtractor.getDataP().recordValue(data_rec)
-
-    def collectStatJSon(self, data_records):
-        col = self.mExtractor.getDataP()
-        stat = self.mExtractor.getVConv().newStat()
-        for data_rec in data_records:
-            stat.regValue(col.recordValue(data_rec))
-        return stat.getJSon(self.getNames())
 
 #===============================================
 class StatusUnit(FilterUnit):
@@ -155,37 +139,31 @@ class StatusUnit(FilterUnit):
             title = None, default_value = False,
             research_only = False, accept_wrong_values = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
+        self._initExtractor(DataExtractor(self, name, path,
+            val_conv.EnumConvertor(variants,
+            atomic_mode = True, default_value = default_value,
+            others_value = accept_wrong_values),
+            DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT)))
         if default_value not in (None, False):
             self._testValue(default_value, "string", "default value")
-        self.mExtractor = DataExtractor(self, name, path,
-            val_conv.EnumConvertor(VariantSet.create(variants),
-                atomic_mode = True, default_value = default_value,
-                others_value = accept_wrong_values),
-            DataColumn(self, name, DataPortion.ATOM_DATA_TYPE_INT))
 
     def getType(self):
         return "status"
 
-    def iterExtractors(self):
-        yield self.mExtractor
-
-    def getVariantSet(self):
-        return self.mExtractor.getVConv().getVariantSet()
-
     def recordCondFunc(self, enum_func, variants):
-        col = self.mExtractor.getDataP()
-        idx_set = self.mExtractor.getVConv().getVariantSet().makeIdxSet(
+        col = self.getExtractor().getDataP()
+        idx_set = self.getExtractor().getVariantSet().makeIdxSet(
             variants)
         check_func = enum_func(idx_set)
         return lambda data_rec: check_func({col.recordValue(data_rec)})
 
     def ruleValue(self, data_rec):
-        idx = self.mExtractor.getDataP().recordValue(data_rec)
-        return self.mExtractor.getVConv().getVariantSet().getValue(idx)
+        idx = self.getExtractor().getDataP().recordValue(data_rec)
+        return self.getExtractor().getVariantSet().getValue(idx)
 
     def collectStatJSon(self, data_records):
-        col = self.mExtractor.getDataP()
-        stat = self.mExtractor.getVConv().newStat()
+        col = self.getExtractor().getDataP()
+        stat = self.getExtractor().getVConv().newStat()
         for data_rec in data_records:
             stat.regValues([col.recordValue(data_rec)])
         return stat.getJSon(self.getNames(), enum_type = "status")
@@ -198,16 +176,13 @@ class BoolSetUnit(FilterUnit):
         self.mColumns = [DataColumn(self, "%s__%s" % (name, variant),
             DataPortion.ATOM_DATA_TYPE_BOOL) for variant in variants]
         self.mEnumType = enum_type
-        self.mVariantSet = VariantSet(variants)
+        self._initExtractor(DataGroupExtractor(variants))
 
     def getType(self):
         return "bool-set"
 
     def enumColumns(self):
         return enumerate(self.mColumns)
-
-    def getVariantSet(self):
-        return self.mVariantSet
 
     def _recordValues(self, data_rec):
         ret = set()
@@ -218,14 +193,15 @@ class BoolSetUnit(FilterUnit):
 
     def ruleValue(self, data_rec):
         idxs = self._recordValues(data_rec)
-        return self.mVariantSet.makeValueSet(idxs)
+        return self.getExtractor().getVariantSet().makeValueSet(idxs)
 
     def recordCondFunc(self, enum_func, variants):
-        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
+        check_func = enum_func(self.getExtractor().
+            getVariantSet().makeIdxSet(variants))
         return lambda data_rec: check_func(self._recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet)
+        stat = EnumStat(self.getExtractor().getVariantSet())
         for data_rec in data_records:
             for var_no, col in enumerate(self.mColumns):
                 if col.recordValue(data_rec):
@@ -239,14 +215,10 @@ class PresenceUnit(BoolSetUnit):
         BoolSetUnit.__init__(self, legend, name,
             [it_name for it_name, it_path in var_info_seq],
             title, research_only = research_only)
-        self.mExtractors = []
         for idx, col in self.enumColumns():
             it_name, it_path = var_info_seq[idx]
-            self.mExtractors.append(DataExtractor(self, it_name,
-                it_path, val_conv.BoolConvertor(), col))
-
-    def iterExtractors(self):
-        return iter(self.mExtractors)
+            self.getExtractor()._add(DataExtractor(self,
+                it_name, it_path, val_conv.BoolConvertor(), col))
 
 #===============================================
 class MultiStatusUnit(FilterUnit):
@@ -255,26 +227,20 @@ class MultiStatusUnit(FilterUnit):
             default_value = False, others_value = False,
             research_only = False):
         FilterUnit.__init__(self, legend, name, title, research_only)
-        if default_value not in (None, False):
-            self._testValue(default_value, "string", "default value")
-        self.mExtractors = [DataExtractor(self, name, path,
-            val_conv.EnumConvertor(VariantSet.create(variants),
+        self._initExtractor(DataExtractor(self, name, path,
+            val_conv.EnumConvertor(variants,
                 chunker = chunker, default_value = default_value,
                 others_value = others_value),
-            compact_mode = compact_mode)]
+            compact_mode = compact_mode))
+        if default_value not in (None, False):
+            self._testValue(default_value, "string", "default value")
 
     def getType(self):
         return "multi-set"
 
-    def iterExtractors(self):
-        return iter(self.mExtractors)
-
-    def getVariantSet(self):
-        return self.mExtractors[0].getVConv().getVariantSet()
-
     def recordCondFunc(self, enum_func, variants):
-        datap = self.mExtractors[0].getDataP()
-        check_func = enum_func(self.mExtractors[0].getVConv().
+        datap = self.getExtractor().getDataP()
+        check_func = enum_func(self.getExtractor().
             getVariantSet().makeIdxSet(variants))
         if datap.isAtomic():
             return lambda data_rec: check_func(
@@ -282,17 +248,17 @@ class MultiStatusUnit(FilterUnit):
         return lambda data_rec: check_func(datap.recordValues(data_rec))
 
     def ruleValue(self, data_rec):
-        col = self.mExtractors[0].getDataP()
+        col = self.getExtractor().getDataP()
         if col.isAtomic():
             idx_set = col.getSetByIdx(col.recordValue(data_rec))
         else:
             idx_set = col.recordValues(data_rec)
-        return self.mExtractors[0].getVConv().getVariantSet().makeValueSet(
+        return self.getExtractor().getVariantSet().makeValueSet(
             idx_set)
 
     def collectStatJSon(self, data_records):
-        col = self.mExtractors[0].getDataP()
-        stat = self.mExtractors[0].getVConv().newStat()
+        col = self.getExtractor().getDataP()
+        stat = self.getExtractor().getVConv().newStat()
         if col.isAtomic():
             counts = Counter()
             for data_rec in data_records:

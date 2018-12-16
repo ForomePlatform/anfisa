@@ -10,6 +10,8 @@ function initXL(ds_name) {
         sTitlePrefix = window.document.title;
     sDSName = ds_name; 
     window.name = sTitlePrefix + "/" + sDSName;
+    document.title = sTitlePrefix + "/" + sDSName;
+    document.getElementById("xl-name").innerHTML = sDSName;
     sUnitsH.setup();
 }
     
@@ -28,10 +30,6 @@ function ajaxCall(rq_name, args, func_eval) {
 }
 
 /**************************************/
-function _unit_h_setup(info) {
-    sUnitsH._setup(info);
-}
-
 var sUnitsH = {
     mItems: null,
     mUnitMap: null,
@@ -48,10 +46,15 @@ var sUnitsH = {
         }
         if (add_instr)
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
-        ajaxCall("xl_filters", args, _unit_h_setup)
+        ajaxCall("xl_filters", args, function(info){sUnitsH._setup(info);})
     },
 
     _setup: function(info) {
+        count = info["count"];
+        total = info["total"]
+        document.getElementById("list-report").innerHTML = (count == total)?
+            total : count + "/" + total;
+
         this.mItems = info["stat-list"];
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         this.mUnitMap = {}
@@ -748,10 +751,6 @@ var sOpEnumH = {
 };
 
 /*************************************/
-function _filter_check_name() {
-    sFiltersH.checkName();
-}
-
 var sFiltersH = {
     mTimeH: null,
     mCurOp: null,
@@ -765,6 +764,7 @@ var sFiltersH = {
     mLoadList: [],
 
     init: function() {
+        document.getElementById("cond-mode-only-span").style.display = "none";
         this.mInpName   = document.getElementById("filter-name-filter");
         this.mSelName   = document.getElementById("filter-name-filter-list");
         this.mComboName = document.getElementById("filter-name-combo");
@@ -844,7 +844,7 @@ var sFiltersH = {
         this.mBtnOp.disabled = !q_ok;
         
         if (this.mTimeH == null) 
-            this.mTimeH = setInterval(_filter_check_name, 100);
+            this.mTimeH = setInterval(function(){sFiltersH.checkName();}, 100);
     },
     
     clearOpMode: function() {

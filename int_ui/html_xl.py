@@ -18,6 +18,12 @@ def formXLPage(output, title, html_base, xl_ds):
 #===============================================
 def _formXLPannel(output, ds_name):
     print >> output, '''
+      <div id="xl-title">
+        <div id="xl-info">
+            XL dataset: <span id="xl-name"></span><br/>
+            Records: <span id="list-report"></span>
+        </div>
+      </div>
       <div id="filter-mod">
         <div id="filter-stat">
           <div id="stat-list">
@@ -85,14 +91,14 @@ def _formXLPannel(output, ds_name):
                       <input id="cond-mode-and" type="checkbox"
                         onchange="sOpEnumH.checkControls(1);"/>&nbsp;AND
                     </span><br/>
-                    <span id="cond-mode-only-span">
-                      <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;ONLY
-                    </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
                         onchange="sOpEnumH.checkControls(3);"/>&nbsp;NOT
                     </span><br/>
+                    <span id="cond-mode-only-span">
+                      <input id="cond-mode-only" type="checkbox"
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;ONLY
+                    </span>
                   </div>
                 </div>
               </div>
