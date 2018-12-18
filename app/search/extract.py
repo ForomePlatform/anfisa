@@ -2,6 +2,7 @@
 
 from app.model.path_works import AttrFuncPool
 from .column import DataColumnSet, DataCompactColumn
+from .variants import VariantSet
 #===============================================
 class DataExtractor:
     def __init__(self, unit, name, path, val_conv,
@@ -38,6 +39,9 @@ class DataExtractor:
     def testValues(self, obj):
         return self.mVConv.testValues(self.mPathF(obj))
 
+    def getVariantSet(self):
+        return self.mVConv.getVariantSet()
+
     def setup(self, rep_out):
         print >> rep_out, "=Setup %s %s" % (
             self.mName, self.mVConv.getVarTypeCode())
@@ -59,7 +63,29 @@ class DataExtractor:
         vv = self.mPathF(obj)
         values = self.mVConv.convert(vv)
         self.mDataP.setValues(record, values)
-        #self.mDataP.setValues(record,
-        #    self.mVConv.convert(self.mPathF(obj)))
 
 #===============================================
+class DataGroupExtractor:
+    def __init__(self, variants):
+        self.mVariantSet = VariantSet(variants)
+        self.mExtractors = []
+
+    def _add(self, extr_h):
+        self.mExtractors.append(extr_h)
+
+    def getVariantSet(self):
+        return self.mVariantSet
+
+    def testValues(self, obj):
+        is_ok = True
+        for extr_h in self.mExtractors:
+            is_ok |= extr_h.testValues(obj)
+        return is_ok
+
+    def setup(self, rep_out):
+        for extr_h in self.mExtractors:
+            extr_h.setup(rep_out)
+
+    def extract(self, obj, record):
+        for extr_h in self.mExtractors:
+            extr_h.extract(obj, record)

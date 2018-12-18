@@ -31,7 +31,8 @@ class FilterZoneH(ZoneH):
         return self.mUnit.getName()
 
     def getVariants(self):
-        return [var for var in self.mUnit.getVariantSet()]
+        return [var for
+            var in self.mUnit.getExtractor().getVariantSet().getVariants()]
 
     def restrict(self, rec_no_seq, variants):
         return self.getWS().getIndex()._applyCondition(rec_no_seq,

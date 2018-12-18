@@ -385,18 +385,18 @@ function setupConitionValues(cond) {
             setCurEnumZeros(true);
     } else {
         sOpNumericInfo[0] = cond[2];
-        sOpNumericInfo[5] = cond[3];
-        sOpNumericInfo[6] = cond[4];
+        sOpNumericInfo[4] = cond[3];
+        sOpNumericInfo[5] = cond[4];
         sOpNumericInfo[7] = true;
         if (sOpNumericInfo[0] == 0) {
-            sInputCurCondMin.value = sOpNumericInfo[5];
+            sInputCurCondMin.value = sOpNumericInfo[4];
         } else {
-            sInputCurCondMax.value = sOpNumericInfo[5];
+            sInputCurCondMax.value = sOpNumericInfo[4];
         }
         sSpanCurCondSign.innerHTML = "&le;";
-        if (sOpNumericInfo[6] != null) {
-            sCheckCurCondUndef.checked = sOpNumericInfo[6];
-            sSpanCurCondUndefCount.innerHTML = "undefined:" + cnt_undef;
+        if (sOpNumericInfo[5] != null) {
+            sCheckCurCondUndef.checked = sOpNumericInfo[5];
+            sSpanCurCondUndefCount.innerHTML = "undefined:" + sOpNumericInfo[1];
         }
     }
 }

@@ -161,7 +161,7 @@ class IntConvertor(_NumericConvertor):
 
 #===============================================
 class EnumConvertor(ValueConvertor):
-    def __init__(self, variant_set = None, atomic_mode = False,
+    def __init__(self, variants = None, atomic_mode = False,
             chunker = None, default_value = False, others_value = False):
         ValueConvertor.__init__(self)
         self.mVariantSet = None
@@ -173,8 +173,8 @@ class EnumConvertor(ValueConvertor):
         self.mOthersVariant = {}
         self.mStat = Counter()
         self.mBadValues = False
-        if variant_set is not None:
-            self.__initVariants(variant_set)
+        if variants is not None:
+            self.__initVariants(variants)
 
     def isAtomic(self):
         return self.mAtomicMode
@@ -182,8 +182,8 @@ class EnumConvertor(ValueConvertor):
     def newStat(self):
         return EnumStat(self.mVariantSet)
 
-    def __initVariants(self, variant_set):
-        self.mVariantSet = variant_set
+    def __initVariants(self, variants):
+        self.mVariantSet = VariantSet(variants)
         if self.mDefaultValue is not False:
             idx = self.mVariantSet.indexOf(self.mDefaultValue)
             if idx is not None:
@@ -212,7 +212,7 @@ class EnumConvertor(ValueConvertor):
             if (self.mDefaultValue is not False and
                     self.mDefaultValue not in variants):
                 variants.append(self.mDefaultValue)
-            self.__initVariants(VariantSet(variants))
+            self.__initVariants(variants)
         used_names = set()
         if self.mVariantSet is not None:
             print >> rep_out, "=Variants(%d):" % len(self.mVariantSet)
