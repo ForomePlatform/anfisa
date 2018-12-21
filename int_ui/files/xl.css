@@ -9,7 +9,7 @@ body {
     padding: 0px;
 }
 
-#xl-title {
+#xl-ctrl {
     width: 100%;
     background-color: #333455; 
     color: white;
@@ -334,3 +334,124 @@ select#filter-name-filter {
 #filter-name-combo {
     margin: 0px 5px 0px 10px;
 }
+
+/********************Control controls*****************************/
+div#ds-dropdown {
+    margin: 0px;
+    padding: 0px;
+}
+
+span#ds-control-open {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+div#ds-control-menu {
+    display: none;
+    padding: 10px;
+    position: absolute;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+div.ctrl-menu {
+    text-align: left;
+    padding: 5px;
+    height: 20px;
+    width: 160px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+div.ctrl-menu:hover {
+    color: #000080;
+}
+
+/********************Modal Note*****************************/
+#note-back {
+    display: none;
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#note-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 00px;
+    border: 1px solid black;
+    border-radius: 7px;
+    height: 50%; 
+    min-height: 50%;
+    width: 55%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/********************note top controls*****************************/
+#note-top {
+    width: 100%;
+    height: 55px;
+    min-height: 20px;
+    margin: 0px;;
+    padding: 0px;
+}
+
+#note-title {
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    height: 25px;
+}
+
+#close-note {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0px 10px 0px 10px;
+    float: right;
+}
+
+#close-note:hover, #close-note:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+} 
+
+div#work-note-area {
+    flex-grow: 1;
+    width: 100%;
+    padding-left: 10px;
+}
+
+textarea#note-content {
+    padding: 10px;
+    width: 95%;
+    height: 100%;
+}
+
+div#work-note-ctrl {
+    height: 40px;
+    margin: 5px;
+    padding: 5px;
+    text-align: center;
+}
+
+
+

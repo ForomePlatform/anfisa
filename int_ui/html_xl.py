@@ -1,15 +1,16 @@
 from .gen_html import startHtmlPage
 
 #===============================================
-def formXLPage(output, title, html_base, xl_ds):
+def formXLPage(output, title, common_title, html_base, xl_ds):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css", "xl.css"],
         js_files = ["xl.js"])
 
-    print >> output, ('  <body onload="initXL(\'%s\');">' %
-        (xl_ds.getName()))
+    print >> output, ('  <body onload="initXL(\'%s\', \'%s\');">' %
+        (xl_ds.getName(), common_title))
 
     _formXLPannel(output, xl_ds.getName())
+    _formNoteDiv(output)
     _formSamplesDiv(output)
 
     print >> output, ' </body>'
@@ -18,8 +19,18 @@ def formXLPage(output, title, html_base, xl_ds):
 #===============================================
 def _formXLPannel(output, ds_name):
     print >> output, '''
-      <div id="xl-title">
+      <div id="xl-ctrl">
         <div id="xl-info">
+            <span id="ds-control-wrap" title="Control Menu..." class="drop">
+                <span id="ds-control-open" class="drop"
+                    onclick="openControlMenu()";>&#8285;</span>
+                <div id="ds-control-menu" class="drop">
+                    <div id="ds-ctrl-home" onclick="goHome();"
+                        class="drop ctrl-menu">Home Directory</div>
+                    <div id="ds-ctrl-home" onclick="openNote();"
+                        class="drop ctrl-menu">Dataset Note</div>
+                </div>
+            </span>&emsp;
             XL dataset: <span id="xl-name"></span><br/>
             Records: <span id="list-report"></span>
         </div>
@@ -149,6 +160,35 @@ def _formXLPannel(output, ds_name):
         </div>
     </div>'''
 
+#===============================================
+def _formNoteDiv(output):
+    print >> output, '''
+    <div id="note-back">
+      <div id="note-mod">
+        <div id="note-top">
+            <p id="note-title">Dataset
+                <span id="note-ds-name"></span> note
+              <span id="close-note" onclick="sViewH.modalOff();">&times;</span>
+            </p>
+        </div>
+        <div id="work-note-area">
+            <textarea id="note-content"></textarea>
+        </div>
+        <div id="work-note-ctrl">
+              <button class="op-button"
+                  onclick="saveNote();">
+                Save
+              </button>
+              <button class="op-button"
+                  onclick="sViewH.modalOff();">
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+'''
 #===============================================
 def _formSamplesDiv(output):
     pass

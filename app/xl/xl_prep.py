@@ -6,10 +6,9 @@ from .json_proto import DRUID_LOAD_TEMPLATE
 #===============================================
 class XL_Preparator:
     def __init__(self, flt_legend, datasource,
-            work_dir, start_time):
+            final_data, start_time):
         self.mFltLegend = flt_legend
         self.mDataSource = datasource
-        self.mWorkDir = os.path.abspath(work_dir)
         self.mExtSchema = deepcopy(DRUID_LOAD_TEMPLATE)
         self.mEnumStat = dict()
         self.mVarStat  = dict()
@@ -32,15 +31,11 @@ class XL_Preparator:
         ext_spec = self.mExtSchema["spec"]
         ext_spec["dataSchema"]["dataSource"] = self.mDataSource
         ext_io = ext_spec["ioConfig"]["firehose"]
-        ext_io["baseDir"] = self.mWorkDir
-        ext_io["filter"] = "xl.data.json"
-        self.mOutFileName = self.mWorkDir + "/xl.data.json"
+        ext_io["baseDir"] = os.path.dirname(final_data)
+        ext_io["filter"] = os.path.basename(final_data)
         self.mCurOrd = 0
         self.mCurTime = self.str2dt(start_time)
         self.mRandH = random.WichmannHill(179)
-
-    def getOutFileName(self):
-        return self.mOutFileName
 
     def getExtSchema(self):
         return self.mExtSchema

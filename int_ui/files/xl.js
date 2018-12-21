@@ -1,15 +1,18 @@
 var sDSName = null;
 var sTitlePrefix = null;
+var sCommonTitle = null;
 
 /*************************************/
-function initXL(ds_name) {
+function initXL(ds_name, common_title) {
     sFiltersH.init();
     sOpNumH.init();
     sOpEnumH.init();
+    sViewH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
+    sCommonTitle = common_title;
     sDSName = ds_name; 
-    window.name = sTitlePrefix + "/" + sDSName;
+    window.name = sCommonTitle + "/" + sDSName;
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
     sUnitsH.setup();
@@ -770,6 +773,7 @@ var sFiltersH = {
         this.mComboName = document.getElementById("filter-name-combo");
         this.mDivOpList  = document.getElementById("filters-op-list");
         this.mBtnOp     = document.getElementById("filter-flt-op");
+        sViewH.addToDrop(this.mDivOpList);
     },
 
     setup: function(filter_list) { // reduced monitor.js//setupNamedFilters()
@@ -812,7 +816,7 @@ var sFiltersH = {
             (cur_filter == "" || 
                 this.mOpList.indexOf(cur_filter) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
-        this._menuOff();
+        sViewH.dropOff();
     },
 
     checkName: function() {
@@ -850,19 +854,14 @@ var sFiltersH = {
     clearOpMode: function() {
     },
 
-    _menuOff: function(mode) {
-        //wsDropShow(false);
-        this.mDivOpList.style.display = "none";
-    },
-    
     menu: function() {
         if (this.mDivOpList.style.display != "none") {
-            this._menuOff();
+            sViewH.dropOff();
             this.update();
             return;
         }
         this.update();
-        //wsDropShow(true);
+        sViewH.dropOff();
         this.mDivOpList.style.display = "block";
     },
 
@@ -872,7 +871,7 @@ var sFiltersH = {
     },
 
     startLoad: function() {
-        this._menuOff();
+        sViewH.dropOff();
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
@@ -887,7 +886,7 @@ var sFiltersH = {
     startCreate: function() {
         if (sConditionsH.isEmpty())
             return;
-        this._menuOff();
+        sViewH.dropOff();
         this.mCurOp = "create";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "visible";
@@ -904,7 +903,7 @@ var sFiltersH = {
         cur_filter = sOpFilterH.getCurFilterName();
         if (sConditionsH.isEmpty() || cur_filter != "")
             return;
-        this._menuOff();
+        sViewH.dropOff();
         this.fillSelNames(false, this.mOpList);
         this.mCurOp = "modify";
         this.mInpName.value = "";
@@ -920,7 +919,7 @@ var sFiltersH = {
         cur_filter = sOpFilterH.getCurFilterName();
         if (cur_filter == "" ||  this.mOpList.indexOf(cur_filter) < 0)
             return;
-        this._menuOff();
+        sViewH.dropOff();
         sUnitsH.setup(sConditionsH.getConditions(), "",
             ["instr", "DROP/" + this.mInpName.value]);
         sOpFilterH._onChangeFilter();
@@ -978,6 +977,95 @@ var sFiltersH = {
         this.mSelName.selectedIndex = 0;
     }
 };
+
+/*************************************/
+/* Top controls                      */
+/*************************************/
+var sViewH = {
+    mShowToDrop: null,
+    mDropCtrls: [],
+    mModalCtrls: [],
+    
+    init: function() {
+        window.onClick = function(event_ms) {sViewH.onclick(event_ms);}
+        this.addToDrop(document.getElementById("ds-control-menu"));
+    },
+
+    addToDrop: function(ctrl) {
+        this.mDropCtrls.push(ctrl);
+    },
+
+    dropOn: function(ctrl) {
+        if (ctrl.style.display == "block") {
+            this.dropOff();
+        } else {
+            this.dropOff();
+            ctrl.style.display = "block";
+            this.mShowToDrop = true;
+        }
+    },
+    
+    dropOff: function() {
+        this.mShowToDrop = false;
+        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
+            this.mDropCtrls[idx].style.display = "none";
+        }
+    },
+    
+    modalOn: function(ctrl) {
+        if (this.mModalCtrls.indexOf(ctrl) < 0)
+            this.mModalCtrls.push(ctrl);
+        this.modalOff();
+        ctrl.style.display = "block";
+    },
+    
+    modalOff: function() {
+        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
+            this.mModalCtrls[idx].style.display = "none";
+        }
+    },
+    
+    onclick: function(event_ms) {
+        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
+            if (event_ms.target == this.mModalCtrls[idx]) 
+                this.modalOff();
+        }
+        if (this.mShowToDrop && !event_ms.target.matches('.drop')) {
+            this.dropOff();
+        }
+    }
+};
+
+function openControlMenu() {
+    sViewH.dropOn(document.getElementById("ds-control-menu"));
+}
+
+function goHome() {
+    sViewH.dropOff();
+    window.open('dir', sCommonTitle + ':dir');
+}
+
+function openNote() {
+    sViewH.dropOff();
+    loadNote();
+    sViewH.modalOn(document.getElementById("note-back"));
+}
+
+function saveNote() {
+    sViewH.dropOff();
+    loadNote(document.getElementById("note-content").value);
+    sViewH.modalOff();
+}
+
+function loadNote(content) {
+    args = "ds=" + sDSName;
+    if (content) 
+        args += "&note=" + encodeURIComponent(content);        
+    ajaxCall("dsnote", args, function(info) {
+        document.getElementById("note-ds-name").innerHTML = info["ds"];
+        document.getElementById("note-content").value = info["note"];
+    });
+}
 
 /*************************************/
 /* Utilities                         */

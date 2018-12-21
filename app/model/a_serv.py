@@ -34,7 +34,6 @@ class AnfisaService:
             content, error = cls.sMain.formXLPanel(rq_args)
             return serv_h.makeResponse(content = content, error = error)
 
-
         if rq_path == "/list":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formList(rq_args))
@@ -77,6 +76,9 @@ class AnfisaService:
         if rq_path == "/xl_filters":
             return serv_h.makeResponse(mode = "json",
                 content = cls.sMain.formXLFilters(rq_args))
+        if rq_path == "/dsnote":
+            return serv_h.makeResponse(mode = "json",
+                content = cls.sMain.formDSNote(rq_args))
         return serv_h.makeResponse(error = 404)
 
     #===============================================
@@ -139,7 +141,7 @@ class AnfisaService:
         output = StringIO()
         err_code = None
         if xl_ds is not None:
-            formXLPage(output, self.mHtmlTitleXL,
+            formXLPage(output, self.mHtmlTitleXL, self.mHtmlTitle,
                 self.mHtmlBase, xl_ds)
         else:
             err_code = 404
@@ -290,7 +292,9 @@ class AnfisaService:
         rep = {
             "version": self.sData.getVersionCode(),
             "workspaces": [workspace.getJSonObj()
-                for workspace in self.sData.iterWorkspaces()]}
+                for workspace in self.sData.iterWorkspaces()],
+            "xl-datasets": [ds.getJSonObj()
+                for ds in self.sData.iterXLDatasets()]}
         output = StringIO()
         output.write(json.dumps(rep))
         return output.getvalue()
@@ -320,3 +324,11 @@ class AnfisaService:
         output.write(json.dumps(report))
         return output.getvalue()
 
+    #===============================================
+    def formDSNote(self, rq_args):
+        xl_ds = self.sData.getDS(rq_args.get("ds"))
+        note = xl_ds.getDSNote(rq_args.get("note"))
+        rep = {"ds": xl_ds.getName(), "note": note}
+        output = StringIO()
+        output.write(json.dumps(rep))
+        return output.getvalue()

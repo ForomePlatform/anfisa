@@ -12,6 +12,7 @@ from export.excel import ExcelExport
 from app.view.attr import AttrH
 from int_ui.mirror_dir import MirrorUiDirectory
 from app.xl.xl_dataset import XL_Dataset
+from app.xl.xl_setup import initXL
 #===============================================
 class AnfisaData:
     sConfig = None
@@ -33,6 +34,7 @@ class AnfisaData:
         cls.sMongoConn = MongoConnector(config["mongo-db"],
             config.get("mongo-host"), config.get("mongo-port"))
         setupRecommended()
+        initXL()
 
         for ws_descr in config["workspaces"]:
             ws_name = ws_descr["name"]
@@ -46,7 +48,7 @@ class AnfisaData:
                     rep_out.gevalue())
             logging.warning(legend.getStatusInfo())
             ws = Workspace(ws_name, legend, data_set,
-               cls.sMongoConn.getAgent(ws_descr["mongo-name"]))
+               cls.sMongoConn.getWSAgent(ws_descr["mongo-name"]))
             cls.sWorkspaces[ws_name] = ws
             if cls.sDefaultWS is None:
                 cls.sDefaultWS = ws
@@ -57,9 +59,9 @@ class AnfisaData:
 
         if config.get("xl-sets"):
             for descr in config["xl-sets"]:
-                xl_ds = XL_Dataset(descr["file"],
-                    descr["name"], descr["title"],
-                    config["druid"]["url_query"])
+                xl_ds = XL_Dataset(descr["file"], descr["name"],
+                    config["druid"]["url_query"],
+                    cls.sMongoConn.getDSAgent(descr["mongo-name"]))
                 cls.sXL_Datasets[xl_ds.getName()] = xl_ds
                 cls.sXlOrdered.append(xl_ds)
                 if cls.sDefaultDS is None:

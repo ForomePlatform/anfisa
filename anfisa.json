@@ -51,7 +51,8 @@
     
     "html-title-xl": "Anfisa-XL",
     "xl-sets": [
-        {"title": "XL experimental", "name": "exp", "file": "${WORK}/xl-set.js"}],
+        {"name": "exp", "file": "${WORK}/data/xl-anfisa-exp.js", "mongo-name": "xl_exp"}],
+    "-xl-sets": [],
     "druid": {
         "url_index": "http://localhost:8090/druid/indexer/v1/task",
         "url_query": "http://localhost:8082/druid/v2",
