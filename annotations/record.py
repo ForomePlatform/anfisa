@@ -475,18 +475,21 @@ class Variant:
                 alt_allels = [s.sequence for s in self.vcf_record.ALT]
                 counts = dict()
                 #.gt_bases
-                genotypes = {self.vcf_record.genotype(s) for s in self.samples}
-                for g in genotypes:
-                    ad = g.data.AD if 'AD' in g.data._asdict() else None
-                    if (not ad):
-                        self.alt_alleles = alt_allels
-                        return self.alt_alleles
-                    for i in range(0, len(alleles)):
-                        al = alleles[i]
-                        n = ad[i]
-                        counts[al] = counts.get(al, 0) + n
+                if (self.samples):
+                    genotypes = {self.vcf_record.genotype(s) for s in self.samples}
+                    for g in genotypes:
+                        ad = g.data.AD if 'AD' in g.data._asdict() else None
+                        if (not ad):
+                            self.alt_alleles = alt_allels
+                            return self.alt_alleles
+                        for i in range(0, len(alleles)):
+                            al = alleles[i]
+                            n = ad[i]
+                            counts[al] = counts.get(al, 0) + n
 
-                self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                    self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                else:
+                    self.alt_alleles = alt_allels
             else:
                 self.alt_alleles = self.alt_list1()
 
@@ -790,7 +793,7 @@ class Variant:
         return genotype.data._asdict().get(field)
 
     def get_proband_GQ(self):
-        if (not self.vcf_record):
+        if (not self.samples or not self.vcf_record):
             return None
         return self.get_from_genotype(self.vcf_record.genotype(self.get_proband()), 'GQ')
 

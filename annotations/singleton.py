@@ -68,27 +68,44 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Annotate variant(s) with VEP and output results as JSON")
     parser.add_argument(dest = "input", help="Variant specification", nargs="*")
     parser.add_argument("-a", "--annotations", default="anfisa", help="List of annotations to add")
-    parser.add_argument("-t", "--test", default=1, type=int, help="Test performance with the specified number of variants")
+    parser.add_argument("-i", "--input", dest = "file", help="Input JSON file, - for standard input")
 
     args = parser.parse_args()
     print args
-    if (len(args.input) > 0):
-        arg = ' '.join(args.input).split(' ')
-    else:
-        arg = ["1:6484880:6484880", "A>G"]
-    if (len(arg) != 2):
-        raise Exception("Invalid variant specification. Use: c:start:end Ref>Alt")
 
-    coords = arg[0].split(':')
-    chromosome = coords[0]
-    start = int(coords[1])
-    if (len(coords) > 2):
-        end = int(coords[2])
+    variants = None
+    if (args.file):
+        if (args.file == '-'):
+            variants = json.load(sys.stdin)
+        else:
+            with open(args.file) as file:
+                variants = json.load(file)
     else:
-        end = start
-    change = arg[1].split('>')
-    ref = change[0]
-    alt = change[1]
+        if (len(args.input) > 0):
+            arg = ' '.join(args.input).split(' ')
+        else:
+            arg = ["1:6484880:6484880", "A>G"]
+        if (len(arg) != 2):
+            raise Exception("Invalid variant specification. Use: c:start:end Ref>Alt")
+
+        coords = arg[0].split(':')
+        chromosome = coords[0]
+        start = int(coords[1])
+        if (len(coords) > 2):
+            end = int(coords[2])
+        else:
+            end = start
+        change = arg[1].split('>')
+        ref = change[0]
+        alt = change[1]
+
+        variant = dict()
+        variant["chromosome"] = chromosome
+        variant["position"] = start
+        variant["end"] = end
+        variant["reference"] = ref
+        variant["alternative"] = alt
+        variants = [variant]
 
     if (args.annotations == "anfisa"):
         connectors = available_connectors
@@ -99,19 +116,17 @@ if __name__ == '__main__':
 
     with Annotator(connectors) as a:
         t0 = time.time()
-        for i in range(0, args.test):
+        for variant in variants:
             if (args.annotations == "anfisa"):
-                data = a.get_anfisa_json(chromosome, start, end, alt)
+                data = a.get_anfisa_json(variant["chromosome"], variant["position"], variant["end"], variant["alternative"])
             elif (args.annotations == 'gnomad'):
-                data = a.get_gnomad(chromosome, start, ref, alt)
+                data = a.get_gnomad(variant["chromosome"], variant["position"], variant["reference"], variant["alternative"])
             else:
                 data = None
 
             if data:
                 for v in data:
                     print json.dumps(v, sort_keys=True, indent=4)
-            start += 1
-            end   += 1
 
         t1 = time.time()
         print (t1 - t0)

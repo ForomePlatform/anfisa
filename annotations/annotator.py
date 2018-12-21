@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 import time
 
@@ -82,11 +83,42 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
     print "Variants processed: {}".format(n)
 
 
+def output_raw_calls(infile, outfile, limit = None, start = 1):
+    n_out = limit / 20 if limit > 0 else 100
+    n = 0
+    l = 0
+    result = list()
+    with open(infile) as source, open(outfile, "w") as destination:
+        while(True):
+            line = source.readline()
+            if (not line):
+                break
+            l += 1
+            if (l < start):
+                continue
+            v = Variant(line)
+            n += 1
+            if (n%n_out == 0):
+                print n
+
+            alleles = v.alt_list()
+            for allele in alleles:
+                variant = dict()
+                variant["chromosome"] = v.chr_num()
+                variant["position"]   = v.start()
+                variant["reference"]  = v.ref()
+                variant["alternative"] = allele
+                result.append(variant)
+        json.dump(result, destination)
+    print "Variants processed: {}".format(n)
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Annotate VCF file with VEP and output results as JSON")
     parser.add_argument("-i", "--input", dest = "input", help="Input JSON file, with VEP annotations")
     parser.add_argument("-o", "--output", dest="output", help="Output file")
     parser.add_argument("--vep", action='store_true', help="Annotate with VEP first")
+    parser.add_argument("--raw", action='store_true', help="Do not annotate, just output raw calls")
     parser.add_argument("-c", "--case", dest="case", help="Case name, default is determined from directory name")
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
     parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants to process")
@@ -127,6 +159,10 @@ if __name__ == '__main__':
     samples = case_utils.parse_fam_file(fam_file)
 
     output = args.output if args.output else "{}/{}_anfisa.json".format(dir, case)
+
+    if (args.raw):
+        output_raw_calls(filtered_by_bed_vep_output, outfile=output, limit=limit, start=args.start)
+        exit(0)
 
     annotate_json(filtered_by_bed_vep_output, out=output,
                   vcf_header=header, samples=samples, case="{}_wgs".format(case), limit=limit, start=args.start)
