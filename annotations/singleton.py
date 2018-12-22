@@ -61,7 +61,9 @@ class Annotator:
         return records
 
     def get_gnomad(self, chromosome, start, ref, alt):
-        data = self.connectors["gnomAD"].get_all(chr=chromosome, pos=start, alt=alt, ref=ref)
+        data = dict()
+        data["input"] = (chromosome, start, ref, alt)
+        data["gnomAD"] = self.connectors["gnomAD"].get_all(chr=chromosome, pos=start, alt=alt, ref=ref)
         return [data]
 
 if __name__ == '__main__':
