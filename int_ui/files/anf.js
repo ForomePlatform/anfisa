@@ -129,7 +129,8 @@ function updateRecordMark(rec_id, rec_marked) {
         } else {
             if (class_seq.length == 1)
                 return
-            class_seq.splice(2, 1);
+            if (class_seq[2] == "marked")          
+                class_seq.splice(2, 1);
         }
         el.className = class_seq.join(' ');
     }
