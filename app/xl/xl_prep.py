@@ -1,8 +1,8 @@
 import sys, os, random
 from datetime import datetime, timedelta
 from copy import deepcopy
-from .json_proto import DRUID_LOAD_TEMPLATE
 
+from .json_proto import DRUID_LOAD_TEMPLATE
 #===============================================
 class XL_Preparator:
     def __init__(self, flt_legend, datasource,
@@ -74,6 +74,14 @@ class XL_Preparator:
                     print >> sys.stderr, "Dummy enum unit:", \
                         f_unit.getName()
                     int_entry["type"] = "dummy " + int_entry["type"]
+                fin_variants = []
+                for var in variants:
+                    var = unicode(var)
+                    if var in fin_variants:
+                        print >> sys.stderr, "Enum value collision:", \
+                            var, "for", f_unit.getName()
+                    else:
+                        fin_variants.append(var)
                 int_entry["variants"] = variants
             int_schema["units"].append(int_entry)
         return int_schema
@@ -97,8 +105,8 @@ class XL_Preparator:
             if f_unit.getType() in {"bool-set", "multi-set"}:
                 if not value:
                     continue
-                value = sorted(value)
                 self.mEnumStat[f_unit.getName()] |= set(value)
+                value = sorted(set(map(unicode, value)))
             else:
                 if value is None:
                     self.mVarStat[f_unit.getName()][1] += 1
@@ -106,8 +114,8 @@ class XL_Preparator:
                 self.mVarStat[f_unit.getName()][0] += 1
                 if f_unit.getType() == "status":
                     self.mEnumStat[f_unit.getName()].add(value)
+                    value = unicode(value)
             out_rec[f_unit.getName()] = value
         self.mCurTime += self.sTimeStep
         self.mCurOrd += 1
         return out_rec
-
