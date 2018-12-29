@@ -239,12 +239,20 @@ class EnumConvertor(ValueConvertor):
     def getVariantSet(self):
         return self.mVariantSet
 
-    @staticmethod
-    def plainValues(values):
-        return map(unicode, values)
+    sLogicConstants = {True, False, None}
+
+    @classmethod
+    def normValue(cls, value):
+        if value in cls.sLogicConstants:
+            return value
+        return unicode(value)
+
+    @classmethod
+    def normValues(cls, values):
+        return map(cls.normValue, values)
 
     def testValues(self, values):
-        values = self.plainValues(values)
+        values = self.normValues(values)
         try:
             if self.mChunker:
                 values = self.mChunker.apply(values)
@@ -268,7 +276,7 @@ class EnumConvertor(ValueConvertor):
             return False
 
     def _convert(self, values):
-        values = self.plainValues(values)
+        values = self.normValues(values)
         if self.mChunker:
             values = self.mChunker.apply(values)
         if len(values) == 0:
