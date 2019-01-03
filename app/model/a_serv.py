@@ -201,7 +201,12 @@ class AnfisaService:
     #===============================================
     def formZoneList(self, rq_args):
         workspace = self.sData.getWS(rq_args.get("ws"))
-        report = workspace.getZone(rq_args.get("zone")).makeValuesReport()
+        zone = rq_args.get("zone")
+        if zone is not None:
+            report = workspace.getZone(zone).makeValuesReport()
+        else:
+            report = [[zone_h.getName(), zone_h.getTitle()]
+                for zone_h in workspace.iterZones()]
         output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()
