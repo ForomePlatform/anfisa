@@ -17,7 +17,7 @@ class AnfisaService:
 
     @classmethod
     def request(cls, serv_h, rq_path, rq_args):
-        if rq_path == "/":
+        if rq_path == "/" or rq_path == "/ws":
             content, error = cls.sMain.formTop(rq_args)
             return serv_h.makeResponse(content = content, error = error)
         if rq_path == "/rec":
@@ -176,7 +176,12 @@ class AnfisaService:
     #===============================================
     def formZoneList(self, rq_args):
         workspace = self.sData.getWS(rq_args.get("ws"))
-        report = workspace.getZone(rq_args.get("zone")).makeValuesReport()
+        zone = rq_args.get("zone")
+        if zone is not None:
+            report = workspace.getZone(zone).makeValuesReport()
+        else:
+            report = [[zone_h.getName(), zone_h.getTitle()]
+                for zone_h in workspace.iterZones()]
         output = StringIO()
         output.write(json.dumps(report))
         return output.getvalue()

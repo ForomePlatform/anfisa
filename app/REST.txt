@@ -8,7 +8,7 @@ Method "/list"
     -> m            (= "")
     -> filter       (null or name of filter)
     -> conditions   (null or ConditionList structure)
-    -> zone         (null or Zone structure)
+    -> zone         (null or Zone name)
     <-
     { * collection of records restricted by filter/conditions/zone
         "workspace" : <ws name>,
@@ -206,12 +206,12 @@ Method "/export"
 ===
 Method "/zone_list"
     -> ws           (= ws_default)
-    -> zone         (zone name, required!)
-    <- { * zone data
-            "zone": name
-            "title": title
-            "variants": [ list of variants ]
-       }
+    -> zone         (zone name)
+    <- 
+     [ * if zone name  is undefined
+        list of Zone structures without variants]
+     { * else:
+        Zone structure }
 
 ===
 Method "/tags"
@@ -323,12 +323,15 @@ Structure Conditions
 === 
 Structure Zone
     Handles data for current zone choice
-    [
-        0: zone name
-        1: zone variants
-    ]
+    {
+        "zone": name
+        "title": title
+        "variants": [ list of variants ]
+    }
     
-  Note: requires update and complexification soon 
+  Notes: 
+  1) in sequence of all zones the field "variants" is absent
+  2) requires update and complexification soon 
 
 === 
 Structure TagList

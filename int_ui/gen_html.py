@@ -493,12 +493,12 @@ def dirPage(output, title, html_base):
         css_files = ["dir.css"], js_files = ["dir.js"])
     print >> output, '''
   <body onload="setup();">
-    <h2>Anfisa home directory</h2>
+    <h2>%s home directory</h2>
     <p id="p-version">System version: <span id="span-version"></span></p>
     <div id="div-main">
     </div>
   </body>
-</html>'''
+</html>''' % title
 
 #===============================================
 def notFound(output, title, html_base):
