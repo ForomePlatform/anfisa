@@ -21,7 +21,7 @@ function setupData(info) {
     var tab_cnt = ["<table>"];
     for (idx = 0; idx < info["workspaces"].length; idx++) {
         ws_info = info["workspaces"][idx];
-        tab_cnt.push('<tr><td class="name"><a href="/?ws=' + ws_info["name"] + '" ' +
+        tab_cnt.push('<tr><td class="name"><a href="ws?ws=' + ws_info["name"] + '" ' +
             'target="' + sTitlePrefix + '/' + ws_info["name"] + '">' +
             ws_info["name"] + '</td>');
         tab_cnt.push('<td class="note">' + ws_info["note"].replace('\n', '<br>') + 
@@ -31,7 +31,7 @@ function setupData(info) {
         tab_cnt.push('<tr><td colspan="2"></td></tr>');
         for (idx = 0; idx < info["xl-datasets"].length; idx++) {
             ds_info = info["xl-datasets"][idx];
-            tab_cnt.push('<tr><td class="name"><a href="/xl?ds=' + 
+            tab_cnt.push('<tr><td class="name"><a href="xl?ds=' + 
                 ds_info["name"] + '" ' + 'target="' + sTitlePrefix + '/' + 
                 ds_info["name"] + '">' +
                 ds_info["name"] + '</td>');

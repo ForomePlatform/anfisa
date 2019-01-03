@@ -18,7 +18,7 @@ class AnfisaService:
 
     @classmethod
     def request(cls, serv_h, rq_path, rq_args):
-        if rq_path == "/":
+        if rq_path == "/" or rq_path == "/ws":
             content, error = cls.sMain.formTop(rq_args)
             return serv_h.makeResponse(content = content, error = error)
         if rq_path == "/rec":
