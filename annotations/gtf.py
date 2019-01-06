@@ -89,7 +89,13 @@ class Lookup:
             a.append(row[1])
         i = bisect.bisect(a, pos)
 
-        d = min(pos - a[i-1], a[i] - pos)
+        if (pos == inf or pos == sup):
+            d = 0
+        else:
+            try:
+                d = min(pos - a[i-1], a[i] - pos)
+            except:
+                raise
 
         if ((i%2) == 1):
             index = (i+1)/2
