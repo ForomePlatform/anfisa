@@ -308,8 +308,9 @@ class Variant:
             if (not transcripts):
                 continue
             distances = []
+            dist, region, index, n = (None, None, None, None)
             for t in transcripts:
-                dist, region, index, n = (None, None, None, None)
+                dist = None
                 for p in pos:
                     result = connection.lookup(pos = p, args={"transcript":t})
                     if (result == None):
@@ -322,6 +323,7 @@ class Variant:
                         dist = d
                 distances.append([dist, region, index, n])
             self.data["dist_from_boundary_{}".format(kind)] = distances
+            self.data["region_{}".format(kind)] = region
 
     def call_beacon(self):
         connection = self.connectors.beacon

@@ -27,6 +27,10 @@ def prepareLegend(ws_name):
         "/_filters/dist_from_exon",
         title="Distance From Intron/Exon Boundary (Canonical)",
         research_only = False, default_value = 0)
+    flt_unit.StatusUnit(legend, "Region",
+        "/data/region_canonical",
+        title="Region (Canonical)",
+        research_only = False, default_value = "Other")
     legend._endViewGroup()
 
     flt_unit.MultiStatusUnit(legend, "Genes",
