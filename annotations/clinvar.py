@@ -1,3 +1,4 @@
+from annotations import positions
 from annotations.db_connect import Connection
 
 
@@ -13,7 +14,9 @@ class ClinVar(Connection):
                 "PhenotypeIDS," \
                 "PhenotypeList," \
                 "OtherIDs, " \
-                "RCVaccession " \
+                "RCVaccession, " \
+                "ReferenceAllele, " \
+                "VariationID " \
             "FROM clinvar.variant_summary AS v " \
             "WHERE " \
                 "Assembly = 'GRCh37' AND " \
@@ -37,12 +40,12 @@ class ClinVar(Connection):
         self.query_base = self.QUERY_BASE.format(*args[:-2])
 
     def get_submitters(self, row):
-        rcv_accessions = row[-1].split(';')
+        rcv_accessions = row[8].split(';')
         args = ','.join(["'{}'".format(arg) for arg in rcv_accessions])
         cursor = self.connection.cursor()
         cursor.execute(self.SUBMITTER_QUERY.format(args))
         submitters = {s[0]: s[1] for s in cursor.fetchall()}
-        return tuple(list(row[0:-1]) + [submitters])
+        return tuple(list(row) + [submitters])
 
     def add_submitters_to_rows(self, rows):
         if (len(rows) < 1):
@@ -53,10 +56,15 @@ class ClinVar(Connection):
         rows = self.get_expanded_data(c, p1)
         return len(rows) > 0
 
-    def get_expanded_data(self, c, p1):
+    def get_expanded_data(self, c, p1, p2 = None, ref = None, alt = None):
         cursor = self.connection.cursor()
         cursor.execute(self.query_base, (c, p1))
-        rows = cursor.fetchall()
+        all_rows = cursor.fetchall()
+        if (alt and ref):
+            rows = [row for row in all_rows if positions.cmp_ref_alt(ref, alt, row[9], row[2])]
+        else:
+            rows = all_rows
+
         return self.add_submitters_to_rows(rows)
 
     def get_data(self, c, p1, p2, alt):
@@ -72,12 +80,16 @@ class ClinVar(Connection):
             rows = cursor.fetchall()
         cursor.close()
         if (len(rows) > len(alt)):
-            raise Exception("Ambiguous query: c={}, start = {}, end = {}, alt = {}".format(c, p1, p2, a))
+            raise Exception("Ambiguous query: c={}, start = {}, end = {}, alt = {}".format(c, p1, p2, alt))
         return self.add_submitters_to_rows(rows)
 
 
 if __name__ == '__main__':
     with ClinVar() as clinvar_connector:  ##anfisa.forome.org
+        data = clinvar_connector.get_expanded_data("6", 7542149, 7542148, "C", "CA")
+        for row in data: print row
+
+
         data = clinvar_connector.get_data("15", 38614525, 38614525, "A")
         print data
         data = clinvar_connector.get_data("1", 156104292, 156104292, "A")

@@ -6,6 +6,7 @@ import time
 from annotations import case_utils, liftover
 from annotations.clinvar import ClinVar
 from annotations.gnomad import GnomAD
+from annotations.gtf import GTF
 from annotations.hgmd import HGMD
 from annotations.record import Variant
 from beacons.beacon import Beacon
@@ -46,6 +47,8 @@ def execute_vep(input, output = None, fork = 8):
 
 def annotate_json(f, out = None, vcf_header = None, samples = None, case = None, limit = None, start = 1):
     n_out = limit / 20 if limit > 0 else 100
+    if (not n_out):
+        n_out = 1
     n = 0
     l = 0
     hg19_to_38_converter = liftover.Converter()
@@ -53,12 +56,14 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
 
     with open(f) as input, open(out, "w") as out1, HGMD() as hgmd, \
                     GnomAD() as gnomAD,  \
-                    ClinVar("anfisa.forome.org:ip-172-31-24-96:MishaMBP4.local") as clinvar:
+                    GTF() as gtf, \
+                    ClinVar() as clinvar:
         cns = {
             "hgmd": hgmd,
             "gnomAD": gnomAD,
             "liftover": hg19_to_38_converter,
             "clinvar": clinvar,
+            "gtf": gtf.prepare_lookup(transcript=True),
             "beacon": beacon
         }
         while(True):

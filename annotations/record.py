@@ -4,6 +4,7 @@ from StringIO import StringIO
 import vcf
 
 from annotations import liftover
+from beacons.beacon import Beacon
 
 
 def link_to_pmid(pmid):
@@ -113,7 +114,15 @@ def get_from_transcripts(transcripts, key, source):
 
 hgvs_signs = ['-', '+', '*']
 def get_distance_hgvsc(hgvsc):
-    coord = hgvsc.split(':')[1]
+    chunks = hgvsc.split(':')[1:]
+    coord = None
+    for chunk in chunks:
+        ch = chunk[0]
+        if (ch in {'c', 'p'}):
+            coord = chunk
+            break
+    if (not coord):
+        return None
     xx = coord.split('.')
     d = None
     try:
@@ -155,6 +164,7 @@ class DBConnectors:
         self.clinvar = array.get("clinvar")
         self.liftover = array.get("liftover")
         self.beacon = array.get("beacon")
+        self.gtf = array.get("gtf")
 
 class Variant:
     csq_damaging = [
@@ -241,6 +251,7 @@ class Variant:
         self.call_hgmd()
         self.call_clinvar()
         self.call_beacon()
+        self.call_gtf()
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
@@ -276,9 +287,50 @@ class Variant:
         self.hg38_start = connection.hg38(self.chr_num(), self.start())
         self.hg38_end = connection.hg38(self.chr_num(), self.end())
 
+    def call_gtf(self):
+        connection = self.connectors.gtf
+        if (not connection):
+            return
+
+        transcript_kinds = ["canonical", "worst"]
+        pos = set()
+        pos.add(self.start())
+        pos.add(self.end())
+        if (len(pos) < 1):
+            return
+        for kind in transcript_kinds:
+            if (kind == "canonical"):
+                transcripts = [t["transcript_id"] for t in self.get_canonical_transcripts() if (t.get("source") == "Ensembl")]
+            elif (kind == "worst"):
+                transcripts = [t["transcript_id"] for t in self.get_most_severe_transcripts() if (t.get("source") == "Ensembl")]
+            else:
+                raise Exception("Unknown Transcript Kind: {}".format(kind))
+            if (not transcripts):
+                continue
+            distances = []
+            for t in transcripts:
+                dist, region, index, n = (None, None, None, None)
+                for p in pos:
+                    result = connection.lookup(pos = p, args={"transcript":t})
+                    if (result == None):
+                        continue
+                    if (len(result) > 3):
+                        d, region, index, n = result
+                    else:
+                        d, region = result
+                    if (dist == None or d < dist):
+                        dist = d
+                distances.append([dist, region, index, n])
+            self.data["dist_from_boundary_{}".format(kind)] = distances
+
     def call_beacon(self):
         connection = self.connectors.beacon
         if (not connection):
+            #"pos={pos}&chrom={chromosome}&allele={alt}&ref={ref}"
+            self.data["beacon_url"] = [
+                Beacon.PUBLIC_URL.format(pos=self.start(), chromosome = self.chr_num(),ref=self.ref(),alt=alt)
+                for alt in self.alt_list()
+            ]
             return
         self.data["beacon"] = dict()
         beacon_names = []
@@ -374,7 +426,7 @@ class Variant:
             return
 
         variants = [
-            "{} {}>{}".format(vstr(self.chromosome(), row[0], row[1]), self.ref(), row[2])
+            "{} {}>{}".format(vstr(self.chromosome(), row[0], row[1]), row[9], row[2])
             for row in rows
         ]
         significance = []
@@ -393,7 +445,7 @@ class Variant:
                     ids[x[0]] = ids[x[0]].append(x[1])
             submissions.update(row[-1])
 
-        self.data["ClinVar"] = "True"
+        self.data["ClinVar"] = [row[10] for row in rows]
         self.data["clinvar_variants"] = variants
         self.data["clinvar_phenotypes"] = [row[6] for row in rows]
         self.data["clinvar_significance"] = significance
@@ -652,6 +704,12 @@ class Variant:
         return (c_worst, c_canonical, c_other)
 
     def get_distance_from_exon(self, kind, none_replacement = "Exonic"):
+        dist = None
+        key = "dist_from_boundary_{}".format(kind)
+        if (key in self.data):
+            dist = unique([d[0] for d in self.data[key]])
+        if (dist):
+            return dist
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs],
                       replace_None=none_replacement)
 
@@ -1143,9 +1201,8 @@ class Variant:
         phenotypes = self.private_data.get("HGMD_phenotypes")
         tab4["hgmd_phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
-        if (self.data.get("ClinVar") <> None):
-            tab4["clinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
-                format(self.chr_num(), self.start(), self.end())
+        if ("ClinVar" in self.data):
+            tab4["clinVar"] = ["https://www.ncbi.nlm.nih.gov/clinvar/variation/{}/".format(c) for c in self.data["ClinVar"]]
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
         tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
@@ -1156,6 +1213,7 @@ class Variant:
             tab4["{}_significance".format(submitter)] = self.data.get(submitter)
         tab4["pubmed_search"] = self.get_tenwise_link()
         tab4["beacons"] = self.get_beacons()
+        tab4["beacon_url"] = self.data.get("beacon_url")
 
     def create_predictions_tab(self, data_info, view_info, filters):
         tab5 = dict()

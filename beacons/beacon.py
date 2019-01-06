@@ -59,8 +59,13 @@ class Beacon:
         /alleles	Lists supported alleles.	Go to example
         /references	Lists supported reference genomes.	Go to example
    """
+    BASE_URL = "https://beacon-network.org/"
+    SEARCH_URI = "#/search?pos={pos}&chrom={chromosome}&allele={alt}&ref={ref}&rs=GRCh37"
+    PUBLIC_URL = "{}{}".format(BASE_URL,SEARCH_URI)
 
-    def __init__(self, baseUrl="https://beacon-network.org/", resJson=False, beacon = None):
+    def __init__(self, baseUrl=None, resJson=False, beacon = None):
+        if (not baseUrl):
+            baseUrl = self.BASE_URL
         self.baseUrl = baseUrl + "api"
         self.resJson = resJson
         if (beacon):

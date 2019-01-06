@@ -1,8 +1,7 @@
 import os
 import sqlite3
-from annotations import gnomAD_path
+from annotations import gnomAD_path, positions
 from annotations.db_connect import Connection
-import difflib
 
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
     try:
@@ -187,14 +186,20 @@ class GnomAD(Connection):
     def get_from_row(self, column, row):
         return row[self.C_DICT[column]]
 
+    def get_int_from_row(self, column, row):
+        v = self.get_from_row(column, row)
+        if (not v):
+            return 0
+        return int(v)
+
     def get_an_and_ac(self, rows, group = None):
         an = 0
         ac = 0
         an_column = '_'.join(["AN",group]) if group else "AN"
         ac_column = '_'.join(["AC",group]) if group else "AC"
         for row in rows:
-            an += self.get_from_row(an_column, row)
-            ac += self.get_from_row(ac_column, row)
+            an += self.get_int_from_row(an_column, row)
+            ac += self.get_int_from_row(ac_column, row)
 
         return an, ac
 
@@ -261,25 +266,7 @@ class GnomAD(Connection):
             ref = self.get_from_row("REF", row)
             alt = self.get_from_row("ALT", row)
 
-            matcher = difflib.SequenceMatcher(a=ref, b=alt)
-            matches = matcher.get_matching_blocks()
-            a = []
-            b = []
-            apos = 0
-            bpos = 0
-            for match in matches:
-                a.append(ref[apos:match.a])
-                apos = match.a + match.size
-                b.append(alt[bpos:match.b])
-                bpos = match.b + match.size
-
-            new_ref = ''.join(a)
-            new_alt = ''.join(b)
-
-            if (not new_ref or not new_alt):
-                first_match = ref[0]
-                new_ref = first_match + new_ref
-                new_alt = first_match + new_alt
+            new_ref, new_alt = positions.transform_ref_alt(ref, alt)
 
             unique_rows.add((chrom, pos, new_ref, new_alt))
 
