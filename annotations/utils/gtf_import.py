@@ -58,7 +58,7 @@ class GTF_Import(GTF):
         m = 0
         t0 = time.time()
         list_of_values = []
-        for line in gtf_file:
+        for line in gtf_stream:
             l += 1
             if (line[0] == '#'):
                 continue
