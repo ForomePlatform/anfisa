@@ -26,6 +26,7 @@ sample_command = "{vep_home}/vep" \
                  "--plugin SpliceRegion " \
                  "--plugin GeneSplicer,{db_home}/GeneSplicer/bin/linux/genesplicer,{db_home}/GeneSplicer/human,context=200,tmpdir={tmp} " \
                  "--fasta {db_home}/vep/cache/homo_sapiens/93_GRCh37/Homo_sapiens.GRCh37.75.dna.primary_assembly.fa.gz " \
+                 "--buffer_size 50000 " \
                  "--fork {fork}"
 
 
