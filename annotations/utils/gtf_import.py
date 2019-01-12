@@ -168,7 +168,7 @@ class GTF_Import(GTF):
         while(row):
             pos = int(row[2])
             bucket = (pos / self.GENE_BUCKET_SIZE) * self.GENE_BUCKET_SIZE
-            if (bucket > prev_bucket):
+            if (bucket != prev_bucket):
                 print "{}: {}".format(row[1], bucket)
                 prev_bucket = bucket
             insert.execute(insert_sql, (bucket, row[0], row[1], row[2], row[3]))
