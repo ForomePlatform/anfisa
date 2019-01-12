@@ -6,6 +6,7 @@ import time
 from annotations import liftover
 from annotations.clinvar import ClinVar
 from annotations.gnomad import GnomAD
+from annotations.gtf import GTF
 from annotations.hgmd import HGMD
 from annotations.record import Variant
 from annotations.vep_rest_client import EnsemblRestClient
@@ -15,7 +16,8 @@ available_connectors = [
     "gnomAD",
     "clinvar",
     "beacon",
-    "liftover"
+    "liftover",
+    "gtf"
 ]
 
 class Annotator:
@@ -33,6 +35,8 @@ class Annotator:
                 c = None
             elif (connector == 'liftover'):
                 c = liftover.Converter()
+            elif (connector == 'gtf'):
+                c = GTF()
             else:
                 raise Exception("Unknown Connector: {}".format(connector))
             self.connectors[lcc[connector]] = c
@@ -65,6 +69,15 @@ class Annotator:
         data["input"] = (chromosome, start, ref, alt)
         data["gnomAD"] = self.connectors["gnomAD"].get_all(chr=chromosome, pos=start, alt=alt, ref=ref)
         return [data]
+
+    def gene_by_pos(self, chromosome, pos):
+        data = dict()
+        data["input"] = (chromosome, pos)
+        data["gene"] = {
+            "symbol": self.connectors["gtf"].get_gene(chromosome=chromosome, pos=pos)
+        }
+        return [data]
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Annotate variant(s) with VEP and output results as JSON")
@@ -113,6 +126,8 @@ if __name__ == '__main__':
         connectors = available_connectors
     elif (args.annotations == 'gnomad'):
         connectors = ["gnomAD"]
+    elif (args.annotations == 'gene'):
+        connectors = ["gtf"]
     else:
         raise Exception("Unsupported Annotation: {}".format(args.annotations))
 
@@ -123,6 +138,8 @@ if __name__ == '__main__':
                 data = a.get_anfisa_json(variant["chromosome"], variant["position"], variant["end"], variant["alternative"])
             elif (args.annotations == 'gnomad'):
                 data = a.get_gnomad(variant["chromosome"], variant["position"], variant["reference"], variant["alternative"])
+            elif (args.annotations == 'gene'):
+                data = a.gene_by_pos(variant["chromosome"], variant["position"])
             else:
                 data = None
 

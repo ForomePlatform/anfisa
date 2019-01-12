@@ -53,7 +53,7 @@ class GTF(Connection):
         sql = "{} WHERE {} ORDER BY {}".format(select, condition, order)
         return Lookup(self.connection, sql, conditions)
 
-    def get_gebe(self, chromosome, pos):
+    def get_gene(self, chromosome, pos):
         sql = "SELECT gene FROM {}_gene WHERE chromosome = {} AND bucket = {} AND {} between {} and {}" \
             .format(self.table, self.parameter(), self.parameter(), self.parameter(), self.quote("start"),
                     self.quote("end"))
@@ -61,7 +61,7 @@ class GTF(Connection):
         cursor = self.connection.cursor()
         cursor.execute(sql, (chromosome, bucket, pos))
         rows = cursor.fetchall()
-        if (cursor):
+        if (rows):
             return rows[0][0]
 
 
@@ -137,4 +137,4 @@ if __name__ == '__main__':
         print lookup.lookup(pos=16370215, args={"gene":"CLCNKB", "transcript":"ENST00000375679"})
         print lookup.lookup(pos=16371067, args={"gene":"CLCNKB", "transcript":"ENST00000375679"})
 
-        print gtf.get_gebe(5, 70818177)
+        print gtf.get_gene(5, 70818177)
