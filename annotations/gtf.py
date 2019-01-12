@@ -6,6 +6,7 @@ from annotations.db_connect import Connection
 
 class GTF(Connection):
     TABLE = "GTF"
+    GENE_BUCKET_SIZE = 1000000
     COLUMNS = [
         "chromosome",
         "source",

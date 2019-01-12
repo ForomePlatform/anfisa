@@ -130,7 +130,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--limit", dest="limit", type=int, help="Maximum number of variants to process")
     parser.add_argument("-s", "--start", dest="start", type=int, help="Start position: first variant to process", default=1)
     parser.add_argument("--header", help="VCF Header file", default="header.vcf")
-    parser.add_argument("--fork", help="Number of parallel processes", default=8, type=int)
+    parser.add_argument("--fork", help="Number of parallel processes", default=16, type=int)
 
     args = parser.parse_args()
     print args

@@ -130,6 +130,50 @@ class GTF_Import(GTF):
         cursor.close()
         return rowcount
 
+    def create_index_table(self, column):
+        index_table = "{}_{}".format(self.table, column)
+        columns = {
+            "bucket": "INT"
+        }
+        for c in [column, "chromosome", "start", "end"]:
+            columns[c] = self.columns[c]
+        self.create_table(index_table, columns)
+        self.create_index(index_table, "SIdx", columns=["start"])
+        self.create_index(index_table, "EIdx", columns=["end"])
+        self.create_index(index_table, "bIdx", columns=["bucket"])
+        self.create_index(index_table, "MainIdx", columns=[column])
+        return index_table, columns
+
+    def bucket_sql(self, column, feature):
+        select = "SELECT distinct {column}, chromosome, {start}, {end} FROM {table} WHERE feature = '{feature}' ORDER by 2, 3" \
+            .format(column=column, start=self.quote("start"), end=self.quote("end"),
+                    feature=feature, table=self.table)
+        index_table, columns = self.create_index_table(column)
+        c_clause = ", ".join([self.quote(c) for c in ["bucket", column, "chromosome", "start", "end"]])
+        v_clause = ", ".join(self.parameter() for c in columns)
+        insert = "INSERT INTO {table} ({c}) values ({v})".format(table=index_table, c=c_clause, v=v_clause)
+        return select, insert
+
+    def build_gene_index(self):
+        if (not self.is_connected()):
+            self.connect()
+        select_sql, insert_sql = self.bucket_sql("gene", "gene")
+        select = self.connection.cursor()
+        connection2 = self.get_connection()
+        insert = connection2.cursor()
+
+        select.execute(select_sql)
+        row = select.fetchone()
+        prev_bucket = -1
+        while(row):
+            pos = int(row[2])
+            bucket = (pos / self.GENE_BUCKET_SIZE) * self.GENE_BUCKET_SIZE
+            if (bucket > prev_bucket):
+                print "{}: {}".format(row[1], bucket)
+                prev_bucket = bucket
+            insert.execute(insert_sql, (bucket, row[0], row[1], row[2], row[3]))
+            row = select.fetchone()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Import VCF files into gnomAD database")
@@ -143,6 +187,7 @@ if __name__ == '__main__':
     parser.add_argument("--user", "-u", help="DBMS user, defualt depends on DBMS type")
     parser.add_argument("--password", "-p", help="DBMS password, defualt depends on DBMS type")
     parser.add_argument("--options", "-o", help="Options to pass to database driver", nargs='*')
+    parser.add_argument("--index", action='store_true', help="Jus build an index")
 
     args = parser.parse_args()
     print args
@@ -168,6 +213,9 @@ if __name__ == '__main__':
             option = key.split(':')
             connector.set_option(option[0], option[1])
     connector.connect()
+    if (args.index):
+        connector.build_gene_index()
+        exit(0)
     connector.initialize()
     for file in files:
         connector.ingest(file)

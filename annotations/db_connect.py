@@ -108,6 +108,14 @@ class Connection:
             self.connection = self.connect_via_tunnel()
         self.connection.autocommit = True
 
+    def get_connection(self):
+        if (self.host == "localhost" or self.host == "127.0.0.1"):
+            connection = self.connect_dbms(self.port, self.user, self.password, self.database, self.options)
+        else:
+            connection = self.connect_via_tunnel()
+        connection.autocommit = True
+        return connection
+
     def connect_via_tunnel(self):
         host = self.host
         home = os.path.expanduser('~')
