@@ -26,6 +26,8 @@ def parse_fam_file(fam_file):
                 tokens = line.split()
                 internal_names = [t for t in tokens if case in t.strip()]
                 external_names = [t for t in tokens if "CP" in t.strip()]
+                if (not external_names):
+                    external_names = tokens[0:1]
                 if (len (internal_names) == 1 and len(external_names) == 1):
                     sample_map[internal_names[0]] = external_names[0]
                 elif (len (internal_names) == 0):
