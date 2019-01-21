@@ -357,12 +357,12 @@ function setupStatUnit() {
             (has_zero)? "block":"none";
     }
     if (sCurCondNo != null) {
-        setupConitionValues(sCurFilterSeq[sCurCondNo]);
+        setupConditionValues(sCurFilterSeq[sCurCondNo]);
     }
     updateCurCondCtrl();
 }
 
-function setupConitionValues(cond) {
+function setupConditionValues(cond) {
     if (cond[1] != sCurStatUnit)
         return;
     if (cond[0] == "enum") {
@@ -627,6 +627,8 @@ function checkNumericOpMax() {
 function checkEnumOpMode(mode_idx) {
     if (sOpEnumModeInfo == null || sOpEnumModeInfo[mode_idx] == null)
         return false;
+    if (sOpEnumModeInfo[mode_idx])
+        mode_idx = -1;
     if (sOpEnumModeInfo[0] != null) {
         sOpEnumModeInfo[0] = (mode_idx == 0);
         sCheckCurCondModAnd.checked = (mode_idx == 0);
