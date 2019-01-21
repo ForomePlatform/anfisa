@@ -94,10 +94,6 @@ def _formXLPannel(output, ds_name):
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
                   <div id="cur-cond-enum-mode">
-                    <span id="cond-mode-or-span">
-                      <input id="cond-mode-or" type="checkbox"
-                        onchange="sOpEnumH.checkControls(0);"/>&nbsp;OR
-                    </span><br/>
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
                         onchange="sOpEnumH.checkControls(1);"/>&nbsp;AND

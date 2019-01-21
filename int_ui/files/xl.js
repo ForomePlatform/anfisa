@@ -689,7 +689,7 @@ var sOpEnumH = {
     
     updateCondition: function(cond) {
         if (this.mOperationMode != null)
-            this.mOperationMode = cond[2];
+            this.mOperationMode = ["", "AND", "ONLY", "NOT"].indexOf(cond[2]);
         var_list = cond[3];
         needs_zeros = false;
         for (j = 0; j < this.mVariants.length; j++) {
@@ -705,7 +705,7 @@ var sOpEnumH = {
     careControls: function() {
         document.getElementById("cur-cond-enum").style.display = 
             (this.mVariants == null)? "none":"block";
-        for (idx=0; idx < 4; idx++) {
+        for (idx = 1; idx < 4; idx++) {
             vmode = ["or", "and", "only", "not"][idx];
             document.getElementById("cond-mode-" + vmode + "-span").
                 style.visibility = (this.mOperationMode == null)? "hidden":"visible";
@@ -731,7 +731,11 @@ var sOpEnumH = {
         this.careControls();
         var error_msg = null;
         if (opt != undefined && this.mOperationMode != null) {
-            this.mOperationMode = opt;
+            if (this.mOperationMode == opt)
+                this.mOperationMode = 0;
+            else
+                this.mOperationMode = opt;
+            
         }
         sel_names = [];
         for (j=0; j < this.mVariants.length; j++) {

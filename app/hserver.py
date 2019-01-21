@@ -1,6 +1,7 @@
 import sys, os, traceback, logging, codecs, json
 from StringIO import StringIO
 from urlparse import parse_qs
+from cgi import parse_header, parse_multipart
 import logging.config
 
 from app.anf_data import AnfisaData
@@ -97,10 +98,21 @@ class HServHandler:
 
         if environ["REQUEST_METHOD"] == "POST":
             try:
-                rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
-                rq_body = environ['wsgi.input'].read(rq_body_size)
-                for a, v in parse_qs(rq_body).items():
-                    query_args[a] = v[0].decode("utf-8")
+                content_type = environ.get('CONTENT_TYPE')
+                if content_type:
+                    ctype, pdict = parse_header(content_type)
+                    if ctype == 'multipart/form-data':
+                        for a, v in parse_multipart(environ['wsgi.input'], pdict).items():
+                            query_args[a] = v[0]
+                    elif ctype != 'application/x-www-form-urlencoded':
+                        logging.error("Bad content type for POST: " + ctype)
+                    else:
+                        content_type = None
+                if not content_type:
+                    rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
+                    rq_body = environ['wsgi.input'].read(rq_body_size)
+                    for a, v in parse_qs(rq_body).items():
+                        query_args[a] = v[0].decode("utf-8")
             except Exception:
                 rep = StringIO()
                 traceback.print_exc(file = rep)
@@ -151,8 +163,8 @@ class HServHandler:
             rep = StringIO()
             traceback.print_exc(file = rep)
             log_record = rep.getvalue()
-            logging.error(
-                "Exception on GET request:\n " + log_record)
+            logging.error("Exception on %s request:\n %s" %
+                (environ["REQUEST_METHOD"], log_record))
             return resp_h.makeResponse(error = 500)
 
 #========================================
