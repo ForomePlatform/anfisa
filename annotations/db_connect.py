@@ -165,6 +165,34 @@ class Connection:
         else:
             return '?'
 
+    def quote(self, str):
+        if (self.dbms == 'MySQL'):
+            return "`{}`".format(str)
+        else:
+            return '"{}"'.format(str)
+
+    def create_table(self, table, columns):
+        c = self.connection.cursor()
+
+        column_string = ", ".join(["{} {}".format(column, columns[column]) for column in columns])
+
+        if (self.is_table_exist(table) > 0):
+            sql = "DROP TABLE {}".format(table)
+            print sql
+            c.execute(sql)
+
+        sql = "CREATE TABLE {} ({})".format(table, column_string)
+        print sql
+        c.execute(sql)
+
+    def create_index(self, table, name, columns, unique = False):
+        c = self.connection.cursor()
+        qualifier = "UNIQUE" if unique else ""
+        column_string = ",".join(columns)
+        sql = "CREATE {q} INDEX {name} ON {table} ({cols})".\
+            format(q=qualifier, name = name, table = table, cols = column_string)
+        c.execute(sql)
+
     def close(self):
         if (self.tunnel):
             self.tunnel.stop()

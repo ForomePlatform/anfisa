@@ -27,7 +27,7 @@ function setupData(info) {
         tab_cnt.push('<td class="note">' + ws_info["note"].replace('\n', '<br>') + 
             '</td></tr>');
     }
-    if (info["xl-datasets"].length > 0) {
+    if (info["xl-datasets"] && info["xl-datasets"].length > 0) {
         tab_cnt.push('<tr><td colspan="2"></td></tr>');
         for (idx = 0; idx < info["xl-datasets"].length; idx++) {
             ds_info = info["xl-datasets"][idx];

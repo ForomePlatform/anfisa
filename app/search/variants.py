@@ -36,3 +36,4 @@ class VariantSet:
 
     def getVariants(self):
         return self.mVariants[:]
+

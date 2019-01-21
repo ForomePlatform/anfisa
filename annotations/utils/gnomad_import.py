@@ -76,28 +76,14 @@ class GnomAD_Import(GnomAD):
                                 ", ".join([self.parameter() for c in self.insert_columns]))
 
     def initialize(self):
-        c = self.connection.cursor()
-        columns = self.columns
-
-        column_string = ", ".join(["{} {}".format(column, columns[column]) for column in columns])
-
-        if (self.is_table_exist(self.table) > 0):
-            sql = "DROP TABLE {}".format(self.table)
-            print sql
-            c.execute(sql)
-
-        sql = "CREATE TABLE {} ({})".format(self.table, column_string)
-        print sql
-        c.execute(sql)
-
+        self.create_table(self.table, self.columns)
         self.create_indices()
 
     def create_indices(self):
-        c = self.connection.cursor()
-        c.execute("CREATE UNIQUE INDEX PosIdx On {} (CHROM, POS, SOURCE, REF, ALT)".format(self.table))
-        c.execute("CREATE INDEX PosIdx2 On {} (POS, REF, ALT)".format(self.table))
-        c.execute("CREATE INDEX RsIdIdx On {} (ID)".format(self.table))
-        c.execute("CREATE INDEX SRCIdx On {} (SOURCE)".format(self.table))
+        self.create_index(self.table, "PosIdx", columns=["CHROM", "POS", "SOURCE", "REF", "ALT"], unique=True)
+        self.create_index(self.table, "PosIdx2", columns=["POS", "REF", "ALT"])
+        self.create_index(self.table, "RsIdIdx", columns=["ID"])
+        self.create_index(self.table, "SRCIdx", columns=["SOURCE"])
 
     def ingest(self, vcf):
         BATCH_SIZE = 100

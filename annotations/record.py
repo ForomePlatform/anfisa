@@ -4,6 +4,7 @@ from StringIO import StringIO
 import vcf
 
 from annotations import liftover
+from beacons.beacon import Beacon
 
 
 def link_to_pmid(pmid):
@@ -113,7 +114,15 @@ def get_from_transcripts(transcripts, key, source):
 
 hgvs_signs = ['-', '+', '*']
 def get_distance_hgvsc(hgvsc):
-    coord = hgvsc.split(':')[1]
+    chunks = hgvsc.split(':')[1:]
+    coord = None
+    for chunk in chunks:
+        ch = chunk[0]
+        if (ch in {'c', 'p'}):
+            coord = chunk
+            break
+    if (not coord):
+        return None
     xx = coord.split('.')
     d = None
     try:
@@ -145,16 +154,6 @@ def get_distance_hgvsc(hgvsc):
         d = None
     return d
 
-## TO-DO:
-## Remove CALLED_BY and CMPD-HET
-## Beside Worst Annotation add canonical annotation
-## cPos: break into worst/canonical/rest
-## gnomAD AF: CLCNKB, 0.003*??
-## Move pLI to gnomAD
-## No popmax?
-## Explore SPlicing, add MaxEntTool
-## HGMD put "NO"
-## Add LoFTool
 
 class DBConnectors:
     def __init__(self, array):
@@ -165,6 +164,7 @@ class DBConnectors:
         self.clinvar = array.get("clinvar")
         self.liftover = array.get("liftover")
         self.beacon = array.get("beacon")
+        self.gtf = array.get("gtf")
 
 class Variant:
     csq_damaging = [
@@ -218,8 +218,12 @@ class Variant:
         return None
 
     def __init__(self, json_string, vcf_header = None, case = None, samples = None, connectors = None):
-        self.original_json = json_string
-        self.data = json.loads(json_string)
+        if (isinstance(json_string, str)):
+            self.original_json = json_string
+            self.data = json.loads(json_string)
+        else:
+            self.original_json = None
+            self.data = json_string
         self.filters = dict()
         self.private_data = dict()
         self.case = case
@@ -230,7 +234,11 @@ class Variant:
         self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
-        vcf_string = "{}\n{}\n".format(vcf_header, self.data.get("input"))
+        vcf_string = None
+        if "input" in self.data:
+            row = self.data.get("input")
+            if (len(row.split()) > 5):
+                vcf_string = "{}\n{}\n".format(vcf_header, row)
         if vcf_string:
             fsock = StringIO(vcf_string)
             vcf_reader = vcf.Reader(fsock)
@@ -243,6 +251,7 @@ class Variant:
         self.call_hgmd()
         self.call_clinvar()
         self.call_beacon()
+        self.call_gtf()
 
         self.filters['min_gq'] = self.get_min_GQ()
         self.filters['proband_gq'] = self.get_proband_GQ()
@@ -250,21 +259,22 @@ class Variant:
         self.filters['has_variant'] = list()
 
         proband = self.get_proband()
-        mother = self.samples[proband]['mother']
-        father = self.samples[proband]['father']
-        for sample in self.samples:
-            name = self.samples[sample]["name"]
-            if (sample == proband):
-                label = "proband [{}]".format(name)
-            elif (sample == mother):
-                label = "mother [{}]".format(name)
-            elif (sample == father):
-                label = "father [{}]".format(name)
-            else:
-                label = sample
+        if (proband):
+            mother = self.samples[proband]['mother']
+            father = self.samples[proband]['father']
+            for sample in self.samples:
+                name = self.samples[sample]["name"]
+                if (sample == proband):
+                    label = "proband [{}]".format(name)
+                elif (sample == mother):
+                    label = "mother [{}]".format(name)
+                elif (sample == father):
+                    label = "father [{}]".format(name)
+                else:
+                    label = sample
 
-            if (self.sample_has_variant(sample)):
-                self.filters['has_variant'].append(label)
+                if (self.sample_has_variant(sample)):
+                    self.filters['has_variant'].append(label)
 
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
@@ -277,9 +287,52 @@ class Variant:
         self.hg38_start = connection.hg38(self.chr_num(), self.start())
         self.hg38_end = connection.hg38(self.chr_num(), self.end())
 
+    def call_gtf(self):
+        connection = self.connectors.gtf
+        if (not connection):
+            return
+
+        transcript_kinds = ["canonical", "worst"]
+        pos = set()
+        pos.add(self.start())
+        pos.add(self.end())
+        if (len(pos) < 1):
+            return
+        for kind in transcript_kinds:
+            if (kind == "canonical"):
+                transcripts = [t["transcript_id"] for t in self.get_canonical_transcripts() if (t.get("source") == "Ensembl")]
+            elif (kind == "worst"):
+                transcripts = [t["transcript_id"] for t in self.get_most_severe_transcripts() if (t.get("source") == "Ensembl")]
+            else:
+                raise Exception("Unknown Transcript Kind: {}".format(kind))
+            if (not transcripts):
+                continue
+            distances = []
+            dist, region, index, n = (None, None, None, None)
+            for t in transcripts:
+                dist = None
+                for p in pos:
+                    result = connection.lookup(pos = p, args={"transcript":t})
+                    if (result == None):
+                        continue
+                    if (len(result) > 3):
+                        d, region, index, n = result
+                    else:
+                        d, region = result
+                    if (dist == None or d < dist):
+                        dist = d
+                distances.append([dist, region, index, n])
+            self.data["dist_from_boundary_{}".format(kind)] = distances
+            self.data["region_{}".format(kind)] = region
+
     def call_beacon(self):
         connection = self.connectors.beacon
         if (not connection):
+            #"pos={pos}&chrom={chromosome}&allele={alt}&ref={ref}"
+            self.data["beacon_url"] = [
+                Beacon.PUBLIC_URL.format(pos=self.start(), chromosome = self.chr_num(),ref=self.ref(),alt=alt)
+                for alt in self.alt_list()
+            ]
             return
         self.data["beacon"] = dict()
         beacon_names = []
@@ -375,7 +428,7 @@ class Variant:
             return
 
         variants = [
-            "{} {}>{}".format(vstr(self.chromosome(), row[0], row[1]), self.ref(), row[2])
+            "{} {}>{}".format(vstr(self.chromosome(), row[0], row[1]), row[9], row[2])
             for row in rows
         ]
         significance = []
@@ -394,7 +447,7 @@ class Variant:
                     ids[x[0]] = ids[x[0]].append(x[1])
             submissions.update(row[-1])
 
-        self.data["ClinVar"] = "True"
+        self.data["ClinVar"] = [row[10] for row in rows]
         self.data["clinvar_variants"] = variants
         self.data["clinvar_phenotypes"] = [row[6] for row in rows]
         self.data["clinvar_significance"] = significance
@@ -457,7 +510,10 @@ class Variant:
         return self.data.get("allele_string")
 
     def ref(self):
-        return self.vcf_record.REF
+        if (self.vcf_record):
+            return self.vcf_record.REF
+        else:
+            return self.ref1()
 
     def ref1(self):
         s = self.data.get("allele_string")
@@ -468,22 +524,28 @@ class Variant:
 
     def alt_list(self):
         if (self.alt_alleles == None):
-            alleles = [str(s) for s in self.vcf_record.alleles]
-            alt_allels = [s.sequence for s in self.vcf_record.ALT]
-            counts = dict()
-            #.gt_bases
-            genotypes = {self.vcf_record.genotype(s) for s in self.samples}
-            for g in genotypes:
-                ad = g.data.AD if 'AD' in g.data._asdict() else None
-                if (not ad):
-                    self.alt_alleles = alt_allels
-                    return self.alt_alleles
-                for i in range(0, len(alleles)):
-                    al = alleles[i]
-                    n = ad[i]
-                    counts[al] = counts.get(al, 0) + n
+            if (self.vcf_record):
+                alleles = [str(s) for s in self.vcf_record.alleles]
+                alt_allels = [s.sequence for s in self.vcf_record.ALT]
+                counts = dict()
+                #.gt_bases
+                if (self.samples):
+                    genotypes = {self.vcf_record.genotype(s) for s in self.samples}
+                    for g in genotypes:
+                        ad = g.data.AD if 'AD' in g.data._asdict() else None
+                        if (not ad):
+                            self.alt_alleles = alt_allels
+                            return self.alt_alleles
+                        for i in range(0, len(alleles)):
+                            al = alleles[i]
+                            n = ad[i]
+                            counts[al] = counts.get(al, 0) + n
 
-            self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                    self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                else:
+                    self.alt_alleles = alt_allels
+            else:
+                self.alt_alleles = self.alt_list1()
 
         return self.alt_alleles
 
@@ -644,6 +706,12 @@ class Variant:
         return (c_worst, c_canonical, c_other)
 
     def get_distance_from_exon(self, kind, none_replacement = "Exonic"):
+        dist = None
+        key = "dist_from_boundary_{}".format(kind)
+        if (key in self.data):
+            dist = unique([d[0] for d in self.data[key]])
+        if (dist):
+            return dist
         return unique([get_distance_hgvsc(hgvcs) for hgvcs in self.get_hgvs_list('c', kind) if hgvcs],
                       replace_None=none_replacement)
 
@@ -780,13 +848,19 @@ class Variant:
 
     @classmethod
     def get_from_genotype(cls, genotype, field):
+        if (not genotype):
+            return None
         return genotype.data._asdict().get(field)
 
     def get_proband_GQ(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         return self.get_from_genotype(self.vcf_record.genotype(self.get_proband()), 'GQ')
 
     def get_min_GQ(self):
         GQ = None
+        if (not self.samples or not self.vcf_record):
+            return None
         for s in self.samples:
             genotype = self.vcf_record.genotype(s)
             gq = self.get_from_genotype(genotype, 'GQ')
@@ -795,6 +869,8 @@ class Variant:
         return GQ
 
     def sample_has_variant(self, sample=None):
+        if (not self.vcf_record):
+            return False
         idx = None
 
         if (isinstance(sample, int)):
@@ -823,6 +899,8 @@ class Variant:
         return False
 
     def is_proband_has_allele(self, allele):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotype = self.get_genotypes()[0]
         if (not genotype):
             return False
@@ -830,12 +908,16 @@ class Variant:
         return (allele in set1)
 
     def proband_sex(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         proband = self.get_proband()
         return self.samples[proband]['sex']
 
 
     def get_genotypes(self):
         proband = self.get_proband()
+        if (not proband):
+            return None, None, None, None
         proband_genotype = self.vcf_record.genotype(proband).gt_bases
         mother = self.samples[proband]['mother']
         if (mother == '0'):
@@ -853,6 +935,8 @@ class Variant:
         return proband_genotype, maternal_genotype, paternal_genotype, other_genotypes
 
     def get_zygosity(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotype = self.get_genotypes()[0]
         if (not genotype):
             return None
@@ -866,6 +950,8 @@ class Variant:
         return "Unknown"
 
     def inherited_from(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         proband_genotype, maternal_genotype, paternal_genotype, other = self.get_genotypes()
 
         if (self.chr_num().upper() == 'X' and self.proband_sex() == 1):
@@ -886,6 +972,8 @@ class Variant:
         return "Inconclusive"
 
     def affected_alt_list(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples if self.samples[s]['affected']}
         alleles_affected = set()
         for g in genotypes:
@@ -899,6 +987,8 @@ class Variant:
         return [caller for caller in self.callers if (self.info().has_key(caller))]
 
     def get_callers(self):
+        if (not self.samples or not self.vcf_record):
+            return None
         callers = self.get_raw_callers()
 
         # GATK callers
@@ -1021,6 +1111,8 @@ class Variant:
     def create_quality_tab(self, data_info, view_info, filters):
         tab2 = list()
         view_info["quality_samples"] = tab2
+        if (not self.vcf_record):
+            return
         q_all = dict()
         q_all["title"] = "All"
         q_all['strand_odds_ratio'] = self.info().get("SOR")
@@ -1111,9 +1203,8 @@ class Variant:
         phenotypes = self.private_data.get("HGMD_phenotypes")
         tab4["hgmd_phenotypes"] = [p[0] for p in phenotypes] if phenotypes else None
 
-        if (self.data.get("ClinVar") <> None):
-            tab4["clinVar"] = "https://www.ncbi.nlm.nih.gov/clinvar/?term={}[chr]+AND+{}%3A{}[chrpos37]".\
-                format(self.chr_num(), self.start(), self.end())
+        if ("ClinVar" in self.data):
+            tab4["clinVar"] = ["https://www.ncbi.nlm.nih.gov/clinvar/variation/{}/".format(c) for c in self.data["ClinVar"]]
         tab4['clinVar_variants'] = unique(self.data.get("clinvar_variants"))
         tab4['clinVar_significance'] = unique(self.data.get("clinvar_significance"))
         tab4['clinVar_phenotypes'] = unique(self.data.get("clinvar_phenotypes"))
@@ -1124,6 +1215,7 @@ class Variant:
             tab4["{}_significance".format(submitter)] = self.data.get(submitter)
         tab4["pubmed_search"] = self.get_tenwise_link()
         tab4["beacons"] = self.get_beacons()
+        tab4["beacon_url"] = self.data.get("beacon_url")
 
     def create_predictions_tab(self, data_info, view_info, filters):
         tab5 = dict()

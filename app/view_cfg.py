@@ -87,13 +87,15 @@ CONFIG_ATTRS = {
             title = "ClinVar Phenotypes", is_seq = True),
         AttrH("clinVar_submitters",
             title = "ClinVar Submitters", is_seq = True),
-        AttrH("clinVar", title = "ClinVar", kind = "link"),
+        AttrH("clinVar", title = "ClinVar", kind = "link", is_seq=True),
         AttrH("gene_cards", title =
             "GeneCards", kind = "link", is_seq = True),
         AttrH("pubmed_search", kind="link",
             title="PubMed Search Results", is_seq = True),
         AttrH("beacons",
               title="Observed at", is_seq=True),
+        AttrH("beacon_url",
+              title="Search Beacons", is_seq=True, kind = "link"),
     ],
     "view_pred": [
         AttrH("lof_score", title = "LoF Score", is_seq = True),
