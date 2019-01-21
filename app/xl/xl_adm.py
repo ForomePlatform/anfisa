@@ -73,7 +73,7 @@ if args.mode == "create":
         cmd.append(cfg["inter_data"])
         cmd.append(cfg["scp-host"] + ':' + cfg["final_data"])
         print >> sys.stderr, "Remote copying:", ' '.join(cmd)
-        subprocess.call(cmd)
+        subprocess.call(' '.join(cmd), shell = True)
 
     print >> sys.stderr, "Load to Druid", args.datasource
     index_agent = RestAgent(cfg["druid_url_index"])
