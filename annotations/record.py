@@ -436,16 +436,16 @@ class Variant:
         ids = dict()
         for row in rows:
             significance.extend(row[4].split('/'))
-            id_list = [row[5].split(',') + row[7].split(',')  for row in rows]
-            for id in id_list:
-                if (not ':' in id):
-                    continue
-                x = id.split(':')
-                if (not x[0] in ids):
-                    ids[x[0]] = x[1]
-                else:
-                    ids[x[0]] = ids[x[0]].append(x[1])
             submissions.update(row[-1])
+        id_list = [row[5].split(',') + row[7].split(',')  for row in rows]
+        for id in id_list:
+            if (not ':' in id):
+                continue
+            x = id.split(':')
+            if (not x[0] in ids):
+                ids[x[0]] = x[1]
+            else:
+                ids[x[0]] = ids[x[0]].append(x[1])
 
         self.data["ClinVar"] = [row[10] for row in rows]
         self.data["clinvar_variants"] = variants
