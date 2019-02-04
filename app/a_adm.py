@@ -199,6 +199,8 @@ if ws_name is not None:
                 print >> sys.stderr, "So such workspace:", ws_name
                 sys.exit()
         m_ws = m_db[ws_name]
+elif not run_args.legacy:
+    m_db = mongo[run_args.database]
 
 #===============================================
 if cmd_seq[0] == "ws-list":
