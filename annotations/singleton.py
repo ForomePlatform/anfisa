@@ -145,7 +145,7 @@ if __name__ == '__main__':
 
             if data:
                 for v in data:
-                    print json.dumps(v, sort_keys=True, indent=4)
+                    print json.dumps(json.loads(v), sort_keys=True, indent=4)
 
         t1 = time.time()
         print (t1 - t0)
