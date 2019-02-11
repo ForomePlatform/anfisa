@@ -29,7 +29,7 @@ class DruidAdmin(DruidAgent):
             base_dir = self.mScpConfig["dir"]
             cmd = [self.mScpConfig["exe"]]
             if self.mScpConfig.get("key"):
-                cmd += ["-i", os.path.expanduser(self.mScpConfig["scp-key"])]
+                cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd.append(fdata_name)
             cmd.append(self.mScpConfig["host"] + ':' + base_dir)
             print >> sys.stderr, "Remote copying:", ' '.join(cmd)
