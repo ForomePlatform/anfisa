@@ -14,12 +14,12 @@
 
 #zone-mod {
     background-color: #fffefe;
-    margin: 3% 3% 2% 2%; 
+    margin: 4% 2% 2% 2%; 
     padding: 00px;
     border: 1px solid black;
     border-radius: 7px;
-    height: 90%; 
-    min-height: 90%;
+    height: 85%; 
+    min-height: 85%;
     width: 95%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     overflow: hidden;

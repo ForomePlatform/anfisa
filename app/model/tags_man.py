@@ -21,7 +21,7 @@ class TagsManager(ZoneH):
         return self.mMarkedSet
 
     def _loadDataSet(self):
-        for rec_no, rec_key in self.getWS().getDataSet().enumDataKeys():
+        for rec_no, rec_key in self.getWS().iterRecKeys():
             data_obj = self.getWS().getMongoRecData(rec_key)
             if data_obj is not None:
                 for tag, value in data_obj.items():
@@ -29,9 +29,6 @@ class TagsManager(ZoneH):
                         self.mTagSets[tag].add(rec_no)
                         self.mMarkedSet.add(rec_no)
         self.mIntVersion += 1
-
-    def getTagRecordList(self, tag):
-        return sorted(self.mTagSets[tag])
 
     def getOpTagList(self):
         return sorted(set(self.mTagSets.keys()) - set(self.mCheckTags))
@@ -52,13 +49,13 @@ class TagsManager(ZoneH):
         return key and key[0] != '_'
 
     def updateRec(self, rec_no, tags_to_update):
-        rec_key = self.getWS().getDataSet().getRecKey(rec_no)
+        rec_key = self.getWS().getRecKey(rec_no)
         rec_data = self.getWS().getMongoRecData(rec_key)
         return self._changeRecord(
             rec_no, rec_key, rec_data, tags_to_update)
 
     def makeRecReport(self, rec_no, update_info = None):
-        rec_key = self.getWS().getDataSet().getRecKey(rec_no)
+        rec_key = self.getWS().getRecKey(rec_no)
         mark_modified = False
         if update_info is not None:
             rec_data, mark_modified = update_info
@@ -161,3 +158,15 @@ class TagsManager(ZoneH):
                 work_set |= (tag_set & rec_no_set)
 
         return sorted(work_set)
+
+    def reportSelectTag(self, tag_name):
+        tag_list = self.getTagList()
+        if tag_name and tag_name not in tag_list:
+            tag_name = None
+        rep = {
+            "tag-list": tag_list,
+            "tag": tag_name,
+            "tags-version": self.mIntVersion}
+        if tag_name:
+            rep["records"] = sorted(self.mTagSets[tag_name])
+        return rep

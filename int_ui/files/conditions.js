@@ -63,7 +63,7 @@ function getCondDescripton(cond, short_form) {
     }
     if (cond != null && cond[0] == "enum") {
         rep_cond.push("IN");
-        if (cond[2]) 
+        if (cond[2] && cond[2] != "OR") 
             rep_cond.push('[' + cond[2] + ']');
         sel_names = cond[3];
         if (sel_names.length > 0)

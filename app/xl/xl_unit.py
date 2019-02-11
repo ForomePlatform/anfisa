@@ -1,21 +1,18 @@
-import logging
-from .druid import DruidCfg
-
 #===============================================
 class XL_Unit:
     def __init__(self, xl_ds, descr):
-        self.mDataset = xl_ds
-        self.mType  = descr["type"]
+        self.mDataSet = xl_ds
+        self.mUnitKind  = descr["kind"]
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
         self.mVGroup = descr.get("vgroup")
 
     def getDS(self):
-        return self.mDataset
+        return self.mDataSet
 
-    def getUnitType(self):
-        return self.mType
+    def getUnitKind(self):
+        return self.mUnitKind
 
     def getName(self):
         return self.mName
@@ -30,21 +27,19 @@ class XL_Unit:
         return self.mNo
 
     def report(self, output):
-        print >> output, "Unit", self.mName, "tp=", self.mType
+        print >> output, "Unit", self.mName, "kind=", self.mUnitKind
 
     @staticmethod
     def create(xl_ds, descr):
-        if descr["type"].startswith("dummy"):
-            logging.error("XL dataset %s: %s %s, ignored" %
-                (xl_ds.getName(), descr["type"], descr["name"]))
-            return None
-        if descr["type"] in {"long", "float"}:
+        if descr["kind"] in {"long", "float"}:
             return XL_NumUnit(xl_ds, descr)
-        else:
-            return XL_EnumUnit(xl_ds, descr)
+        ret = XL_EnumUnit(xl_ds, descr)
+        if ret.isDummy():
+            return None
+        return ret
 
     def _prepareStat(self):
-        return [self.mType, {
+        return [self.mUnitKind, {
             "name": self.mName,
             "title": self.mTitle,
             "vgroup": self.mVGroup}]
@@ -58,24 +53,25 @@ class XL_NumUnit(XL_Unit):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
+        druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getDS().getDataSource(),
-            "granularity": DruidCfg.GRANULARITY,
+            "dataSource": self.getDS().getName(),
+            "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
                 { "type": "count", "name": name_cnt,
                     "fieldName": self.getName()},
-                { "type": "%sMin" % self.getUnitType(),
+                { "type": "%sMin" % self.getUnitKind(),
                     "name": name_min,
                     "fieldName": self.getName()},
-                { "type": "%sMax" % self.getUnitType(),
+                { "type": "%sMax" % self.getUnitKind(),
                     "name": name_max,
                     "fieldName": self.getName()}],
-            "intervals": [ DruidCfg.INTERVAL ]}
+            "intervals": [ druid_agent.INTERVAL ]}
         if filter is not None:
             query["filter"] = filter
-        rq = self.getDS().getQueryAgent().call(query)
+        rq = druid_agent.call("query", query)
         assert len(rq) == 1
         return [rq[0]["result"][nm] for nm in
             (name_min, name_max, name_cnt)]
@@ -95,23 +91,28 @@ class XL_NumUnit(XL_Unit):
 class XL_EnumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
-        self.mVariants = descr["variants"]
+        self.mVariants = [info[0]
+            for info in descr["variants"]]
+
+    def isDummy(self):
+        return len(self.mVariants) < 1
 
     def evalStat(self, filter = None):
+        druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
-            "dataSource": self.getDS().getDataSource(),
+            "dataSource": self.getDS().getName(),
             "dimension": self.getName(),
             "threshold": len(self.mVariants),
             "metric": "count",
-            "granularity": DruidCfg.GRANULARITY,
+            "granularity": druid_agent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
-            "intervals": [ DruidCfg.INTERVAL ]}
+            "intervals": [ druid_agent.INTERVAL ]}
         if filter is not None:
             query["filter"] = filter
-        rq = self.getDS().getQueryAgent().call(query)
+        rq = druid_agent.call("query", query)
         assert len(rq) == 1
         counts = dict()
         for rec in rq[0]["result"]:

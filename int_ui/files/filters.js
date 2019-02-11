@@ -368,9 +368,11 @@ function setupConditionValues(cond) {
     if (cond[0] == "enum") {
         if (cond[2] && sOpEnumModeInfo != null) {
             mode = ["AND", "ONLY", "NOT"].indexOf(cond[2]);
-            sOpEnumModeInfo[mode] = true;
-            document.getElementById("cond-mode-" + 
-                ["and", "only", "not"][mode]).checked = true;
+            if (mode >= 0) {
+                sOpEnumModeInfo[mode] = true;
+                document.getElementById("cond-mode-" + 
+                    ["and", "only", "not"][mode]).checked = true;
+            }
         }
         var_list = cond[3];
         needs_zeros = false;

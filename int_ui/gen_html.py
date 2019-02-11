@@ -385,7 +385,8 @@ def _formRulesDiv(output):
           </div>
           <div id="rules-right">
             <div id="rules-wrap-content">
-                <textarea id="rule-item-content"></textarea>
+                <textarea id="rule-item-content"
+                    oninput="checkRuleContent();"></textarea>
             </div>
             <div id="rule-item-ctrl">
                 <button id="rule-item-modify" onclick="ruleItemModify();">
