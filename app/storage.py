@@ -2,6 +2,7 @@ import sys, gzip, bz2, codecs, json, os, shutil
 from glob import glob
 from argparse import ArgumentParser
 from StringIO import StringIO
+from datetime import datetime
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.json_conf import loadJSonConfig
@@ -176,8 +177,10 @@ if run_args.mode == "create":
     if run_args.force:
         dropDataSet(app_config, run_args.name[0],
             run_args.kind, True)
+    print >> sys.stderr, "Started at", datetime.now()
     createDataSet(app_config, run_args.name[0], run_args.kind,
         run_args.mongo, run_args.source, run_args.reportlines)
+    print >> sys.stderr, "Finished at", datetime.now()
 elif run_args.mode == "drop":
     dropDataSet(app_config, run_args.name[0], run_args.kind, False)
 elif run_args.mode == "check":
