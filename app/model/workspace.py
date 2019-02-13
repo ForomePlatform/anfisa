@@ -247,7 +247,7 @@ class Workspace(DataSet):
             zone_name, variants = json.loads(zone_data)
             rec_no_seq = self.getZone(zone_name).restrict(
                 rec_no_seq, variants)
-        fname = self.getVault().getApp().makeExcelExport(
+        fname = self.getDataVault().getApp().makeExcelExport(
             self.getName(), self, rec_no_seq)
         return {"kind": "excel", "fname": fname}
 
