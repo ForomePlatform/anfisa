@@ -94,7 +94,7 @@ class DruidAdmin(DruidAgent):
                     "forceExtendableShardSpecs" : True}}}
 
         if report_name is not None:
-            with codecs.open(report_name, "w", "encoding=utf-8") as outp:
+            with codecs.open(report_name, "w", encoding="utf-8") as outp:
                 outp.write(json.dumps(schema_request, ensure_ascii = False))
             print >> sys.stderr, "Report stored:", report_name
 
