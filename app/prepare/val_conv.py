@@ -211,6 +211,7 @@ class EnumConvertor(PathValueConvertor):
                         if v:
                             mod_values.append(v)
             is_ok = True
+            mod_values = map(unicode, mod_values)
             for val in set(mod_values):
                 if (self.mVariantSet is not None and
                         val not in self.mVariantSet):
