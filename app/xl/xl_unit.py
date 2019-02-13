@@ -94,9 +94,11 @@ class XL_EnumUnit(XL_Unit):
         XL_Unit.__init__(self, xl_ds, descr)
         self.mVariants = [info[0]
             for info in descr["variants"]]
+        self.mAccumCount = sum([info[1]
+            for info in descr["variants"]])
 
     def isDummy(self):
-        return len(self.mVariants) < 1
+        return len(self.mVariants) < 1 or self.mAccumCount == 0
 
     def evalStat(self, filter = None):
         druid_agent = self.getDS().getDruidAgent()
