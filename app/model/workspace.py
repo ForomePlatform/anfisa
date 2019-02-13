@@ -237,7 +237,6 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__export(self, rq_args):
-        workspace = self.sData.getWS(rq_args.get("ws"))
         conditions = rq_args.get("conditions")
         if conditions:
             conditions = json.loads(conditions)
@@ -246,7 +245,7 @@ class Workspace(DataSet):
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
-            rec_no_seq = workspace.getZone(zone_name).restrict(
+            rec_no_seq = self.getZone(zone_name).restrict(
                 rec_no_seq, variants)
         fname = self.getVault().getApp().makeExcelExport(
             self.getName(), self, rec_no_seq)

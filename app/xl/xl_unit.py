@@ -1,3 +1,4 @@
+import logging
 #===============================================
 class XL_Unit:
     def __init__(self, xl_ds, descr):
@@ -113,6 +114,12 @@ class XL_EnumUnit(XL_Unit):
         if filter is not None:
             query["filter"] = filter
         rq = druid_agent.call("query", query)
+        if len(rq) != 1:
+            logging.error("Got problem with xl_unit %s: %d" %
+                (self.getName(), len(rq)))
+            if len(rq) == 0:
+                return [[var, 0] for var in self.mVariants]
+
         assert len(rq) == 1
         counts = dict()
         for rec in rq[0]["result"]:
