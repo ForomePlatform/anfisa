@@ -2,13 +2,7 @@ from .filters import FilterPrepareSetH
 
 #===============================================
 def defineFilterSchema():
-    filters = FilterPrepareSetH([
-        ["_ord",   'rec-no'],
-        ["_color", 'path', "/data/color_code"],
-        ["_label", 'path', "/data/label"],
-        ["_key",   'path-seq', '-',
-            "/data/seq_region_name", "/data/start", "/data/end"],
-        ["_rand",  'hash', "_key"]])
+    filters = FilterPrepareSetH()
 
     with filters.viewGroup("Coordinates"):
         # filters.statusUnit("Chromosome", "/seq_region_name",

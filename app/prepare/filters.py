@@ -1,14 +1,11 @@
 import app.prepare.val_conv as val_conv
-from .flt_supp import SuportFilterField
 
 #===============================================
 class FilterPrepareSetH:
-    def __init__(self, support_field_seq):
+    def __init__(self):
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
-        self.mSupportFields = [SuportFilterField.create(info)
-            for info in support_field_seq]
 
     def viewGroup(self, view_group_title):
         assert view_group_title not in self.mVGroups
@@ -67,8 +64,6 @@ class FilterPrepareSetH:
 
     def process(self, rec_no, rec_data):
         result = dict()
-        for supp_f in self.mSupportFields:
-            supp_f.process(rec_no, rec_data, result)
         for unit in self.mUnits:
             unit.process(rec_no, rec_data, result)
         return result

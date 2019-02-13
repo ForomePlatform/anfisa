@@ -50,6 +50,9 @@ class DataSet:
     def _openFData(self):
         return gzip.open(self.mPath + "/fdata.json.gz", "rb")
 
+    def _openPData(self):
+        return gzip.open(self.mPath + "/pdata.json.gz", "rb")
+
     def getRecordData(self, rec_no):
         assert 0 <= rec_no < self.mTotal
         return json.loads(self.mVData[rec_no])

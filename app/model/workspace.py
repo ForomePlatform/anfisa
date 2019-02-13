@@ -12,7 +12,6 @@ from app.search.index import Index
 class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
-        self.mTabRecOrd = []
         self.mTabRecRand = []
         self.mTabRecKey  = []
         self.mTabRecColor  = []
@@ -21,6 +20,7 @@ class Workspace(DataSet):
         self.mMongoWS = (self.mDataVault.getApp().getMongoConnector().
             getWSAgent(self.getMongoName()))
         self.mIndex = Index(self)
+        self._loadPData()
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
@@ -41,14 +41,17 @@ class Workspace(DataSet):
                     self.mIndex.getUnit(unit_name))
             self.mZoneHandlers.append(zone_h)
 
-    def _regFltData(self, flt_data):
-        for key, tab in (
-                ("_ord",   self.mTabRecOrd),
-                ("_rand",  self.mTabRecRand),
-                ("_key",   self.mTabRecKey),
-                ("_color", self.mTabRecColor),
-                ("_label", self.mTabRecLabel)):
-            tab.append(flt_data.get(key))
+    def _loadPData(self):
+        with self._openPData() as inp:
+            for line in inp:
+                pre_data = json.loads(line)
+                for key, tab in (
+                        ("_rand",  self.mTabRecRand),
+                        ("_key",   self.mTabRecKey),
+                        ("_color", self.mTabRecColor),
+                        ("_label", self.mTabRecLabel)):
+                    tab.append(pre_data.get(key))
+        assert len(self.mTabRecRand) == self.getTotal()
 
     def getName(self):
         return self.mName

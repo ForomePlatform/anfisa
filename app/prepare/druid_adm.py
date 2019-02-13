@@ -6,9 +6,10 @@ from app.model.druid_agent import DruidAgent
 class DruidAdmin(DruidAgent):
     TIME_START = "2015-01-01"
 
-    def __init__(self, config):
+    def __init__(self, config, no_coord = False):
         DruidAgent.__init__(self, config)
         self.mScpConfig = None
+        self.mNoCoord = no_coord
         if "druid" in config:
             self.mScpConfig = config["druid"].get("scp")
         self.mStartTime = self.str2dt(self.TIME_START)
@@ -18,12 +19,15 @@ class DruidAdmin(DruidAgent):
        year, month, day = map(int, text.split('-'))
        return datetime(year = year, month = month, day = day)
 
-    def addTimeToRec(self, rec_data, rec_no):
+    def addFieldsToRec(self, rec_data, pre_data, rec_no):
         rec_data["time"] = (self.mStartTime +
             timedelta(seconds = rec_no)).isoformat()
+        rec_data["_ord"]  = rec_no
+        rec_data["_rand"] = pre_data["_rand"]
 
     #===============================================
     def uploadDataset(self, dataset_name, flt_data, fdata_name):
+
         filter_name = os.path.basename(fdata_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
@@ -33,16 +37,14 @@ class DruidAdmin(DruidAgent):
             cmd.append(fdata_name)
             cmd.append(self.mScpConfig["host"] + ':' + base_dir)
             print >> sys.stderr, "Remote copying:", ' '.join(cmd)
+            print >> sys.stderr, "Scp started at", datetime.now()
             subprocess.call(' '.join(cmd), shell = True)
         else:
             base_dir = os.path.dirname(fdata_name)
 
         dim_container = [
             {"name": "_ord", "type": "long"},
-            {"name": "_rand", "type": "long"},
-            {"name": "_key", "type": "string", "createBitmapIndex": False},
-            {"name": "_color", "type": "string", "createBitmapIndex": False},
-            {"name": "_label", "type": "string", "createBitmapIndex": False}]
+            {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
             if unit_data["kind"] in {"long", "float"}:
@@ -89,12 +91,14 @@ class DruidAdmin(DruidAgent):
                     "maxRowsInMemory" : 25000,
                     "forceExtendableShardSpecs" : True}}}
 
-        print >> sys.stderr, "Upload to Druid", dataset_name
+        print >> sys.stderr, "Upload to Druid", dataset_name, \
+            "started at ", datetime.now()
         self.call("index", schema_request)
         return True
 
     def dropDataset(self, dataset_name):
-        self.call("coord", None, "DELETE", "/datasources/" + dataset_name)
+        if not self.mNoCoord:
+            self.call("coord", None, "DELETE", "/datasources/" + dataset_name)
         self.call("index", {
             "type": "kill",
             "dataSource": dataset_name,

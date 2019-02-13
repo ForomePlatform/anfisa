@@ -20,7 +20,7 @@ class AttrH:
     def normLink(cls, value):
         if cls.sBaseHostFrom and value:
             return value.replace(cls.sBaseHostFrom, cls.sBaseHostTo)
-        return str
+        return value
 
     #===============================================
     def __init__(self, name, kind = None, title = None,

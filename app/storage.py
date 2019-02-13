@@ -6,6 +6,7 @@ from datetime import datetime
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.json_conf import loadJSonConfig
+from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.view_schema import defineViewSchema
 from app.prepare.flt_schema import defineFilterSchema
@@ -36,20 +37,25 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
         print >> sys.stderr, "Processing..."
 
     rec_no = 0
+    fdata_out = gzip.open(ds_dir + "/fdata.json.gz", 'wb')
+    pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
     with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
-        with gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_out:
-            for record in readJSonRecords(source):
-                view_checker.regValue(rec_no, record)
-                vdata_out.putLine(json.dumps(record))
-                flt_data = filter_set.process(rec_no, record)
-                if DRUID_ADM is not None:
-                    DRUID_ADM.addTimeToRec(flt_data, rec_no)
-                print >> fdata_out, json.dumps(flt_data)
-                rec_no += 1
-                if report_lines and rec_no % report_lines == 0:
-                    print >> sys.stderr, "\r%d lines..." % rec_no,
+        for record in readJSonRecords(source):
+            view_checker.regValue(rec_no, record)
+            vdata_out.putLine(json.dumps(record, ensure_ascii = False))
+            flt_data = filter_set.process(rec_no, record)
+            pre_data = PresentationData.make(record)
+            if DRUID_ADM is not None:
+                DRUID_ADM.addFieldsToRec(flt_data, pre_data, rec_no)
+            print >> fdata_out, json.dumps(flt_data, ensure_ascii = False)
+            print >> pdata_out, json.dumps(pre_data, ensure_ascii = False)
+            rec_no += 1
+            if report_lines and rec_no % report_lines == 0:
+                print >> sys.stderr, "\r%d lines..." % rec_no,
     if report_lines:
         print >> sys.stderr, "\nTotal lines: %d" % rec_no
+    fdata_out.close()
+    pdata_out.close()
 
     rep_out = StringIO()
     is_ok = view_checker.finishUp(rep_out)
@@ -157,6 +163,8 @@ parser.add_argument("-k", "--kind",  default = "ws",
 parser.add_argument("-s", "--source", help="Annotrated json")
 parser.add_argument("-f", "--force", action = "store_true",
     help = "Force removal")
+parser.add_argument("-C", "--nocoord", action = "store_true",
+    help = "Druid: no use coordinator")
 parser.add_argument("-m", "--mode",
     help = "Mode: create/drop/check")
 parser.add_argument("--mongo", default = "",
@@ -171,7 +179,7 @@ app_config = loadJSonConfig(run_args.config)
 assert os.path.isdir(app_config["data-vault"])
 
 if run_args.kind == "xl":
-    DRUID_ADM = DruidAdmin(app_config)
+    DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
 
 if run_args.mode == "create":
     if run_args.force:

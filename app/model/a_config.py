@@ -45,12 +45,10 @@ class AnfisaConfig:
         return cls.sTextDecor.get(text, text)
 
     @classmethod
-    def normalizeColorCode(cls, color_codes):
-        if color_codes:
-            for code in color_codes:
-                if code in {"red", "red-cross",
-                        "yellow", "yellow-cross", "green"}:
-                    return code
+    def normalizeColorCode(cls, color_code):
+        if color_code in {"red", "red-cross",
+                "yellow", "yellow-cross", "green"}:
+            return color_code
         return "grey"
 
 #===============================================

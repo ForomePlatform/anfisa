@@ -26,7 +26,6 @@ class Index:
                     unit.fillRecord(inp_data, rec)
                 self.mUnits[0].fillRulesPart(inp_data, rec)
                 self.mRecords.append(rec)
-                self.mWS._regFltData(inp_data)
         assert len(self.mRecords) == self.mWS.getTotal()
 
         self.mStdFilters  = deepcopy(STD_WS_FILTERS)
