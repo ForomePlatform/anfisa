@@ -1,4 +1,4 @@
-import os, sys, subprocess
+import os, sys, subprocess, codecs, json
 from datetime import datetime, timedelta
 
 from app.model.druid_agent import DruidAgent
@@ -26,8 +26,8 @@ class DruidAdmin(DruidAgent):
         rec_data["_rand"] = pre_data["_rand"]
 
     #===============================================
-    def uploadDataset(self, dataset_name, flt_data, fdata_name):
-
+    def uploadDataset(self, dataset_name, flt_data, fdata_name,
+            report_name = None):
         filter_name = os.path.basename(fdata_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
@@ -53,6 +53,8 @@ class DruidAdmin(DruidAgent):
                     "type": unit_data["kind"]})
             else:
                 if len(unit_data["variants"]) == 0:
+                    continue
+                if sum([info[1] for info in unit_data["variants"]]) == 0:
                     continue
                 dim_container.append(unit_data["name"])
 
@@ -90,6 +92,11 @@ class DruidAdmin(DruidAgent):
                     "targetPartitionSize" : 5000000,
                     "maxRowsInMemory" : 25000,
                     "forceExtendableShardSpecs" : True}}}
+
+        if report_name is not None:
+            with codecs.open(report_name, "w", "encoding=utf-8") as outp:
+                outp.write(json.dumps(schema_request, ensure_ascii = False))
+            print >> sys.stderr, "Report stored:", report_name
 
         print >> sys.stderr, "Upload to Druid", dataset_name, \
             "started at ", datetime.now()
