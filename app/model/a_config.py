@@ -29,9 +29,6 @@ class AnfisaConfig:
         "VEP Transcripts": "VEP<br/>Transcripts",
         "Colocated Variants": "Colocated<br/>Variants"}
 
-    DRUID_GRANULARITY = "all"
-    DRUID_INTERVAL = "2015-01-01/2015-12-31"
-
     @classmethod
     def textMessage(cls, key):
         return cls.sTextMessages[key]

@@ -1,4 +1,5 @@
-import os, json, codecs
+import os, json, codecs, logging
+from StringIO import StringIO
 
 from .rest_api import RestAPI
 from .mongo_db import MongoConnector
@@ -8,6 +9,10 @@ from export.excel import ExcelExport
 from app.view.attr import AttrH
 from int_ui.mirror_dir import MirrorUiDirectory
 from int_ui.ui_requests import IntUI
+
+from app.prepare.view_schema import defineViewSchema
+from app.prepare.v_check import ViewDataChecker
+from app.view.asp_set import AspectSetH
 #===============================================
 class AnfisaApp:
     sConfig = None
@@ -88,63 +93,16 @@ class AnfisaApp:
 
         return IntUI.finishRequest(serv_h, rq_path, rq_args, cls.sDataVault)
 
-#from app.model.a_serv import AnfisaService
-#from app.view.dataset import DataSet
-#from .view_setup import ViewSetup
-#from .view_cfg import setupRecommended
-#from .search_setup import prepareLegend
-#from app.xl.xl_dataset import XL_Dataset
-#
-#        for ws_descr in config["workspaces"]:
-#            ws_name = ws_descr["name"]
-#            data_set = DataSet(ViewSetup(), ws_name, ws_descr["file"])
-#            legend = prepareLegend(ws_name)
-#            legend.testDataSet(data_set)
-#            rep_out = StringIO()
-#            legend.setup(rep_out)
-#            if not legend.isOK():
-#                logging.fatal(("FILTER LEGEND for %s FAILED\n" % ws_name) +
-#                    rep_out.gevalue())
-#            logging.warning(legend.getStatusInfo())
-#            ws = Workspace(ws_name, legend, data_set,
-#               cls.sMongoConn.getWSAgent(ws_descr["mongo-name"]))
-#            cls.sWorkspaces[ws_name] = ws
-#            if cls.sDefaultWS is None:
-#                cls.sDefaultWS = ws
-#            cls.sWsOrdered.append(ws)
-#
-#
-#        if config.get("xl-sets"):
-#            for descr in config["xl-sets"]:
-#                xl_ds = XL_Dataset(descr["file"], descr["name"],
-#                    config["druid"]["url_query"],
-#                    cls.sMongoConn.getDSAgent(descr["mongo-name"]))
-#                cls.sXL_Datasets[xl_ds.getName()] = xl_ds
-#                cls.sXlOrdered.append(xl_ds)
-#                if cls.sDefaultDS is None:
-#                    cls.sDefaultDS = xl_ds
-#
-#        cls.sService = AnfisaService.start(cls, config, in_container)
-#        return cls.sService
-#
-#
-#
-##@classmethod
-#def getWS(cls, name):
-#    if not name:
-#        return cls.sDefaultWS
-#    return cls.sWorkspaces.get(name)
-#
-##@classmethod
-#def iterWorkspaces(cls):
-#    return iter(cls.sWsOrdered)
-#
-##@classmethod
-#def getDS(cls, name):
-#    if not name:
-#        return cls.sDefaultDS
-#    return cls.sXL_Datasets.get(name)
-#
-##@classmethod
-#def iterXLDatasets(cls):
-#    return iter(cls.sXlOrdered)
+    @classmethod
+    def viewSingleRecord(cls, record, research_mode):
+        view_aspects = defineViewSchema()
+        view_checker = ViewDataChecker(view_aspects)
+        view_checker.regValue(0, record)
+        rep_out = StringIO()
+        is_ok = view_checker.finishUp(rep_out)
+        if not is_ok:
+            logging.error("Single record annotation failed:\n" +
+                rep_out.getvalue())
+        assert is_ok
+        aspects = AspectSetH.load(view_aspects.dump())
+        return aspects.getViewRepr(record, research_mode)

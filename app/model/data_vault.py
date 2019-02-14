@@ -66,3 +66,11 @@ class DataVault:
             else:
                 rep["xl-datasets"].append(ds_h.dump())
         return rep
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__single_cnt(self, rq_args):
+        record = json.loads(rq_args["record"])
+        modes = rq_args.get("m", "").upper()
+        return self.mApp.viewSingleRecord(record, 'R' in modes)
+
