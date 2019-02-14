@@ -371,3 +371,10 @@ Structure AttrStat
                * may be truncated to 12 symbols with "...", ...
             ]
     }
+
+===
+Method "/single_cnt"
+    -> m            (= "")
+    -> record       (!required)
+    <- 
+    [ * prepared view presentation of record, the same as in method "/reccnt", see above]

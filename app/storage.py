@@ -25,7 +25,9 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     if not mongo:
         mongo = name
     assert kind in ("ws", "xl")
-    assert not os.path.exists(ds_dir)
+    if os.path.exists(ds_dir):
+        print >> sys.stderr, "Dataset exists:", ds_dir
+        assert False
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
 

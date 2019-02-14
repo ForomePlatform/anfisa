@@ -6,6 +6,17 @@ from app.search.hot_eval import RULES_SETUP
 
 #===============================================
 class RulesEvalUnit(MultiSetUnit):
+    sEnumNormValues = {
+        "None": None,
+        "null": None,
+        "False": False,
+        "false": False,
+        "True": True,
+        "true": True}
+    @classmethod
+    def normEnumValue(cls, val):
+        return cls.sEnumNormValues.get(val, val)
+
     def __init__(self, index, dc_collection, unit_idx):
         MultiSetUnit.__init__(self, index, dc_collection, {
             "name": "Rules",
@@ -43,7 +54,9 @@ class RulesEvalUnit(MultiSetUnit):
         for name in self.mUnitNames:
             val = inp_data.get(name)
             if isinstance(val, list):
-                val = set(val)
+                val = set(map(self.normEnumValue, val))
+            elif isinstance(val, basestring):
+                val = self.normEnumValue(val)
             value_dict[name] = val
         pre_rec = PresentationObj(value_dict)
         for idx, col in self.enumColumns():
