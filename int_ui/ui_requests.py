@@ -2,6 +2,7 @@ from StringIO import StringIO
 
 from .gen_html import formTopPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage
+from .html_xltree import formXLTreePage
 from .record import reportRecord
 #===============================================
 class IntUI:
@@ -65,5 +66,13 @@ class IntUI:
                 cls.sHtmlBase, xl_ds)
             return serv_h.makeResponse(content = output.getvalue())
 
+        if rq_path == "/xt":
+            xl_ds = data_vault.getXL(rq_args.get("ds"))
+            if xl_ds is None:
+                return cls.notFoundResponse(serv_h)
+            output = StringIO()
+            formXLTreePage(output, cls.sHtmlTitleXL, cls.sHtmlTitleWS,
+                cls.sHtmlBase, xl_ds)
+            return serv_h.makeResponse(content = output.getvalue())
         return cls.notFoundResponse(serv_h)
 

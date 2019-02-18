@@ -3,7 +3,9 @@ import json
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
-from .xl_filters import XL_Filter
+from .xl_cond import XL_Condition
+from .decision import DecisionTree
+from .xl_conf import defineDefaultDecisionTree
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -68,6 +70,9 @@ class XLDataset(DataSet):
     def evalTotalCount(self, filter):
         if filter is None:
             return self.getTotal()
+        druid_cond = filter.getDruidRepr()
+        if druid_cond is None:
+            return self.getTotal()
         query = {
             "queryType": "timeseries",
             "dataSource": self.getName(),
@@ -76,9 +81,8 @@ class XLDataset(DataSet):
             "aggregations": [
                 { "type": "count", "name": "count",
                     "fieldName": "_ord"}],
+            "filter": druid_cond,
             "intervals": [ self.mDruidAgent.INTERVAL ]}
-        if filter is not None:
-            query["filter"] = filter
         rq = self.mDruidAgent.call("query", query)
         assert len(rq) == 1
         return rq[0]["result"]["count"]
@@ -101,7 +105,7 @@ class XLDataset(DataSet):
             cond_seq = self.mDruidAgent.getStdFilterConditions()
         else:
             cond_seq = self.mFilterCache.get(filter_name, conditions)
-        filter_data = XL_Filter.makeFilter(cond_seq)
+        filter_data = XL_Condition.prepareDruidRepr(cond_seq)
         return {
             "total": self.getTotal(),
             "count": self.evalTotalCount(filter_data),
@@ -121,3 +125,34 @@ class XLDataset(DataSet):
         return {
             "ds": self.getName(),
             "note": self.mMongoDS.getDSNote()}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xltree(self, rq_args):
+        tree_data = rq_args.get("tree")
+        if tree_data is None:
+            tree = defineDefaultDecisionTree()
+        else:
+            tree = DecisionTree.parse(json.loads(tree_data))
+        tree.evalCounts(self)
+        return {
+            "tree": tree.dump()}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xlstat(self, rq_args):
+        tree_data = rq_args["tree"]
+        tree = DecisionTree.parse(json.loads(tree_data))
+        point_no = int(rq_args["no"])
+        condition = tree.actualCondition(point_no)
+        count = self.evalTotalCount(condition)
+        ret = {
+            "total": self.getTotal(),
+            "count": count}
+        if count > 0:
+            filter = condition.getDruidRepr()
+            ret["stat-list"] = [unit.makeStat(filter)
+                for unit in self.mUnits]
+        return ret
+
+

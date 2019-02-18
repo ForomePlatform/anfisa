@@ -77,8 +77,7 @@ def _formXLPannel(output, ds_name):
               <span id="num-count" class="num-count"></span>
               <input id="cond-undef-check" class="num-inp"
                 type="checkbox"  onchange="sOpNumH.checkControls();"/>
-              <span id="cond-undef-count" class="num-count"
-                class="num-count"></span>
+              <span id="cond-undef-count" class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
               <div id="wrap-cond-enum">
