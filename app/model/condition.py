@@ -1,12 +1,12 @@
 #===============================================
 class ConditionMaker:
     @staticmethod
-    def condNumGE(unit_name, bound, use_undef = False):
-        return ["numeric", unit_name, True, bound, use_undef]
+    def condNumUpperBound(unit_name, bound, use_undef = False):
+        return ["numeric", unit_name, 1, bound, use_undef]
 
     @staticmethod
-    def condNumLE(unit_name, bound, use_undef = False):
-        return ["numeric", unit_name, False, bound, use_undef]
+    def condNumLowerBound(unit_name, bound, use_undef = False):
+        return ["numeric", unit_name, 0, bound, use_undef]
 
     @staticmethod
     def condEnum(unit_name, variants, join_mode = "OR"):

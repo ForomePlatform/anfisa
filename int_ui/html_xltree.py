@@ -6,7 +6,8 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds):
         css_files = ["base.css", "xltree.css"],
         js_files = ["xltree.js"])
 
-    print >> output, ('  <body onload="initXL(\'%s\', \'%s\');">' %
+    print >> output, (
+        '  <body id="_body" onload="initXL(\'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title))
 
     _formXLPannel(output, xl_ds.getName())
@@ -35,8 +36,16 @@ def _formXLPannel(output, ds_name):
             XL dataset: <span id="xl-name"></span>
         </div>
         <div id="xl-tree-info">
-            Accepted: <span id="report-accepted"></span><br/>
+            Accepted: <span id="report-accepted"></span>&emsp;
             Rejected: <span id="report-rejected"></span><br/>
+            <!--div id="tree-ctrl">
+              <button id="tree-undo" title="Undo"
+                onclick='sTreeCtrlH.modify(\"undo\");'> &#8630;
+              </button>
+              <button id="tree-redo" title="Redo"
+                onclick='sTreeCtrl.modify(\"redo\");'> &#8631;
+              </button>
+            </div-->
         </div>
         <div id="xl-cur-info">
             Records in scope: <span id="list-report"></span>
@@ -58,12 +67,12 @@ def _formCurCondDiv(output):
     print >> output, '''
     <div id="cur-cond-back">
       <div id="cur-cond-mod">
-        <div id="filter-conditions">
-          <div id="filter-cur-cond-text">
-            <span id="cond-text"></span>
-            <span id="cond-error"></span>
-          </div>
-          <div id="filter-cur-cond">
+        <div id="condition-change">
+            <div id="cond-title-wrap">
+                <span id="cond-title"></span>
+                <span class="close-it" onclick="modalOff();">&times;</span>
+            </div>
+            <div id="cond-error"></div>
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
@@ -108,7 +117,14 @@ def _formCurCondDiv(output):
                 </div>
               </div>
             </div>
-          </div>
+            <div id="cond-ctrl">
+                <button id="cond-button-set" onclick="fixCond();">
+                    Set
+                </button>
+                <button onclick="modalOff();">
+                    Cancel
+                </button>
+            </div>
         </div>
       </div>
     </div>'''
@@ -121,19 +137,17 @@ def _formNoteDiv(output):
         <div id="note-top">
             <p id="note-title">Dataset
                 <span id="note-ds-name"></span> note
-              <span id="close-note" onclick="sViewH.modalOff();">&times;</span>
+              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
             <textarea id="note-content"></textarea>
         </div>
         <div id="work-note-ctrl">
-            <button class="op-button"
-                onclick="saveNote();">
+            <button onclick="saveNote();">
               Save
             </button>
-            <button class="op-button"
-                onclick="sViewH.modalOff();">
+            <button onclick="sViewH.modalOff();">
               Done
             </button>
         </div>

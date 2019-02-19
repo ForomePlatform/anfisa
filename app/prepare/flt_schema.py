@@ -32,7 +32,7 @@ def defineFilterSchema():
 
     filters.statusUnit("Most_Severe_Consequence",
         "/data/most_severe_consequence",
-        ["transcript_ablation",
+        variants = ["transcript_ablation",
         "splice_acceptor_variant",
         "splice_donor_variant",
         "stop_gained",

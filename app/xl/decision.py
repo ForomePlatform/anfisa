@@ -68,10 +68,7 @@ class CaseStory:
         return None
 
     def dump(self):
-        ret = ["story"]
-        for point in self.mPoints:
-            ret.append(point.dump())
-        return ret
+        return [point.dump() for point in self.mPoints]
 
 #===============================================
 class CheckPoint(PointCounter):
@@ -99,8 +96,7 @@ class CheckPoint(PointCounter):
         return self.mPointNo
 
     def dump(self):
-        return [self.getPointKind(), self.mPointNo,
-            self.getLevel(), self.mCount]
+        return [self.getPointKind(), self.getLevel()]
 
 #===============================================
 class TerminalPoint(CheckPoint):
@@ -182,8 +178,14 @@ class DecisionTree(CaseStory):
     def actualCondition(self, point_no):
         return self.mPointList[point_no].actualCondition()
 
+    def getStat(self):
+        return self.mStat
+
+    def getCounts(self):
+        return [point.getCount() for point in self.mPointList]
+
     def dump(self):
-        ret = [["tree", self.mStat]]
+        ret = []
         for point_no, point in enumerate(self.mPointList):
             comments = self.mComments.get(point_no)
             if comments:
@@ -194,21 +196,20 @@ class DecisionTree(CaseStory):
 
     @staticmethod
     def parse(json_data):
-        assert json_data[0][0] == "tree"
-        ret = DecisionTree(json_data[1])
+        ret = DecisionTree()
         stories = [ret]
-        for rec in json_data[1:]:
+        for rec in json_data:
             if rec[0] == "comment":
                 ret.addComment(rec[1])
                 continue
-            p_kind, p_no, p_level, p_count = rec[:4]
+            p_kind, p_level = rec[:2]
             assert p_level == len(stories) - 1
             if rec[0] == "cond":
-                point = stories[-1].addCondition(rec[4], count = p_count)
+                point = stories[-1].addCondition(rec[2])
                 stories.append(point.getSubStory())
             else:
                 assert rec[0] == "term"
-                stories[-1].setFinalDecision(rec[4], count = p_count)
+                stories[-1].setFinalDecision(rec[2])
                 stories.pop()
         assert ret.checkDetermined() is None
         return ret

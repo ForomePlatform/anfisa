@@ -4,6 +4,7 @@ var sCommonTitle = null;
 
 /*************************************/
 function initXL(ds_name, common_title) {
+    sOpCondH.init();
     sOpNumH.init();
     sOpEnumH.init();
     sViewH.init();
@@ -35,23 +36,27 @@ function ajaxCall(rq_name, args, func_eval) {
 var sDecisionTree = {
     mPoints: null,
     mTree: null,
+    mCounts: null,
     mStat: null,
     mCurPointNo: null,
+    mOpCond: null,
+    mOpIdx: null,
     
     setup: function() {
         args = "ds=" + sDSName;
         if (this.mTree != null) 
-            args += "&tree=" + encodeURIComponent(this.mTree);
+            args += "&tree=" + encodeURIComponent(JSON.stringify(this.mTree));
         ajaxCall("xltree", args, function(info){sDecisionTree._setup(info);})
     },
     
     _setup: function(info) {
         this.mTree = info["tree"];
-        this.mStat = this.mTree[0][1];
+        this.mStat = info["stat"];
+        this.mCounts = info["counts"];
         this.mPoints = [];
-        this.mCurPointNo = null;
+        this.mOpIdx = null;
         var list_rep = ['<table class="d-tree">'];
-        for (var idx = 1; idx < this.mTree.length; idx++) {
+        for (var idx = 0; idx < this.mTree.length; idx++) {
             it = this.mTree[idx];
             p_kind = it[0];
             if (p_kind == "comment") {
@@ -59,8 +64,8 @@ var sDecisionTree = {
                     escapeText(it[1]) + '</td></tr>');
                 continue;
             }
+            p_no = this.mPoints.length; p_lev = it[1]; p_count = this.mCounts[p_no];
             this.mPoints.push(it);
-            p_no = it[1]; p_lev = it[2]; p_count = it[3];
             if (p_count > 0) {
                 list_rep.push('<tr id="p_td__' + p_no + 
                     '" class="active" onclick="sDecisionTree.selectPoint(' + 
@@ -77,25 +82,26 @@ var sDecisionTree = {
             p_count_add = "";
             if (p_kind == "cond") {
                 list_rep.push('<span class="point-instr">if</span> ');
-                p_cond = it[4];
+                p_cond = it[2];
                 if (p_cond[0] == "and") {
                     list_rep.push('<div class="point-block"><div class="point-block1">' + 
                         '<div class="point-op">and</div><div class="point-list">') 
                     for (var j=1; j < p_cond.length; j++) {
-                        list_rep.push('<div class="point-cond1" id="p_cond__' +
-                            p_no + '_' + j + '">' + getConditionDescr(p_cond[j]) + 
-                            '</div>');
+                        list_rep.push('<div class="point-cond" id="p_cond__' +
+                            p_no + '_' + j + '">' + 
+                            this._markEdit(p_cond[j], p_no, j, p_count > 0) +
+                            getConditionDescr(p_cond[j]) + '</div>');
                     }
                     list_rep.push('</div></div></div>');
                 } else {
                     list_rep.push('<div class="point-cond" id="p_cond__' +
-                        p_no + '">' + getConditionDescr(p_cond) + '</div>');
+                        p_no + '">' + this._markEdit(p_cond, p_no, -1, p_count > 0) + 
+                        getConditionDescr(p_cond) + '</div>');
                 }
             } else {
-                p_decision = it[4]? "True": "False";
-                if (p_count > 0)
-                    p_count_class = it[4]? "point-count-accept":"point-count-reject";
-                    p_count_add = it[4]? "+":"-";
+                p_decision = it[2]? "True": "False";
+                p_count_class = it[2]? "point-count-accept":"point-count-reject";
+                p_count_add = it[2]? "+":"-";
                 list_rep.push('<span class="point-instr">return ' + p_decision +
                     '</span> ');
             }
@@ -105,7 +111,15 @@ var sDecisionTree = {
         list_rep.push('</table>'); 
         document.getElementById("decision-tree").innerHTML = list_rep.join('\n');
         //alert("tb:" + list_rep.join('\n'));
-        this.selectPoint(0);
+        point_no = (this.mCurPointNo)? this.mCurPointNo: 0;
+        while (point_no > 0) {
+            if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
+                point_no--;
+            else
+                break;
+        }
+        this.mCurPointNo = null;
+        this.selectPoint(point_no);
         
         document.getElementById("report-accepted").innerHTML = "" + (this.mStat[1]);
         rep_rejected = "" + this.mStat[2];
@@ -115,11 +129,27 @@ var sDecisionTree = {
         document.getElementById("report-rejected").innerHTML = rep_rejected;
     },
     
+    _markEdit: function(p_cond, point_no, cond_idx, not_empty) {
+        if (!not_empty)
+            return '';
+        if (p_cond[0] == "numeric") 
+            return '<span class="point-edit" onclick="sDecisionTree.editCond(' +
+                point_no + ', ' + cond_idx + ');">&#9874;</span>';
+        return '';
+    },
+    
     selectPoint: function(point_no) {
         if (this.mCurPointNo == point_no) 
             return;
-        if (this.mPoints[point_no][3] == 0)
+        if (this.mCounts[point_no] == 0)
             return;
+        if (sUnitsH.postAction(
+            'sDecisionTree.selectPoint(' + point_no + ');'))
+            return;
+        sViewH.modalOff();
+        this._highlightCondition(false);
+        this.mOpCond = null;
+        this.mOpIdx = null;
         var new_el = document.getElementById("p_td__" + point_no);
         if (new_el == null) 
             return;
@@ -130,28 +160,85 @@ var sDecisionTree = {
         this.mCurPointNo = point_no;
         new_el.className = "cur";
         sUnitsH.setup(this.mTree, this.mCurPointNo);
-    }    
+    },
+    
+    editCond: function(point_no, cond_idx) {
+        this.selectPoint(point_no);
+        if (sUnitsH.postAction(
+                'sDecisionTree.editCond(' + point_no + ', ' + cond_idx + ');'))
+            return;
+        if (this.mCurPointNo != point_no)
+            return
+        var point = this.mPoints[point_no];
+        this.mOpCond = point[2];
+        if (cond_idx >= 0)
+            this.mOpCond = this.mOpCond[cond_idx];
+        this.mOpIdx = cond_idx;
+        this._highlightCondition(true);
+        sOpCondH.show(this.mOpCond);
+    },
+
+    _highlightCondition(mode) {
+        if (this.mOpIdx == null)
+            return;
+        if (this.mOpIdx >= 0)
+            cond_el = document.getElementById("p_cond__" + 
+                this.mCurPointNo + "_" + this.mOpIdx);
+        else
+            cond_el = document.getElementById("p_cond__" + this.mCurPointNo);
+        if (mode)
+            cond_el.className += " active";
+        else
+            cond_el.className = cond_el.className.replace(" active", "");
+    },
+    
+    fixCondition: function(new_cond) {
+        if (this.mOpIdx == null)
+            return;
+        if (this.mOpIdx >= 0) {
+            this.mPoints[this.mCurPointNo][2][this.mOpIdx] = new_cond;
+        } else {
+            this.mPoints[this.mCurPointNo][2] = new_cond;
+        }
+        this.setup();
+    }
 }
 
 /**************************************/
 var sUnitsH = {
     mItems: null,
     mUnitMap: null,
-    mCurUnit: null,    
+    mCurUnit: null,
+    mWaiting: false,
+    mPostAction: null,
     
     setup: function(decision_tree, point_no) {
         args = "ds=" + sDSName + "&tree=" +
             encodeURIComponent(JSON.stringify(decision_tree)) + 
             "&no=" + point_no;
+        this.mWaiting = true;
+        document.getElementById("_body").style.cursor = "wait";
+        document.getElementById("stat-list").className = "wait";
+        document.getElementById("list-report").innerHTML = 
+            '<marquee behavior="alternate" direction="right">| - | -</marquee>';
         ajaxCall("xlstat", args, function(info){sUnitsH._setup(info);})
     },
 
+    postAction: function(action) {
+        if (this.mWaiting) {
+            this.mPostAction = action;
+            return true;
+        }
+        return false;
+    },
+    
     _setup: function(info) {
+        document.getElementById("_body").style.cursor = "default";
+        document.getElementById("stat-list").className = "";
         count = info["count"];
         total = info["total"]
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
-
             
         this.mItems = info["stat-list"];
         this.mUnitMap = {}
@@ -196,10 +283,16 @@ var sUnitsH = {
         }
         document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
         
-        this.mCurUnit = null;
+        this.mCurUnit = null;        
         
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0][1]["name"]);
+        
+        var post_action = this.mPostAction;
+        this.mWaiting = false;
+        this.mPostAction = null;
+        if (post_action)
+            eval(post_action);
     },
 
     _fillStatRepNum: function(unit_stat, list_stat_rep) {
@@ -259,28 +352,11 @@ var sUnitsH = {
         return this.mCurUnit;
     },
     
-    getCurUnitStat: function() {
-        if (this.mCurUnit == null)
-            return null;
-        return this.mItems[this.mUnitMap[this.mCurUnit]];
+    getUnitStat: function(unit_name) {
+        return this.mItems[this.mUnitMap[unit_name]];
     },
     
     selectUnit: function(stat_unit, force_it) {
-        if (sDecisionTree  != null)
-            return; 
-        if (this.mCurUnit == stat_unit && !force_it) 
-            return;
-        var new_unit_el = document.getElementById("stat--" + stat_unit);
-        if (new_unit_el == null) 
-            return;
-        if (this.mCurUnit != null) {
-            var prev_el = document.getElementById("stat--" + this.mCurUnit);
-            prev_el.className = prev_el.className.replace(" cur", "");
-        }
-        this.mCurUnit = stat_unit;
-        new_unit_el.className = new_unit_el.className + " cur";
-        sConditionsH.correctCurUnit(this.mCurUnit);
-        sOpCondH.updateUnit(this.mCurUnit);
     }
     
 };
@@ -289,91 +365,50 @@ var sUnitsH = {
 var sOpCondH = {
     mCurTpHandler: null,
     mCondition: null,
-    mIdxToUpdate: null,
-    mIdxToAdd: null,
+    mNewCondition: null,
+    mButtonSet: null,
+
+    init: function() {
+        this.mButtonSet   = document.getElementById("cond-button-set");
+    },
     
-    updateUnit: function() {
-        unit_name = sUnitsH.getCurUnitName();
-        document.getElementById("cond-title").innerHTML = (unit_name)? unit_name:"";
-        if (unit_name == null) {
-            sOpEnumH.suspend();
-            sOpNumH.suspend();
-            this.formCondition(null);
-            return;
-        } 
-        unit_stat = sUnitsH.getCurUnitStat();
+    show: function(condition) {
+        this.mCondition = condition;
+        this.mNewCondition = null;
+        unit_name = this.mCondition[1];
+        document.getElementById("cond-title").innerHTML = unit_name;
+        unit_stat = sUnitsH.getUnitStat(unit_name);
         unit_type = unit_stat[0];
         if (unit_type == "long" || unit_type == "float") {
             sOpEnumH.suspend();
             this.mCurTpHandler = sOpNumH;
+            mode = "num";
         } else {
             sOpNumH.suspend();
             this.mCurTpHandler = sOpEnumH;
+            mode = "enum";
         }
         this.mCurTpHandler.updateUnit(unit_stat);
-
-        if (sConditionsH.getCurCondNo() != null) {
-            cond = sConditionsH.getCurCond();
-            if (cond[1] == unit_name)
-                this.mCurTpHandler.updateCondition(cond);
-        }
+        this.mCurTpHandler.updateCondition(this.mCondition);
         this.mCurTpHandler.checkControls();
+        document.getElementById("cur-cond-mod").className = mode;
+        sViewH.modalOn(document.getElementById("cur-cond-back"), "flex");
     },
     
     formCondition: function(condition_data, error_msg, cond_mode, add_always) {
-        cur_unit_name = sUnitsH.getCurUnitName();
-        this.mCondition   = null;
-        this.mIdxToAdd    = null;
-        this.mIdxToUpdate = null;
         if (condition_data != null) {
-            this.mCondition = [this.mCurTpHandler.getType(), cur_unit_name].concat(
-                condition_data);
-            this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode);
-            
-            if (this.mIdxToUpdate == null) {
-                if (add_always) 
-                    this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name);
-                else {
-                    this.mIdxToAdd = sConditionsH.findCond(cur_unit_name);
-                    if (this.mIdxToAdd == null)
-                        this.mIdxToAdd = sConditionsH.nextIdx();
-                }
-            }
-            if (add_always) {
-                this.mIdxToAdd = (this.mIdxToUpdate == null)?
-                    sConditionsH.nextIdx(): this.mIdxToUpdate + 1;
-            }
-            
-        }
-        document.getElementById("cond-text").innerHTML = 
-            (this.mCondition)? getConditionDescr(this.mCondition, true):"";
+            cur_unit_name = this.mCondition[1];
+            this.mNewCondition = [this.mCurTpHandler.getType(), cur_unit_name].concat(
+                    condition_data);
+        } else
+            this.mNewCondition = null;
         document.getElementById("cond-error").innerHTML = (error_msg)? error_msg:"";
-        this.careControls();
+        this.mButtonSet.disabled = (condition_data == null);
     },
     
-    availableActions: function() {
-        ret = []
-        if (this.mCondition != null) {
-            if (this.mIdxToAdd != null)
-                ret.push("add");
-            if (this.mIdxToUpdate != null)
-                ret.push("update");
-        }
-        return ret;
-    },
-    
-    applyCondition: function(condition_seq, func_name) {
-        if ( func_name == "add" && this.mIdxToAdd != null) {
-            new_seq = condition_seq.slice();
-            new_seq.splice(this.mIdxToAdd, 0, this.mCondition);
-            return new_seq;
-        }
-        if ( func_name == "update" && this.mIdxToUpdate != null) {
-            new_seq = condition_seq.slice();
-            new_seq[this.mIdxToUpdate] = this.mCondition;
-            return new_seq;
-        }
-        return null;
+    fixCondition: function() {
+        if (this.mNewCondition && this.mNewCondition != this.mCondition)
+            sDecisionTree.fixCondition(this.mNewCondition);
     },
     
     careControls: function() {
@@ -408,7 +443,6 @@ var sOpNumH = {
         this.mInfo = {
             op:         0,
             val_cur:    null,
-            updating:   false,
             with_undef: null,
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
@@ -436,7 +470,6 @@ var sOpNumH = {
         this.mInfo.op           = cond[2];
         this.mInfo.val_cur      = cond[3];
         this.mInfo.with_undef   = cond[4];
-        this.mInfo.updating     = true;
         if (this.mInfo.op == 0) {
             this.mInputMin.value = this.mInfo.val_cur;
         } else {
@@ -472,16 +505,18 @@ var sOpNumH = {
         if (this.mInfo.with_undef != null) {
             this.mInfo.with_undef = this.mCheckUndef.checked;
         }
+        this.mInfo.val_cur = null;
         if (this.mInfo.op == 0) {
             val = toNumeric(this.mInfo.unit_type, this.mInputMin.value);
             if (val != null) {
-                if (val < this.mInfo.val_min) {
-                    if (!this.mInfo.updating)
+                if (val > this.mInfo.val_max) {
+                    error_msg = "Incorrrect lower bound";
+                } else {
+                    if (val < this.mInfo.val_min) {
                         error_msg = "Lower bound is above minimal value";
-                    else
-                        error_msg = "";
+                    }
+                    this.mInfo.val_cur = val;
                 }
-                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
@@ -491,13 +526,14 @@ var sOpNumH = {
         if (this.mInfo.op == 1) {
             val = toNumeric(this.mInfo.unit_type, this.mInputMax.value);
             if (val != null) {
-                if (val > this.mInfo.val_max) {
-                    if (!this.mInfo.updating)
+                if (val < this.mInfo.val_min) {
+                    error_msg = "Incorrrect upper bound";
+                } else {
+                    if (val > this.mInfo.val_max) {
                         error_msg = "Upper bound is below maximum value";
-                    else
-                        error_msg = "";
+                    }
+                    this.mInfo.val_cur = val;
                 }
-                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
@@ -656,6 +692,72 @@ var sOpEnumH = {
 
 };
 
+/**************************************/
+var sTreeCtrlH = {
+    mHistory: [],
+    mRedoStack: [],
+    mCurVersion: null,
+
+    update: function(filter_name, filter_list) {
+        this.mCurFilter = (filter_name)? filter_name:"";
+        var all_filters = sFiltersH.setup(filter_list)
+        for (idx = 0; idx < this.mHistory.length; idx++) {
+            hinfo = this.mHistory[idx];
+            if (hinfo[0] != "" && all_filters.indexOf(hinfo[0]) < 0)
+                hinfo[0] = "";
+        }
+        for (idx = 0; idx < this.mRedoStack.length; idx++) {
+            hinfo = this.mRedoStack[idx];
+            if (hinfo[0] != "" && all_filters.indexOf(hinfo[0]) < 0)
+                hinfo[0] = "";
+        }
+        if (this.mCurFilter != "" && 
+                all_filters.indexOf(this.mCurFilter) < 0)
+            this.mCurFilter = "";
+    },
+    
+    getCurVersion: function() {
+        return this.mCurVersion;
+    },
+    
+    availableActions: function() {
+        var ret = [];
+        if (this.mHistory.length > 0)
+            ret.push("undo");
+        if (this.mRedoStack.length > 0)
+            ret.push("redo");
+        return ret;
+    },
+    
+    _updateConditions: function(new_seq, filter_name) {
+        this.mHistory.push(
+            [this.mCurFilter, sConditionsH.getConditions()]);
+        this.mRedoStack = [];
+        sUnitsH.setup(new_seq, filter_name);
+        this._onChangeFilter();
+    },
+
+    modify: function(action) {
+        if (action == "undo") {
+            if (this.mHistory.length > 0) {
+                this.mRedoStack.push(
+                    [this.mCurFilter, sConditionsH.getConditions()]);
+                hinfo = this.mHistory.pop();
+                sUnitsH.setup(hinfo[1], hinfo[0]);
+                this._onChangeFilter();
+            }
+        }
+        if (action == "redo") {
+            if (this.mRedoStack.length > 0) {
+                this.mHistory.push(
+                    [this.mCurFilter, sConditionsH.getConditions()]);
+                hinfo = this.mRedoStack.pop();
+                sUnitsH.setup(hinfo[1], hinfo[0]);
+                this._onChangeFilter();
+            }
+        }        
+    }
+};
 
 /*************************************/
 /* Top controls                      */
@@ -666,7 +768,7 @@ var sViewH = {
     mModalCtrls: [],
     
     init: function() {
-        window.onClick = function(event_ms) {sViewH.onclick(event_ms);}
+        window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
         this.addToDrop(document.getElementById("ds-control-menu"));
     },
 
@@ -691,11 +793,11 @@ var sViewH = {
         }
     },
     
-    modalOn: function(ctrl) {
+    modalOn: function(ctrl, disp_mode) {
         if (this.mModalCtrls.indexOf(ctrl) < 0)
             this.mModalCtrls.push(ctrl);
         this.modalOff();
-        ctrl.style.display = "block";
+        ctrl.style.display = (disp_mode)? disp_mode: "block";
     },
     
     modalOff: function() {
@@ -744,6 +846,15 @@ function loadNote(content) {
         document.getElementById("note-ds-name").innerHTML = info["ds"];
         document.getElementById("note-content").value = info["note"];
     });
+}
+
+function modalOff() {
+    sViewH.modalOff();
+}
+
+function fixCond() {
+    sViewH.modalOff();
+    sOpCondH.fixCondition();
 }
 
 /*************************************/

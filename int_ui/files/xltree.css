@@ -42,6 +42,11 @@ span#xl-name, span#list-report {
     font-weight: bold;
 }
 
+span#list-report {
+    width: 150px;
+    max-width: 150px;
+}
+
 /********************Filter controls*****************************/
 
 div#panel-tree, div#panel-stat  {
@@ -53,36 +58,36 @@ div#panel-tree, div#panel-stat  {
     width: 50%;
 }
 
-div#filter-conditions {
-    width: 100%;
-    height: 100%;
-    min-height: 100%;
+div#condition-change {
     display: flex;
     flex-direction: column;
     align-items: stretch;
-}
-
-div#filter-cur-cond-text {
-    height: 17px;
-    padding: 5px 10px 4px 10px;
-    background-color: #f0f0ff;    
-}
-div#filter-cur-cond {
-    height: 150px;
-    min-height: 120px;
+    margin: 0px;
+    padding: 0px;
     vertical-align: top;
     overflow: hidden;
-    margin: 0px;
-    padding: 0px;
 }
 
-div#filter-list-conditions {
-    margin: 0px;
-    padding: 0px;
-    display: block;
-    width: 100%;
-    overflow: hidden;
-    border: none;
+div#cond-title-wrap {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    color: #8F00E0;
+    font-weight: bold;
+    font-size: 15px;
+    flex: 0 0 17px;
+
+}
+div#cond-error {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    color: red;
+    font-style: italic;
+    font-size: 13px;
+    flex: 0 0 20px;
+}
+div#cond-ctrl {
+    padding: 5px 10px 4px 30px;
+    flex: 0 0 17px;
 }
 
 div#stat-list, div#decision-tree {
@@ -91,6 +96,10 @@ div#stat-list, div#decision-tree {
     white-space: nowrap;
     overflow: auto;
     font-size: 12px;
+}
+
+div#stat-list.wait {
+    background-color: #E0E0E0;
 }
 
 div.stat-group {
@@ -144,37 +153,19 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
-span#cond-text {
-    color: #8F00E0;
-    font-weight: bold;
-    font-size: 15px;
-}
-
-span#cond-error {
-    color: red;
-    font-style: italic;
-    font-size: 13px;
-}
-
-span#cond-title {
-    font-size: 15px;
-    font-weight: bold;
-    color: #8F00E0;
-    margin: 8px 5px 1px 10px;
-    float: left;
-}
-
 div#cur-cond-numeric {
     margin: 10px;
     padding: 0px 10px 0px 30px;
     vertical-align: top;
     overflow: hidden;
+    flex: 1 0 40px;
 }
 
 div#cur-cond-enum {
     padding: 0px;
     margin:  0px;
     overflow: hidden;
+    flex: 1 0 200px;
 }
 
 div#wrap-cond-enum {
@@ -260,10 +251,14 @@ span.enum-cnt {
     margin: 10px;
 }
 
-span.stat-count, span.stat-comment {
+span.stat-count {
     font-style: italic;
 }
 
+span.stat-comment {
+    font-style: italic;
+    white-space: pre;
+}
 span.stat-undef-count {
     color: grey;
     font-style: italic;
@@ -278,6 +273,11 @@ span.stat-bad {
     margin: 1px 5px 1px 5px;
 }
 
+span.point-edit {
+    color: grey;
+    border: 1px solid grey;
+    cursor: pointer;
+}
 /********************Decision tree*****************************/
 td.tree-comment {
     color: grey;
@@ -312,23 +312,24 @@ td.point-cond {
 }
 
 td.point-count, td.point-count-accept, td.point-count-reject {
-    width: 50px;
-    font-weight: bold;
-    color: grey;
+    width: 60px;
 }
 
 td.point-count {
     text-align: right;
-    color: grey;
+    font-style: italic;
+    color: #000080;
 }
 
 td.point-count-accept {
-    text-align: center;
+    font-weight: bold;
+    text-align: left;
     color: #006F00;
 }
 
 td.point-count-reject {
-    text-align: center;
+    font-weight: bold;
+    text-align: left;
     color: #6F3800;
 }
 
@@ -344,10 +345,16 @@ div.point-block {
 div.point-cond {
     display: inline-block;
     color: #000008;
+    border: 1px solid white;
 }
 
-div.point-cond1 {
-    color: #000008;
+div.point-list div.point-cond {
+    display: block;
+}
+
+div.point-cond.active {
+    background-color: #FFFF80;
+    border: 1px solid red;
 }
 
 div.point-block1 {
@@ -421,23 +428,33 @@ div.ctrl-menu:hover {
     overflow: auto;
     background-color: rgb(0,0,0);
     background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
 }
 
 #cur-cond-mod {
     background-color: #fffefe;
-    margin: 50% 3% 2% 2%; 
-    padding: 00px;
+    margin: 3% 3% 2% 2%; 
+    padding: 0px;
     border: 1px solid black;
     border-radius: 7px;
-    height: 50%; 
-    min-height: 50%;
-    width: 55%;
+    width: 40%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
 }
+
+#cur-cond-mod.num {
+    height: 180px;
+    min-height: 180px;
+}
+
+#cur-cond-mod.enum {
+    height: 400px;
+    min-height: 400px;
+}
+
 
 /********************Modal Note*****************************/
 #note-back {
@@ -461,12 +478,9 @@ div.ctrl-menu:hover {
     border-radius: 7px;
     height: 50%; 
     min-height: 50%;
-    width: 55%;
+    width: 40%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
 }
 
 /********************note top controls*****************************/
@@ -487,7 +501,7 @@ div.ctrl-menu:hover {
     height: 25px;
 }
 
-#close-note {
+span.close-it {
     color: #aaa;
     font-size: 28px;
     font-weight: bold;
@@ -495,7 +509,7 @@ div.ctrl-menu:hover {
     float: right;
 }
 
-#close-note:hover, #close-note:focus {
+span.close-it:hover, span.close-it:focus {
     color: black;
     text-decoration: none;
     cursor: pointer;
@@ -519,6 +533,7 @@ div#work-note-ctrl {
     padding: 5px;
     text-align: center;
 }
+
 
 
 

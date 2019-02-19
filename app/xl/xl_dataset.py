@@ -136,7 +136,9 @@ class XLDataset(DataSet):
             tree = DecisionTree.parse(json.loads(tree_data))
         tree.evalCounts(self)
         return {
-            "tree": tree.dump()}
+            "tree": tree.dump(),
+            "counts": tree.getCounts(),
+            "stat": tree.getStat()}
 
     #===============================================
     @RestAPI.xl_request
