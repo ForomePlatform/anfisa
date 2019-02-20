@@ -368,9 +368,11 @@ function setupConditionValues(cond) {
     if (cond[0] == "enum") {
         if (cond[2] && sOpEnumModeInfo != null) {
             mode = ["AND", "ONLY", "NOT"].indexOf(cond[2]);
-            sOpEnumModeInfo[mode] = true;
-            document.getElementById("cond-mode-" + 
-                ["and", "only", "not"][mode]).checked = true;
+            if (mode >= 0) {
+                sOpEnumModeInfo[mode] = true;
+                document.getElementById("cond-mode-" + 
+                    ["and", "only", "not"][mode]).checked = true;
+            }
         }
         var_list = cond[3];
         needs_zeros = false;
@@ -584,7 +586,12 @@ function checkNumericOpMin() {
             if (!sOpNumericInfo[7])
                 sOpError = "Lower bound is above minimal value";
         } else {
-            sInputCurCondMin.className = "num-inp";
+            if (val > sOpNumericInfo[3]) {
+                sInputCurCondMin.className = "num-inp bad";
+                sOpError = "Incorrect lower bound";
+            } else {
+                sInputCurCondMin.className = "num-inp";
+            }
         }
         if (sOpUpdateIdx == null) {
             if (sOpError == null) {
@@ -611,7 +618,12 @@ function checkNumericOpMax() {
             if (!sOpNumericInfo[7])
                 sOpError = "Upper bound is below maximum value";
         } else {
-            sInputCurCondMax.className = "num-inp";
+            if (val < sOpNumericInfo[2]) {
+                sInputCurCondMin.className = "num-inp bad";
+                sOpError = "Incorrect upper bound";
+            } else {
+                sInputCurCondMax.className = "num-inp";
+            }
         }
         if (sOpUpdateIdx == null) {
             if (sOpError == null) {

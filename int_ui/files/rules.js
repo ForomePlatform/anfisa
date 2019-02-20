@@ -63,21 +63,30 @@ function ruleItemSel(item) {
     sCurItemNode = new_it_el;
     sCurItemNode.className = sCurItemNode.className + " cur";
     ruleItemReset();
-    document.getElementById("rule-item-modify").disabled = 
-        (sCurItem != "--param");
-    document.getElementById("rule-item-reset").disabled = 
-        (sCurItem != "--param");
-    document.getElementById("rule-item-content").disabled = 
-        (sCurItem != "--param");
+    document.getElementById("rule-item-reset").disabled = true;
+    document.getElementById("rule-item-modify").disabled = true;
+    document.getElementById("rule-item-content").disabled = (sCurItem != "--param");
+    checkRuleContent();
+}
+
+
+/*************************************/
+function checkRuleContent() {
+    modified = false;
+    if (sCurItem == "--param") {
+        new_content = document.getElementById("rule-item-content").value;
+        modified = (new_content != sItemsContents[sCurItem]);
+    }
+    document.getElementById("rule-item-reset").disabled = !modified;
+    document.getElementById("rule-item-modify").disabled = !modified;
+    return modified;
 }
 
 /*************************************/
 function ruleItemModify() {
-    if (sCurItem != "--param")
+    if (!checkRuleContent())
         return;
     new_content = document.getElementById("rule-item-content").value;
-    if (new_content == sItemsContents[sCurItem])
-        return;
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -105,6 +114,7 @@ function setupItemChange(info) {
         rulesModOff();
         updateCurFilter(sCurFilterName, true);
         loadStat();
+        loadRulesData();
     } else {
         document.getElementById("rule-item-errors").innerHTML =
             info["error"]; 
