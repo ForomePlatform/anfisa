@@ -128,7 +128,7 @@ function setupTags(info) {
             sInpTagNameList.append(option)
         }
     }
-    sInpTagNameList.selectedIndex = 0;
+    sInpTagNameList.selectedIndex = -1;
     if (info["marker"]) {
         parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
     }
@@ -144,13 +144,14 @@ function updateTagsState() {
     } else {
         tag_name = sTagOrder[sCurTagIdx];
         sInpTagName.value = tag_name;
-        sInpTagValue.value = ("" + sRecTags[tag_name]).trim();
+        tag_val = sRecTags[tag_name];
+        sInpTagValue.value = ((tag_val != undefined)? "" + tag_val:"").trim();
     }
-    checkInputs();
+    checkTagInputs();
 }
 
-function checkInputs() {    
-    tag_name = sInpTagName.value.trim();
+function checkTagInputs() {    
+    var tag_name = sInpTagName.value.trim();
     pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
         sTagNameOK = tag_name && /^[A-Za-z0-9_\-]+$/i.test(tag_name) && tag_name[0] != '_'
@@ -174,7 +175,7 @@ function checkInputs() {
     sBtnDeleteTag.disabled  = (sViewPort < 1) || (sCurTagIdx == null);
         
     if (sTimeH == null) 
-        sTimeH = setInterval(checkInputs, 200);
+        sTimeH = setInterval(checkTagInputs, 200);
 }
 
 function dropCurTag() {
@@ -201,7 +202,7 @@ function tagEnvSave(force_it) {
     if (sViewPort < 1)
         return;
     if (!force_it) {
-        checkInputs();
+        checkTagInputs();
         if (!sTagNameOK)
             return;
     }
@@ -221,7 +222,7 @@ function tagEnvCancel() {
 function tagEnvDelete() {
     if (sViewPort < 1)
         return;
-    checkInputs();
+    checkTagInputs();
     if (sCurTagIdx != null) {
         tag_name = sTagOrder[sCurTagIdx];
         tags_to_update = sRecTags;
@@ -282,10 +283,9 @@ function pickTag(idx) {
 }
 
 function tagEnvTagSel() {
-    if (sCurTagIdx == null) {
-        sInpTagName.value = sInpTagNameList.value;
-        checkInputs();
-    }
+    pickTag(-1);
+    sInpTagName.value = sInpTagNameList.value;
+    checkTagInputs();
 }
 
 function checkTagCheck(tag_name) {

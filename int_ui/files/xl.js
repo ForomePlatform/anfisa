@@ -573,16 +573,18 @@ var sOpNumH = {
         if (this.mInfo.with_undef != null) {
             this.mInfo.with_undef = this.mCheckUndef.checked;
         }
+        this.mInfo.val_cur = null;
         if (this.mInfo.op == 0) {
             val = toNumeric(this.mInfo.unit_type, this.mInputMin.value);
             if (val != null) {
-                if (val < this.mInfo.val_min) {
-                    if (!this.mInfo.updating)
+                if (val > this.mInfo.val_max) {
+                    error_msg = "Incorrrect lower bound";
+                } else {
+                    if (val < this.mInfo.val_min) {
                         error_msg = "Lower bound is above minimal value";
-                    else
-                        error_msg = "";
+                    }
+                    this.mInfo.val_cur = val;
                 }
-                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
@@ -592,13 +594,14 @@ var sOpNumH = {
         if (this.mInfo.op == 1) {
             val = toNumeric(this.mInfo.unit_type, this.mInputMax.value);
             if (val != null) {
-                if (val > this.mInfo.val_max) {
-                    if (!this.mInfo.updating)
+                if (val < this.mInfo.val_min) {
+                    error_msg = "Incorrrect upper bound";
+                } else {
+                    if (val > this.mInfo.val_max) {
                         error_msg = "Upper bound is below maximum value";
-                    else
-                        error_msg = "";
+                    }
+                    this.mInfo.val_cur = val;
                 }
-                this.mInfo.val_cur = val;
             }
             else {
                 error_msg = "Bad numeric value";
