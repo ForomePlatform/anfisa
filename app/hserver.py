@@ -1,11 +1,11 @@
-import sys, os, traceback, logging, codecs, json
+import sys, os, traceback, logging, codecs
 from StringIO import StringIO
 from urlparse import parse_qs
 from cgi import parse_header, parse_multipart
 import logging.config
 
-from app.anf_data import AnfisaData
-
+from app.model.a_app import AnfisaApp
+from app.model.json_conf import loadJSonConfig
 #========================================
 class HServResponse:
     #========================================
@@ -58,12 +58,10 @@ class HServResponse:
 #========================================
 class HServHandler:
     sInstance = None
-    sService  = None
 
     @classmethod
     def init(cls, config, in_container):
         cls.sInstance = cls(config, in_container)
-        cls.sService  = AnfisaData.setup(config, in_container)
 
     @classmethod
     def request(cls, environ, start_response):
@@ -75,6 +73,7 @@ class HServHandler:
             if in_container else None)
         if self.mHtmlBase and self.mHtmlBase.endswith('/'):
             self.mHtmlBase = self.mHtmlBase[:-1]
+        AnfisaApp.setup(config, in_container)
 
     def checkFilePath(self, path):
         for path_from, path_to in self.mDirFiles:
@@ -99,7 +98,7 @@ class HServHandler:
         if environ["REQUEST_METHOD"] == "POST":
             try:
                 content_type = environ.get('CONTENT_TYPE')
-                if content_type: 
+                if content_type:
                     ctype, pdict = parse_header(content_type)
                     if ctype == 'multipart/form-data':
                         for a, v in parse_multipart(environ['wsgi.input'], pdict).items():
@@ -158,7 +157,7 @@ class HServHandler:
                     file_path, query_args, True)
                 if ret is not False:
                     return ret
-            return self.sService.request(resp_h, path, query_args)
+            return AnfisaApp.request(resp_h, path, query_args)
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep)
@@ -166,23 +165,6 @@ class HServHandler:
             logging.error(
                 "Exception on request evaluation:\n " + log_record)
             return resp_h.makeResponse(error = 500)
-
-#========================================
-def loadJSonConfig(config_file):
-    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
-        content = inp.read()
-    dir_name = os.path.abspath(__file__)
-    for idx in range(2):
-        dir_name = os.path.dirname(dir_name)
-    content = content.replace('${HOME}', dir_name)
-    pre_config = json.loads(content)
-
-    file_path_def = pre_config.get("file-path-def")
-    if file_path_def:
-        for key, value in file_path_def.items():
-            assert key != "HOME"
-            content = content.replace('${%s}' % key, value)
-    return json.loads(content)
 
 #========================================
 def setupHServer(config_file, in_container):

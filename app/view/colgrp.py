@@ -18,12 +18,23 @@ class ColGroupsH:
     def getTitle(self, idx):
         return self.mATPairs[idx][1]
 
-    def getJSonObj(self):
+    def getAttrNames(self):
+        return [attr for attr, title in self.mATPairs]
+
+    #=============================
+    def dump(self):
         return [[attr, title] for attr, title in self.mATPairs]
 
-    def prepareObjects(self, objects):
-        assert len(objects) == 1
-        rec_obj = objects[0]
+    @classmethod
+    def load(cls, data):
+        if data is None:
+            return None
+        return cls(attr_title_pairs = data)
+
+    #=============================
+    def formColumns(self, in_objects):
+        assert len(in_objects) == 1
+        rec_obj = in_objects[0]
         prefix_head = []
         objects = []
         for attr, title in self.mATPairs:

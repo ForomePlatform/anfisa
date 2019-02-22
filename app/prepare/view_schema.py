@@ -1,9 +1,35 @@
+from app.view.asp_set import AspectSetH
+from app.view.aspect import AspectH
 from app.view.attr import AttrH
-from .view_setup import ViewSetup
+from app.view.colgrp import ColGroupsH
 
 #===============================================
-CONFIG_ATTRS = {
-    "view_gen": [
+def defineViewSchema():
+    aspects = AspectSetH([
+        AspectH("view_gen", "General", "view", field = "general"),
+        AspectH("view_qsamples", "Quality", "view",
+            col_groups = ColGroupsH(attr = "quality_samples")),
+        AspectH("view_gnomAD", "gnomAD", "view",
+                col_groups = ColGroupsH(attr = "gnomAD")),
+        AspectH("view_db", "Databases", "view", field = "databases"),
+        AspectH("view_pred", "Predictions", "view", field = "predictions"),
+        AspectH("view_genetics", "Bioinformatics", "view",
+            field = "bioinformatics"),
+        AspectH("view_inheritance", "Inheritance", "view",
+            field = "inheritance", ignored = True),
+        AspectH("_main", "VEP Data", "data"),
+        AspectH("transcripts", "VEP Transcripts", "data",
+            col_groups = ColGroupsH([
+                ("intergenic_consequences", "Intergenic"),
+                ("motif_feature_consequences", "Motif"),
+                ("regulatory_feature_consequences", "Regulatory"),
+                ("transcript_consequences", "Transcript")])),
+        AspectH("colocated_v", "Colocated Variants", "data",
+            col_groups = ColGroupsH(attr = "colocated_variants")),
+        AspectH("input", "VCF", "data", field = "input",
+            mode = "string")])
+
+    aspects["view_gen"].setAttributes([
         AttrH("genes", title = "Gene(s)", is_seq = True),
         AttrH("hg19"),
         AttrH("hg38"),
@@ -41,9 +67,9 @@ CONFIG_ATTRS = {
         AttrH("proband_genotype", title = "Proband Genotype"),
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
-        AttrH("igv", title = "IGV", kind="link"),
-    ],
-    "view_qsamples": [
+        AttrH("igv", title = "IGV", kind="link")])
+
+    aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),
         AttrH("qd", title = "Quality by Depth"),
         AttrH("mq", title = "Mapping Quality"),
@@ -52,9 +78,9 @@ CONFIG_ATTRS = {
         AttrH("fs", title = "Fisher Strand Bias"),
         AttrH("allelic_depth", title = "Allelic Depth", is_seq = True),
         AttrH("read_depth", title = "Read Depth"),
-        AttrH("genotype_quality", title = "Genotype Quality"),
-    ],
-    "view_gnomAD": [
+        AttrH("genotype_quality", title = "Genotype Quality")])
+
+    aspects["view_gnomAD"].setAttributes([
         AttrH("allele", title = "Allele"),
         AttrH("proband", title = "Proband"),
         AttrH("pli", title = "pLI", is_seq = True),
@@ -64,60 +90,73 @@ CONFIG_ATTRS = {
         AttrH("genome_an", title="Genome AN"),
         AttrH("exome_an", title="Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq=True),
-        AttrH("pop_max", title = "PopMax",),
-    ],
-    "view_db": [
+        AttrH("pop_max", title = "PopMax",)])
+
+    aspects["view_db"].setAttributes([
         AttrH("hgmd", title = "HGMD"),
         AttrH("hgmd_hg38", title = "HGMD (HG38)"),
         AttrH("hgmd_tags", title = "HGMD TAGs", is_seq = True),
-        AttrH("hgmd_phenotypes",
-            title = "HGMD Phenotypes", is_seq = True),
-        AttrH("hgmd_pmids",
-            title = "HGMD PMIDs", is_seq = True, kind = "link"),
-        AttrH("omim", title = "OMIM", is_seq = True, kind="link"),
-        AttrH("clinVar_variants",
-            title = "ClinVar Variants", is_seq = True),
-        AttrH("clinVar_significance",
-            title = "ClinVar Significance", is_seq = True),
-        AttrH("lmm_significance",
-            title = "Clinical Significance by LMM", is_seq = False),
+        AttrH("hgmd_phenotypes", title = "HGMD Phenotypes",
+            is_seq = True),
+        AttrH("hgmd_pmids", title = "HGMD PMIDs",
+            is_seq = True, kind = "link"),
+        AttrH("omim", title = "OMIM",
+            is_seq = True, kind = "link"),
+        AttrH("clinVar_variants", title = "ClinVar Variants",
+            is_seq = True),
+        AttrH("clinVar_significance", title = "ClinVar Significance",
+            is_seq = True),
+        AttrH("lmm_significance", title = "Clinical Significance by LMM"),
         AttrH("gene_dx_significance",
             title = "Clinical Significance by GeneDx"),
-        AttrH("clinVar_phenotypes",
-            title = "ClinVar Phenotypes", is_seq = True),
-        AttrH("clinVar_submitters",
-            title = "ClinVar Submitters", is_seq = True),
-        AttrH("clinVar", title = "ClinVar", kind = "link", is_seq=True),
-        AttrH("gene_cards", title =
-            "GeneCards", kind = "link", is_seq = True),
-        AttrH("pubmed_search", kind="link",
-            title="PubMed Search Results", is_seq = True),
-        AttrH("beacons",
-              title="Observed at", is_seq=True),
-        AttrH("beacon_url",
-              title="Search Beacons", is_seq=True, kind = "link"),
-    ],
-    "view_pred": [
-        AttrH("lof_score", title = "LoF Score", is_seq = True),
-        AttrH("lof_score_canonical", title = "LoF Score (Canonical)", is_seq = True),
-        AttrH("max_ent_scan", title = "MaxEntScan", is_seq = True),
-        AttrH("polyphen", title = "Polyphen", is_seq = True),
-        AttrH("polyphen2_hvar",
-            title = "Polyphen 2 HVAR", is_seq = True),
-        AttrH("polyphen2_hdiv",
-            title = "Polyphen 2 HDIV", is_seq = True),
-        AttrH("sift", title = "SIFT", is_seq = True),
-        AttrH("revel", title = "REVEL", is_seq = True),
-        AttrH("mutation_taster", title = "Mutation Taster", is_seq = True),
+        AttrH("clinVar_phenotypes", title = "ClinVar Phenotypes",
+            is_seq = True),
+        AttrH("clinVar_submitters", title = "ClinVar Submitters",
+            is_seq = True),
+        AttrH("clinVar", title = "ClinVar",
+            is_seq = True, kind = "link"),
+        AttrH("gene_cards", title = "GeneCards",
+            is_seq = True, kind = "link"),
+        AttrH("pubmed_search", title="PubMed Search Results",
+            is_seq = True, kind = "link"),
+        AttrH("beacons", title="Observed at", is_seq = True),
+        AttrH("beacon_url", title="Search Beacons",
+            is_seq = True, kind = "link")])
+
+    aspects["view_pred"].setAttributes([
+        AttrH("lof_score", title = "LoF Score",
+            is_seq = True),
+        AttrH("lof_score_canonical", title = "LoF Score (Canonical)",
+            is_seq = True),
+        AttrH("max_ent_scan", title = "MaxEntScan",
+            is_seq = True),
+        AttrH("polyphen", title = "Polyphen",
+            is_seq = True),
+        AttrH("polyphen2_hvar", title = "Polyphen 2 HVAR",
+            is_seq = True),
+        AttrH("polyphen2_hdiv", title = "Polyphen 2 HDIV",
+            is_seq = True),
+        AttrH("sift", title = "SIFT",
+            is_seq = True),
+        AttrH("revel", title = "REVEL",
+            is_seq = True),
+        AttrH("mutation_taster", title = "Mutation Taster",
+            is_seq = True),
         AttrH("fathmm", title = "FATHMM", is_seq = True),
-        AttrH("cadd_phred", title = "CADD (Phred)", is_seq = True),
-        AttrH("cadd_raw", title = "CADD (Raw)", is_seq = True),
-        AttrH("mutation_assessor", title = "Mutation Assessor", is_seq = True),
-        AttrH("sift_score", title = "SIFT score", is_seq = True),
-        AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score", is_seq = True),
-        AttrH("polyphen2_hdiv_score", title = "Polyphen 2 HDIV score", is_seq = True),
-    ],
-    "view_genetics": [
+        AttrH("cadd_phred", title = "CADD (Phred)",
+            is_seq = True),
+        AttrH("cadd_raw", title = "CADD (Raw)",
+            is_seq = True),
+        AttrH("mutation_assessor", title = "Mutation Assessor",
+            is_seq = True),
+        AttrH("sift_score", title = "SIFT score",
+            is_seq = True),
+        AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score",
+            is_seq = True),
+        AttrH("polyphen2_hdiv_score", title = "Polyphen 2 HDIV score",
+            is_seq = True)])
+
+    aspects["view_genetics"].setAttributes([
         AttrH("zygosity", title = "Zygosity"),
         AttrH("inherited_from", title = "Inherited from"),
         AttrH("dist_from_exon_worst",
@@ -127,17 +166,20 @@ CONFIG_ATTRS = {
             title="Distance From Intron/Exon Boundary (Canonical)",
             is_seq = True),
         AttrH("conservation", title = "Conservation", is_seq = True),
-        AttrH("species_with_variant", title = "Species with variant"),
-        AttrH("species_with_others", title = "Species with other variants"),
+        AttrH("species_with_variant",
+            title = "Species with variant"),
+        AttrH("species_with_others",
+            title = "Species with other variants"),
         AttrH("max_ent_scan", title = "MaxEntScan", is_seq = True),
         AttrH("nn_splice", title = "NNSplice"),
         AttrH("human_splicing_finder", title = "Human Splicing Finder"),
         AttrH("other_genes",
-            title="Gene symbols from other transcripts", is_seq = True),
+            title="Gene symbols from other transcripts",
+            is_seq = True),
         AttrH("called_by", title = "Called by", is_seq = True),
-        AttrH("caller_data", title = "CALLER DATA"),
-    ],
-    "_main": [
+        AttrH("caller_data", title = "CALLER DATA")])
+
+    aspects["_main"].setAttributes([
         AttrH("label"),
         AttrH("color_code"),
         AttrH("id"),
@@ -160,9 +202,9 @@ CONFIG_ATTRS = {
         AttrH("EXPECTED"),
         AttrH("gnomad_db_genomes_af", kind = "hidden"),
         AttrH("gnomad_db_exomes_af", kind = "hidden"),
-        AttrH("SEQaBOO"),
-    ],
-    "transcripts": [
+        AttrH("SEQaBOO")])
+
+    aspects["transcripts"].setAttributes([
         AttrH("amino_acids"),
         AttrH("bam_edit"),
         AttrH("biotype"),
@@ -241,9 +283,9 @@ CONFIG_ATTRS = {
         AttrH("trembl", is_seq = True),
         AttrH("uniparc", is_seq = True),
         AttrH("used_ref"),
-        AttrH("variant_allele"),
-    ],
-    "colocated_v": [
+        AttrH("variant_allele")])
+
+    aspects["colocated_v"].setAttributes([
         AttrH("id"),
         AttrH("start"),
         AttrH("end"),
@@ -256,12 +298,6 @@ CONFIG_ATTRS = {
         AttrH("phenotype_or_disease"),
         AttrH("seq_region_name"),
         AttrH("clin_sig", is_seq = True),
-        AttrH("minor"),
-    ],
-    "input": [AttrH("input")]
-}
+        AttrH("minor")])
 
-#===============================================
-def setupRecommended():
-    for aspect_name, attrs in CONFIG_ATTRS.items():
-        ViewSetup.setRecomendedAttributes(aspect_name, attrs)
+    return aspects

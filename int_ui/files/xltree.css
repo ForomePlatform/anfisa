@@ -1,0 +1,539 @@
+/********************Modal Filter*****************************/
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    white-space: nowrap;
+    height: 100%;
+    margin: 0px; 
+    padding: 0px;
+    font-family: sans-serif;
+}
+
+#xl-ctrl {
+    width: 100%;
+    background-color: #333455; 
+    color: white;
+    height: 60px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+    
+#xl-main {
+    background-color: white;
+    margin: 0px; 
+    padding: 0px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+/********************Top controls*****************************/
+div#xl-info, div#xl-tree-info, div#xl-cur-info {
+    padding: 3px 10px;
+    flex: 1 0 30%;
+}
+
+span#xl-name, span#list-report {
+    font-weight: bold;
+}
+
+span#list-report {
+    width: 150px;
+    max-width: 150px;
+}
+
+/********************Filter controls*****************************/
+
+div#panel-tree, div#panel-stat  {
+    flex-grow: 1;
+    overflow: hidden;
+    display: grid;
+    border: 1px solid black;
+    white-space: nowrap;
+    width: 50%;
+}
+
+div#condition-change {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0px;
+    padding: 0px;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+div#cond-title-wrap {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    color: #8F00E0;
+    font-weight: bold;
+    font-size: 15px;
+    flex: 0 0 17px;
+
+}
+div#cond-error {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    color: red;
+    font-style: italic;
+    font-size: 13px;
+    flex: 0 0 20px;
+}
+div#cond-ctrl {
+    padding: 5px 10px 4px 30px;
+    flex: 0 0 17px;
+}
+
+div#stat-list, div#decision-tree {
+    margin: 5px;
+    padding: 5px;
+    white-space: nowrap;
+    overflow: auto;
+    font-size: 12px;
+}
+
+div#stat-list.wait {
+    background-color: #E0E0E0;
+}
+
+div.stat-group {
+    border: 1px solid #333455;
+    margin: 0px;
+    padding: 0px;
+}
+
+div.stat-unit {
+    border: 1px solid white;
+    cursor: pointer;
+}
+
+div.stat-unit.cur {
+    border: 1px solid #8F00E0;
+    cursor: inherit;
+}
+
+div.stat-unit.cur span.stat-unit-name {
+    color: #8F00E0;
+}
+
+div.stat-group-title {
+    font-size: 12px;
+    font-weight: bold;
+    font-style: italic;
+    color: #333455;
+    margin: 1px 5px 1px 15px;
+}
+
+span.stat-unit-name {
+    font-size: 13px;
+    font-weight: bold;
+    color: #333455;
+    margin: 1px 5px 1px 5px;
+}
+
+span.stat-unit-title {
+    flex-grow: 1;
+    font-size: 13px;
+    color: #333455;
+    text-align: right;
+    margin: 1px 5px 1px 5px;
+}
+
+div.stat-unit ul {
+    margin-before: 0px;
+    margin-after: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-start: 1px;
+}
+
+div#cur-cond-numeric {
+    margin: 10px;
+    padding: 0px 10px 0px 30px;
+    vertical-align: top;
+    overflow: hidden;
+    flex: 1 0 40px;
+}
+
+div#cur-cond-enum {
+    padding: 0px;
+    margin:  0px;
+    overflow: hidden;
+    flex: 1 0 200px;
+}
+
+div#wrap-cond-enum {
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: columns;
+}
+
+div#wrap-cond-enum-list {
+    padding: 0px 5px;
+    margin: 0px;
+    flex-grow: 1;
+    display: grid;
+    overflow: hidden;    
+    border: 1px solid black;
+}
+
+div#cur-cond-enum-list {
+    padding: 0px;
+    margin: 2px;
+    min-width: 200px;
+    display: grid;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+div#op-enum-list {
+    margin: 0px;
+    padding: 0px;
+    overflow-y: auto;
+    display: block;
+}
+
+div#cur-cond-enum-ctrl {
+    width: 100px;
+    vertical-align: top;
+    overflow: hidden;
+    margin: 10px 5px;
+    padding: 10px 5px;
+}
+
+div#cur-cond-enum-zeros {
+    font-size: 9px;
+    font-style: italic;
+    margin-bottom: 15px;
+}
+
+div#op-enum-list.no-zeros div.zero {
+    display: none;
+}
+
+input.num-inp {
+    width: 100px;
+}
+
+span#cond-sign {
+    cursor: hand;
+}
+
+#cond-undef-check {
+    margin-left: 150px;
+}
+
+div#cond-list {
+    margin: 0px;
+    padding: 0px;
+    overflow: auto;
+    font-size: 12px;
+    vertical-align: top;
+    height: auto !important;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+
+span.enum-cnt {
+    color: grey;
+    font-style: italic;
+    margin: 10px;
+}
+
+span.stat-count {
+    font-style: italic;
+}
+
+span.stat-comment {
+    font-style: italic;
+    white-space: pre;
+}
+span.stat-undef-count {
+    color: grey;
+    font-style: italic;
+}
+span.stat-ok {
+    font-weight: bold;
+    margin: 1px 5px 1px 5px;
+}
+span.stat-bad {
+    color: #0f000f;
+    font-style: italic;
+    margin: 1px 5px 1px 5px;
+}
+
+span.point-edit {
+    color: grey;
+    border: 1px solid grey;
+    cursor: pointer;
+}
+/********************Decision tree*****************************/
+td.tree-comment {
+    color: grey;
+    font-style: italic;
+}
+
+table.d-tree {
+    width: 100%;
+}
+
+table.d-tree td {
+    border: 1px solid #F0F0F0;
+}
+
+table.d-tree tr.cur {
+    background-color: #FFF080;
+    cursor: default;
+}
+
+table.d-tree tr.active {
+    cursor: pointer;
+}
+
+td.point-no {
+    width: 15px;
+    color: grey;
+    text-align: right;
+}
+
+td.point-cond {
+    text-align: left;
+}
+
+td.point-count, td.point-count-accept, td.point-count-reject {
+    width: 60px;
+}
+
+td.point-count {
+    text-align: right;
+    font-style: italic;
+    color: #000080;
+}
+
+td.point-count-accept {
+    font-weight: bold;
+    text-align: left;
+    color: #006F00;
+}
+
+td.point-count-reject {
+    font-weight: bold;
+    text-align: left;
+    color: #6F3800;
+}
+
+span.point-instr {
+    font-weight: bold;
+}
+
+div.point-block {
+    display: inline-block;
+}
+
+
+div.point-cond {
+    display: inline-block;
+    color: #000008;
+    border: 1px solid white;
+}
+
+div.point-list div.point-cond {
+    display: block;
+}
+
+div.point-cond.active {
+    background-color: #FFFF80;
+    border: 1px solid red;
+}
+
+div.point-block1 {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    white-space: nowrap;
+    height: 100%;
+    width: 100%;
+}
+
+div.point-op {
+    font-weight: bold;
+    font-style: italic;
+    font-size: 80%;
+    height: 100%;
+    width: 30px;
+    padding: 5px;
+}
+
+div.point-list {
+    border-left: 1px solid black;
+    padding-left: 10px;
+}
+/********************Control controls*****************************/
+div#ds-dropdown {
+    margin: 0px;
+    padding: 0px;
+}
+
+span#ds-control-open {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+div#ds-control-menu {
+    display: none;
+    padding: 10px;
+    position: absolute;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+div.ctrl-menu {
+    text-align: left;
+    padding: 5px;
+    height: 20px;
+    width: 160px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+div.ctrl-menu:hover {
+    color: #000080;
+}
+
+/********************Modal Cur-Cond*****************************/
+#cur-cond-back {
+    display: none;
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#cur-cond-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 0px;
+    border: 1px solid black;
+    border-radius: 7px;
+    width: 40%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+}
+
+#cur-cond-mod.num {
+    height: 180px;
+    min-height: 180px;
+}
+
+#cur-cond-mod.enum {
+    height: 400px;
+    min-height: 400px;
+}
+
+
+/********************Modal Note*****************************/
+#note-back {
+    display: none;
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#note-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 00px;
+    border: 1px solid black;
+    border-radius: 7px;
+    height: 50%; 
+    min-height: 50%;
+    width: 40%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+}
+
+/********************note top controls*****************************/
+#note-top {
+    width: 100%;
+    height: 55px;
+    min-height: 20px;
+    margin: 0px;;
+    padding: 0px;
+}
+
+#note-title {
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    height: 25px;
+}
+
+span.close-it {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0px 10px 0px 10px;
+    float: right;
+}
+
+span.close-it:hover, span.close-it:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+} 
+
+div#work-note-area {
+    flex-grow: 1;
+    width: 100%;
+    padding-left: 10px;
+}
+
+textarea#note-content {
+    padding: 10px;
+    width: 95%;
+    height: 100%;
+}
+
+div#work-note-ctrl {
+    height: 40px;
+    margin: 5px;
+    padding: 5px;
+    text-align: center;
+}
+
+
+
+

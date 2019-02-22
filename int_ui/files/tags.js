@@ -95,10 +95,11 @@ function setupTags(info) {
         tag_name = op_tags[j];
         if (sRecTags[tag_name] == undefined)
             continue
+        tag_add = (sRecTags[tag_name])? '...':'';
         idx = sTagOrder.length;
         sTagOrder.push(tag_name);
         rep.push('<div id="tag--' + idx + '" class="tag-label" ' +
-            'onclick="pickTag(' + idx + ');">' + tag_name + '</div>');
+            'onclick="pickTag(' + idx + ');">' + tag_name + tag_add + '</div>');
         sHasTags = true;
     }
     document.getElementById("tg-op-tags-list").innerHTML = rep.join('\n');

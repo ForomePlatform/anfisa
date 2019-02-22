@@ -15,14 +15,20 @@ class MongoConnector:
     def getCommonAgent(self):
         return self.mAgents["_common_"]
 
-    def getAgent(self, name):
+    def getWSAgent(self, name):
         if name not in self.mAgents:
-            self.mAgents[name] = MongoCollectionAgent(self,
+            self.mAgents[name] = MongoWSAgent(self,
+                self.mMongo[self.mPath][name], name)
+        return self.mAgents[name]
+
+    def getDSAgent(self, name):
+        if name not in self.mAgents:
+            self.mAgents[name] = MongoDSAgent(self,
                 self.mMongo[self.mPath][name], name)
         return self.mAgents[name]
 
 #===============================================
-class MongoCollectionAgent:
+class MongoWSAgent:
     def __init__(self, connector, agent, name):
         self.mConnector = connector
         self.mAgent = agent
@@ -75,8 +81,7 @@ class MongoCollectionAgent:
         return None
 
     def setRulesParamValues(self, param_values):
-        self.mAgent.update(
-            {"_id": "params"},
+        self.mAgent.update({"_id": "params"},
             {"$set": {"params": param_values}}, upsert = True)
 
     def getWSNote(self):
@@ -86,8 +91,7 @@ class MongoCollectionAgent:
         return ""
 
     def setWSNote(self, note):
-        self.mAgent.update(
-            {"_id": "note"},
+        self.mAgent.update({"_id": "note"},
             {"$set": {"note": note.strip()}}, upsert = True)
 
 #===============================================
@@ -95,4 +99,39 @@ class MongoCommonAgent:
     def __init__(self, connector, agent):
         self.mConnector = connector
         self.mAgent = agent
+
+#===============================================
+class MongoDSAgent:
+    def __init__(self, connector, agent, name):
+        self.mConnector = connector
+        self.mAgent = agent
+        self.mName = name
+
+    def getName(self):
+        return self.mName
+
+    def getFilters(self):
+        ret = []
+        for it in self.mAgent.find({"_tp": "flt"}):
+            it_id = it["_id"]
+            if it_id.startswith("flt-"):
+                ret.append((it_id[4:], it["seq"]))
+        return ret
+
+    def setFilter(self, filter_name, conditions):
+        self.mAgent.update({"_id": "flt-" + filter_name},
+            {"$set": {"seq": conditions, "_tp": "flt"}}, upsert = True)
+
+    def dropFilter(self, filter_name):
+        self.mAgent.remove({"_id": "flt-" + filter_name})
+
+    def getDSNote(self):
+        it = self.mAgent.find_one({"_id": "note"})
+        if it is not None:
+            return it["note"].strip()
+        return ""
+
+    def setDSNote(self, note):
+        self.mAgent.update({"_id": "note"},
+            {"$set": {"note": note.strip()}}, upsert = True)
 
