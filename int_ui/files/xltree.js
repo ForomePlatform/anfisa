@@ -858,7 +858,7 @@ var sVersionsH = {
             
     show: function() {
         if (this.mVersions.length > 1 || 
-                (this.modVersions.length == 1 && this.mBaseCmpVer == null))
+                (this.mVersions.length == 1 && this.mBaseCmpVer == null))
             sViewH.modalOn(document.getElementById("versions-back"));
     },
     
