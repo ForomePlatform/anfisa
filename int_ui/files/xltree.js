@@ -768,7 +768,7 @@ var sTreeCtrlH = {
     
     doSaveVersion: function() {
         if (!this.mCurVersion)
-            sDecisionTree.setup(true, false, "add_version");
+            sDecisionTree.setup(true, null, "add_version");
     },
     
     availableActions: function() {
