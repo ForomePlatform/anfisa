@@ -75,7 +75,7 @@ var sDecisionTree = {
                     escapeText(it[1]) + '</td></tr>');
                 continue;
             }
-            p_no = this.mPoints.length + 1; p_lev = it[1]; p_count = this.mCounts[p_no];
+            p_no = this.mPoints.length; p_lev = it[1]; p_count = this.mCounts[p_no];
             this.mPoints.push(it);
             if (p_count > 0) {
                 list_rep.push('<tr id="p_td__' + p_no + 
@@ -85,7 +85,7 @@ var sDecisionTree = {
                 list_rep.push('<tr>');
             }
             list_rep.push('<td class="point-no" id="p_no__' + p_no + '">' + 
-                p_no + '</td>');
+                (p_no + 1) + '</td>');
             list_rep.push('<td class="point-cond">')
             for (var j=0; j < p_lev; j++)
                 list_rep.push('&emsp;');
