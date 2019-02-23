@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from datetime import datetime
 
 #===============================================
 class MongoConnector:
@@ -134,4 +135,27 @@ class MongoDSAgent:
     def setDSNote(self, note):
         self.mAgent.update({"_id": "note"},
             {"$set": {"note": note.strip()}}, upsert = True)
+
+    def getVersionList(self):
+        ret = []
+        for it in self.mAgent.find({"_tp": "version"}):
+            it_id = it["_id"]
+            if it_id.startswith("ver-"):
+                ret.append((int(it_id[4:]), it["date"], it["hash"]))
+        return sorted(ret)
+
+    def getVersionTree(self, version):
+        for it in self.mAgent.find({"_id": "ver-" + str(version)}):
+            return it["tree"]
+        return None
+
+    def addVersion(self, version, tree, hash, date = None):
+        if date is None:
+            date = datetime.now().isoformat()
+        self.mAgent.update({"_id": "ver-" + str(version)},
+            {"$set": {"hash": hash, "tree": tree,
+                "date": date, "_tp": "version"}}, upsert = True)
+
+    def dropVersion(self, version):
+        self.mAgent.remove({"_id": "ver-" + str(version)})
 

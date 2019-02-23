@@ -7,6 +7,8 @@ function initXL(ds_name, common_title) {
     sOpCondH.init();
     sOpNumH.init();
     sOpEnumH.init();
+    sTreeCtrlH.init();
+    sVersionsH.init();
     sViewH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
@@ -42,10 +44,18 @@ var sDecisionTree = {
     mOpCond: null,
     mOpIdx: null,
     
-    setup: function() {
+    setup: function(tree_descr, version, instruction) {
         args = "ds=" + sDSName;
-        if (this.mTree != null) 
-            args += "&tree=" + encodeURIComponent(JSON.stringify(this.mTree));
+        if (tree_descr) {
+            if (tree_descr == true)
+                tree_descr = JSON.stringify(this.mTree);
+            args += "&tree=" + encodeURIComponent(tree_descr);
+        }
+        if (version != undefined && version != null)  {
+            args += "&version=" + encodeURIComponent(version);
+        }
+        if (instruction)
+            args += "&instr=" + encodeURIComponent(instruction);
         ajaxCall("xltree", args, function(info){sDecisionTree._setup(info);})
     },
     
@@ -53,6 +63,7 @@ var sDecisionTree = {
         this.mTree = info["tree"];
         this.mStat = info["stat"];
         this.mCounts = info["counts"];
+        sTreeCtrlH.update(info["cur_version"], info["versions"])
         this.mPoints = [];
         this.mOpIdx = null;
         var list_rep = ['<table class="d-tree">'];
@@ -64,7 +75,7 @@ var sDecisionTree = {
                     escapeText(it[1]) + '</td></tr>');
                 continue;
             }
-            p_no = this.mPoints.length; p_lev = it[1]; p_count = this.mCounts[p_no];
+            p_no = this.mPoints.length + 1; p_lev = it[1]; p_count = this.mCounts[p_no];
             this.mPoints.push(it);
             if (p_count > 0) {
                 list_rep.push('<tr id="p_td__' + p_no + 
@@ -195,12 +206,13 @@ var sDecisionTree = {
     fixCondition: function(new_cond) {
         if (this.mOpIdx == null)
             return;
+        sTreeCtrlH.fixCurrent();
         if (this.mOpIdx >= 0) {
             this.mPoints[this.mCurPointNo][2][this.mOpIdx] = new_cond;
         } else {
             this.mPoints[this.mCurPointNo][2] = new_cond;
         }
-        this.setup();
+        this.setup(true);
     }
 }
 
@@ -696,28 +708,67 @@ var sOpEnumH = {
 var sTreeCtrlH = {
     mHistory: [],
     mRedoStack: [],
-    mCurVersion: null,
+    mCurVersion: "",
+    
+    mButtonUndo: null,
+    mButtonRedo: null,
+    mButtonSaveVersion: null,
+    mSpanCurVersion: null,
 
-    update: function(filter_name, filter_list) {
-        this.mCurFilter = (filter_name)? filter_name:"";
-        var all_filters = sFiltersH.setup(filter_list)
-        for (idx = 0; idx < this.mHistory.length; idx++) {
-            hinfo = this.mHistory[idx];
-            if (hinfo[0] != "" && all_filters.indexOf(hinfo[0]) < 0)
-                hinfo[0] = "";
-        }
-        for (idx = 0; idx < this.mRedoStack.length; idx++) {
-            hinfo = this.mRedoStack[idx];
-            if (hinfo[0] != "" && all_filters.indexOf(hinfo[0]) < 0)
-                hinfo[0] = "";
-        }
-        if (this.mCurFilter != "" && 
-                all_filters.indexOf(this.mCurFilter) < 0)
-            this.mCurFilter = "";
+    init: function() {
+        this.mButtonUndo = document.getElementById("tree-undo");
+        this.mButtonRedo = document.getElementById("tree-redo");
+        this.mButtonSaveVersion = document.getElementById("tree-version");
+        this.mSpanCurVersion = document.getElementById("tree-current-version");
+        
+    },
+    
+    update: function(cur_version, versions) {
+        sVersionsH.setup(cur_version, versions);
+        this.mCurVersion = (cur_version != null)? cur_version + "": "";
+        this.mSpanCurVersion.innerHTML = this.mCurVersion;
+        this.mButtonUndo.disabled = (this.mHistory.length == 0);
+        this.mButtonRedo.disabled = (this.mRedoStack.length == 0);
+        this.mButtonSaveVersion.disabled = (cur_version != null);
     },
     
     getCurVersion: function() {
         return this.mCurVersion;
+    },
+    
+    _evalCurState: function() {
+        return [sDecisionTree.mCurPointNo,
+            JSON.stringify(sDecisionTree.mTree)];
+    },
+    
+    fixCurrent: function() {
+        this.mHistory.push(this._evalCurState());
+        while (this.mHistory.length > 50)
+            this.mHistory.shift();
+        this.mRedoStack = [];
+    },
+
+    doUndo: function() {
+        if (this.mHistory.length > 0) {
+            this.mRedoStack.push(this._evalCurState());
+            state = this.mHistory.pop()
+            sDecisionTree.mCurPointNo = state[0];
+            sDecisionTree.setup(state[1]);
+        }
+    },
+
+    doRedo: function() {
+        if (this.mRedoStack.length > 0) {
+            this.mHistory.push(this._evalCurState());
+            state = this.mRedoStack.pop()
+            sDecisionTree.mCurPointNo = state[0];
+            sDecisionTree.setup(state[1]);
+        }
+    },
+    
+    doSaveVersion: function() {
+        if (!this.mCurVersion)
+            sDecisionTree.setup(true, false, "add_version");
     },
     
     availableActions: function() {
@@ -734,7 +785,6 @@ var sTreeCtrlH = {
             [this.mCurFilter, sConditionsH.getConditions()]);
         this.mRedoStack = [];
         sUnitsH.setup(new_seq, filter_name);
-        this._onChangeFilter();
     },
 
     modify: function(action) {
@@ -756,6 +806,126 @@ var sTreeCtrlH = {
                 this._onChangeFilter();
             }
         }        
+    }
+};
+
+/**************************************/
+var sVersionsH = {
+    mVersions: null,
+    mBaseCmpVer: null,
+    mCurCmpVer: null,
+    
+    mDivVersionTab: null,
+    mDivVersionCmp: null,
+    mButtonVersionSelect: null,
+    mButtonVersionDelete: null,
+    
+    init: function() {
+        this.mDivVersionTab = document.getElementById("versions-tab");
+        this.mDivVersionCmp = document.getElementById("versions-cmp");
+        this.mButtonVersionSelect = document.getElementById("btn-version-select");
+        this.mButtonVersionDelete = document.getElementById("btn-version-delete");
+    },
+    
+    setup: function(cur_version, versions) {
+        if (versions == null)
+            versions = [];
+        this.mBaseCmpVer = cur_version;
+        this.mVersions= versions;
+        this.mCurCmpVer = null;
+        rep = ['<table id="ver-tab">'];
+        if (this.mBaseCmpVer == null)
+            rep.push('<tr class="v-base"><td class="v-no">&lt;&gt;</td>' +
+                '<td class="v-date"></td></tr>');
+        for (var idx = versions.length - 1; idx >= 0; idx--) {
+            if (versions[idx][0] == this.mBaseCmpVer) 
+                rep.push('<tr class="v-base">');
+            else {
+                rep.push('<tr class="v-norm" id="ver__' + versions[idx][0] + '" ' + 
+                    'onclick="sVersionsH.selIt(' + versions[idx][0] + ')">');
+            }
+            date_repr = Date(versions[idx][1]).toLocaleString("en-US").
+                replace(/GMT.*/i, "");
+            rep.push('<td class="v-no">' + versions[idx][0] + '</td>' +
+                '<td class="v-date">' + date_repr + '</td></tr>');
+        }
+        rep.push('</table>');
+        this.mDivVersionTab.innerHTML = rep.join('\n');
+        this.mDivVersionCmp.innerHTML = "";
+        this.mDivVersionCmp.className = "empty";
+        this.checkControls();
+    },
+            
+    show: function() {
+        if (this.mVersions.length > 1 || 
+                (this.modVersions.length == 1 && this.mBaseCmpVer == null))
+            sViewH.modalOn(document.getElementById("versions-back"));
+    },
+    
+    checkControls: function(){
+        this.mButtonVersionSelect.disabled = (this.mCurCmpVer == null);
+        this.mButtonVersionDelete.disabled = true;
+    },
+    
+    selIt: function(ver_no) {
+        if (ver_no == this.mCurCmpVer)
+            return;
+        if (this.mCurCmpVer != null) {
+            prev_el = document.getElementById("ver__" + this.mCurCmpVer);
+            prev_el.className = prev_el.className.replace(" cur", "");
+        }
+        this.mCurCmpVer = ver_no;
+        if (this.mCurCmpVer != null) {
+            new_el = document.getElementById("ver__" + this.mCurCmpVer);
+            new_el.className += " cur";
+        }
+        this.checkControls();
+        
+        if (this.mCurCmpVer != null) {
+            args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
+            if (this.mBaseCmpVer == null) 
+                args += "&tree=" + encodeURIComponent(
+                    JSON.stringify(sDecisionTree.mTree));
+            else
+                args += "&base=" + this.mBaseCmpVer;
+            ajaxCall("cmptree", args, function(info){sVersionsH._setCmp(info);});
+        }
+    },
+    
+    _setCmp: function(info) {
+        if (!info["cmp"]) {
+            this.mDivVersionCmp.innerHTML = "";
+            this.mDivVersionCmp.className = "empty";
+        } else {
+            rep = [];
+                        
+            for (var j = 0; j < info["cmp"].length; j++) {
+                block = info["cmp"][j];
+                cls_name = "cmp";
+                sign = block[0][0];
+                if (sign == "+") 
+                    cls_name += " plus";
+                if (sign == "-")
+                    cls_name += " minus";
+                if (sign == '?')
+                    cls_name += " note";
+                rep.push('<div class="' + cls_name + '">' + 
+                    escapeText(block.join('\n')) + '</div>');
+            }
+            this.mDivVersionCmp.innerHTML = rep.join('\n');
+            this.mDivVersionCmp.className = "";
+        }
+    },
+    
+    selectVersion: function() {
+        if (this.mCurCmpVer != null) {
+            sViewH.modalOff();
+            sDecisionTree.setup(false, this.mCurCmpVer);
+        }
+    },
+    
+    deleteVersion: function() {
+        //TRF: write it later!!!
     }
 };
 
@@ -855,6 +1025,30 @@ function modalOff() {
 function fixCond() {
     sViewH.modalOff();
     sOpCondH.fixCondition();
+}
+
+function treeUndo() {
+    sTreeCtrlH.doUndo();
+}
+
+function treeRedo() {
+    sTreeCtrlH.doRedo();
+}
+
+function treeVersionSave() {
+    sTreeCtrlH.doSaveVersion();
+}
+
+function modVersions() {
+    sVersionsH.show();
+}
+
+function versionSelect() {
+    sVersionsH.selectVersion();
+}
+
+function versionDelete() {
+    sVersionsH.deleteVersion();
 }
 
 /*************************************/

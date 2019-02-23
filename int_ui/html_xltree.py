@@ -3,7 +3,7 @@ from .gen_html import startHtmlPage
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds):
     startHtmlPage(output, title, html_base,
-        css_files = ["base.css", "xltree.css"],
+        css_files = ["xltree.css"],
         js_files = ["xltree.js"])
 
     print >> output, (
@@ -12,6 +12,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds):
 
     _formXLPannel(output, xl_ds.getName())
     _formCurCondDiv(output)
+    _formVersionsDiv(output)
     _formNoteDiv(output)
     _formSamplesDiv(output)
 
@@ -38,14 +39,19 @@ def _formXLPannel(output, ds_name):
         <div id="xl-tree-info">
             Accepted: <span id="report-accepted"></span>&emsp;
             Rejected: <span id="report-rejected"></span><br/>
-            <!--div id="tree-ctrl">
-              <button id="tree-undo" title="Undo"
-                onclick='sTreeCtrlH.modify(\"undo\");'> &#8630;
+            <div id="tree-ctrl">
+              <button id="tree-undo" title="Undo" class="action"
+                onclick='treeUndo();'> &#8630;
               </button>
-              <button id="tree-redo" title="Redo"
-                onclick='sTreeCtrl.modify(\"redo\");'> &#8631;
+              <button id="tree-redo" title="Redo" class="action"
+                onclick='treeRedo();'> &#8631;
               </button>
-            </div-->
+              <span id="tree-current-version" title="tree version"
+                 onclick="modVersions();"></span>
+              <button id="tree-version" class="action" title="Save version"
+                onclick='treeVersionSave();'> Save
+              </button>
+            </div>
         </div>
         <div id="xl-cur-info">
             Records in scope: <span id="list-report"></span>
@@ -130,6 +136,39 @@ def _formCurCondDiv(output):
     </div>'''
 
 #===============================================
+def _formVersionsDiv(output):
+    print >> output, '''
+    <div id="versions-back">
+      <div id="versions-mod">
+        <div id="versions-title">
+            Versions
+              <span class="close-it" onclick="modalOff();">&times;</span>
+            </p>
+        </div>
+        <div id="versions-main">
+            <div id="versions-list-wrap">
+                <div id="versions-tab"></div>
+            </div>
+            <div id="versions-cmp-wrap">
+                <div id="versions-cmp"></div>
+            </div>
+        </div>
+        <div id="versions-ctrl">
+            <button class="action" onclick="modalOff();">
+                Done
+            </button>
+            <button id="btn-version-select" class="action" title="Select version"
+                onclick='versionSelect();'> Select
+            </button>
+            <span id="versions-ctrl-sep"></span>
+            <button id="btn-version-delete" class="action" title="Delete version"
+                onclick='versionDelete();'> Delete
+            </button>
+        </div>
+    </div>
+'''
+
+#===============================================
 def _formNoteDiv(output):
     print >> output, '''
     <div id="note-back">
@@ -137,7 +176,7 @@ def _formNoteDiv(output):
         <div id="note-top">
             <p id="note-title">Dataset
                 <span id="note-ds-name"></span> note
-              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+              <span class="close-it" onclick="modalOff();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
@@ -147,7 +186,7 @@ def _formNoteDiv(output):
             <button onclick="saveNote();">
               Save
             </button>
-            <button onclick="sViewH.modalOff();">
+            <button onclick="modalOff();">
               Done
             </button>
         </div>

@@ -1,4 +1,5 @@
 import json
+from md5 import md5
 
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
@@ -6,6 +7,7 @@ from .xl_unit import XL_Unit
 from .xl_cond import XL_Condition
 from .decision import DecisionTree
 from .xl_conf import defineDefaultDecisionTree
+from .tree_repr import cmpTrees
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -127,18 +129,57 @@ class XLDataset(DataSet):
             "note": self.mMongoDS.getDSNote()}
 
     #===============================================
+    @staticmethod
+    def _evalTreeHash(tree):
+        return md5(json.dumps(tree,
+            sort_keys = True, ensure_ascii = False)).hexdigest()
+
     @RestAPI.xl_request
     def rq__xltree(self, rq_args):
         tree_data = rq_args.get("tree")
-        if tree_data is None:
+        version = rq_args.get("version")
+        instr = rq_args.get("instr")
+        versions = self.mMongoDS.getVersionList()
+        tree = None
+        if len(versions) == 0 and tree_data is None:
             tree = defineDefaultDecisionTree()
+            tree_hash = self._evalTreeHash(tree.dump())
+            version = 0
+            self.mMongoDS.addVersion(version, tree.dump(), tree_hash)
+            versions = self.mMongoDS.getVersionList()
+        elif version is not None:
+            tree = DecisionTree.parse(
+                self.mMongoDS.getVersionTree(int(version)))
+            for ver_info in versions:
+                if ver_info[0] == int(version):
+                    tree_hash = ver_info[2]
+                    break
+        elif tree_data is None:
+            tree = DecisionTree.parse(
+                self.mMongoDS.getVersionTree(versions[-1][0]))
+            tree_hash = versions[-1][2];
         else:
             tree = DecisionTree.parse(json.loads(tree_data))
+            tree_hash = self._evalTreeHash(tree.dump())
+            if instr == "add_version" and tree_hash not in {
+                ver_info[2] for ver_info in versions}:
+                self.mMongoDS.addVersion(
+                    versions[-1][0] + 1, tree.dump(), tree_hash)
+                versions = self.mMongoDS.getVersionList()
+
+        cur_version = None
+        versions_rep = []
+        for ver_info in versions:
+            versions_rep.append(ver_info[:2])
+            if tree_hash == ver_info[2]:
+                cur_version = ver_info[0]
         tree.evalCounts(self)
         return {
             "tree": tree.dump(),
             "counts": tree.getCounts(),
-            "stat": tree.getStat()}
+            "stat": tree.getStat(),
+            "cur_version": cur_version,
+            "versions": versions_rep}
 
     #===============================================
     @RestAPI.xl_request
@@ -157,4 +198,15 @@ class XLDataset(DataSet):
                 for unit in self.mUnits]
         return ret
 
+    #===============================================
+    @RestAPI.xl_request
+    def rq__cmptree(self, rq_args):
+        tree_data1 = self.mMongoDS.getVersionTree(
+                int(rq_args["ver"]))
+        if "base" in rq_args:
+            tree_data2 = self.mMongoDS.getVersionTree(
+                int(rq_args["base"]))
+        else:
+            tree_data2 = json.loads(rq_args["tree"])
+        return {"cmp": cmpTrees(tree_data1, tree_data2)}
 
