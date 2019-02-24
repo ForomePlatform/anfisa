@@ -43,7 +43,7 @@ class AnfisaApp:
             cls.sConfig.get("default-ws"), cls.sConfig.get("default-xl"))
 
     @classmethod
-    def makeExcelExport(cls, prefix, ds_h, rec_no_seq):
+    def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):
         export_setup = cls.sConfig["export"]
         dir_name = export_setup["work-dir"]
         if not os.path.dirname(dir_name):
@@ -59,10 +59,13 @@ class AnfisaApp:
                 break
         if fname is None:
             return None
-        export_h = ExcelExport(export_setup["excel-template"])
+        export_h = ExcelExport(export_setup["excel-template"],
+            tags_list = tags_man.getTagsListInfo()
+            if tags_man is not None else None)
         export_h.new()
         for rec_no in rec_no_seq:
-            export_h.add_variant(ds_h.getRecordData(rec_no))
+            export_h.add_variant(ds_h.getRecordData(rec_no),
+                tags_man.getRecTags(rec_no) if tags_man else None)
         export_h.save(dir_name + fname)
         return 'excel/' + fname
 

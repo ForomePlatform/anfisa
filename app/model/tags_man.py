@@ -54,21 +54,32 @@ class TagsManager(ZoneH):
         return self._changeRecord(
             rec_no, rec_key, rec_data, tags_to_update)
 
-    def makeRecReport(self, rec_no, update_info = None):
+    def getTagsListInfo(self):
+        return {
+            "check-tags": self.mCheckTags[:],
+            "op-tags": self.getOpTagList()}
+
+    def getRecTags(self, rec_no):
+        return self._getRecTagsAndHistory(rec_no)[0]
+
+    def _getRecTagsAndHistory(self, rec_no, update_info = None):
         rec_key = self.getWS().getRecKey(rec_no)
         mark_modified = False
         if update_info is not None:
             rec_data, mark_modified = update_info
         else:
             rec_data = self.getWS().getMongoRecData(rec_key)
-        ret = {"check-tags": self.mCheckTags[:],
-            "op-tags": self.getOpTagList()}
-        ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
         if rec_data is None:
-            ret["rec-tags"] = dict()
-            return ret
-        ret["rec-tags"] = dict(filter(self._goodPair, rec_data.items()))
-        history = rec_data.get('_h')
+            return (dict(), None)
+        return (dict(filter(self._goodPair, rec_data.items())),
+            rec_data.get('_h'))
+
+    def makeRecReport(self, rec_no, update_info = None):
+        ret = self.getTagListInfo()
+        ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
+        rec_tags, history = self.__getRecTagsAndHistory(
+            rec_no, update_info)
+        ret["rec-tags"] = rec_tags
         if history is not None:
             idx_h, len_h = history[0], len(history[1])
             if idx_h > 0:

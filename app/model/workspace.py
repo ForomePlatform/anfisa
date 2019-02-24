@@ -251,7 +251,7 @@ class Workspace(DataSet):
             rec_no_seq = self.getZone(zone_name).restrict(
                 rec_no_seq, variants)
         fname = self.getDataVault().getApp().makeExcelExport(
-            self.getName(), self, rec_no_seq)
+            self.getName(), self, rec_no_seq, self.mTagsMan)
         return {"kind": "excel", "fname": fname}
 
     #===============================================
