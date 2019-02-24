@@ -143,7 +143,6 @@ def _formVersionsDiv(output):
         <div id="versions-title">
             Versions
               <span class="close-it" onclick="modalOff();">&times;</span>
-            </p>
         </div>
         <div id="versions-main">
             <div id="versions-list-wrap">
@@ -165,6 +164,7 @@ def _formVersionsDiv(output):
                 onclick='versionDelete();'> Delete
             </button>
         </div>
+      </div>
     </div>
 '''
 
