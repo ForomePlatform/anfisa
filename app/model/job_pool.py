@@ -34,6 +34,15 @@ class ExecutionTask:
         assert False
 
 #===============================================
+class TestTask(ExecutionTask):
+    def __init__(self):
+        ExecutionTask.__init__(self, "test")
+
+    def execIt(self):
+        logging.warning("TestTask finished")
+        return True
+
+#===============================================
 class TaskHandler:
     def __init__(self, task, ord_no, priority):
         self.mTask     = task
@@ -85,14 +94,7 @@ class JobPool:
         self.mWorkers = [Worker(self)
             for idx in range(int(thread_count))]
 
-    @classmethod
-    def create(cls, config, prefix, one_thread = False):
-        if one_thread:
-            thread_count = 1
-        else:
-            thread_count = config.get(prefix + ".threads-count", as_int = True)
-        pool_size = config.get(prefix + ".pool-size", strip_it = True)
-        return cls(thread_count, pool_size)
+        self.putTask(TestTask())
 
     def getLock(self):
         return self.mLock

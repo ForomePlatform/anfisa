@@ -222,11 +222,6 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl2ws(self, rq_args):
-        tree_data = self.mMongoDS.getVersionTree(
-            int(rq_args["verbase"]))
-        wsname = rq_args["ws"]
-        tree = DecisionTree.parse(tree_data)
-        rec_no_seq = tree.collectRecSeq(self)
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
-            self, wsname, rec_no_seq)
+            self, rq_args["ws"], int(rq_args["verbase"]))
         return {"task_id" : task_id}
