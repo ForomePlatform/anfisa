@@ -262,6 +262,7 @@ class Variant:
         if (proband):
             mother = self.samples[proband]['mother']
             father = self.samples[proband]['father']
+            self.data["zygosity"] = dict()
             for sample in self.samples:
                 name = self.samples[sample]["name"]
                 if (sample == proband):
@@ -273,9 +274,10 @@ class Variant:
                 else:
                     label = sample
 
-                if (self.sample_has_variant(sample)):
+                zyg = self.sample_has_variant(sample)
+                self.data["zygosity"][sample] = zyg
+                if (zyg > 0):
                     self.filters['has_variant'].append(label)
-
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
         self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
@@ -870,7 +872,7 @@ class Variant:
 
     def sample_has_variant(self, sample=None):
         if (not self.vcf_record):
-            return False
+            return 0
         idx = None
 
         if (isinstance(sample, int)):
@@ -891,12 +893,12 @@ class Variant:
             genotype = genotypes[idx]
 
         if (not genotype):
-            return False
+            return 0
         set1 = set(genotype.split('/'))
         set2 = set(self.alt_list())
         if (set1 & set2):
-            return True
-        return False
+            return 3 - len(set1)
+        return 0
 
     def is_proband_has_allele(self, allele):
         if (not self.samples or not self.vcf_record):
