@@ -25,6 +25,7 @@ class AnfisaConfig:
         "rand.sample.size": 100,
 
         "max.ws.size":  5000,
+        "report.lines": 100,
 
         "job.pool.size":    3,
         "job.pool.threads": 1}

@@ -30,6 +30,9 @@ class XLDataset(DataSet):
     def getDruidAgent(self):
         return self.mDruidAgent
 
+    def getMongoDS(self):
+        return self.mMongoDS
+
     def report(self, output):
         print >> output, "Report for datasource", self.getName()
         for unit in self.mUnits:
@@ -86,7 +89,7 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return ret[0]["result"]["count"]
 
-    def evalRecSeq(self, druid_cond):
+    def _evalRecSeq(self, druid_cond):
         assert druid_cond is not None
         query = {
             "queryType": "search",
@@ -98,6 +101,25 @@ class XLDataset(DataSet):
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
+
+    def evalRecSeq(self, druid_cond, expect_count):
+        assert druid_cond is not None
+        query = {
+            "queryType": "topN",
+            "dataSource": self.getName(),
+            "dimension": "_ord",
+            "threshold": expect_count,
+            "metric": "count",
+            "filter": druid_cond,
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "aggregations": [{
+                "type": "count", "name": "count",
+                "fieldName": "_ord"}],
+            "intervals": [ self.mDruidAgent.INTERVAL ]}
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        assert len(ret[0]["result"]) == expect_count
+        return [int(it["_ord"]) for it in ret[0]["result"]]
 
     def dump(self):
         return {

@@ -1,6 +1,7 @@
-import os, json, gzip, codecs
+import os, json, gzip, codecs, logging
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
+from app.model.a_config import AnfisaConfig
 from app.model.job_pool import ExecutionTask
 from app.xl.decision import DecisionTree
 #===============================================
@@ -10,7 +11,7 @@ class SecondaryWsCreation(ExecutionTask):
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
-        self.mReportLines = 100
+        self.mReportLines = AnfisaConfig.configOption("report.lines")
 
     def execIt(self):
         self.setStatus("Prepare creation")
@@ -18,6 +19,7 @@ class SecondaryWsCreation(ExecutionTask):
             self.mBaseVersion)
         tree = DecisionTree.parse(tree_data)
         rec_no_seq = tree.collectRecSeq(self.mDS)
+        logging.info("C-2: %d" % len(rec_no_seq));
 
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):
@@ -25,6 +27,7 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         os.mkdir(ws_dir)
 
+        logging.info("C-3");
         with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
             for out_rec_no, rec_no in enumerate(rec_no_seq):
                 if out_rec_no > 0 and (out_rec_no % self.mReportLines) == 0:
@@ -33,6 +36,7 @@ class SecondaryWsCreation(ExecutionTask):
                 rec_data = self.mDS.getRecordData(rec_no)
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
+        logging.info("C-4");
         rec_no_set = set(rec_no_seq)
         cnt_done = 0
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
@@ -45,6 +49,7 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
+        logging.info("C-5");
         cnt_done = 0
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
@@ -56,6 +61,7 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
+        logging.info("C-6");
         self.setStatus("Finishing...")
 
         ds_info = {

@@ -242,11 +242,17 @@ class DecisionTree(CaseStory):
         assert len(counts) == 0
 
     def collectRecSeq(self, dataset):
+        max_ws_size = AnfisaConfig.configOption("max.ws.size")
         ret = set()
         for point in self.mPointList:
             if (point.getPointKind() == "term" and
                     point.getDecision() is True):
-                ret |= set(dataset.evalRecSeq(
-                    point.actualCondition().getDruidRepr()))
-            assert len(ret) < AnfisaConfig.configOption("max.ws.size")
+                act_druid_cond = point.actualCondition().getDruidRepr()
+                point_count = dataset.evalTotalCount(act_druid_cond)
+                assert point_count < max_ws_size
+                if point_count > 0:
+                    seq = dataset.evalRecSeq(act_druid_cond,
+                        point_count)
+                    ret |= set(seq)
+            assert len(ret) < max_ws_size
         return sorted(ret)

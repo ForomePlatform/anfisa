@@ -1067,10 +1067,10 @@ var sCreateWsH = {
     },
     
     _checkTask: function(info) {
-        if (info[0] == false) {
+        if (info != null && info[0] == false) {
             this.mDivModStatus.innerHTML = info[1];
             if (this.mTimeH == null)
-                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 300);
+                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 3000);
             this.checkControls();
             return;
         }
@@ -1081,12 +1081,16 @@ var sCreateWsH = {
         this.mStage = "DONE";
         sViewH.blockModal(false);
         this.checkControls();
-        if (info[0] == null) {
-            this.mDivModStatus.innerHTML = info[1];
+        if (info == null) {
+            this.mDivModStatus.innerHTML = "Task information lost";
         } else {
-            this.mDivModStatus.innerHTML = 'Done: <a href="ws?ws=' + 
-                info[0]["ws"] + '" target="' + sTitlePrefix + '/' + 
-                info[0]["ws"] + '">Open it</a>';
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                this.mDivModStatus.innerHTML = 'Done: <a href="ws?ws=' + 
+                    info[0]["ws"] + '" target="' + sTitlePrefix + '/' + 
+                    info[0]["ws"] + '">Open it</a>';
+            }
         }
     }
 };

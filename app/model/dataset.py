@@ -17,7 +17,7 @@ class DataSet:
         self.mAspects = AspectSetH.load(dataset_info["view_schema"])
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
-        self.mVData = IndexBZ2(dataset_path + "/vdata.ixbz2")
+        self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
 
     def __enter__(self):
         self.mLock.acquire()

@@ -53,19 +53,18 @@ class TaskHandler:
         return (self.mPriority, self.mOrdNo)
 
     def execIt(self, pool):
+        result = None
         try:
             self.mTask._setLock(pool.getLock())
             result = self.mTask.execIt()
-            pool.setResult(self.mTask, result)
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep)
             logging.error("Task failed:" +
                 self.mTask.getDescr() + "\n" + rep.getvalue())
             self.mTask.setStatus("Failed, ask tech support")
-            pool.setResult(self.mTask, None)
-        finally:
-            self.mTask._setLock(None)
+        self.mTask._setLock(None)
+        pool.setResult(self.mTask, result)
 
 #===============================================
 class Worker(threading.Thread):
