@@ -5,6 +5,8 @@ from .rest_api import RestAPI
 from .mongo_db import MongoConnector
 from .data_vault import DataVault
 from .druid_agent import DruidAgent
+from .a_config import AnfisaConfig
+from .job_pool import JobPool
 from export.excel import ExcelExport
 from app.view.attr import AttrH
 from int_ui.mirror_dir import MirrorUiDirectory
@@ -12,6 +14,7 @@ from int_ui.ui_requests import IntUI
 
 from app.prepare.view_schema import defineViewSchema
 from app.prepare.v_check import ViewDataChecker
+from app.prepare.sec_ws import SecondaryWsCreation
 from app.view.asp_set import AspectSetH
 #===============================================
 class AnfisaApp:
@@ -20,6 +23,10 @@ class AnfisaApp:
     sVersionCode = None
     sDataVault = None
     sDruidAgent = None
+    sJobPool = None
+    sTasks = dict()
+
+    DEBUG_REPORT = True
 
     @classmethod
     def setup(cls, config, in_container):
@@ -42,6 +49,10 @@ class AnfisaApp:
         cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"],
             cls.sConfig.get("default-ws"), cls.sConfig.get("default-xl"))
 
+        cls.sJobPool = JobPool(
+            AnfisaConfig.configOption("job.pool.threads"),
+            AnfisaConfig.configOption("job.pool.size"))
+
     @classmethod
     def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):
         export_setup = cls.sConfig["export"]
@@ -53,20 +64,38 @@ class AnfisaApp:
         dir_name += '/'
         for no in range(10000):
             fname = "%s_%04d.xlsx" % (prefix, no)
+            debug_file_name = "%s_%04d.json" % (prefix, no)
             if os.path.exists(dir_name + fname):
                 fname = None
             else:
                 break
         if fname is None:
             return None
+        if cls.DEBUG_REPORT and tags_man is not None:
+            debug_report = codecs.open(dir_name + debug_file_name, "w",
+                encoding = "utf-8")
+            print >> debug_report, "@TAGS_CFG"
+            print >> debug_report, json.dumps(tags_man.getTagListInfo(),
+                ensure_ascii = False)
         export_h = ExcelExport(export_setup["excel-template"],
-            tags_list = tags_man.getTagsListInfo()
+            tags_list = tags_man.getTagListInfo()
             if tags_man is not None else None)
         export_h.new()
         for rec_no in rec_no_seq:
-            export_h.add_variant(ds_h.getRecordData(rec_no),
-                tags_man.getRecTags(rec_no) if tags_man else None)
+            rec_data = ds_h.getRecordData(rec_no)
+            tags_data = tags_man.getRecTags(rec_no) if tags_man else None
+            export_h.add_variant(rec_data, tags_data)
+            if cls.DEBUG_REPORT and tags_man is not None:
+                print >> debug_report, "@RECORD"
+                print >> debug_report, json.dumps(
+                    rec_data, ensure_ascii = False)
+                print >> debug_report, "@TAGS"
+                print >> debug_report, json.dumps(
+                    tags_data, ensure_ascii = False)
+
         export_h.save(dir_name + fname)
+        if cls.DEBUG_REPORT and tags_man is not None:
+            debug_report.close()
         return 'excel/' + fname
 
     @classmethod
@@ -94,7 +123,8 @@ class AnfisaApp:
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
 
-        return IntUI.finishRequest(serv_h, rq_path, rq_args, cls.sDataVault)
+        return IntUI.finishRequest(serv_h,
+            rq_path, rq_args, cls.sDataVault)
 
     @classmethod
     def viewSingleRecord(cls, record, research_mode):
@@ -109,3 +139,13 @@ class AnfisaApp:
         assert is_ok
         aspects = AspectSetH.load(view_aspects.dump())
         return aspects.getViewRepr(record, research_mode)
+
+    @classmethod
+    def startCreateSecondaryWS(cls, dataset, wsname, rec_no_seq):
+        task = SecondaryWsCreation(dataset, wsname, rec_no_seq)
+        cls.sJobPool.putTask(task)
+        return str(task.getUID())
+
+    @classmethod
+    def askJobStatus(cls, task_id):
+        return cls.sJobPool.askTaskStatus(int(task_id));

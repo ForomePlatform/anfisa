@@ -1,6 +1,7 @@
 from collections import defaultdict
 
-from xl_cond import XL_Condition, XL_None
+from app.model.a_config import AnfisaConfig
+from .xl_cond import XL_Condition, XL_None
 #===============================================
 class PointCounter:
     def __init__(self, count = None):
@@ -223,14 +224,14 @@ class DecisionTree(CaseStory):
                 #print >> sys.stderr, point.getPointNo(), "RQ:", json.dumps(
                 #    point.getWorkCondition().getDruidRepr(), indent = 4)
                 if counts[-1] > 0:
-                    flt_count = dataset.evalTotalCount(
-                        point.getWorkCondition())
+                    point_count = dataset.evalTotalCount(
+                        point.getWorkCondition().getDruidRepr())
                 else:
-                    flt_count = 0
+                    point_count = 0
                 #print >> sys.stderr, "Cnt:", flt_count, counts
-                assert flt_count <= counts[-1]
-                counts[-1] -= flt_count
-                counts.append(flt_count)
+                assert point_count <= counts[-1]
+                counts[-1] -= point_count
+                counts.append(point_count)
             else:
                 assert point.getPointKind() == "term"
                 rest_count = counts.pop()
@@ -239,3 +240,13 @@ class DecisionTree(CaseStory):
                 elif point.getDecision() is False:
                     self.mStat[2] += rest_count
         assert len(counts) == 0
+
+    def collectRecSeq(self, dataset):
+        ret = set()
+        for point in self.mPointList:
+            if (point.getPointKind() == "term" and
+                    point.getDecision() is True):
+                ret |= set(dataset.evalRecSeq(
+                    point.actualCondition().getDruidRepr()))
+            assert len(ret) < AnfisaConfig.configOption("max.ws.size")
+        return sorted(ret)

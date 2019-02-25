@@ -54,7 +54,7 @@ class TagsManager(ZoneH):
         return self._changeRecord(
             rec_no, rec_key, rec_data, tags_to_update)
 
-    def getTagsListInfo(self):
+    def getTagListInfo(self):
         return {
             "check-tags": self.mCheckTags[:],
             "op-tags": self.getOpTagList()}
@@ -77,7 +77,7 @@ class TagsManager(ZoneH):
     def makeRecReport(self, rec_no, update_info = None):
         ret = self.getTagListInfo()
         ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
-        rec_tags, history = self.__getRecTagsAndHistory(
+        rec_tags, history = self._getRecTagsAndHistory(
             rec_no, update_info)
         ret["rec-tags"] = rec_tags
         if history is not None:

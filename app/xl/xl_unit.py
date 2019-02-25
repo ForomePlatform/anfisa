@@ -50,7 +50,7 @@ class XL_NumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
 
-    def evalStat(self, filter = None):
+    def evalStat(self, druid_cond = None):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
@@ -70,8 +70,8 @@ class XL_NumUnit(XL_Unit):
                     "name": name_max,
                     "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if filter is not None:
-            query["filter"] = filter
+        if druid_cond is not None:
+            query["filter"] = druid_cond
         rq = druid_agent.call("query", query)
         assert len(rq) == 1
         return [rq[0]["result"][nm] for nm in
@@ -82,9 +82,9 @@ class XL_NumUnit(XL_Unit):
         vmin, vmax, count = self.evalStat()
         print >> output, "\tdiap:", vmin, vmax, "count=", count
 
-    def makeStat(self, filter):
+    def makeStat(self, druid_cond):
         ret = self._prepareStat();
-        vmin, vmax, count = self.evalStat(filter)
+        vmin, vmax, count = self.evalStat(druid_cond)
         #TRF: count_undef!!!
         return ret + [vmin, vmax, count, 0]
 
@@ -100,7 +100,7 @@ class XL_EnumUnit(XL_Unit):
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
 
-    def evalStat(self, filter = None):
+    def evalStat(self, druid_cond = None):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
@@ -113,8 +113,8 @@ class XL_EnumUnit(XL_Unit):
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if filter is not None:
-            query["filter"] = filter
+        if druid_cond is not None:
+            query["filter"] = druid_cond
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
@@ -142,7 +142,7 @@ class XL_EnumUnit(XL_Unit):
         if cnt < len(stat):
             print >> output, "\t\t...and %d more" % (len(stat) - cnt)
 
-    def makeStat(self, filter):
+    def makeStat(self, druid_cond):
         ret = self._prepareStat();
-        ret.append(self.evalStat(filter))
+        ret.append(self.evalStat(druid_cond))
         return ret

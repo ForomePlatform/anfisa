@@ -47,6 +47,9 @@ class DataSet:
     def getDataInfo(self):
         return self.mDataInfo
 
+    def getViewSchema(self):
+        return self.mAspects.dump()
+
     def _openFData(self):
         return gzip.open(self.mPath + "/fdata.json.gz", "rb")
 

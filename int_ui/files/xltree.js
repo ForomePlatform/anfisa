@@ -10,6 +10,7 @@ function initXL(ds_name, common_title) {
     sTreeCtrlH.init();
     sVersionsH.init();
     sViewH.init();
+    sCreateWsH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
@@ -213,6 +214,14 @@ var sDecisionTree = {
             this.mPoints[this.mCurPointNo][2] = new_cond;
         }
         this.setup(true);
+    },
+    
+    getAcceptedCount: function() {
+        return this.mStat[1];
+    },
+    
+    getTotalCount: function() {
+        return this.mStat[0];
     }
 }
 
@@ -229,7 +238,7 @@ var sUnitsH = {
             encodeURIComponent(JSON.stringify(decision_tree)) + 
             "&no=" + point_no;
         this.mWaiting = true;
-        document.getElementById("_body").style.cursor = "wait";
+        document.getElementById("_body").className = "wait";
         document.getElementById("stat-list").className = "wait";
         document.getElementById("list-report").innerHTML = 
             '<marquee behavior="alternate" direction="right">| - | -</marquee>';
@@ -245,7 +254,7 @@ var sUnitsH = {
     },
     
     _setup: function(info) {
-        document.getElementById("_body").style.cursor = "default";
+        document.getElementById("_body").className = "";
         document.getElementById("stat-list").className = "";
         count = info["count"];
         total = info["total"]
@@ -766,6 +775,10 @@ var sTreeCtrlH = {
         }
     },
     
+    curVersionSaved: function() {
+        return !!this.mCurVersion;
+    },
+    
     doSaveVersion: function() {
         if (!this.mCurVersion)
             sDecisionTree.setup(true, null, "add_version");
@@ -887,7 +900,7 @@ var sVersionsH = {
                 args += "&tree=" + encodeURIComponent(
                     JSON.stringify(sDecisionTree.mTree));
             else
-                args += "&base=" + this.mBaseCmpVer;
+                args += "&verbase=" + this.mBaseCmpVer;
             ajaxCall("cmptree", args, function(info){sVersionsH._setCmp(info);});
         }
     },
@@ -918,14 +931,163 @@ var sVersionsH = {
     },
     
     selectVersion: function() {
-        if (this.mCurCmpVer != null) {
+        if (this.mCurCmpVer != nsull) {
             sViewH.modalOff();
             sDecisionTree.setup(false, this.mCurCmpVer);
         }
+        
     },
     
     deleteVersion: function() {
         //TRF: write it later!!!
+    }
+};
+
+/**************************************/
+var sCreateWsH = {
+    mStage: null,
+    mDSNames: null,
+    mSpanModTitle: null,
+    mInputModName: null,
+    mDivModProblems: null,
+    mDivModStatus: null,
+    mButtonModStart: null,
+    mTaskId: null,
+    mTimeH: null,
+    
+    init: function() {
+        this.mSpanModTitle = document.getElementById("create-ws-title");
+        this.mInputModName = document.getElementById("create-ws-name");
+        this.mDivModProblems = document.getElementById("create-ws-problems");
+        this.mDivModStatus = document.getElementById("create-ws-status");
+        this.mButtonModStart = document.getElementById("create-ws-start");
+    },
+    
+    show: function() {
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mDSNames = null;
+        this.mTaskId = null;
+        this.mSpanModTitle.innerHTML = 'Create workspace for ' +
+            sDecisionTree.getAcceptedCount() + ' of ' + 
+            sDecisionTree.getTotalCount();
+        var error_msg = "";
+        if (!sTreeCtrlH.curVersionSaved())
+            error_msg = "Save current version before";
+        if (sDecisionTree.getAcceptedCount() >= 5000)
+            error_msg = "Too many records, try to reduce";
+        if (sDecisionTree.getAcceptedCount() < 10)
+            error_msg = "Too small workspace";
+        this.mDivModProblems.innerHTML = error_msg;
+        if (error_msg) {
+            this.mStage = "BAD";
+            this.checkControls();
+            sViewH.modalOn(document.getElementById("create-ws-back"));
+            return;
+        }
+        this.mStage = "NAMES";
+        ajaxCall("dirinfo", "", function(info) {
+            sCreateWsH._setupName(info);})
+    },
+    
+    _nameReserved: function(dsname) {
+        return this.mDSNames.indexOf(dsname) >= 0;
+    },
+    
+    _setupName: function(dirinfo) {
+        this.mDSNames = [];
+        for (idx = 0; idx < dirinfo["xl-datasets"].length; idx++)
+            this.mDSNames.push(dirinfo["xl-datasets"][idx]["name"]);
+        for (idx = 0; idx < dirinfo["workspaces"].length; idx++)
+            this.mDSNames.push(dirinfo["workspaces"][idx]["name"]);
+        var no = 1;
+        var own_name = sDSName.match(/\_(.*)$/)[1];
+        var ws_name;
+        while (true) {
+            ws_name = "ws" + no + '_' + own_name;
+            if (!this._nameReserved(ws_name))
+                break;
+            no += 1;
+        }
+        this.mInputModName.value = ws_name;
+        this.mStage = "READY";
+        this.checkControls();
+        sViewH.modalOn(document.getElementById("create-ws-back"));
+    },
+    
+    checkControls: function() {
+        if (this.mStage == "BAD")
+            this.mInputModName.value = "";
+        this.mInputModName.disabled = (this.mStage != "READY");
+        error_msg = "";
+        if (this.mStage == "READY") {
+            if (this._nameReserved(this.mInputModName.value)) 
+                error_msg = "Name is reserved, try another one";
+            this.mDivModProblems.innerHTML = error_msg;
+        }
+        this.mButtonModStart.disabled = (this.mStage != "READY" || error_msg);
+        if (this.mStage == "BAD" || this.mStage == "READY") {
+            this.mDivModProblems.style.display = "block";
+            this.mDivModStatus.style.display = "none";
+            this.mDivModStatus.innerHTML = "";
+        } else {
+            this.mDivModProblems.style.display = "none";
+            this.mDivModStatus.style.display = "block";
+        }
+    },
+    
+    startIt: function() {
+        if (this.mStage != "READY")
+            return;
+         this.checkControls();
+        if (this.mButtonModStart.disabled)
+            return;
+        sViewH.blockModal(true);
+        this.mStage = "WAIT";
+        ajaxCall("xl2ws", "ds=" + sDSName + "&verbase= " + 
+            sTreeCtrlH.getCurVersion() + "&ws=" + 
+            encodeURIComponent(this.mInputModName.value),
+            function(info) {
+                sCreateWsH._setupTask(info);})
+    },
+    
+    _setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.checkTask();
+    },
+    
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sCreateWsH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info[0] == false) {
+            this.mDivModStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 300);
+            this.checkControls();
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mStage = "DONE";
+        sViewH.blockModal(false);
+        this.checkControls();
+        if (info[0] == null) {
+            this.mDivModStatus.innerHTML = info[1];
+        } else {
+            this.mDivModStatus.innerHTML = 'Done: <a href="ws?ws=' + 
+                info[0]["ws"] + '" target="' + sTitlePrefix + '/' + 
+                info[0]["ws"] + '">Open it</a>';
+        }
     }
 };
 
@@ -936,6 +1098,7 @@ var sViewH = {
     mShowToDrop: null,
     mDropCtrls: [],
     mModalCtrls: [],
+    mBlock: false,
     
     init: function() {
         window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
@@ -964,6 +1127,7 @@ var sViewH = {
     },
     
     modalOn: function(ctrl, disp_mode) {
+        this.mBlock = false;
         if (this.mModalCtrls.indexOf(ctrl) < 0)
             this.mModalCtrls.push(ctrl);
         this.modalOff();
@@ -971,9 +1135,16 @@ var sViewH = {
     },
     
     modalOff: function() {
+        if (this.mBlock)
+            return;
         for (idx = 0; idx < this.mModalCtrls.length; idx++) {
             this.mModalCtrls[idx].style.display = "none";
         }
+    },
+    
+    blockModal: function(mode) {
+        this.mBlock = mode;
+        document.getElementById("_body").className = (mode)? "wait":"";
     },
     
     onclick: function(event_ms) {
@@ -1049,6 +1220,15 @@ function versionSelect() {
 
 function versionDelete() {
     sVersionsH.deleteVersion();
+}
+
+function wsCreate() {
+    sCreateWsH.show();
+}
+
+
+function startWsCreate() {
+    sCreateWsH.startIt();
 }
 
 /*************************************/

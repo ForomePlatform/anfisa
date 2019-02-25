@@ -22,7 +22,12 @@ class AnfisaConfig:
             "False positives"
         ],
         "rand.min.size":    100,
-        "rand.sample.size": 100}
+        "rand.sample.size": 100,
+
+        "max.ws.size":  5000,
+
+        "job.pool.size":    3,
+        "job.pool.threads": 1}
 
     sTextDecor = {
         "VEP Data": "VEP<br/>Data",

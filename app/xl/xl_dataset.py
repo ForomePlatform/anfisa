@@ -12,7 +12,7 @@ from .tree_repr import cmpTrees
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
-        self.mMongoDS = (self.mDataVault.getApp().getMongoConnector().
+        self.mMongoDS = (self.getDataVault().getApp().getMongoConnector().
             getDSAgent(self.getMongoName()))
         self.mDruidAgent = self.getDataVault().getApp().getDruidAgent()
 
@@ -69,10 +69,7 @@ class XLDataset(DataSet):
             ret.append([filter_name, False, True])
         return sorted(ret)
 
-    def evalTotalCount(self, filter):
-        if filter is None:
-            return self.getTotal()
-        druid_cond = filter.getDruidRepr()
+    def evalTotalCount(self, druid_cond):
         if druid_cond is None:
             return self.getTotal()
         query = {
@@ -85,9 +82,22 @@ class XLDataset(DataSet):
                     "fieldName": "_ord"}],
             "filter": druid_cond,
             "intervals": [ self.mDruidAgent.INTERVAL ]}
-        rq = self.mDruidAgent.call("query", query)
-        assert len(rq) == 1
-        return rq[0]["result"]["count"]
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        return ret[0]["result"]["count"]
+
+    def evalRecSeq(self, druid_cond):
+        assert druid_cond is not None
+        query = {
+            "queryType": "search",
+            "dataSource": self.getName(),
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "searchDimensions": ["_ord"],
+            "filter": druid_cond,
+            "intervals": [ self.mDruidAgent.INTERVAL ]}
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        return [int(it["value"]) for it in ret[0]["result"]]
 
     def dump(self):
         return {
@@ -107,11 +117,11 @@ class XLDataset(DataSet):
             cond_seq = self.mDruidAgent.getStdFilterConditions()
         else:
             cond_seq = self.mFilterCache.get(filter_name, conditions)
-        filter_data = XL_Condition.prepareDruidRepr(cond_seq)
+        druid_cond = XL_Condition.prepareDruidRepr(cond_seq)
         return {
             "total": self.getTotal(),
-            "count": self.evalTotalCount(filter_data),
-            "stat-list": [unit.makeStat(filter_data)
+            "count": self.evalTotalCount(druid_cond),
+            "stat-list": [unit.makeStat(druid_cond)
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
@@ -187,14 +197,13 @@ class XLDataset(DataSet):
         tree_data = rq_args["tree"]
         tree = DecisionTree.parse(json.loads(tree_data))
         point_no = int(rq_args["no"])
-        condition = tree.actualCondition(point_no)
-        count = self.evalTotalCount(condition)
+        druid_cond = tree.actualCondition(point_no).getDruidRepr()
+        count = self.evalTotalCount(druid_cond)
         ret = {
             "total": self.getTotal(),
             "count": count}
         if count > 0:
-            filter = condition.getDruidRepr()
-            ret["stat-list"] = [unit.makeStat(filter)
+            ret["stat-list"] = [unit.makeStat(druid_cond)
                 for unit in self.mUnits]
         return ret
 
@@ -203,10 +212,21 @@ class XLDataset(DataSet):
     def rq__cmptree(self, rq_args):
         tree_data1 = self.mMongoDS.getVersionTree(
                 int(rq_args["ver"]))
-        if "base" in rq_args:
+        if "verbase" in rq_args:
             tree_data2 = self.mMongoDS.getVersionTree(
-                int(rq_args["base"]))
+                int(rq_args["verbase"]))
         else:
             tree_data2 = json.loads(rq_args["tree"])
         return {"cmp": cmpTrees(tree_data1, tree_data2)}
 
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl2ws(self, rq_args):
+        tree_data = self.mMongoDS.getVersionTree(
+            int(rq_args["verbase"]))
+        wsname = rq_args["ws"]
+        tree = DecisionTree.parse(tree_data)
+        rec_no_seq = tree.collectRecSeq(self)
+        task_id = self.getDataVault().getApp().startCreateSecondaryWS(
+            self, wsname, rec_no_seq)
+        return {"task_id" : task_id}
