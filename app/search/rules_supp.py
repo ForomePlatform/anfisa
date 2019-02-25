@@ -1,27 +1,68 @@
 from StringIO import StringIO
 
-from .flt_unit import BoolSetUnit
+from .flt_unit import MultiSetUnit
 from app.eval.params import parseParams
-#===============================================
-class RulesEvalUnit(BoolSetUnit):
-    def __init__(self, legend, rules_setup):
-        BoolSetUnit.__init__(self, legend, "Rules",
-            [func_h.getName() for func_h in rules_setup.FUNCTIONS])
-        self.mRulesSetup = rules_setup
-        self.mEnv = PresentationObj({param_h.getName(): param_h.getValue()
-            for param_h in rules_setup.PARAMETERS})
+from app.search.hot_eval import RULES_SETUP
 
-    def fillRulesPart(self, obj, data_record):
+#===============================================
+class RulesEvalUnit(MultiSetUnit):
+    sEnumNormValues = {
+        "None": None,
+        "null": None,
+        "False": False,
+        "false": False,
+        "True": True,
+        "true": True}
+    @classmethod
+    def normEnumValue(cls, val):
+        return cls.sEnumNormValues.get(val, val)
+
+    def __init__(self, index, dc_collection, unit_idx):
+        MultiSetUnit.__init__(self, index, dc_collection, {
+            "name": "Rules",
+            "title": "Rules",
+            "kind": "rules",
+            "atomic": False,
+            "compact": False,
+            "default": None,
+            "path": None,
+            "research": False,
+            "undef": 0,
+            "variants": [[func_h.getName(), -1]
+                for func_h in RULES_SETUP.FUNCTIONS]}, unit_idx)
+        env_dict = {param_h.getName(): param_h.getValue()
+            for param_h in RULES_SETUP.PARAMETERS}
+        rules_data = (self.getIndex().getWS().getMongoWS().
+            getRulesParamValues())
+        if rules_data is not None:
+            for key, val in rules_data:
+                env_dict[key] = val
+        self.mEnv = PresentationObj(env_dict)
+        self.mUnitNames = None
+
+    def fillRecord(self, inp_data, record):
+        pass
+
+    def fillRulesPart(self, inp_data, data_record):
+        if self.mUnitNames is None:
+            self.mUnitNames = []
+            for unit in self.getIndex().iterUnits():
+                if unit is not self:
+                    self.mUnitNames.append(unit.getName())
         rules_set = set()
         value_dict = {"Rules": rules_set}
-        for unit in self.getLegend().iterUnits():
-            if unit is not self:
-                value_dict[unit.getName()] = unit.ruleValue(data_record)
+        for name in self.mUnitNames:
+            val = inp_data.get(name)
+            if isinstance(val, list):
+                val = set(map(self.normEnumValue, val))
+            elif isinstance(val, basestring):
+                val = self.normEnumValue(val)
+            value_dict[name] = val
         pre_rec = PresentationObj(value_dict)
         for idx, col in self.enumColumns():
-            func_h = self.mRulesSetup.FUNCTIONS[idx]
+            func_h = RULES_SETUP.FUNCTIONS[idx]
             val = func_h.getFunc()(self.mEnv, pre_rec)
-            col.setValues(data_record, val)
+            col.setValue(data_record, val)
             if val:
                 rules_set.add(func_h.getName())
 
@@ -29,14 +70,14 @@ class RulesEvalUnit(BoolSetUnit):
         ret = dict()
         columns = []
         for idx, col in self.enumColumns():
-            func_h = self.mRulesSetup.FUNCTIONS[idx]
+            func_h = RULES_SETUP.FUNCTIONS[idx]
             if (not research_mode and func_h.isResearch()):
                 continue
             columns.append([func_h.getName(),
-                self.mRulesSetup.getSrcContent(func_h.getFileName())])
+                RULES_SETUP.getSrcContent(func_h.getFileName())])
         ret["columns"] = columns
         param_rep = StringIO()
-        for param_h in self.mRulesSetup.PARAMETERS:
+        for param_h in RULES_SETUP.PARAMETERS:
             if not research_mode and param_h.isResearch():
                 continue
             print >> param_rep, ("%s=%s" % (param_h.getName(),
@@ -44,25 +85,24 @@ class RulesEvalUnit(BoolSetUnit):
         ret["params"] = param_rep.getvalue()
         return ret
 
-    def changeParamEnv(self, par_data):
-        for key, value in par_data:
-            self.mEnv.set(key, value)
-
     def modifyRulesData(self, research_mode, item, content):
         if item == "--param":
             param_list = []
-            for param_h in self.mRulesSetup.PARAMETERS:
+            for param_h in RULES_SETUP.PARAMETERS:
                 if not research_mode and param_h.isResearch():
                     continue
                 param_list.append(param_h.getName())
-            result, error = parseParams(content, param_list)
+            rules_data, error = parseParams(content, param_list)
         else:
-            result, error = None, "Mode is not supported yet"
-        if result is not None:
-            for key, value in result:
-                self.mEnv.set(key, value)
-            return {"status": "OK"}, result
-        return {"status": "FAILED", "error": error}, None
+            rules_data, error = None, "Mode is not supported yet"
+        if rules_data is None:
+            return {"status": "FAILED", "error": error}
+        for key, value in rules_data:
+            self.mEnv.set(key, value)
+        self.getIndex().getWS().getMongoWS().setRulesParamValues(
+            rules_data)
+        self.getIndex().updateRulesEnv()
+        return {"status": "OK"}
 
 #===============================================
 class PresentationObj:

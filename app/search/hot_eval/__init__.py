@@ -51,7 +51,7 @@ class RuleParamH:
         return self.mIsResearch
 
 #===============================================
-class HOT_SETUP:
+class RULES_SETUP:
     sPath = os.path.dirname(os.path.abspath(__file__))
 
     FUNCTIONS = [

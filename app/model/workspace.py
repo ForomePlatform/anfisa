@@ -1,57 +1,69 @@
-from threading import Lock
-from app.search.index import Index
+import logging, json
+from xml.sax.saxutils import escape
+
+from .rest_api import RestAPI
+from .dataset import DataSet
 from .tags_man import TagsManager
 from .zone import FilterZoneH
+from .a_config import AnfisaConfig
+from app.search.index import Index
 
 #===============================================
-class Workspace:
-    def __init__(self, name, legend, data_set, mongo_ws):
-        self.mName = name
-        self.mLegend = legend
-        self.mDataSet = data_set
-        self.mMongoWS = mongo_ws
-        self.mViewSetup = self.mDataSet.getViewSetup()
-        self.mLock  = Lock()
+class Workspace(DataSet):
+    def __init__(self, data_vault, dataset_info, dataset_path):
+        DataSet.__init__(self, data_vault, dataset_info, dataset_path)
+        self.mTabRecRand = []
+        self.mTabRecKey  = []
+        self.mTabRecColor  = []
+        self.mTabRecLabel = []
+
+        self.mMongoWS = (self.mDataVault.getApp().getMongoConnector().
+            getWSAgent(self.getMongoName()))
+        self.mIndex = Index(self)
+        self._loadPData()
         self.mTagsMan = TagsManager(self,
-            self.mViewSetup.configOption("check.tags"))
-        self.mIndex  = Index(self.mDataSet, self.mLegend)
+            AnfisaConfig.configOption("check.tags"))
+
         for filter_name, conditions in self.mMongoWS.getFilters():
-            if not self.mLegend.hasFilter(filter_name):
+            if not self.mIndex.hasStdFilter(filter_name):
                 try:
                     self.mIndex.cacheFilter(filter_name, conditions)
                 except Exception as ex:
-                    print str(ex)
+                    logging.error("Exception on load filter %s:\n %s" %
+                        filter_name, str(ex))
         self.mZoneHandlers  = []
-        for zone_title, unit_name in self.mViewSetup.configOption("zones"):
+        for zone_title, unit_name in AnfisaConfig.configOption("zones"):
             if (unit_name == "_tags"):
                 zone_h = self.mTagsMan
                 zone_h._setTitle(zone_title)
             else:
                 zone_h = FilterZoneH(self, zone_title,
-                    self.mLegend.getUnit(unit_name))
+                    self.mIndex.getUnit(unit_name))
             self.mZoneHandlers.append(zone_h)
-        par_data = self.mMongoWS.getRulesParamValues()
-        if par_data is not None:
-            self.mLegend.getRulesUnit().changeParamEnv(par_data)
 
-    def __enter__(self):
-        self.mLock.acquire()
-        return self
-
-    def __exit__(self, type, value, traceback):
-        self.mLock.release()
+    def _loadPData(self):
+        with self._openPData() as inp:
+            for line in inp:
+                pre_data = json.loads(line)
+                for key, tab in (
+                        ("_rand",  self.mTabRecRand),
+                        ("_key",   self.mTabRecKey),
+                        ("_color", self.mTabRecColor),
+                        ("_label", self.mTabRecLabel)):
+                    tab.append(pre_data.get(key))
+        assert len(self.mTabRecRand) == self.getTotal()
 
     def getName(self):
         return self.mName
-
-    def getDataSet(self):
-        return self.mDataSet
 
     def getIndex(self):
         return self.mIndex
 
     def getTagsMan(self):
         return self.mTagsMan
+
+    def getMongoWS(self):
+        return self.mMongoWS
 
     def iterZones(self):
         return iter(self.mZoneHandlers)
@@ -62,40 +74,80 @@ class Workspace:
                 return zone_h
         return None
 
-    def getFirstAspectID(self):
-        return self.mViewSetup.getFirstAspectID()
-
     def getLastAspectID(self):
-        return self.mViewSetup.configOption("aspect.tags.name")
+        return AnfisaConfig.configOption("aspect.tags.name")
 
-    def getRulesData(self, research_mode):
-        return self.mLegend.getRulesUnit().getJSonData(research_mode)
+    def getWSNote(self, note = None):
+        if note is not None:
+            self.mMongoWS.setWSNote(note)
+        return self.mMongoWS.getWSNote()
 
-    def modifyRulesData(self, research_mode, item, content):
+    def dump(self):
+        return {"name": self.mName, "note": self.getWSNote()}
+
+    def getMongoRecData(self, key):
+        return self.mMongoWS.getRecData(key)
+
+    def setMongoRecData(self, key, data, prev_data = False):
+        self.mMongoWS.setRecData(key, data, prev_data)
+
+    def _reportListKeys(self, rec_no_seq):
+        marked_set = self.mTagsMan.getMarkedSet()
+        ret = []
+        for rec_no in rec_no_seq:
+            ret.append([rec_no, escape(self.mTabRecLabel[rec_no]),
+                AnfisaConfig.normalizeColorCode(self.mTabRecColor[rec_no]),
+                rec_no in marked_set])
+        return ret
+
+    def reportList(self, rec_no_seq, random_mode):
+        rep = {
+            "workspace": self.getName(),
+            "total": self.getTotal()}
+        rep["filtered"] = len(rec_no_seq)
+
+        if (random_mode and len(rec_no_seq) >
+                AnfisaConfig.configOption("rand.min.size")):
+            sheet = [(self.mTabRecRand[rec_no], rec_no)
+                for rec_no in rec_no_seq]
+            sheet.sort()
+            del sheet[AnfisaConfig.configOption("rand.sample.size"):]
+            reduced_rec_no_seq = [rec_no for hash, rec_no in sheet]
+            rep["records"] = self._reportListKeys(reduced_rec_no_seq)
+            rep["list-mode"] = "samples"
+        else:
+            rep["records"] = self._reportListKeys(rec_no_seq)
+            rep["list-mode"] = "complete"
+        return rep
+
+    def getRecKey(self, rec_no):
+        return self.mTabRecKey[rec_no]
+
+    def iterRecKeys(self):
+        return enumerate(self.mTabRecKey)
+
+    def filterOperation(self, instr, filter_name, conditions):
+        if instr is None:
+            return filter_name
+        op, q, flt_name = instr.partition('/')
+        if self.mIndex.hasStdFilter(flt_name):
+            return filter_name
         with self:
-            report, par_data = self.mLegend.getRulesUnit().modifyRulesData(
-                research_mode, item, content)
-            if report["status"] == "OK":
-                self.mIndex.updateRulesEnv()
-                if par_data is not None:
-                    self.mMongoWS.setRulesParamValues(par_data)
-        return report
-
-    def makeTagsJSonReport(self, rec_no,
-            research_mode, tags_to_update = None):
-        update_info = None
-        if tags_to_update is not None:
-            with self:
-                update_info = self.mTagsMan.updateRec(rec_no, tags_to_update)
-        report = self.mTagsMan.makeRecReport(rec_no, update_info)
-        report["filters"] = self.mIndex.getRecFilters(rec_no)
-        report["tags-version"] = self.mTagsMan.getIntVersion()
-        return report
+            if op == "UPDATE":
+                self.mMongoWS.setFilter(flt_name, conditions)
+                self.mIndex.cacheFilter(flt_name, conditions)
+                filter_name = flt_name
+            elif op == "DROP":
+                self.mMongoWS.dropFilter(flt_name)
+                self.mIndex.dropFilter(flt_name)
+            else:
+                assert False
+        return filter_name
 
     def makeStatReport(self, filter_name, research_mode, conditions, instr):
         if instr:
             op, q, flt_name = instr.partition('/')
-            if not self.mLegend.hasFilter(flt_name):
+            if not self.mIndex.hasStdFilter(flt_name):
                 with self:
                     if op == "UPDATE":
                         self.mMongoWS.setFilter(flt_name, conditions)
@@ -109,16 +161,119 @@ class Workspace:
         return self.mIndex.makeStatReport(
             filter_name, research_mode, conditions)
 
-    def getMongoRecData(self, key):
-        return self.mMongoWS.getRecData(key)
+    #===============================================
+    @RestAPI.ws_request
+    def rq__list(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
+        rec_no_seq = self.mIndex.getRecNoSeq(
+            rq_args.get("filter"), conditions)
+        zone_data = rq_args.get("zone")
+        if zone_data is not None:
+            zone_name, variants = json.loads(zone_data)
+            rec_no_seq = self.getZone(zone_name).restrict(
+                rec_no_seq, variants)
+        return self.reportList(sorted(rec_no_seq), 'S' in modes)
 
-    def setMongoRecData(self, key, data, prev_data = False):
-        self.mMongoWS.setRecData(key, data, prev_data)
+    #===============================================
+    @RestAPI.ws_request
+    def rq__stat(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        filter_name = rq_args.get("filter")
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
+        filter_name = self.filterOperation(rq_args.get("instr"),
+            filter_name, conditions)
+        return self.mIndex.makeStatReport(
+            filter_name, 'R' in modes, conditions)
 
-    def getWSNote(self, note = None):
-        if note is not None:
-            self.mMongoWS.setWSNote(note)
-        return self.mMongoWS.getWSNote()
+    #===============================================
+    @RestAPI.ws_request
+    def rq__tags(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        rec_no = int(rq_args.get("rec"))
+        update_info = None
+        if rq_args.get("tags") is not None:
+            tags_to_update = json.loads(rq_args.get("tags"))
+            with self:
+                update_info = self.mTagsMan.updateRec(
+                    rec_no, tags_to_update)
+        rep = self.mTagsMan.makeRecReport(rec_no, update_info)
+        rep["filters"] = self.mIndex.getRecFilters(rec_no, 'R' in modes)
+        rep["tags-version"] = self.mTagsMan.getIntVersion()
+        return rep
 
-    def getJSonObj(self):
-        return {"name": self.mName, "note": self.getWSNote()}
+    #===============================================
+    @RestAPI.ws_request
+    def rq__zone_list(self, rq_args):
+        zone = rq_args.get("zone")
+        if zone is not None:
+            return self.getZone(zone).makeValuesReport()
+        return [[zone_h.getName(), zone_h.getTitle()]
+            for zone_h in self.mZoneHandlers]
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__rules_data(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        return self.mIndex.getRulesUnit().getJSonData('R' in modes)
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__rules_modify(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        item = rq_args.get("it")
+        content = rq_args.get("cnt")
+        with self:
+            return self.mIndex.getRulesUnit().modifyRulesData(
+                'R' in modes, item, content)
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__tag_select(self, rq_args):
+        return self.mTagsMan.reportSelectTag(
+            rq_args.get("tag"))
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__export(self, rq_args):
+        conditions = rq_args.get("conditions")
+        if conditions:
+            conditions = json.loads(conditions)
+        rec_no_seq = self.getIndex().getRecNoSeq(
+            rq_args.get("filter"), conditions)
+        zone_data = rq_args.get("zone")
+        if zone_data is not None:
+            zone_name, variants = json.loads(zone_data)
+            rec_no_seq = self.getZone(zone_name).restrict(
+                rec_no_seq, variants)
+        fname = self.getDataVault().getApp().makeExcelExport(
+            self.getName(), self, rec_no_seq, self.mTagsMan)
+        return {"kind": "excel", "fname": fname}
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__vsetup(self, rq_args):
+        return self.getViewSetupReport()
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__recdata(self, rq_args):
+        return self.getRecordData(int(rq_args.get("rec")))
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__reccnt(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        rec_no = int(rq_args.get("rec"))
+        return self.getViewRepr(rec_no, 'R' in modes)
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__wsnote(self, rq_args):
+        with self:
+            note = self.getWSNote(rq_args.get("note"))
+        return {"workspace": self.getName(), "note": note}

@@ -1,4 +1,4 @@
-from app.search.condition import ConditionMaker
+from .condition import ConditionMaker
 
 #===============================================
 class ZoneH:
@@ -31,8 +31,7 @@ class FilterZoneH(ZoneH):
         return self.mUnit.getName()
 
     def getVariants(self):
-        return [var for
-            var in self.mUnit.getExtractor().getVariantSet().getVariants()]
+        return list(iter(self.mUnit.getVariantSet()))
 
     def restrict(self, rec_no_seq, variants):
         return self.getWS().getIndex()._applyCondition(rec_no_seq,
