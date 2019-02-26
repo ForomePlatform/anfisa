@@ -1,0 +1,434 @@
+/********************Globals*****************************/
+body {
+    padding: 0px;
+    margin: 0px;  
+    background-color: white;
+    font-family: sans-serif;
+    overflow: hidden;
+}
+
+/********************Top area split*****************************/
+#all {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;    
+    margin: 0px;
+    padding: 0px;
+    white-space: nowrap;
+}
+
+#top {
+    min-height: 50px;
+    display: flex;
+    align-items: stretch;
+    flex-direction: row;
+    margin: 0px;
+    padding: 0px;
+    text-align: justify;
+    background-color: #333455; 
+    color: white;
+    border: 1px solid black;
+    vertical-align: top; 
+    overflow: hidden;
+}
+
+#bottom {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    flex-grow: 1;
+    margin: 0px;
+    padding: 0px;
+    white-space: nowrap;
+}
+
+
+#bottom-left {
+    overflow: hidden;
+    display: grid;
+    margin:  0px;
+    padding: 0px;
+    border: none;
+    background-color: white;
+}
+
+#bottom-right {
+    flex-grow: 1;
+    white-space: nowrap;
+    margin:  0px;
+    padding: 0px;
+    border: none;
+    display: flex;
+    align-items: stretch;
+    flex-direction: column;
+}
+
+/********************Top area split*****************************/
+#top-ws {
+   width: 20%;
+   margin: 5px;
+   border: none;
+   text-align: left;
+   display: flex;
+}
+
+span#ws-name {
+    padding: 3px 5px 0px 5px;
+    font-size: 12px;
+    font-weight: bold;
+    flex-grow: 1;
+    min-width: 50%;
+}
+
+#top-filters {
+   width: 35%;
+   margin: 5px;
+   border: none;
+   text-align: left;
+   display: flex;
+   margin-right: 5px;
+}
+
+#top-zones{
+   width: 20%;
+   margin: 5px;
+   border: none;
+   text-align: left;
+   display: block;
+   margin-right: 15px;
+}
+
+#top-tags{
+   width: 25%;
+   margin: 5px;
+   border: none;
+   text-align: left;
+}
+
+/********************Left area*****************************/
+div#wrap-rec-list {
+    overflow: hidden;
+    display: grid;
+    border: 1px solid black;
+    white-space: nowrap;
+    width: 250px;
+    margin: 0px;
+    padding: 0px;
+}
+
+div#rec-list  {
+    background-color:#333455; 
+    margin-top: 2px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    white-space: nowrap;
+    max-height: 100%;
+}
+
+
+input#list-rand-portion {
+    width: 40px;
+    font-size: 10px;
+    display: none;
+}
+
+div.rec-label {
+    cursor: pointer;
+    color: #818195;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px 0px 10px 20px;
+    line-height: 18px;
+    border: none; 
+    font-weight: bold;
+}
+
+div.rec-label.marked {
+    font-weight: normal;
+}
+
+div.rec-label:hover {
+    color: #f6f6f7;
+}
+
+div.rec-label.red { 
+    background: url(images/red.png) no-repeat 5px 12px; 
+}
+div.rec-label.red:hover { 
+    background: url(images/red-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.red-cross { 
+    background: url(images/red-cross.png) no-repeat 5px 12px; 
+}
+div.rec-label.red-cross:hover { 
+    background: url(images/red-cross-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.green { 
+    background: url(images/green.png) no-repeat 5px 12px; 
+}
+div.rec-label.green:hover { 
+    background: url(images/green-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow { 
+    background: url(images/yellow.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow:hover { 
+    background: url(images/yellow-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow-cross { 
+    background: url(images/yellow-cross.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow-cross:hover { 
+    background: url(images/yellow-cross-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.grey { 
+    background: url(images/grey.png) no-repeat 5px 12px;     
+}
+div.rec-label.grey:hover { 
+    background: url(images/grey-hover.png) no-repeat 5px 12px; 
+}
+
+div.rec-label.press, div.rec-label.press:hover {
+    color: #f6f6f7;
+    background-color: #505070; 
+}
+
+/********************Right area*****************************/
+#rec-frame1 {
+    flex-grow: 4;
+}
+#rec-frame2 {
+    flex-grow: 4;
+}
+
+#rec-frame1, #rec-frame2 {
+    border: 2px 3px 3px 1px solid #333455;
+    padding: 0px;
+    margin: 0px;
+}
+
+#rec-frame1 {
+    display: none;
+}
+#rec-frame2 {
+    display: block;
+}
+/********************Top filters*****************************/
+div#flt-ctrl, div#ws.ctrl {
+  display: block;
+  flex-grow: 1;
+}
+
+div#ws-info {
+  display: flex;
+  vertical-align: bottom;
+}
+
+div#list-info {
+  display: flex;
+  vertical-align: bottom;
+}
+
+div#flt-cur {
+    display: flex;
+}
+
+
+div#zone-cur {
+    display: flex;
+}
+
+span#list-report {
+  vertical-align: bottom;
+}
+
+span#flt-current-state, span#zone-descr {
+    margin-left: 10px;
+    flex-grow: 1;
+    cursor: pointer;
+    background-color: #f0f0f0;
+    color: #333455; 
+    padding: 5px;
+    border-radius: 7px;
+    border: 2px solid black;
+    width: 100%;
+}
+
+span#flt-current-state.problems, span#zone-descr.problems {
+    font-style: italic;
+    color: grey;
+}
+
+span#cur-tag-count{
+    font-size: 12px;
+    width: 200px;
+}
+
+span#cur-tag-here.tags-nav {
+    cursor: inherit;
+}
+
+span.tags-nav {
+    cursor: pointer;
+}
+
+span.tags-nav-disable {
+    cursor: inherit;
+    color: grey;
+}
+
+
+span.tags-count {
+    cursor: inherit;
+    font-size: 9px;
+    vertical-align: top;
+}
+
+div#ws-dropdown {
+    margin: 0px;
+    padding: 0px;
+}
+
+span#ws-control-open {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+span#ws-control-open.res-mode {
+    background-color: #8000A0;
+}
+
+div#ws-control-menu {
+    display: none;
+    padding: 10px;
+    position: absolute;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+div.ctrl-menu {
+    text-align: left;
+    padding: 5px;
+    height: 20px;
+    width: 160px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+div.ctrl-menu:hover {
+    color: #000080;
+}
+
+div#ws-export-result {
+    display: none;
+    position: absolute;
+    padding: 20px;
+    top: 70px;
+    left: 50px;
+    width: 200px;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+span#ws-export-result.problems {
+    color: red;
+}
+
+span#res-mode-check {
+    visibility: hidden;
+}
+
+/********************Modal Note*****************************/
+#note-back {
+    display: none;
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+#note-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 00px;
+    border: 1px solid black;
+    border-radius: 7px;
+    height: 50%; 
+    min-height: 50%;
+    width: 55%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/********************note top controls*****************************/
+#note-top {
+    width: 100%;
+    height: 55px;
+    min-height: 20px;
+    margin: 0px;;
+    padding: 0px;
+}
+
+#note-title {
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    height: 25px;
+}
+
+#close-note {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0px 10px 0px 10px;
+    float: right;
+}
+
+#close-note:hover, #close-note:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+} 
+
+div#work-note-area {
+    flex-grow: 1;
+    width: 100%;
+    padding-left: 10px;
+}
+
+textarea#note-content {
+    padding: 10px;
+    width: 95%;
+    height: 100%;
+}
+
+div#work-note-ctrl {
+    height: 40px;
+    margin: 5px;
+    padding: 5px;
+    text-align: center;
+}
+
+
+/*************************************************/

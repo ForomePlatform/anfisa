@@ -2,7 +2,8 @@ from collections import Counter
 
 #===============================================
 class BoolStat:
-    def __init__(self):
+    def __init__(self, names):
+        self.mNames = names
         self.mStat = Counter()
 
     def isDefined(self):
@@ -15,13 +16,14 @@ class BoolStat:
         print >> rep_out, (
             "True: %d, False: %d" % (self.mStat[True], self.mStat[False]))
 
-    def getJSon(self, names):
-        return ["bool", names, self.mStat[True], self.mStat[False]]
+    def dump(self, names):
+        return ["bool", self.mNames, self.mStat[True], self.mStat[False]]
 
 #===============================================
 class NumDiapStat:
-    def __init__(self, type_name):
+    def __init__(self, type_name, names):
         self.mTypeName = type_name
+        self.mNames = names
         self.mMin, self.mMax = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -48,14 +50,16 @@ class NumDiapStat:
         if self.mCntUndef > 0:
             print >> rep_out, "Undef: %d" % self.mCntDef
 
-    def getJSon(self, names):
-        return [self.mTypeName, names,
+    def dump(self):
+        return [self.mTypeName, self.mNames,
             self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
 
 #===============================================
 class EnumStat:
-    def __init__(self, variant_set):
+    def __init__(self, variant_set, names, enum_type):
         self.mVariantSet = variant_set
+        self.mNames = names
+        self.mEnumType = enum_type
         self.mStat = Counter()
 
     def isDefined(self):
@@ -75,9 +79,8 @@ class EnumStat:
         #TRF: write it later
         assert False
 
-    def getJSon(self, names, enum_type = None):
+    def dump(self):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             rep_list.append([variant, self.mStat.get(idx, 0)])
-        return ["enum" if enum_type is None else enum_type,
-            names, rep_list]
+        return ["enum", self.mNames, rep_list]

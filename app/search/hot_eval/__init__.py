@@ -1,13 +1,14 @@
 import os, codecs
 
 from .acmg59 import evalRec as acmg59_evalRec
+from .hl_reportable import evalRec as hl_reportable_evalRec
 from .quality_check import evalRec as quality_check_evalRec
 from .af_check import evalRec as af_check_evalRec
 from .bgm_rule import evalRec as bgm_rule_evalRec
-from .seq_a_boo_hearing_loss import evalRec as seq_a_boo_hearing_loss_evalRec
-from .seq_a_boo_hearing_loss_2 import evalRec as seq_a_boo_hearing_loss_2_evalRec
+from .seq_a_boo_hearing_loss_v1 import evalRec as seq_a_boo_hearing_loss_v1_evalRec
+from .seq_a_boo_hearing_loss_v2 import evalRec as seq_a_boo_hearing_loss_v2_evalRec
+from .seq_a_boo_hearing_loss_v3 import evalRec as seq_a_boo_hearing_loss_v3_evalRec
 from .seq_a_boo_acmg59 import evalRec as seq_a_boo_acmg59_evalRec
-from .common_check import evalRec as common_check_evalRec
 from .polyphen_check import evalRec as polyphen_check_evalRec
 
 #===============================================
@@ -50,20 +51,24 @@ class RuleParamH:
         return self.mIsResearch
 
 #===============================================
-class HOT_SETUP:
+class RULES_SETUP:
     sPath = os.path.dirname(os.path.abspath(__file__))
 
     FUNCTIONS = [
         RuleFuncH("ACMG59",
             "acmg59", acmg59_evalRec),
+        RuleFuncH("HL_Reportable_Genes",
+            "hl_reportable", hl_reportable_evalRec),
         RuleFuncH("Quality-PASS",
             "quality_check", quality_check_evalRec),
         RuleFuncH("Candidates_BGM",
             "bgm_rule", bgm_rule_evalRec),
+        RuleFuncH("SEQaBOO_Hearing_Loss_v_03",
+            "seq_a_boo_hearing_loss_v3", seq_a_boo_hearing_loss_v3_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss_v_02",
-            "seq_a_boo_hearing_loss_v02", seq_a_boo_hearing_loss_evalRec),
+            "seq_a_boo_hearing_loss_v2", seq_a_boo_hearing_loss_v2_evalRec),
         RuleFuncH("SEQaBOO_Hearing_Loss_v_01",
-            "seq_a_boo_hearing_loss_v01", seq_a_boo_hearing_loss_2_evalRec),
+            "seq_a_boo_hearing_loss_v1", seq_a_boo_hearing_loss_v1_evalRec),
         RuleFuncH("SEQaBOO_ACMG59",
             "seq_a_boo_acmg59", seq_a_boo_acmg59_evalRec),
         RuleFuncH("gnomAD_Frequency_Threshold",

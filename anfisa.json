@@ -1,25 +1,36 @@
 {
-    "file-path-def": {"WORK": "../a-setup"},
+    "file-path-def": {"WORK": "${HOME}/../a-setup"},
     "host": "0.0.0.0",
-    "port": 8090,
+    "port": 8190,
     "html-base": "/anfisa/",
-    "html-title": "Anfisa",
+    "html-title-ws": "Anfisa",
+    "html-title-xl": "Anfisa-XL",
     "mongo-db": "Anfisa",
-    "workspaces": [
-        {
-            "name": "Personal_Genome_3140",
-            "mongo-name": "bgm9001",
-            "file": "${WORK}/data/PGP3140.json"
-        }
-    ],
-    "files": {
-        "files": [".css", ".js", ".png", ".gif"],
-        "${WORK}/export":  [".xlsx"]}, 
+    "data-vault": "${WORK}/vault",
+    "default-ws": "Personal_Genome_3140",
+    "default-xl": null,
+    "link-base": ["anfisa.forome.org", "Local"],
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
         "work-dir": "${WORK}/export/work"
     },
-    "link-base": ["anfisa.forome.org", "Local"],
+    "dir-files": [
+        ["/ui/images", "${HOME}/int_ui/images"],
+        ["/ui", "${HOME}/int_ui/files"],
+        ["--/ui", "${WORK}/ui"],
+        ["/excel", "${WORK}/export/work"]], 
+    "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
+    "druid": {
+        "index": "http://localhost:8090/druid/indexer/v1/task",
+        "query": "http://localhost:8082/druid/v2",
+        "sql":   "http://localhost:8082/druid/v2/sql",
+        "coord": "http://localhost:8081/druid/coordinator/v1",
+        "-scp": {
+            "dir": "/data/upload/",
+            "key": "---",
+            "host": "---",
+            "exe": "/usr/bin/scp"}
+    },
     "logging": { 
         "version": 1,
         "disable_existing_loggers": false,
@@ -43,5 +54,5 @@
                 "propagate": true
             }
         } 
-    }      
+    }
 }
