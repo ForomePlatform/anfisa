@@ -40,7 +40,7 @@ def diff(s1, s2):
         y = []
         for i in range(0, len(s2)):
             j = len(x)
-            if (s1[j] == s2[i]):
+            if (j < len(s1) and s1[j] == s2[i]):
                 x.append(s2[i])
             else:
                 y.append(s2[i])
