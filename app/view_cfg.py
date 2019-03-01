@@ -63,6 +63,8 @@ CONFIG_ATTRS = {
         AttrH("exome_af", title = "Exome AF"),
         AttrH("genome_an", title="Genome AN"),
         AttrH("exome_an", title="Exome AN"),
+        AttrH("hom", title="Homozygous"),
+        AttrH("hem", title="Hemizygous"),
         AttrH("url", title = "URL", kind = "link", is_seq=True),
         AttrH("pop_max", title = "PopMax",),
     ],

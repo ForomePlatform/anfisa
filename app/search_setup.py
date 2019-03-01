@@ -103,6 +103,14 @@ def prepareLegend(ws_name):
         "/_filters/gnomad_popmax_an",
         default_value = 0,
         title = "gnomAD: Number of alleles in PopMax Ancestry")
+    flt_unit.IntValueUnit(legend, "gnomAD_Hom",
+        "/_filters/gnomad_hom",
+        default_value = 0,
+        title = "gnomAD: Number of homozygous")
+    flt_unit.IntValueUnit(legend, "gnomAD_Hem",
+        "/_filters/gnomad_hem",
+        default_value = 0,
+        title = "gnomAD: Number of hemizygous")
 
     legend._endViewGroup()
     legend._startViewGroup("Databases")
@@ -146,6 +154,9 @@ def prepareLegend(ws_name):
 
     flt_unit.IntValueUnit(legend, "QD",
         "/_filters/qd")
+
+    flt_unit.IntValueUnit(legend, "MQ",
+        "/_filters/mq")
 
     flt_unit.IntValueUnit(legend, "FS",
         "/_filters/fs")
