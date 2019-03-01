@@ -137,14 +137,14 @@ class GnomAD(Connection):
         args = (chr, pos)
         p = self.parameter()
         select_list = ', '.join(self.COLUMNS)
-        sql = "SELECT {columns} FROM {table} WHERE CHROM = {chrom} and POS = {pos}".\
+        base_sql = "SELECT {columns} FROM {table} WHERE CHROM = {chrom} and POS = {pos}".\
             format(columns=select_list, table=self.TABLE, chrom=p, pos=p)
 
         if (ref and alt):
             if (exact):
-                sql = sql + " and REF = '{ref}' and ALT = '{alt}'"
+                sql = base_sql + " and REF = '{ref}' and ALT = '{alt}'"
             else:
-                sql = sql + " and (REF LIKE '%{ref}%' and ALT LIKE '%{alt}%')"
+                sql = base_sql + " and (REF LIKE '%{ref}%' and ALT LIKE '%{alt}%')"
 
         if (from_what):
             q = from_what.lower().split(',')
@@ -161,28 +161,32 @@ class GnomAD(Connection):
         rows = self.fetch_data(sql, ref=ref, alt=alt, args=args)
 
         if (not exact and len(rows) == 0 and ref and alt):
-            if (len(ref) > len(alt)):
-                if (alt in ref):
-                    idx = ref.find(alt)
-                    if (idx == 0):
-                        n = len(alt) - 1
-                        new_alt = alt[n]
-                        new_ref = ref[n:]
-                    else:
-                        new_ref = None
-                        new_alt = None
-                    rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
-            elif (len(alt) > len(ref)):
-                if (ref in alt):
-                    idx = alt.find(ref)
-                    if (idx == 0):
-                        n = len(ref) - 1
-                        new_ref = ref[n]
-                        new_alt = alt[n:]
-                    else:
-                        new_ref = None
-                        new_alt = None
-                    rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
+            rows = self.fetch_data(base_sql, (chr, pos - 1), None, None)
+
+            # if (len(ref) > len(alt)):
+            #     if (alt in ref):
+            #         idx = ref.find(alt)
+            #         if (idx == 0):
+            #             n = len(alt) - 1
+            #             new_alt = alt[n]
+            #             new_ref = ref[n:]
+            #             # new_alt = alt[0]
+            #             # new_ref = ref[0] + ref[len(alt):]
+            #         else:
+            #             new_ref = None
+            #             new_alt = None
+            #         rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
+            # elif (len(alt) > len(ref)):
+            #     if (ref in alt):
+            #         idx = alt.find(ref)
+            #         if (idx == 0):
+            #             n = len(ref) - 1
+            #             new_ref = ref[n]
+            #             new_alt = alt[n:]
+            #         else:
+            #             new_ref = None
+            #             new_alt = None
+            #         rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
 
         if (not exact and rows):
             diff_ref_alt = diff(ref, alt)
@@ -305,12 +309,18 @@ class GnomAD(Connection):
 
 if __name__ == '__main__':
     with GnomAD() as gnomAD:
-        print json.dumps(gnomAD.get_all(2, 55863111, 'CTA', 'C'), indent=2)
-        print json.dumps(gnomAD.get_all(7, 30051225, 'ATATT', 'AT'), indent=2)
+        print gnomAD.get_af(11, 27679011, 'GTT', 'GT')
 
-        print json.dumps(gnomAD.get_all(1, 6484880, 'A', 'G'), indent=2)
-        print json.dumps(gnomAD.get_all('X', 153010066, 'C', 'T'), indent=2)
+        print gnomAD.get_af(2, 55863111, 'CTA', 'C')
+        print gnomAD.get_af(7, 30051225, 'ATATT', 'AT')
+        print gnomAD.get_af(1, 6484880, 'A', 'G')
 
+        # print json.dumps(gnomAD.get_all(2, 55863111, 'CTA', 'C'), indent=2)
+        # print json.dumps(gnomAD.get_all(7, 30051225, 'ATATT', 'AT'), indent=2)
+        #
+        # print json.dumps(gnomAD.get_all(1, 6484880, 'A', 'G'), indent=2)
+        # print json.dumps(gnomAD.get_all('X', 153010066, 'C', 'T'), indent=2)
+        #
         print gnomAD.get_all(1, 103471457, "CCATCAT", "CCAT")
         print gnomAD.get_af(1, 160009164, "GACACACACACACAC", "GACACACACACACACAC")
         print gnomAD.get_af(4, 88536543, "AACAGCAGTG", "A")
