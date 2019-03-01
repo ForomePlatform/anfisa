@@ -52,7 +52,7 @@ class GnomAD_Import(GnomAD):
             "Hom":"INT"
         }
 
-        ancestries = self.POP_GROUPS
+        ancestries = self.DATA_SUFFIXES
 
         self.info_columns = {}
         for field in fields:
@@ -61,6 +61,7 @@ class GnomAD_Import(GnomAD):
                     continue
                 column = "{}_{}".format(field, ancestry)
                 self.info_columns[column] = fields[field]
+        self.info_columns["Hom"] = fields["Hom"]
 
         columns = self.vcf_columns.copy()
         columns.update(self.aux_columns)

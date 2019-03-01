@@ -74,7 +74,11 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
             l += 1
             if (l < start):
                 continue
-            v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, connectors=cns)
+            try:
+                v = Variant(line, vcf_header=vcf_header, samples=samples, case = case, connectors=cns)
+            except:
+                print "Line = {}".format(l)
+                raise
             n += 1
             if (n%n_out == 0):
                 print n
