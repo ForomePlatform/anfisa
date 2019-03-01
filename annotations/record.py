@@ -230,7 +230,6 @@ class Variant:
         self.samples = samples
         self.hg38_start = None
         self.hg38_end = None
-        self.alt_alleles = None
         self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
@@ -245,6 +244,7 @@ class Variant:
             self.vcf_record = vcf_reader.next()
         else:
             self.vcf_record = None
+        self.alt_alleles = None
 
         self.call_liftover()
         self.call_gnomAD()
@@ -557,6 +557,8 @@ class Variant:
                             counts[al] = counts.get(al, 0) + n
 
                     self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                    if (not self.alt_alleles):
+                        self.alt_alleles = alt_allels
                 else:
                     self.alt_alleles = alt_allels
             else:
@@ -930,10 +932,13 @@ class Variant:
 
 
     def get_genotypes(self):
+        empty = "Can not be determined"
         proband = self.get_proband()
         if (not proband):
             return None, None, None, None
         proband_genotype = self.vcf_record.genotype(proband).gt_bases
+        if not proband_genotype:
+            proband_genotype = empty
         mother = self.samples[proband]['mother']
         if (mother == '0'):
             mother = None
@@ -943,6 +948,10 @@ class Variant:
 
         maternal_genotype = self.vcf_record.genotype(mother).gt_bases if mother else None
         paternal_genotype = self.vcf_record.genotype(father).gt_bases if father else None
+        if mother and not maternal_genotype:
+            maternal_genotype = empty
+        if father and not paternal_genotype:
+            paternal_genotype = empty
 
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples}
         other_genotypes = genotypes.difference({proband_genotype, maternal_genotype, paternal_genotype})
