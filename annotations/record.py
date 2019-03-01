@@ -253,8 +253,8 @@ class Variant:
         self.call_beacon()
         self.call_gtf()
 
-        self.filters['min_gq'] = self.get_min_GQ()
-        self.filters['proband_gq'] = self.get_proband_GQ()
+        self.call_quality()
+
         self.filters['severity'] = self.get_severity()
         self.filters['has_variant'] = list()
 
@@ -279,6 +279,13 @@ class Variant:
 
         d = self.get_distance_from_exon("worst", none_replacement=0)
         self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
+
+    def call_quality(self):
+        self.filters['min_gq'] = self.get_min_GQ()
+        self.filters['proband_gq'] = self.get_proband_GQ()
+        self.filters['qd'] = self.info().get("QD")
+        self.filters['fs'] = self.info().get("FS")
+        self.filters['mq'] = self.info().get("MQ")
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -362,6 +369,9 @@ class Variant:
         popmax_af = None
         popmax_an = None
 
+        hom = None
+        hem = None
+
         self.private_data["gnomad"] = dict()
         for alt in self.alt_list():
             gnomad_data = gnomAD.get_all(self.chr_num(), self.lowest_coord(), self.ref(), alt)
@@ -385,6 +395,9 @@ class Variant:
             if (self.is_proband_has_allele(alt)):
                 _af_pb = min(_af_pb, af) if _af_pb else af
 
+            hom = max(hom, gnomad_data["overall"]["HOM"])
+            hem = max(hem, gnomad_data["overall"].get("HEM"))
+
             if (af < _af or _af == None):
                 _af = af
                 popmax = gnomad_data.get("popmax")
@@ -395,6 +408,8 @@ class Variant:
         self.filters["gnomad_db_genomes_af"] = gm_af
         self.filters['gnomad_af_fam'] = _af
         self.filters['gnomad_af_pb'] = _af_pb
+        self.filters['gnomad_hom'] = hom
+        self.filters['gnomad_hem'] = hem
 
         self.filters['gnomad_popmax'] = popmax
         self.filters['gnomad_popmax_af'] = popmax_af
@@ -1108,7 +1123,7 @@ class Variant:
 
         tab1["igv"] = self.get_igv_url()
 
-    def create_quality_tab(self, data_info, view_info, filters):
+    def create_quality_tab(self, data_info, view_info):
         tab2 = list()
         view_info["quality_samples"] = tab2
         if (not self.vcf_record):
@@ -1121,8 +1136,6 @@ class Variant:
 
         q_all['qd'] = self.info().get("QD")
         q_all['fs'] = self.info().get("FS")
-        filters['qd'] = self.info().get("QD")
-        filters['fs'] = self.info().get("FS")
         tab2.append(q_all)
 
         proband = self.get_proband()
@@ -1169,8 +1182,16 @@ class Variant:
                     pop_max_af = gnomad_data["popmax_af"]
                     pop_max_an = gnomad_data["popmax_an"]
                     gr["pop_max"] = "{}: {} [{}]".format(pop_max, pop_max_af, pop_max_an)
+                    gr["hom"] = gnomad_data["overall"]["HOM"]
+                    gr["hem"] = gnomad_data["overall"].get("HEM")
 
                     gr["url"] = gnomad_data["url"]
+        else:
+            gr = dict()
+            tab3.append(gr)
+            p1 = self.lowest_coord() - 2
+            p2 = self.highest_coord() + 1
+            gr["url"] = "https://gnomad.broadinstitute.org/region/{}-{}-{}".format(self.chr_num(), p1, p2)
 
 
     def create_databases_tab(self, data_info, view_info, filters):
@@ -1270,7 +1291,7 @@ class Variant:
         data_info['label'] = self.get_label()
         data_info['color_code'] = self.get_color_code()
         self.create_general_tab(data_info, view_info, filters)
-        self.create_quality_tab(data_info, view_info, filters)
+        self.create_quality_tab(data_info, view_info)
         self.create_gnomad_tab(data_info, view_info, filters)
         self.create_databases_tab(data_info, view_info, filters)
         self.create_predictions_tab(data_info, view_info, filters)

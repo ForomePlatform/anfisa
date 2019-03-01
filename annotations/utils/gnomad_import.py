@@ -52,7 +52,7 @@ class GnomAD_Import(GnomAD):
             "Hom":"INT"
         }
 
-        ancestries = self.POP_GROUPS
+        ancestries = self.DATA_SUFFIXES
 
         self.info_columns = {}
         for field in fields:

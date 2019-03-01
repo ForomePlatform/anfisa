@@ -1,6 +1,6 @@
-import os
-import sqlite3
-from annotations import gnomAD_path, positions
+import json
+
+from annotations import positions
 from annotations.db_connect import Connection
 
 def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
@@ -24,39 +24,6 @@ def get_af_from_row(ref, alt, REF, ALT, MAX_AF, AFs):
     return float(AFs.split(',')[i2])
 
 
-class GnomAD_SQL_Lite:
-    def __init__(self, path_to_gnomad_data = None):
-        if (not path_to_gnomad_data):
-            path_to_gnomad_data = gnomAD_path()
-
-        self.db_file_genomes = os.path.join(path_to_gnomad_data, "gnomAD_genomes.db")
-        self.db_file_exomes = os.path.join(path_to_gnomad_data, "gnomAD_exomes.db")
-        self.connection_to_exomes = sqlite3.connect(self.db_file_exomes)
-        self.connection_to_genomes = sqlite3.connect(self.db_file_genomes)
-
-    def get_data(self, chr, pos, ref=None, alt=None, from_what = 'e,g'):
-        from_what = from_what.lower()
-        args = (chr, pos)
-        if (ref and alt):
-            sql = "SELECT CHROM, POS, ID, REF, ALT, MAX_AF, AFs FROM AF WHERE CHROM = ? and POS = ? and REF LIKE '%{}%' and ALT LIKE '%{}%'".format(ref, alt)
-        else:
-            sql = '''SELECT CHROM, POS, ID, REF, ALT, MAX_AF, AFs FROM AF WHERE CHROM = ? and POS = ?'''
-
-        if ('e' in from_what):
-            c = self.connection_to_exomes.cursor()
-            rows = [row for row in c.execute(sql, args)]
-            c.close()
-        else:
-            rows = []
-
-        if ('g' in from_what):
-            c = self.connection_to_genomes.cursor()
-            rows += [row for row in c.execute(sql, args)]
-            c.close()
-
-        return rows
-
-
 def af_(an, ac):
     af = float(ac) / an if an > 0 else 0
     return af
@@ -68,10 +35,37 @@ def diff(s1, s2):
     if (s1 in s2):
         idx = s2.find(s1)
         return s2[0:idx] + s2[idx+len(s1):]
-    elif (s2 in s1):
+    elif (len(s1) < len(s2)):
+        x = []
+        y = []
+        for i in range(0, len(s2)):
+            j = len(x)
+            if (s1[j] == s2[i]):
+                x.append(s2[i])
+            else:
+                y.append(s2[i])
+        if (y):
+            return "".join(y)
+        return None
+    elif (len(s2) < len(s1)):
         return "-" + diff(s2, s1)
     else:
         return None
+
+
+def diff3(s1, s2, d):
+    if (not d):
+        return s1 == s2
+    if (d[0] == '-'):
+        return diff3(s2, s1, d[1:])
+    if (len(s1) + len(d) != len(s2)):
+        return False
+    for i in range(0, len(s1)):
+        x = s1[:i]
+        y = s1[i:]
+        if (x + d + y == s2):
+            return True
+    return False
 
 
 class GnomAD(Connection):
@@ -85,12 +79,17 @@ class GnomAD(Connection):
         "OTH",
     ]
 
-    POP_GROUPS = [
+    SEX = [
         "Male",
-        "Female",
+        "Female"
+    ]
+
+    POP_GROUPS = ANCESTRIES + SEX
+
+    DATA_SUFFIXES = [
         "raw",
         "POPMAX"
-    ] + ANCESTRIES
+    ] + POP_GROUPS
 
     TABLE = "gnomad.VARIANTS"
     KEY_COLUMNS = [
@@ -100,15 +99,20 @@ class GnomAD(Connection):
             "REF",
             "ALT"
     ]
-    DATA_PREFIXES = ["AN", "AC"]
+    DATA_PREFIXES = ["AN", "AC", "Hom"]
+
+    hom = ['_'.join(["Hom", a]) for a in ANCESTRIES]
+    hom_column = " + ".join(hom)
+
     AGGREGATE_DATA_COLUMNS = [
         "AN_Female + AN_Male as AN",
         "AC_Female + AC_Male as AC",
+        hom_column + " as Hom",
         "AN_POPMAX",
         "AC_POPMAX",
         "POPMAX"
     ]
-    DATA_COLUMNS = ['_'.join([a,b]) for a in DATA_PREFIXES for b in POP_GROUPS]
+    DATA_COLUMNS = ['_'.join([a,b]) for a in DATA_PREFIXES for b in DATA_SUFFIXES if (not (a == "Hom" and b == "POPMAX"))]
 
     COLUMNS = KEY_COLUMNS + AGGREGATE_DATA_COLUMNS + DATA_COLUMNS
     C_DICT = dict()
@@ -140,7 +144,7 @@ class GnomAD(Connection):
             if (exact):
                 sql = sql + " and REF = '{ref}' and ALT = '{alt}'"
             else:
-                sql = sql + " and REF LIKE '%{ref}%' and ALT LIKE '%{alt}%'"
+                sql = sql + " and (REF LIKE '%{ref}%' and ALT LIKE '%{alt}%')"
 
         if (from_what):
             q = from_what.lower().split(',')
@@ -161,25 +165,28 @@ class GnomAD(Connection):
                 if (alt in ref):
                     idx = ref.find(alt)
                     if (idx == 0):
-                        new_alt = alt[0]
-                        new_ref = ref[0] + ref[len(alt):]
+                        n = len(alt) - 1
+                        new_alt = alt[n]
+                        new_ref = ref[n:]
                     else:
-                        new_ref = ref
-                        new_alt = alt
+                        new_ref = None
+                        new_alt = None
                     rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
             elif (len(alt) > len(ref)):
                 if (ref in alt):
                     idx = alt.find(ref)
                     if (idx == 0):
-                        new_ref = ref[0]
-                        new_alt = alt[0] + alt[len(ref):]
+                        n = len(ref) - 1
+                        new_ref = ref[n]
+                        new_alt = alt[n:]
                     else:
-                        new_ref = ref
-                        new_alt = alt
+                        new_ref = None
+                        new_alt = None
                     rows = self.fetch_data(sql, (chr, pos + idx - 1), new_ref, new_alt)
 
-        if (not exact):
-            rows = [r for r in rows if (diff(ref, alt) == diff(r[3], r[4]))]
+        if (not exact and rows):
+            diff_ref_alt = diff(ref, alt)
+            rows = [r for r in rows if (diff_ref_alt == diff(r[3], r[4]) or diff3(r[3], r[4], diff_ref_alt))]
 
         return rows
 
@@ -202,6 +209,14 @@ class GnomAD(Connection):
             ac += self.get_int_from_row(ac_column, row)
 
         return an, ac
+
+    def get_hom(self, rows, group = None):
+        hom = 0
+        column = '_'.join(["Hom",group]) if group else "Hom"
+        for row in rows:
+            hom += self.get_int_from_row(column, row)
+
+        return hom
 
     def get_af(self, chr, pos, ref, alt, group = None, from_what = 'e,g'):
         rows = self.get_data(chr, pos, ref, alt, from_what)
@@ -253,6 +268,9 @@ class GnomAD(Connection):
             data[key]["AN"] = an
             data[key]["AC"] = ac
             data[key]["AF"] = af
+            data[key]["HOM"] = self.get_hom(row_set)
+            if (chr in ['x', 'X']):
+                junk, data[key]["HEM"] = self.get_an_and_ac(row_set, "Male")
 
         popmax, popmax_af, popmax_an= self.popmax_from_rows(rows)
         data["popmax"] = popmax
@@ -287,6 +305,12 @@ class GnomAD(Connection):
 
 if __name__ == '__main__':
     with GnomAD() as gnomAD:
+        print json.dumps(gnomAD.get_all(2, 55863111, 'CTA', 'C'), indent=2)
+        print json.dumps(gnomAD.get_all(7, 30051225, 'ATATT', 'AT'), indent=2)
+
+        print json.dumps(gnomAD.get_all(1, 6484880, 'A', 'G'), indent=2)
+        print json.dumps(gnomAD.get_all('X', 153010066, 'C', 'T'), indent=2)
+
         print gnomAD.get_all(1, 103471457, "CCATCAT", "CCAT")
         print gnomAD.get_af(1, 160009164, "GACACACACACACAC", "GACACACACACACACAC")
         print gnomAD.get_af(4, 88536543, "AACAGCAGTG", "A")
