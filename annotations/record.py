@@ -1191,7 +1191,7 @@ class Variant:
             tab3.append(gr)
             p1 = self.lowest_coord() - 2
             p2 = self.highest_coord() + 1
-            gr["url"] = "https://gnomad.broadinstitute.org/region/{}-{}-{}".format(self.chr_num(), p1, p2)
+            gr["url"] = ["https://gnomad.broadinstitute.org/region/{}-{}-{}".format(self.chr_num(), p1, p2)]
 
 
     def create_databases_tab(self, data_info, view_info, filters):
