@@ -1,8 +1,11 @@
-from .filters import FilterPrepareSetH
+from .prep_filters import FilterPrepareSetH
 
 #===============================================
 def defineFilterSchema():
     filters = FilterPrepareSetH()
+
+    filters.zygositySpecialUnit("zygosity",
+        "/data/zygosity", title = "zygosity")
 
     with filters.viewGroup("Coordinates"):
         # filters.statusUnit("Chromosome", "/seq_region_name",

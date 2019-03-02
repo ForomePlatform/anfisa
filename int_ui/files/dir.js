@@ -31,9 +31,9 @@ function setupData(info) {
         tab_cnt.push('<tr><td colspan="2"></td></tr>');
         for (idx = 0; idx < info["xl-datasets"].length; idx++) {
             ds_info = info["xl-datasets"][idx];
-            tab_cnt.push('<tr><td class="name"><a href="xl?ds=' + 
-                ds_info["name"] + '" ' + 'target="' + sTitlePrefix + '/' + 
-                ds_info["name"] + '">' +
+            tab_cnt.push('<tr><td class="name"><a href="xl_flt?ds=' + 
+                ds_info["name"] + '" ' + 'target="' + sTitlePrefix + ':' + 
+                ds_info["name"] + ':R">' +
                 ds_info["name"] + '</td>');
             tab_cnt.push('<td class="note">' + ds_info["note"].replace('\n', '<br>') + 
                 '</td></tr>');

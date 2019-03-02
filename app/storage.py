@@ -112,7 +112,6 @@ def dropDataSet(app_config, name, kind, calm_mode):
     if kind == "xl":
         if calm_mode:
             druid_datasets = DRUID_ADM.listDatasets()
-            print >> sys.stderr, "listDatasets:", druid_datasets
         else:
             druid_datasets = [name]
         if name in druid_datasets:

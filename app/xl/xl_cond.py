@@ -74,19 +74,20 @@ class XL_Condition:
         return XL_None()
 
     @classmethod
-    def prepareDruidRepr(cls, cond_seq):
+    def parseSeq(cls, cond_seq):
         if not cond_seq:
-            return None
+            return XL_None()
         ret = cls.joinAnd([cls.parse(cond_data)
             for cond_data in cond_seq])
-        return ret.getDruidRepr()
+        return ret
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, unit_name, ge_mode, the_val, use_undef):
+    def __init__(self, unit_name,
+            upper_bound_mode, the_val, use_undef = False):
         XL_Condition.__init__(self)
         self.mUnitName = unit_name
-        self.mGE_Mode = ge_mode
+        self.mUpperBoundMode = upper_bound_mode
         self.mTheVal = the_val
         self.mUseUndef = use_undef
 
@@ -95,14 +96,14 @@ class XL_NumCondition(XL_Condition):
 
     def getDruidRepr(self):
         # use_undef ignored
-        if self.mGE_Mode > 0:
+        if self.mUpperBoundMode > 0:
             return {
                 "type": "bound",
                 "dimension": self.mUnitName,
                 "upper": str(self.mTheVal),
                 "upperStrict": False,
                 "ordering": "numeric" }
-        assert self.mGE_Mode == 0
+        assert self.mUpperBoundMode == 0
         return {
             "type": "bound",
             "dimension": self.mUnitName,

@@ -31,6 +31,8 @@ def _formXLPannel(output, ds_name):
                 <div id="ds-control-menu" class="drop">
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
+                    <div onclick="goToFilters();"
+                        class="drop ctrl-menu">Filtering dataset...</div>
                     <div onclick="wsCreate();"
                         class="drop ctrl-menu">Create workspace...</div>
                     <div onclick="openNote();"

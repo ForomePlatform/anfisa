@@ -12,8 +12,10 @@ class Index:
         self.mDCCollection = DataColumnCollecton()
         self.mUnits = [RulesEvalUnit(self, self.mDCCollection, 0)]
         for unit_data in self.mWS.getFltSchema():
-            self.mUnits.append(loadWSFilterUnit(self,
-                self.mDCCollection, unit_data, len(self.mUnits)))
+            unit = loadWSFilterUnit(self,
+                self.mDCCollection, unit_data, len(self.mUnits))
+            if unit is not None:
+                self.mUnits.append(unit)
         self.mUnitDict = {unit.getName(): unit for unit in self.mUnits}
         assert len(self.mUnitDict) == len(self.mUnits)
 

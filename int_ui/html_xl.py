@@ -25,9 +25,11 @@ def _formXLPannel(output, ds_name):
                 <span id="ds-control-open" class="drop"
                     onclick="openControlMenu()";>&#8285;</span>
                 <div id="ds-control-menu" class="drop">
-                    <div id="ds-ctrl-home" onclick="goHome();"
+                    <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
-                    <div id="ds-ctrl-home" onclick="openNote();"
+                    <div onclick="goToTree();"
+                        class="drop ctrl-menu">Prepare workspace...</div>
+                    <div onclick="openNote();"
                         class="drop ctrl-menu">Dataset Note</div>
                 </div>
             </span>&emsp;

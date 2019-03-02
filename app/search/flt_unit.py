@@ -37,6 +37,9 @@ class FilterUnit:
     def getData(self):
         return self.mData
 
+    def isAtomic(self):
+        return True
+
     def dumpNames(self):
         return {
             "name": self.mName,
@@ -120,6 +123,9 @@ class MultiSetUnit(FilterUnit):
         self.mColumns = dc_collection.makeColumnSet(self,
             self.getName(), iter(self.mVariantSet))
 
+    def isAtomic(self):
+        return False
+
     def getVariantSet(self):
         return self.mVariantSet
 
@@ -152,6 +158,9 @@ class MultiCompactUnit(FilterUnit):
         self.mColumn = dc_collection.makeCompactEnumColumn(
             self, self.getName())
 
+    def isAtomic(self):
+        return False
+
     def getVariantSet(self):
         return self.mVariantSet
 
@@ -176,6 +185,8 @@ class MultiCompactUnit(FilterUnit):
 #===============================================
 def loadWSFilterUnit(index, dc_collection, unit_data, unit_idx):
     kind = unit_data["kind"]
+    if kind == "zygosity":
+        return None
     if kind in ("long", "float"):
        return NumericValueUnit(index, dc_collection,
             unit_data, unit_idx, "float" if kind == "float" else "int")

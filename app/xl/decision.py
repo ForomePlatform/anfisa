@@ -221,11 +221,9 @@ class DecisionTree(CaseStory):
         for point in self.mPointList:
             point.setCount(counts[-1])
             if point.getPointKind() == "cond":
-                #print >> sys.stderr, point.getPointNo(), "RQ:", json.dumps(
-                #    point.getWorkCondition().getDruidRepr(), indent = 4)
                 if counts[-1] > 0:
                     point_count = dataset.evalTotalCount(
-                        point.getWorkCondition().getDruidRepr())
+                        {"cond": point.getWorkCondition()})
                 else:
                     point_count = 0
                 #print >> sys.stderr, "Cnt:", flt_count, counts
@@ -247,12 +245,11 @@ class DecisionTree(CaseStory):
         for point in self.mPointList:
             if (point.getPointKind() == "term" and
                     point.getDecision() is True):
-                act_druid_cond = point.actualCondition().getDruidRepr()
-                point_count = dataset.evalTotalCount(act_druid_cond)
+                flt_context = {"cond": point.actualCondition()}
+                point_count = dataset.evalTotalCount(flt_context)
                 assert point_count < max_ws_size
                 if point_count > 0:
-                    seq = dataset.evalRecSeq(act_druid_cond,
-                        point_count)
+                    seq = dataset.evalRecSeq(flt_context, point_count)
                     ret |= set(seq)
             assert len(ret) < max_ws_size
         return sorted(ret)

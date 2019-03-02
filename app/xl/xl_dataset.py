@@ -33,11 +33,6 @@ class XLDataset(DataSet):
     def getMongoDS(self):
         return self.mMongoDS
 
-    def report(self, output):
-        print >> output, "Report for datasource", self.getName()
-        for unit in self.mUnits:
-            unit.report(output)
-
     def filterOperation(self, filter_name, conditions, instr):
         if instr is None:
             return filter_name
@@ -72,8 +67,8 @@ class XLDataset(DataSet):
             ret.append([filter_name, False, True])
         return sorted(ret)
 
-    def evalTotalCount(self, druid_cond):
-        if druid_cond is None:
+    def evalTotalCount(self, context):
+        if context is None or "cond" not in context:
             return self.getTotal()
         query = {
             "queryType": "timeseries",
@@ -83,34 +78,32 @@ class XLDataset(DataSet):
             "aggregations": [
                 { "type": "count", "name": "count",
                     "fieldName": "_ord"}],
-            "filter": druid_cond,
+            "filter": context["cond"].getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return ret[0]["result"]["count"]
 
-    def _evalRecSeq(self, druid_cond):
-        assert druid_cond is not None
+    def _evalRecSeq(self, context):
         query = {
             "queryType": "search",
             "dataSource": self.getName(),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
-            "filter": druid_cond,
+            "filter": context["cond"].getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def evalRecSeq(self, druid_cond, expect_count):
-        assert druid_cond is not None
+    def evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
             "dataSource": self.getName(),
             "dimension": "_ord",
             "threshold": expect_count,
             "metric": "count",
-            "filter": druid_cond,
+            "filter": context["cond"].getDruidRepr(),
             "granularity": self.mDruidAgent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
@@ -139,15 +132,37 @@ class XLDataset(DataSet):
             cond_seq = self.mDruidAgent.getStdFilterConditions()
         else:
             cond_seq = self.mFilterCache.get(filter_name, conditions)
-        druid_cond = XL_Condition.prepareDruidRepr(cond_seq)
+        if "ctx" in rq_args:
+            context = json.loads(rq_args["ctx"])
+        else:
+            context = dict()
+        context["cond"] = XL_Condition.parseSeq(cond_seq)
         return {
             "total": self.getTotal(),
-            "count": self.evalTotalCount(druid_cond),
-            "stat-list": [unit.makeStat(druid_cond)
+            "count": self.evalTotalCount(context),
+            "stat-list": [unit.makeStat(context)
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
             "conditions": cond_seq}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_statunit(self, rq_args):
+        print "ctx", rq_args["ctx"]
+        if "ctx" in rq_args:
+            context = json.loads(rq_args["ctx"])
+        else:
+            context = dict()
+        context["cond"] = XL_Condition.parseSeq(
+            json.loads(rq_args["conditions"]))
+        unit_name = rq_args["unit"]
+        the_unit = None
+        for unit_h in self.mUnits:
+            if unit_h.getName() == unit_name:
+                the_unit = unit_h
+                break
+        return the_unit.makeStat(context)
 
     #===============================================
     @RestAPI.xl_request
@@ -219,13 +234,13 @@ class XLDataset(DataSet):
         tree_data = rq_args["tree"]
         tree = DecisionTree.parse(json.loads(tree_data))
         point_no = int(rq_args["no"])
-        druid_cond = tree.actualCondition(point_no).getDruidRepr()
-        count = self.evalTotalCount(druid_cond)
+        filter_context = {"cond": tree.actualCondition(point_no)}
+        count = self.evalTotalCount(filter_context)
         ret = {
             "total": self.getTotal(),
             "count": count}
         if count > 0:
-            ret["stat-list"] = [unit.makeStat(druid_cond)
+            ret["stat-list"] = [unit.makeStat(filter_context)
                 for unit in self.mUnits]
         return ret
 

@@ -12,7 +12,7 @@ function initXL(ds_name, common_title) {
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
     sDSName = ds_name; 
-    window.name = sCommonTitle + "/" + sDSName;
+    window.name = sCommonTitle + ":" + sDSName + ":R";
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
     sUnitsH.setup();
@@ -36,7 +36,8 @@ function ajaxCall(rq_name, args, func_eval) {
 var sUnitsH = {
     mItems: null,
     mUnitMap: null,
-    mCurUnit: null,    
+    mCurUnit: null,
+    mCtx: null,
     
     setup: function(conditions, filter_name, add_instr) {
         args = "ds=" + sDSName;
@@ -47,6 +48,8 @@ var sUnitsH = {
                 args += "&conditions=" + 
                     encodeURIComponent(JSON.stringify(conditions)); 
         }
+        if (this.mCtx != null)
+            args += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (add_instr)
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
         ajaxCall("xl_filters", args, function(info){sUnitsH._setup(info);})
@@ -58,6 +61,7 @@ var sUnitsH = {
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
 
+        this.mCtx = null;
         this.mItems = info["stat-list"];
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         this.mUnitMap = {}
@@ -95,10 +99,14 @@ var sUnitsH = {
                     '<span id="flt-run-rules" title="Rules evaluation setup" ' +
                     ' onclick="rulesModOn();">&#9874;</span>')
             }
-            if (unit_type == "long" || unit_type == "float") {
-                this._fillStatRepNum(unit_stat, list_stat_rep);
-            } else {
-                this._fillStatRepEnum(unit_stat, list_stat_rep);
+            if (unit_type == "zygosity") 
+                sZygosityH.setup(unit_stat, list_stat_rep);
+            else {
+                if (unit_type == "long" || unit_type == "float") {
+                    this._fillStatRepNum(unit_stat, list_stat_rep);
+                } else {
+                    this._fillStatRepEnum(unit_stat, list_stat_rep);
+                }
             }
             list_stat_rep.push('</div>')
         }
@@ -192,6 +200,10 @@ var sUnitsH = {
         new_unit_el.className = new_unit_el.className + " cur";
         sConditionsH.correctCurUnit(this.mCurUnit);
         sOpCondH.updateUnit(this.mCurUnit);
+    },
+    
+    setCtx: function(ctx) {
+        this.mCtx = ctx;
     }
     
 };
@@ -760,6 +772,95 @@ var sOpEnumH = {
 
 };
 
+/**************************************/
+var sZygosityH = {
+    mFamily: null,
+    mProblemIdxs: null,
+    mUnitName: null,
+    mZStat: null,
+    
+    setup: function(unit_stat, list_stat_rep) {
+        this.mUnitName = unit_stat[1]["name"];
+        this.mFamily = unit_stat[2];
+        this.mProblemIdxs = unit_stat[3];
+        this.mZStat = unit_stat[4] ;
+        if (this.mProblemIdxs == null)
+            this.mProblemIdxs = [];
+        list_stat_rep.push('<div class="zyg-wrap"><div class="zyg-family">');
+        for (var idx = 0; idx < this.mFamily.length; idx++) {
+            q_checked = (this.mProblemIdxs.indexOf(idx)>=0)? " checked":"";
+            list_stat_rep.push('<div class="zyg-fam-member">' + 
+                '<input type="checkbox" id="zyg_fam_m__' + idx + '" ' + q_checked + 
+                ' onchange="sZygosityH.checkMember(' + idx + ');" />' +
+                this.mFamily[idx] + '</div>');
+        }
+        list_stat_rep.push('</div><div id="zyg-stat">');
+        this._reportStat(list_stat_rep);
+        list_stat_rep.push('</div></div>');
+        sUnitsH.setCtx({"problem_group": this.mProblemIdxs.slice()})
+    },
+    
+    _reportStat: function(list_stat_rep) {
+        if (this.mZStat == null) {
+            list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
+        } else {
+            list_count = 0;
+            for (j = 0; j < this.mZStat.length; j++) {
+                if (this.mZStat[j][1] > 0)
+                    list_count++;
+            }
+            if (list_count > 0) {
+                list_stat_rep.push('<ul>');
+                for (j = 0; j < this.mZStat.length; j++) {
+                    var_name = this.mZStat[j][0];
+                    var_count = this.mZStat[j][1];
+                    if (var_count == 0)
+                        continue;
+                    list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
+                        '<span class="stat-count">' +
+                        var_count + ' records</span></li>');
+                }
+            } else {
+                list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+            }
+        }
+    },
+    
+    checkMember: function(m_idx) {
+        m_checked = document.getElementById("zyg_fam_m__" + m_idx).checked;
+        if (m_checked && this.mProblemIdxs.indexOf(m_idx) < 0) {
+            this.mProblemIdxs.push(m_idx);
+            this.mProblemIdxs.sort();
+            this.refreshContext();
+            return;
+        } 
+        if (!m_checked) {
+            pos = this.mProblemIdxs.indexOf(m_idx);
+            if (pos >= 0) {
+                this.mProblemIdxs.splice(pos, 1);
+                this.refreshContext();
+            }
+        }
+    },
+    
+    refreshContext: function() {
+        var ctx = {"problem_group": this.mProblemIdxs.slice()};
+        sUnitsH.setCtx(ctx);
+
+        args = "ds=" + sDSName + "&unit=" + this.mUnitName + "&conditions=" +
+            encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(ctx));
+        ajaxCall("xl_statunit", args, function(info){sZygosityH._refresh(info);})
+    },
+    
+    _refresh: function(info) {
+        this.mZStat = info[4];
+        rep_list = [];
+        this._reportStat(rep_list);
+        document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');
+    }
+};
+
 /*************************************/
 var sFiltersH = {
     mTimeH: null,
@@ -1050,6 +1151,11 @@ function openControlMenu() {
 function goHome() {
     sViewH.dropOff();
     window.open('dir', sCommonTitle + ':dir');
+}
+
+function goToTree() {
+    sViewH.dropOff();
+    window.open("xl_tree?ds=" + sDSName, sCommonTitle + ":" + sDSName + ":L");
 }
 
 function openNote() {

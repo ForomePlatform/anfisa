@@ -1,4 +1,5 @@
 import logging
+from xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit:
     def __init__(self, xl_ds, descr):
@@ -27,11 +28,11 @@ class XL_Unit:
     def getNo(self):
         return self.mNo
 
-    def report(self, output):
-        print >> output, "Unit", self.mName, "kind=", self.mUnitKind
-
     @staticmethod
     def create(xl_ds, descr):
+        if descr["kind"] == "zygosity":
+            ret = XL_ZygosityUnit(xl_ds, descr)
+            return None if ret.isDummy() else ret
         if descr["kind"] in {"long", "float"}:
             return XL_NumUnit(xl_ds, descr)
         ret = XL_EnumUnit(xl_ds, descr)
@@ -50,7 +51,7 @@ class XL_NumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
 
-    def evalStat(self, druid_cond = None):
+    def evalStat(self, context = None):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
@@ -70,21 +71,16 @@ class XL_NumUnit(XL_Unit):
                     "name": name_max,
                     "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if druid_cond is not None:
-            query["filter"] = druid_cond
+        if context and  context.get("cond") is not None:
+            query["filter"] = context["cond"].getDruidRepr()
         rq = druid_agent.call("query", query)
         assert len(rq) == 1
         return [rq[0]["result"][nm] for nm in
             (name_min, name_max, name_cnt)]
 
-    def report(self, output):
-        XL_Unit.report(self, output)
-        vmin, vmax, count = self.evalStat()
-        print >> output, "\tdiap:", vmin, vmax, "count=", count
-
-    def makeStat(self, druid_cond):
+    def makeStat(self, context = None):
         ret = self._prepareStat();
-        vmin, vmax, count = self.evalStat(druid_cond)
+        vmin, vmax, count = self.evalStat(context)
         #TRF: count_undef!!!
         return ret + [vmin, vmax, count, 0]
 
@@ -100,7 +96,7 @@ class XL_EnumUnit(XL_Unit):
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
 
-    def evalStat(self, druid_cond = None):
+    def evalStat(self, context = None):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
@@ -113,8 +109,8 @@ class XL_EnumUnit(XL_Unit):
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if druid_cond is not None:
-            query["filter"] = druid_cond
+        if context and  context.get("cond") is not None:
+            query["filter"] = context["cond"].getDruidRepr()
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
@@ -129,20 +125,80 @@ class XL_EnumUnit(XL_Unit):
         return [[var, counts.get(var, 0)]
             for var in self.mVariants]
 
-    def report(self, output):
-        XL_Unit.report(self, output)
-        stat = self.evalStat()
-        if len(stat) < 5:
-            cnt = len(stat)
-        else:
-            cnt = 3
-        for idx in range(cnt):
-            var, count = stat[idx]
-            print >> output, "\t%s: %d" % (var, count)
-        if cnt < len(stat):
-            print >> output, "\t\t...and %d more" % (len(stat) - cnt)
-
-    def makeStat(self, druid_cond):
+    def makeStat(self, context):
         ret = self._prepareStat();
-        ret.append(self.evalStat(druid_cond))
+        ret.append(self.evalStat(context))
         return ret
+
+#===============================================
+class XL_ZygosityUnit(XL_Unit):
+    def __init__(self, xl_ds, descr):
+        XL_Unit.__init__(self, xl_ds, descr)
+        self.mFamily = descr["family"]
+        if not self.isDummy():
+            self.mFamMap = {member:idx
+                for idx, member in enumerate(self.mFamily)}
+
+    def isDummy(self):
+        return not self.mFamily or len(self.mFamily) < 2
+
+    def getFamilyInfo(self):
+        return self.mFamily
+
+    def conditionZHomoRecessive(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, False, 2))
+            else:
+                seq.append(XL_NumCondition(dim_name, True, 1))
+        return XL_Condition.joinAnd(seq)
+
+    def conditionZDominant(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, False, 1))
+            else:
+                seq.append(XL_NumCondition(dim_name, True, 0))
+        return XL_Condition.joinAnd(seq)
+
+    def conditionZCompensational(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, True, 0))
+            else:
+                seq.append(XL_NumCondition(dim_name, False, 1))
+        return XL_Condition.joinAnd(seq)
+
+    def _evalOneCrit(self, z_condition, context):
+        condition = z_condition
+        if context and "cond" in context:
+            condition = z_condition.addAnd(context["cond"])
+        return self.getDS.evalTotalCount({"cond": condition})
+
+    def makeStat(self, context = None):
+        ret = self._prepareStat() + [self.mFamily]
+        if context is None or "problem_group" not in context:
+            return ret + [[], None]
+        p_group = {m_idx if 0 <= m_idx < len(self.mFamily) else None
+            for m_idx in context["problem_group"]}
+        if None in p_group:
+            p_group.remove(None)
+        if (len(p_group) == 0 or len(p_group) == len(self.mFamily)):
+            return ret + [sorted(p_group), None]
+        stat = []
+        for name, z_condition in (
+                ("homo_recessive", self.conditionZHomoRecessive(p_group)),
+                ("dominant", self.conditionZDominant(p_group)),
+                ("compensational", self.conditionZCompensational(p_group))):
+            condition = z_condition
+            if "cond" in context:
+                condition = z_condition.addAnd(context["cond"])
+            stat.append([name,
+                self.getDS().evalTotalCount({"cond": condition})])
+        return ret + [sorted(p_group), stat]

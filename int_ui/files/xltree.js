@@ -15,7 +15,7 @@ function initXL(ds_name, common_title) {
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
     sDSName = ds_name; 
-    window.name = sCommonTitle + "/" + sDSName;
+    window.name = sCommonTitle + ":" + sDSName + ":L";
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
     sDecisionTree.setup();
@@ -268,6 +268,8 @@ var sUnitsH = {
         for (idx = 0; idx < this.mItems.length; idx++) {
             unit_stat = this.mItems[idx];
             unit_type = unit_stat[0];
+            if (unit_type == "zigosity")
+                continue;
             unit_name   = unit_stat[1]["name"];
             unit_title  = unit_stat[1]["title"];
             unit_vgroup = unit_stat[1]["vgroup"];
@@ -1169,6 +1171,11 @@ function openControlMenu() {
 function goHome() {
     sViewH.dropOff();
     window.open('dir', sCommonTitle + ':dir');
+}
+
+function goToFilters() {
+    sViewH.dropOff();
+    window.open("xl_flt?ds=" + sDSName, sCommonTitle + ":" + sDSName + ":R");
 }
 
 function openNote() {
