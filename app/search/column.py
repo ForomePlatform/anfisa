@@ -48,7 +48,9 @@ class DataColumn(DataPortion):
         return self.mAtomType
 
     def setValues(self, record, value):
-        assert self.mColIdx >= 0
+        assert value == None or self.mColIdx >= 0
+        if (value == None and self.mColIdx < 0):
+            return
         record[self.mColIdx] = value
 
     def recordValue(self, data_record):
