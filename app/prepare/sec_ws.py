@@ -1,4 +1,4 @@
-import os, json, gzip, codecs, logging
+import os, json, gzip, codecs, logging, re
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
@@ -13,13 +13,18 @@ class SecondaryWsCreation(ExecutionTask):
         self.mBaseVersion = base_version
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
+    sID_Pattern = re.compile('^[a-z][\\w\-\_]+$', re.I)
+
     def execIt(self):
+        if not self.sID_Pattern.match(self.mWSName):
+            self.setStatus("Incorrect workspace name")
+            return None
         self.setStatus("Prepare creation")
+        logging.info("Prepare workspace creation: %s" % self.mWSName)
         tree_data = self.mDS.getMongoDS().getVersionTree(
             self.mBaseVersion)
         tree = DecisionTree.parse(tree_data)
         rec_no_seq = tree.collectRecSeq(self.mDS)
-        logging.info("C-2: %d" % len(rec_no_seq));
 
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):
@@ -27,7 +32,7 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         os.mkdir(ws_dir)
 
-        logging.info("C-3");
+        logging.info("Fill workspace %s datafiles..." % self.mWSName)
         with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
             for out_rec_no, rec_no in enumerate(rec_no_seq):
                 if out_rec_no > 0 and (out_rec_no % self.mReportLines) == 0:
@@ -36,7 +41,6 @@ class SecondaryWsCreation(ExecutionTask):
                 rec_data = self.mDS.getRecordData(rec_no)
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
-        logging.info("C-4");
         rec_no_set = set(rec_no_seq)
         cnt_done = 0
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
@@ -49,7 +53,6 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
-        logging.info("C-5");
         cnt_done = 0
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
@@ -61,8 +64,8 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
-        logging.info("C-6");
         self.setStatus("Finishing...")
+        logging.info("Finishing up workspace %s" % self.mWSName)
 
         ds_info = {
             "name": self.mWSName,

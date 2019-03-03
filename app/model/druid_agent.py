@@ -19,6 +19,7 @@ class DruidAgent:
         self.mRestAgents = {mode: RestAgent(druid_cfg.get(mode, url), mode)
             for mode, url in self.sDefaultUrls.items()}
         self.mFilters = deepcopy(STD_XL_FILTERS)
+        self.mVaultPrefix = druid_cfg["vault-prefix"]
 
     def call(self, mode, request_data, method = "POST", add_path = ""):
         return self.mRestAgents[mode].call(request_data, method, add_path)
@@ -32,3 +33,8 @@ class DruidAgent:
     def getStdFilterConditions(self, flt_name):
         return self.mFilters.get(flt_name)
 
+    def normDataSetName(self, ds_name):
+        if not self.mVaultPrefix:
+            return ds_name
+        assert not ds_name.startswith(self.mVaultPrefix)
+        return self.mVaultPrefix + '.' + ds_name

@@ -71,7 +71,7 @@ class DruidAdmin(DruidAgent):
             "type" : "index",
             "spec" : {
                 "dataSchema" : {
-                    "dataSource" : dataset_name,
+                    "dataSource" : self.normDataSetName(dataset_name),
                     "parser" : {
                         "type" : "string",
                         "parseSpec" : {
@@ -114,10 +114,11 @@ class DruidAdmin(DruidAgent):
 
     def dropDataset(self, dataset_name):
         if not self.mNoCoord:
-            self.call("coord", None, "DELETE", "/datasources/" + dataset_name)
+            self.call("coord", None, "DELETE", "/datasources/" +
+                self.normDataSetName(dataset_name))
         self.call("index", {
             "type": "kill",
-            "dataSource": dataset_name,
+            "dataSource": self.normDataSetName(dataset_name),
             "interval" : self.INTERVAL})
 
     def listDatasets(self):

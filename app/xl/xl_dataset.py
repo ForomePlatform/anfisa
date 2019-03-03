@@ -77,7 +77,7 @@ class XLDataset(DataSet):
             return self.getTotal()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -92,7 +92,7 @@ class XLDataset(DataSet):
     def _evalRecSeq(self, context):
         query = {
             "queryType": "search",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
             "filter": context["cond"].getDruidRepr(),
@@ -104,7 +104,7 @@ class XLDataset(DataSet):
     def evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
             "threshold": expect_count,
             "metric": "count",
