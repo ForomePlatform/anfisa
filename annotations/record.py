@@ -1,4 +1,6 @@
 import json
+import os
+import sys
 from StringIO import StringIO
 
 import vcf
@@ -47,6 +49,13 @@ trusted_submitters = {
     "lmm": "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine",
     "gene_dx": "GeneDx"
 }
+
+
+def resolve(filename):
+    for directory in sys.path:
+        path = os.path.join(directory, filename)
+        if os.path.isfile(path):
+            return path
 
 
 def unique(lst, replace_None=None):
@@ -209,6 +218,28 @@ class Variant:
                    'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
                    'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM', 'SANGER']
 
+    __VERSION = None
+    @staticmethod
+    def get_version():
+        if Variant.__VERSION == None:
+            version = "UNDEFINED"
+            vf = resolve(os.path.join("app", "VERSION"))
+            if vf:
+                with open(vf) as f:
+                    lines = f.readlines()
+                    las = [l for l in lines if l.strip().startswith("Anfisa")]
+                    if not las:
+                        las = [l for l in lines if len(l.strip()) > 0]
+                    if las:
+                        line = las[0].strip()
+                        tokens = line.split()
+                        if (len(tokens) > 1 and tokens[0] == "Anfisa"):
+                            version = tokens[1]
+                        else:
+                            version = tokens[0]
+            Variant.__VERSION = version
+        return Variant.__VERSION
+
 
     @classmethod
     def most_severe(cls, csq):
@@ -224,6 +255,7 @@ class Variant:
         else:
             self.original_json = None
             self.data = json_string
+        self.data["VERSION"] = Variant.get_version()
         self.filters = dict()
         self.private_data = dict()
         self.case = case
