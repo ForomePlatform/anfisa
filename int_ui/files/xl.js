@@ -37,6 +37,7 @@ var sUnitsH = {
     mItems: null,
     mUnitMap: null,
     mCurUnit: null,
+    mCurZygName: null,
     mCtx: null,
     
     setup: function(conditions, filter_name, add_instr) {
@@ -116,6 +117,7 @@ var sUnitsH = {
         document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
         
         this.mCurUnit = null;
+        this.mCurZygName = null;
         sConditionsH.setup(info["conditions"]);
         
         if (this.mCurUnit == null)
@@ -176,6 +178,10 @@ var sUnitsH = {
         }
     },
     
+    getCurUnitTitle: function() {
+        return (this.mCurZygName == null)? this.mCurUnit: this.mCurZygName;
+    },
+    
     getCurUnitName: function() {
         return this.mCurUnit;
     },
@@ -197,9 +203,17 @@ var sUnitsH = {
             prev_el.className = prev_el.className.replace(" cur", "");
         }
         this.mCurUnit = stat_unit;
+        this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
         sConditionsH.correctCurUnit(this.mCurUnit);
         sOpCondH.updateUnit(this.mCurUnit);
+    },
+    
+    updateZygUnit: function(zyg_name) {
+        if (this.mCurZygName != null) {
+            this.mCurZygName = zyg_name;
+            this.selectUnit(this.mCurUnit, true);
+        }
     },
     
     setCtx: function(ctx) {
@@ -340,6 +354,7 @@ var sConditionsH = {
         this.mCurNo = cond_no;
         if (new_cond_el != null) {
             new_cond_el.className = new_cond_el.className + " cur";
+            sZygosityH.onSelectCondition(this.mList[cond_no]);
             sUnitsH.selectUnit(this.mList[cond_no][1], true);
         }
     },
@@ -398,8 +413,9 @@ var sOpCondH = {
     mIdxToAdd: null,
     
     updateUnit: function() {
+        unit_title = sUnitsH.getCurUnitTitle();
         unit_name = sUnitsH.getCurUnitName();
-        document.getElementById("cond-title").innerHTML = (unit_name)? unit_name:"";
+        document.getElementById("cond-title").innerHTML = (unit_title)? unit_title:"";
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();
@@ -431,7 +447,7 @@ var sOpCondH = {
         this.mIdxToAdd    = null;
         this.mIdxToUpdate = null;
         if (condition_data != null) {
-            this.mCondition = [this.mCurTpHandler.getType(), cur_unit_name].concat(
+            this.mCondition = [this.mCurTpHandler.getCondType(), cur_unit_name].concat(
                 condition_data);
             this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode);
             
@@ -508,7 +524,7 @@ var sOpNumH = {
         this.mSpanUndefCount = document.getElementById("cond-undef-count");
     },
     
-    getType: function() {
+    getCondType: function() {
         return "numeric";
     },
 
@@ -664,15 +680,18 @@ var sOpEnumH = {
     mVariants: null,
     mOperationMode: null,
     mDivVarList: null,
+    mSpecCtrl: null,
 
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
     },
     
-    getType: function() {
+    getCondType: function() {
+        if (this.mSpecCtrl != null)
+            return this.mSpecCtrl.getCondType();
         return "enum";
     },
-
+    
     suspend: function() {
         this.mVariants = null;
         this.mOperationMode = null;
@@ -680,8 +699,15 @@ var sOpEnumH = {
     },
 
     updateUnit: function(unit_stat) {
-        this.mVariants = unit_stat[2];
-        this.mOperationMode = (unit_stat[0] == "status")? null:0;
+        if (unit_stat[0] == "zygosity") {
+            this.mSpecCtrl = sZygosityH;
+            this.mVariants = sZygosityH.getVariants(unit_stat);
+            this.mOperationMode = null;
+        } else {
+            this.mVariants = unit_stat[2];
+            this.mOperationMode = (unit_stat[0] == "status")? null:0;
+            this.mSpecCtrl = null;
+        }
         this.careEnumZeros(false);
         
         list_val_rep = [];
@@ -703,9 +729,16 @@ var sOpEnumH = {
     },
     
     updateCondition: function(cond) {
+        if (this.mSpecCtrl != null) {
+            this.mSpecCtrl = sZygosityH;
+            var_list = this.mSpecCtrl.getCondVarList(cond);
+            op_mode = this.mSpecCtrl.getCondOpMode(cond);
+        } else {
+            var_list = cond[3];
+            op_mode = cond[2];
+        }
         if (this.mOperationMode != null)
-            this.mOperationMode = ["", "AND", "ONLY", "NOT"].indexOf(cond[2]);
-        var_list = cond[3];
+            this.mOperationMode = ["", "AND", "ONLY", "NOT"].indexOf(op_mode);
         needs_zeros = false;
         for (j = 0; j < this.mVariants.length; j++) {
             var_name = this.mVariants[j][0];
@@ -766,10 +799,14 @@ var sOpEnumH = {
             condition_data = [op_mode, sel_names];
         }
 
-        sOpCondH.formCondition(condition_data, "", op_mode, true);
+        err_msg = "";
+        if (this.mSpecCtrl != null) {
+            condition_data = this.mSpecCtrl.transCondition(condition_data);
+            err_msg = this.mSpecCtrl.checkError(condition_data);
+        }
+        sOpCondH.formCondition(condition_data, err_msg, op_mode, true);
         this.careControls();
     }
-
 };
 
 /**************************************/
@@ -778,6 +815,7 @@ var sZygosityH = {
     mProblemIdxs: null,
     mUnitName: null,
     mZStat: null,
+    mZEmpty: null,
     
     setup: function(unit_stat, list_stat_rep) {
         this.mUnitName = unit_stat[1]["name"];
@@ -800,7 +838,64 @@ var sZygosityH = {
         sUnitsH.setCtx({"problem_group": this.mProblemIdxs.slice()})
     },
     
+    getCondType: function() {
+        return "zygosity";
+    },
+    
+    getVariants: function(unit_stat) {
+        return (this.mZStat == null)? []:this.mZStat;
+    },
+    
+    transCondition: function(condition_data) {
+        if (condition_data == null)
+            return null;
+        ret = condition_data.slice();
+        ret.splice(0, 0, this.mProblemIdxs.slice());
+        return ret;
+    },
+    
+    checkError: function(condition_data) {
+        if (this.mZStat == null)
+            return "Determine problem group";
+        if (this.mZEmpty)
+            return "Out of choice";
+        return "";
+    },
+    
+    getUnitTitle: function(problem_group) {
+        if (problem_group == undefined)
+            problem_group = this.mProblemIdxs;
+        return this.mUnitName + '({' + problem_group.join(',') + '})';        
+    },
+    
+    checkUnitTitle: function(unit_name) {
+        if (unit_name != this.mUnitName)
+            return null;
+        return this.getUnitTitle();
+    },
+    
+    getCondOpMode: function(condition_data) {
+        return condition_data[3];
+    },
+    
+    getCondVarList: function(condition_data) {
+        return condition_data[4];
+    },
+    
+    onSelectCondition: function(condition_data) {
+        if (condition_data[1] != this.mUnitName)
+            return;
+        if (this.mProblemIdxs.join(",") != condition_data[2].join(",")) {
+            this.mProblemIdxs = condition_data[2];
+            for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
+                document.getElementById("zyg_fam_m__" + m_idx).checked =
+                    (this.mProblemIdxs.indexOf(m_idx) >= 0);
+            this.refreshContext();
+        }
+    },
+    
     _reportStat: function(list_stat_rep) {
+        this.mZEmpty = true;
         if (this.mZStat == null) {
             list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
         } else {
@@ -816,6 +911,7 @@ var sZygosityH = {
                     var_count = this.mZStat[j][1];
                     if (var_count == 0)
                         continue;
+                    this.mZEmpty = false;
                     list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
                         '<span class="stat-count">' +
                         var_count + ' records</span></li>');
@@ -858,6 +954,7 @@ var sZygosityH = {
         rep_list = [];
         this._reportStat(rep_list);
         document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');
+        sUnitsH.updateZygUnit(this.getUnitTitle());
     }
 };
 
@@ -1093,9 +1190,10 @@ var sViewH = {
     mShowToDrop: null,
     mDropCtrls: [],
     mModalCtrls: [],
+    mBlock: false,
     
     init: function() {
-        window.onClick = function(event_ms) {sViewH.onclick(event_ms);}
+        window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
         this.addToDrop(document.getElementById("ds-control-menu"));
     },
 
@@ -1120,17 +1218,25 @@ var sViewH = {
         }
     },
     
-    modalOn: function(ctrl) {
+    modalOn: function(ctrl, disp_mode) {
+        this.mBlock = false;
         if (this.mModalCtrls.indexOf(ctrl) < 0)
             this.mModalCtrls.push(ctrl);
         this.modalOff();
-        ctrl.style.display = "block";
+        ctrl.style.display = (disp_mode)? disp_mode: "block";
     },
     
     modalOff: function() {
+        if (this.mBlock)
+            return;
         for (idx = 0; idx < this.mModalCtrls.length; idx++) {
             this.mModalCtrls[idx].style.display = "none";
         }
+    },
+    
+    blockModal: function(mode) {
+        this.mBlock = mode;
+        document.getElementById("_body").className = (mode)? "wait":"";
     },
     
     onclick: function(event_ms) {
@@ -1184,8 +1290,10 @@ function loadNote(content) {
 /* Utilities                         */
 /*************************************/
 function getConditionDescr(cond, short_form) {
+    if (cond == null)
+        return "";
     rep_cond = (short_form)? []:[cond[1]];
-    if (cond != null && cond[0] == "numeric") {
+    if (cond[0] == "numeric") {
         switch (cond[2]) {
             case 0:
                 rep_cond.push("&ge; " + cond[3]);
@@ -1204,28 +1312,39 @@ function getConditionDescr(cond, short_form) {
         }
         return rep_cond.join(" ");
     }
-    if (cond != null && cond[0] == "enum") {
-        rep_cond.push("IN");
-        if (cond[2] && cond[2]!="OR") 
-            rep_cond.push('[' + cond[2] + ']');
+    if (cond[0] == "enum") {
+        op_mode = cond[2];
         sel_names = cond[3];
-        if (sel_names.length > 0)
-            rep_cond.push(sel_names[0]);
-        else
-            rep_cond.push("&lt;?&gt;")
-        rep_cond = [rep_cond.join(' ')];        
-        rep_len = rep_cond[0].length;
-        for (j=1; j<sel_names.length; j++) {
-            if (short_form && rep_len > 45) {
-                rep_cond.push('<i>+ ' + (sel_names.length - j) + ' more</i>');
-                break;
-            }
-            rep_len += 2 + sel_names[j].length;
-            rep_cond.push(sel_names[j]);
+    } else {
+        if (cond[0] == "zygosity") {
+            op_mode = cond[3];
+            sel_names = cond[4];
+            if (rep_cond.length > 0)
+                rep_cond = [sZygosityH.getUnitTitle(cond[2])];
         }
-        return rep_cond.join(', ');
+        else {
+            return "???";
+        }
     }
-    return ""
+    
+    rep_cond.push("IN");
+    if (op_mode && op_mode!="OR") 
+        rep_cond.push('[' + op_mode + ']');
+    if (sel_names.length > 0)
+        rep_cond.push(sel_names[0]);
+    else
+        rep_cond.push("&lt;?&gt;")
+    rep_cond = [rep_cond.join(' ')];        
+    rep_len = rep_cond[0].length;
+    for (j=1; j<sel_names.length; j++) {
+        if (short_form && rep_len > 45) {
+            rep_cond.push('<i>+ ' + (sel_names.length - j) + ' more</i>');
+            break;
+        }
+        rep_len += 2 + sel_names[j].length;
+        rep_cond.push(sel_names[j]);
+    }
+    return rep_cond.join(', ');
 }
 
 /*************************************/

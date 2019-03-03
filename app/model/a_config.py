@@ -21,6 +21,11 @@ class AnfisaConfig:
             "Benign/Likely benign",
             "False positives"
         ],
+        "zygosity.cases": {
+            "homo_recess": "homo_recessive",
+            "dominant": "dominant",
+            "compens": "compensational"
+        },
         "rand.min.size":    100,
         "rand.sample.size": 100,
 

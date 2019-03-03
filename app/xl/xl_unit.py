@@ -1,4 +1,5 @@
 import logging
+from app.model.a_config import AnfisaConfig
 from xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit:
@@ -27,6 +28,9 @@ class XL_Unit:
 
     def getNo(self):
         return self.mNo
+
+    def getParseSupport(self):
+        return (None, None)
 
     @staticmethod
     def create(xl_ds, descr):
@@ -58,7 +62,7 @@ class XL_NumUnit(XL_Unit):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getDS().getName(),
+            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
             "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -100,7 +104,7 @@ class XL_EnumUnit(XL_Unit):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
-            "dataSource": self.getDS().getName(),
+            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
             "dimension": self.getName(),
             "threshold": len(self.mVariants),
             "metric": "count",
@@ -138,6 +142,7 @@ class XL_ZygosityUnit(XL_Unit):
         if not self.isDummy():
             self.mFamMap = {member:idx
                 for idx, member in enumerate(self.mFamily)}
+        self.mLabels = AnfisaConfig.configOption("zygosity.cases")
 
     def isDummy(self):
         return not self.mFamily or len(self.mFamily) < 2
@@ -145,13 +150,18 @@ class XL_ZygosityUnit(XL_Unit):
     def getFamilyInfo(self):
         return self.mFamily
 
-    def conditionZHomoRecessive(self, problem_group):
+    def getParseSupport(self):
+        return ("zygosity", self.parseZCondition)
+
+    def conditionZHomoRecess(self, problem_group):
         seq = []
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
+                # z >= 2
                 seq.append(XL_NumCondition(dim_name, False, 2))
             else:
+                # z <= 1
                 seq.append(XL_NumCondition(dim_name, True, 1))
         return XL_Condition.joinAnd(seq)
 
@@ -160,18 +170,22 @@ class XL_ZygosityUnit(XL_Unit):
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
+                # z >= 1
                 seq.append(XL_NumCondition(dim_name, False, 1))
             else:
+                # z <= 0
                 seq.append(XL_NumCondition(dim_name, True, 0))
         return XL_Condition.joinAnd(seq)
 
-    def conditionZCompensational(self, problem_group):
+    def conditionZCompens(self, problem_group):
         seq = []
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
+                # z <= 0
                 seq.append(XL_NumCondition(dim_name, True, 0))
             else:
+                # z >= 1
                 seq.append(XL_NumCondition(dim_name, False, 1))
         return XL_Condition.joinAnd(seq)
 
@@ -180,6 +194,14 @@ class XL_ZygosityUnit(XL_Unit):
         if context and "cond" in context:
             condition = z_condition.addAnd(context["cond"])
         return self.getDS.evalTotalCount({"cond": condition})
+
+    def _iterCritSeq(self, p_group):
+        yield (self.mLabels["homo_recess"],
+            self.conditionZHomoRecess(p_group))
+        yield (self.mLabels["dominant"],
+            self.conditionZDominant(p_group))
+        yield (self.mLabels["compens"],
+            self.conditionZCompens(p_group))
 
     def makeStat(self, context = None):
         ret = self._prepareStat() + [self.mFamily]
@@ -192,13 +214,29 @@ class XL_ZygosityUnit(XL_Unit):
         if (len(p_group) == 0 or len(p_group) == len(self.mFamily)):
             return ret + [sorted(p_group), None]
         stat = []
-        for name, z_condition in (
-                ("homo_recessive", self.conditionZHomoRecessive(p_group)),
-                ("dominant", self.conditionZDominant(p_group)),
-                ("compensational", self.conditionZCompensational(p_group))):
+        for name, z_condition in self._iterCritSeq(p_group):
             condition = z_condition
             if "cond" in context:
                 condition = z_condition.addAnd(context["cond"])
             stat.append([name,
                 self.getDS().evalTotalCount({"cond": condition})])
         return ret + [sorted(p_group), stat]
+
+    def parseZCondition(self, cond_info):
+        assert cond_info[0] == "zygosity"
+        unit_name, p_group, filter_mode, variants = cond_info[1:]
+        assert unit_name == self.getName()
+        assert filter_mode != "ONLY"
+        assert len(variants) > 0
+
+        singles = []
+        for name, z_condition in self._iterCritSeq(p_group):
+            if name in variants:
+                singles.append(z_condition)
+        assert len(singles) == len(variants)
+
+        if filter_mode == "NOT":
+            return XL_Condition.joinAnd([cond.negative() for cond in singles])
+        if filter_mode == "AND":
+            return XL_Condition.joinAnd(singles)
+        return XL_Condition.joinOr(singles)

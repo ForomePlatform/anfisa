@@ -15,12 +15,17 @@ class XLDataset(DataSet):
         self.mMongoDS = (self.getDataVault().getApp().getMongoConnector().
             getDSAgent(self.getMongoName()))
         self.mDruidAgent = self.getDataVault().getApp().getDruidAgent()
+        self.mParseContext = dict()
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
             xl_unit = XL_Unit.create(self, unit_data)
             if xl_unit is not None:
                 self.mUnits.append(xl_unit)
+                field, parse_f = xl_unit.getParseSupport()
+                if field:
+                    assert field not in self.mParseContext
+                    self.mParseContext[field] = parse_f
         self.mFilterCache = dict()
         if self.mMongoDS is not None:
             for filter_name, conditions in self.mMongoDS.getFilters():
@@ -72,7 +77,7 @@ class XLDataset(DataSet):
             return self.getTotal()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -87,7 +92,7 @@ class XLDataset(DataSet):
     def _evalRecSeq(self, context):
         query = {
             "queryType": "search",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
             "filter": context["cond"].getDruidRepr(),
@@ -99,7 +104,7 @@ class XLDataset(DataSet):
     def evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
             "threshold": expect_count,
             "metric": "count",
@@ -136,7 +141,7 @@ class XLDataset(DataSet):
             context = json.loads(rq_args["ctx"])
         else:
             context = dict()
-        context["cond"] = XL_Condition.parseSeq(cond_seq)
+        context["cond"] = XL_Condition.parseSeq(cond_seq, self.mParseContext)
         return {
             "total": self.getTotal(),
             "count": self.evalTotalCount(context),
@@ -149,13 +154,12 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl_statunit(self, rq_args):
-        print "ctx", rq_args["ctx"]
         if "ctx" in rq_args:
             context = json.loads(rq_args["ctx"])
         else:
             context = dict()
         context["cond"] = XL_Condition.parseSeq(
-            json.loads(rq_args["conditions"]))
+            json.loads(rq_args["conditions"]), self.mParseContext)
         unit_name = rq_args["unit"]
         the_unit = None
         for unit_h in self.mUnits:
