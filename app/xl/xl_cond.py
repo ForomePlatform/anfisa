@@ -52,7 +52,9 @@ class XL_Condition:
         return ret
 
     @classmethod
-    def parse(cls, cond_info):
+    def parse(cls, cond_info, parse_context = None):
+        if parse_context and cond_info[0] in parse_context:
+            return parse_context[cond_info[0]](cond_info)
         if cond_info[0] == "numeric":
             return XL_NumCondition(*cond_info[1:])
         if cond_info[0] == "enum":
@@ -74,10 +76,10 @@ class XL_Condition:
         return XL_None()
 
     @classmethod
-    def parseSeq(cls, cond_seq):
+    def parseSeq(cls, cond_seq, parse_context = None):
         if not cond_seq:
             return XL_None()
-        ret = cls.joinAnd([cls.parse(cond_data)
+        ret = cls.joinAnd([cls.parse(cond_data, parse_context)
             for cond_data in cond_seq])
         return ret
 
