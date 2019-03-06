@@ -59,6 +59,8 @@ class EnumStat:
         return False
 
     def regValues(self, values, count = 1):
+        if not values:
+            return
         for val in values:
             if not(0 <= val < len(self.mVariantSet)):
                 continue
