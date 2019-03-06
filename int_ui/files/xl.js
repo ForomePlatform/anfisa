@@ -1281,8 +1281,10 @@ function loadNote(content) {
     if (content) 
         args += "&note=" + encodeURIComponent(content);        
     ajaxCall("dsnote", args, function(info) {
-        document.getElementById("note-ds-name").innerHTML = info["ds"];
+        document.getElementById("note-ds-name").innerHTML = info["name"];
         document.getElementById("note-content").value = info["note"];
+        document.getElementById("note-time").innerHTML = 
+            (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
     });
 }
 
@@ -1372,4 +1374,8 @@ function toNumeric(tp, x) {
     }
     if (!isStrFloat(x)) return null;
     return parseFloat(x);
+}
+
+function timeRepr(time_label) {
+    return Date(time_label).toLocaleString("en-US").replace(/GMT.*/i, "");
 }
