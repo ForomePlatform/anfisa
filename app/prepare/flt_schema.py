@@ -129,6 +129,7 @@ def defineFilterSchema():
         filters.intValueUnit("Min_GQ", "/_filters/min_gq")
         filters.intValueUnit("QD", "/_filters/qd")
         filters.intValueUnit("FS", "/_filters/fs")
+        filters.intValueUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",

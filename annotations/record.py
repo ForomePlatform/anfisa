@@ -320,6 +320,15 @@ class Variant:
         self.filters['qd'] = self.info().get("QD")
         self.filters['fs'] = self.info().get("FS")
         self.filters['mq'] = self.info().get("MQ")
+        try:
+            q_filters = self.vcf_record.FILTER
+            if not q_filters:
+                self.filters["filters"] = ["PASS"]
+            else:
+                self.filters["filters"] = q_filters
+        except:
+            pass
+        return
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -1179,6 +1188,7 @@ class Variant:
 
         q_all['qd'] = self.info().get("QD")
         q_all['fs'] = self.info().get("FS")
+        q_all["ft"] = self.filters.get("filters")
         tab2.append(q_all)
 
         proband = self.get_proband()
