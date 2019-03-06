@@ -859,10 +859,8 @@ var sVersionsH = {
                 rep.push('<tr class="v-norm" id="ver__' + versions[idx][0] + '" ' + 
                     'onclick="sVersionsH.selIt(' + versions[idx][0] + ')">');
             }
-            date_repr = Date(versions[idx][1]).toLocaleString("en-US").
-                replace(/GMT.*/i, "");
             rep.push('<td class="v-no">' + versions[idx][0] + '</td>' +
-                '<td class="v-date">' + date_repr + '</td></tr>');
+                '<td class="v-date">' + timeRepr(versions[idx][1]) + '</td></tr>');
         }
         rep.push('</table>');
         this.mDivVersionTab.innerHTML = rep.join('\n');
@@ -1195,8 +1193,10 @@ function loadNote(content) {
     if (content) 
         args += "&note=" + encodeURIComponent(content);        
     ajaxCall("dsnote", args, function(info) {
-        document.getElementById("note-ds-name").innerHTML = info["ds"];
+        document.getElementById("note-ds-name").innerHTML = info["name"];
         document.getElementById("note-content").value = info["note"];
+        document.getElementById("note-time").innerHTML = 
+            (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
     });
 }
 
@@ -1321,4 +1321,8 @@ function replaceTag(tag) {
 
 function escapeText(str) {
     return str.replace(/[&<>]/g, replaceTag);
+}
+
+function timeRepr(time_label) {
+    return Date(time_label).toLocaleString("en-US").replace(/GMT.*/i, "");
 }

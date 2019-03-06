@@ -28,9 +28,9 @@ class XLDataset(DataSet):
                     self.mParseContext[field] = parse_f
         self.mFilterCache = dict()
         if self.mMongoDS is not None:
-            for filter_name, conditions in self.mMongoDS.getFilters():
-                if not self.mDruidAgent.hasStdFilter(filter_name):
-                        self.mFilterCache[filter_name] = conditions
+            for f_name, conditions, time_label in self.mMongoDS.getFilters():
+                if not self.mDruidAgent.hasStdFilter(f_name):
+                    self.cacheFilter(conditions, time_label)
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -45,8 +45,8 @@ class XLDataset(DataSet):
         if not self.mDruidAgent.hasStdFilter(flt_name):
             with self:
                 if op == "UPDATE":
-                    self.mMongoDS.setFilter(flt_name, conditions)
-                    self.cacheFilter(flt_name, conditions)
+                    time_label = self.mMongoDS.setFilter(flt_name, conditions)
+                    self.cacheFilter(flt_name, conditions, time_label)
                     filter_name = flt_name
                 elif op == "DROP":
                     self.mMongoDS.dropFilter(flt_name)
@@ -55,8 +55,8 @@ class XLDataset(DataSet):
                     assert False
         return filter_name
 
-    def cacheFilter(self, filter_name, conditions):
-        self.mFilterCache[filter_name] = conditions
+    def cacheFilter(self, filter_name, conditions, time_label):
+        self.mFilterCache[filter_name] = [conditions, time_label]
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
@@ -66,10 +66,10 @@ class XLDataset(DataSet):
         ret = []
         for filter_name in self.mDruidAgent.getStdFilterNames():
             ret.append([filter_name, True, True])
-        for filter_name, flt_info in self.mFilterCache.items():
-            if filter_name.startswith('_'):
+        for f_name, flt_info, time_label in self.mFilterCache.items():
+            if f_name.startswith('_'):
                 continue
-            ret.append([filter_name, False, True])
+            ret.append([filter_name, False, True, time_label])
         return sorted(ret)
 
     def evalTotalCount(self, context):
@@ -120,9 +120,11 @@ class XLDataset(DataSet):
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
     def dump(self):
+        note, time_label = self.mMongoDS.getDSNote()
         return {
             "name": self.mName,
-            "note": self.mMongoDS.getDSNote()}
+            "note": note,
+            "time": time_label}
 
     #===============================================
     @RestAPI.xl_request
@@ -136,7 +138,10 @@ class XLDataset(DataSet):
         if self.mDruidAgent.hasStdFilter(filter_name):
             cond_seq = self.mDruidAgent.getStdFilterConditions()
         else:
-            cond_seq = self.mFilterCache.get(filter_name, conditions)
+            if filter_name in self.mFilterCache:
+                cond_seq = self.mFilterCache[filter_name][0]
+            else:
+                cond_seq = conditions
         if "ctx" in rq_args:
             context = json.loads(rq_args["ctx"])
         else:
@@ -175,9 +180,7 @@ class XLDataset(DataSet):
         if note is not None:
             with self:
                 self.mMongoDS.setDSNote(note)
-        return {
-            "ds": self.getName(),
-            "note": self.mMongoDS.getDSNote()}
+        return self.dump()
 
     #===============================================
     @staticmethod

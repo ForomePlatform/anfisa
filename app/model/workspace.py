@@ -24,10 +24,11 @@ class Workspace(DataSet):
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
-        for filter_name, conditions in self.mMongoWS.getFilters():
+        for filter_name, conditions, time_label in self.mMongoWS.getFilters():
             if not self.mIndex.hasStdFilter(filter_name):
                 try:
-                    self.mIndex.cacheFilter(filter_name, conditions)
+                    self.mIndex.cacheFilter(filter_name,
+                        conditions, time_label)
                 except Exception as ex:
                     logging.error("Exception on load filter %s:\n %s" %
                         filter_name, str(ex))
@@ -77,13 +78,12 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
-    def getWSNote(self, note = None):
-        if note is not None:
-            self.mMongoWS.setWSNote(note)
-        return self.mMongoWS.getWSNote()
-
     def dump(self):
-        return {"name": self.mName, "note": self.getWSNote()}
+        note, time_label = self.mMongoWS.getWSNote()
+        return {
+            "name": self.mName,
+            "note": note,
+            "time": time_label}
 
     def getMongoRecData(self, key):
         return self.mMongoWS.getRecData(key)
@@ -134,8 +134,8 @@ class Workspace(DataSet):
             return filter_name
         with self:
             if op == "UPDATE":
-                self.mMongoWS.setFilter(flt_name, conditions)
-                self.mIndex.cacheFilter(flt_name, conditions)
+                time_label = self.mMongoWS.setFilter(flt_name, conditions)
+                self.mIndex.cacheFilter(flt_name, conditions, time_label)
                 filter_name = flt_name
             elif op == "DROP":
                 self.mMongoWS.dropFilter(flt_name)
@@ -143,23 +143,6 @@ class Workspace(DataSet):
             else:
                 assert False
         return filter_name
-
-    def makeStatReport(self, filter_name, research_mode, conditions, instr):
-        if instr:
-            op, q, flt_name = instr.partition('/')
-            if not self.mIndex.hasStdFilter(flt_name):
-                with self:
-                    if op == "UPDATE":
-                        self.mMongoWS.setFilter(flt_name, conditions)
-                        self.mIndex.cacheFilter(flt_name, conditions)
-                        filter_name = flt_name
-                    elif op == "DROP":
-                        self.mMongoWS.dropFilter(flt_name)
-                        self.mIndex.dropFilter(flt_name)
-                    else:
-                        assert False
-        return self.mIndex.makeStatReport(
-            filter_name, research_mode, conditions)
 
     #===============================================
     @RestAPI.ws_request
@@ -274,6 +257,8 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__wsnote(self, rq_args):
-        with self:
-            note = self.getWSNote(rq_args.get("note"))
-        return {"workspace": self.getName(), "note": note}
+        note = rq_args.get("note")
+        if note is not None:
+            with self:
+                self.mMongoWS.setWSNote(note)
+        return self.dump()

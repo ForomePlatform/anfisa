@@ -33,7 +33,7 @@ class Index:
         self.mStdFilters  = deepcopy(STD_WS_FILTERS)
         self.mFilterCache = dict()
         for filter_name, conditions in self.mStdFilters.items():
-            self.cacheFilter(filter_name, conditions)
+            self.cacheFilter(filter_name, conditions, None)
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
@@ -46,8 +46,8 @@ class Index:
                     for cond_info in filter_info[0]]):
                 to_update.append(filter_name)
         for filter_name in to_update:
-            self.cacheFilter(filter_name,
-                self.mFilterCache[filter_name][0])
+            filter_info = self.mFilterCache[filter_name]
+            self.cacheFilter(filter_name, filter_info[0], filter_info[3])
 
     def getWS(self):
         return self.mWS
@@ -149,10 +149,10 @@ class Index:
                 return True
         return False
 
-    def cacheFilter(self, filter_name, conditions):
+    def cacheFilter(self, filter_name, conditions, time_label):
         self.mFilterCache[filter_name] = (
             conditions, self.evalConditions(conditions),
-            self.checkResearchBlock(conditions))
+            self.checkResearchBlock(conditions), time_label)
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
@@ -164,7 +164,7 @@ class Index:
             if filter_name.startswith('_'):
                 continue
             ret.append([filter_name, self.hasStdFilter(filter_name),
-                research_mode or not flt_info[2]])
+                research_mode or not flt_info[2], flt_info[3]])
         return sorted(ret)
 
     def makeStatReport(self, filter_name, research_mode,

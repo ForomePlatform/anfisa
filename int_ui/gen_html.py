@@ -353,6 +353,7 @@ def _formNoteDiv(output):
                   onclick="noteModOff();">
                 Done
               </button>
+              <span id="note-time"></span>
             </div>
           </div>
         </div>

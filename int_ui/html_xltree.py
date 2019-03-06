@@ -194,6 +194,7 @@ def _formNoteDiv(output):
             <button onclick="modalOff();">
               Done
             </button>
+            <span id="note-time"></span>
         </div>
       </div>
     </div>

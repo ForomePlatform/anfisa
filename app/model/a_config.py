@@ -59,4 +59,10 @@ class AnfisaConfig:
             return color_code
         return "grey"
 
+    @classmethod
+    def normalizeTime(cls, time_label):
+        if time_label is None:
+            return '2019-03-01T00:00:00'
+        return time_label
+
 #===============================================

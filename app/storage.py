@@ -67,7 +67,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     if kind == "xl":
         is_ok &= DRUID_ADM.uploadDataset(name, flt_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
-            os.path.abspath(ds_dir + "/druid_rq.gz"))
+            os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
         ds_info = {
