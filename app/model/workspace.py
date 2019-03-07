@@ -45,7 +45,7 @@ class Workspace(DataSet):
     def _loadPData(self):
         with self._openPData() as inp:
             for line in inp:
-                pre_data = json.loads(line)
+                pre_data = json.loads(line.decode("utf-8"))
                 for key, tab in (
                         ("_rand",  self.mTabRecRand),
                         ("_key",   self.mTabRecKey),

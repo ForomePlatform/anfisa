@@ -5,7 +5,6 @@ from threading import Lock
 from .workspace import Workspace
 from .rest_api import RestAPI
 from app.xl.xl_dataset import XLDataset
-from .job_pool import TestTask
 
 #===============================================
 class DataVault:
@@ -84,7 +83,6 @@ class DataVault:
     #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
-        self.mApp.sJobPool.putTask(TestTask())
         rep = {
             "version": self.mApp.getVersionCode(),
             "workspaces": [],

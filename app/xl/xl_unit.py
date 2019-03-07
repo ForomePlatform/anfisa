@@ -106,7 +106,7 @@ class XL_EnumUnit(XL_Unit):
             "queryType": "topN",
             "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
             "dimension": self.getName(),
-            "threshold": len(self.mVariants),
+            "threshold": len(self.mVariants) + 5,
             "metric": "count",
             "granularity": druid_agent.GRANULARITY,
             "aggregations": [{

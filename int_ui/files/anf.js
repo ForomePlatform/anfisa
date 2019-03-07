@@ -272,7 +272,8 @@ function initExportForm() {
     wsDropShow(false);
     if (sRecList.length <= 300)
         res_content = 'Export ' + sRecList.length + ' records?<br>' +
-            '<button class="drop" onclick="doExport();">Export</button>';
+            '<button class="drop" onclick="doExport();">Export</button>' + 
+            '&emsp;<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
     else
         res_content = 'Too many records for export: ' + 
             sRecList.length + ' > 300.<br>' +

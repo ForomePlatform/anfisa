@@ -22,7 +22,7 @@ class Index:
         self.mRecords = []
         with self.mWS._openFData() as inp:
             for line in inp:
-                inp_data = json.loads(line)
+                inp_data = json.loads(line.decode("utf-8"))
                 rec = self.mDCCollection.initRecord()
                 for unit in self.mUnits:
                     unit.fillRecord(inp_data, rec)
@@ -38,7 +38,7 @@ class Index:
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
             for rec_no, line in enumerate(inp):
-                inp_data = json.loads(line)
+                inp_data = json.loads(line.decode("utf-8"))
                 self.mUnits[0].fillRulesPart(inp_data, self.mRecords[rec_no])
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
