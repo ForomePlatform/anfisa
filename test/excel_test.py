@@ -31,6 +31,11 @@ class ExcelExportTest(unittest.TestCase):
 
         export.save('test.xlsx')
 
+    def test_export_json_with_tags(self):
+        mapping = read_mapping(self.XLS_TEMPLATE)
+        for column in range(len(mapping)):
+            print "{}: {}".format(column, mapping[column])
+
 
 if __name__ == '__main__':
     unittest.main()
