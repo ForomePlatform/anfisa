@@ -101,7 +101,7 @@ def find_value(array, key):
 
 class ExcelExport:
     def __init__(self, fname = None, mapping = None,
-            tags_list = None):
+            version_info = None, tags_list = None):
         if fname:
             self.mapping = read_mapping(fname)
         else:

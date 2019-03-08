@@ -70,3 +70,6 @@ class DataSet:
     def getViewRepr(self, rec_no, research_mode):
         rec_data = self.getRecordData(rec_no)
         return self.mAspects.getViewRepr(rec_data, research_mode)
+
+    def getVersionData(self):
+        return dict()

@@ -4,13 +4,16 @@ from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
 from app.model.job_pool import ExecutionTask
 from app.xl.decision import DecisionTree
+from app.xl.xl_cond import XL_Condition
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, dataset, ws_name, base_version):
+    def __init__(self, dataset, ws_name,
+            base_version = None, conditions = None):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
+        self.mConditions = conditions
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
     sID_Pattern = re.compile('^[a-z][\\w\-\_]+$', re.I)
@@ -21,10 +24,16 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         self.setStatus("Prepare creation")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
-        tree_data = self.mDS.getMongoDS().getVersionTree(
-            self.mBaseVersion)
-        tree = DecisionTree.parse(tree_data)
-        rec_no_seq = tree.collectRecSeq(self.mDS)
+        if (self.mBaseVersion is not None):
+            tree = DecisionTree.parse(
+                self.mDS.getMongoDS().getVersionTree(self.mBaseVersion))
+            rec_no_seq = tree.collectRecSeq(self.mDS)
+        else:
+            context = {"cond":XL_Condition.parseSeq(
+                json.loads(self.mConditions))}
+            rec_count = self.mDS.evalTotalCount(context)
+            assert rec_count <= AnfisaConfig.configOption("max.ws.size")
+            rec_no_seq = self.mDS.evalRecSeq(context, rec_count)
 
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):

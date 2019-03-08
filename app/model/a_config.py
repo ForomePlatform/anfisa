@@ -31,6 +31,7 @@ class AnfisaConfig:
 
         "max.ws.size":  5000,
         "report.lines": 100,
+        "max.export.size": 300,
 
         "job.pool.size":    3,
         "job.pool.threads": 1}

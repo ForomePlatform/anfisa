@@ -1,6 +1,7 @@
 import json
 from md5 import md5
 
+from app.model.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
@@ -89,7 +90,7 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return ret[0]["result"]["count"]
 
-    def _evalRecSeq(self, context):
+    def evalRecSeq(self, context, expect_count = None):
         query = {
             "queryType": "search",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
@@ -101,12 +102,12 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def evalRecSeq(self, context, expect_count):
+    def _evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
-            "threshold": expect_count,
+            "threshold": expect_count + 5,
             "metric": "count",
             "filter": context["cond"].getDruidRepr(),
             "granularity": self.mDruidAgent.GRANULARITY,
@@ -266,6 +267,25 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl2ws(self, rq_args):
+        if "verbase" in rq_args:
+            base_version = int(rq_args["verbase"])
+            conditions = None
+        else:
+            base_version = None
+            conditions = rq_args["conditions"]
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
-            self, rq_args["ws"], int(rq_args["verbase"]))
+            self, rq_args["ws"],
+            base_version = base_version, conditions = conditions)
         return {"task_id" : task_id}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_export(self, rq_args):
+        context = {"cond":
+            XL_Condition.parseSeq(json.loads(rq_args["conditions"]))}
+        rec_count = self.evalTotalCount(context)
+        assert rec_count <= AnfisaConfig.configOption("max.export.size")
+        rec_no_seq = self.evalRecSeq(context, rec_count)
+        fname = self.getDataVault().getApp().makeExcelExport(
+            self.getName(), self, rec_no_seq)
+        return {"kind": "excel", "fname": fname}

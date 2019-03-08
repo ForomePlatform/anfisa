@@ -8,6 +8,7 @@ function initXL(ds_name, common_title) {
     sOpNumH.init();
     sOpEnumH.init();
     sViewH.init();
+    sCreateWsH.init()
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
@@ -38,6 +39,9 @@ var sUnitsH = {
     mUnitMap: null,
     mCurUnit: null,
     mCurZygName: null,
+    mCounts: null,
+    mTotal: null,
+    mExportFormed: null,
     mCtx: null,
     
     setup: function(conditions, filter_name, add_instr) {
@@ -57,10 +61,12 @@ var sUnitsH = {
     },
 
     _setup: function(info) {
-        count = info["count"];
-        total = info["total"]
-        document.getElementById("list-report").innerHTML = (count == total)?
-            total : count + "/" + total;
+        this.mCount = info["count"];
+        this.mTotal = info["total"];
+        this.mExportFormed = false;
+        document.getElementById("list-report").innerHTML = 
+            (this.mCount == this.mTotal)? 
+                this.mTotal : this.mCount + "/" + this.mTotal;
 
         this.mCtx = null;
         this.mItems = info["stat-list"];
@@ -1183,6 +1189,155 @@ var sFiltersH = {
     }
 };
 
+/**************************************/
+var sCreateWsH = {
+    mStage: null,
+    mDSNames: null,
+    mSpanModTitle: null,
+    mInputModName: null,
+    mDivModProblems: null,
+    mDivModStatus: null,
+    mButtonModStart: null,
+    mTaskId: null,
+    mTimeH: null,
+    
+    init: function() {
+        this.mSpanModTitle = document.getElementById("create-ws-title");
+        this.mInputModName = document.getElementById("create-ws-name");
+        this.mDivModProblems = document.getElementById("create-ws-problems");
+        this.mDivModStatus = document.getElementById("create-ws-status");
+        this.mButtonModStart = document.getElementById("create-ws-start");
+    },
+    
+    show: function() {
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mDSNames = null;
+        this.mTaskId = null;
+        this.mSpanModTitle.innerHTML = 'Create workspace for ' +
+            sUnitsH.mCount + ' of ' + sUnitsH.mTotal;
+        var error_msg = "";
+        if (sUnitsH.mCount >= 5000)
+            error_msg = "Too many records, try to reduce";
+        if (sUnitsH.mCount < 10)
+            error_msg = "Too small workspace";
+        this.mDivModProblems.innerHTML = error_msg;
+        if (error_msg) {
+            this.mStage = "BAD";
+            this.checkControls();
+            sViewH.modalOn(document.getElementById("create-ws-back"));
+            return;
+        }
+        this.mStage = "NAMES";
+        ajaxCall("dirinfo", "", function(info) {
+            sCreateWsH._setupName(info);})
+    },
+    
+    _nameReserved: function(dsname) {
+        return this.mDSNames.indexOf(dsname) >= 0;
+    },
+    
+    _setupName: function(dirinfo) {
+        this.mDSNames = [];
+        for (idx = 0; idx < dirinfo["xl-datasets"].length; idx++)
+            this.mDSNames.push(dirinfo["xl-datasets"][idx]["name"]);
+        for (idx = 0; idx < dirinfo["workspaces"].length; idx++)
+            this.mDSNames.push(dirinfo["workspaces"][idx]["name"]);
+        var no = 1;
+        var own_name = sDSName.match(/\_(.*)$/)[1];
+        var ws_name;
+        while (true) {
+            ws_name = "ws" + no + '_' + own_name;
+            if (!this._nameReserved(ws_name))
+                break;
+            no += 1;
+        }
+        this.mInputModName.value = ws_name;
+        this.mStage = "READY";
+        this.checkControls();
+        sViewH.modalOn(document.getElementById("create-ws-back"));
+    },
+    
+    checkControls: function() {
+        if (this.mStage == "BAD")
+            this.mInputModName.value = "";
+        this.mInputModName.disabled = (this.mStage != "READY");
+        error_msg = "";
+        if (this.mStage == "READY") {
+            if (this._nameReserved(this.mInputModName.value)) 
+                error_msg = "Name is reserved, try another one";
+            this.mDivModProblems.innerHTML = error_msg;
+        }
+        this.mButtonModStart.disabled = (this.mStage != "READY" || error_msg);
+        if (this.mStage == "BAD" || this.mStage == "READY") {
+            this.mDivModProblems.style.display = "block";
+            this.mDivModStatus.style.display = "none";
+            this.mDivModStatus.innerHTML = "";
+        } else {
+            this.mDivModProblems.style.display = "none";
+            this.mDivModStatus.style.display = "block";
+        }
+    },
+    
+    startIt: function() {
+        if (this.mStage != "READY")
+            return;
+         this.checkControls();
+        if (this.mButtonModStart.disabled)
+            return;
+        sViewH.blockModal(true);
+        this.mStage = "WAIT";
+        ajaxCall("xl2ws", "ds=" + sDSName + "&conditions= " +
+            encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
+            "&ws=" + encodeURIComponent(this.mInputModName.value),
+            function(info) {
+                sCreateWsH._setupTask(info);})
+    },
+    
+    _setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.checkTask();
+    },
+    
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sCreateWsH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info != null && info[0] == false) {
+            this.mDivModStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 3000);
+            this.checkControls();
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mStage = "DONE";
+        sViewH.blockModal(false);
+        this.checkControls();
+        if (info == null) {
+            this.mDivModStatus.innerHTML = "Task information lost";
+        } else {
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                this.mDivModStatus.innerHTML = 'Done: <a href="ws?ws=' + 
+                    info[0]["ws"] + '" target="' + sTitlePrefix + '/' + 
+                    info[0]["ws"] + '">Open it</a>';
+            }
+        }
+    }
+};
+
 /*************************************/
 /* Top controls                      */
 /*************************************/
@@ -1202,6 +1357,8 @@ var sViewH = {
     },
 
     dropOn: function(ctrl) {
+        if (this.mDropCtrls.indexOf(ctrl) < 0)
+            this.mDropCtrls.push(ctrl);
         if (ctrl.style.display == "block") {
             this.dropOff();
         } else {
@@ -1236,7 +1393,7 @@ var sViewH = {
     
     blockModal: function(mode) {
         this.mBlock = mode;
-        document.getElementById("_body").className = (mode)? "wait":"";
+        document.body.className = (mode)? "wait":"";
     },
     
     onclick: function(event_ms) {
@@ -1264,6 +1421,15 @@ function goToTree() {
     window.open("xl_tree?ds=" + sDSName, sCommonTitle + ":" + sDSName + ":L");
 }
 
+function wsCreate() {
+    sCreateWsH.show();
+}
+
+function startWsCreate() {
+    sCreateWsH.startIt();
+}
+
+/*************************************/
 function openNote() {
     sViewH.dropOff();
     loadNote();
@@ -1286,6 +1452,46 @@ function loadNote(content) {
         document.getElementById("note-time").innerHTML = 
             (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
     });
+}
+
+/*************************************/
+function showExport() {
+    sViewH.dropOff();
+    if (sUnitsH.mExportFormed) {
+        sViewH.dropOn(document.getElementById("ws-export-result"));
+        return;
+    }
+    if (sUnitsH.mCount <= 300)
+        res_content = 'Export ' + sUnitsH.mCount + ' records?<br>' +
+            '<button class="drop" onclick="doExport();">Export</button>' + 
+            '&emsp;<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
+    else
+        res_content = 'Too many records for export: ' + 
+            sUnitsH.length + ' > 300.<br>' +
+            '<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
+    res_el = document.getElementById("ws-export-result");
+    res_el.innerHTML = res_content;
+    sViewH.dropOn(res_el);
+}
+
+function doExport() {
+    args = "ds=" + sDSName + "&conditions=" + 
+        encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
+    ajaxCall("xl_export", args, setupExport);
+}
+
+function setupExport(info) {
+    res_el = document.getElementById("ws-export-result");
+    if (info["fname"]) {
+        res_el.className = "drop";
+        res_el.innerHTML = 'Exported ' + sUnitsH.mCount + ' records<br>' +
+        '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
+    } else {
+        res_el.className = "drop problems";
+        res_el.innerHTML = 'Bad configuration';
+    }
+    sUnitsH.mExportFormed = true;
+    showExport();
 }
 
 /*************************************/

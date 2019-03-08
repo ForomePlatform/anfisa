@@ -7,7 +7,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds):
         js_files = ["xltree.js"])
 
     print >> output, (
-        '  <body id="_body" onload="initXL(\'%s\', \'%s\');">' %
+        '  <body onload="initXL(\'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title))
 
     _formXLPannel(output, xl_ds.getName())
@@ -32,11 +32,11 @@ def _formXLPannel(output, ds_name):
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
                     <div onclick="goToFilters();"
-                        class="drop ctrl-menu">Filtering dataset...</div>
+                        class="drop ctrl-menu">Filtering pannel</div>
+                    <div onclick="openNote();"
+                        class="drop ctrl-menu">Dataset Note...</div>
                     <div onclick="wsCreate();"
                         class="drop ctrl-menu">Create workspace...</div>
-                    <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note</div>
                 </div>
             </span>&emsp;
             XL dataset: <span id="xl-name"></span>

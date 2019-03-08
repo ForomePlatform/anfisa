@@ -277,7 +277,7 @@ function initExportForm() {
     else
         res_content = 'Too many records for export: ' + 
             sRecList.length + ' > 300.<br>' +
-            '<button class="drop" onclick="wsDropShow(false);">Continue</button>';
+            '<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
     document.getElementById("ws-export-result").innerHTML = res_content;
     sExportFormed = false;
 }

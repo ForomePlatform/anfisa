@@ -11,6 +11,7 @@ def formXLPage(output, title, common_title, html_base, xl_ds):
 
     _formXLPannel(output, xl_ds.getName())
     _formNoteDiv(output)
+    _formCreateWsDiv(output)
     _formSamplesDiv(output)
 
     print >> output, ' </body>'
@@ -28,10 +29,15 @@ def _formXLPannel(output, ds_name):
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
                     <div onclick="goToTree();"
-                        class="drop ctrl-menu">Prepare workspace...</div>
+                        class="drop ctrl-menu">Decision tree panel</div>
                     <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note</div>
+                        class="drop ctrl-menu">Dataset Note...</div>
+                    <div onclick="showExport();"
+                        class="drop ctrl-menu" >Export...</div>
+                    <div onclick="wsCreate();"
+                        class="drop ctrl-menu">Create workspace...</div>
                 </div>
+                <div id="ws-export-result" class="drop"></div>
             </span>&emsp;
             XL dataset: <span id="xl-name"></span><br/>
             Records: <span id="list-report"></span>
@@ -160,7 +166,7 @@ def _formXLPannel(output, ds_name):
 #===============================================
 def _formNoteDiv(output):
     print >> output, '''
-    <div id="note-back">
+    <div id="note-back" class="modal-back">
       <div id="note-mod">
         <div id="note-top">
             <p id="note-title">Dataset
@@ -183,6 +189,33 @@ def _formNoteDiv(output):
               <span id="note-time"></span>
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+'''
+#===============================================
+def _formCreateWsDiv(output):
+    print >> output, '''
+    <div id="create-ws-back" class="modal-back">
+      <div id="create-ws-mod">
+        <div id="create-ws-top">
+            <span id="create-ws-title"></span>
+              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+        </div>
+        <div id="create-ws-main">
+            <div>Workspace name:
+                <input id="create-ws-name" type="text"/>
+            </div>
+            <div id="create-ws-problems"></div>
+            <div id="create-ws-status"></div>
+        </div>
+        <div id="create-ws-ctrl">
+            <button id="create-ws-start" onclick="startWsCreate();">
+              Start...
+            </button>
+            <button onclick="sViewH.modalOff();">
+              Cancel
+            </button>
         </div>
       </div>
     </div>

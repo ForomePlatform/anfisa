@@ -238,7 +238,7 @@ var sUnitsH = {
             encodeURIComponent(JSON.stringify(decision_tree)) + 
             "&no=" + point_no;
         this.mWaiting = true;
-        document.getElementById("_body").className = "wait";
+        document.body.className = "wait";
         document.getElementById("stat-list").className = "wait";
         document.getElementById("list-report").innerHTML = 
             '<marquee behavior="alternate" direction="right">| - | -</marquee>';
@@ -254,7 +254,7 @@ var sUnitsH = {
     },
     
     _setup: function(info) {
-        document.getElementById("_body").className = "";
+        document.body.className = "";
         document.getElementById("stat-list").className = "";
         count = info["count"];
         total = info["total"]
@@ -1148,7 +1148,7 @@ var sViewH = {
     
     blockModal: function(mode) {
         this.mBlock = mode;
-        document.getElementById("_body").className = (mode)? "wait":"";
+        document.body.className = (mode)? "wait":"";
     },
     
     onclick: function(event_ms) {

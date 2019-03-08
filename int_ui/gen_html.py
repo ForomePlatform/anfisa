@@ -60,14 +60,14 @@ def _formMainDiv(output, workspace_name):
                 <span id="ws-control-open" class="drop"
                     onclick="openControlMenu()";>&#8285;</span>
                 <div id="ws-control-menu" class="drop">
-                    <div id="ws-ctrl-home" onclick="goHome();"
+                    <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
-                    <div id="ws-ctrl-home" onclick="openNote();"
+                    <div onclick="openNote();"
                         class="drop ctrl-menu">Workspace Note</div>
-                    <div id="ws-ctrl-research-mode" onclick="switchResMode();"
-                        class="drop ctrl-menu"><span id="res-mode-check">&#10003;</span>Research mode</div>
-                    <div id="ws-ctrl-export"
-                        class="drop ctrl-menu" onclick="showExport();">Export</div>
+                    <div onclick="switchResMode();" class="drop ctrl-menu">
+                        <span id="res-mode-check">&#10003;</span>Research mode</div>
+                    <div onclick="showExport();"
+                        class="drop ctrl-menu" >Export...</div>
                 </div>
                 <div id="ws-export-result" class="drop"></div>
               </span>&emsp;
