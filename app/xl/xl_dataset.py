@@ -90,19 +90,20 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return ret[0]["result"]["count"]
 
-    def evalRecSeq(self, context, expect_count = None):
+    def _evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "search",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
+            "limit": expect_count + 5,
             "filter": context["cond"].getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def _evalRecSeq(self, context, expect_count):
+    def evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
