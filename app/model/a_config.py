@@ -33,6 +33,8 @@ class AnfisaConfig:
         "report.lines": 100,
         "max.export.size": 300,
 
+        "filter.std.mark": u"\u23da",
+
         "job.pool.size":    3,
         "job.pool.threads": 1}
 

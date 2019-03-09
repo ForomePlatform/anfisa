@@ -288,7 +288,6 @@ function openControlMenu() {
     if (sWsDropShown)
         document.getElementById("ws-control-menu").style.display = 
             (sWsDropShown)? "block":"none";
-        
 }
 
 function showExport() {
@@ -377,5 +376,6 @@ function wsDropShow(mode) {
 
 //=====================================
 function timeRepr(time_label) {
-    return Date(time_label).toLocaleString("en-US").replace(/GMT.*/i, "");
+    var dt = new Date(time_label);
+    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
 }

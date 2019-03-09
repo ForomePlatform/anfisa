@@ -338,3 +338,9 @@ select#filter-name-filter {
 #filter-name-combo {
     margin: 0px 5px 0px 10px;
 }
+
+span.flt-time {
+    margin-left: 15px;
+    font-style: italic;
+    font-size: 70%;
+}

@@ -2,11 +2,14 @@ import json
 from copy import deepcopy
 
 from app.model.solutions import STD_WS_FILTERS
+from app.model.a_config import AnfisaConfig
 from .column import DataColumnCollecton
 from .flt_unit import loadWSFilterUnit
 from .rules_supp import RulesEvalUnit
 #===============================================
 class Index:
+    sStdFMark = AnfisaConfig.configOption("filter.std.mark")
+
     def __init__(self, ws_h):
         self.mWS = ws_h
         self.mDCCollection = DataColumnCollecton()
@@ -33,7 +36,8 @@ class Index:
         self.mStdFilters  = deepcopy(STD_WS_FILTERS)
         self.mFilterCache = dict()
         for filter_name, conditions in self.mStdFilters.items():
-            self.cacheFilter(filter_name, conditions, None)
+            self.cacheFilter(self.sStdFMark + filter_name,
+                conditions, None)
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
@@ -60,6 +64,10 @@ class Index:
 
     def iterUnits(self):
         return iter(self.mUnits)
+
+    def goodOpFilterName(self, flt_name):
+        return (flt_name and not flt_name.startswith(self.sStdFMark)
+            and flt_name[0].isalpha() and ' ' not in flt_name)
 
     def hasStdFilter(self, filter_name):
         return filter_name in self.mStdFilters
@@ -199,10 +207,8 @@ class Index:
         for filter_name, flt_info in self.mFilterCache.items():
             if not research_mode and flt_info[2]:
                 continue
-            if (not filter_name.startswith('_') and
-                    rec_no in flt_info[1]):
-                if self.hasStdFilter(filter_name):
-                    ret0.append(filter_name)
-                else:
-                    ret1.append(filter_name)
+            if self.hasStdFilter(filter_name):
+                ret0.append(filter_name)
+            elif self.goodOpFilterName(filter_name):
+                ret1.append(filter_name)
         return sorted(ret0) + sorted(ret1)

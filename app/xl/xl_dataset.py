@@ -30,8 +30,8 @@ class XLDataset(DataSet):
         self.mFilterCache = dict()
         if self.mMongoDS is not None:
             for f_name, conditions, time_label in self.mMongoDS.getFilters():
-                if not self.mDruidAgent.hasStdFilter(f_name):
-                    self.cacheFilter(conditions, time_label)
+                if self.mDruidAgent.goodOpFilterName(f_name):
+                    self.cacheFilter(f_name, conditions, time_label)
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -43,7 +43,7 @@ class XLDataset(DataSet):
         if instr is None:
             return filter_name
         op, q, flt_name = instr.partition('/')
-        if not self.mDruidAgent.hasStdFilter(flt_name):
+        if self.mDruidAgent.goodOpFilterName(flt_name):
             with self:
                 if op == "UPDATE":
                     time_label = self.mMongoDS.setFilter(flt_name, conditions)
@@ -67,10 +67,10 @@ class XLDataset(DataSet):
         ret = []
         for filter_name in self.mDruidAgent.getStdFilterNames():
             ret.append([filter_name, True, True])
-        for f_name, flt_info, time_label in self.mFilterCache.items():
+        for f_name, flt_info in self.mFilterCache.items():
             if f_name.startswith('_'):
                 continue
-            ret.append([filter_name, False, True, time_label])
+            ret.append([f_name, False, True, flt_info[1]])
         return sorted(ret)
 
     def evalTotalCount(self, context):
@@ -138,7 +138,7 @@ class XLDataset(DataSet):
         filter_name = self.filterOperation(
             filter_name, conditions, rq_args.get("instr"))
         if self.mDruidAgent.hasStdFilter(filter_name):
-            cond_seq = self.mDruidAgent.getStdFilterConditions()
+            cond_seq = self.mDruidAgent.getStdFilterConditions(filter_name)
         else:
             if filter_name in self.mFilterCache:
                 cond_seq = self.mFilterCache[filter_name][0]

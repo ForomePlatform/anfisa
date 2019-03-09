@@ -105,8 +105,7 @@ class StatusUnit(FilterUnit):
             {self.mColumn.recordValue(data_rec)})
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "status")
         for data_rec in data_records:
             stat.regValues({self.mColumn.recordValue(data_rec)})
         return stat.dump()
@@ -138,8 +137,7 @@ class MultiSetUnit(FilterUnit):
             self.mColumns.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "enum")
         for data_rec in data_records:
             stat.regValues(self.mColumns.recordValues(data_rec))
         return stat.dump()
@@ -170,8 +168,7 @@ class MultiCompactUnit(FilterUnit):
             self.mColumn.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "enum")
         for data_rec in data_records:
             stat.regValues(self.mColumn.recordValues(data_rec))
         return stat.dump()

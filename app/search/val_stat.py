@@ -71,4 +71,4 @@ class EnumStat:
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             rep_list.append([variant, self.mStat.get(idx, 0)])
-        return ["enum", self.mNames, rep_list]
+        return [self.mEnumType, self.mNames, rep_list]

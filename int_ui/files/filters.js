@@ -333,7 +333,9 @@ function setupStatUnit() {
             ("undefined:" + cnt_undef) : "";        
     } else {
         sOpMode = "enum";
-        if (unit_type != "status") {
+        if (unit_type == "status") {
+            sOpEnumModeInfo = [null, null, false];
+        } else {
             sOpEnumModeInfo = [false, false, false];
         }
         sOpEnumList = unit_stat[2];
@@ -368,7 +370,7 @@ function setupConditionValues(cond) {
     if (cond[0] == "enum") {
         if (cond[2] && sOpEnumModeInfo != null) {
             mode = ["AND", "ONLY", "NOT"].indexOf(cond[2]);
-            if (mode >= 0) {
+            if (mode >= 0 && sOpEnumModeInfo[mode] != null) {
                 sOpEnumModeInfo[mode] = true;
                 document.getElementById("cond-mode-" + 
                     ["and", "only", "not"][mode]).checked = true;

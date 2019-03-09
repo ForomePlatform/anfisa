@@ -3,9 +3,9 @@ from app.model.a_config import AnfisaConfig
 from xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit:
-    def __init__(self, xl_ds, descr):
+    def __init__(self, xl_ds, descr, unit_kind = None):
         self.mDataSet = xl_ds
-        self.mUnitKind  = descr["kind"]
+        self.mUnitKind  = descr["kind"] if unit_kind is None else unit_kind
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
@@ -91,7 +91,8 @@ class XL_NumUnit(XL_Unit):
 #===============================================
 class XL_EnumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
-        XL_Unit.__init__(self, xl_ds, descr)
+        XL_Unit.__init__(self, xl_ds, descr,
+            "status" if descr.get("atomic") else "enum")
         self.mVariants = [info[0]
             for info in descr["variants"]]
         self.mAccumCount = sum([info[1]

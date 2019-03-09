@@ -180,6 +180,9 @@ function prepareFilterOperations() {
     document.getElementById("filters-op-delete").className = 
         (sBaseFilterName == "_current_" || 
             sOpFilters.indexOf(sBaseFilterName) < 0)? "disabled":"";
+    /*flt_time = sFltTimeDict[sBaseFilterName];
+    document.getElementById("filter-upd-time").innerHTML = 
+        (flt_time)? timeRepr(flt_time):'';*/
     sBtnFilters_Op.style.display = "none";
     wsDropShow(false);
 }

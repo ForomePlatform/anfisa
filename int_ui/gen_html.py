@@ -470,6 +470,8 @@ def tagsBlock(output):
             onclick="tagEnvRedo();">
           &#8631;
         </button>
+        <span id="tags-time">
+        </span>
       </div>
     </div>
   </div>

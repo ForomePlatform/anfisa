@@ -25,7 +25,7 @@ class Workspace(DataSet):
             AnfisaConfig.configOption("check.tags"))
 
         for filter_name, conditions, time_label in self.mMongoWS.getFilters():
-            if not self.mIndex.hasStdFilter(filter_name):
+            if not self.mIndex.goodOpFilterName(filter_name):
                 try:
                     self.mIndex.cacheFilter(filter_name,
                         conditions, time_label)
@@ -178,13 +178,11 @@ class Workspace(DataSet):
     def rq__tags(self, rq_args):
         modes = rq_args.get("m", "").upper()
         rec_no = int(rq_args.get("rec"))
-        update_info = None
         if rq_args.get("tags") is not None:
             tags_to_update = json.loads(rq_args.get("tags"))
             with self:
-                update_info = self.mTagsMan.updateRec(
-                    rec_no, tags_to_update)
-        rep = self.mTagsMan.makeRecReport(rec_no, update_info)
+                self.mTagsMan.updateRec(rec_no, tags_to_update)
+        rep = self.mTagsMan.makeRecReport(rec_no)
         rep["filters"] = self.mIndex.getRecFilters(rec_no, 'R' in modes)
         rep["tags-version"] = self.mTagsMan.getIntVersion()
         return rep

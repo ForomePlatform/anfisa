@@ -133,7 +133,10 @@ function setupTags(info) {
     if (info["marker"]) {
         parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
     }
-
+    document.getElementById("tags-time").innerHTML = (info["time"])?
+        ('Updated: <span class="note-time">' + 
+            timeRepr(info["time"]) + '</span>') : '';
+    
     parent.window.checkTagsIntVersion(info["tags-version"]);    
 }
 
@@ -292,4 +295,10 @@ function tagEnvTagSel() {
 function checkTagCheck(tag_name) {
     sRecTags[tag_name] = document.getElementById("check-tag--" + tag_name).checked;
     tagEnvSave(true);
+}
+
+//=====================================
+function timeRepr(time_label) {
+    var dt = new Date(time_label);
+    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
 }

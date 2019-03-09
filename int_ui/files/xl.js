@@ -64,6 +64,7 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mExportFormed = false;
+        sCreateWsH.reset();
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
@@ -687,6 +688,7 @@ var sOpEnumH = {
     mOperationMode: null,
     mDivVarList: null,
     mSpecCtrl: null,
+    mStatusMode: null,
 
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
@@ -709,9 +711,11 @@ var sOpEnumH = {
             this.mSpecCtrl = sZygosityH;
             this.mVariants = sZygosityH.getVariants(unit_stat);
             this.mOperationMode = null;
+            this.mStatusMode = null;
         } else {
             this.mVariants = unit_stat[2];
-            this.mOperationMode = (unit_stat[0] == "status")? null:0;
+            this.mOperationMode = 0;
+            this.mStatusMode = (unit_stat[0] == "status");
             this.mSpecCtrl = null;
         }
         this.careEnumZeros(false);
@@ -762,7 +766,8 @@ var sOpEnumH = {
         for (idx = 1; idx < 4; idx++) {
             vmode = ["or", "and", "only", "not"][idx];
             document.getElementById("cond-mode-" + vmode + "-span").
-                style.visibility = (this.mOperationMode == null)? "hidden":"visible";
+                style.visibility = (this.mOperationMode == null ||
+                    (this.mStatusMode && idx != 3))? "hidden":"visible";
             document.getElementById("cond-mode-" + vmode).checked =
                 (idx == this.mOperationMode);
         }
@@ -1198,6 +1203,7 @@ var sCreateWsH = {
     mDivModProblems: null,
     mDivModStatus: null,
     mButtonModStart: null,
+    mWSFormed: false,
     mTaskId: null,
     mTimeH: null,
     
@@ -1209,7 +1215,15 @@ var sCreateWsH = {
         this.mButtonModStart = document.getElementById("create-ws-start");
     },
     
+    reset: function() {
+        this.mWSFormed = false;
+    },
+    
     show: function() {
+        if (this.mWSFormed) {
+            sViewH.dropOn(this.mDivModStatus);
+            return;
+        }
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
@@ -1221,8 +1235,10 @@ var sCreateWsH = {
         var error_msg = "";
         if (sUnitsH.mCount >= 5000)
             error_msg = "Too many records, try to reduce";
-        if (sUnitsH.mCount < 10)
-            error_msg = "Too small workspace";
+        if (sUnitsH.mCount < 1)
+            error_msg = "Empty set";
+        /*if (sUnitsH.mCount < 10)
+            error_msg = "Too small workspace";*/
         this.mDivModProblems.innerHTML = error_msg;
         if (error_msg) {
             this.mStage = "BAD";
@@ -1320,6 +1336,7 @@ var sCreateWsH = {
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
+            self.mWSFormed = true;
         }
         this.mStage = "DONE";
         sViewH.blockModal(false);
@@ -1583,5 +1600,6 @@ function toNumeric(tp, x) {
 }
 
 function timeRepr(time_label) {
-    return Date(time_label).toLocaleString("en-US").replace(/GMT.*/i, "");
+    var dt = new Date(time_label);
+    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
 }
