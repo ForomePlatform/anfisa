@@ -20,7 +20,7 @@ class DruidAgent:
         druid_cfg = config.get("druid", dict())
         self.mRestAgents = {mode: RestAgent(druid_cfg.get(mode, url), mode)
             for mode, url in self.sDefaultUrls.items()}
-        self.mFilters = {self.sStdFMark + flt_name: deepcopy(conditions)
+        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(conditions)
             for flt_name, conditions in STD_XL_FILTERS}
         self.mVaultPrefix = druid_cfg["vault-prefix"]
 
@@ -28,7 +28,7 @@ class DruidAgent:
         return self.mRestAgents[mode].call(request_data, method, add_path)
 
     def getStdFilterNames(self):
-        return self.mFilters.keys()
+        return self.mStdFilters.keys()
 
     def goodOpFilterName(self, flt_name):
         return (flt_name and not flt_name.startswith(self.sStdFMark)
@@ -38,7 +38,7 @@ class DruidAgent:
         return filter_name in self.mStdFilters
 
     def getStdFilterConditions(self, flt_name):
-        return self.mFilters.get(flt_name)
+        return self.mStdFilters.get(flt_name)
 
     def normDataSetName(self, ds_name):
         if not self.mVaultPrefix:
