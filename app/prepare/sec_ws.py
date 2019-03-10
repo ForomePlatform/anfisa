@@ -35,7 +35,7 @@ class SecondaryWsCreation(ExecutionTask):
             assert rec_count <= AnfisaConfig.configOption("max.ws.size")
             rec_no_seq = self.mDS.evalRecSeq(context, rec_count)
 
-        rec_no_seq.sort()
+        rec_no_seq = sorted(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):
             self.setStatus("Dataset already exists")
