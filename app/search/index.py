@@ -73,70 +73,52 @@ class Index:
         return filter_name in self.mStdFilters
 
     @staticmethod
-    def not_NONE(val):
-        return val is not None
+    def numericFilterFunc(bounds, use_undef):
+        bound_min, bound_max = bounds
+        if bound_min is None:
+            if bound_max is None:
+                if use_undef:
+                    return lambda val: val is None
+                assert False
+                return lambda val: True
+            if use_undef:
+                return lambda val: val is None or val <= bound_max
+            return lambda val: val is not None and val <= bound_max
+        if bound_max is None:
+            if use_undef:
+                return lambda val: val is None or bound_min <= val
+            return lambda val: val is not None and bound_min <= val
+        if use_undef:
+            return lambda val: val is None or (
+                bound_min <= val <= bound_max)
+        return lambda val: val is not None and (
+            bound_min <= val <= bound_max)
 
     @staticmethod
-    def numeric_LE(the_val):
-        return lambda val: val is not None and val >= the_val
-
-    @staticmethod
-    def numeric_GE(the_val):
-        return lambda val: val is not None and val <= the_val
-
-    @staticmethod
-    def numeric_LE_U(the_val):
-        return lambda val: val is None or val >= the_val
-
-    @staticmethod
-    def numeric_GE_U(the_val):
-        return lambda val: val is None or val <= the_val
-
-    @staticmethod
-    def enum_OR(base_idx_set):
+    def enumFilterFunc(filter_mode, base_idx_set):
+        if filter_mode == "NOT":
+            return lambda idx_set: len(idx_set & base_idx_set) == 0
+        if filter_mode == "ONLY":
+            return lambda idx_set: (len(idx_set) > 0 and
+                len(idx_set - base_idx_set) == 0)
+        if filter_mode == "AND":
+            all_len = len(base_idx_set)
+            return lambda idx_set: len(idx_set & base_idx_set) == all_len
         return lambda idx_set: len(idx_set & base_idx_set) > 0
 
-    @staticmethod
-    def enum_AND(base_idx_set):
-        all_len = len(base_idx_set)
-        return lambda idx_set: len(idx_set & base_idx_set) == all_len
-
-    @staticmethod
-    def enum_NOT(base_idx_set):
-        return lambda idx_set: len(idx_set & base_idx_set) == 0
-
-    @staticmethod
-    def enum_ONLY(base_idx_set):
-        return lambda idx_set: (len(idx_set) > 0 and
-            len(idx_set - base_idx_set) == 0)
-
     def _applyCondition(self, rec_no_seq, cond_info):
-        if cond_info[0] == "numeric":
-            unit_name, ge_mode, the_val, use_undef = cond_info[1:]
-            if ge_mode > 0:
-                cmp_func = (self.numeric_GE_U(the_val) if use_undef
-                    else self.numeric_GE(the_val))
-            elif ge_mode == 0:
-                cmp_func = (self.numeric_LE_U(the_val) if use_undef
-                    else self.numeric_LE(the_val))
-            elif use_undef is False:
-                cmp_func = self.not_NONE
-            cond_f = self.getUnit(unit_name).recordCondFunc(
-                cmp_func)
+        cond_type, unit_name = cond_info[:2]
+        unit_h = self.getUnit(unit_name)
+        if cond_type == "numeric":
+            bounds, use_undef = cond_info[2:]
+            filter_func = self.numericFilterFunc(bounds, use_undef)
         elif cond_info[0] == "enum":
-            unit_name, filter_mode, variants = cond_info[1:]
-            if filter_mode == "AND":
-                enum_func = self.enum_AND
-            elif filter_mode == "ONLY":
-                enum_func = self.enum_ONLY
-            elif filter_mode == "NOT":
-                enum_func = self.enum_NOT
-            else:
-                enum_func = self.enum_OR
-            cond_f = self.getUnit(unit_name).recordCondFunc(
-                enum_func, variants)
+            filter_mode, variants = cond_info[2:]
+            filter_func = self.enumFilterFunc(filter_mode,
+                unit_h.getVariantSet().makeIdxSet(variants))
         else:
             assert False
+        cond_f = unit_h.recordCondFunc(filter_func)
         flt_rec_no_seq = []
         for rec_no in rec_no_seq:
             if cond_f(self.mRecords[rec_no]):

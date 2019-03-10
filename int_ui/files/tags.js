@@ -158,8 +158,9 @@ function checkTagInputs() {
     var tag_name = sInpTagName.value.trim();
     pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
-        sTagNameOK = tag_name && /^[A-Za-z0-9_\-]+$/i.test(tag_name) && tag_name[0] != '_'
-            && sCheckTags.indexOf(tag_name) < 0;
+        sTagNameOK = tag_name && /^\S+$/u.test(tag_name) && 
+            (tag_name[0].toLowerCase() != tag_name[0].toUpperCase()) &&
+            sCheckTags.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
     } else {
         sTagNameOK = true;

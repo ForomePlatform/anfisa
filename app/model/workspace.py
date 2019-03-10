@@ -6,6 +6,7 @@ from .dataset import DataSet
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .a_config import AnfisaConfig
+from .condition import ConditionMaker
 from app.search.index import Index
 
 #===============================================
@@ -28,7 +29,8 @@ class Workspace(DataSet):
             if not self.mIndex.goodOpFilterName(filter_name):
                 try:
                     self.mIndex.cacheFilter(filter_name,
-                        conditions, time_label)
+                        ConditionMaker.upgradeOldFormatSeq(conditions),
+                        time_label)
                 except Exception as ex:
                     logging.error("Exception on load filter %s:\n %s" %
                         filter_name, str(ex))

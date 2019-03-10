@@ -70,15 +70,14 @@ def _formXLPannel(output, ds_name):
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>
-            <span id="cond-error"></span>
+            <span id="cond-message"></span>
           </div>
           <div id="filter-cur-cond">
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-sign" class="num-sign"
-                onclick="sOpNumH.checkControls(true);"></span>
+              <span id="cond-sign" class="num-sign"></span>
               <input id="cond-max-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
               <span id="cond-max" class="num-set"></span>

@@ -85,12 +85,10 @@ class XL_Condition:
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, unit_name,
-            upper_bound_mode, the_val, use_undef = False):
+    def __init__(self, unit_name, bounds, use_undef = False):
         XL_Condition.__init__(self)
         self.mUnitName = unit_name
-        self.mUpperBoundMode = upper_bound_mode
-        self.mTheVal = the_val
+        self.mBounds = bounds
         self.mUseUndef = use_undef
 
     def getCondKind(self):
@@ -98,21 +96,17 @@ class XL_NumCondition(XL_Condition):
 
     def getDruidRepr(self):
         # use_undef ignored
-        if self.mUpperBoundMode > 0:
-            return {
-                "type": "bound",
-                "dimension": self.mUnitName,
-                "upper": str(self.mTheVal),
-                "upperStrict": False,
-                "ordering": "numeric" }
-        assert self.mUpperBoundMode == 0
-        return {
+        ret = {
             "type": "bound",
             "dimension": self.mUnitName,
-            "lower": str(self.mTheVal),
             "lowerStrict": False,
+            "upperStrict": False,
             "ordering": "numeric" }
-        return None
+        if self.mBounds[0] is not None:
+            ret["lower"] = str(self.mBounds[0])
+        if self.mBounds[1] is not None:
+            ret["upper"] = str(self.mBounds[1])
+        return ret
 
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):

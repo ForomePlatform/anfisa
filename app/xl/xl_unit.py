@@ -159,11 +159,9 @@ class XL_ZygosityUnit(XL_Unit):
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
-                # z >= 2
-                seq.append(XL_NumCondition(dim_name, False, 2))
+                seq.append(XL_NumCondition(dim_name, [2, None]))
             else:
-                # z <= 1
-                seq.append(XL_NumCondition(dim_name, True, 1))
+                seq.append(XL_NumCondition(dim_name, [None, 1]))
         return XL_Condition.joinAnd(seq)
 
     def conditionZDominant(self, problem_group):
@@ -171,11 +169,9 @@ class XL_ZygosityUnit(XL_Unit):
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
-                # z >= 1
-                seq.append(XL_NumCondition(dim_name, False, 1))
+                seq.append(XL_NumCondition(dim_name, [1, None]))
             else:
-                # z <= 0
-                seq.append(XL_NumCondition(dim_name, True, 0))
+                seq.append(XL_NumCondition(dim_name, [None, 0]))
         return XL_Condition.joinAnd(seq)
 
     def conditionZCompens(self, problem_group):
@@ -183,11 +179,10 @@ class XL_ZygosityUnit(XL_Unit):
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
-                # z <= 0
-                seq.append(XL_NumCondition(dim_name, True, 0))
+                seq.append(XL_NumCondition(dim_name, [None, 0]))
             else:
                 # z >= 1
-                seq.append(XL_NumCondition(dim_name, False, 1))
+                seq.append(XL_NumCondition(dim_name, [1, None]))
         return XL_Condition.joinAnd(seq)
 
     def _evalOneCrit(self, z_condition, context):

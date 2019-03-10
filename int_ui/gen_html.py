@@ -183,21 +183,20 @@ def _formFiltersDiv(output):
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>
-            <span id="cond-error"></span>
+            <span id="cond-message"></span>
           </div>
           <div id="filter-cur-cond">
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
-                type="text" onchange="checkCurCond(\'min\');"/>
-              <span id="cond-sign" class="num-sign"
-                onclick="checkCurCond(\'sign\');"></span>
+                type="text" onchange="checkOpNum();"/>
+              <span id="cond-sign" class="num-sign"></span>
               <input id="cond-max-inp" class="num-inp"
-                type="text" onchange="checkCurCond(\'max\');"/>
+                type="text" onchange="checkOpNum();"/>
               <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span>
               <input id="cond-undef-check" class="num-inp"
-                type="checkbox"  onchange="checkCurCond(\'undef\');"/>
+                type="checkbox"  onchange="checkOpNum();"/>
               <span id="cond-undef-count" class="num-count"
                 class="num-count"></span>
             </div>

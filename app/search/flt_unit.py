@@ -76,8 +76,8 @@ class NumericValueUnit(FilterUnit):
     def getAtomType(self):
         return self.mAtomType
 
-    def recordCondFunc(self, cmp_func):
-        return lambda data_rec: cmp_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumn.recordValue(data_rec))
 
     def collectStatJSon(self, data_records):
@@ -98,10 +98,8 @@ class StatusUnit(FilterUnit):
         self.mColumn = dc_collection.makeColumn(self,
             self.getName(), dc_collection.ATOM_DATA_TYPE_INT)
 
-    def recordCondFunc(self, enum_func, variants):
-        idx_set = self.mVariantSet.makeIdxSet(variants)
-        check_func = enum_func(idx_set)
-        return lambda data_rec: check_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             {self.mColumn.recordValue(data_rec)})
 
     def collectStatJSon(self, data_records):
@@ -131,9 +129,8 @@ class MultiSetUnit(FilterUnit):
     def enumColumns(self):
         return enumerate(self.mColumns)
 
-    def recordCondFunc(self, enum_func, variants):
-        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
-        return lambda data_rec: check_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumns.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
@@ -162,9 +159,8 @@ class MultiCompactUnit(FilterUnit):
     def getVariantSet(self):
         return self.mVariantSet
 
-    def recordCondFunc(self, enum_func, variants):
-        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
-        return lambda data_rec: check_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumn.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):

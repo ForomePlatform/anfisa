@@ -164,8 +164,8 @@ span#cond-text {
     font-size: 15px;
 }
 
-span#cond-error {
-    color: red;
+span#cond-message {
+    color: #338833;
     font-style: italic;
     font-size: 13px;
 }

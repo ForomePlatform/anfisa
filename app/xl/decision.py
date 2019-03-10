@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from app.model.a_config import AnfisaConfig
+
 from .xl_cond import XL_Condition, XL_None
 #===============================================
 class PointCounter:

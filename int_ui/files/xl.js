@@ -475,7 +475,9 @@ var sOpCondH = {
         }
         document.getElementById("cond-text").innerHTML = 
             (this.mCondition)? getConditionDescr(this.mCondition, true):"";
-        document.getElementById("cond-error").innerHTML = (error_msg)? error_msg:"";
+        message_el = document.getElementById("cond-message");
+        message_el.innerHTML = (error_msg)? error_msg:"";
+        message_el.className = (this.mCondition == null)? "bad":"";
         this.careControls();
     },
     
@@ -542,9 +544,8 @@ var sOpNumH = {
     
     updateUnit: function(unit_stat) {
         this.mInfo = {
-            op:         0,
-            val_cur:    null,
-            updating:   false,
+            cur_bounds: [null, null],
+            fix_bounds: null,
             with_undef: null,
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
@@ -554,30 +555,26 @@ var sOpNumH = {
             
         if (this.mInfo.cnt_undef > 0) 
             this.mInfo.with_undef = true;
-        if (this.mInfo.val_min == this.mInfo.val_max) 
-            this.mInfo.op = -1;
 
         document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
         document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
         document.getElementById("cond-sign").innerHTML = 
             (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
-        this.mInputMin.value = this.mInfo.val_min;
-        this.mInputMax.value = this.mInfo.val_max;
+        this.mInputMin.value = "";
+        this.mInputMax.value = "";
         this.mCheckUndef.checked = (this.mInfo.cnt_undef > 0);
         this.mSpanUndefCount.innerHTML = (this.mInfo.cnt_undef > 0)?
             ("undefined:" + this.mInfo.cnt_undef) : "";
     },
 
     updateCondition: function(cond) {
-        this.mInfo.op           = cond[2];
-        this.mInfo.val_cur      = cond[3];
-        this.mInfo.with_undef   = cond[4];
-        this.mInfo.updating     = true;
-        if (this.mInfo.op == 0) {
-            this.mInputMin.value = this.mInfo.val_cur;
-        } else {
-            this.mInputMax.value = this.mInfo.val_cur;
-        }
+        this.mInfo.fixed_bounds = [cond[2][0], cond[2][1]];
+        this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
+        this.mInfo.with_undef   = cond[3];
+        this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
+            this.mInfo.cur_bounds[0] : "";
+        this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
+            this.mInfo.cur_bounds[1] : "";
         document.getElementById("cond-sign").innerHTML = "&le;";
         if (this.mInfo.with_undef != null) {
             this.mCheckUndef.checked = this.mInfo.with_undef;
@@ -588,10 +585,6 @@ var sOpNumH = {
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
-        this.mInputMin.style.visibility = 
-            (this.mInfo && this.mInfo.op == 0)? "visible":"hidden";
-        this.mInputMax.style.visibility = 
-            (this.mInfo && this.mInfo.op == 1)? "visible":"hidden";
         this.mCheckUndef.style.visibility = 
             (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
         this.mSpanUndefCount.style.visibility = 
@@ -602,83 +595,67 @@ var sOpNumH = {
         if (this.mInfo == null) 
             return;
         var error_msg = null;
-        if (opt == true && this.mInfo.op >= 0) {
-            this.mInfo.op = 1 - this.mInfo.op;
+        if (this.mInputMin.value.trim() == "") {
+            this.mInfo.cur_bounds[0] = null;
+            this.mInputMin.className = "num-inp";
+        } else {
+            val = toNumeric(this.mInfo.unit_type, this.mInputMin.value)
+            this.mInputMin.className = (val == null)? "num-inp bad":"num-inp";
+            if (val == null) 
+                error_msg = "Bad numeric value";
+            else {
+                this.mInfo.cur_bounds[0] = val;
+            }
+        }
+        if (this.mInputMax.value.trim() == "") {
+            this.mInfo.cur_bounds[1] = null;
+            this.mInputMax.className = "num-inp";
+        } else {
+            val = toNumeric(this.mInfo.unit_type, this.mInputMax.value)
+            this.mInputMax.className = (val == null)? "num-inp bad":"num-inp";
+            if (val == null) 
+                error_msg = "Bad numeric value";
+            else {
+                this.mInfo.cur_bounds[1] = val;
+            }
         }
         if (this.mInfo.with_undef != null) {
             this.mInfo.with_undef = this.mCheckUndef.checked;
         }
-        this.mInfo.val_cur = null;
-        if (this.mInfo.op == 0) {
-            val = toNumeric(this.mInfo.unit_type, this.mInputMin.value);
-            if (val != null) {
-                if (val > this.mInfo.val_max) {
-                    error_msg = "Incorrrect lower bound";
-                } else {
-                    if (val < this.mInfo.val_min) {
-                        error_msg = "Lower bound is above minimal value";
-                    }
-                    this.mInfo.val_cur = val;
-                }
-            }
-            else {
-                error_msg = "Bad numeric value";
-            }
-            this.mInputMin.className = (error_msg == null)? "num-inp":"num-inp bad";
-        } 
-        if (this.mInfo.op == 1) {
-            val = toNumeric(this.mInfo.unit_type, this.mInputMax.value);
-            if (val != null) {
-                if (val < this.mInfo.val_min) {
-                    error_msg = "Incorrrect upper bound";
-                } else {
-                    if (val > this.mInfo.val_max) {
-                        error_msg = "Upper bound is below maximum value";
-                    }
-                    this.mInfo.val_cur = val;
-                }
-            }
-            else {
-                error_msg = "Bad numeric value";
-            }
-            this.mInputMax.className = (error_msg == null)? "num-inp":"num-inp bad";
+        if (error_msg == null) {
+            if (this.mInfo.cur_bounds[0] == null && 
+                    this.mInfo.cur_bounds[1] == null && 
+                    !this.mInfo.with_undef)
+                error_msg = "";            
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.val_max)
+                error_msg = "Lower bound is above maximum value";
+            if (this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[1] < this.mInfo.val_min)
+                error_msg = "Upper bound is below minimum value";
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1])
+                error_msg = "Bounds are mixed up";
         }
+
         condition_data = null;
-        if (!error_msg) {
-            condition_data = this.formConditionData();
-            if (condition_data == null)
-                error = "";
+        if (error_msg == null) {
+            condition_data = [this.mInfo.cur_bounds, this.with_undef]
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[0] < this.mInfo.val_min &&
+                    (this.mInfo.fix_bounds == null || 
+                    this.mInfo.fix_bounds[0] != this.mInfo.cur_bounds[0]))
+                error_msg = "Lower bound is below minimal value";
+            if (this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[1] > this.mInfo.val_max &&
+                    (this.mInfo.fix_bounds == null || 
+                    this.mInfo.fix_bounds[1] != this.mInfo.cur_bounds[1]))
+                error_msg = "Upper bound is above maximal value";
         }
         sOpCondH.formCondition(
             condition_data, error_msg, this.mInfo.op, false);
         this.careControls();
-    },
-
-    formConditionData: function() {
-        if (this.mInfo.op == -1) {
-            if (this.mInfo.cnt_undef > 0 && this.mInfo.with_undef) {
-                return [-1, null, true];
-            }
-        } else if (this.mInfo.op == 0) {
-            if (this.mInfo.val_cur != null && (this.mInfo.updating ||
-                    (this.mInfo.val_min != this.mInfo.val_cur))) {
-                return [0, this.mInfo.val_cur, this.mInfo.with_undef];
-            } else {
-                if (this.mInfo.cnt_undef > 0 && !this.mInfo.with_undef) {
-                    return [-1, null, false];
-                }
-            }
-        } else {
-            if (this.mInfo.val_cur != null && (this.mInfo.updating ||
-                (this.mInfo.val_max != this.mInfo.val_cur))) {
-                return [1, this.mInfo.val_cur, this.mInfo.with_undef];
-            } else {
-                if (this.mInfo.cnt_undef > 0 && !this.mInfo.with_undef) {
-                    return [-1, null, false];
-                }
-            }
-        }
-        return null;
     }
 };
 
@@ -867,7 +844,7 @@ var sZygosityH = {
     
     checkError: function(condition_data) {
         if (this.mZStat == null)
-            return "Determine problem group";
+            return " Determine problem group";
         if (this.mZEmpty)
             return "Out of choice";
         return "";
@@ -1517,17 +1494,14 @@ function setupExport(info) {
 function getConditionDescr(cond, short_form) {
     if (cond == null)
         return "";
-    rep_cond = (short_form)? []:[cond[1]];
-    if (cond[0] == "numeric") {
-        switch (cond[2]) {
-            case 0:
-                rep_cond.push("&ge; " + cond[3]);
-                break;
-            case 1:
-                rep_cond.push("&le; " + cond[3]);
-                break;
-        }
-        switch (cond[4]) {
+    if (cond != null && cond[0] == "numeric") {
+        rep_cond = [];
+        if (cond[2][0] != null)
+            rep_cond.push(cond[2][0] + " &le;");
+        rep_cond.push(cond[1]);
+        if (cond[2][1] != null)
+            rep_cond.push("&le; " + cond[2][1]);
+        switch (cond[3]) {
             case true:
                 rep_cond.push("with undef");
                 break
@@ -1537,6 +1511,7 @@ function getConditionDescr(cond, short_form) {
         }
         return rep_cond.join(" ");
     }
+    rep_cond = (short_form)? []:[cond[1]];
     if (cond[0] == "enum") {
         op_mode = cond[2];
         sel_names = cond[3];
@@ -1574,7 +1549,8 @@ function getConditionDescr(cond, short_form) {
 
 /*************************************/
 function checkFilterAsIdent(filter_name) {
-    return /^[A-Za-z0-9_\-]+$/i.test(filter_name) && filter_name[0] != '_';
+    return /^\S+$/u.test(filter_name) && 
+        (filter_name[0].toLowerCase() != filter_name[0].toUpperCase());
 }
 
 /*************************************/

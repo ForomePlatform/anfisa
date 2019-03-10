@@ -128,6 +128,10 @@ input.bad {
     color: red;
 }
 
+span.bad {
+    color: red;
+}
+
 span.note-time {
     margin-left: 10px;
     font-size: 80%;
