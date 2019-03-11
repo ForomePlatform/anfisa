@@ -122,8 +122,16 @@ class GnomAD(Connection):
             c = c.split(" as ")[1]
         C_DICT[c] = i
 
-    def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96"):
-        Connection.__init__(self, host, database="gnomad", user="hgmd", password='hgmd', connect_now=True)
+    def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96",
+            database = "gnomad", port = None, user = "hgmd",
+            password = "hgmd", dbms = "MySQL",
+            ssh_user = None, driver = None,
+            java_class_path = None, connect_now = True):
+        Connection.__init__(self, host = host,
+            database = database, port = port, user = user,
+            password = password, dbms = dbms,
+            ssh_user = ssh_user, driver = driver,
+            java_class_path = java_class_path, connect_now = connect_now)
 
     def fetch_data(self, sql, args, ref=None, alt=None):
         if (ref or alt):
