@@ -21,10 +21,15 @@ DRUID_ADM = None
 def createDataSet(app_config, name, kind, mongo, source, report_lines):
     global DRUID_ADM
     vault_dir = app_config["data-vault"]
+    if not os.path.isdir(vault_dir):
+        print >> sys.stderr, "No vault directory:", vault_dir
+        assert False
     ds_dir = vault_dir + "/" + name
     if not mongo:
         mongo = name
-    assert kind in ("ws", "xl")
+    if kind not in ("ws", "xl"):
+        print >> sys.stderr, "Wrong dataset kind:", kind
+        assert False
     if os.path.exists(ds_dir):
         print >> sys.stderr, "Dataset exists:", ds_dir
         assert False

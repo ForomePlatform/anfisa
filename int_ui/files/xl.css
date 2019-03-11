@@ -161,9 +161,9 @@ span#cond-text {
 }
 
 span#cond-message {
-    color: #338833;
     font-style: italic;
     font-size: 13px;
+    background-color: #f0f0ff;
 }
 
 span#cond-title {
@@ -595,7 +595,10 @@ button.action {
     margin: 1px !important;
 }
 
-span.bad {
+.bad {
     color: red;
 }
 
+.message {
+    color: #338833;
+}

@@ -13,10 +13,15 @@ parser.add_argument("-H", "--host",  default = "localhost",
     help = "MongoDB host")
 parser.add_argument("-P", "--port",  type = int, default = 27017,
     help = "MongoDB port")
-parser.add_argument("-l", "--legacy", action = "store_true",
-    help = "Legacy storage mode")
 parser.add_argument("-d", "--database", default = "Anfisa",
     help = "Anfisa database in MongoDB")
+parser.add_argument("-c", "--config",
+    help = "Anfisa config file(anfisa.json), "
+        "use it instead of host/port/database")
+parser.add_argument("-C", "--config_default", action = "store_true",
+    help = "Use it for config = ./anfisa.json")
+parser.add_argument("-l", "--legacy", action = "store_true",
+    help = "Legacy storage mode")
 parser.add_argument("command", nargs="+",
     help="Commands, use help command for list")
 run_args = parser.parse_args()
@@ -171,6 +176,7 @@ CmdInfo("del-tag", ["ws", "tag_name"])
 CmdInfo("drop-filters", ["ws"])
 CmdInfo("drop-tags", ["ws"])
 CmdInfo("drop-rules", ["ws"])
+CmdInfo("drop-ws", ["ws"])
 
 #===============================================
 if run_args.command[0] == "help":
@@ -178,11 +184,25 @@ if run_args.command[0] == "help":
     print >> sys.stderr, ' * List of commands *'
     CmdInfo.reportAll(sys.stderr)
     sys.exit()
-cmd_seq, ws_name, cr_supp = CmdInfo.checkCall(run_args.command, run_args.legacy)
+cmd_seq, ws_name, cr_supp = CmdInfo.checkCall(
+    run_args.command, run_args.legacy)
 if not cmd_seq:
     sys.exit()
 
-mongo = MongoClient(run_args.host,  run_args.port)
+if run_args.config_default:
+    config_path = "./anfisa.json"
+else:
+    config_path = run_args.config
+if config_path:
+    with codecs.open(config_path, "r", encoding = "utf-8") as inp:
+        cfg = json.loads(inp.read())
+    database = cfg["mongo-db"]
+    host, port = cfg.get("mongo-host"), cfg.get("mongo-port")
+else:
+    database = run_args.database
+    host, port = run_args.host,  run_args.port
+
+mongo = MongoClient(host,  port)
 if ws_name is not None:
     if run_args.legacy:
         if ws_name not in mongo.list_database_names():
@@ -190,7 +210,7 @@ if ws_name is not None:
             sys.exit()
         m_ws_l = mongo[ws_name]
     else:
-        m_db = mongo[run_args.database]
+        m_db = mongo[database]
         if ws_name not in m_db.list_collection_names():
             if cr_supp:
                 print >> sys.stderr, ("Workspace %s is possibly creating" %
@@ -200,7 +220,7 @@ if ws_name is not None:
                 sys.exit()
         m_ws = m_db[ws_name]
 elif not run_args.legacy:
-    m_db = mongo[run_args.database]
+    m_db = mongo[database]
 
 #===============================================
 if cmd_seq[0] == "ws-list":
@@ -378,6 +398,12 @@ if cmd_seq[0] == "drop-tags":
 if cmd_seq[0] == "drop-rules":
     m_ws.remove({'_id': 'params'})
     print >> sys.stdout, json.dumps("RULES PARAMS DROPPED")
+    sys.exit()
+
+#===============================================
+if cmd_seq[0] == "drop-ws":
+    m_ws.delete_many({})
+    print >> sys.stdout, json.dumps("DATASET DROPPED")
     sys.exit()
 
 #===============================================

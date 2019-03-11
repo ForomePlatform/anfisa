@@ -477,7 +477,8 @@ var sOpCondH = {
             (this.mCondition)? getConditionDescr(this.mCondition, true):"";
         message_el = document.getElementById("cond-message");
         message_el.innerHTML = (error_msg)? error_msg:"";
-        message_el.className = (this.mCondition == null)? "bad":"";
+        message_el.className = (this.mCondition == null && 
+            !error_msg.startsWith(' '))? "bad":"message";
         this.careControls();
     },
     

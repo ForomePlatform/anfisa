@@ -128,8 +128,12 @@ input.bad {
     color: red;
 }
 
-span.bad {
+.bad {
     color: red;
+}
+
+.message {
+    color: #338833;
 }
 
 span.note-time {

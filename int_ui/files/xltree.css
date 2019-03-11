@@ -93,10 +93,9 @@ div#cond-title-wrap {
     flex: 0 0 17px;
 
 }
-div#cond-error {
+div#cond-message {
     padding: 5px 10px 4px 10px;
     background-color: #f0f0ff;
-    color: red;
     font-style: italic;
     font-size: 13px;
     flex: 0 0 20px;
@@ -754,4 +753,11 @@ button.action {
 }
 
 
+.bad {
+    color: red;
+}
+
+.message {
+    color: #338833;
+}
 

@@ -640,7 +640,7 @@ function updateOpCondText() {
             getCondDescripton(sOpCondition, true) : "";
     el_message = document.getElementById("cond-message");
     el_message.innerHTML = (sOpError != null)? sOpError:"";
-    el_message.className = (sOpCondition == null)? "bad":"";
+    el_message.className = (sOpCondition == null)? "bad":"message";
 }
 
 function setCurEnumZeros(value) {

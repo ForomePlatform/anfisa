@@ -421,11 +421,14 @@ var sOpCondH = {
     formCondition: function(condition_data, error_msg, cond_mode, add_always) {
         if (condition_data != null) {
             cur_unit_name = this.mCondition[1];
-            this.mNewCondition = [this.mCurTpHandler.getType(), cur_unit_name].concat(
-                    condition_data);
+            this.mNewCondition = [this.mCurTpHandler.getCondType(), 
+                cur_unit_name].concat(condition_data);
         } else
             this.mNewCondition = null;
-        document.getElementById("cond-error").innerHTML = (error_msg)? error_msg:"";
+        message_el = document.getElementById("cond-message");
+        message_el.innerHTML = (error_msg)? error_msg:"";
+        message_el.className = (this.mCondition == null && 
+            !error_msg.startsWith(' '))? "bad":"message";
         this.mButtonSet.disabled = (condition_data == null);
     },
     
