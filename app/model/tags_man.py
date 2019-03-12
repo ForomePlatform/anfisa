@@ -43,12 +43,13 @@ class TagsManager(ZoneH):
 
     @staticmethod
     def _goodPair(key_value):
-        return (key_value[0] and key_value[0][0] != '_' and
-            key_value[1] not in (None, False))
+        key, value = key_value
+        return (key and (key[0] != '_' or key == "_note")and
+            value not in (None, False))
 
     @staticmethod
     def _goodKey(key):
-        return key and key[0] != '_'
+        return key and (key[0] != '_' or key == "_note")
 
     def updateRec(self, rec_no, tags_to_update):
         rec_key = self.getWS().getRecKey(rec_no)
@@ -91,20 +92,13 @@ class TagsManager(ZoneH):
         new_rec_data = dict()
         if data is not None:
             for key, value in data.items():
-                if cls._goodKey(key) and value not in (None, False):
+                if cls._goodPair((key, value)):
                     new_rec_data[key] = value
             if time_label is None and '_t' in data:
                 new_rec_data['_t'] = data['_t']
         if time_label is not None:
             new_rec_data['_t'] = time_label
         return new_rec_data
-
-    @classmethod
-    def _hasTags(cls, rec_data):
-        for key in rec_data.keys():
-            if cls._goodKey(key):
-                return True
-        return False
 
     def _changeRecord(self, rec_no, rec_key, rec_data, tags_to_update):
         if rec_data and rec_data.get('_h') is not None:
@@ -130,6 +124,8 @@ class TagsManager(ZoneH):
         else:
             new_rec_data = self._cloneTagObj(tags_to_update,
                 datetime.now().isoformat())
+            if ("_note" in new_rec_data and not new_rec_data["_note"].strip()):
+                del new_rec_data["_note"]
             h_stack = h_stack[:h_idx + 1]
             if rec_data is not None:
                 h_stack.append(self._cloneTagObj(rec_data))
@@ -154,7 +150,7 @@ class TagsManager(ZoneH):
                 self.mTagSets[tag_name].add(rec_no)
         if list_modified:
             self.mIntVersion += 1
-        if self._hasTags(new_rec_data):
+        if filter(self._goodKey, new_rec_data.keys()):
             if rec_no not in self.mMarkedSet:
                 self.mMarkedSet.add(rec_no)
         else:

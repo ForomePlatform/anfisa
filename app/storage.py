@@ -69,6 +69,8 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
     with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
         for record in readJSonRecords(source):
+            if record.get("record_type") == "metadata":
+                continue
             view_checker.regValue(rec_no, record)
             vdata_out.putLine(json.dumps(record, ensure_ascii = False))
             flt_data = filter_set.process(rec_no, record)

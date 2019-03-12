@@ -92,14 +92,17 @@ function setupTags(info) {
     sTagOrder = [];
     rep = [];
     for (j = 0; j < op_tags.length; j++) {
-        tag_name = op_tags[j];
+        var tag_name = op_tags[j];
         if (sRecTags[tag_name] == undefined)
             continue
-        tag_add = (sRecTags[tag_name])? '...':'';
+        if (tag_name == "_note") 
+            tag_title = "_note...";
+        else 
+            tag_title = tag_name + ((sRecTags[tag_name])? '...':'');
         idx = sTagOrder.length;
         sTagOrder.push(tag_name);
         rep.push('<div id="tag--' + idx + '" class="tag-label" ' +
-            'onclick="pickTag(' + idx + ');">' + tag_name + tag_add + '</div>');
+            'onclick="pickTag(' + idx + ');">' + tag_title + '</div>');
         sHasTags = true;
     }
     document.getElementById("tg-op-tags-list").innerHTML = rep.join('\n');
@@ -122,6 +125,8 @@ function setupTags(info) {
     op_tags = info["op-tags"];
     for (idx = 0; idx < op_tags.length; idx++) {
         tag_name = op_tags[idx];
+        if (tag_name == "_note")
+            continue;
         if (sTagOrder.indexOf(tag_name) < 0) {
             var option = document.createElement('option');
             option.innerHTML = tag_name;
@@ -129,6 +134,10 @@ function setupTags(info) {
             sInpTagNameList.append(option)
         }
     }
+    var option = document.createElement('option');
+    option.innerHTML = "_note";
+    option.value = "_note";
+    sInpTagNameList.append(option);
     sInpTagNameList.selectedIndex = -1;
     if (info["marker"]) {
         parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
@@ -159,7 +168,8 @@ function checkTagInputs() {
     pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
         sTagNameOK = tag_name && /^\S+$/u.test(tag_name) && 
-            (tag_name[0].toLowerCase() != tag_name[0].toUpperCase()) &&
+            (tag_name == "_note" || 
+            tag_name[0].toLowerCase() != tag_name[0].toUpperCase()) &&
             sCheckTags.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
     } else {

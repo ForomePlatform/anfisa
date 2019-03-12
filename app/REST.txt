@@ -254,6 +254,8 @@ Method "/tags"
     * Name for any new tag must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces; in terms of js the criterium is as follows:
     /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
     
+    * Exception to the previous rule - special tag "_note". It is legal. Special behavior for this tag: it is being deleted when its text is empty or spaces only.
+    
 ===
 Method "/tag_select"
     -> ws           (= ws_default)
