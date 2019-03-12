@@ -427,7 +427,7 @@ var sOpCondH = {
             this.mNewCondition = null;
         message_el = document.getElementById("cond-message");
         message_el.innerHTML = (error_msg)? error_msg:"";
-        message_el.className = (this.mCondition == null && 
+        message_el.className = (this.mNewCondition == null && 
             !error_msg.startsWith(' '))? "bad":"message";
         this.mButtonSet.disabled = (condition_data == null);
     },

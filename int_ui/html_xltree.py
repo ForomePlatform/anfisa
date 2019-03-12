@@ -83,7 +83,7 @@ def _formCurCondDiv(output):
                 <span id="cond-title"></span>
                 <span class="close-it" onclick="modalOff();">&times;</span>
             </div>
-            <div id="cond-error"></div>
+            <div id="cond-message"></div>
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"

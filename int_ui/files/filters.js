@@ -327,6 +327,7 @@ function setupStatUnit() {
 function setupConditionValues(cond) {
     if (cond[1] != sCurStatUnit)
         return;
+    sOpUpdateIdx = sCurCondNo;
     if (cond[0] == "enum") {
         if (cond[2] && sOpEnumModeInfo != null) {
             mode = ["AND", "ONLY", "NOT"].indexOf(cond[2]);
@@ -396,14 +397,14 @@ function toNumeric(tp, x) {
 /*************************************/
 function checkOpNum() {
     sOpAddIdx = null;
-    sOpUpdateIdx = null;
     sOpNumH.checkControls();
     cond_data = sOpNumH.getConditionData();
     sOpCondition = (cond_data == null)? null:
         ["numeric", sCurStatUnit].concat(cond_data);
     sOpError = sOpNumH.getMessage();
     if (sOpCondition != null) {
-        sOpUpdateIdx = findCond(sCurStatUnit);
+        if (sOpUpdateIdx == null)
+            sOpUpdateIdx = findCond(sCurStatUnit);
         if (sOpUpdateIdx == null)
             sOpAddIdx = sCurFilterSeq.length;
     }
@@ -432,7 +433,6 @@ function checkCurCond(option) {
     }
     if (sOpEnumList != null) {
         sOpAddIdx = null;
-        sOpUpdateIdx = null;
         enum_mode = "";
         if (sOpEnumModeInfo != null) {
             for (mode_idx = 0; mode_idx < 3; mode_idx++) {
@@ -442,7 +442,8 @@ function checkCurCond(option) {
                 }
             }
         }
-        sOpUpdateIdx = findCond(sCurStatUnit, enum_mode);
+        if (sOpUpdateIdx == null)
+            sOpUpdateIdx = findCond(sCurStatUnit, enum_mode);
         if (sOpUpdateIdx == null) 
             sOpUpdateIdx = findCond(sCurStatUnit);
         selectCond(sOpUpdateIdx);
@@ -456,7 +457,7 @@ function checkCurCond(option) {
             sOpAddIdx = (sOpUpdateIdx == null)? sCurFilterSeq.length:sOpUpdateIdx + 1;
             sOpCondition = ["enum", sCurStatUnit, enum_mode, sel_names];
         } else {
-            sOpUpdateIdx = null;
+            sOpCondition = null;
         }
     }
     updateOpCondText();
