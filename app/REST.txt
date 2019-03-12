@@ -327,9 +327,10 @@ Structure Conditions
         1: name of unit
         
         * in case of generalized type "numeric" (types "int", "float") :
-        2: bool if operation is GE, otherwise LE
-        3: int/float bound value
-        4: bool if undefined value is ok
+        2: bounds, array of 2 elements (int/float)
+            0: min bound value or null
+            1: max bound value or null
+        3: bool if undefined value is ok (none might mean that there is no null values)
         
         * in case of generalized type "enum" (types "enum", "status")
         2: "OR" / "AND" / "ONLY" / "NOT" - operation mode (see Note)

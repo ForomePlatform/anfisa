@@ -238,10 +238,6 @@ input.num-inp {
     width: 100px;
 }
 
-span#cond-sign {
-    cursor: hand;
-}
-
 #cond-undef-check {
     margin-left: 150px;
 }
