@@ -16,7 +16,7 @@ class SecondaryWsCreation(ExecutionTask):
         self.mConditions = conditions
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
-    sID_Pattern = re.compile('^\\w+$', re.U)
+    sID_Pattern = re.compile('^\\S+$', re.U)
     @classmethod
     def correctWSName(cls, name):
         if not cls.sID_Pattern.match(name):

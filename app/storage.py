@@ -19,7 +19,7 @@ sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 DRUID_ADM = None
 
 #===============================================
-sID_Pattern = re.compile('^\\w+$', re.U)
+sID_Pattern = re.compile('^\\S+$', re.U)
 
 def checkDSName(name, kind):
     global sID_Pattern
