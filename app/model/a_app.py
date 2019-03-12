@@ -1,4 +1,4 @@
-import os, json, codecs, logging
+import sys, os, json, codecs, logging, signal
 from StringIO import StringIO
 
 from .rest_api import RestAPI
@@ -16,6 +16,10 @@ from app.prepare.view_schema import defineViewSchema
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.sec_ws import SecondaryWsCreation
 from app.view.asp_set import AspectSetH
+
+#===============================================
+def terminateAll(sig, frame):
+    AnfisaApp.terminate(sig, frame)
 
 #===============================================
 class AnfisaApp:
@@ -51,6 +55,17 @@ class AnfisaApp:
         cls.sJobPool = JobPool(
             AnfisaConfig.configOption("job.pool.threads"),
             AnfisaConfig.configOption("job.pool.size"))
+
+        signal.signal(signal.SIGTERM, terminateAll)
+        signal.signal(signal.SIGHUP, terminateAll)
+        signal.signal(signal.SIGINT, terminateAll)
+
+    @classmethod
+    def terminate(cls, sig, frame):
+        cls.sMongoConn.close()
+        cls.sJobPool.close()
+        logging.info("Application terminated")
+        sys.exit(0)
 
     @classmethod
     def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):

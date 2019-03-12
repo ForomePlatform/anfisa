@@ -1,4 +1,4 @@
-import threading, logging, abc, traceback
+import threading, logging, abc, traceback, time
 from StringIO import StringIO
 from uuid import uuid4
 
@@ -34,15 +34,6 @@ class ExecutionTask:
         assert False
 
 #===============================================
-class TestTask(ExecutionTask):
-    def __init__(self):
-        ExecutionTask.__init__(self, "test")
-
-    def execIt(self):
-        logging.warning("TestTask finished")
-        return True
-
-#===============================================
 class TaskHandler:
     def __init__(self, task, ord_no, priority):
         self.mTask     = task
@@ -76,6 +67,8 @@ class Worker(threading.Thread):
     def run(self):
         while True:
             task_h = self.mMaster._pickTask()
+            if task_h is None:
+                break
             task_h.execIt(self.mMaster)
 
 #===============================================
@@ -89,14 +82,23 @@ class JobPool:
         self.mTaskCount  = 0
         self.mActiveTasks = dict()
         self.mResults    = dict()
+        self.mTerminating = False
 
         self.mWorkers = [Worker(self)
             for idx in range(int(thread_count))]
 
-        self.putTask(TestTask())
-
     def getLock(self):
         return self.mLock
+
+    def close(self):
+        with self.mThrCondition:
+            self.mTerminating = True
+            self.mThrCondition.notify()
+        for cnt in range(1000):
+            with self.mThrCondition:
+                if all([not w.is_alive() for w in self.mWorkers]):
+                    return
+            time.sleep(.001)
 
     def putTask(self, task, priority = 10):
         with self.mThrCondition:
@@ -122,6 +124,8 @@ class JobPool:
     def _pickTask(self):
         while True:
             with self.mThrCondition:
+                if self.mTerminating:
+                    return None
                 with self.mLock:
                     if len(self.mTaskPool) > 0:
                         return self.mTaskPool.pop()

@@ -1,4 +1,4 @@
-import sys, gzip, bz2, codecs, json, os, shutil
+import sys, gzip, bz2, codecs, json, os, shutil, re
 from glob import glob
 from argparse import ArgumentParser
 from StringIO import StringIO
@@ -17,6 +17,29 @@ sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 DRUID_ADM = None
+
+#===============================================
+sID_Pattern = re.compile('^\\w+$', re.U)
+
+def checkDSName(name, kind):
+    global sID_Pattern
+    if not sID_Pattern.match(name) or not name[0].isalpha():
+        print >> sys.stderr, "Incorrect dataset name:", name
+        assert False
+    if kind == "ws":
+        if name.lower().startswith("xl_"):
+            print >> sys.stderr, "Improper WS name:", name
+            print >> sys.stderr, "(Should not have prefix XL_)"
+            assert False
+    elif kind == "xl":
+        if not name.lower().startswith("xl_"):
+            print >> sys.stderr, "Improper XL-dataset name:", name
+            print >> sys.stderr, "(Should have prefix XL_ or xl_)"
+            assert False
+    else:
+        print >> sys.stderr, "Wrong dataset kind:", kind
+        assert False
+
 #===============================================
 def createDataSet(app_config, name, kind, mongo, source, report_lines):
     global DRUID_ADM
@@ -24,12 +47,10 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     if not os.path.isdir(vault_dir):
         print >> sys.stderr, "No vault directory:", vault_dir
         assert False
+    checkDSName(name, kind)
     ds_dir = vault_dir + "/" + name
     if not mongo:
         mongo = name
-    if kind not in ("ws", "xl"):
-        print >> sys.stderr, "Wrong dataset kind:", kind
-        assert False
     if os.path.exists(ds_dir):
         print >> sys.stderr, "Dataset exists:", ds_dir
         assert False

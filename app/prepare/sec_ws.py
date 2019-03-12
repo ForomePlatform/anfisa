@@ -16,10 +16,15 @@ class SecondaryWsCreation(ExecutionTask):
         self.mConditions = conditions
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
-    sID_Pattern = re.compile('^[a-z][\\w\-\_]+$', re.I)
+    sID_Pattern = re.compile('^\\w+$', re.U)
+    @classmethod
+    def correctWSName(cls, name):
+        if not cls.sID_Pattern.match(name):
+            return False
+        return name[0].isalpha and not name.lower().startswith("xl_")
 
     def execIt(self):
-        if not self.sID_Pattern.match(self.mWSName):
+        if not self.correctWSName(self.mWSName):
             self.setStatus("Incorrect workspace name")
             return None
         self.setStatus("Prepare creation")

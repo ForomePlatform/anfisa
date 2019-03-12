@@ -12,11 +12,10 @@ class MongoConnector:
         if port is None:
             port  = 27017
         self.mMongo = MongoClient(host,  port)
-        self.mAgents = {"_common_": MongoCommonAgent(self,
-            self.mMongo[self.mPath]["_common_"])}
+        self.mAgents = {}
 
-    def getCommonAgent(self):
-        return self.mAgents["_common_"]
+    def close(self):
+        self.mMongo.close()
 
     def getWSAgent(self, name):
         if name not in self.mAgents:
@@ -103,12 +102,6 @@ class MongoWSAgent:
         self.mAgent.update({"_id": "note"},
             {"$set": {"note": note.strip(), "time": time_label}},
                 upsert = True)
-
-#===============================================
-class MongoCommonAgent:
-    def __init__(self, connector, agent):
-        self.mConnector = connector
-        self.mAgent = agent
 
 #===============================================
 class MongoDSAgent:
