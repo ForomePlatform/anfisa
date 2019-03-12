@@ -98,6 +98,9 @@ class StatusUnit(FilterUnit):
         self.mColumn = dc_collection.makeColumn(self,
             self.getName(), dc_collection.ATOM_DATA_TYPE_INT)
 
+    def getVariantSet(self):
+        return self.mVariantSet
+
     def recordCondFunc(self, cond_func):
         return lambda data_rec: cond_func(
             {self.mColumn.recordValue(data_rec)})
