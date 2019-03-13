@@ -35,7 +35,8 @@ class SecondaryWsCreation(ExecutionTask):
             rec_no_seq = tree.collectRecSeq(self.mDS)
         else:
             context = {"cond":XL_Condition.parseSeq(
-                json.loads(self.mConditions))}
+                json.loads(self.mConditions),
+                self.mDS.getParseContext())}
             rec_count = self.mDS.evalTotalCount(context)
             assert rec_count <= AnfisaConfig.configOption("max.ws.size")
             rec_no_seq = self.mDS.evalRecSeq(context, rec_count)

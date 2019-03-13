@@ -23,6 +23,7 @@ class AnfisaConfig:
         ],
         "zygosity.cases": {
             "homo_recess": "Homozygous Recessive",
+            "x_linked": "X-linked",
             "dominant": "Autosomal Dominant",
             "compens": "Compensational"
         },

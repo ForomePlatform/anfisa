@@ -295,11 +295,12 @@ class PresenceConvertor(ValueConvertor):
 
 #===============================================
 class ZygosityConvertor(ValueConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup):
+    def __init__(self, name, path, title, unit_no, vgroup, config):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup, True)
         self.mFamilyInfo = None
         self.mPath   = path
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
+        self.mConfig = config
 
     def process(self, rec_no, rec_data, result):
         zig_distr_seq = self.mPathF(rec_data)
@@ -322,4 +323,6 @@ class ZygosityConvertor(ValueConvertor):
         ret["kind"] = "zygosity"
         ret["path"] = self.mPath
         ret["family"] = self.mFamilyInfo
+        if self.mRefConfig is not None:
+            ret["config"] = self.mRefConfig
         return ret

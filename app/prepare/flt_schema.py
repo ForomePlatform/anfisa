@@ -1,11 +1,13 @@
 from .prep_filters import FilterPrepareSetH
-
+from app.model.condition import ConditionMaker
 #===============================================
 def defineFilterSchema():
     filters = FilterPrepareSetH()
 
     filters.zygositySpecialUnit("zygosity",
-        "/data/zygosity", title = "zygosity")
+        "/data/zygosity", title = "zygosity",
+        config = {"x_cond":
+            ConditionMaker.condEnum("Chromosome", ["chrX"])})
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",

@@ -1,5 +1,4 @@
-import sys, gzip, bz2, codecs, json, os, shutil, re
-from glob import glob
+import sys, gzip, codecs, json, os, shutil, re
 from argparse import ArgumentParser
 from StringIO import StringIO
 from datetime import datetime
@@ -11,6 +10,7 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.view_schema import defineViewSchema
 from app.prepare.flt_schema import defineFilterSchema
 from app.prepare.druid_adm import DruidAdmin
+from app.prepare.read_json import JsonLineReader
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
@@ -67,8 +67,9 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     rec_no = 0
     fdata_out = gzip.open(ds_dir + "/fdata.json.gz", 'wb')
     pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
+    input = JsonLineReader(source)
     with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
-        for record in readJSonRecords(source):
+        for record in input:
             if record.get("record_type") == "metadata":
                 continue
             view_checker.regValue(rec_no, record)
@@ -84,6 +85,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
                 print >> sys.stderr, "\r%d lines..." % rec_no,
     if report_lines:
         print >> sys.stderr, "\nTotal lines: %d" % rec_no
+    input.close()
     fdata_out.close()
     pdata_out.close()
 
@@ -163,26 +165,6 @@ def checkDataSet(app_config, name, kind):
 
     print >> sys.stdout, "Check", ds_dir, ":", \
         os.path.exists(ds_dir), os.path.exists(ds_dir + "/active")
-
-#===============================================
-def readJSonRecords(src):
-    if '*' in src:
-        names = sorted(glob(src))
-    else:
-        names = [src]
-    for nm in names:
-        if nm.endswith('.gz'):
-            with gzip.open(nm, 'rb') as inp:
-                for line in inp:
-                    yield json.loads(line.decode('utf-8'))
-        elif nm.endswith('.bz2'):
-            with bz2.BZ2File(nm, 'rb') as inp:
-                for line in inp:
-                    yield json.loads(line.decode('utf-8'))
-        else:
-            with codecs.open(nm, 'r', encoding = 'utf-8') as inp:
-                for line in inp:
-                    yield json.loads(line)
 
 #===============================================
 parser = ArgumentParser()

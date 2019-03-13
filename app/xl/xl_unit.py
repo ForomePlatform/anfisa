@@ -1,5 +1,6 @@
 import logging
 from app.model.a_config import AnfisaConfig
+from app.model.condition import ConditionMaker
 from xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit:
@@ -144,6 +145,9 @@ class XL_ZygosityUnit(XL_Unit):
             self.mFamMap = {member:idx
                 for idx, member in enumerate(self.mFamily)}
         self.mLabels = AnfisaConfig.configOption("zygosity.cases")
+        self.mConfig = descr.get("config", dict())
+        self.mXCondition = XL_Condition.parse(self.mConfig.get("x_cond",
+            ConditionMaker.condEnum("Chromosome", ["chrX"])))
 
     def isDummy(self):
         return not self.mFamily or len(self.mFamily) < 2
@@ -165,6 +169,14 @@ class XL_ZygosityUnit(XL_Unit):
         return XL_Condition.joinAnd(seq)
 
     def conditionZDominant(self, problem_group):
+        return self.mXCondition.negative().addAnd(
+            self._conditionZDominant(problem_group))
+
+    def conditionZXLinked(self, problem_group):
+        return self.mXCondition.addAnd(
+            self._conditionZDominant(problem_group))
+
+    def _conditionZDominant(self, problem_group):
         seq = []
         for idx in range(len(self.mFamily)):
             dim_name = "%s_%d" % (self.getName(), idx)
@@ -194,6 +206,8 @@ class XL_ZygosityUnit(XL_Unit):
     def _iterCritSeq(self, p_group):
         yield (self.mLabels["homo_recess"],
             self.conditionZHomoRecess(p_group))
+        yield (self.mLabels["x_linked"],
+            self.conditionZXLinked(p_group))
         yield (self.mLabels["dominant"],
             self.conditionZDominant(p_group))
         yield (self.mLabels["compens"],

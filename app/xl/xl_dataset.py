@@ -39,6 +39,15 @@ class XLDataset(DataSet):
     def getMongoDS(self):
         return self.mMongoDS
 
+    def getParseContext(self):
+        return self.mParseContext
+
+    def getUnit(self, name):
+        for unit_h in self.mUnits:
+            if unit_h.getName() == name:
+                return unit_h
+        return None
+
     def filterOperation(self, filter_name, conditions, instr):
         if instr is None:
             return filter_name

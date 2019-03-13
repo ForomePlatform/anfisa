@@ -63,9 +63,9 @@ class FilterPrepareSetH:
             accept_other_values = accept_other_values))
 
     def zygositySpecialUnit(self, name, path, title = None,
-            default_value = None):
+            default_value = None, config = None):
         self._addUnit(prep_unit.ZygosityConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup))
+            len(self.mUnits), self.mCurVGroup, config))
 
     def process(self, rec_no, rec_data):
         result = dict()
