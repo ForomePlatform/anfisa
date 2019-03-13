@@ -1,4 +1,3 @@
-#import sys
 import abc, re
 from collections import Counter
 
@@ -323,6 +322,6 @@ class ZygosityConvertor(ValueConvertor):
         ret["kind"] = "zygosity"
         ret["path"] = self.mPath
         ret["family"] = self.mFamilyInfo
-        if self.mRefConfig is not None:
-            ret["config"] = self.mRefConfig
+        if self.mConfig is not None:
+            ret["config"] = self.mConfig
         return ret

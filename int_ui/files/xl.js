@@ -1459,7 +1459,7 @@ function showExport() {
     if (sUnitsH.mCount <= 300)
         res_content = 'Export ' + sUnitsH.mCount + ' records?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
-            '&emsp;<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
+            '&emsp;<button class="drop"';
     else
         res_content = 'Too many records for export: ' + 
             sUnitsH.length + ' > 300.<br>' +
