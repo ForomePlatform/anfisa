@@ -67,6 +67,7 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
             "gtf": gtf.prepare_lookup(transcript=True),
             "beacon": beacon
         }
+        out1.write(Variant.get_metadata(vcf_header=vcf_header, samples=samples, case = case) + '\n')
         while(True):
             line = input.readline()
             if (not line):

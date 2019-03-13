@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import sys
@@ -240,6 +241,26 @@ class Variant:
             Variant.__VERSION = version
         return Variant.__VERSION
 
+    @staticmethod
+    def get_metadata(vcf_header = None, case = None, samples = None):
+        metadata = dict()
+        metadata["record_type"] = "metadata"
+        metadata["samples"] = samples
+        metadata["case"] = case
+        versions = dict()
+        metadata["versions"] = versions
+        versions["annotations"] = Variant.get_version()
+        versions["annotations_date"] = str(datetime.date.today())
+        if (vcf_header):
+            fsock = StringIO(vcf_header)
+            vcf_reader = vcf.Reader(fsock)
+            p = vcf_reader.metadata.get("source")
+            if (isinstance(p, list)):
+                p = ", ".join(p)
+            versions["pipeline"] = p
+            versions["pipeline_date"] = vcf_reader.metadata.get("fileDate")
+            versions["reference"] = vcf_reader.metadata.get("reference")
+        return json.dumps(metadata)
 
     @classmethod
     def most_severe(cls, csq):
@@ -255,7 +276,7 @@ class Variant:
         else:
             self.original_json = None
             self.data = json_string
-        self.data["VERSION"] = Variant.get_version()
+        self.data["version"] = Variant.get_version()
         self.filters = dict()
         self.private_data = dict()
         self.case = case
@@ -291,12 +312,15 @@ class Variant:
         self.filters['has_variant'] = list()
 
         proband = self.get_proband()
+        c = self.chr_num()
         if (proband):
             mother = self.samples[proband]['mother']
             father = self.samples[proband]['father']
             self.data["zygosity"] = dict()
+            self.filters["alt_zygosity"] = dict()
             for sample in self.samples:
                 name = self.samples[sample]["name"]
+                sex = self.samples[sample]["sex"]
                 if (sample == proband):
                     label = "proband [{}]".format(name)
                 elif (sample == mother):
@@ -308,11 +332,18 @@ class Variant:
 
                 zyg = self.sample_has_variant(sample)
                 self.data["zygosity"][sample] = zyg
+                modified_zygosity = zyg if (c != 'X' or sex == 2 or zyg == 0) else 2
+                self.filters["alt_zygosity"][sample] = modified_zygosity
                 if (zyg > 0):
                     self.filters['has_variant'].append(label)
 
+
         d = self.get_distance_from_exon("worst", none_replacement=0)
         self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
+        chromosome = self.chromosome()
+        if (len(chromosome) < 2):
+            chromosome = "chr{}".format(str(chromosome))
+        self.filters["chromosome"] = chromosome
 
     def call_quality(self):
         self.filters['min_gq'] = self.get_min_GQ()
@@ -549,7 +580,7 @@ class Variant:
     def chr_num(self):
         chr_str = self.chromosome()
         if (chr_str.startswith('chr')):
-            return chr_str[3:]
+            return chr_str[3:].upper()
         return chr_str.upper()
 
     def start(self):
@@ -1354,6 +1385,6 @@ class Variant:
         tab7 = dict()
         view_info["inheritance"] = tab7
 
-        ret = {"data": data_info,
+        ret = {"data": data_info, "record_type": "variant",
             "view": view_info, "_filters": filters}
         return json.dumps(ret)

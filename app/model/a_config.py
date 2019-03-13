@@ -22,9 +22,9 @@ class AnfisaConfig:
             "False positives"
         ],
         "zygosity.cases": {
-            "homo_recess": "homo_recessive",
-            "dominant": "dominant",
-            "compens": "compensational"
+            "homo_recess": "Homozygous Recessive",
+            "dominant": "Autosomal Dominant",
+            "compens": "Compensational"
         },
         "rand.min.size":    100,
         "rand.sample.size": 100,

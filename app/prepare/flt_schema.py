@@ -8,13 +8,13 @@ def defineFilterSchema():
         "/data/zygosity", title = "zygosity")
 
     with filters.viewGroup("Coordinates"):
-        # filters.statusUnit("Chromosome", "/seq_region_name",
-        #     ["chr1", "chr2", "chr3", "chr4", "chr5",
-        #     "chr6", "chr7", "chr8", "chr9", "chr10",
-        #     "chr11", "chr12", "chr13", "chr14", "chr15",
-        #     "chr16", "chr17", "chr18", "chr19", "chr20",
-        #     "chr21", "chr22", "chr23", "chrX", "chrY", "?"],
-        #research_only = True, accept_other_values = True)
+        filters.statusUnit("Chromosome", "/_filters/chromosome",
+            ["chr1", "chr2", "chr3", "chr4", "chr5",
+            "chr6", "chr7", "chr8", "chr9", "chr10",
+            "chr11", "chr12", "chr13", "chr14", "chr15",
+            "chr16", "chr17", "chr18", "chr19", "chr20",
+            "chr21", "chr22", "chr23", "chrX", "chrY", "?"],
+        research_only = True, accept_other_values = True)
 
         filters.statusUnit("Chromosome", "/data/seq_region_name",
             research_only = True)
