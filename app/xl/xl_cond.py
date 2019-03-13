@@ -15,7 +15,7 @@ class XL_Condition:
     def addOr(self, other):
         assert other is not None and other.getCondKind() is not None
         if other.getCondKind() == "or":
-            return other and self
+            return other.addOr(self)
         elif other.getCondKind() == "null":
             return self
         return XL_Or([self, other])
@@ -23,7 +23,7 @@ class XL_Condition:
     def addAnd(self, other):
         assert other is not None and other.getCondKind() is not None
         if other.getCondKind() == "and":
-            return other and self
+            return other.addAnd(self)
         elif other.getCondKind() == "null":
             return self
         return XL_And([self, other])

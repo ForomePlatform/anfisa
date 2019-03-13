@@ -92,7 +92,7 @@ class CompHetsBatch:
             assert len(m_seq_rec_no) > 0
             for rec_no in (f_seq_rec_no | m_seq_rec_no):
                 self.mResTab[rec_no].append(gene)
-        print >> sys.stderr, "Final result: %d variants in %d genes" % (
+        print >> sys.stderr, "\nFinal result: %d variants in %d genes\n" % (
             len(self.mResTab), gene_cnt)
 
     def report(self, output):

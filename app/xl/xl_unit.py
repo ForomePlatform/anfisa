@@ -1,4 +1,4 @@
-import logging
+import logging, json
 from app.model.a_config import AnfisaConfig
 from app.model.condition import ConditionMaker
 from xl_cond import XL_Condition, XL_NumCondition
