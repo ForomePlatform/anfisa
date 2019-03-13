@@ -80,15 +80,20 @@ class CompHetsBatch:
             len(self.mGenesF), len(self.mGenesM)),
 
     def finishUp(self):
+        self.reportStatus()
         self.mResTab = defaultdict(list)
+        gene_cnt = 0
         for gene, f_seq_rec_no in self.mGenesF.items():
             assert len(f_seq_rec_no) > 0
             m_seq_rec_no = self.mGenesM.get(gene)
             if m_seq_rec_no is None:
                 continue
+            gene_cnt += 1
             assert len(m_seq_rec_no) > 0
             for rec_no in (f_seq_rec_no | m_seq_rec_no):
                 self.mResTab[rec_no].append(gene)
+        print >> sys.stderr, "Final result: %d variants in %d genes" % (
+            len(self.mResTab), gene_cnt)
 
     def report(self, output):
         print >> output, json.dumps(
