@@ -11,6 +11,7 @@ from app.prepare.view_schema import defineViewSchema
 from app.prepare.flt_schema import defineFilterSchema
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.read_json import JsonLineReader
+from annotations.post.post_comp import PostAttonationProcess
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
@@ -57,6 +58,23 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
 
+    post_proc = None
+    if kind == "xl":
+        print >> sys.stderr, "Post annotation processing..."
+        post_proc = PostAttonationProcess()
+        with JsonLineReader(source) as input:
+            for inp_rec_no, record in enumerate(input):
+                if record.get("record_type") == "metadata":
+                    continue
+                post_proc.process(inp_rec_no, record)
+                if not post_proc.isOK():
+                    post_proc = None
+                    break
+        if post_proc is not None:
+            post_proc.finishUp()
+            if not post_proc.isOK():
+                post_proc = None
+
     view_aspects = defineViewSchema()
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema()
@@ -64,27 +82,31 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     if report_lines:
         print >> sys.stderr, "Processing..."
 
-    rec_no = 0
+    data_rec_no = 0
     fdata_out = gzip.open(ds_dir + "/fdata.json.gz", 'wb')
     pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
     input = JsonLineReader(source)
+    metadata_record = None
     with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
-        for record in input:
+        for inp_rec_no, record in enumerate(input):
+            if post_proc is not None:
+                post_proc.transform(inp_rec_no, record)
             if record.get("record_type") == "metadata":
+                metadata_record = record
                 continue
-            view_checker.regValue(rec_no, record)
+            view_checker.regValue(data_rec_no, record)
             vdata_out.putLine(json.dumps(record, ensure_ascii = False))
-            flt_data = filter_set.process(rec_no, record)
+            flt_data = filter_set.process(data_rec_no, record)
             pre_data = PresentationData.make(record)
             if DRUID_ADM is not None:
-                DRUID_ADM.addFieldsToRec(flt_data, pre_data, rec_no)
+                DRUID_ADM.addFieldsToRec(flt_data, pre_data, data_rec_no)
             print >> fdata_out, json.dumps(flt_data, ensure_ascii = False)
             print >> pdata_out, json.dumps(pre_data, ensure_ascii = False)
-            rec_no += 1
-            if report_lines and rec_no % report_lines == 0:
-                print >> sys.stderr, "\r%d lines..." % rec_no,
+            data_rec_no += 1
+            if report_lines and data_rec_no % report_lines == 0:
+                print >> sys.stderr, "\r%d lines..." % data_rec_no,
     if report_lines:
-        print >> sys.stderr, "\nTotal lines: %d" % rec_no
+        print >> sys.stderr, "\nTotal lines: %d" % data_rec_no
     input.close()
     fdata_out.close()
     pdata_out.close()
@@ -105,8 +127,9 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             "kind": kind,
             "view_schema": view_aspects.dump(),
             "flt_schema": flt_data,
-            "total": rec_no,
-            "mongo": mongo}
+            "total": data_rec_no,
+            "mongo": mongo,
+            "meta": metadata_record}
         with codecs.open(ds_dir + "/dsinfo.json",
                 "w", encoding = "utf-8") as outp:
             print >> outp, json.dumps(ds_info,
@@ -197,10 +220,13 @@ if run_args.mode == "create":
     if run_args.force:
         dropDataSet(app_config, run_args.name[0],
             run_args.kind, True)
-    print >> sys.stderr, "Started at", datetime.now()
+    time_start = datetime.now()
+    print >> sys.stderr, "Started at", time_start
     createDataSet(app_config, run_args.name[0], run_args.kind,
         run_args.mongo, run_args.source, run_args.reportlines)
-    print >> sys.stderr, "Finished at", datetime.now()
+    time_done = datetime.now()
+    print >> sys.stderr, "Finished at", time_done, "for", \
+        (time_done - time_start)
 elif run_args.mode == "drop":
     dropDataSet(app_config, run_args.name[0], run_args.kind, False)
 elif run_args.mode == "check":
