@@ -66,7 +66,7 @@ class IntUI:
                 cls.sHtmlBase, xl_ds)
             return serv_h.makeResponse(content = output.getvalue())
 
-        if rq_path == "/xl":
+        if rq_path == "/xl_tree":
             xl_ds = data_vault.getXL(rq_args.get("ds"))
             if xl_ds is None:
                 return cls.notFoundResponse(serv_h)

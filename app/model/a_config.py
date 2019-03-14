@@ -21,11 +21,20 @@ class AnfisaConfig:
             "Benign/Likely benign",
             "False positives"
         ],
+        "zygosity.cases": {
+            "homo_recess": "Homozygous Recessive",
+            "x_linked": "X-linked",
+            "dominant": "Autosomal Dominant",
+            "compens": "Compensational"
+        },
         "rand.min.size":    100,
         "rand.sample.size": 100,
 
         "max.ws.size":  5000,
         "report.lines": 100,
+        "max.export.size": 300,
+
+        "filter.std.mark": u"\u23da",
 
         "job.pool.size":    3,
         "job.pool.threads": 1}
@@ -53,5 +62,11 @@ class AnfisaConfig:
                 "yellow", "yellow-cross", "green"}:
             return color_code
         return "grey"
+
+    @classmethod
+    def normalizeTime(cls, time_label):
+        if time_label is None:
+            return '2019-03-01T00:00:00'
+        return time_label
 
 #===============================================

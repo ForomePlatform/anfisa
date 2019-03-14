@@ -1,33 +1,54 @@
-import os, json, gzip, codecs, logging
+import os, json, gzip, codecs, logging, re
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
 from app.model.job_pool import ExecutionTask
 from app.xl.decision import DecisionTree
+from app.xl.xl_cond import XL_Condition
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, dataset, ws_name, base_version):
+    def __init__(self, dataset, ws_name,
+            base_version = None, conditions = None):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
+        self.mConditions = conditions
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
-    def execIt(self):
-        self.setStatus("Prepare creation")
-        tree_data = self.mDS.getMongoDS().getVersionTree(
-            self.mBaseVersion)
-        tree = DecisionTree.parse(tree_data)
-        rec_no_seq = tree.collectRecSeq(self.mDS)
-        logging.info("C-2: %d" % len(rec_no_seq));
+    sID_Pattern = re.compile('^\\S+$', re.U)
+    @classmethod
+    def correctWSName(cls, name):
+        if not cls.sID_Pattern.match(name):
+            return False
+        return name[0].isalpha and not name.lower().startswith("xl_")
 
+    def execIt(self):
+        if not self.correctWSName(self.mWSName):
+            self.setStatus("Incorrect workspace name")
+            return None
+        self.setStatus("Prepare creation")
+        logging.info("Prepare workspace creation: %s" % self.mWSName)
+        if (self.mBaseVersion is not None):
+            tree = DecisionTree.parse(
+                self.mDS.getMongoDS().getVersionTree(self.mBaseVersion))
+            rec_no_seq = tree.collectRecSeq(self.mDS)
+        else:
+            context = {"cond":XL_Condition.parseSeq(
+                json.loads(self.mConditions),
+                self.mDS.getParseContext())}
+            rec_count = self.mDS.evalTotalCount(context)
+            assert rec_count <= AnfisaConfig.configOption("max.ws.size")
+            rec_no_seq = self.mDS.evalRecSeq(context, rec_count)
+
+        rec_no_seq = sorted(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):
             self.setStatus("Dataset already exists")
             return None
         os.mkdir(ws_dir)
 
-        logging.info("C-3");
+        logging.info("Fill workspace %s datafiles..." % self.mWSName)
         with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
             for out_rec_no, rec_no in enumerate(rec_no_seq):
                 if out_rec_no > 0 and (out_rec_no % self.mReportLines) == 0:
@@ -36,7 +57,6 @@ class SecondaryWsCreation(ExecutionTask):
                 rec_data = self.mDS.getRecordData(rec_no)
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
-        logging.info("C-4");
         rec_no_set = set(rec_no_seq)
         cnt_done = 0
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
@@ -49,7 +69,6 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
-        logging.info("C-5");
         cnt_done = 0
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
@@ -61,8 +80,8 @@ class SecondaryWsCreation(ExecutionTask):
                             self.setStatus("Prepare fdata: %d/%d" %
                                 (cnt_done, len(rec_no_seq)))
 
-        logging.info("C-6");
         self.setStatus("Finishing...")
+        logging.info("Finishing up workspace %s" % self.mWSName)
 
         ds_info = {
             "name": self.mWSName,

@@ -1,6 +1,7 @@
 import json
 from md5 import md5
 
+from app.model.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
@@ -15,17 +16,22 @@ class XLDataset(DataSet):
         self.mMongoDS = (self.getDataVault().getApp().getMongoConnector().
             getDSAgent(self.getMongoName()))
         self.mDruidAgent = self.getDataVault().getApp().getDruidAgent()
+        self.mParseContext = dict()
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
             xl_unit = XL_Unit.create(self, unit_data)
             if xl_unit is not None:
                 self.mUnits.append(xl_unit)
+                field, parse_f = xl_unit.getParseSupport()
+                if field:
+                    assert field not in self.mParseContext
+                    self.mParseContext[field] = parse_f
         self.mFilterCache = dict()
         if self.mMongoDS is not None:
-            for filter_name, conditions in self.mMongoDS.getFilters():
-                if not self.mDruidAgent.hasStdFilter(filter_name):
-                        self.mFilterCache[filter_name] = conditions
+            for f_name, conditions, time_label in self.mMongoDS.getFilters():
+                if self.mDruidAgent.goodOpFilterName(f_name):
+                    self.cacheFilter(f_name, conditions, time_label)
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -33,20 +39,24 @@ class XLDataset(DataSet):
     def getMongoDS(self):
         return self.mMongoDS
 
-    def report(self, output):
-        print >> output, "Report for datasource", self.getName()
-        for unit in self.mUnits:
-            unit.report(output)
+    def getParseContext(self):
+        return self.mParseContext
+
+    def getUnit(self, name):
+        for unit_h in self.mUnits:
+            if unit_h.getName() == name:
+                return unit_h
+        return None
 
     def filterOperation(self, filter_name, conditions, instr):
         if instr is None:
             return filter_name
         op, q, flt_name = instr.partition('/')
-        if not self.mDruidAgent.hasStdFilter(flt_name):
+        if self.mDruidAgent.goodOpFilterName(flt_name):
             with self:
                 if op == "UPDATE":
-                    self.mMongoDS.setFilter(flt_name, conditions)
-                    self.cacheFilter(flt_name, conditions)
+                    time_label = self.mMongoDS.setFilter(flt_name, conditions)
+                    self.cacheFilter(flt_name, conditions, time_label)
                     filter_name = flt_name
                 elif op == "DROP":
                     self.mMongoDS.dropFilter(flt_name)
@@ -55,8 +65,8 @@ class XLDataset(DataSet):
                     assert False
         return filter_name
 
-    def cacheFilter(self, filter_name, conditions):
-        self.mFilterCache[filter_name] = conditions
+    def cacheFilter(self, filter_name, conditions, time_label):
+        self.mFilterCache[filter_name] = [conditions, time_label]
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
@@ -66,51 +76,50 @@ class XLDataset(DataSet):
         ret = []
         for filter_name in self.mDruidAgent.getStdFilterNames():
             ret.append([filter_name, True, True])
-        for filter_name, flt_info in self.mFilterCache.items():
-            if filter_name.startswith('_'):
+        for f_name, flt_info in self.mFilterCache.items():
+            if f_name.startswith('_'):
                 continue
-            ret.append([filter_name, False, True])
+            ret.append([f_name, False, True, flt_info[1]])
         return sorted(ret)
 
-    def evalTotalCount(self, druid_cond):
-        if druid_cond is None:
+    def evalTotalCount(self, context):
+        if context is None or "cond" not in context:
             return self.getTotal()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "descending": "true",
             "aggregations": [
                 { "type": "count", "name": "count",
                     "fieldName": "_ord"}],
-            "filter": druid_cond,
+            "filter": context["cond"].getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return ret[0]["result"]["count"]
 
-    def _evalRecSeq(self, druid_cond):
-        assert druid_cond is not None
+    def _evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "search",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
-            "filter": druid_cond,
+            "limit": expect_count + 5,
+            "filter": context["cond"].getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def evalRecSeq(self, druid_cond, expect_count):
-        assert druid_cond is not None
+    def evalRecSeq(self, context, expect_count):
         query = {
             "queryType": "topN",
-            "dataSource": self.getName(),
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
-            "threshold": expect_count,
+            "threshold": expect_count + 5,
             "metric": "count",
-            "filter": druid_cond,
+            "filter": context["cond"].getDruidRepr(),
             "granularity": self.mDruidAgent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
@@ -122,9 +131,11 @@ class XLDataset(DataSet):
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
     def dump(self):
+        note, time_label = self.mMongoDS.getDSNote()
         return {
             "name": self.mName,
-            "note": self.mMongoDS.getDSNote()}
+            "note": note,
+            "time": time_label}
 
     #===============================================
     @RestAPI.xl_request
@@ -136,18 +147,42 @@ class XLDataset(DataSet):
         filter_name = self.filterOperation(
             filter_name, conditions, rq_args.get("instr"))
         if self.mDruidAgent.hasStdFilter(filter_name):
-            cond_seq = self.mDruidAgent.getStdFilterConditions()
+            cond_seq = self.mDruidAgent.getStdFilterConditions(filter_name)
         else:
-            cond_seq = self.mFilterCache.get(filter_name, conditions)
-        druid_cond = XL_Condition.prepareDruidRepr(cond_seq)
+            if filter_name in self.mFilterCache:
+                cond_seq = self.mFilterCache[filter_name][0]
+            else:
+                cond_seq = conditions
+        if "ctx" in rq_args:
+            context = json.loads(rq_args["ctx"])
+        else:
+            context = dict()
+        context["cond"] = XL_Condition.parseSeq(cond_seq, self.mParseContext)
         return {
             "total": self.getTotal(),
-            "count": self.evalTotalCount(druid_cond),
-            "stat-list": [unit.makeStat(druid_cond)
+            "count": self.evalTotalCount(context),
+            "stat-list": [unit.makeStat(context)
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
             "conditions": cond_seq}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_statunit(self, rq_args):
+        if "ctx" in rq_args:
+            context = json.loads(rq_args["ctx"])
+        else:
+            context = dict()
+        context["cond"] = XL_Condition.parseSeq(
+            json.loads(rq_args["conditions"]), self.mParseContext)
+        unit_name = rq_args["unit"]
+        the_unit = None
+        for unit_h in self.mUnits:
+            if unit_h.getName() == unit_name:
+                the_unit = unit_h
+                break
+        return the_unit.makeStat(context)
 
     #===============================================
     @RestAPI.xl_request
@@ -156,9 +191,7 @@ class XLDataset(DataSet):
         if note is not None:
             with self:
                 self.mMongoDS.setDSNote(note)
-        return {
-            "ds": self.getName(),
-            "note": self.mMongoDS.getDSNote()}
+        return self.dump()
 
     #===============================================
     @staticmethod
@@ -219,13 +252,13 @@ class XLDataset(DataSet):
         tree_data = rq_args["tree"]
         tree = DecisionTree.parse(json.loads(tree_data))
         point_no = int(rq_args["no"])
-        druid_cond = tree.actualCondition(point_no).getDruidRepr()
-        count = self.evalTotalCount(druid_cond)
+        filter_context = {"cond": tree.actualCondition(point_no)}
+        count = self.evalTotalCount(filter_context)
         ret = {
             "total": self.getTotal(),
             "count": count}
         if count > 0:
-            ret["stat-list"] = [unit.makeStat(druid_cond)
+            ret["stat-list"] = [unit.makeStat(filter_context)
                 for unit in self.mUnits]
         return ret
 
@@ -244,6 +277,25 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl2ws(self, rq_args):
+        if "verbase" in rq_args:
+            base_version = int(rq_args["verbase"])
+            conditions = None
+        else:
+            base_version = None
+            conditions = rq_args["conditions"]
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
-            self, rq_args["ws"], int(rq_args["verbase"]))
+            self, rq_args["ws"],
+            base_version = base_version, conditions = conditions)
         return {"task_id" : task_id}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_export(self, rq_args):
+        context = {"cond":
+            XL_Condition.parseSeq(json.loads(rq_args["conditions"]))}
+        rec_count = self.evalTotalCount(context)
+        assert rec_count <= AnfisaConfig.configOption("max.export.size")
+        rec_no_seq = self.evalRecSeq(context, rec_count)
+        fname = self.getDataVault().getApp().makeExcelExport(
+            self.getName(), self, rec_no_seq)
+        return {"kind": "excel", "fname": fname}

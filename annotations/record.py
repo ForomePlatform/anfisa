@@ -1,4 +1,7 @@
+import datetime
 import json
+import os
+import sys
 from StringIO import StringIO
 
 import vcf
@@ -47,6 +50,13 @@ trusted_submitters = {
     "lmm": "Laboratory for Molecular Medicine,Partners HealthCare Personalized Medicine",
     "gene_dx": "GeneDx"
 }
+
+
+def resolve(filename):
+    for directory in sys.path:
+        path = os.path.join(directory, filename)
+        if os.path.isfile(path):
+            return path
 
 
 def unique(lst, replace_None=None):
@@ -209,6 +219,48 @@ class Variant:
                    'BGM_BAYES_DE_NOVO', 'BGM_BAYES_CMPD_HET', 'BGM_BAYES_HOM_REC',
                    'BGM_PIPELINE_A', 'BGM_PIPELINE', 'LMM', 'SANGER']
 
+    __VERSION = None
+    @staticmethod
+    def get_version():
+        if Variant.__VERSION == None:
+            version = "UNDEFINED"
+            vf = resolve(os.path.join("app", "VERSION"))
+            if vf:
+                with open(vf) as f:
+                    lines = f.readlines()
+                    las = [l for l in lines if l.strip().startswith("Anfisa")]
+                    if not las:
+                        las = [l for l in lines if len(l.strip()) > 0]
+                    if las:
+                        line = las[0].strip()
+                        tokens = line.split()
+                        if (len(tokens) > 1 and tokens[0] == "Anfisa"):
+                            version = tokens[1]
+                        else:
+                            version = tokens[0]
+            Variant.__VERSION = version
+        return Variant.__VERSION
+
+    @staticmethod
+    def get_metadata(vcf_header = None, case = None, samples = None):
+        metadata = dict()
+        metadata["record_type"] = "metadata"
+        metadata["samples"] = samples
+        metadata["case"] = case
+        versions = dict()
+        metadata["versions"] = versions
+        versions["annotations"] = Variant.get_version()
+        versions["annotations_date"] = str(datetime.date.today())
+        if (vcf_header):
+            fsock = StringIO(vcf_header)
+            vcf_reader = vcf.Reader(fsock)
+            p = vcf_reader.metadata.get("source")
+            if (isinstance(p, list)):
+                p = ", ".join(p)
+            versions["pipeline"] = p
+            versions["pipeline_date"] = vcf_reader.metadata.get("fileDate")
+            versions["reference"] = vcf_reader.metadata.get("reference")
+        return json.dumps(metadata)
 
     @classmethod
     def most_severe(cls, csq):
@@ -224,13 +276,13 @@ class Variant:
         else:
             self.original_json = None
             self.data = json_string
+        self.data["version"] = Variant.get_version()
         self.filters = dict()
         self.private_data = dict()
         self.case = case
         self.samples = samples
         self.hg38_start = None
         self.hg38_end = None
-        self.alt_alleles = None
         self.connectors = DBConnectors(connectors)
         if (not vcf_header):
             vcf_header = "#"
@@ -245,6 +297,7 @@ class Variant:
             self.vcf_record = vcf_reader.next()
         else:
             self.vcf_record = None
+        self.alt_alleles = None
 
         self.call_liftover()
         self.call_gnomAD()
@@ -253,18 +306,21 @@ class Variant:
         self.call_beacon()
         self.call_gtf()
 
-        self.filters['min_gq'] = self.get_min_GQ()
-        self.filters['proband_gq'] = self.get_proband_GQ()
+        self.call_quality()
+
         self.filters['severity'] = self.get_severity()
         self.filters['has_variant'] = list()
 
         proband = self.get_proband()
+        c = self.chr_num()
         if (proband):
             mother = self.samples[proband]['mother']
             father = self.samples[proband]['father']
             self.data["zygosity"] = dict()
+            self.filters["alt_zygosity"] = dict()
             for sample in self.samples:
                 name = self.samples[sample]["name"]
+                sex = self.samples[sample]["sex"]
                 if (sample == proband):
                     label = "proband [{}]".format(name)
                 elif (sample == mother):
@@ -276,11 +332,34 @@ class Variant:
 
                 zyg = self.sample_has_variant(sample)
                 self.data["zygosity"][sample] = zyg
+                modified_zygosity = zyg if (c != 'X' or sex == 2 or zyg == 0) else 2
+                self.filters["alt_zygosity"][sample] = modified_zygosity
                 if (zyg > 0):
                     self.filters['has_variant'].append(label)
 
+
         d = self.get_distance_from_exon("worst", none_replacement=0)
         self.filters['dist_from_exon'] = min(d) if (len(d)> 0) else 0
+        chromosome = self.chromosome()
+        if (len(chromosome) < 2):
+            chromosome = "chr{}".format(str(chromosome))
+        self.filters["chromosome"] = chromosome
+
+    def call_quality(self):
+        self.filters['min_gq'] = self.get_min_GQ()
+        self.filters['proband_gq'] = self.get_proband_GQ()
+        self.filters['qd'] = self.info().get("QD")
+        self.filters['fs'] = self.info().get("FS")
+        self.filters['mq'] = self.info().get("MQ")
+        try:
+            q_filters = self.vcf_record.FILTER
+            if not q_filters:
+                self.filters["filters"] = ["PASS"]
+            else:
+                self.filters["filters"] = q_filters
+        except:
+            pass
+        return
 
     def call_liftover(self):
         connection = self.connectors.liftover
@@ -364,6 +443,9 @@ class Variant:
         popmax_af = None
         popmax_an = None
 
+        hom = None
+        hem = None
+
         self.private_data["gnomad"] = dict()
         for alt in self.alt_list():
             gnomad_data = gnomAD.get_all(self.chr_num(), self.lowest_coord(), self.ref(), alt)
@@ -387,6 +469,9 @@ class Variant:
             if (self.is_proband_has_allele(alt)):
                 _af_pb = min(_af_pb, af) if _af_pb else af
 
+            hom = max(hom, gnomad_data["overall"]["HOM"])
+            hem = max(hem, gnomad_data["overall"].get("HEM"))
+
             if (af < _af or _af == None):
                 _af = af
                 popmax = gnomad_data.get("popmax")
@@ -397,6 +482,8 @@ class Variant:
         self.filters["gnomad_db_genomes_af"] = gm_af
         self.filters['gnomad_af_fam'] = _af
         self.filters['gnomad_af_pb'] = _af_pb
+        self.filters['gnomad_hom'] = hom
+        self.filters['gnomad_hem'] = hem
 
         self.filters['gnomad_popmax'] = popmax
         self.filters['gnomad_popmax_af'] = popmax_af
@@ -493,7 +580,7 @@ class Variant:
     def chr_num(self):
         chr_str = self.chromosome()
         if (chr_str.startswith('chr')):
-            return chr_str[3:]
+            return chr_str[3:].upper()
         return chr_str.upper()
 
     def start(self):
@@ -544,6 +631,8 @@ class Variant:
                             counts[al] = counts.get(al, 0) + n
 
                     self.alt_alleles = [a for a in alt_allels if counts.get(a) > 0]
+                    if (not self.alt_alleles):
+                        self.alt_alleles = alt_allels
                 else:
                     self.alt_alleles = alt_allels
             else:
@@ -917,10 +1006,13 @@ class Variant:
 
 
     def get_genotypes(self):
+        empty = "Can not be determined"
         proband = self.get_proband()
         if (not proband):
             return None, None, None, None
         proband_genotype = self.vcf_record.genotype(proband).gt_bases
+        if not proband_genotype:
+            proband_genotype = empty
         mother = self.samples[proband]['mother']
         if (mother == '0'):
             mother = None
@@ -930,6 +1022,10 @@ class Variant:
 
         maternal_genotype = self.vcf_record.genotype(mother).gt_bases if mother else None
         paternal_genotype = self.vcf_record.genotype(father).gt_bases if father else None
+        if mother and not maternal_genotype:
+            maternal_genotype = empty
+        if father and not paternal_genotype:
+            paternal_genotype = empty
 
         genotypes = {self.vcf_record.genotype(s).gt_bases for s in self.samples}
         other_genotypes = genotypes.difference({proband_genotype, maternal_genotype, paternal_genotype})
@@ -1110,7 +1206,7 @@ class Variant:
 
         tab1["igv"] = self.get_igv_url()
 
-    def create_quality_tab(self, data_info, view_info, filters):
+    def create_quality_tab(self, data_info, view_info):
         tab2 = list()
         view_info["quality_samples"] = tab2
         if (not self.vcf_record):
@@ -1123,8 +1219,7 @@ class Variant:
 
         q_all['qd'] = self.info().get("QD")
         q_all['fs'] = self.info().get("FS")
-        filters['qd'] = self.info().get("QD")
-        filters['fs'] = self.info().get("FS")
+        q_all["ft"] = self.filters.get("filters")
         tab2.append(q_all)
 
         proband = self.get_proband()
@@ -1171,8 +1266,16 @@ class Variant:
                     pop_max_af = gnomad_data["popmax_af"]
                     pop_max_an = gnomad_data["popmax_an"]
                     gr["pop_max"] = "{}: {} [{}]".format(pop_max, pop_max_af, pop_max_an)
+                    gr["hom"] = gnomad_data["overall"]["HOM"]
+                    gr["hem"] = gnomad_data["overall"].get("HEM")
 
                     gr["url"] = gnomad_data["url"]
+        else:
+            gr = dict()
+            tab3.append(gr)
+            p1 = self.lowest_coord() - 2
+            p2 = self.highest_coord() + 1
+            gr["url"] = ["https://gnomad.broadinstitute.org/region/{}-{}-{}".format(self.chr_num(), p1, p2)]
 
 
     def create_databases_tab(self, data_info, view_info, filters):
@@ -1272,7 +1375,7 @@ class Variant:
         data_info['label'] = self.get_label()
         data_info['color_code'] = self.get_color_code()
         self.create_general_tab(data_info, view_info, filters)
-        self.create_quality_tab(data_info, view_info, filters)
+        self.create_quality_tab(data_info, view_info)
         self.create_gnomad_tab(data_info, view_info, filters)
         self.create_databases_tab(data_info, view_info, filters)
         self.create_predictions_tab(data_info, view_info, filters)
@@ -1282,6 +1385,6 @@ class Variant:
         tab7 = dict()
         view_info["inheritance"] = tab7
 
-        ret = {"data": data_info,
+        ret = {"data": data_info, "record_type": "variant",
             "view": view_info, "_filters": filters}
         return json.dumps(ret)

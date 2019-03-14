@@ -15,7 +15,7 @@ class XL_Condition:
     def addOr(self, other):
         assert other is not None and other.getCondKind() is not None
         if other.getCondKind() == "or":
-            return other and self
+            return other.addOr(self)
         elif other.getCondKind() == "null":
             return self
         return XL_Or([self, other])
@@ -23,7 +23,7 @@ class XL_Condition:
     def addAnd(self, other):
         assert other is not None and other.getCondKind() is not None
         if other.getCondKind() == "and":
-            return other and self
+            return other.addAnd(self)
         elif other.getCondKind() == "null":
             return self
         return XL_And([self, other])
@@ -52,7 +52,9 @@ class XL_Condition:
         return ret
 
     @classmethod
-    def parse(cls, cond_info):
+    def parse(cls, cond_info, parse_context = None):
+        if parse_context and cond_info[0] in parse_context:
+            return parse_context[cond_info[0]](cond_info)
         if cond_info[0] == "numeric":
             return XL_NumCondition(*cond_info[1:])
         if cond_info[0] == "enum":
@@ -74,20 +76,19 @@ class XL_Condition:
         return XL_None()
 
     @classmethod
-    def prepareDruidRepr(cls, cond_seq):
+    def parseSeq(cls, cond_seq, parse_context = None):
         if not cond_seq:
-            return None
-        ret = cls.joinAnd([cls.parse(cond_data)
+            return XL_None()
+        ret = cls.joinAnd([cls.parse(cond_data, parse_context)
             for cond_data in cond_seq])
-        return ret.getDruidRepr()
+        return ret
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, unit_name, ge_mode, the_val, use_undef):
+    def __init__(self, unit_name, bounds, use_undef = False):
         XL_Condition.__init__(self)
         self.mUnitName = unit_name
-        self.mGE_Mode = ge_mode
-        self.mTheVal = the_val
+        self.mBounds = bounds
         self.mUseUndef = use_undef
 
     def getCondKind(self):
@@ -95,21 +96,17 @@ class XL_NumCondition(XL_Condition):
 
     def getDruidRepr(self):
         # use_undef ignored
-        if self.mGE_Mode > 0:
-            return {
-                "type": "bound",
-                "dimension": self.mUnitName,
-                "upper": str(self.mTheVal),
-                "upperStrict": False,
-                "ordering": "numeric" }
-        assert self.mGE_Mode == 0
-        return {
+        ret = {
             "type": "bound",
             "dimension": self.mUnitName,
-            "lower": str(self.mTheVal),
             "lowerStrict": False,
+            "upperStrict": False,
             "ordering": "numeric" }
-        return None
+        if self.mBounds[0] is not None:
+            ret["lower"] = str(self.mBounds[0])
+        if self.mBounds[1] is not None:
+            ret["upper"] = str(self.mBounds[1])
+        return ret
 
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):

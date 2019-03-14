@@ -164,8 +164,7 @@ span#cond-text {
     font-size: 15px;
 }
 
-span#cond-error {
-    color: red;
+span#cond-message {
     font-style: italic;
     font-size: 13px;
 }
@@ -246,10 +245,6 @@ div#op-enum-list.no-zeros div.zero {
 
 input.num-inp {
     width: 100px;
-}
-
-span#cond-sign {
-    cursor: hand;
 }
 
 #cond-undef-check {
@@ -337,4 +332,10 @@ select#filter-name-filter {
 
 #filter-name-combo {
     margin: 0px 5px 0px 10px;
+}
+
+span.flt-time {
+    margin-left: 15px;
+    font-style: italic;
+    font-size: 70%;
 }

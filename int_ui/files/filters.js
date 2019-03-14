@@ -9,7 +9,6 @@ var sCurStatUnit = null;
 var sCurCondNo = null;
 
 var sOpMode = null;
-var sOpNumericInfo = null;
 var sOpEnumList = null;
 var sOpEnumModeInfo = null;
 var sOpCondition = null;
@@ -31,18 +30,9 @@ var sBtnUndoCond   = null;
 var sBtnRedoCond   = null; 
 
 var sSpanCurCondTitle       = null;
-var sSpanCurCondMin         = null;
-var sSpanCurCondMax         = null;
-var sSpanCurCondSign        = null;
-var sSpanCurCondUndefCount  = null;
-
 var sSpanCurCondModOnly     = null;
 var sSpanCurCondModAnd      = null;
 var sSpanCurCondModNot      = null;
-
-var sInputCurCondMin        = null;
-var sInputCurCondMax        = null;
-var sCheckCurCondUndef      = null;
 
 var sCheckCurCondModOnly    = null;
 var sCheckCurCondModAnd     = null;
@@ -64,25 +54,16 @@ function initFilters() {
     sBtnRedoCond   = document.getElementById("filter-redo-cond"); 
     
     sSpanCurCondTitle       = document.getElementById("cond-title");
-    sSpanCurCondText        = document.getElementById("cond-text");
-    sSpanCurCondError       = document.getElementById("cond-error");
-    sSpanCurCondMin         = document.getElementById("cond-min");
-    sSpanCurCondMax         = document.getElementById("cond-max");
-    sSpanCurCondSign        = document.getElementById("cond-sign");
-    sSpanCurCondUndefCount  = document.getElementById("cond-undef-count");
 
     sSpanCurCondModOnly     = document.getElementById("cond-mode-only-span");
     sSpanCurCondModAnd      = document.getElementById("cond-mode-and-span");
     sSpanCurCondModNot      = document.getElementById("cond-mode-not-span");
     
-    sInputCurCondMin        = document.getElementById("cond-min-inp");
-    sInputCurCondMax        = document.getElementById("cond-max-inp");
-    sCheckCurCondUndef      = document.getElementById("cond-undef-check");
-
     sCheckCurCondModOnly    = document.getElementById("cond-mode-only");
     sCheckCurCondModAnd     = document.getElementById("cond-mode-and");
     sCheckCurCondModNot     = document.getElementById("cond-mode-not");
 
+    sOpNumH.init();
     document.getElementById("cur-enum-zeros").checked = false;
     setCurEnumZeros(false);
 
@@ -293,7 +274,6 @@ function selectCond(cond_no){
 function setupStatUnit() {
     sOpMode = null;
     sOpEnumModeInfo = null;
-    sOpNumericInfo = null;
     sOpCondition = null;
     sOpEnumList = null;
     sOpError = null;
@@ -310,30 +290,12 @@ function setupStatUnit() {
     unit_type = unit_stat[0];
     if (unit_type == "int" || unit_type == "float") {
         sOpMode = "numeric";
-        val_min   = unit_stat[2];
-        val_max   = unit_stat[3];
-        count     = unit_stat[4];
-        cnt_undef = unit_stat[5];
-        
-        if (val_min == val_max) 
-            sOpNumericInfo = [-1, cnt_undef, val_min, val_max, 
-                null, null, unit_type, false];
-        else
-            sOpNumericInfo = [0, cnt_undef, val_min, val_max, 
-                val_min,  (cnt_undef > 0)? true : null, unit_type, false];
-        
-        sSpanCurCondMin.innerHTML = val_min;
-        sSpanCurCondMax.innerHTML = val_max;
-        sSpanCurCondSign.innerHTML = (val_min == val_max)? "=":"&le;";
-        sInputCurCondMin.value = val_min;
-        sInputCurCondMax.value = val_max;
-        
-        sCheckCurCondUndef.checked = (cnt_undef > 0)
-        sSpanCurCondUndefCount.innerHTML = (cnt_undef > 0)?
-            ("undefined:" + cnt_undef) : "";        
+        sOpNumH.updateUnit(unit_stat);
     } else {
         sOpMode = "enum";
-        if (unit_type != "status") {
+        if (unit_type == "status") {
+            sOpEnumModeInfo = [null, null, false];
+        } else {
             sOpEnumModeInfo = [false, false, false];
         }
         sOpEnumList = unit_stat[2];
@@ -365,10 +327,11 @@ function setupStatUnit() {
 function setupConditionValues(cond) {
     if (cond[1] != sCurStatUnit)
         return;
+    sOpUpdateIdx = sCurCondNo;
     if (cond[0] == "enum") {
         if (cond[2] && sOpEnumModeInfo != null) {
             mode = ["AND", "ONLY", "NOT"].indexOf(cond[2]);
-            if (mode >= 0) {
+            if (mode >= 0 && sOpEnumModeInfo[mode] != null) {
                 sOpEnumModeInfo[mode] = true;
                 document.getElementById("cond-mode-" + 
                     ["and", "only", "not"][mode]).checked = true;
@@ -386,35 +349,13 @@ function setupConditionValues(cond) {
         if (needs_zeros)
             setCurEnumZeros(true);
     } else {
-        sOpNumericInfo[0] = cond[2];
-        sOpNumericInfo[4] = cond[3];
-        sOpNumericInfo[5] = cond[4];
-        sOpNumericInfo[7] = true;
-        if (sOpNumericInfo[0] == 0) {
-            sInputCurCondMin.value = sOpNumericInfo[4];
-        } else {
-            sInputCurCondMax.value = sOpNumericInfo[4];
-        }
-        sSpanCurCondSign.innerHTML = "&le;";
-        if (sOpNumericInfo[5] != null) {
-            sCheckCurCondUndef.checked = sOpNumericInfo[5];
-            sSpanCurCondUndefCount.innerHTML = "undefined:" + sOpNumericInfo[1];
-        }
+        sOpNumH.updateCondition(cond)
     }
 }
 
 function updateCurCondCtrl() {
     sDivCurCondNumeric.style.display = (sOpMode == "numeric")? "block":"none";
     sDivCurCondEnum.style.display    = (sOpMode == "enum")? "block":"none";
-
-    sInputCurCondMin.style.visibility = 
-        (sOpNumericInfo && sOpNumericInfo[0] == 0)? "visible":"hidden";
-    sInputCurCondMax.style.visibility = 
-        (sOpNumericInfo && sOpNumericInfo[0] == 1)? "visible":"hidden";
-    sCheckCurCondUndef.style.visibility = 
-        (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
-    sSpanCurCondUndefCount.style.visibility = 
-        (sOpNumericInfo && sOpNumericInfo[1] > 0)? "visible":"hidden";
 
     sSpanCurCondModAnd.style.visibility = 
         (sOpEnumModeInfo && sOpEnumModeInfo[0] != null)? "visible":"hidden";
@@ -454,40 +395,25 @@ function toNumeric(tp, x) {
 }
 
 /*************************************/
+function checkOpNum() {
+    sOpAddIdx = null;
+    sOpNumH.checkControls();
+    cond_data = sOpNumH.getConditionData();
+    sOpCondition = (cond_data == null)? null:
+        ["numeric", sCurStatUnit].concat(cond_data);
+    sOpError = sOpNumH.getMessage();
+    if (sOpCondition != null) {
+        if (sOpUpdateIdx == null)
+            sOpUpdateIdx = findCond(sCurStatUnit);
+        if (sOpUpdateIdx == null)
+            sOpAddIdx = sCurFilterSeq.length;
+    }
+    updateOpCondText();
+    updateCurCondCtrl();
+}
+
 function checkCurCond(option) {
     switch(option) {
-        case "min":
-            if (sOpNumericInfo == null || sOpNumericInfo[0] != 0)
-                return;
-            checkNumericOpMin();
-            break;
-        case "max":
-            if (sOpNumericInfo == null || sOpNumericInfo[0] != 1)
-                return;
-            checkNumericOpMax();
-            break;
-        case "sign":
-            if (sOpNumericInfo == null || sOpNumericInfo[0] < 0)
-                return;
-            if (sOpNumericInfo[0] == 0) {
-                sOpNumericInfo[0] = 1;
-                checkNumericOpMax();
-            } else {
-                sOpNumericInfo[0] = 0;
-                checkNumericOpMin();
-            }
-            break;
-        case "undef": 
-            if (sOpNumericInfo == null || sOpNumericInfo[6] == null)
-                return;
-            sOpNumericInfo[5] = !sOpNumericInfo[5];
-            sCheckCurCondUndef.checked = sOpNumericInfo[5];
-            if (sOpNumericInfo[0] == 0) {
-                checkNumericOpMin();
-            } else if (sOpNumericInfo[0] == 1) {
-                checkNumericOpMax();
-            }
-            break;
         case "mode-and":
             if (!checkEnumOpMode(0))
                 return;
@@ -505,41 +431,8 @@ function checkCurCond(option) {
         default:
             return;
     }
-    if (sOpNumericInfo != null) {
-        sOpCondition = null;
-        switch (sOpNumericInfo[0]) {
-            case -1:
-                if (sOpNumericInfo[1] > 0 && sOpNumericInfo[5]) {
-                    sOpCondition = ["numeric", sCurStatUnit, -1, null, true];
-                }
-                break;
-            case 0:
-                if (sOpNumericInfo[4] != null && (sOpNumericInfo[7] ||
-                        (sOpNumericInfo[2] != sOpNumericInfo[4]))) {
-                    sOpCondition = ["numeric", sCurStatUnit, 0, sOpNumericInfo[4],
-                        sOpNumericInfo[5]];
-                } else {
-                    if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
-                        sOpCondition = ["numeric", sCurStatUnit, -1, null, false];
-                    }
-                }
-                break;
-            case 1:
-                if (sOpNumericInfo[4] != null && (sOpNumericInfo[7] ||
-                    (sOpNumericInfo[3] != sOpNumericInfo[4]))) {
-                    sOpCondition = ["numeric", sCurStatUnit, 1, sOpNumericInfo[4],
-                        sOpNumericInfo[5]];
-                } else {
-                    if (sOpNumericInfo[1] > 0 && !sOpNumericInfo[5]) {
-                        sOpCondition = ["numeric", sCurStatUnit, -1, null, false];
-                    }
-                }
-                break;
-        }
-    }
     if (sOpEnumList != null) {
         sOpAddIdx = null;
-        sOpUpdateIdx = null;
         enum_mode = "";
         if (sOpEnumModeInfo != null) {
             for (mode_idx = 0; mode_idx < 3; mode_idx++) {
@@ -549,7 +442,8 @@ function checkCurCond(option) {
                 }
             }
         }
-        sOpUpdateIdx = findCond(sCurStatUnit, enum_mode);
+        if (sOpUpdateIdx == null)
+            sOpUpdateIdx = findCond(sCurStatUnit, enum_mode);
         if (sOpUpdateIdx == null) 
             sOpUpdateIdx = findCond(sCurStatUnit);
         selectCond(sOpUpdateIdx);
@@ -563,78 +457,163 @@ function checkCurCond(option) {
             sOpAddIdx = (sOpUpdateIdx == null)? sCurFilterSeq.length:sOpUpdateIdx + 1;
             sOpCondition = ["enum", sCurStatUnit, enum_mode, sel_names];
         } else {
-            sOpUpdateIdx = null;
+            sOpCondition = null;
         }
     }
     updateOpCondText();
     updateCurCondCtrl();
 }
 
-function checkNumericOpMin() {
-    sOpAddIdx = null;
-    sOpUpdateIdx = null;
-    sOpError = null;
-    val = toNumeric(sOpNumericInfo[6], sInputCurCondMin.value);
-    if (val == null) {
-        sOpError = "Bad numeric value";
-        sInputCurCondMin.className = "num-inp bad";
-    } else {
-        sOpNumericInfo[4] = val;
-        sOpUpdateIdx = findCond(sCurStatUnit, 0);
-        if (val < sOpNumericInfo[2]) {
-            sInputCurCondMin.className = "num-inp bad";
-            if (!sOpNumericInfo[7])
-                sOpError = "Lower bound is above minimal value";
-        } else {
-            if (val > sOpNumericInfo[3]) {
-                sInputCurCondMin.className = "num-inp bad";
-                sOpError = "Incorrect lower bound";
-            } else {
-                sInputCurCondMin.className = "num-inp";
-            }
-        }
-        if (sOpUpdateIdx == null) {
-            if (sOpError == null) {
-                idx = findCond(sCurStatUnit);
-                sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
-            }
-        } 
-    }
-}
+/**************************************/
+var sOpNumH = {
+    mInfo: null,
+    mInputMin: null,
+    mInputMax: null,
+    mCheckUndef: null,
+    mSpanUndefCount: null,
+    mConditionData: null,
+    mMessage: null,
 
-function checkNumericOpMax() {
-    sOpAddIdx = null;
-    sOpUpdateIdx = null;
-    sOpError = null;
-    val = toNumeric(sOpNumericInfo[6], sInputCurCondMax.value);
-    if (val == null) {
-        sOpError = "Bad numeric value";
-        sInputCurCondMax.className = "num-inp bad";
-    } else {
-        sOpNumericInfo[4] = val;
-        sOpUpdateIdx = findCond(sCurStatUnit, 1);
-        if (val > sOpNumericInfo[3]) {
-            sInputCurCondMax.className = "num-inp bad";
-            if (!sOpNumericInfo[7])
-                sOpError = "Upper bound is below maximum value";
+    init: function() {
+        this.mInputMin   = document.getElementById("cond-min-inp");
+        this.mInputMax   = document.getElementById("cond-max-inp");
+        this.mCheckUndef = document.getElementById("cond-undef-check")
+        this.mSpanUndefCount = document.getElementById("cond-undef-count");
+    },
+    
+    getCondType: function() {
+        return "numeric";
+    },
+
+    suspend: function() {
+        this.mInfo = null;
+        this.mConditionData = null;
+        this.mMessage = null;
+        this.careControls();
+    },
+    
+    updateUnit: function(unit_stat) {
+        this.mInfo = {
+            cur_bounds: [null, null],
+            fix_bounds: null,
+            with_undef: null,
+            unit_type:  unit_stat[0],
+            val_min:    unit_stat[2],
+            val_max:    unit_stat[3],
+            count:      unit_stat[4],
+            cnt_undef:  unit_stat[5]}
+        if (this.mInfo.cnt_undef > 0) 
+            this.mInfo.with_undef = false;
+        this.mConditionData = null;
+        this.mMessage = null;
+        
+        document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
+        document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
+        document.getElementById("cond-sign").innerHTML = 
+            (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
+        this.mInputMin.value = "";
+        this.mInputMax.value = "";
+        this.mCheckUndef.checked = false;
+        this.mSpanUndefCount.innerHTML = (this.mInfo.cnt_undef > 0)?
+            ("undefined:" + this.mInfo.cnt_undef) : "";
+    },
+
+    updateCondition: function(cond) {
+        this.mInfo.fixed_bounds = [cond[2][0], cond[2][1]];
+        this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
+        this.mInfo.with_undef   = cond[3];
+        this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
+            this.mInfo.cur_bounds[0] : "";
+        this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
+            this.mInfo.cur_bounds[1] : "";
+        document.getElementById("cond-sign").innerHTML = "&le;";
+        if (this.mInfo.with_undef != null) {
+            this.mCheckUndef.checked = this.mInfo.with_undef;
+            this.mSpanUndefCount.innerHTML = "undefined:" + this.mInfo.cnt_undef;
+        }
+    },
+
+    careControls: function() {
+        document.getElementById("cur-cond-numeric").style.display = 
+            (this.mInfo == null)? "none":"block";
+        this.mCheckUndef.style.visibility = 
+            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
+        this.mSpanUndefCount.style.visibility = 
+            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
+    },
+
+    checkControls: function() {
+        if (this.mInfo == null) 
+            return;
+        this.mConditionData = null;
+        this.mMessage = null;
+        if (this.mInputMin.value.trim() == "") {
+            this.mInfo.cur_bounds[0] = null;
+            this.mInputMin.className = "num-inp";
         } else {
-            if (val < sOpNumericInfo[2]) {
-                sInputCurCondMin.className = "num-inp bad";
-                sOpError = "Incorrect upper bound";
-            } else {
-                sInputCurCondMax.className = "num-inp";
+            val = toNumeric(this.mInfo.unit_type, this.mInputMin.value)
+            this.mInputMin.className = (val == null)? "num-inp bad":"num-inp";
+            if (val == null) 
+                this.mMessage = "Bad numeric value";
+            else {
+                this.mInfo.cur_bounds[0] = val;
             }
         }
-        if (sOpUpdateIdx == null) {
-            if (sOpError == null) {
-                idx = findCond(sCurStatUnit);
-                sOpAddIdx = (idx == null)? sCurFilterSeq.length:idx + 1;
-            }
+        if (this.mInputMax.value.trim() == "") {
+            this.mInfo.cur_bounds[1] = null;
+            this.mInputMax.className = "num-inp";
         } else {
-            selectCond(sOpUpdateIdx);
+            val = toNumeric(this.mInfo.unit_type, this.mInputMax.value)
+            this.mInputMax.className = (val == null)? "num-inp bad":"num-inp";
+            if (val == null) 
+                this.mMessage = "Bad numeric value";
+            else {
+                this.mInfo.cur_bounds[1] = val;
+            }
         }
+        if (this.mInfo.with_undef != null) {
+            this.mInfo.with_undef = this.mCheckUndef.checked;
+        }
+        if (this.mMessage == null) {
+            if (this.mInfo.cur_bounds[0] == null && 
+                    this.mInfo.cur_bounds[1] == null && 
+                    !this.mInfo.with_undef)
+                this.mMessage = "";            
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.val_max)
+                this.mMessage = "Lower bound is above maximum value";
+            if (this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[1] < this.mInfo.val_min)
+                this.mMessage = "Upper bound is below minimum value";
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1])
+                this.mMessage = "Bounds are mixed up";
+        }
+        if (this.mMessage == null) {
+            this.mConditionData = [this.mInfo.cur_bounds, this.with_undef]
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[0] < this.mInfo.val_min &&
+                    (this.mInfo.fix_bounds == null || 
+                    this.mInfo.fix_bounds[0] != this.mInfo.cur_bounds[0]))
+                this.mMessage = "Lower bound is below minimal value";
+            if (this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[1] > this.mInfo.val_max &&
+                    (this.mInfo.fix_bounds == null || 
+                    this.mInfo.fix_bounds[1] != this.mInfo.cur_bounds[1]))
+                this.mMessage = "Upper bound is above maximal value";
+        }
+        this.careControls();
+    },
+    
+    getConditionData: function() {
+        return this.mConditionData;
+    },
+    
+    getMessage: function() {
+        return this.mMessage;
     }
-}
+};
 
 function checkEnumOpMode(mode_idx) {
     if (sOpEnumModeInfo == null || sOpEnumModeInfo[mode_idx] == null)
@@ -657,16 +636,13 @@ function checkEnumOpMode(mode_idx) {
 }
 
 function updateOpCondText() {
-    if (sOpAddIdx != null || sOpUpdateIdx != null) 
-        sSpanCurCondText.innerHTML = getCondDescripton(sOpCondition, true);
-    else
-        sSpanCurCondText.innerHTML = "";
-    if (sOpError != null)
-        sSpanCurCondError.innerHTML = sOpError;
-    else
-        sSpanCurCondError.innerHTML = "";
+    document.getElementById("cond-text").innerHTML = 
+        (sOpAddIdx != null || sOpUpdateIdx != null)?
+            getCondDescripton(sOpCondition, true) : "";
+    el_message = document.getElementById("cond-message");
+    el_message.innerHTML = (sOpError != null)? sOpError:"";
+    el_message.className = (sOpCondition == null)? "bad":"message";
 }
-
 
 function setCurEnumZeros(value) {
     document.getElementById("cur-enum-zeros").checked = value;

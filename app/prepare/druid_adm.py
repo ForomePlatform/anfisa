@@ -51,6 +51,15 @@ class DruidAdmin(DruidAgent):
                 dim_container.append({
                     "name": unit_data["name"],
                     "type": unit_data["kind"]})
+            elif unit_data["kind"] == "zygosity":
+                if unit_data["family"] is None:
+                    continue
+                if len(unit_data["family"]) < 2:
+                    continue
+                for idx in range(len(unit_data["family"])):
+                    dim_container.append({
+                        "name": "%s_%d" % (unit_data["name"], idx),
+                        "type": "long"})
             else:
                 if len(unit_data["variants"]) == 0:
                     continue
@@ -62,7 +71,7 @@ class DruidAdmin(DruidAgent):
             "type" : "index",
             "spec" : {
                 "dataSchema" : {
-                    "dataSource" : dataset_name,
+                    "dataSource" : self.normDataSetName(dataset_name),
                     "parser" : {
                         "type" : "string",
                         "parseSpec" : {
@@ -105,10 +114,11 @@ class DruidAdmin(DruidAgent):
 
     def dropDataset(self, dataset_name):
         if not self.mNoCoord:
-            self.call("coord", None, "DELETE", "/datasources/" + dataset_name)
+            self.call("coord", None, "DELETE", "/datasources/" +
+                self.normDataSetName(dataset_name))
         self.call("index", {
             "type": "kill",
-            "dataSource": dataset_name,
+            "dataSource": self.normDataSetName(dataset_name),
             "interval" : self.INTERVAL})
 
     def listDatasets(self):

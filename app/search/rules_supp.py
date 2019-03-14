@@ -39,6 +39,7 @@ class RulesEvalUnit(MultiSetUnit):
                 env_dict[key] = val
         self.mEnv = PresentationObj(env_dict)
         self.mUnitNames = None
+        self.mMultiSetUnits = None
 
     def fillRecord(self, inp_data, record):
         pass
@@ -46,14 +47,20 @@ class RulesEvalUnit(MultiSetUnit):
     def fillRulesPart(self, inp_data, data_record):
         if self.mUnitNames is None:
             self.mUnitNames = []
+            self.mMultiSetUnits = set()
             for unit in self.getIndex().iterUnits():
                 if unit is not self:
                     self.mUnitNames.append(unit.getName())
+                    if not unit.isAtomic():
+                        self.mMultiSetUnits.add(unit.getName())
         rules_set = set()
         value_dict = {"Rules": rules_set}
         for name in self.mUnitNames:
             val = inp_data.get(name)
-            if isinstance(val, list):
+            if val is None:
+                if name in self.mMultiSetUnits:
+                    val = set()
+            elif isinstance(val, list):
                 val = set(map(self.normEnumValue, val))
             elif isinstance(val, basestring):
                 val = self.normEnumValue(val)

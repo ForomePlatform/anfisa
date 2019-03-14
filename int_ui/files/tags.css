@@ -148,3 +148,6 @@ span#tg-run-rules{
     border: 1px solid black;
 }
 
+span#tags-time {
+    margin-left: 100px;
+}

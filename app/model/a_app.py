@@ -1,4 +1,4 @@
-import os, json, codecs, logging
+import sys, os, json, codecs, logging, signal
 from StringIO import StringIO
 
 from .rest_api import RestAPI
@@ -16,6 +16,11 @@ from app.prepare.view_schema import defineViewSchema
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.sec_ws import SecondaryWsCreation
 from app.view.asp_set import AspectSetH
+
+#===============================================
+def terminateAll(sig, frame):
+    AnfisaApp.terminate(sig, frame)
+
 #===============================================
 class AnfisaApp:
     sConfig = None
@@ -25,8 +30,6 @@ class AnfisaApp:
     sDruidAgent = None
     sJobPool = None
     sTasks = dict()
-
-    DEBUG_REPORT = True
 
     @classmethod
     def setup(cls, config, in_container):
@@ -53,6 +56,17 @@ class AnfisaApp:
             AnfisaConfig.configOption("job.pool.threads"),
             AnfisaConfig.configOption("job.pool.size"))
 
+        signal.signal(signal.SIGTERM, terminateAll)
+        signal.signal(signal.SIGHUP, terminateAll)
+        signal.signal(signal.SIGINT, terminateAll)
+
+    @classmethod
+    def terminate(cls, sig, frame):
+        cls.sMongoConn.close()
+        cls.sJobPool.close()
+        logging.info("Application terminated")
+        sys.exit(0)
+
     @classmethod
     def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):
         export_setup = cls.sConfig["export"]
@@ -71,31 +85,21 @@ class AnfisaApp:
                 break
         if fname is None:
             return None
-        if cls.DEBUG_REPORT and tags_man is not None:
-            debug_report = codecs.open(dir_name + debug_file_name, "w",
-                encoding = "utf-8")
-            print >> debug_report, "@TAGS_CFG"
-            print >> debug_report, json.dumps(tags_man.getTagListInfo(),
-                ensure_ascii = False)
+        version_info = ds_h.getVersionData()
+        tags_info = tags_man.getTagListInfo() if tags_man is not None else None
+
         export_h = ExcelExport(export_setup["excel-template"],
-            tags_list = tags_man.getTagListInfo()
-            if tags_man is not None else None)
+            version_info = version_info, tags_list = tags_info)
+        exp_rep = _ExportReport(dir_name + debug_file_name,
+            version_info, tags_info)
         export_h.new()
         for rec_no in rec_no_seq:
             rec_data = ds_h.getRecordData(rec_no)
             tags_data = tags_man.getRecTags(rec_no) if tags_man else None
             export_h.add_variant(rec_data, tags_data)
-            if cls.DEBUG_REPORT and tags_man is not None:
-                print >> debug_report, "@RECORD"
-                print >> debug_report, json.dumps(
-                    rec_data, ensure_ascii = False)
-                print >> debug_report, "@TAGS"
-                print >> debug_report, json.dumps(
-                    tags_data, ensure_ascii = False)
-
+            exp_rep.record(rec_data, tags_data)
         export_h.save(dir_name + fname)
-        if cls.DEBUG_REPORT and tags_man is not None:
-            debug_report.close()
+        exp_rep.close()
         return 'excel/' + fname
 
     @classmethod
@@ -141,11 +145,40 @@ class AnfisaApp:
         return aspects.getViewRepr(record, research_mode)
 
     @classmethod
-    def startCreateSecondaryWS(cls, dataset, wsname, rec_no_seq):
-        task = SecondaryWsCreation(dataset, wsname, rec_no_seq)
+    def startCreateSecondaryWS(cls, dataset, wsname,
+            base_version = None, conditions = None):
+        task = SecondaryWsCreation(dataset, wsname, base_version, conditions)
         cls.sJobPool.putTask(task)
         return str(task.getUID())
 
     @classmethod
     def askJobStatus(cls, task_id):
         return cls.sJobPool.askTaskStatus(int(task_id));
+
+#===============================================
+class _ExportReport:
+    sActive = True
+
+    def __init__(self, debug_file_path, version_info, tags_info):
+        if not self.sActive:
+            self.mOutput = None
+            return
+        self.mOutput = codecs.open(debug_file_path, "w", encoding = "utf-8")
+        print >> self.mOutput, "@VERSIONS"
+        print >> self.mOutput, json.dumps(version_info, ensure_ascii = False)
+        print >> self.mOutput, "@TAGS_CFG"
+        print >> self.mOutput, json.dumps(tags_info, ensure_ascii = False)
+
+    def close(self):
+        if self.mOutput is not None:
+            self.mOutput.close()
+            self.mOutput = None
+
+    def record(self, rec_data, tags_data):
+        if self.mOutput is None:
+            return
+        print >> self.mOutput, "@RECORD"
+        print >> self.mOutput, json.dumps(rec_data, ensure_ascii = False)
+        print >> self.mOutput, "@TAGS"
+        print >> self.mOutput, json.dumps(tags_data, ensure_ascii = False)
+

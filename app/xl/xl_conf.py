@@ -7,13 +7,13 @@ def defineDefaultDecisionTree():
     dtree.addComment(
         "0.     Quality check")
     dtree.addCondition(
-        ConditionMaker.condNumUpperBound("Proband_GQ", 19),
+        ConditionMaker.condNum("Proband_GQ", [None, 19]),
         decision = False)
     dtree.addCondition(
-        ConditionMaker.condNumLowerBound("FS", 31),
+        ConditionMaker.condNum("FS", [31, None]),
         decision = False)
     dtree.addCondition(
-        ConditionMaker.condNumUpperBound("QD", 3),
+        ConditionMaker.condNum("QD", [None, 3]),
         decision = False)
 
     dtree.addComment(
@@ -23,12 +23,12 @@ def defineDefaultDecisionTree():
         decision = True)
 
     dtree.addComment(
-        '2.	    AF< 5% AND +/- bases from intronic/exonic border')
+        '2.	    AF < 5% AND +/- bases from intronic/exonic border')
     dtree.addCondition(
-        ConditionMaker.condNumLowerBound("gnomAD_AF", 0.05),
+        ConditionMaker.condNum("gnomAD_AF", [0.05, None]),
         decision = False)
     dtree.addCondition(["and",
-        ConditionMaker.condNumLowerBound("Dist_from_Exon", 6),
+        ConditionMaker.condNum("Dist_from_Exon", [6, None]),
         ConditionMaker.condEnum("Region", ["exon"], "NOT")],
         decision = False)
 
@@ -51,14 +51,14 @@ def defineDefaultDecisionTree():
         '(stop-codon, frameshift, canonical splice site).')
 
     dtree.addCondition(
-        ConditionMaker.condNumLowerBound("Severity", 3),
+        ConditionMaker.condNum("Severity", [3, None]),
         decision = True)
 
     dtree.addComment(
         '3.a.	annotated as "Missense", "synonymous" '
         'and "splice region" variants')
     dtree.addCondition(
-        ConditionMaker.condNumUpperBound("Severity", 0),
+        ConditionMaker.condNum("Severity", [None, 0]),
         decision = False)
 
     dtree.addComment(
@@ -66,9 +66,9 @@ def defineDefaultDecisionTree():
     dtree.addComment(
         'PopMax < 0.01 (minimum 2000 alleles total in ancestral group)')
     dtree.addCondition(["and",
-        ConditionMaker.condNumUpperBound("gnomAD_AF", 0.0007),
-        ConditionMaker.condNumLowerBound("gnomAD_PopMax_AN", 2001),
-        ConditionMaker.condNumUpperBound("gnomAD_PopMax_AF", 0.01)],
+        ConditionMaker.condNum("gnomAD_AF", [None, 0.0007]),
+        ConditionMaker.condNum("gnomAD_PopMax_AN", [2001, None]),
+        ConditionMaker.condNum("gnomAD_PopMax_AF", [None, 0.01])],
         decision = True)
     dtree.setFinalDecision(False)
 

@@ -12,10 +12,6 @@ class BoolStat:
     def regValue(self, val):
         self.mStat[not not val] += 1
 
-    def report(self, rep_out):
-        print >> rep_out, (
-            "True: %d, False: %d" % (self.mStat[True], self.mStat[False]))
-
     def dump(self, names):
         return ["bool", self.mNames, self.mStat[True], self.mStat[False]]
 
@@ -44,12 +40,6 @@ class NumDiapStat:
             elif val > self.mMax:
                 self.mMax = val
 
-    def report(self, rep_out):
-        print >> rep_out, "Min: %s, Max: %s" % (
-            str(self.mMin), str(self.mMax))
-        if self.mCntUndef > 0:
-            print >> rep_out, "Undef: %d" % self.mCntDef
-
     def dump(self):
         return [self.mTypeName, self.mNames,
             self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
@@ -69,18 +59,16 @@ class EnumStat:
         return False
 
     def regValues(self, values, count = 1):
+        if not values:
+            return
         for val in values:
             if not(0 <= val < len(self.mVariantSet)):
                 continue
             assert 0 <= val < len(self.mVariantSet)
             self.mStat[val] += count
 
-    def report(self, rep_out):
-        #TRF: write it later
-        assert False
-
     def dump(self):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             rep_list.append([variant, self.mStat.get(idx, 0)])
-        return ["enum", self.mNames, rep_list]
+        return [self.mEnumType, self.mNames, rep_list]

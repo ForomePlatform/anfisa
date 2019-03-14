@@ -270,9 +270,15 @@ function updateTabCfg() {
 //=====================================
 function initExportForm() {
     wsDropShow(false);
-    document.getElementById("ws-export-result").innerHTML = 
-        'Export ' + sRecList.length + ' records?<br>' +
-        '<button class="drop" onclick="doExport();">Export</button>';
+    if (sRecList.length <= 300)
+        res_content = 'Export ' + sRecList.length + ' records?<br>' +
+            '<button class="drop" onclick="doExport();">Export</button>' + 
+            '&emsp;<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
+    else
+        res_content = 'Too many records for export: ' + 
+            sRecList.length + ' > 300.<br>' +
+            '<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
+    document.getElementById("ws-export-result").innerHTML = res_content;
     sExportFormed = false;
 }
 
@@ -282,7 +288,6 @@ function openControlMenu() {
     if (sWsDropShown)
         document.getElementById("ws-control-menu").style.display = 
             (sWsDropShown)? "block":"none";
-        
 }
 
 function showExport() {
@@ -350,8 +355,10 @@ function loadNote(content) {
 }
 
 function setupNote(info) {
-    document.getElementById("note-ws-name").innerHTML = info["workspace"];
+    document.getElementById("note-ws-name").innerHTML = info["name"];
     document.getElementById("note-content").value = info["note"];
+    document.getElementById("note-time").innerHTML = 
+        (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
 }
 
 //=====================================
@@ -367,3 +374,8 @@ function wsDropShow(mode) {
     }
 }
 
+//=====================================
+function timeRepr(time_label) {
+    var dt = new Date(time_label);
+    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
+}
