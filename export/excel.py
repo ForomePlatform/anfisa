@@ -4,6 +4,7 @@ import logging
 import time
 import os
 from copy import copy
+from enum import Enum
 
 import openpyxl
 from jsonpath_rw import parse
@@ -101,7 +102,7 @@ def find_value(array, key):
 
 class ExcelExport:
     def __init__(self, fname = None, mapping = None,
-            version_info = None, tags_list = None):
+            tags_list = None):
         if fname:
             self.mapping = read_mapping(fname)
         else:
