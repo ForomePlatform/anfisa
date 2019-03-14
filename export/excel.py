@@ -166,6 +166,7 @@ class ExcelExport:
         self.__createKeySheet();
 
     def __createKeySheet(self):
+        self.workbook.create_sheet("version")
         ws = self.workbook.create_sheet("key")
         for idx, title in enumerate(["Column", "Definition", "Mapping"]):
             ws.cell(row=1, column=idx + 1, value=title)
@@ -185,6 +186,10 @@ class ExcelExport:
         self.tags_count = {}
         for key in self.tags_list['check-tags']:
             self.tags_list[key] = 0
+        if 'version' in  self.tags_list:
+            ws_ver = self.workbook["version"]
+            ws_ver.cell(row=1, column=1, value ="Version:")
+            ws_ver.cell(row=1, column=2, value=self.tags_list['version'])
 
     def add_variant(self, data, tags=None):
         ws = self.workbook.active
