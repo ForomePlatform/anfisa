@@ -7,7 +7,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds):
         js_files = ["xltree.js"])
 
     print >> output, (
-        '  <body id="_body" onload="initXL(\'%s\', \'%s\');">' %
+        '  <body onload="initXL(\'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title))
 
     _formXLPannel(output, xl_ds.getName())
@@ -31,10 +31,12 @@ def _formXLPannel(output, ds_name):
                 <div id="ds-control-menu" class="drop">
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
+                    <div onclick="goToFilters();"
+                        class="drop ctrl-menu">Filtering pannel</div>
+                    <div onclick="openNote();"
+                        class="drop ctrl-menu">Dataset Note...</div>
                     <div onclick="wsCreate();"
                         class="drop ctrl-menu">Create workspace...</div>
-                    <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note</div>
                 </div>
             </span>&emsp;
             XL dataset: <span id="xl-name"></span>
@@ -81,13 +83,12 @@ def _formCurCondDiv(output):
                 <span id="cond-title"></span>
                 <span class="close-it" onclick="modalOff();">&times;</span>
             </div>
-            <div id="cond-error"></div>
+            <div id="cond-message"></div>
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-sign" class="num-sign"
-                onclick="sOpNumH.checkControls(true);"></span>
+              <span id="cond-sign"></span>
               <input id="cond-max-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
               <span id="cond-max" class="num-set"></span>
@@ -192,6 +193,7 @@ def _formNoteDiv(output):
             <button onclick="modalOff();">
               Done
             </button>
+            <span id="note-time"></span>
         </div>
       </div>
     </div>

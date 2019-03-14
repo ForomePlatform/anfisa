@@ -5,6 +5,7 @@ var sNavSheet = null;
 var sAllFilters = [];
 var sOpFilters = [];
 var sLoadFilters = [];
+var sFltTimeDict = [];
 var sCurZoneData = null;
 
 var sCheckFltNamed   = null;
@@ -186,6 +187,7 @@ function setupNamedFilters(filter_list) {
     q_same = (filter_list.length == sAllFilters.length)
     sOpFilters = [];
     sLoadFilters = [];
+    sFltTimeDict = {};
     var all_filters = [];
     for (idx = 0; idx < filter_list.length; idx++) {
         flt_name = filter_list[idx][0];
@@ -195,6 +197,7 @@ function setupNamedFilters(filter_list) {
             sOpFilters.push(flt_name);
         if (filter_list[idx][2])
             sLoadFilters.push(flt_name);
+        sFltTimeDict[flt_name] = filter_list[idx][3];
     }
     if (q_same)
         return sAllFilters;

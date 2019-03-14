@@ -1,9 +1,12 @@
-import logging
+import logging, json
+from app.model.a_config import AnfisaConfig
+from app.model.condition import ConditionMaker
+from xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit:
-    def __init__(self, xl_ds, descr):
+    def __init__(self, xl_ds, descr, unit_kind = None):
         self.mDataSet = xl_ds
-        self.mUnitKind  = descr["kind"]
+        self.mUnitKind  = descr["kind"] if unit_kind is None else unit_kind
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
@@ -27,11 +30,14 @@ class XL_Unit:
     def getNo(self):
         return self.mNo
 
-    def report(self, output):
-        print >> output, "Unit", self.mName, "kind=", self.mUnitKind
+    def getParseSupport(self):
+        return (None, None)
 
     @staticmethod
     def create(xl_ds, descr):
+        if descr["kind"] == "zygosity":
+            ret = XL_ZygosityUnit(xl_ds, descr)
+            return None if ret.isDummy() else ret
         if descr["kind"] in {"long", "float"}:
             return XL_NumUnit(xl_ds, descr)
         ret = XL_EnumUnit(xl_ds, descr)
@@ -50,14 +56,14 @@ class XL_NumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
 
-    def evalStat(self, druid_cond = None):
+    def evalStat(self, context = None):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "timeseries",
-            "dataSource": self.getDS().getName(),
+            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
             "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -70,28 +76,24 @@ class XL_NumUnit(XL_Unit):
                     "name": name_max,
                     "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if druid_cond is not None:
-            query["filter"] = druid_cond
+        if context and  context.get("cond") is not None:
+            query["filter"] = context["cond"].getDruidRepr()
         rq = druid_agent.call("query", query)
         assert len(rq) == 1
         return [rq[0]["result"][nm] for nm in
             (name_min, name_max, name_cnt)]
 
-    def report(self, output):
-        XL_Unit.report(self, output)
-        vmin, vmax, count = self.evalStat()
-        print >> output, "\tdiap:", vmin, vmax, "count=", count
-
-    def makeStat(self, druid_cond):
+    def makeStat(self, context = None):
         ret = self._prepareStat();
-        vmin, vmax, count = self.evalStat(druid_cond)
+        vmin, vmax, count = self.evalStat(context)
         #TRF: count_undef!!!
         return ret + [vmin, vmax, count, 0]
 
 #===============================================
 class XL_EnumUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
-        XL_Unit.__init__(self, xl_ds, descr)
+        XL_Unit.__init__(self, xl_ds, descr,
+            "status" if descr.get("atomic") else "enum")
         self.mVariants = [info[0]
             for info in descr["variants"]]
         self.mAccumCount = sum([info[1]
@@ -100,21 +102,21 @@ class XL_EnumUnit(XL_Unit):
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
 
-    def evalStat(self, druid_cond = None):
+    def evalStat(self, context = None):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
-            "dataSource": self.getDS().getName(),
+            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
             "dimension": self.getName(),
-            "threshold": len(self.mVariants),
+            "threshold": len(self.mVariants) + 5,
             "metric": "count",
             "granularity": druid_agent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
-        if druid_cond is not None:
-            query["filter"] = druid_cond
+        if context and  context.get("cond") is not None:
+            query["filter"] = context["cond"].getDruidRepr()
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
@@ -129,20 +131,122 @@ class XL_EnumUnit(XL_Unit):
         return [[var, counts.get(var, 0)]
             for var in self.mVariants]
 
-    def report(self, output):
-        XL_Unit.report(self, output)
-        stat = self.evalStat()
-        if len(stat) < 5:
-            cnt = len(stat)
-        else:
-            cnt = 3
-        for idx in range(cnt):
-            var, count = stat[idx]
-            print >> output, "\t%s: %d" % (var, count)
-        if cnt < len(stat):
-            print >> output, "\t\t...and %d more" % (len(stat) - cnt)
-
-    def makeStat(self, druid_cond):
+    def makeStat(self, context):
         ret = self._prepareStat();
-        ret.append(self.evalStat(druid_cond))
+        ret.append(self.evalStat(context))
         return ret
+
+#===============================================
+class XL_ZygosityUnit(XL_Unit):
+    def __init__(self, xl_ds, descr):
+        XL_Unit.__init__(self, xl_ds, descr)
+        self.mFamily = descr["family"]
+        if not self.isDummy():
+            self.mFamMap = {member:idx
+                for idx, member in enumerate(self.mFamily)}
+        self.mLabels = AnfisaConfig.configOption("zygosity.cases")
+        self.mConfig = descr.get("config", dict())
+        self.mXCondition = XL_Condition.parse(self.mConfig.get("x_cond",
+            ConditionMaker.condEnum("Chromosome", ["chrX"])))
+
+    def isDummy(self):
+        return not self.mFamily or len(self.mFamily) < 2
+
+    def getFamilyInfo(self):
+        return self.mFamily
+
+    def getParseSupport(self):
+        return ("zygosity", self.parseZCondition)
+
+    def conditionZHomoRecess(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, [2, None]))
+            else:
+                seq.append(XL_NumCondition(dim_name, [None, 1]))
+        return XL_Condition.joinAnd(seq)
+
+    def conditionZDominant(self, problem_group):
+        return self.mXCondition.negative().addAnd(
+            self._conditionZDominant(problem_group))
+
+    def conditionZXLinked(self, problem_group):
+        return self.mXCondition.addAnd(
+            self._conditionZDominant(problem_group))
+
+    def _conditionZDominant(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, [1, None]))
+            else:
+                seq.append(XL_NumCondition(dim_name, [None, 0]))
+        return XL_Condition.joinAnd(seq)
+
+    def conditionZCompens(self, problem_group):
+        seq = []
+        for idx in range(len(self.mFamily)):
+            dim_name = "%s_%d" % (self.getName(), idx)
+            if idx in problem_group:
+                seq.append(XL_NumCondition(dim_name, [None, 0]))
+            else:
+                # z >= 1
+                seq.append(XL_NumCondition(dim_name, [1, None]))
+        return XL_Condition.joinAnd(seq)
+
+    def _evalOneCrit(self, z_condition, context):
+        condition = z_condition
+        if context and "cond" in context:
+            condition = z_condition.addAnd(context["cond"])
+        return self.getDS.evalTotalCount({"cond": condition})
+
+    def _iterCritSeq(self, p_group):
+        yield (self.mLabels["homo_recess"],
+            self.conditionZHomoRecess(p_group))
+        yield (self.mLabels["x_linked"],
+            self.conditionZXLinked(p_group))
+        yield (self.mLabels["dominant"],
+            self.conditionZDominant(p_group))
+        yield (self.mLabels["compens"],
+            self.conditionZCompens(p_group))
+
+    def makeStat(self, context = None):
+        ret = self._prepareStat() + [self.mFamily]
+        if context is None or "problem_group" not in context:
+            return ret + [[], None]
+        p_group = {m_idx if 0 <= m_idx < len(self.mFamily) else None
+            for m_idx in context["problem_group"]}
+        if None in p_group:
+            p_group.remove(None)
+        if (len(p_group) == 0 or len(p_group) == len(self.mFamily)):
+            return ret + [sorted(p_group), None]
+        stat = []
+        for name, z_condition in self._iterCritSeq(p_group):
+            condition = z_condition
+            if "cond" in context:
+                condition = z_condition.addAnd(context["cond"])
+            stat.append([name,
+                self.getDS().evalTotalCount({"cond": condition})])
+        return ret + [sorted(p_group), stat]
+
+    def parseZCondition(self, cond_info):
+        assert cond_info[0] == "zygosity"
+        unit_name, p_group, filter_mode, variants = cond_info[1:]
+        assert unit_name == self.getName()
+        assert filter_mode != "ONLY"
+        assert len(variants) > 0
+
+        singles = []
+        for name, z_condition in self._iterCritSeq(p_group):
+            if name in variants:
+                singles.append(z_condition)
+        assert len(singles) == len(variants)
+
+        if filter_mode == "NOT":
+            return XL_Condition.joinAnd([cond.negative() for cond in singles])
+        if filter_mode == "AND":
+            return XL_Condition.joinAnd(singles)
+        return XL_Condition.joinOr(singles)

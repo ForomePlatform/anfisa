@@ -1,5 +1,4 @@
-import sys, gzip, bz2, codecs, json, os, shutil
-from glob import glob
+import sys, gzip, codecs, json, os, shutil, re
 from argparse import ArgumentParser
 from StringIO import StringIO
 from datetime import datetime
@@ -11,20 +10,47 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.view_schema import defineViewSchema
 from app.prepare.flt_schema import defineFilterSchema
 from app.prepare.druid_adm import DruidAdmin
+from app.prepare.read_json import JsonLineReader
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
 DRUID_ADM = None
+
+#===============================================
+sID_Pattern = re.compile('^\\S+$', re.U)
+
+def checkDSName(name, kind):
+    global sID_Pattern
+    if not sID_Pattern.match(name) or not name[0].isalpha():
+        print >> sys.stderr, "Incorrect dataset name:", name
+        assert False
+    if kind == "ws":
+        if name.lower().startswith("xl_"):
+            print >> sys.stderr, "Improper WS name:", name
+            print >> sys.stderr, "(Should not have prefix XL_)"
+            assert False
+    elif kind == "xl":
+        if not name.lower().startswith("xl_"):
+            print >> sys.stderr, "Improper XL-dataset name:", name
+            print >> sys.stderr, "(Should have prefix XL_ or xl_)"
+            assert False
+    else:
+        print >> sys.stderr, "Wrong dataset kind:", kind
+        assert False
+
 #===============================================
 def createDataSet(app_config, name, kind, mongo, source, report_lines):
     global DRUID_ADM
     vault_dir = app_config["data-vault"]
+    if not os.path.isdir(vault_dir):
+        print >> sys.stderr, "No vault directory:", vault_dir
+        assert False
+    checkDSName(name, kind)
     ds_dir = vault_dir + "/" + name
     if not mongo:
         mongo = name
-    assert kind in ("ws", "xl")
     if os.path.exists(ds_dir):
         print >> sys.stderr, "Dataset exists:", ds_dir
         assert False
@@ -41,8 +67,11 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     rec_no = 0
     fdata_out = gzip.open(ds_dir + "/fdata.json.gz", 'wb')
     pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
+    input = JsonLineReader(source)
     with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
-        for record in readJSonRecords(source):
+        for record in input:
+            if record.get("record_type") == "metadata":
+                continue
             view_checker.regValue(rec_no, record)
             vdata_out.putLine(json.dumps(record, ensure_ascii = False))
             flt_data = filter_set.process(rec_no, record)
@@ -56,6 +85,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
                 print >> sys.stderr, "\r%d lines..." % rec_no,
     if report_lines:
         print >> sys.stderr, "\nTotal lines: %d" % rec_no
+    input.close()
     fdata_out.close()
     pdata_out.close()
 
@@ -67,7 +97,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     if kind == "xl":
         is_ok &= DRUID_ADM.uploadDataset(name, flt_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
-            os.path.abspath(ds_dir + "/druid_rq.gz"))
+            os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
         ds_info = {
@@ -112,7 +142,6 @@ def dropDataSet(app_config, name, kind, calm_mode):
     if kind == "xl":
         if calm_mode:
             druid_datasets = DRUID_ADM.listDatasets()
-            print >> sys.stderr, "listDatasets:", druid_datasets
         else:
             druid_datasets = [name]
         if name in druid_datasets:
@@ -136,26 +165,6 @@ def checkDataSet(app_config, name, kind):
 
     print >> sys.stdout, "Check", ds_dir, ":", \
         os.path.exists(ds_dir), os.path.exists(ds_dir + "/active")
-
-#===============================================
-def readJSonRecords(src):
-    if '*' in src:
-        names = sorted(glob(src))
-    else:
-        names = [src]
-    for nm in names:
-        if nm.endswith('.gz'):
-            with gzip.open(nm, 'rb') as inp:
-                for line in inp:
-                    yield json.loads(line.decode('utf-8'))
-        elif nm.endswith('.bz2'):
-            with bz2.BZ2File(nm, 'rb') as inp:
-                for line in inp:
-                    yield json.loads(line.decode('utf-8'))
-        else:
-            with codecs.open(nm, 'r', encoding = 'utf-8') as inp:
-                for line in inp:
-                    yield json.loads(line)
 
 #===============================================
 parser = ArgumentParser()

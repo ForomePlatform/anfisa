@@ -6,6 +6,7 @@ from .dataset import DataSet
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .a_config import AnfisaConfig
+from .condition import ConditionMaker
 from app.search.index import Index
 
 #===============================================
@@ -24,10 +25,12 @@ class Workspace(DataSet):
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
-        for filter_name, conditions in self.mMongoWS.getFilters():
-            if not self.mIndex.hasStdFilter(filter_name):
+        for filter_name, conditions, time_label in self.mMongoWS.getFilters():
+            if not self.mIndex.goodOpFilterName(filter_name):
                 try:
-                    self.mIndex.cacheFilter(filter_name, conditions)
+                    self.mIndex.cacheFilter(filter_name,
+                        ConditionMaker.upgradeOldFormatSeq(conditions),
+                        time_label)
                 except Exception as ex:
                     logging.error("Exception on load filter %s:\n %s" %
                         filter_name, str(ex))
@@ -44,7 +47,7 @@ class Workspace(DataSet):
     def _loadPData(self):
         with self._openPData() as inp:
             for line in inp:
-                pre_data = json.loads(line)
+                pre_data = json.loads(line.decode("utf-8"))
                 for key, tab in (
                         ("_rand",  self.mTabRecRand),
                         ("_key",   self.mTabRecKey),
@@ -77,13 +80,12 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
-    def getWSNote(self, note = None):
-        if note is not None:
-            self.mMongoWS.setWSNote(note)
-        return self.mMongoWS.getWSNote()
-
     def dump(self):
-        return {"name": self.mName, "note": self.getWSNote()}
+        note, time_label = self.mMongoWS.getWSNote()
+        return {
+            "name": self.mName,
+            "note": note,
+            "time": time_label}
 
     def getMongoRecData(self, key):
         return self.mMongoWS.getRecData(key)
@@ -134,8 +136,8 @@ class Workspace(DataSet):
             return filter_name
         with self:
             if op == "UPDATE":
-                self.mMongoWS.setFilter(flt_name, conditions)
-                self.mIndex.cacheFilter(flt_name, conditions)
+                time_label = self.mMongoWS.setFilter(flt_name, conditions)
+                self.mIndex.cacheFilter(flt_name, conditions, time_label)
                 filter_name = flt_name
             elif op == "DROP":
                 self.mMongoWS.dropFilter(flt_name)
@@ -143,23 +145,6 @@ class Workspace(DataSet):
             else:
                 assert False
         return filter_name
-
-    def makeStatReport(self, filter_name, research_mode, conditions, instr):
-        if instr:
-            op, q, flt_name = instr.partition('/')
-            if not self.mIndex.hasStdFilter(flt_name):
-                with self:
-                    if op == "UPDATE":
-                        self.mMongoWS.setFilter(flt_name, conditions)
-                        self.mIndex.cacheFilter(flt_name, conditions)
-                        filter_name = flt_name
-                    elif op == "DROP":
-                        self.mMongoWS.dropFilter(flt_name)
-                        self.mIndex.dropFilter(flt_name)
-                    else:
-                        assert False
-        return self.mIndex.makeStatReport(
-            filter_name, research_mode, conditions)
 
     #===============================================
     @RestAPI.ws_request
@@ -195,13 +180,11 @@ class Workspace(DataSet):
     def rq__tags(self, rq_args):
         modes = rq_args.get("m", "").upper()
         rec_no = int(rq_args.get("rec"))
-        update_info = None
         if rq_args.get("tags") is not None:
             tags_to_update = json.loads(rq_args.get("tags"))
             with self:
-                update_info = self.mTagsMan.updateRec(
-                    rec_no, tags_to_update)
-        rep = self.mTagsMan.makeRecReport(rec_no, update_info)
+                self.mTagsMan.updateRec(rec_no, tags_to_update)
+        rep = self.mTagsMan.makeRecReport(rec_no)
         rep["filters"] = self.mIndex.getRecFilters(rec_no, 'R' in modes)
         rep["tags-version"] = self.mTagsMan.getIntVersion()
         return rep
@@ -274,6 +257,8 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__wsnote(self, rq_args):
-        with self:
-            note = self.getWSNote(rq_args.get("note"))
-        return {"workspace": self.getName(), "note": note}
+        note = rq_args.get("note")
+        if note is not None:
+            with self:
+                self.mMongoWS.setWSNote(note)
+        return self.dump()

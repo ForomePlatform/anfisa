@@ -1,6 +1,8 @@
 from pymongo import MongoClient
 from datetime import datetime
 
+from .a_config import AnfisaConfig
+
 #===============================================
 class MongoConnector:
     def __init__(self, path, host = None, port = None):
@@ -10,11 +12,10 @@ class MongoConnector:
         if port is None:
             port  = 27017
         self.mMongo = MongoClient(host,  port)
-        self.mAgents = {"_common_": MongoCommonAgent(self,
-            self.mMongo[self.mPath]["_common_"])}
+        self.mAgents = {}
 
-    def getCommonAgent(self):
-        return self.mAgents["_common_"]
+    def close(self):
+        self.mMongo.close()
 
     def getWSAgent(self, name):
         if name not in self.mAgents:
@@ -65,12 +66,16 @@ class MongoWSAgent:
         for it in self.mAgent.find({"_tp": "flt"}):
             it_id = it["_id"]
             if it_id.startswith("flt-"):
-                ret.append((it_id[4:], it["seq"]))
+                ret.append((it_id[4:], it["seq"],
+                    AnfisaConfig.normalizeTime(it.get("time"))))
         return ret
 
     def setFilter(self, filter_name, conditions):
+        time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": conditions, "_tp": "flt"}}, upsert = True)
+            {"$set": {"seq": conditions,
+                "_tp": "flt", "time": time_label}}, upsert = True)
+        return time_label
 
     def dropFilter(self, filter_name):
         self.mAgent.remove({"_id": "flt-" + filter_name})
@@ -88,18 +93,15 @@ class MongoWSAgent:
     def getWSNote(self):
         it = self.mAgent.find_one({"_id": "note"})
         if it is not None:
-            return it["note"].strip()
-        return ""
+            return (it["note"].strip(),
+                AnfisaConfig.normalizeTime(it.get("time")))
+        return ("", None)
 
     def setWSNote(self, note):
+        time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "note"},
-            {"$set": {"note": note.strip()}}, upsert = True)
-
-#===============================================
-class MongoCommonAgent:
-    def __init__(self, connector, agent):
-        self.mConnector = connector
-        self.mAgent = agent
+            {"$set": {"note": note.strip(), "time": time_label}},
+                upsert = True)
 
 #===============================================
 class MongoDSAgent:
@@ -116,12 +118,16 @@ class MongoDSAgent:
         for it in self.mAgent.find({"_tp": "flt"}):
             it_id = it["_id"]
             if it_id.startswith("flt-"):
-                ret.append((it_id[4:], it["seq"]))
+                ret.append((it_id[4:], it["seq"],
+                    AnfisaConfig.normalizeTime(it.get("time"))))
         return ret
 
     def setFilter(self, filter_name, conditions):
+        time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": conditions, "_tp": "flt"}}, upsert = True)
+            {"$set": {"seq": conditions, "_tp": "flt", "time": time_label}},
+            upsert = True)
+        return time_label
 
     def dropFilter(self, filter_name):
         self.mAgent.remove({"_id": "flt-" + filter_name})
@@ -129,12 +135,15 @@ class MongoDSAgent:
     def getDSNote(self):
         it = self.mAgent.find_one({"_id": "note"})
         if it is not None:
-            return it["note"].strip()
-        return ""
+            return (it["note"].strip(),
+                AnfisaConfig.normalizeTime(it.get("time")))
+        return ("", None)
 
     def setDSNote(self, note):
+        time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "note"},
-            {"$set": {"note": note.strip()}}, upsert = True)
+            {"$set": {"note": note.strip(), "time": time_label}},
+            upsert = True)
 
     def getVersionList(self):
         ret = []

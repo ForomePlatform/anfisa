@@ -13,7 +13,7 @@ def evalRec(env, rec):
     # 2.	AF< 5% AND +/- bases from intronic/exonic border
     if (rec.gnomAD_AF_Exomes > env.af_in_db):
         return False
-    if (rec.Dist_from_Exon > env.exon_dist):
+    if (rec.Dist_from_Exon > env.exon_dist and rec.Region != "exon"):
         return False
 
     # 2.a.	Present in ClinVar Path, Likely Path, VUS (worst annotation).

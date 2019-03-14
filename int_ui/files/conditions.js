@@ -41,17 +41,14 @@ function findCond(unit_name, mode) {
 
 /*************************************/
 function getCondDescripton(cond, short_form) {
-    rep_cond = (short_form)? []:[cond[1]];
     if (cond != null && cond[0] == "numeric") {
-        switch (cond[2]) {
-            case 0:
-                rep_cond.push("&ge; " + cond[3]);
-                break;
-            case 1:
-                rep_cond.push("&le; " + cond[3]);
-                break;
-        }
-        switch (cond[4]) {
+        rep_cond = [];
+        if (cond[2][0] != null)
+            rep_cond.push(cond[2][0] + " &le;");
+        rep_cond.push(cond[1]);
+        if (cond[2][1] != null)
+            rep_cond.push("&le; " + cond[2][1]);
+        switch (cond[3]) {
             case true:
                 rep_cond.push("with undef");
                 break
@@ -62,6 +59,7 @@ function getCondDescripton(cond, short_form) {
         return rep_cond.join(" ");
     }
     if (cond != null && cond[0] == "enum") {
+        rep_cond = (short_form)? []:[cond[1]];
         rep_cond.push("IN");
         if (cond[2] && cond[2] != "OR") 
             rep_cond.push('[' + cond[2] + ']');
@@ -180,12 +178,16 @@ function prepareFilterOperations() {
     document.getElementById("filters-op-delete").className = 
         (sBaseFilterName == "_current_" || 
             sOpFilters.indexOf(sBaseFilterName) < 0)? "disabled":"";
+    /*flt_time = sFltTimeDict[sBaseFilterName];
+    document.getElementById("filter-upd-time").innerHTML = 
+        (flt_time)? timeRepr(flt_time):'';*/
     sBtnFilters_Op.style.display = "none";
     wsDropShow(false);
 }
 
 function checkFilterAsIdent(filter_name) {
-    return /^[A-Za-z0-9_\-]+$/i.test(filter_name) && filter_name[0] != '_';
+    return /^\S+$/u.test(filter_name) && 
+        (filter_name[0].toLowerCase() != filter_name[0].toUpperCase());
 }
 
 function checkFilterName() {

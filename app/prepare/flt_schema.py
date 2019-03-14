@@ -1,20 +1,17 @@
-from .filters import FilterPrepareSetH
-
+from .prep_filters import FilterPrepareSetH
+from app.model.condition import ConditionMaker
 #===============================================
 def defineFilterSchema():
     filters = FilterPrepareSetH()
 
     with filters.viewGroup("Coordinates"):
-        # filters.statusUnit("Chromosome", "/seq_region_name",
-        #     ["chr1", "chr2", "chr3", "chr4", "chr5",
-        #     "chr6", "chr7", "chr8", "chr9", "chr10",
-        #     "chr11", "chr12", "chr13", "chr14", "chr15",
-        #     "chr16", "chr17", "chr18", "chr19", "chr20",
-        #     "chr21", "chr22", "chr23", "chrX", "chrY", "?"],
-        #research_only = True, accept_other_values = True)
-
-        filters.statusUnit("Chromosome", "/data/seq_region_name",
-            research_only = True)
+        filters.statusUnit("Chromosome", "/_filters/chromosome",
+            variants = ["chr1", "chr2", "chr3", "chr4", "chr5",
+            "chr6", "chr7", "chr8", "chr9", "chr10",
+            "chr11", "chr12", "chr13", "chr14", "chr15",
+            "chr16", "chr17", "chr18", "chr19", "chr20",
+            "chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
+            research_only = True, default_value = "undefined")
 
         filters.intValueUnit("Start_Pos", "/data/start",
             title = "Start Position", research_only = True)
@@ -26,6 +23,13 @@ def defineFilterSchema():
         filters.statusUnit("Region", "/data/region_canonical",
             title = "Region (Canonical)",
             research_only = False, default_value = "Other")
+
+    with filters.viewGroup("Zygosity"):
+        filters.zygositySpecialUnit("zygosity",
+            "/data/zygosity", config = {"x_cond":
+            ConditionMaker.condEnum("Chromosome", ["chrX"])})
+        filters.presenceUnit("Compound_heterozygous",
+            [("True", "/_filters/compoundHet")])
 
     filters.multiStatusUnit("Genes", "/view/general/genes[]",
         compact_mode = True)
@@ -126,6 +130,7 @@ def defineFilterSchema():
         filters.intValueUnit("Min_GQ", "/_filters/min_gq")
         filters.intValueUnit("QD", "/_filters/qd")
         filters.intValueUnit("FS", "/_filters/fs")
+        filters.multiStatusUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",

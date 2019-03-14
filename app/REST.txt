@@ -147,7 +147,7 @@ Method "/stat"
         "stat-list": 
             [ * list of search units
                 [
-                    0: unit type, "int" / "float" / "enum"
+                    0: unit type, "int" / "float" / "enum" / "status"
                     1:  {
                             "name": name of unit
                             "title": title of unit
@@ -160,7 +160,7 @@ Method "/stat"
                     4: int count of records with value
                     5: int count of records woth undefined value
 
-                    * in case of unit type = "enum"
+                    * in case of unit type = "enum"/"status"
                     2: [ * statictics for all values in enum
                           [ * statistics for enum value
                             0: name (name of value)
@@ -177,6 +177,7 @@ Method "/stat"
                     0: name of filter
                     1: bool if filter is common
                     2: bool if filter is available to load, see Notes
+                    3: time of latest update in isoformat, of null for common filters
                 ], ...
             ]
     }
@@ -191,6 +192,8 @@ Method "/stat"
       "UPDATE/<filter name>" - create or update filter with this name 
                 by conditions set  by request
       "DELETE/<filter name> - delete filter
+    * Name for any filter (to create/update) must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces, in terms of js the criterium is as follows:
+    /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
       
 ===
 Method "/export"
@@ -227,6 +230,7 @@ Method "/tags"
             "rec-tags": TagList structure
             "can_undo": bool if undo is possible
             "can_redo": bool if redo is possible
+            "time": time of latest update, isoformat or null if tags are untouched
             "marker":  
                 [ * "marked" state of record, see Notes
                     0: int rec no
@@ -246,6 +250,11 @@ Method "/tags"
     
     * "marked" state or record might change on operation, so we report it.
     Change of this state should be worked out by client dynamically
+
+    * Name for any new tag must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces; in terms of js the criterium is as follows:
+    /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
+    
+    * Exception to the previous rule - special tag "_note". It is legal. Special behavior for this tag: it is being deleted when its text is empty or spaces only.
     
 ===
 Method "/tag_select"
@@ -293,11 +302,20 @@ Method "/rules_modify"
 Method "/wsnote"
     -> ws           (= ws_default)
     <-  {
-            "workspace": <ws name>,
+            "name": <ws name>,
             "note": <ws note>
+            "time": <time of latest modification, isoformat>
         }
 
-====================================
+===
+Method "/single_cnt"
+    -> m            (= "")
+    -> record       (!required)
+    <- 
+    [ * prepared view presentation of record, 
+        the same as in method "/reccnt", see above]
+
+    ====================================
 2. Compex structures
 
 === 
@@ -305,19 +323,25 @@ Structure Conditions
     List of conditions - filter definition
 [
     [
-        0: "int" / "float", "enum" - type of unit
+        0: "numeric" or "enum" - generalized type of unit
         1: name of unit
         
-        * in case of type = "int" / "float":
-        2: bool if operation is GE, otherwise LE
-        3: int/float bound value
-        4: bool if undefined value is ok
+        * in case of generalized type "numeric" (types "int", "float") :
+        2: bounds, array of 2 elements (int/float)
+            0: min bound value or null
+            1: max bound value or null
+        3: bool if undefined value is ok (none might mean that there is no null values)
         
-        * in case of type = "enum"
-        2: "AND" / "OR" / "ONLY" / "NOT" - operation mode
+        * in case of generalized type "enum" (types "enum", "status")
+        2: "OR" / "AND" / "ONLY" / "NOT" - operation mode (see Note)
         3: [ * list of value variants ]
     ],...
 ]
+
+    Notes on operational mode: 
+      "OR" is equivalent to ""
+      "AND"/"ONLY" are out of sence in case of type="status"
+    
 
 === 
 Structure Zone
@@ -380,9 +404,3 @@ Structure AttrStat
             ]
     }
 
-===
-Method "/single_cnt"
-    -> m            (= "")
-    -> record       (!required)
-    <- 
-    [ * prepared view presentation of record, the same as in method "/reccnt", see above]

@@ -78,6 +78,7 @@ def defineViewSchema():
         AttrH("fs", title = "Fisher Strand Bias"),
         AttrH("allelic_depth", title = "Allelic Depth", is_seq = True),
         AttrH("read_depth", title = "Read Depth"),
+        AttrH("ft", title = "FILTERs"),
         AttrH("genotype_quality", title = "Genotype Quality")])
 
     aspects["view_gnomAD"].setAttributes([

@@ -1,4 +1,4 @@
-import app.prepare.val_conv as val_conv
+import app.prepare.prep_unit as prep_unit
 
 #===============================================
 class FilterPrepareSetH:
@@ -28,39 +28,44 @@ class FilterPrepareSetH:
 
     def intValueUnit(self, name, path, title = None,
             default_value = None, diap = None, research_only = False):
-        self._addUnit(val_conv.IntConvertor(name, path, title,
+        self._addUnit(prep_unit.IntConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, default_value, diap))
 
     def floatValueUnit(self, name, path, title = None,
             default_value = None, diap = None, research_only = False):
-        self._addUnit(val_conv.FloatConvertor(name, path, title,
+        self._addUnit(prep_unit.FloatConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, default_value, diap))
 
     def statusUnit(self, name, path, title = None,
             variants = None, default_value = "False",
             accept_other_values = False, research_only = False):
-        self._addUnit(val_conv.EnumConvertor(name, path, title,
+        self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, True, variants, default_value,
             accept_other_values = accept_other_values))
 
     def presenceUnit(self, name, var_info_seq, title = None,
             research_only = False):
-        self._addUnit(val_conv.PresenceConvertor(name, title,
+        self._addUnit(prep_unit.PresenceConvertor(name, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, var_info_seq))
 
     def multiStatusUnit(self, name, path, title = None,
-            variants = None, default_value = "False",
+            variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False, research_only = False):
-        self._addUnit(val_conv.EnumConvertor(name, path, title,
+        self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, False, variants, default_value,
             separators = separators, compact_mode = compact_mode,
             accept_other_values = accept_other_values))
+
+    def zygositySpecialUnit(self, name, path, title = None,
+            default_value = None, config = None):
+        self._addUnit(prep_unit.ZygosityConvertor(name, path, title,
+            len(self.mUnits), self.mCurVGroup, config))
 
     def process(self, rec_no, rec_data):
         result = dict()

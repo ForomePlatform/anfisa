@@ -16,9 +16,15 @@ def _reprCondition(cond, output, repr_level):
             _reprCondition(sub_cond, output, repr_level + 1)
         output.write(')')
     elif cond_kind == "numeric":
-        unit_name, ge_mode, the_val, use_undef = cond[1:]
-        output.write('(' + ' '.join([unit_name,
-            "<=" if ge_mode else ">=", str(the_val)]) + ')')
+        unit_name, bounds, use_undef = cond[1:]
+        seq = []
+        if bounds[0] is not None:
+            seq.append(str(bounds[0]))
+        seq.append(unit_name)
+        if bounds[1] is not None:
+            seq.append(str(bounds[1]))
+        assert len(seq) > 1
+        output.write('(' + ' <= '.join(seq) + ')')
     else:
         assert cond_kind == "enum"
         unit_name, filter_mode, variants = cond[1:]

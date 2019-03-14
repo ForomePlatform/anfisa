@@ -37,6 +37,9 @@ class FilterUnit:
     def getData(self):
         return self.mData
 
+    def isAtomic(self):
+        return True
+
     def dumpNames(self):
         return {
             "name": self.mName,
@@ -73,8 +76,8 @@ class NumericValueUnit(FilterUnit):
     def getAtomType(self):
         return self.mAtomType
 
-    def recordCondFunc(self, cmp_func):
-        return lambda data_rec: cmp_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumn.recordValue(data_rec))
 
     def collectStatJSon(self, data_records):
@@ -95,15 +98,15 @@ class StatusUnit(FilterUnit):
         self.mColumn = dc_collection.makeColumn(self,
             self.getName(), dc_collection.ATOM_DATA_TYPE_INT)
 
-    def recordCondFunc(self, enum_func, variants):
-        idx_set = self.mVariantSet.makeIdxSet(variants)
-        check_func = enum_func(idx_set)
-        return lambda data_rec: check_func(
+    def getVariantSet(self):
+        return self.mVariantSet
+
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             {self.mColumn.recordValue(data_rec)})
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "status")
         for data_rec in data_records:
             stat.regValues({self.mColumn.recordValue(data_rec)})
         return stat.dump()
@@ -120,20 +123,21 @@ class MultiSetUnit(FilterUnit):
         self.mColumns = dc_collection.makeColumnSet(self,
             self.getName(), iter(self.mVariantSet))
 
+    def isAtomic(self):
+        return False
+
     def getVariantSet(self):
         return self.mVariantSet
 
     def enumColumns(self):
         return enumerate(self.mColumns)
 
-    def recordCondFunc(self, enum_func, variants):
-        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
-        return lambda data_rec: check_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumns.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "enum")
         for data_rec in data_records:
             stat.regValues(self.mColumns.recordValues(data_rec))
         return stat.dump()
@@ -152,17 +156,18 @@ class MultiCompactUnit(FilterUnit):
         self.mColumn = dc_collection.makeCompactEnumColumn(
             self, self.getName())
 
+    def isAtomic(self):
+        return False
+
     def getVariantSet(self):
         return self.mVariantSet
 
-    def recordCondFunc(self, enum_func, variants):
-        check_func = enum_func(self.mVariantSet.makeIdxSet(variants))
-        return lambda data_rec: check_func(
+    def recordCondFunc(self, cond_func):
+        return lambda data_rec: cond_func(
             self.mColumn.recordValues(data_rec))
 
     def collectStatJSon(self, data_records):
-        stat = EnumStat(self.mVariantSet, self.dumpNames(),
-            self.getUnitKind())
+        stat = EnumStat(self.mVariantSet, self.dumpNames(), "enum")
         for data_rec in data_records:
             stat.regValues(self.mColumn.recordValues(data_rec))
         return stat.dump()
@@ -176,6 +181,8 @@ class MultiCompactUnit(FilterUnit):
 #===============================================
 def loadWSFilterUnit(index, dc_collection, unit_data, unit_idx):
     kind = unit_data["kind"]
+    if kind == "zygosity":
+        return None
     if kind in ("long", "float"):
        return NumericValueUnit(index, dc_collection,
             unit_data, unit_idx, "float" if kind == "float" else "int")

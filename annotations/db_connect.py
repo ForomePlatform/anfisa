@@ -60,8 +60,11 @@ def resolve_host(host):
 
 
 class Connection:
-    def __init__(self, host = "localhost", database = None, port = None, user = None,
-                 password = None, dbms = 'MySQL', ssh_user = None, driver = None, java_class_path = None, connect_now = False):
+    def __init__(self, host = "localhost",
+            database = None, port = None, user = None,
+            password = None, dbms = 'MySQL',
+            ssh_user = None, driver = None,
+            java_class_path = None, connect_now = False):
         self.tunnel = None
         self.database = database
         self.host = resolve_host(host)

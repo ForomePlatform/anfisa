@@ -60,14 +60,14 @@ def _formMainDiv(output, workspace_name):
                 <span id="ws-control-open" class="drop"
                     onclick="openControlMenu()";>&#8285;</span>
                 <div id="ws-control-menu" class="drop">
-                    <div id="ws-ctrl-home" onclick="goHome();"
+                    <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
-                    <div id="ws-ctrl-home" onclick="openNote();"
+                    <div onclick="openNote();"
                         class="drop ctrl-menu">Workspace Note</div>
-                    <div id="ws-ctrl-research-mode" onclick="switchResMode();"
-                        class="drop ctrl-menu"><span id="res-mode-check">&#10003;</span>Research mode</div>
-                    <div id="ws-ctrl-export"
-                        class="drop ctrl-menu" onclick="showExport();">Export</div>
+                    <div onclick="switchResMode();" class="drop ctrl-menu">
+                        <span id="res-mode-check">&#10003;</span>Research mode</div>
+                    <div onclick="showExport();"
+                        class="drop ctrl-menu" >Export...</div>
                 </div>
                 <div id="ws-export-result" class="drop"></div>
               </span>&emsp;
@@ -183,21 +183,20 @@ def _formFiltersDiv(output):
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>
-            <span id="cond-error"></span>
+            <span id="cond-message"></span>
           </div>
           <div id="filter-cur-cond">
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
-                type="text" onchange="checkCurCond(\'min\');"/>
-              <span id="cond-sign" class="num-sign"
-                onclick="checkCurCond(\'sign\');"></span>
+                type="text" onchange="checkOpNum();"/>
+              <span id="cond-sign"></span>
               <input id="cond-max-inp" class="num-inp"
-                type="text" onchange="checkCurCond(\'max\');"/>
+                type="text" onchange="checkOpNum();"/>
               <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span>
               <input id="cond-undef-check" class="num-inp"
-                type="checkbox"  onchange="checkCurCond(\'undef\');"/>
+                type="checkbox"  onchange="checkOpNum();"/>
               <span id="cond-undef-count" class="num-count"
                 class="num-count"></span>
             </div>
@@ -353,6 +352,7 @@ def _formNoteDiv(output):
                   onclick="noteModOff();">
                 Done
               </button>
+              <span id="note-time"></span>
             </div>
           </div>
         </div>
@@ -469,6 +469,8 @@ def tagsBlock(output):
             onclick="tagEnvRedo();">
           &#8631;
         </button>
+        <span id="tags-time">
+        </span>
       </div>
     </div>
   </div>
