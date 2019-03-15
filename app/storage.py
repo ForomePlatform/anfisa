@@ -11,7 +11,6 @@ from app.prepare.view_schema import defineViewSchema
 from app.prepare.flt_schema import defineFilterSchema
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.read_json import JsonLineReader
-from annotations.post.post_comp import PostAttonationProcess
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
@@ -59,22 +58,6 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     os.mkdir(ds_dir)
 
     post_proc = None
-    if kind == "xl":
-        print >> sys.stderr, "Post annotation processing..."
-        post_proc = PostAttonationProcess()
-        with JsonLineReader(source) as input:
-            for inp_rec_no, record in enumerate(input):
-                if record.get("record_type") == "metadata":
-                    continue
-                post_proc.process(inp_rec_no, record)
-                if not post_proc.isOK():
-                    post_proc = None
-                    break
-        if post_proc is not None:
-            post_proc.finishUp()
-            if not post_proc.isOK():
-                post_proc = None
-
     view_aspects = defineViewSchema()
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema()
