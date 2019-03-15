@@ -292,7 +292,8 @@ class XLDataset(DataSet):
     @RestAPI.xl_request
     def rq__xl_export(self, rq_args):
         context = {"cond":
-            XL_Condition.parseSeq(json.loads(rq_args["conditions"]))}
+            XL_Condition.parseSeq(json.loads(rq_args["conditions"]),
+            self.getParseContext())}
         rec_count = self.evalTotalCount(context)
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         rec_no_seq = self.evalRecSeq(context, rec_count)
