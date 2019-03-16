@@ -1,4 +1,4 @@
-import abc, re
+import abc, re, sys
 from collections import Counter
 
 from app.model.path_works import AttrFuncPool
@@ -294,34 +294,35 @@ class PresenceConvertor(ValueConvertor):
 
 #===============================================
 class ZygosityConvertor(ValueConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup, config):
+    def __init__(self, name, path, title, unit_no, vgroup, config, master):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup, True)
-        self.mFamilyInfo = None
         self.mPath   = path
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         self.mConfig = config
+        self.mMaster = master
+        self.mFamilyMembers = None
 
     def process(self, rec_no, rec_data, result):
-        zig_distr_seq = self.mPathF(rec_data)
-        assert len(zig_distr_seq) < 2
-        zig_distr = zig_distr_seq[0] if len(zig_distr_seq) > 0 else None
-        if zig_distr is not None and len(zig_distr.keys()) < 2:
-            zig_distr = None
-        if zig_distr is None:
-            assert self.mFamilyInfo is None
+        if self.mFamilyMembers is None:
+            if self.mMaster.getFamilyInfo() is None:
+                print >> sys.stderr, "No dataset metadata with samples info"
+                assert False
+            self.mFamilyMembers = self.mMaster.getFamilyInfo().getMembers()
+        if len(self.mFamilyMembers) < 2:
             return
-        if self.mFamilyInfo is None:
-            assert rec_no == 0
-            self.mFamilyInfo = sorted(zig_distr.keys())
-        assert len(zig_distr.keys()) == len(self.mFamilyInfo)
-        for idx, member in enumerate(self.mFamilyInfo):
+        zig_distr_seq = self.mPathF(rec_data)
+        assert len(zig_distr_seq) == 1
+        zig_distr = zig_distr_seq[0]
+        assert len(zig_distr.keys()) == len(self.mFamilyMembers)
+        for idx, member in enumerate(self.mFamilyMembers):
             result["%s_%d" % (self.getName(), idx)] = zig_distr[member]
 
     def dump(self):
         ret = ValueConvertor.dump(self)
         ret["kind"] = "zygosity"
         ret["path"] = self.mPath
-        ret["family"] = self.mFamilyInfo
         if self.mConfig is not None:
             ret["config"] = self.mConfig
+        ret["size"] = (len(self.mFamilyMembers)
+                if self.mFamilyMembers is not None else 0)
         return ret

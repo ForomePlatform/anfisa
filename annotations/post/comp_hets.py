@@ -114,10 +114,10 @@ class CompHetsBatch:
 
 #=====================================
 class CompHetsMarkupBatch:
-    def __init__(self, family_data):
+    def __init__(self, proband_rel):
         setup = AnfisaConfig.configOption("comp-hets.setup")
         self.mF_zFamily = [setup["zygosity"] + '_' + str(member_idx)
-            for member_idx in family_data]
+            for member_idx in proband_rel]
         self.mF_Genes = setup["Genes"]
         self.mF_Result = setup["Compound_heterozygous"]
         self.mView_Result = setup["ws_compound_heterosygotes"]
@@ -193,21 +193,3 @@ class CompHetsMarkupBatch:
         if rec_no in self.mResTab:
             rec_data["data"][self.mView_Result] = ", ".join(
                 sorted(self.mResTab[rec_no]))
-
-    @staticmethod
-    def detectFamilyData(ds_info):
-        if "meta" not in ds_info:
-            return None
-        if "samples" not in ds_info["meta"]:
-            return None
-        samples = ds_info["meta"]["samples"]
-        if len(samples) < 3:
-            return None
-        #assume that order is correct!
-        names = sorted(samples.keys())
-        proband = samples[names[0]]
-        if "father" not in proband or "mother" not in proband:
-            return None
-        return [names.index(proband[key])
-            for key in ("name", "father", "mother")]
-

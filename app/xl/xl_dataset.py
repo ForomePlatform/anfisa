@@ -34,9 +34,8 @@ class XLDataset(DataSet):
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, conditions, time_label)
         self.mOptions = []
-        self.mFamilyData = CompHetsMarkupBatch.detectFamilyData(
-            self.getDataInfo())
-        if self.mFamilyData is not None:
+        if (self.getFamilyInfo() is not None and
+                self.getFamilyInfo().getProbandRel()):
             self.mOptions.append("comp_hets")
 
     def getDruidAgent(self):
@@ -292,8 +291,10 @@ class XLDataset(DataSet):
             base_version = None
             conditions = rq_args["conditions"]
         markup_batch = None
-        if self.mFamilyData is not None:
-            markup_batch = CompHetsMarkupBatch(self.mFamilyData)
+        if self.getFamilyInfo() is not None:
+            proband_rel = self.getFamilyInfo().getProbandRel()
+            if proband_rel:
+                markup_batch = CompHetsMarkupBatch(proband_rel)
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
             self, rq_args["ws"], base_version = base_version,
             conditions = conditions, markup_batch = markup_batch)

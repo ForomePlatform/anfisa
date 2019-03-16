@@ -804,14 +804,16 @@ var sZygosityH = {
     mFamily: null,
     mProblemIdxs: null,
     mUnitName: null,
+    mDefaultIdxs: null,
     mZStat: null,
     mZEmpty: null,
     
     setup: function(unit_stat, list_stat_rep) {
         this.mUnitName = unit_stat[1]["name"];
         this.mFamily = unit_stat[2];
-        this.mProblemIdxs = unit_stat[3];
-        this.mZStat = unit_stat[4] ;
+        this.mDefaultIdxs = unit_stat[3];
+        this.mProblemIdxs = unit_stat[4];
+        this.mZStat = unit_stat[5] ;
         if (this.mProblemIdxs == null)
             this.mProblemIdxs = [];
         list_stat_rep.push('<div class="zyg-wrap"><div class="zyg-family">');
@@ -822,6 +824,10 @@ var sZygosityH = {
                 ' onchange="sZygosityH.checkMember(' + idx + ');" />' +
                 this.mFamily[idx] + '</div>');
         }
+        reset_dis = (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','))?
+            'disabled="true"':'';
+        list_stat_rep.push('<button id="zyg_fam_reset" title="Reset affected group" ' +
+            reset_dis + ' onclick="sZygosityH.resetGrp()">Reset</button>');
         list_stat_rep.push('</div><div id="zyg-stat">');
         this._reportStat(list_stat_rep);
         list_stat_rep.push('</div></div>');
@@ -877,11 +883,17 @@ var sZygosityH = {
             return;
         if (this.mProblemIdxs.join(",") != condition_data[2].join(",")) {
             this.mProblemIdxs = condition_data[2];
-            for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
-                document.getElementById("zyg_fam_m__" + m_idx).checked =
-                    (this.mProblemIdxs.indexOf(m_idx) >= 0);
-            this.refreshContext();
+            this._reselectFamily();
         }
+    },
+    
+    _reselectFamily: function() {
+        for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
+            document.getElementById("zyg_fam_m__" + m_idx).checked =
+                (this.mProblemIdxs.indexOf(m_idx) >= 0);
+        document.getElementById("zyg_fam_reset").disabled = 
+            (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','));
+        this.refreshContext();
     },
     
     _reportStat: function(list_stat_rep) {
@@ -909,6 +921,14 @@ var sZygosityH = {
             } else {
                 list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
             }
+        }
+    },
+    
+    resetGrp: function() {
+        if (this.mDefaultIdxs != this.mProblemIdxs) {
+            this.mProblemIdxs = this.mDefaultIdxs;
+            this._reselectFamily();
+            return;
         }
     },
     
@@ -940,7 +960,7 @@ var sZygosityH = {
     },
     
     _refresh: function(info) {
-        this.mZStat = info[4];
+        this.mZStat = info[5];
         rep_list = [];
         this._reportStat(rep_list);
         document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');

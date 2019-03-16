@@ -75,7 +75,9 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             if post_proc is not None:
                 post_proc.transform(inp_rec_no, record)
             if record.get("record_type") == "metadata":
+                assert inp_rec_no == 0
                 metadata_record = record
+                filter_set.setMeta(metadata_record)
                 continue
             view_checker.regValue(data_rec_no, record)
             vdata_out.putLine(json.dumps(record, ensure_ascii = False))
@@ -112,6 +114,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             "flt_schema": flt_data,
             "total": data_rec_no,
             "mongo": mongo,
+            "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record}
         with codecs.open(ds_dir + "/dsinfo.json",
                 "w", encoding = "utf-8") as outp:

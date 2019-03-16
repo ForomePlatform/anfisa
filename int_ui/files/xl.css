@@ -354,6 +354,10 @@ div#zyg-stat {
     margin-left: 20px;
 }
 
+button#zyg_fam_reset {
+    padding: 0px !important;
+    float: right;
+}
 
 /********************Control controls*****************************/
 div#ds-dropdown {
@@ -524,8 +528,7 @@ div#create-ws-status {
     font-size: 28px;
     font-weight: bold;
     margin: 0px 10px 0px 10px;
-    float: right;
-}
+"zyg_fam_reset"}
 
 #close-note:hover, #close-note:focus {
     color: black;

@@ -52,11 +52,9 @@ class DruidAdmin(DruidAgent):
                     "name": unit_data["name"],
                     "type": unit_data["kind"]})
             elif unit_data["kind"] == "zygosity":
-                if unit_data["family"] is None:
+                if unit_data["size"] < 2:
                     continue
-                if len(unit_data["family"]) < 2:
-                    continue
-                for idx in range(len(unit_data["family"])):
+                for idx in range(unit_data["size"]):
                     dim_container.append({
                         "name": "%s_%d" % (unit_data["name"], idx),
                         "type": "long"})
