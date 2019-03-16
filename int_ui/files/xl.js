@@ -43,6 +43,7 @@ var sUnitsH = {
     mTotal: null,
     mExportFormed: null,
     mCtx: null,
+    mDSOptions: null,
     
     setup: function(conditions, filter_name, add_instr) {
         args = "ds=" + sDSName;
@@ -64,7 +65,7 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mExportFormed = false;
-        sCreateWsH.reset();
+        sCreateWsH.reset(info["options"]);
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
@@ -1181,9 +1182,11 @@ var sCreateWsH = {
     mDivModProblems: null,
     mDivModStatus: null,
     mButtonModStart: null,
+    mButtonModCancel: null,
     mWSFormed: false,
     mTaskId: null,
     mTimeH: null,
+    mDSOptions: null,
     
     init: function() {
         this.mSpanModTitle = document.getElementById("create-ws-title");
@@ -1191,10 +1194,12 @@ var sCreateWsH = {
         this.mDivModProblems = document.getElementById("create-ws-problems");
         this.mDivModStatus = document.getElementById("create-ws-status");
         this.mButtonModStart = document.getElementById("create-ws-start");
+        this.mButtonModCancel = document.getElementById("create-ws-cancel");
     },
     
-    reset: function() {
+    reset: function(ds_options) {
         this.mWSFormed = false;
+        this.mDSOptions  = ds_options;
     },
     
     show: function() {
@@ -1234,11 +1239,7 @@ var sCreateWsH = {
     },
     
     _setupName: function(dirinfo) {
-        this.mDSNames = [];
-        for (idx = 0; idx < dirinfo["xl-datasets"].length; idx++)
-            this.mDSNames.push(dirinfo["xl-datasets"][idx]["name"]);
-        for (idx = 0; idx < dirinfo["workspaces"].length; idx++)
-            this.mDSNames.push(dirinfo["workspaces"][idx]["name"]);
+        this.mDSNames = dirinfo["reserved"];
         var no = 1;
         var own_name = sDSName.match(/\_(.*)$/)[1];
         var ws_name;
@@ -1273,6 +1274,7 @@ var sCreateWsH = {
             this.mDivModProblems.style.display = "none";
             this.mDivModStatus.style.display = "block";
         }
+        this.mButtonModCancel.disabled = (this.mStage == "WAIT");
     },
     
     startIt: function() {
@@ -1459,10 +1461,10 @@ function showExport() {
     if (sUnitsH.mCount <= 300)
         res_content = 'Export ' + sUnitsH.mCount + ' records?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
-            '&emsp;<button class="drop"';
+            '&emsp;<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
     else
         res_content = 'Too many records for export: ' + 
-            sUnitsH.length + ' > 300.<br>' +
+            sUnitsH.mCount + ' > 300.<br>' +
             '<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
     res_el = document.getElementById("ws-export-result");
     res_el.innerHTML = res_content;

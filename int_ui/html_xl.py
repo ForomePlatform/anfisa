@@ -204,6 +204,7 @@ def _formCreateWsDiv(output):
         <div id="create-ws-main">
             <div>Workspace name:
                 <input id="create-ws-name" type="text"/>
+                </span>
             </div>
             <div id="create-ws-problems"></div>
             <div id="create-ws-status"></div>
@@ -212,7 +213,7 @@ def _formCreateWsDiv(output):
             <button id="create-ws-start" onclick="startWsCreate();">
               Start...
             </button>
-            <button onclick="sViewH.modalOff();">
+            <button id="create-ws-cancel" onclick="sViewH.modalOff();">
               Cancel
             </button>
         </div>

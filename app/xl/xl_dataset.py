@@ -9,6 +9,7 @@ from .xl_cond import XL_Condition
 from .decision import DecisionTree
 from .xl_conf import defineDefaultDecisionTree
 from .tree_repr import cmpTrees
+from annotations.post.comp_hets import CompHetsMarkupBatch
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -32,6 +33,11 @@ class XLDataset(DataSet):
             for f_name, conditions, time_label in self.mMongoDS.getFilters():
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, conditions, time_label)
+        self.mOptions = []
+        self.mFamilyData = CompHetsMarkupBatch.detectFamilyData(
+            self.getDataInfo())
+        if self.mFamilyData is not None:
+            self.mOptions.append("comp_hets")
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -165,7 +171,8 @@ class XLDataset(DataSet):
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
-            "conditions": cond_seq}
+            "conditions": cond_seq,
+            "options": self.mOptions}
 
     #===============================================
     @RestAPI.xl_request
@@ -244,7 +251,8 @@ class XLDataset(DataSet):
             "counts": tree.getCounts(),
             "stat": tree.getStat(),
             "cur_version": cur_version,
-            "versions": versions_rep}
+            "versions": versions_rep,
+            "options": self.mOptions}
 
     #===============================================
     @RestAPI.xl_request
@@ -283,9 +291,12 @@ class XLDataset(DataSet):
         else:
             base_version = None
             conditions = rq_args["conditions"]
+        markup_batch = None
+        if self.mFamilyData is not None:
+            markup_batch = CompHetsMarkupBatch(self.mFamilyData)
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
-            self, rq_args["ws"],
-            base_version = base_version, conditions = conditions)
+            self, rq_args["ws"], base_version = base_version,
+            conditions = conditions, markup_batch = markup_batch)
         return {"task_id" : task_id}
 
     #===============================================

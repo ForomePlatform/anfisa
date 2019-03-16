@@ -1,4 +1,5 @@
 import os, json, gzip, codecs, logging, re
+from copy import deepcopy
 
 from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
@@ -8,12 +9,13 @@ from app.xl.xl_cond import XL_Condition
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, dataset, ws_name,
-            base_version = None, conditions = None):
+            base_version = None, conditions = None, markup_batch = None):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
         self.mConditions = conditions
+        self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
     sID_Pattern = re.compile('^\\S+$', re.U)
@@ -42,12 +44,30 @@ class SecondaryWsCreation(ExecutionTask):
             rec_no_seq = self.mDS.evalRecSeq(context, rec_count)
 
         rec_no_seq = sorted(rec_no_seq)
+        rec_no_set = set(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir):
             self.setStatus("Dataset already exists")
             return None
-        os.mkdir(ws_dir)
 
+        fdata_seq = []
+        with self.mDS._openFData() as inp:
+            for rec_no, line in enumerate(inp):
+                if rec_no in rec_no_set:
+                    fdata_seq.append(json.loads(line.rstrip()))
+        assert len(fdata_seq) == len(rec_no_seq)
+
+        view_schema = deepcopy(self.mDS.getViewSchema())
+        flt_schema  = deepcopy(self.mDS.getFltSchema())
+        if self.mMarkupBatch is not None:
+            self.setStatus("Markup evaluation")
+            for rec_no, fdata in zip(rec_no_seq, fdata_seq):
+                self.mMarkupBatch.feed(rec_no, fdata)
+            self.mMarkupBatch.finishUp(view_schema, flt_schema)
+            for rec_no, fdata in zip(rec_no_seq, fdata_seq):
+                self.mMarkupBatch.transformFData(rec_no, fdata)
+
+        os.mkdir(ws_dir)
         logging.info("Fill workspace %s datafiles..." % self.mWSName)
         with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
             for out_rec_no, rec_no in enumerate(rec_no_seq):
@@ -55,30 +75,21 @@ class SecondaryWsCreation(ExecutionTask):
                     self.setStatus("Prepare records: %d/%d" %
                         (out_rec_no, len(rec_no_seq)))
                 rec_data = self.mDS.getRecordData(rec_no)
+                if self.mMarkupBatch is not None:
+                    self.mMarkupBatch.transformRecData(rec_no, rec_data)
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
-        rec_no_set = set(rec_no_seq)
-        cnt_done = 0
+        self.setStatus("Prepare fdata")
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
-            with self.mDS._openFData() as inp:
-                for rec_no, line in enumerate(inp):
-                    if rec_no in rec_no_set:
-                        print >> fdata_out, line.rstrip()
-                        cnt_done += 1
-                        if (cnt_done % self.mReportLines) == 0:
-                            self.setStatus("Prepare fdata: %d/%d" %
-                                (cnt_done, len(rec_no_seq)))
+            for fdata in fdata_seq:
+                print >> fdata_out, json.dumps(fdata, ensure_ascii = False)
 
-        cnt_done = 0
+        self.setStatus("Prepare pdata")
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
                 for rec_no, line in enumerate(inp):
                     if rec_no in rec_no_set:
                         print >> fdata_out, line.rstrip()
-                        cnt_done += 1
-                        if (cnt_done % self.mReportLines) == 0:
-                            self.setStatus("Prepare fdata: %d/%d" %
-                                (cnt_done, len(rec_no_seq)))
 
         self.setStatus("Finishing...")
         logging.info("Finishing up workspace %s" % self.mWSName)
@@ -86,10 +97,11 @@ class SecondaryWsCreation(ExecutionTask):
         ds_info = {
             "name": self.mWSName,
             "kind": "ws",
-            "view_schema": self.mDS.getViewSchema(),
-            "flt_schema": self.mDS.getFltSchema(),
+            "view_schema": view_schema,
+            "flt_schema": flt_schema,
             "total": len(rec_no_seq),
-            "mongo": self.mWSName}
+            "mongo": self.mWSName,
+            "meta": self.mDS.getDataInfo().get("meta")}
 
         with codecs.open(ws_dir + "/dsinfo.json",
                 "w", encoding = "utf-8") as outp:

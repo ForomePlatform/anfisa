@@ -932,6 +932,7 @@ var sCreateWsH = {
     mDivModProblems: null,
     mDivModStatus: null,
     mButtonModStart: null,
+    mButtonModCancel: null,
     mTaskId: null,
     mTimeH: null,
     
@@ -941,6 +942,7 @@ var sCreateWsH = {
         this.mDivModProblems = document.getElementById("create-ws-problems");
         this.mDivModStatus = document.getElementById("create-ws-status");
         this.mButtonModStart = document.getElementById("create-ws-start");
+        this.mButtonModCancel = document.getElementById("create-ws-cancel");
     },
     
     show: function() {
@@ -1016,6 +1018,7 @@ var sCreateWsH = {
             this.mDivModProblems.style.display = "none";
             this.mDivModStatus.style.display = "block";
         }
+        this.mButtonModCancel.disabled = (this.mStage == "WAIT");
     },
     
     startIt: function() {

@@ -220,7 +220,7 @@ def _formCreateWsDiv(output):
             <button id="create-ws-start" onclick="startWsCreate();">
               Start...
             </button>
-            <button onclick="modalOff();">
+            <button id="create-ws-cancel" onclick="sViewH.modalOff();">
               Cancel
             </button>
         </div>

@@ -417,8 +417,8 @@ span#ws-export-result.problems {
     padding: 10px;
     border: 1px solid black;
     border-radius: 7px;
-    height: 200px; 
-    min-height: 200px;
+    height: 150px; 
+    min-height: 150px;
     width: 500px;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     flex-direction: column;
@@ -429,7 +429,7 @@ span#ws-export-result.problems {
 
 div#create-ws-top {
     width: 100%;
-    height: 55px;
+    height: 25px;
     min-height: 20px;
     margin: 0px;;
     padding: 0px;
@@ -441,12 +441,13 @@ span#create-ws-title {
     padding: 5px;
     font-weight: bold;
     font-size: 18px;
-    height: 25px;
+    height: 20px;
 }
 
 div#create-ws-main {
     flex-grow: 1;
     width: 100%;
+    margin-top: 10px;
     padding-left: 10px;
 }
 

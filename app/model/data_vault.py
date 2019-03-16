@@ -86,13 +86,16 @@ class DataVault:
         rep = {
             "version": self.mApp.getVersionCode(),
             "workspaces": [],
-            "xl-datasets": []}
+            "xl-datasets": [],
+            "reserved": []}
         for ds_name in sorted(self.mDataSets.keys()):
             ds_h = self.mDataSets[ds_name]
             if ds_h.getDSKind() == "ws":
                 rep["workspaces"].append(ds_h.dump())
             else:
                 rep["xl-datasets"].append(ds_h.dump())
+        for reserved_path in glob(self.mVaultDir + "/*"):
+            rep["reserved"].append(os.path.basename(reserved_path))
         return rep
 
     #===============================================

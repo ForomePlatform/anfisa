@@ -9,7 +9,7 @@ def defineFilterSchema():
             "/data/zygosity", config = {"x_cond":
             ConditionMaker.condEnum("Chromosome", ["chrX"])})
         filters.presenceUnit("Compound_heterozygous",
-            [("True", "/_filters/compoundHet")])
+            [("True", "/_filters/nowhere")])
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by", research_only = False)
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
