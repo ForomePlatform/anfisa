@@ -4,6 +4,7 @@ import logging
 import time
 import os
 from copy import copy
+from enum import Enum
 
 import openpyxl
 from jsonpath_rw import parse
@@ -18,7 +19,7 @@ def cell_value(ws, row, column):
 
 def read_mapping(path):
     if (not os.path.isfile(path)):
-        raise Exception ("No Mapping file: {}".format(path))
+        raise Exception("No Mapping file: {}".format(path))
     if (not os.access(path, os.R_OK)):
         raise Exception("No read access to: {}".format(path))
 
@@ -55,6 +56,36 @@ def read_mapping(path):
             mapping.append((len(mapping) + 1, key, value, style, def_value))
 
     return mapping
+
+
+def read_mapping_check_tags_mapping(path):
+    if (not os.path.isfile(path)):
+        raise Exception("tags: No Mapping file: {}".format(path))
+    if (not os.access(path, os.R_OK)):
+        raise Exception("tags: No read access to: {}".format(path))
+
+    logging.info("tags: Reading: {}".format(path))
+    wb = openpyxl.load_workbook(path, read_only=False)
+    ws = wb["Check_Tags"]
+    key_column = 1
+    res = {}
+    for r in range(1, ws.max_row + 1):
+        cell = ws.cell(r, key_column)
+        key = cell.value
+        logging.info("tags: Reading key: {}".format(key))
+        if not key:
+            continue
+
+        key = key.strip()
+        style = dict()
+        style["fill"] = copy(cell.fill)
+        style["font"] = copy(cell.font)
+        style["alignment"] = copy(cell.alignment)
+        style["number_format"] = copy(cell.number_format)
+        if key:
+            res[key] = style
+
+    return res
 
 
 def getColumnByName(ws, name, path):
@@ -100,16 +131,18 @@ def find_value(array, key):
 
 
 class ExcelExport:
-    def __init__(self, fname = None, mapping = None,
-            tags_list = None):
+    def __init__(self, fname=None, mapping=None,
+                 tags_list=None, check_tags_mapping=None):
         if fname:
             self.mapping = read_mapping(fname)
         else:
             self.mapping = mapping
         self.workbook = None
         self.column_widths = {}
+        self.tags_list = tags_list
+        self.check_tags_mapping = check_tags_mapping
 
-    def new(self, title = None):
+    def new(self, title=None):
         self.workbook = openpyxl.Workbook()
         ws = self.workbook.active
         ws.title = title if title else "Variants"
@@ -120,10 +153,20 @@ class ExcelExport:
             self.column_widths[cell.column] = len(key)
             for s in style:
                 setattr(cell, s, style[s])
+
+        cell = ws.cell(row=1, column=len(self.mapping) + 1, value="check tags")
+        self.column_widths[cell.column] = len(cell.value)
+
+        cell = ws.cell(row=1, column=len(self.mapping) + 2, value="tags")
+        self.column_widths[cell.column] = len(cell.value)
+
+        cell = ws.cell(row=1, column=len(self.mapping) + 3, value="tags with values")
+        self.column_widths[cell.column] = len(cell.value)
         ws.freeze_panes = 'D2'
         self.__createKeySheet();
 
     def __createKeySheet(self):
+        self.workbook.create_sheet("version")
         ws = self.workbook.create_sheet("key")
         for idx, title in enumerate(["Column", "Definition", "Mapping"]):
             ws.cell(row=1, column=idx + 1, value=title)
@@ -138,9 +181,19 @@ class ExcelExport:
             for s in style:
                 setattr(cell, s, style[s])
 
-    def add_variant(self, data, tags = None):
+    def add_tags_cfg(self, data):
+        self.tags_list = data
+        self.tags_count = {}
+        for key in self.tags_list['check-tags']:
+            self.tags_list[key] = 0
+        if 'version' in  self.tags_list:
+            self.workbook["version"].cell(row=1, column=1, value = "Version:")
+            self.workbook["version"].cell(row=1, column=2, value=self.tags_list['version'])
+
+    def add_variant(self, data, tags=None):
         ws = self.workbook.active
-        row = ws.max_row + 1
+        row = self.__get_next_row_index(ws.max_row + 1, tags)
+        ws.insert_rows(row)
         for column, _, key, style, _ in self.mapping:
             if not key:
                 continue
@@ -151,6 +204,35 @@ class ExcelExport:
                     self.column_widths[cell.column], len(value))
             for s in style:
                 setattr(cell, s, style[s])
+        if tags is not None and self.tags_list is not None:
+            self.__add_tags_to_excel(tags, row)
+
+    def __add_tags_to_excel(self, tags, row):
+        style = None
+        ws = self.workbook.active
+        tagList = filter(lambda k: k in self.tags_list['op-tags'], tags.keys())
+        op_tags = ', '.join(tagList)
+        check_tags = ', '.join(filter(lambda k: k in self.tags_list['check-tags'] and tags[k] == True, tags.keys()))
+        tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
+        if check_tags in self.check_tags_mapping:
+            style = self.check_tags_mapping[check_tags]
+
+        cell = ws.cell(row=row, column=(len(self.mapping) + 1), value=check_tags)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+
+        cell = ws.cell(row=row, column=(len(self.mapping) + 2), value=op_tags)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+
+        cell = ws.cell(row=row, column=len(self.mapping) + 3, value=tags_with_value)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+        self.__set_style(cell, style, ws)
+
+    def __set_style(self, cell, style, ws):
+        if style:
+            row = ws.row_dimensions[cell.row]
+            for c in range(1, cell.col_idx + 1):
+                for s in style:
+                    setattr(ws.cell(row=cell.row, column=c), s, style[s])
 
     def save(self, file):
         ws = self.workbook.active
@@ -167,24 +249,59 @@ class ExcelExport:
             return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
         return value
 
+    def __get_next_row_index(self, max_index, tags):
+        check_tag = next(iter(filter(lambda k: k in self.tags_list['check-tags'] and tags[k] == True, tags.keys())), None)
+        if tags is None or check_tag is None:
+            return max_index
+
+        res = 0
+        for key in self.tags_list['check-tags']:
+            res += self.tags_list[key]
+            if check_tag == key:
+                self.tags_list[key] += 1
+                return min(res + 2, max_index)
+
+        return max_index;
+
+class LoadMode(Enum):
+    RECORD = "@RECORD",
+    TAGS_CFG = "@TAGS_CFG",
+    TAGS = "@TAGS",
+
 
 def processing(args):
     start_time = time.time()
     print "parsing template {} ...".format(args.template)
     mapping = read_mapping(args.template)
+    check_tags_mapping = read_mapping_check_tags_mapping(args.template)
     if args.verbose:
         for column in range(len(mapping)):
             print "{}: {}".format(column, mapping[column])
-    export = ExcelExport(mapping=mapping)
+    export = ExcelExport(mapping=mapping, check_tags_mapping=check_tags_mapping)
     export.new()
     print "export variants from {} ...".format(args.input)
     with open(args.input) as json_file:
+        mode = LoadMode.RECORD
+        record = None
         for idx, line in enumerate(json_file):
-            export.add_variant(json.loads(line))
+            if line.startswith("@"):
+                mode = LoadMode[line.strip()[1:]]
+            else:
+                data = json.loads(line)
+                if mode == LoadMode.RECORD:
+                    record = data
+                elif mode == LoadMode.TAGS_CFG:
+                    export.add_tags_cfg(data)
+                elif mode == LoadMode.TAGS:
+                    if record != None:
+                        export.add_variant(record, data)
+                    record = None
+
             if args.limit and idx >= args.limit:
                 break
             if args.verbose and idx > 0 and idx % 100 == 0:
                 print "export lines: {}".format(idx)
+
         print "total export line: {}".format(idx)
 
     print "save {}".format(args.output)
