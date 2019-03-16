@@ -4,6 +4,60 @@ from app.model.condition import ConditionMaker
 def defineFilterSchema():
     filters = FilterPrepareSetH()
 
+    with filters.viewGroup("Inheritance"):
+        filters.zygositySpecialUnit("Custom",
+            "/data/zygosity", config = {"x_cond":
+            ConditionMaker.condEnum("Chromosome", ["chrX"])})
+        filters.presenceUnit("Compound_heterozygous",
+            [("True", "/_filters/nowhere")])
+        filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
+            title = "Called by", research_only = False)
+        filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
+
+    with filters.viewGroup("Variant"):
+        filters.statusUnit("Variant_Class", "/data/variant_class")
+        filters.statusUnit("Most_Severe_Consequence",
+                           "/data/most_severe_consequence",
+                           variants=["transcript_ablation",
+                                     "splice_acceptor_variant",
+                                     "splice_donor_variant",
+                                     "stop_gained",
+                                     "frameshift_variant",
+                                     "stop_lost",
+                                     "start_lost",
+                                     "transcript_amplification",
+                                     "inframe_insertion",
+                                     "inframe_deletion",
+                                     "missense_variant",
+                                     "protein_altering_variant",
+                                     "incomplete_terminal_codon_variant",
+                                     "stop_retained_variant",
+                                     "synonymous_variant",
+                                     "splice_region_variant",
+                                     "coding_sequence_variant",
+                                     "mature_miRNA_variant",
+                                     "5_prime_UTR_variant",
+                                     "3_prime_UTR_variant",
+                                     "non_coding_transcript_exon_variant",
+                                     "intron_variant",
+                                     "NMD_transcript_variant",
+                                     "non_coding_transcript_variant",
+                                     "upstream_gene_variant",
+                                     "downstream_gene_variant",
+                                     "TFBS_ablation",
+                                     "TFBS_amplification",
+                                     "TF_binding_site_variant",
+                                     "regulatory_region_ablation",
+                                     "regulatory_region_amplification",
+                                     "feature_elongation",
+                                     "regulatory_region_variant",
+                                     "feature_truncation",
+                                     "intergenic_variant",
+                                     "undefined"], default_value="undefined")
+
+    filters.multiStatusUnit("Genes", "/view/general/genes[]",
+        compact_mode = True)
+
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
             variants = ["chr1", "chr2", "chr3", "chr4", "chr5",
@@ -23,55 +77,6 @@ def defineFilterSchema():
         filters.statusUnit("Region", "/data/region_canonical",
             title = "Region (Canonical)",
             research_only = False, default_value = "Other")
-
-    with filters.viewGroup("Zygosity"):
-        filters.zygositySpecialUnit("zygosity",
-            "/data/zygosity", config = {"x_cond":
-            ConditionMaker.condEnum("Chromosome", ["chrX"])})
-        filters.presenceUnit("Compound_heterozygous",
-            [("True", "/_filters/compoundHet")])
-
-    filters.multiStatusUnit("Genes", "/view/general/genes[]",
-        compact_mode = True)
-
-    filters.statusUnit("Most_Severe_Consequence",
-        "/data/most_severe_consequence",
-        variants = ["transcript_ablation",
-        "splice_acceptor_variant",
-        "splice_donor_variant",
-        "stop_gained",
-        "frameshift_variant",
-        "stop_lost",
-        "start_lost",
-        "transcript_amplification",
-        "inframe_insertion",
-        "inframe_deletion",
-        "missense_variant",
-        "protein_altering_variant",
-        "incomplete_terminal_codon_variant",
-        "stop_retained_variant",
-        "synonymous_variant",
-        "splice_region_variant",
-        "coding_sequence_variant",
-        "mature_miRNA_variant",
-        "5_prime_UTR_variant",
-        "3_prime_UTR_variant",
-        "non_coding_transcript_exon_variant",
-        "intron_variant",
-        "NMD_transcript_variant",
-        "non_coding_transcript_variant",
-        "upstream_gene_variant",
-        "downstream_gene_variant",
-        "TFBS_ablation",
-        "TFBS_amplification",
-        "TF_binding_site_variant",
-        "regulatory_region_ablation",
-        "regulatory_region_amplification",
-        "feature_elongation",
-        "regulatory_region_variant",
-        "feature_truncation",
-        "intergenic_variant",
-        "undefined"], default_value = "undefined")
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_AF",
@@ -118,12 +123,6 @@ def defineFilterSchema():
         # filters.multiStatusUnit("beacons",
         #     "/data/beacon_names",
         #     title = "Observed at")
-
-    with filters.viewGroup("Call"):
-        filters.statusUnit("Variant_Class", "/data/variant_class")
-        filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
-            title = "Called by", research_only = False)
-        filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     with filters.viewGroup("Call_Quality"):
         filters.intValueUnit("Proband_GQ", "/_filters/proband_gq")

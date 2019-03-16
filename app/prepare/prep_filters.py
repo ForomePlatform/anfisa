@@ -1,11 +1,20 @@
 import app.prepare.prep_unit as prep_unit
-
+from app.model.family import FamilyInfo
 #===============================================
 class FilterPrepareSetH:
     def __init__(self):
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
+        self.mMeta = None
+        self.mFamilyInfo = None
+
+    def setMeta(self, meta):
+        self.mMeta = meta
+        self.mFamilyInfo = FamilyInfo.detect(self.mMeta["samples"])
+
+    def getFamilyInfo(self):
+        return self.mFamilyInfo
 
     def viewGroup(self, view_group_title):
         assert view_group_title not in self.mVGroups
@@ -65,7 +74,7 @@ class FilterPrepareSetH:
     def zygositySpecialUnit(self, name, path, title = None,
             default_value = None, config = None):
         self._addUnit(prep_unit.ZygosityConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup, config))
+            len(self.mUnits), self.mCurVGroup, config, self))
 
     def process(self, rec_no, rec_data):
         result = dict()

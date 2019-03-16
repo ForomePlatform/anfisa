@@ -9,6 +9,7 @@ from .xl_cond import XL_Condition
 from .decision import DecisionTree
 from .xl_conf import defineDefaultDecisionTree
 from .tree_repr import cmpTrees
+from annotations.post.comp_hets import CompHetsMarkupBatch
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -32,6 +33,10 @@ class XLDataset(DataSet):
             for f_name, conditions, time_label in self.mMongoDS.getFilters():
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, conditions, time_label)
+        self.mOptions = []
+        if (self.getFamilyInfo() is not None and
+                self.getFamilyInfo().getProbandRel()):
+            self.mOptions.append("comp_hets")
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -165,7 +170,8 @@ class XLDataset(DataSet):
                 for unit in self.mUnits],
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
-            "conditions": cond_seq}
+            "conditions": cond_seq,
+            "options": self.mOptions}
 
     #===============================================
     @RestAPI.xl_request
@@ -244,7 +250,8 @@ class XLDataset(DataSet):
             "counts": tree.getCounts(),
             "stat": tree.getStat(),
             "cur_version": cur_version,
-            "versions": versions_rep}
+            "versions": versions_rep,
+            "options": self.mOptions}
 
     #===============================================
     @RestAPI.xl_request
@@ -283,16 +290,22 @@ class XLDataset(DataSet):
         else:
             base_version = None
             conditions = rq_args["conditions"]
+        markup_batch = None
+        if self.getFamilyInfo() is not None:
+            proband_rel = self.getFamilyInfo().getProbandRel()
+            if proband_rel:
+                markup_batch = CompHetsMarkupBatch(proband_rel)
         task_id = self.getDataVault().getApp().startCreateSecondaryWS(
-            self, rq_args["ws"],
-            base_version = base_version, conditions = conditions)
+            self, rq_args["ws"], base_version = base_version,
+            conditions = conditions, markup_batch = markup_batch)
         return {"task_id" : task_id}
 
     #===============================================
     @RestAPI.xl_request
     def rq__xl_export(self, rq_args):
         context = {"cond":
-            XL_Condition.parseSeq(json.loads(rq_args["conditions"]))}
+            XL_Condition.parseSeq(json.loads(rq_args["conditions"]),
+            self.getParseContext())}
         rec_count = self.evalTotalCount(context)
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         rec_no_seq = self.evalRecSeq(context, rec_count)

@@ -4,7 +4,6 @@ import logging
 import time
 import os
 from copy import copy
-from enum import Enum
 
 import openpyxl
 from jsonpath_rw import parse

@@ -11,7 +11,7 @@
     "default-xl": null,
     "link-base": ["anfisa.forome.org", "Local"],
     "export": {
-        "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
+        "excel-template": "${WORK}/export/SEQaBOO_output_template_20190306.xlsx",
         "work-dir": "${WORK}/export/work"
     },
     "dir-files": [

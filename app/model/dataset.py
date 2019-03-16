@@ -1,6 +1,7 @@
 import gzip, json
 from threading import Lock
 
+from .family import FamilyInfo
 from ixbz2.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
 from app.view.attr import AttrH
@@ -18,6 +19,11 @@ class DataSet:
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
+        self.mFamilyInfo = FamilyInfo.load(dataset_info.get("family"))
+
+    def _setFamilyInfo(self, members):
+        assert self.mFamilyInfo is None
+        self.mFamilyInfo = FamilyInfo(members, members, [], None)
 
     def __enter__(self):
         self.mLock.acquire()
@@ -46,6 +52,9 @@ class DataSet:
 
     def getDataInfo(self):
         return self.mDataInfo
+
+    def getFamilyInfo(self):
+        return self.mFamilyInfo
 
     def getViewSchema(self):
         return self.mAspects.dump()

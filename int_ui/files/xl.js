@@ -43,6 +43,7 @@ var sUnitsH = {
     mTotal: null,
     mExportFormed: null,
     mCtx: null,
+    mDSOptions: null,
     
     setup: function(conditions, filter_name, add_instr) {
         args = "ds=" + sDSName;
@@ -64,7 +65,7 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mExportFormed = false;
-        sCreateWsH.reset();
+        sCreateWsH.reset(info["options"]);
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
@@ -803,14 +804,16 @@ var sZygosityH = {
     mFamily: null,
     mProblemIdxs: null,
     mUnitName: null,
+    mDefaultIdxs: null,
     mZStat: null,
     mZEmpty: null,
     
     setup: function(unit_stat, list_stat_rep) {
         this.mUnitName = unit_stat[1]["name"];
         this.mFamily = unit_stat[2];
-        this.mProblemIdxs = unit_stat[3];
-        this.mZStat = unit_stat[4] ;
+        this.mDefaultIdxs = unit_stat[3];
+        this.mProblemIdxs = unit_stat[4];
+        this.mZStat = unit_stat[5] ;
         if (this.mProblemIdxs == null)
             this.mProblemIdxs = [];
         list_stat_rep.push('<div class="zyg-wrap"><div class="zyg-family">');
@@ -820,6 +823,13 @@ var sZygosityH = {
                 '<input type="checkbox" id="zyg_fam_m__' + idx + '" ' + q_checked + 
                 ' onchange="sZygosityH.checkMember(' + idx + ');" />' +
                 this.mFamily[idx] + '</div>');
+        }
+        if (this.mDefaultIdxs.length > 0) {
+            reset_dis = (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','))?
+                'disabled="true"':'';
+            list_stat_rep.push('<button id="zyg_fam_reset" ' +
+                'title="Reset affected group" ' + reset_dis + 
+                ' onclick="sZygosityH.resetGrp()">Reset</button>');
         }
         list_stat_rep.push('</div><div id="zyg-stat">');
         this._reportStat(list_stat_rep);
@@ -876,11 +886,15 @@ var sZygosityH = {
             return;
         if (this.mProblemIdxs.join(",") != condition_data[2].join(",")) {
             this.mProblemIdxs = condition_data[2];
-            for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
-                document.getElementById("zyg_fam_m__" + m_idx).checked =
-                    (this.mProblemIdxs.indexOf(m_idx) >= 0);
-            this.refreshContext();
+            this._reselectFamily();
         }
+    },
+    
+    _reselectFamily: function() {
+        for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
+            document.getElementById("zyg_fam_m__" + m_idx).checked =
+                (this.mProblemIdxs.indexOf(m_idx) >= 0);
+        this.refreshContext();
     },
     
     _reportStat: function(list_stat_rep) {
@@ -911,6 +925,14 @@ var sZygosityH = {
         }
     },
     
+    resetGrp: function() {
+        if (this.mDefaultIdxs != this.mProblemIdxs) {
+            this.mProblemIdxs = this.mDefaultIdxs;
+            this._reselectFamily();
+            return;
+        }
+    },
+    
     checkMember: function(m_idx) {
         m_checked = document.getElementById("zyg_fam_m__" + m_idx).checked;
         if (m_checked && this.mProblemIdxs.indexOf(m_idx) < 0) {
@@ -929,6 +951,9 @@ var sZygosityH = {
     },
     
     refreshContext: function() {
+        if (this.mDefaultIdxs.length > 0)
+            document.getElementById("zyg_fam_reset").disabled = 
+                (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','));
         var ctx = {"problem_group": this.mProblemIdxs.slice()};
         sUnitsH.setCtx(ctx);
 
@@ -939,7 +964,7 @@ var sZygosityH = {
     },
     
     _refresh: function(info) {
-        this.mZStat = info[4];
+        this.mZStat = info[5];
         rep_list = [];
         this._reportStat(rep_list);
         document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');
@@ -1181,9 +1206,11 @@ var sCreateWsH = {
     mDivModProblems: null,
     mDivModStatus: null,
     mButtonModStart: null,
+    mButtonModCancel: null,
     mWSFormed: false,
     mTaskId: null,
     mTimeH: null,
+    mDSOptions: null,
     
     init: function() {
         this.mSpanModTitle = document.getElementById("create-ws-title");
@@ -1191,10 +1218,12 @@ var sCreateWsH = {
         this.mDivModProblems = document.getElementById("create-ws-problems");
         this.mDivModStatus = document.getElementById("create-ws-status");
         this.mButtonModStart = document.getElementById("create-ws-start");
+        this.mButtonModCancel = document.getElementById("create-ws-cancel");
     },
     
-    reset: function() {
+    reset: function(ds_options) {
         this.mWSFormed = false;
+        this.mDSOptions  = ds_options;
     },
     
     show: function() {
@@ -1234,11 +1263,7 @@ var sCreateWsH = {
     },
     
     _setupName: function(dirinfo) {
-        this.mDSNames = [];
-        for (idx = 0; idx < dirinfo["xl-datasets"].length; idx++)
-            this.mDSNames.push(dirinfo["xl-datasets"][idx]["name"]);
-        for (idx = 0; idx < dirinfo["workspaces"].length; idx++)
-            this.mDSNames.push(dirinfo["workspaces"][idx]["name"]);
+        this.mDSNames = dirinfo["reserved"];
         var no = 1;
         var own_name = sDSName.match(/\_(.*)$/)[1];
         var ws_name;
@@ -1273,6 +1298,7 @@ var sCreateWsH = {
             this.mDivModProblems.style.display = "none";
             this.mDivModStatus.style.display = "block";
         }
+        this.mButtonModCancel.disabled = (this.mStage == "WAIT");
     },
     
     startIt: function() {
@@ -1459,10 +1485,10 @@ function showExport() {
     if (sUnitsH.mCount <= 300)
         res_content = 'Export ' + sUnitsH.mCount + ' records?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
-            '&emsp;<button class="drop"';
+            '&emsp;<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
     else
         res_content = 'Too many records for export: ' + 
-            sUnitsH.length + ' > 300.<br>' +
+            sUnitsH.mCount + ' > 300.<br>' +
             '<button class="drop" onclick="sViewH.dropOff();">Cancel</button>';
     res_el = document.getElementById("ws-export-result");
     res_el.innerHTML = res_content;

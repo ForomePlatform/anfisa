@@ -1,4 +1,4 @@
-import logging, json
+import logging
 from app.model.a_config import AnfisaConfig
 from app.model.condition import ConditionMaker
 from xl_cond import XL_Condition, XL_NumCondition
@@ -140,27 +140,27 @@ class XL_EnumUnit(XL_Unit):
 class XL_ZygosityUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
-        self.mFamily = descr["family"]
-        if not self.isDummy():
-            self.mFamMap = {member:idx
-                for idx, member in enumerate(self.mFamily)}
+        if descr.get("family") and self.getDS().getFamilyInfo() is None:
+            self.getDS()._setFamilyInfo(descr["family"])
+
+        self.mIsOK = (self.getDS().getFamilyInfo() is not None and
+            len(self.getDS().getFamilyInfo()) > 1)
         self.mLabels = AnfisaConfig.configOption("zygosity.cases")
         self.mConfig = descr.get("config", dict())
         self.mXCondition = XL_Condition.parse(self.mConfig.get("x_cond",
             ConditionMaker.condEnum("Chromosome", ["chrX"])))
 
     def isDummy(self):
-        return not self.mFamily or len(self.mFamily) < 2
-
-    def getFamilyInfo(self):
-        return self.mFamily
+        return not self.mIsOK
 
     def getParseSupport(self):
+        if not self.mIsOK:
+            return (None, None)
         return ("zygosity", self.parseZCondition)
 
     def conditionZHomoRecess(self, problem_group):
         seq = []
-        for idx in range(len(self.mFamily)):
+        for idx in range(len(self.getDS().getFamilyInfo())):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
                 seq.append(XL_NumCondition(dim_name, [2, None]))
@@ -178,7 +178,7 @@ class XL_ZygosityUnit(XL_Unit):
 
     def _conditionZDominant(self, problem_group):
         seq = []
-        for idx in range(len(self.mFamily)):
+        for idx in range(len(self.getDS().getFamilyInfo())):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
                 seq.append(XL_NumCondition(dim_name, [1, None]))
@@ -188,7 +188,7 @@ class XL_ZygosityUnit(XL_Unit):
 
     def conditionZCompens(self, problem_group):
         seq = []
-        for idx in range(len(self.mFamily)):
+        for idx in range(len(self.getDS().getFamilyInfo())):
             dim_name = "%s_%d" % (self.getName(), idx)
             if idx in problem_group:
                 seq.append(XL_NumCondition(dim_name, [None, 0]))
@@ -214,14 +214,19 @@ class XL_ZygosityUnit(XL_Unit):
             self.conditionZCompens(p_group))
 
     def makeStat(self, context = None):
-        ret = self._prepareStat() + [self.mFamily]
+        assert self.mIsOK
+        ret = self._prepareStat() + [
+            self.getDS().getFamilyInfo().getTitles(),
+            self.getDS().getFamilyInfo().getAffectedGroup()]
         if context is None or "problem_group" not in context:
-            return ret + [[], None]
-        p_group = {m_idx if 0 <= m_idx < len(self.mFamily) else None
-            for m_idx in context["problem_group"]}
-        if None in p_group:
-            p_group.remove(None)
-        if (len(p_group) == 0 or len(p_group) == len(self.mFamily)):
+            p_group = self.getDS().getFamilyInfo().getAffectedGroup()
+        else:
+            p_group = {m_idx if 0 <= m_idx < len(self.getDS().getFamilyInfo())
+                else None for m_idx in context["problem_group"]}
+            if None in p_group:
+                p_group.remove(None)
+        if (len(p_group) == 0 or
+                len(p_group) == len(self.getDS().getFamilyInfo())):
             return ret + [sorted(p_group), None]
         stat = []
         for name, z_condition in self._iterCritSeq(p_group):
