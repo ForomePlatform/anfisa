@@ -225,8 +225,7 @@ class XL_ZygosityUnit(XL_Unit):
                 else None for m_idx in context["problem_group"]}
             if None in p_group:
                 p_group.remove(None)
-        if (len(p_group) == 0 or
-                len(p_group) == len(self.getDS().getFamilyInfo())):
+        if len(p_group) == 0:
             return ret + [sorted(p_group), None]
         stat = []
         for name, z_condition in self._iterCritSeq(p_group):
