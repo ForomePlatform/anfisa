@@ -43,6 +43,15 @@ class FamilyInfo:
     @staticmethod
     def detect(samples):
         members = sorted(samples.keys())
+        if not members[0].endswith("a1"):
+            proband_idx = None
+            for idx, member_id in enumerate(members):
+                if member_id.endswith("a1"):
+                    proband_idx = idx
+                    proband_id = member_id
+                    break
+            del members[proband_idx]
+            members.insert(0, proband_id)
         titles = members[:]
         affected_group = []
         for idx, member_id in enumerate(members):

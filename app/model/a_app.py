@@ -89,10 +89,9 @@ class AnfisaApp:
         tags_info = tags_man.getTagListInfo() if tags_man is not None else None
 
         export_h = ExcelExport(export_setup["excel-template"],
-            version_info = version_info, tags_list = tags_info)
+            version_info = version_info, tags_info = tags_info)
         exp_rep = _ExportReport(dir_name + debug_file_name,
             version_info, tags_info)
-        export_h.new()
         for rec_no in rec_no_seq:
             rec_data = ds_h.getRecordData(rec_no)
             tags_data = tags_man.getRecTags(rec_no) if tags_man else None

@@ -4,6 +4,7 @@ import logging
 import time
 import os
 from copy import copy
+from collections import Counter
 
 import openpyxl
 from jsonpath_rw import parse
@@ -130,18 +131,29 @@ def find_value(array, key):
 
 
 class ExcelExport:
-    def __init__(self, fname=None, mapping=None,
-                 tags_list=None, check_tags_mapping=None):
-        if fname:
-            self.mapping = read_mapping(fname)
-        else:
-            self.mapping = mapping
+    def __init__(self, template_file,
+            tags_info = None, version_info = None,
+            verbose_mode = False):
+        self.mapping = read_mapping(template_file)
+        self.check_tags_mapping = read_mapping_check_tags_mapping(
+            template_file)
         self.workbook = None
         self.column_widths = {}
-        self.tags_list = tags_list
-        self.check_tags_mapping = check_tags_mapping
+        self.tags_info = None
+        self.tags_count = None
+        self.add_tags_cfg(tags_info)
+        if verbose_mode:
+            for column in range(len(self.mapping)):
+                print "{}: {}".format(column, self.mapping[column])
+        self._new()
+        if version_info:
+            for idx, pair in enumerate(version_info):
+                self.workbook["version"].cell(row=idx + 1, column=1,
+                    value = pair[0])
+                self.workbook["version"].cell(row=idx + 1, column=2,
+                    value = pair[1])
 
-    def new(self, title=None):
+    def _new(self, title=None):
         self.workbook = openpyxl.Workbook()
         ws = self.workbook.active
         ws.title = title if title else "Variants"
@@ -181,15 +193,12 @@ class ExcelExport:
                 setattr(cell, s, style[s])
 
     def add_tags_cfg(self, data):
-        self.tags_list = data
-        self.tags_count = {}
-        for key in self.tags_list['check-tags']:
-            self.tags_list[key] = 0
-        if 'version' in  self.tags_list:
-            self.workbook["version"].cell(row=1, column=1, value = "Version:")
-            self.workbook["version"].cell(row=1, column=2, value=self.tags_list['version'])
+        if data is None:
+            return
+        self.tags_info = data
+        self.tags_count = Counter()
 
-    def add_variant(self, data, tags=None):
+    def add_variant(self, data, tags = None):
         ws = self.workbook.active
         row = self.__get_next_row_index(ws.max_row + 1, tags)
         ws.insert_rows(row)
@@ -203,15 +212,15 @@ class ExcelExport:
                     self.column_widths[cell.column], len(value))
             for s in style:
                 setattr(cell, s, style[s])
-        if tags is not None and self.tags_list is not None:
+        if tags is not None and self.tags_info is not None:
             self.__add_tags_to_excel(tags, row)
 
     def __add_tags_to_excel(self, tags, row):
         style = None
         ws = self.workbook.active
-        tagList = filter(lambda k: k in self.tags_list['op-tags'], tags.keys())
+        tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
         op_tags = ', '.join(tagList)
-        check_tags = ', '.join(filter(lambda k: k in self.tags_list['check-tags'] and tags[k] == True, tags.keys()))
+        check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
         tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
         if check_tags in self.check_tags_mapping:
             style = self.check_tags_mapping[check_tags]
@@ -228,7 +237,7 @@ class ExcelExport:
 
     def __set_style(self, cell, style, ws):
         if style:
-            row = ws.row_dimensions[cell.row]
+            #?row = ws.row_dimensions[cell.row]
             for c in range(1, cell.col_idx + 1):
                 for s in style:
                     setattr(ws.cell(row=cell.row, column=c), s, style[s])
@@ -249,66 +258,61 @@ class ExcelExport:
         return value
 
     def __get_next_row_index(self, max_index, tags):
-        check_tag = next(iter(filter(lambda k: k in self.tags_list['check-tags'] and tags[k] == True, tags.keys())), None)
+        check_tag = next(iter(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys())), None)
         if tags is None or check_tag is None:
             return max_index
 
         res = 0
-        for key in self.tags_list['check-tags']:
-            res += self.tags_list[key]
+        for key in self.tags_info['check-tags']:
+            res += self.tags_count[key]
             if check_tag == key:
-                self.tags_list[key] += 1
+                self.tags_count[key] += 1
                 return min(res + 2, max_index)
 
         return max_index;
 
-class LoadMode(Enum):
-    RECORD = "@RECORD",
-    TAGS_CFG = "@TAGS_CFG",
-    TAGS = "@TAGS",
-
-
-def processing(args):
-    start_time = time.time()
-    print "parsing template {} ...".format(args.template)
-    mapping = read_mapping(args.template)
-    check_tags_mapping = read_mapping_check_tags_mapping(args.template)
-    if args.verbose:
-        for column in range(len(mapping)):
-            print "{}: {}".format(column, mapping[column])
-    export = ExcelExport(mapping=mapping, check_tags_mapping=check_tags_mapping)
-    export.new()
-    print "export variants from {} ...".format(args.input)
-    with open(args.input) as json_file:
-        mode = LoadMode.RECORD
-        record = None
-        for idx, line in enumerate(json_file):
-            if line.startswith("@"):
-                mode = LoadMode[line.strip()[1:]]
-            else:
-                data = json.loads(line)
-                if mode == LoadMode.RECORD:
-                    record = data
-                elif mode == LoadMode.TAGS_CFG:
-                    export.add_tags_cfg(data)
-                elif mode == LoadMode.TAGS:
-                    if record != None:
-                        export.add_variant(record, data)
-                    record = None
-
-            if args.limit and idx >= args.limit:
-                break
-            if args.verbose and idx > 0 and idx % 100 == 0:
-                print "export lines: {}".format(idx)
-
-        print "total export line: {}".format(idx)
-
-    print "save {}".format(args.output)
-    export.save(args.output)
-    print "complete (execution time: {0:.3f} s)".format(time.time() - start_time)
-
-
 if __name__ == '__main__':
+    import Enum
+    class LoadMode(Enum):
+        RECORD = "@RECORD",
+        TAGS_CFG = "@TAGS_CFG",
+        TAGS = "@TAGS",
+
+
+    def processing(args):
+        start_time = time.time()
+        print "parsing template {} ...".format(args.template)
+        export = ExcelExport(args.template, verbose_mode = args.verbose)
+        print "export variants from {} ...".format(args.input)
+        with open(args.input) as json_file:
+            mode = LoadMode.RECORD
+            record = None
+            for idx, line in enumerate(json_file):
+                if line.startswith("@"):
+                    mode = LoadMode[line.strip()[1:]]
+                else:
+                    data = json.loads(line)
+                    if mode == LoadMode.RECORD:
+                        record = data
+                    elif mode == LoadMode.TAGS_CFG:
+                        export.add_tags_cfg(data)
+                    elif mode == LoadMode.TAGS:
+                        if record != None:
+                            export.add_variant(record, data)
+                        record = None
+
+                if args.limit and idx >= args.limit:
+                    break
+                if args.verbose and idx > 0 and idx % 100 == 0:
+                    print "export lines: {}".format(idx)
+
+            print "total export line: {}".format(idx)
+
+        print "save {}".format(args.output)
+        export.save(args.output)
+        print "complete (execution time: {0:.3f} s)".format(time.time() - start_time)
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--template", help="template file", required=True)
     parser.add_argument("-i", "--input", help="input file with json lines", required=True)
