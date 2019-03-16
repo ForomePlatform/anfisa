@@ -225,21 +225,20 @@ class ExcelExport:
         if check_tags in self.check_tags_mapping:
             style = self.check_tags_mapping[check_tags]
 
-        cell = ws.cell(row=row, column=(len(self.mapping) + 1), value=check_tags)
+        col_tags = len(self.mapping) + 1
+        cell = ws.cell(row=row, column = col_tags, value=check_tags)
         self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
 
-        cell = ws.cell(row=row, column=(len(self.mapping) + 2), value=op_tags)
+        cell = ws.cell(row=row, column = col_tags + 1, value=op_tags)
         self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
 
-        cell = ws.cell(row=row, column=len(self.mapping) + 3, value=tags_with_value)
+        cell = ws.cell(row=row, column = col_tags + 2, value=tags_with_value)
         self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
-        self.__set_style(cell, style, ws)
-
-    def __set_style(self, cell, style, ws):
         if style:
-            for c in range(1, cell.col_idx + 1):
+            for idx_add in range(3):
                 for s in style:
-                    setattr(ws.cell(row=cell.row, column=c), s, style[s])
+                    setattr(ws.cell(row=cell.row, column=col_tags + idx_add),
+                        s, style[s])
 
     def save(self, file):
         ws = self.workbook.active
@@ -257,8 +256,12 @@ class ExcelExport:
         return value
 
     def __get_next_row_index(self, max_index, tags):
-        check_tag = next(iter(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys())), None)
-        if tags is None or check_tag is None:
+        if tags is None:
+            return max_index
+        check_tag = next(iter(filter(lambda k:
+            k in self.tags_info['check-tags'] and tags[k] == True,
+            tags.keys())), None)
+        if check_tag is None:
             return max_index
 
         res = 0
