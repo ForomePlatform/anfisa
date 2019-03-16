@@ -140,7 +140,7 @@ class XL_EnumUnit(XL_Unit):
 class XL_ZygosityUnit(XL_Unit):
     def __init__(self, xl_ds, descr):
         XL_Unit.__init__(self, xl_ds, descr)
-        if "family" in descr and self.getDS().getFamilyInfo() is None:
+        if descr.get("family") and self.getDS().getFamilyInfo() is None:
             self.getDS()._setFamilyInfo(descr["family"])
 
         self.mIsOK = (self.getDS().getFamilyInfo() is not None and
