@@ -237,7 +237,6 @@ class ExcelExport:
 
     def __set_style(self, cell, style, ws):
         if style:
-            #?row = ws.row_dimensions[cell.row]
             for c in range(1, cell.col_idx + 1):
                 for s in style:
                     setattr(ws.cell(row=cell.row, column=c), s, style[s])
