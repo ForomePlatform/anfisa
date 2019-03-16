@@ -21,6 +21,10 @@ class DataSet:
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
         self.mFamilyInfo = FamilyInfo.load(dataset_info.get("family"))
 
+    def _setFamilyInfo(self, members):
+        assert self.mFamilyInfo is None
+        self.mFamilyInfo = FamilyInfo(members, members, [], None)
+
     def __enter__(self):
         self.mLock.acquire()
         return self

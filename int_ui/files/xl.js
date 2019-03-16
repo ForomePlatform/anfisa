@@ -824,10 +824,13 @@ var sZygosityH = {
                 ' onchange="sZygosityH.checkMember(' + idx + ');" />' +
                 this.mFamily[idx] + '</div>');
         }
-        reset_dis = (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','))?
-            'disabled="true"':'';
-        list_stat_rep.push('<button id="zyg_fam_reset" title="Reset affected group" ' +
-            reset_dis + ' onclick="sZygosityH.resetGrp()">Reset</button>');
+        if (this.mDefaultIdxs.length > 0) {
+            reset_dis = (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','))?
+                'disabled="true"':'';
+            list_stat_rep.push('<button id="zyg_fam_reset" ' +
+                'title="Reset affected group" ' + reset_dis + 
+                ' onclick="sZygosityH.resetGrp()">Reset</button>');
+        }
         list_stat_rep.push('</div><div id="zyg-stat">');
         this._reportStat(list_stat_rep);
         list_stat_rep.push('</div></div>');
@@ -891,8 +894,6 @@ var sZygosityH = {
         for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
             document.getElementById("zyg_fam_m__" + m_idx).checked =
                 (this.mProblemIdxs.indexOf(m_idx) >= 0);
-        document.getElementById("zyg_fam_reset").disabled = 
-            (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','));
         this.refreshContext();
     },
     
@@ -950,6 +951,9 @@ var sZygosityH = {
     },
     
     refreshContext: function() {
+        if (this.mDefaultIdxs.length > 0)
+            document.getElementById("zyg_fam_reset").disabled = 
+                (this.mDefaultIdxs.join(',') == this.mProblemIdxs.join(','));
         var ctx = {"problem_group": this.mProblemIdxs.slice()};
         sUnitsH.setCtx(ctx);
 
