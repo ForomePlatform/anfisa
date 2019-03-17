@@ -194,7 +194,7 @@ class ExcelExport:
             return
         self.tags_info = data
         logging.info("info: %s" % json.dumps(data))
-        self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + 2)
+        self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + len(self.tags_info['op-tags']) + 2)
 
     def reg_check_group(self, tags):
         if self.check_group_tab is None:
@@ -205,6 +205,14 @@ class ExcelExport:
             if tags.get(check_tag):
                 if group_idx is None:
                     group_idx, group_name = check_idx, check_tag
+                else:
+                    group_idx = len(self.check_group_tab) - 2
+                    group_name = "_mix"
+                    break
+        for op_idx, op_tag in enumerate(self.tags_info['op-tags']):
+            if op_tag in tags:
+                if group_idx is None:
+                    group_idx, group_name = len(self.tags_info['check-tags']) + op_idx, op_tag
                 else:
                     group_idx = len(self.check_group_tab) - 2
                     group_name = "_mix"
@@ -238,7 +246,15 @@ class ExcelExport:
         op_tags = ', '.join(tagList)
         check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
         tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
-        style = self.check_tags_mapping.get(tag_group_name)
+        if tag_group_name:
+            if tag_group_name in self.check_tags_mapping:
+                style = self.check_tags_mapping[tag_group_name]
+            elif tag_group_name == "_mix":
+                style = self.check_tags_mapping["Multiple Tags"]
+            else:
+                style = self.check_tags_mapping["Custom"]
+        else:
+            style = None
 
         col_tags = len(self.mapping) + 1
         cell = ws.cell(row=row, column = col_tags, value=check_tags)
