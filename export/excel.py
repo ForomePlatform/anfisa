@@ -29,6 +29,7 @@ def read_mappings(path, verbose_mode):
     mapping = _read_key_mapping(wb["key"], path)
     check_tags_mapping = _read_check_tags_mapping(wb["Check_Tags"],
         verbose_mode)
+    wb.close()
     return mapping, check_tags_mapping
 
 def _read_key_mapping(ws, path):
@@ -60,7 +61,6 @@ def _read_key_mapping(ws, path):
         if value:
             def_value = cell_value(ws, r, def_column) if def_column else None
             mapping.append((len(mapping) + 1, key, value, style, def_value))
-
     return mapping
 
 def _read_check_tags_mapping(ws, verbose_mode):
@@ -91,7 +91,6 @@ def getColumnByName(ws, name):
         if cell_value(ws, 1, c) == name:
             return c
 
-
 def build_value_jsonpath(array, key):
     '''
     It's working, but very slowly
@@ -105,7 +104,6 @@ def build_value_jsonpath(array, key):
             return ','.join([str(item) for item in match[0].value])
         else:
             return match[0].value
-
 
 def build_value(array, key):
     if array.get(key):
@@ -125,6 +123,11 @@ def build_value(array, key):
                 value = ','.join([str(item) for item in value])
             return value
     return None
+
+def _setStyle(cell, style):
+    if style:
+        for s in style:
+            setattr(cell, s, style[s])
 
 class ExcelExport:
     def __init__(self, template_file, tags_info = None,
@@ -153,8 +156,7 @@ class ExcelExport:
                 continue
             cell = ws.cell(row=1, column=column, value=key)
             self.column_widths[cell.column] = len(key)
-            for s in style:
-                setattr(cell, s, style[s])
+            _setStyle(cell, style)
 
         cell = ws.cell(row=1, column=len(self.mapping) + 1, value="check tags")
         self.column_widths[cell.column] = len(cell.value)
@@ -185,8 +187,7 @@ class ExcelExport:
             cell = ws.cell(row=row + 1, column=1, value=value)
             ws.cell(row=row + 1, column=2, value=def_value)
             ws.cell(row=row + 1, column=3, value=key)
-            for s in style:
-                setattr(cell, s, style[s])
+            _setStyle(cell, style)
 
     def add_tags_cfg(self, data):
         if data is None:
@@ -227,20 +228,17 @@ class ExcelExport:
             if isinstance(value, basestring):
                 self.column_widths[cell.column] = max(
                     self.column_widths[cell.column], len(value))
-            for s in style:
-                setattr(cell, s, style[s])
+            _setStyle(cell, style)
         if tags is not None and self.tags_info is not None:
             self.__add_tags_to_excel(tags, new_row, tag_group_name)
 
     def __add_tags_to_excel(self, tags, row, tag_group_name):
-        style = None
         ws = self.workbook.active
         tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
         op_tags = ', '.join(tagList)
         check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
         tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
-        if tag_group_name in self.check_tags_mapping:
-            style = self.check_tags_mapping[check_tags]
+        style = self.check_tags_mapping.get(tag_group_name)
 
         col_tags = len(self.mapping) + 1
         cell = ws.cell(row=row, column = col_tags, value=check_tags)
@@ -251,13 +249,35 @@ class ExcelExport:
 
         cell = ws.cell(row=row, column = col_tags + 2, value=tags_with_value)
         self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
-        if style:
-            for idx in (1, col_tags):
-                for s in style:
-                    setattr(ws.cell(row=cell.row, column=idx), s, style[s])
+        for idx in (1, col_tags):
+            _setStyle(ws.cell(row=cell.row, column=idx), style)
+
+    def _decor_one_line(self, ws, new_row, style = None):
+        ws.insert_rows(new_row)
+        for idx in range(1, len(self.mapping) + 2):
+            _setStyle(ws.cell(row=new_row, column=idx), style)
+
+    def _decor_lines(self, ws):
+        if self.check_group_tab is None:
+            return None
+        if (self.check_group_tab[-1] > 0):
+            cnt_before = sum(self.check_group_tab[:-1])
+            if cnt_before > 0:
+                self._decor_one_line(ws, cnt_before + 1)
+        for idx in range(len(self.check_group_tab) - 2, -1, -1):
+            if self.check_group_tab[idx] == 0:
+                continue
+            cnt_before = sum(self.check_group_tab[:idx])
+            if idx >= len(self.tags_info['check-tags']):
+                group_name = "_mix"
+            else:
+                group_name = self.tags_info['check-tags'][idx]
+            self._decor_one_line(ws, cnt_before + 1,
+                self.check_tags_mapping.get(group_name))
 
     def save(self, file):
         ws = self.workbook.active
+        self._decor_lines(ws)
         for column, width in self.column_widths.iteritems():
             ws.column_dimensions[column].width = min(12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
