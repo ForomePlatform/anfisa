@@ -260,7 +260,7 @@ class Variant:
             versions["pipeline"] = p
             versions["pipeline_date"] = vcf_reader.metadata.get("fileDate")
             versions["reference"] = vcf_reader.metadata.get("reference")
-        return json.dumps(metadata)
+        metadata
 
     @classmethod
     def most_severe(cls, csq):
