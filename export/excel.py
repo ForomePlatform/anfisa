@@ -212,7 +212,7 @@ class ExcelExport:
         if group_idx is None:
             group_idx = len(self.check_group_tab) - 1
         self.check_group_tab[group_idx] += 1
-        return group_name, sum(self.check_group_tab[:group_idx + 1])
+        return group_name, 1 + sum(self.check_group_tab[:group_idx + 1])
 
     def add_variant(self, data, tags = None):
         ws = self.workbook.active
@@ -263,7 +263,7 @@ class ExcelExport:
         if (self.check_group_tab[-1] > 0):
             cnt_before = sum(self.check_group_tab[:-1])
             if cnt_before > 0:
-                self._decor_one_line(ws, cnt_before + 1)
+                self._decor_one_line(ws, cnt_before + 2)
         for idx in range(len(self.check_group_tab) - 2, -1, -1):
             if self.check_group_tab[idx] == 0:
                 continue
@@ -272,7 +272,7 @@ class ExcelExport:
                 group_name = "_mix"
             else:
                 group_name = self.tags_info['check-tags'][idx]
-            self._decor_one_line(ws, cnt_before + 1,
+            self._decor_one_line(ws, cnt_before + 2,
                 self.check_tags_mapping.get(group_name))
 
     def save(self, file):
