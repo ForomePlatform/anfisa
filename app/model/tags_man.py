@@ -42,6 +42,18 @@ class TagsManager(ZoneH):
     def getVariants(self):
         return self.getTagList()
 
+    def getTagListInfo(self):
+        return {
+            "check-tags": self.mCheckTags[:],
+            "op-tags": self.getOpTagList()}
+
+    def getRecTags(self, rec_no):
+        rec_key = self.getWS().getDataSet().getRecKey(rec_no)
+        rec_data = self.getWS().getMongoRecData(rec_key)
+        if rec_data is None:
+            return dict()
+        return dict(filter(self._goodPair, rec_data.items()))
+
     @staticmethod
     def _goodPair(key_value):
         return (key_value[0] and key_value[0][0] != '_' and

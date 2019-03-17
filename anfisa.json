@@ -1,7 +1,7 @@
 {
     "file-path-def": {"WORK": "${HOME}/../a-setup"},
     "host": "0.0.0.0",
-    "port": 8090,
+    "port": 8190,
     "html-base": "/anfisa/",
     "html-title": "Anfisa",
     "mongo-db": "Anfisa",
@@ -19,7 +19,7 @@
         ["/excel", "${WORK}/export/work"]], 
     "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "export": {
-        "excel-template": "${WORK}/export/SEQaBOO_output_template_0730.xlsx",
+        "excel-template": "${WORK}/export/SEQaBOO_output_template_20190306.xlsx",
         "work-dir": "${WORK}/export/work"
     },
     "link-base": ["anfisa.forome.org", "Local"],

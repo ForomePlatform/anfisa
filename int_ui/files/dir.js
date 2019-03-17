@@ -27,18 +27,6 @@ function setupData(info) {
         tab_cnt.push('<td class="note">' + ws_info["note"].replace('\n', '<br>') + 
             '</td></tr>');
     }
-    if (info["xl-datasets"] && info["xl-datasets"].length > 0) {
-        tab_cnt.push('<tr><td colspan="2"></td></tr>');
-        for (idx = 0; idx < info["xl-datasets"].length; idx++) {
-            ds_info = info["xl-datasets"][idx];
-            tab_cnt.push('<tr><td class="name"><a href="xl?ds=' + 
-                ds_info["name"] + '" ' + 'target="' + sTitlePrefix + '/' + 
-                ds_info["name"] + '">' +
-                ds_info["name"] + '</td>');
-            tab_cnt.push('<td class="note">' + ds_info["note"].replace('\n', '<br>') + 
-                '</td></tr>');
-        }
-    }
     tab_cnt.push("</table>");
     document.getElementById("div-main").innerHTML = tab_cnt.join('\n');
 }

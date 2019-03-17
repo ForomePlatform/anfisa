@@ -8,7 +8,6 @@ var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModes = null;
-var sExportFormed = null;
 var sWsDropShown = null;
 
 var sNodeFilterBack  = null;
@@ -81,7 +80,6 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
-    initExportForm();
 }
 
 function refreshRecList() {
@@ -270,10 +268,15 @@ function updateTabCfg() {
 //=====================================
 function initExportForm() {
     wsDropShow(false);
-    document.getElementById("ws-export-result").innerHTML = 
-        'Export ' + sRecList.length + ' records?<br>' +
-        '<button class="drop" onclick="doExport();">Export</button>';
-    sExportFormed = false;
+    if (sRecList.length <= 300)
+        res_content = 'Export ' + sRecList.length + ' records?<br>' +
+            '<button class="drop" onclick="doExport();">Export</button>' + 
+            '&emsp;<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
+    else
+        res_content = 'Too many records for export: ' + 
+            sRecList.length + ' > 300.<br>' +
+            '<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
+    document.getElementById("ws-export-result").innerHTML = res_content;
 }
 
 
@@ -287,6 +290,7 @@ function openControlMenu() {
 
 function showExport() {
     wsDropShow(false);
+    initExportForm();
     document.getElementById("ws-export-result").style.display = "block";
     wsDropShow(true);
 }
@@ -329,7 +333,6 @@ function setupExport(info) {
         res_el.className = "drop problems";
         res_el.innerHTML = 'Bad configuration';
     }
-    sExportFormed = true;
     wsDropShow(true);
 }
 

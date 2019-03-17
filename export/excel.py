@@ -16,24 +16,32 @@ def cell_value(ws, row, column):
     return v.strip()
 
 
-def read_mapping(path):
+def read_mappings(path, verbose_mode):
     if (not os.path.isfile(path)):
-        raise Exception ("No Mapping file: {}".format(path))
+        raise Exception("No Mapping file: {}".format(path))
     if (not os.access(path, os.R_OK)):
         raise Exception("No read access to: {}".format(path))
 
-    logging.info("Reading: {}".format(path))
+    if verbose_mode:
+        logging.info("Reading: {}".format(path))
     wb = openpyxl.load_workbook(path, read_only=False)
-    ws = wb["key"]
+
+    mapping = _read_key_mapping(wb["key"], path)
+    check_tags_mapping = _read_check_tags_mapping(wb["Check_Tags"],
+        verbose_mode)
+    wb.close()
+    return mapping, check_tags_mapping
+
+def _read_key_mapping(ws, path):
     if cell_value(ws, 1, 1) != "Column":
         raise Exception('First column must be called "Column". '
                         'Worksheet "key" of file {}'.format(path))
     key_column = 1
-    map_column = getColumnByName(ws, "Mapping", path)
+    map_column = getColumnByName(ws, "Mapping")
     if not map_column:
         raise Exception("Column '{}' is not found in Worksheet key "
                         "of file {}".format("Mapping", path))
-    def_column = getColumnByName(ws, "Definition", path)
+    def_column = getColumnByName(ws, "Definition")
 
     mapping = []
     for r in range(2, ws.max_row):
@@ -53,17 +61,37 @@ def read_mapping(path):
         if value:
             def_value = cell_value(ws, r, def_column) if def_column else None
             mapping.append((len(mapping) + 1, key, value, style, def_value))
-
     return mapping
 
+def _read_check_tags_mapping(ws, verbose_mode):
+    key_column = 1
+    res = {}
+    for r in range(1, ws.max_row + 1):
+        cell = ws.cell(r, key_column)
+        key = cell.value
+        if verbose_mode:
+            logging.info("tags: Reading key: {}".format(key))
+        if not key:
+            continue
 
-def getColumnByName(ws, name, path):
+        key = key.strip()
+        style = dict()
+        style["fill"] = copy(cell.fill)
+        style["font"] = copy(cell.font)
+        style["alignment"] = copy(cell.alignment)
+        style["number_format"] = copy(cell.number_format)
+        if key:
+            res[key] = style
+
+    return res
+
+
+def getColumnByName(ws, name):
     for c in range(1, ws.max_column):
         if cell_value(ws, 1, c) == name:
             return c
 
-
-def find_value_jsonpath(array, key):
+def build_value_jsonpath(array, key):
     '''
     It's working, but very slowly
     :param array: - json
@@ -77,39 +105,50 @@ def find_value_jsonpath(array, key):
         else:
             return match[0].value
 
-
-def find_value(array, key):
+def build_value(array, key):
     if array.get(key):
         return array[key]
     for x in array.values():
         value = None
         if isinstance(x, dict):
-            value = find_value(x, key)
+            value = build_value(x, key)
         elif isinstance(x, list):
             for element in x:
                 if isinstance(element, dict):
-                    value = find_value(element, key)
+                    value = build_value(element, key)
                     if value:
                         break
         if value:
             if isinstance(value, list):
                 value = ','.join([str(item) for item in value])
             return value
-
     return None
 
+def _setStyle(cell, style):
+    if style:
+        for s in style:
+            setattr(cell, s, style[s])
 
 class ExcelExport:
-    def __init__(self, fname=None, mapping=None):
-        if fname:
-            self.mapping = read_mapping(fname)
-        else:
-            self.mapping = mapping
+    def __init__(self, template_file, tags_info = None,
+            version_info = None, verbose_mode = False):
+        self.mapping, self.check_tags_mapping = read_mappings(
+            template_file, verbose_mode)
         self.workbook = None
         self.column_widths = {}
-
-    def new(self, title=None):
+        self.tags_info = None
+        self.check_group_tab = None
+        self.add_tags_cfg(tags_info)
+        if verbose_mode:
+            for column in range(len(self.mapping)):
+                logging.info("Column {}: {}".format(
+                    column, self.mapping[column]))
         self.workbook = openpyxl.Workbook()
+        self._createVariantSheet()
+        self._createVersionSheet(version_info)
+        self._createKeySheet()
+
+    def _createVariantSheet(self, title=None):
         ws = self.workbook.active
         ws.title = title if title else "Variants"
         for column, key, value, style, _ in self.mapping:
@@ -117,12 +156,26 @@ class ExcelExport:
                 continue
             cell = ws.cell(row=1, column=column, value=key)
             self.column_widths[cell.column] = len(key)
-            for s in style:
-                setattr(cell, s, style[s])
-        ws.freeze_panes = 'D2'
-        self.__createKeySheet();
+            _setStyle(cell, style)
 
-    def __createKeySheet(self):
+        cell = ws.cell(row=1, column=len(self.mapping) + 1, value="check tags")
+        self.column_widths[cell.column] = len(cell.value)
+
+        cell = ws.cell(row=1, column=len(self.mapping) + 2, value="tags")
+        self.column_widths[cell.column] = len(cell.value)
+
+        cell = ws.cell(row=1, column=len(self.mapping) + 3, value="tags with values")
+        self.column_widths[cell.column] = len(cell.value)
+        ws.freeze_panes = 'D2'
+
+    def _createVersionSheet(self, version_info):
+        ws = self.workbook.create_sheet("version")
+        if version_info:
+            for idx, pair in enumerate(version_info):
+                ws.cell(row=idx + 1, column=1, value = pair[0])
+                ws.cell(row=idx + 1, column=2, value = pair[1])
+
+    def _createKeySheet(self):
         ws = self.workbook.create_sheet("key")
         for idx, title in enumerate(["Column", "Definition", "Mapping"]):
             ws.cell(row=1, column=idx + 1, value=title)
@@ -134,25 +187,97 @@ class ExcelExport:
             cell = ws.cell(row=row + 1, column=1, value=value)
             ws.cell(row=row + 1, column=2, value=def_value)
             ws.cell(row=row + 1, column=3, value=key)
-            for s in style:
-                setattr(cell, s, style[s])
+            _setStyle(cell, style)
 
-    def add_variant(self, data):
+    def add_tags_cfg(self, data):
+        if data is None:
+            return
+        self.tags_info = data
+        logging.info("info: %s" % json.dumps(data))
+        self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + 2)
+
+    def reg_check_group(self, tags):
+        if self.check_group_tab is None:
+            return None, None
+        group_idx = None
+        group_name = None
+        for check_idx, check_tag in enumerate(self.tags_info['check-tags']):
+            if tags.get(check_tag):
+                if group_idx is None:
+                    group_idx, group_name = check_idx, check_tag
+                else:
+                    group_idx = len(self.check_group_tab) - 2
+                    group_name = "_mix"
+                    break
+        if group_idx is None:
+            group_idx = len(self.check_group_tab) - 1
+        self.check_group_tab[group_idx] += 1
+        return group_name, 1 + sum(self.check_group_tab[:group_idx + 1])
+
+    def add_variant(self, data, tags = None):
         ws = self.workbook.active
-        row = ws.max_row + 1
+        tag_group_name, new_row = self.reg_check_group(tags)
+        if new_row is None:
+            new_row = ws.max_row + 1
+        ws.insert_rows(new_row)
         for column, _, key, style, _ in self.mapping:
             if not key:
                 continue
-            value = self.__to_excel(find_value(data, key))
-            cell = ws.cell(row=row, column=column, value=value)
+            value = self.__to_excel(build_value(data, key))
+            cell = ws.cell(row=new_row, column=column, value=value)
             if isinstance(value, basestring):
                 self.column_widths[cell.column] = max(
                     self.column_widths[cell.column], len(value))
-            for s in style:
-                setattr(cell, s, style[s])
+            _setStyle(cell, style)
+        if tags is not None and self.tags_info is not None:
+            self.__add_tags_to_excel(tags, new_row, tag_group_name)
+
+    def __add_tags_to_excel(self, tags, row, tag_group_name):
+        ws = self.workbook.active
+        tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
+        op_tags = ', '.join(tagList)
+        check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
+        tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
+        style = self.check_tags_mapping.get(tag_group_name)
+
+        col_tags = len(self.mapping) + 1
+        cell = ws.cell(row=row, column = col_tags, value=check_tags)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+
+        cell = ws.cell(row=row, column = col_tags + 1, value=op_tags)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+
+        cell = ws.cell(row=row, column = col_tags + 2, value=tags_with_value)
+        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
+        for idx in (1, col_tags):
+            _setStyle(ws.cell(row=cell.row, column=idx), style)
+
+    def _decor_one_line(self, ws, new_row, style = None):
+        ws.insert_rows(new_row)
+        for idx in range(1, len(self.mapping) + 2):
+            _setStyle(ws.cell(row=new_row, column=idx), style)
+
+    def _decor_lines(self, ws):
+        if self.check_group_tab is None:
+            return None
+        if (self.check_group_tab[-1] > 0):
+            cnt_before = sum(self.check_group_tab[:-1])
+            if cnt_before > 0:
+                self._decor_one_line(ws, cnt_before + 2)
+        for idx in range(len(self.check_group_tab) - 2, -1, -1):
+            if self.check_group_tab[idx] == 0:
+                continue
+            cnt_before = sum(self.check_group_tab[:idx])
+            if idx >= len(self.tags_info['check-tags']):
+                group_name = "_mix"
+            else:
+                group_name = self.tags_info['check-tags'][idx]
+            self._decor_one_line(ws, cnt_before + 2,
+                self.check_tags_mapping.get(group_name))
 
     def save(self, file):
         ws = self.workbook.active
+        self._decor_lines(ws)
         for column, width in self.column_widths.iteritems():
             ws.column_dimensions[column].width = min(12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
@@ -166,32 +291,48 @@ class ExcelExport:
             return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
         return value
 
-
-def processing(args):
-    start_time = time.time()
-    print "parsing template {} ...".format(args.template)
-    mapping = read_mapping(args.template)
-    if args.verbose:
-        for column in range(len(mapping)):
-            print "{}: {}".format(column, mapping[column])
-    export = ExcelExport(mapping=mapping)
-    export.new()
-    print "export variants from {} ...".format(args.input)
-    with open(args.input) as json_file:
-        for idx, line in enumerate(json_file):
-            export.add_variant(json.loads(line))
-            if args.limit and idx >= args.limit:
-                break
-            if args.verbose and idx > 0 and idx % 100 == 0:
-                print "export lines: {}".format(idx)
-        print "total export line: {}".format(idx)
-
-    print "save {}".format(args.output)
-    export.save(args.output)
-    print "complete (execution time: {0:.3f} s)".format(time.time() - start_time)
-
-
 if __name__ == '__main__':
+    import Enum
+    class LoadMode(Enum):
+        RECORD = "@RECORD",
+        TAGS_CFG = "@TAGS_CFG",
+        TAGS = "@TAGS",
+
+
+    def processing(args):
+        start_time = time.time()
+        print "parsing template {} ...".format(args.template)
+        export = ExcelExport(args.template, verbose_mode = args.verbose)
+        print "export variants from {} ...".format(args.input)
+        with open(args.input) as json_file:
+            mode = LoadMode.RECORD
+            record = None
+            for idx, line in enumerate(json_file):
+                if line.startswith("@"):
+                    mode = LoadMode[line.strip()[1:]]
+                else:
+                    data = json.loads(line)
+                    if mode == LoadMode.RECORD:
+                        record = data
+                    elif mode == LoadMode.TAGS_CFG:
+                        export.add_tags_cfg(data)
+                    elif mode == LoadMode.TAGS:
+                        if record != None:
+                            export.add_variant(record, data)
+                        record = None
+
+                if args.limit and idx >= args.limit:
+                    break
+                if args.verbose and idx > 0 and idx % 100 == 0:
+                    print "export lines: {}".format(idx)
+
+            print "total export line: {}".format(idx)
+
+        print "save {}".format(args.output)
+        export.save(args.output)
+        print "complete (execution time: {0:.3f} s)".format(time.time() - start_time)
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--template", help="template file", required=True)
     parser.add_argument("-i", "--input", help="input file with json lines", required=True)

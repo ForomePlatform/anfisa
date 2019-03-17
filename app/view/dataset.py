@@ -46,6 +46,9 @@ class DataSet:
     def iterDataObjects(self):
         return iter(self.mDataObjects)
 
+    def getDataObject(self, idx):
+        return self.mDataObjects[idx]
+
     def enumDataKeys(self):
         return enumerate(self.mDataKeys)
 
@@ -78,10 +81,6 @@ class DataSet:
             ret["records"] = self._prepareList(rec_no_seq, marked_set)
             ret["list-mode"] = "complete"
         return ret
-
-    def makeExportFile(self, workname, rec_no_seq, export_func):
-        return export_func(workname, [self.mDataObjects[rec_no]
-            for rec_no in rec_no_seq])
 
     def getViewSetupJSon(self):
         return {"aspects": [asp_h.getJSonObj()

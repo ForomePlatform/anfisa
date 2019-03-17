@@ -65,7 +65,7 @@ class AnfisaData:
         return iter(cls.sWsOrdered)
 
     @classmethod
-    def makeExcelExport(cls, prefix, json_seq):
+    def makeExcelExport(cls, workspace, rec_no_seq):
         export_setup = cls.sConfig["export"]
         dir_name = export_setup["work-dir"]
         if not os.path.dirname(dir_name):
@@ -74,17 +74,20 @@ class AnfisaData:
             dir_name = dir_name[:-1]
         dir_name += '/'
         for no in range(10000):
-            fname = "%s_%04d.xlsx" % (prefix, no)
+            fname = "%s_%04d.xlsx" % (workspace.getName(), no)
             if os.path.exists(dir_name + fname):
                 fname = None
             else:
                 break
         if fname is None:
             return None
-        export_h = ExcelExport(export_setup["excel-template"])
-        export_h.new()
-        for obj in json_seq:
-            export_h.add_variant(obj)
+        tags_man = workspace.getTagsMan()
+        export_h = ExcelExport(export_setup["excel-template"],
+            tags_info = tags_man.getTagListInfo(),
+            version_info = [["version", cls.sVersionCode]])
+        for rec_no in rec_no_seq:
+            export_h.add_variant(workspace.getDataSet().getDataObject(rec_no),
+                tags_man.getRecTags(rec_no))
         export_h.save(dir_name + fname)
         return 'excel/' + fname
 

@@ -234,8 +234,8 @@ class AnfisaService:
             zone_name, variants = json.loads(zone_data)
             rec_no_seq = workspace.getZone(zone_name).restrict(
                 rec_no_seq, variants)
-        fname = workspace.getDataSet().makeExportFile(
-            workspace.getName(), rec_no_seq, self.sData.makeExcelExport)
+        
+        fname = self.sData.makeExcelExport(workspace, rec_no_seq)
         rep = {"kind": "excel", "fname": fname}
         output = StringIO()
         output.write(json.dumps(rep))
