@@ -8,7 +8,6 @@ var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModes = null;
-var sExportFormed = null;
 var sWsDropShown = null;
 
 var sNodeFilterBack  = null;
@@ -81,7 +80,6 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
-    initExportForm();
 }
 
 function refreshRecList() {
@@ -279,7 +277,6 @@ function initExportForm() {
             sRecList.length + ' > 300.<br>' +
             '<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
     document.getElementById("ws-export-result").innerHTML = res_content;
-    sExportFormed = false;
 }
 
 
@@ -292,6 +289,7 @@ function openControlMenu() {
 
 function showExport() {
     wsDropShow(false);
+    initExportForm();
     document.getElementById("ws-export-result").style.display = "block";
     wsDropShow(true);
 }
@@ -334,7 +332,6 @@ function setupExport(info) {
         res_el.className = "drop problems";
         res_el.innerHTML = 'Bad configuration';
     }
-    sExportFormed = true;
     wsDropShow(true);
 }
 

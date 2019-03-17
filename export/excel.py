@@ -4,7 +4,6 @@ import logging
 import time
 import os
 from copy import copy
-from collections import Counter
 
 import openpyxl
 from jsonpath_rw import parse
@@ -17,24 +16,31 @@ def cell_value(ws, row, column):
     return v.strip()
 
 
-def read_mapping(path):
+def read_mappings(path, verbose_mode):
     if (not os.path.isfile(path)):
         raise Exception("No Mapping file: {}".format(path))
     if (not os.access(path, os.R_OK)):
         raise Exception("No read access to: {}".format(path))
 
-    logging.info("Reading: {}".format(path))
+    if verbose_mode:
+        logging.info("Reading: {}".format(path))
     wb = openpyxl.load_workbook(path, read_only=False)
-    ws = wb["key"]
+
+    mapping = _read_key_mapping(wb["key"], path)
+    check_tags_mapping = _read_check_tags_mapping(wb["Check_Tags"],
+        verbose_mode)
+    return mapping, check_tags_mapping
+
+def _read_key_mapping(ws, path):
     if cell_value(ws, 1, 1) != "Column":
         raise Exception('First column must be called "Column". '
                         'Worksheet "key" of file {}'.format(path))
     key_column = 1
-    map_column = getColumnByName(ws, "Mapping", path)
+    map_column = getColumnByName(ws, "Mapping")
     if not map_column:
         raise Exception("Column '{}' is not found in Worksheet key "
                         "of file {}".format("Mapping", path))
-    def_column = getColumnByName(ws, "Definition", path)
+    def_column = getColumnByName(ws, "Definition")
 
     mapping = []
     for r in range(2, ws.max_row):
@@ -57,22 +63,14 @@ def read_mapping(path):
 
     return mapping
 
-
-def read_mapping_check_tags_mapping(path):
-    if (not os.path.isfile(path)):
-        raise Exception("tags: No Mapping file: {}".format(path))
-    if (not os.access(path, os.R_OK)):
-        raise Exception("tags: No read access to: {}".format(path))
-
-    logging.info("tags: Reading: {}".format(path))
-    wb = openpyxl.load_workbook(path, read_only=False)
-    ws = wb["Check_Tags"]
+def _read_check_tags_mapping(ws, verbose_mode):
     key_column = 1
     res = {}
     for r in range(1, ws.max_row + 1):
         cell = ws.cell(r, key_column)
         key = cell.value
-        logging.info("tags: Reading key: {}".format(key))
+        if verbose_mode:
+            logging.info("tags: Reading key: {}".format(key))
         if not key:
             continue
 
@@ -88,13 +86,13 @@ def read_mapping_check_tags_mapping(path):
     return res
 
 
-def getColumnByName(ws, name, path):
+def getColumnByName(ws, name):
     for c in range(1, ws.max_column):
         if cell_value(ws, 1, c) == name:
             return c
 
 
-def find_value_jsonpath(array, key):
+def build_value_jsonpath(array, key):
     '''
     It's working, but very slowly
     :param array: - json
@@ -109,52 +107,45 @@ def find_value_jsonpath(array, key):
             return match[0].value
 
 
-def find_value(array, key):
+def build_value(array, key):
     if array.get(key):
         return array[key]
     for x in array.values():
         value = None
         if isinstance(x, dict):
-            value = find_value(x, key)
+            value = build_value(x, key)
         elif isinstance(x, list):
             for element in x:
                 if isinstance(element, dict):
-                    value = find_value(element, key)
+                    value = build_value(element, key)
                     if value:
                         break
         if value:
             if isinstance(value, list):
                 value = ','.join([str(item) for item in value])
             return value
-
     return None
 
-
 class ExcelExport:
-    def __init__(self, template_file,
-            tags_info = None, version_info = None,
-            verbose_mode = False):
-        self.mapping = read_mapping(template_file)
-        self.check_tags_mapping = read_mapping_check_tags_mapping(
-            template_file)
+    def __init__(self, template_file, tags_info = None,
+            version_info = None, verbose_mode = False):
+        self.mapping, self.check_tags_mapping = read_mappings(
+            template_file, verbose_mode)
         self.workbook = None
         self.column_widths = {}
         self.tags_info = None
-        self.tags_count = None
+        self.check_group_tab = None
         self.add_tags_cfg(tags_info)
         if verbose_mode:
             for column in range(len(self.mapping)):
-                print "{}: {}".format(column, self.mapping[column])
-        self._new()
-        if version_info:
-            for idx, pair in enumerate(version_info):
-                self.workbook["version"].cell(row=idx + 1, column=1,
-                    value = pair[0])
-                self.workbook["version"].cell(row=idx + 1, column=2,
-                    value = pair[1])
-
-    def _new(self, title=None):
+                logging.info("Column {}: {}".format(
+                    column, self.mapping[column]))
         self.workbook = openpyxl.Workbook()
+        self._createVariantSheet()
+        self._createVersionSheet(version_info)
+        self._createKeySheet()
+
+    def _createVariantSheet(self, title=None):
         ws = self.workbook.active
         ws.title = title if title else "Variants"
         for column, key, value, style, _ in self.mapping:
@@ -174,10 +165,15 @@ class ExcelExport:
         cell = ws.cell(row=1, column=len(self.mapping) + 3, value="tags with values")
         self.column_widths[cell.column] = len(cell.value)
         ws.freeze_panes = 'D2'
-        self.__createKeySheet();
 
-    def __createKeySheet(self):
-        self.workbook.create_sheet("version")
+    def _createVersionSheet(self, version_info):
+        ws = self.workbook.create_sheet("version")
+        if version_info:
+            for idx, pair in enumerate(version_info):
+                ws.cell(row=idx + 1, column=1, value = pair[0])
+                ws.cell(row=idx + 1, column=2, value = pair[1])
+
+    def _createKeySheet(self):
         ws = self.workbook.create_sheet("key")
         for idx, title in enumerate(["Column", "Definition", "Mapping"]):
             ws.cell(row=1, column=idx + 1, value=title)
@@ -196,33 +192,54 @@ class ExcelExport:
         if data is None:
             return
         self.tags_info = data
-        self.tags_count = Counter()
+        logging.info("info: %s" % json.dumps(data))
+        self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + 2)
+
+    def reg_check_group(self, tags):
+        if self.check_group_tab is None:
+            return None, None
+        group_idx = None
+        group_name = None
+        for check_idx, check_tag in enumerate(self.tags_info['check-tags']):
+            if tags.get(check_tag):
+                if group_idx is None:
+                    group_idx, group_name = check_idx, check_tag
+                else:
+                    group_idx = len(self.check_group_tab) - 2
+                    group_name = "_mix"
+                    break
+        if group_idx is None:
+            group_idx = len(self.check_group_tab) - 1
+        self.check_group_tab[group_idx] += 1
+        return group_name, sum(self.check_group_tab[:group_idx + 1])
 
     def add_variant(self, data, tags = None):
         ws = self.workbook.active
-        row = self.__get_next_row_index(ws.max_row + 1, tags)
-        ws.insert_rows(row)
+        tag_group_name, new_row = self.reg_check_group(tags)
+        if new_row is None:
+            new_row = ws.max_row + 1
+        ws.insert_rows(new_row)
         for column, _, key, style, _ in self.mapping:
             if not key:
                 continue
-            value = self.__to_excel(find_value(data, key))
-            cell = ws.cell(row=row, column=column, value=value)
+            value = self.__to_excel(build_value(data, key))
+            cell = ws.cell(row=new_row, column=column, value=value)
             if isinstance(value, basestring):
                 self.column_widths[cell.column] = max(
                     self.column_widths[cell.column], len(value))
             for s in style:
                 setattr(cell, s, style[s])
         if tags is not None and self.tags_info is not None:
-            self.__add_tags_to_excel(tags, row)
+            self.__add_tags_to_excel(tags, new_row, tag_group_name)
 
-    def __add_tags_to_excel(self, tags, row):
+    def __add_tags_to_excel(self, tags, row, tag_group_name):
         style = None
         ws = self.workbook.active
         tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
         op_tags = ', '.join(tagList)
         check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
         tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
-        if check_tags in self.check_tags_mapping:
+        if tag_group_name in self.check_tags_mapping:
             style = self.check_tags_mapping[check_tags]
 
         col_tags = len(self.mapping) + 1
@@ -235,10 +252,9 @@ class ExcelExport:
         cell = ws.cell(row=row, column = col_tags + 2, value=tags_with_value)
         self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
         if style:
-            for idx_add in range(3):
+            for idx in (1, col_tags):
                 for s in style:
-                    setattr(ws.cell(row=cell.row, column=col_tags + idx_add),
-                        s, style[s])
+                    setattr(ws.cell(row=cell.row, column=idx), s, style[s])
 
     def save(self, file):
         ws = self.workbook.active
@@ -254,24 +270,6 @@ class ExcelExport:
         if isinstance(value, dict):
             return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
         return value
-
-    def __get_next_row_index(self, max_index, tags):
-        if tags is None:
-            return max_index
-        check_tag = next(iter(filter(lambda k:
-            k in self.tags_info['check-tags'] and tags[k] == True,
-            tags.keys())), None)
-        if check_tag is None:
-            return max_index
-
-        res = 0
-        for key in self.tags_info['check-tags']:
-            res += self.tags_count[key]
-            if check_tag == key:
-                self.tags_count[key] += 1
-                return min(res + 2, max_index)
-
-        return max_index;
 
 if __name__ == '__main__':
     import Enum
