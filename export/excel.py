@@ -295,7 +295,7 @@ class ExcelExport:
         ws = self.workbook.active
         self._decor_lines(ws)
         for column, width in self.column_widths.iteritems():
-            ws.column_dimensions[column].width = min(12, width + 2)
+            ws.column_dimensions[openpyxl.utils.get_column_letter(column)].width = min(12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
         ws.auto_filter.ref = 'A1:' + max_column + str(len(ws['A']))
         self.workbook.save(filename=file)
