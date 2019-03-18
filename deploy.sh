@@ -36,7 +36,7 @@ cd data
 rm *
 wget https://www.dropbox.com/s/duj0r1ccgjj1olv/PGP3140.json
 cd ../tmp/export
-[ ! -f SEQaBOO_output_template_0730.xlsx ] && wget https://www.dropbox.com/s/qvi229bfdtfxyrw/SEQaBOO_output_template_0730.xlsx
+[ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 
 cd ../..
 echo "Updating configuration in anfisa.json"

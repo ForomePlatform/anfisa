@@ -19,7 +19,7 @@
         ["/excel", "${WORK}/export/work"]], 
     "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "export": {
-        "excel-template": "${WORK}/export/SEQaBOO_output_template_20190306.xlsx",
+        "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",
         "work-dir": "${WORK}/export/work"
     },
     "link-base": ["anfisa.forome.org", "Local"],
