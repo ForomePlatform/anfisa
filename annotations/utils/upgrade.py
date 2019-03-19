@@ -107,7 +107,7 @@ if __name__ == '__main__':
     config = loadJSonConfig(config_file)
     updated_config = copy_data(config, os.path.dirname(config_file))
     with open(config_file + ".new", "w") as c:
-        json.dump(updated_config, c)
+        json.dump(updated_config, c, indent=2)
 
     annotate_all(config)
     import_all(config)
