@@ -52,13 +52,13 @@ class FamilyInfo:
                     break
             del members[proband_idx]
             members.insert(0, proband_id)
-        titles = members[:]
+        titles = [samples[member_id]["name"] for member_id in members]
         affected_group = []
         for idx, member_id in enumerate(members):
             if samples[member_id]["affected"]:
                 affected_group.append(idx)
         proband_info = samples[members[0]]
-        if "father" in proband_info and "mother" in proband_info:
+        if proband_info.get("father") and proband_info.get("mother"):
             proband_rel = [members.index(proband_info[key])
                 for key in ("id", "father", "mother")]
         else:
