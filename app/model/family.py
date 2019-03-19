@@ -60,7 +60,7 @@ class FamilyInfo:
         proband_info = samples[members[0]]
         if "father" in proband_info and "mother" in proband_info:
             proband_rel = [members.index(proband_info[key])
-                for key in ("name", "father", "mother")]
+                for key in ("id", "father", "mother")]
         else:
             proband_rel = None
         return FamilyInfo(members, titles, affected_group, proband_rel)

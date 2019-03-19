@@ -2,8 +2,12 @@ import codecs
 import datetime
 import json
 import os
+import copy
 import shutil
 import sys
+
+from annotations.annotator import get_md
+from annotations.record import Variant
 from app import storage
 
 
@@ -24,6 +28,13 @@ def import_all(config):
 
 def annotate (workspace):
     f = workspace["file"]
+    metadata = get_md(f)
+    if (metadata):
+        version = Variant.get_version()
+        old_version = metadata["versions"]["annotations"]
+        if (old_version == version):
+            print "Case is already annotated with the same version"
+            return
     case = workspace["mongo-name"]
     remote = "{aws_user}@{annotation_server}".format(annotation_server=annotation_server, aws_user=aws_user)
     remote_dir = "/data/bgm/cases/{}".format(case)
@@ -35,7 +46,8 @@ def annotate (workspace):
     ret = os.system(ssh)
     if (ret):
         raise Exception("Returned {}".format(ret))
-    scp = "scp {remote} {local}".format(remote=remote, local=f)
+    result = "{}/{}_anfisa.json".format(remote_dir, case)
+    scp = "scp {remote}:{result} {local}".format(remote=remote, local=f, result=result)
     print scp
     ret = os.system(scp)
     if (ret):
@@ -45,7 +57,9 @@ def annotate (workspace):
 def load(config, workspace):
     f = workspace["file"]
     case = workspace["mongo-name"]
-    storage.createDataSet(config, case, "ws", case, f)
+    print "Importing: {}".format(case)
+    storage.dropDataSet(config, case, "ws", False)
+    storage.createDataSet(config, case, "ws", case, f, 100)
 
 
 def loadJSonConfig(config_file):
@@ -67,7 +81,7 @@ def loadJSonConfig(config_file):
 
 
 def copy_data(config, dest):
-    updated_config = config.copy()
+    updated_config = copy.deepcopy(config)
     dirname = os.path.join(dest,"data")
     if (os.path.isdir(dirname)):
         now = str(datetime.datetime.now()).replace(' ', '_').replace(':','-')
