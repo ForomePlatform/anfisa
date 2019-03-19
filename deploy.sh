@@ -45,3 +45,4 @@ sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > 
 
 cd $repo
 echo "Run anfisa: env PYTHONPATH="." python app/hserver.py $target/anfisa_$hostname.json"
+echo "Open: http://localhost:8190/ (or adjust port in $target/anfisa_$hostname.json)"
