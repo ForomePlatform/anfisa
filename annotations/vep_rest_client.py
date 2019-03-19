@@ -70,7 +70,8 @@ class EnsemblRestClient(object):
 
     def get_consequences(self, region, allele):
         csq = self.perform_rest_action(
-            '/vep/human/region/{0}/{1}'.format(region, allele)
+            '/vep/human/region/{0}/{1}'.format(region, allele),
+            params={"hgvs":True}
         )
         return csq
 
