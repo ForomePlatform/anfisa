@@ -1,4 +1,4 @@
-import json
+import json, logging
 from copy import deepcopy
 
 from app.model.solutions import STD_WS_FILTERS
@@ -109,14 +109,15 @@ class Index:
     def _applyCondition(self, rec_no_seq, cond_info):
         cond_type, unit_name = cond_info[:2]
         unit_h = self.getUnit(unit_name)
-        if cond_type == "numeric":
+        if cond_type in {"numeric", "int", "float"}:
             bounds, use_undef = cond_info[2:]
             filter_func = self.numericFilterFunc(bounds, use_undef)
-        elif cond_info[0] == "enum":
+        elif cond_info[0] in {"enum", "status"}:
             filter_mode, variants = cond_info[2:]
             filter_func = self.enumFilterFunc(filter_mode,
                 unit_h.getVariantSet().makeIdxSet(variants))
         else:
+            logging.error("Bad condition: %s" % json.dumps(cond_info))
             assert False
         cond_f = unit_h.recordCondFunc(filter_func)
         flt_rec_no_seq = []

@@ -153,8 +153,11 @@ class Workspace(DataSet):
         conditions = rq_args.get("conditions")
         if conditions:
             conditions = json.loads(conditions)
+        filter_name = rq_args.get("filter")
+        if filter_name == "null":
+            filter_name = None
         rec_no_seq = self.mIndex.getRecNoSeq(
-            rq_args.get("filter"), conditions)
+            filter_name, conditions)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
@@ -167,6 +170,8 @@ class Workspace(DataSet):
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
         filter_name = rq_args.get("filter")
+        if filter_name == "null":
+            filter_name = None
         conditions = rq_args.get("conditions")
         if conditions:
             conditions = json.loads(conditions)
@@ -223,11 +228,14 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__export(self, rq_args):
+        filter_name = rq_args.get("filter")
+        if filter_name == "null":
+            filter_name = None
         conditions = rq_args.get("conditions")
         if conditions:
             conditions = json.loads(conditions)
         rec_no_seq = self.getIndex().getRecNoSeq(
-            rq_args.get("filter"), conditions)
+            filter_name, conditions)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)

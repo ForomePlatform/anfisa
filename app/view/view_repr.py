@@ -8,7 +8,7 @@ def htmlEscape(val):
         return "null"
     if val == "":
         return ""
-    return escape(str(val))
+    return escape(unicode(val))
 
 #===============================================
 def jsonHtmlRepr(obj, level = 0):
