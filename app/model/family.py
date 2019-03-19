@@ -1,4 +1,9 @@
 #===============================================
+def has(who, whom):
+    relative = who.get(whom)
+    return relative and relative != '0'
+
+
 class FamilyInfo:
     def __init__(self, members, titles, affected_group, proband_rel):
         self.mMembers = members
@@ -52,15 +57,15 @@ class FamilyInfo:
                     break
             del members[proband_idx]
             members.insert(0, proband_id)
-        titles = members[:]
+        titles = [samples[member_id]["name"] for member_id in members]
         affected_group = []
         for idx, member_id in enumerate(members):
             if samples[member_id]["affected"]:
                 affected_group.append(idx)
         proband_info = samples[members[0]]
-        if "father" in proband_info and "mother" in proband_info:
+        if has(proband_info, "father") and has(proband_info, "mother"):
             proband_rel = [members.index(proband_info[key])
-                for key in ("name", "father", "mother")]
+                for key in ("id", "father", "mother")]
         else:
             proband_rel = None
         return FamilyInfo(members, titles, affected_group, proband_rel)

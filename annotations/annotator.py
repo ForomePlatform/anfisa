@@ -126,6 +126,19 @@ def output_raw_calls(infile, outfile, limit = None, start = 1):
     print "Variants processed: {}".format(n)
 
 
+def get_md(f):
+    with open(f) as source:
+        while(True):
+            line = source.readline()
+            if (not line):
+                break
+            data = json.loads(line)
+            if (not "record_type" in data):
+                return None
+            if (data["record_type"] == "metadata"):
+                return data
+    return None
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Annotate VCF file with VEP and output results as JSON")
     parser.add_argument("-i", "--input", dest = "input", help="Input JSON file, with VEP annotations")
@@ -138,6 +151,7 @@ if __name__ == '__main__':
     parser.add_argument("-s", "--start", dest="start", type=int, help="Start position: first variant to process", default=1)
     parser.add_argument("--header", help="VCF Header file", default="header.vcf")
     parser.add_argument("--fork", help="Number of parallel processes", default=16, type=int)
+    parser.add_argument("--force", help="Force re-annotation even if the same version", action='store_true')
 
     args = parser.parse_args()
     print args
@@ -172,10 +186,18 @@ if __name__ == '__main__':
     samples = case_utils.parse_fam_file(fam_file)
 
     output = args.output if args.output else "{}/{}_anfisa.json".format(dir, case)
-
     if (args.raw):
         output_raw_calls(filtered_by_bed_vep_output, outfile=output, limit=limit, start=args.start)
         exit(0)
+
+    if (not args.force and os.path.exists(output)):
+        metadata = get_md(output)
+        if (metadata):
+            version = Variant.get_version()
+            old_version = metadata["versions"]["annotations"]
+            if (old_version == version):
+                print "Case is already annotated with the same version"
+                exit(0)
 
     annotate_json(filtered_by_bed_vep_output, out=output,
                   vcf_header=header, samples=samples, case="{}_wgs".format(case), limit=limit, start=args.start)
