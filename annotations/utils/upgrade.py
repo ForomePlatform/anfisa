@@ -37,6 +37,15 @@ def annotate (workspace):
             return
     case = workspace["mongo-name"]
     fname = os.path.basename(f)
+    casedir = os.path.dirname(f)
+    path = casedir.split('/')
+    case_full_id = None
+    for p in path:
+        if (case in p):
+            case_full_id = p
+            break
+    if (not case_full_id):
+        case_full_id = "{}_wgs".format(case)
     if (not case in fname):
         print "Skipping non-standard case: {}".format(fname)
         return
@@ -44,7 +53,7 @@ def annotate (workspace):
     remote = "{aws_user}@{annotation_server}".format(annotation_server=annotation_server, aws_user=aws_user)
     remote_dir = "/data/bgm/cases/{}".format(case)
     cmd = "export PYTHONPATH=/data/bgm/anfisa ; cd {remote_dir} ; python -m annotations.annotator ".format(remote_dir=remote_dir)
-    cmd = "{base} -i {case_id}_wgs_seq_a_boo_regions.vep.json ".format(base=cmd,case_id=case)
+    cmd = "{base} -i {case_id}_seq_a_boo_regions.vep.json ".format(base=cmd,case_id=case_full_id)
     print "Running {cmd} on ${annotation_server}".format(cmd=cmd, annotation_server=annotation_server)
     ssh = 'ssh -t {remote} "{cmd}"'.format(cmd=cmd, remote=remote)
     print ssh
