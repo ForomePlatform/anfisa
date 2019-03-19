@@ -36,6 +36,11 @@ def annotate (workspace):
             print "Case is already annotated with the same version"
             return
     case = workspace["mongo-name"]
+    fname = os.path.basename(f)
+    if (not case in fname):
+        print "Skipping non-standard case: {}".format(fname)
+        return
+
     remote = "{aws_user}@{annotation_server}".format(annotation_server=annotation_server, aws_user=aws_user)
     remote_dir = "/data/bgm/cases/{}".format(case)
     cmd = "export PYTHONPATH=/data/bgm/anfisa ; cd {remote_dir} ; python -m annotations.annotator ".format(remote_dir=remote_dir)
@@ -57,6 +62,10 @@ def annotate (workspace):
 def load(config, workspace):
     f = workspace["file"]
     case = workspace["mongo-name"]
+    fname = os.path.basename(f)
+    if (not case in fname):
+        print "Skipping non-standard case: {}".format(fname)
+        return
     print "Importing: {}".format(case)
     storage.dropDataSet(config, case, "ws", False)
     storage.createDataSet(config, case, "ws", case, f, 100)
