@@ -106,6 +106,14 @@ def defineFilterSchema():
             "/_filters/gnomad_popmax_an",
             default_value = 0,
             title = "gnomAD: Number of alleles in PopMax Ancestry")
+        filters.intValueUnit("gnomAD_Hom",
+            "/_filters/gnomad_hom",
+            default_value = 0,
+            title = "gnomAD: Number of homozygous")
+        filters.intValueUnit("gnomAD_Hem",
+            "/_filters/gnomad_hem",
+            default_value = 0,
+            title = "gnomAD: Number of hemizygous")
 
     with filters.viewGroup("Databases"):
         filters.presenceUnit("Presence_in_Databases", [
