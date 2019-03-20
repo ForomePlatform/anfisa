@@ -44,7 +44,7 @@ class FilterUnit:
     def dumpNames(self):
         ret = {"name": self.mName,
             "title": self.mTitle,
-            "vgroup": self.mVGroup}
+            "vgroup": self.mVGroupTitle}
         if self.mRenderMode:
             ret["render"] = self.mRenderMode
         return ret
