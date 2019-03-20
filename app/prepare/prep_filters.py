@@ -36,13 +36,13 @@ class FilterPrepareSetH:
         self.mUnits.append(unit)
 
     def intValueUnit(self, name, path, title = None,
-            default_value = None, diap = None, research_only = False):
+            default_value = None, diap = None, research_only = False, render=None):
         self._addUnit(prep_unit.IntConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, default_value, diap))
 
     def floatValueUnit(self, name, path, title = None,
-            default_value = None, diap = None, research_only = False):
+            default_value = None, diap = None, research_only = False, render=None):
         self._addUnit(prep_unit.FloatConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
             research_only, default_value, diap))
