@@ -14,6 +14,7 @@ class FilterUnit:
         self.mUnitKind = unit_data["kind"]
         self.mResearchOnly = unit_data["research"]
         self.mVGroupTitle = unit_data.get("vgroup")
+        self.mRenderMode = unit_data.get("render")
         self.mExtractor = None
 
     def getIndex(self):
@@ -41,10 +42,12 @@ class FilterUnit:
         return True
 
     def dumpNames(self):
-        return {
-            "name": self.mName,
+        ret = {"name": self.mName,
             "title": self.mTitle,
-            "vgroup": self.mVGroupTitle}
+            "vgroup": self.mVGroup}
+        if self.mRenderMode:
+            ret["render"] = self.mRenderMode
+        return ret
 
     def getVariants(self):
         variants_info = self.mData.get("variants")

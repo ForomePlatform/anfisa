@@ -139,37 +139,19 @@ Method "/vsetup"
 Method "/stat"
     -> ws           (= ws_default)
     -> m            (= "")
-    -> filter       (= null or filter name)
-    -> conditions   (= null or ConditionList structure)
-    -> instr        (null or filter modifying instruction, see Notes)
+    -> filter       (= filter name or undefined)
+    -> conditions   (= ConditionList structure or null or undefined)
+    -> instr        (filter modifying instruction or null or undefined, see Notes)
+    -> ctx          (dictionary with contect options or null or undefined,
+                        expected form:
+                        {"problem_group":
+                            <problem group for zygosity, list of int indexes>})
     <-
     { * collection of data to setup "filter" modal window
         "stat-list": 
-            [ * list of search units
-                [
-                    0: unit type, "int" / "float" / "enum" / "status"
-                    1:  {
-                            "name": name of unit
-                            "title": title of unit
-                            "vgroup": null or view group name
-                        }
-                    
-                    * in case of unit type = "int"/"float"
-                    2: int/float minimum value
-                    3: int/float maximum value
-                    4: int count of records with value
-                    5: int count of records woth undefined value
-
-                    * in case of unit type = "enum"/"status"
-                    2: [ * statictics for all values in enum
-                          [ * statistics for enum value
-                            0: name (name of value)
-                            1: int count 
-                          ], ...
-                       ]
-                ], ...
-            ]
-        "cur-filter": null or filter name, got from request  
+            [ * list UnitStat structures
+            ],
+        "cur-filter": filter name or null, got from request  
         "conditions": [ * ConditionList structure, see Notes]
         "filter-list": 
             [ * list of all named filters
@@ -194,7 +176,15 @@ Method "/stat"
       "DELETE/<filter name> - delete filter
     * Name for any filter (to create/update) must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces, in terms of js the criterium is as follows:
     /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
-      
+
+===
+Мethod /statunit:
+    -> ws           (= ws_default)
+    -> m            (= "")
+    -> unit         (unit name)
+    -> conditions   (= null or ConditionList structure)
+    -> ctx          (dictionary with contect options:
+    <- UnitStat structure
 ===
 Method "/export"
     -> ws           (= ws_default)
@@ -318,13 +308,52 @@ Method "/single_cnt"
     ====================================
 2. Compex structures
 
+Structure UnitStat
+[
+    0: unit type, "int" / "float" / "enum" / "status" / "zygosity"
+    1: unit properties: 
+        {
+            "name": name of unit
+            "title": title of unit
+            "vgroup": view group name or null
+            "render": render options or undefined
+            ... and more options special for type "zygosity"
+        }
+    
+    * in case of unit type = "int"/"float"
+    2: int/float minimum value
+    3: int/float maximum value
+    4: int count of records with value
+    5: int count of records woth undefined value
+
+    * in case of unit type = "enum"/"status"
+    2: [ * statictics for all values in enum
+            [ * statistics for enum value
+            0: name (name of value)
+            1: int count 
+            ], ...
+        ]
+    * in case of unit type = "zygocity"
+        more options in unit properties always present:
+            "family": [list of family member identifiers],
+            "affected": default problem/affected group - 
+                        array of int indexes
+    2: current problem group - array of int indexes
+    3: [ * statictics for all values in unit, 
+        [ * statistics for unit value (same as for enum value)
+            0: name (name of value)
+            1: int count
+        ], ...
+    ] * or null in case of empty problem group
+]
+
 === 
 Structure Conditions
     List of conditions - filter definition
 [
     [
-        0: "numeric" or "enum" - generalized type of unit
-        1: name of unit
+        0: ("numeric" or "enum" - generalized type of unit) or "zygosity"
+        1: unit name
         
         * in case of generalized type "numeric" (types "int", "float") :
         2: bounds, array of 2 elements (int/float)
@@ -335,6 +364,11 @@ Structure Conditions
         * in case of generalized type "enum" (types "enum", "status")
         2: "OR" / "AND" / "ONLY" / "NOT" - operation mode (see Note)
         3: [ * list of value variants ]
+        
+        * in case of type "zygocity"
+        2: current problem group - array of int indexes
+        3: "OR" / "AND" / "ONLY" / "NOT" - operation mode (see Note)
+        4: [ * list of value variants ]
     ],...
 ]
 

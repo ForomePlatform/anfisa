@@ -68,12 +68,14 @@ def defineFilterSchema():
             research_only = False, default_value = "undefined")
 
         filters.intValueUnit("Start_Pos", "/data/start",
-            title = "Start Position", research_only = False, render="neighborhood")
+            title = "Start Position", research_only = False,
+            render_mode = "neighborhood")
         filters.intValueUnit("End_Pos", "/data/end",
-            title = "End Position", research_only = False, render="neighborhood")
+            title = "End Position", research_only = False,
+            render_mode = "neighborhood")
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
-            title = "Distance From Intron/Exon Boundary (Canonical)", 
-            research_only = False, default_value = 0, render="log,<")
+            title = "Distance From Intron/Exon Boundary (Canonical)",
+            research_only = False, default_value = 0, render_mode = "log,<")
         filters.statusUnit("Region", "/data/region_canonical",
             title = "Region (Canonical)",
             research_only = False, default_value = "Other")
@@ -82,38 +84,46 @@ def defineFilterSchema():
         filters.floatValueUnit("gnomAD_AF",
             "/_filters/gnomad_af_fam",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (family)", render="log,<")
+            title = "gnomAD Allele Frequency (family)",
+            render_mode = "log,<")
         filters.floatValueUnit("gnomAD_AF_Exomes",
             "/_filters/gnomad_db_exomes_af",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Exome Allele Frequency (family)", render="log,<")
+            title = "gnomAD Exome Allele Frequency (family)",
+            render_mode = "log,<")
         filters.floatValueUnit("gnomAD_AF_Genomes",
             "/_filters/gnomad_db_genomes_af",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Genome Allele Frequency (family)", render="log,<")
+            title = "gnomAD Genome Allele Frequency (family)",
+            render_mode = "log,<")
         filters.floatValueUnit("gnomAD_AF_Proband",
             "/_filters/gnomad_af_pb",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (proband)", render="log,<")
+            title = "gnomAD Allele Frequency (proband)",
+            render_mode = "log,<")
         filters.floatValueUnit("gnomAD_PopMax_AF",
             "/_filters/gnomad_popmax_af",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD PopMax Allele Frequency", render="log,<")
+            title = "gnomAD PopMax Allele Frequency",
+            render_mode = "log,<")
         filters.statusUnit("gnomAD_PopMax",
             "/_filters/gnomad_popmax", default_value = "None",
             title = "gnomAD PopMax Ancestry")
         filters.intValueUnit("gnomAD_PopMax_AN",
             "/_filters/gnomad_popmax_an",
             default_value = 0,
-            title = "gnomAD: Number of alleles in PopMax Ancestry", render="log,>")
+            title = "gnomAD: Number of alleles in PopMax Ancestry",
+            render_mode = "log,>")
         filters.intValueUnit("gnomAD_Hom",
             "/_filters/gnomad_hom",
             default_value = 0,
-            title = "gnomAD: Number of homozygous", render="log,>")
+            title = "gnomAD: Number of homozygous",
+            render_mode = "log,>")
         filters.intValueUnit("gnomAD_Hem",
             "/_filters/gnomad_hem",
             default_value = 0,
-            title = "gnomAD: Number of hemizygous", render="log,>")
+            title = "gnomAD: Number of hemizygous",
+            render_mode = "log,>")
 
     with filters.viewGroup("Databases"):
         filters.presenceUnit("Presence_in_Databases", [
@@ -133,10 +143,10 @@ def defineFilterSchema():
         #     title = "Observed at")
 
     with filters.viewGroup("Call_Quality"):
-        filters.intValueUnit("Proband_GQ", "/_filters/proband_gq", title="Genotype Quality (GQ) for Proband", render="linear,>")
-        filters.intValueUnit("Min_GQ", "/_filters/min_gq", title="Minimum GQ for the family)", render="linear,>")
-        filters.intValueUnit("QD", "/_filters/qd", title="Quality by Depth", render="linear,>")
-        filters.intValueUnit("FS", "/_filters/fs", "Fisher Strand Bias", render="linear,<")
+        filters.intValueUnit("Proband_GQ", "/_filters/proband_gq", title="Genotype Quality (GQ) for Proband", render_mode = "linear,>")
+        filters.intValueUnit("Min_GQ", "/_filters/min_gq", title="Minimum GQ for the family)", render_mode = "linear,>")
+        filters.intValueUnit("QD", "/_filters/qd", title="Quality by Depth", render_mode = "linear,>")
+        filters.intValueUnit("FS", "/_filters/fs", "Fisher Strand Bias", render_mode = "linear,<")
         filters.multiStatusUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):

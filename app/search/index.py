@@ -111,9 +111,13 @@ class Index:
         unit_h = self.getUnit(unit_name)
         if cond_type in {"numeric", "int", "float"}:
             bounds, use_undef = cond_info[2:]
+            if cond_type != "numeric":
+                cond_info[0] = "numeric"
             filter_func = self.numericFilterFunc(bounds, use_undef)
-        elif cond_info[0] in {"enum", "status"}:
+        elif cond_type in {"enum", "status"}:
             filter_mode, variants = cond_info[2:]
+            if cond_type != "enum":
+                cond_info[0] = "enum"
             filter_func = self.enumFilterFunc(filter_mode,
                 unit_h.getVariantSet().makeIdxSet(variants))
         else:

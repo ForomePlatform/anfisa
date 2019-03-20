@@ -11,6 +11,7 @@ class XL_Unit:
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
         self.mVGroup = descr.get("vgroup")
+        self.mRenderMode = descr.get("render")
 
     def getDS(self):
         return self.mDataSet
@@ -46,10 +47,13 @@ class XL_Unit:
         return ret
 
     def _prepareStat(self):
-        return [self.mUnitKind, {
+        ret = [self.mUnitKind, {
             "name": self.mName,
             "title": self.mTitle,
             "vgroup": self.mVGroup}]
+        if self.mRenderMode:
+            ret[1]["render"] = self.mRenderMode
+        return ret
 
 #===============================================
 class XL_NumUnit(XL_Unit):

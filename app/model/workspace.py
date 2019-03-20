@@ -136,10 +136,12 @@ class Workspace(DataSet):
             return filter_name
         with self:
             if op == "UPDATE":
+                if conditions:
+                    conditions = ConditionMaker.upgradeOldFormatSeq(conditions)
                 time_label = self.mMongoWS.setFilter(flt_name, conditions)
                 self.mIndex.cacheFilter(flt_name, conditions, time_label)
                 filter_name = flt_name
-            elif op == "DROP":
+            elif op in {"DROP", "DELETE"}:
                 self.mMongoWS.dropFilter(flt_name)
                 self.mIndex.dropFilter(flt_name)
             else:
