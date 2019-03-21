@@ -101,8 +101,8 @@ class SecondaryWsCreation(ExecutionTask):
             "flt_schema": flt_schema,
             "total": len(rec_no_seq),
             "mongo": self.mWSName,
-            "family": (self.mDS.getFamiyInfo().dump()
-                if self.mDS.getFamiyInfo() is not None else None),
+            "family": (self.mDS.getFamilyInfo().dump()
+                if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta")}
 
         with codecs.open(ws_dir + "/dsinfo.json",
