@@ -1,4 +1,48 @@
 #===============================================
+class XL_CondEnv:
+    def __init__(self):
+        self.mSpecialParse = dict()
+
+    def addSpecialParse(self, unit_name, func):
+        self.mSpecialParse[unit_name] = func
+
+    def parse(self, cond_info):
+        if cond_info[0] == "and":
+            return XL_Condition.joinAnd(
+                [self.parse(cc) for cc in cond_info[1:]])
+        if cond_info[0] == "or":
+            return XL_Condition.joinOr(
+                [self.parse(cc) for cc in cond_info[1:]])
+        if cond_info[0] == "not":
+            assert len(cond_info) == 2
+            return XL_Negation(self.parse(cond_info[1]))
+        if cond_info[1] in self.mSpecialParse:
+            return self.mSpecialParse[cond_info[1]](cond_info)
+        if cond_info[0] == "numeric":
+            return XL_NumCondition(*cond_info[1:])
+        if cond_info[0] == "enum":
+            unit_name, filter_mode, variants = cond_info[1:]
+            assert filter_mode != "ONLY"
+            assert len(variants) > 0
+            singles = [XL_EnumSingleCondition(unit_name, variant)
+                for variant in variants]
+            if filter_mode == "NOT":
+                return XL_Condition.joinAnd(
+                    [cond.negative() for cond in singles])
+            if filter_mode == "AND":
+                return XL_Condition.joinAnd(singles)
+            return XL_Condition.joinOr(singles)
+        assert False
+        return XL_None()
+
+    def parseSeq(self, cond_seq):
+        if not cond_seq:
+            return XL_All()
+        ret = XL_Condition.joinAnd([self.parse(cond_data)
+            for cond_data in cond_seq])
+        return ret
+
+#===============================================
 class XL_Condition:
     def __init__(self):
         pass
@@ -39,7 +83,7 @@ class XL_Condition:
 
     @classmethod
     def joinAnd(self, seq):
-        ret = XL_None()
+        ret = XL_All()
         for cond in seq:
             ret = ret.addAnd(cond)
         return ret
@@ -49,38 +93,6 @@ class XL_Condition:
         ret = XL_None()
         for cond in seq:
             ret = ret.addOr(cond)
-        return ret
-
-    @classmethod
-    def parse(cls, cond_info, parse_context = None):
-        if parse_context and cond_info[0] in parse_context:
-            return parse_context[cond_info[0]](cond_info)
-        if cond_info[0] == "numeric":
-            return XL_NumCondition(*cond_info[1:])
-        if cond_info[0] == "enum":
-            unit_name, filter_mode, variants = cond_info[1:]
-            assert filter_mode != "ONLY"
-            assert len(variants) > 0
-            singles = [XL_EnumSingleCondition(unit_name, variant)
-                for variant in variants]
-            if filter_mode == "NOT":
-                return cls.joinAnd([cond.negative() for cond in singles])
-            if filter_mode == "AND":
-                return cls.joinAnd(singles)
-            return cls.joinOr(singles)
-        if cond_info[0] == "and":
-            return cls.joinAnd([cls.parse(cc) for cc in cond_info[1:]])
-        if cond_info[0] == "or":
-            return cls.joinOr([cls.parse(cc) for cc in cond_info[1:]])
-        assert False
-        return XL_None()
-
-    @classmethod
-    def parseSeq(cls, cond_seq, parse_context = None):
-        if not cond_seq:
-            return XL_None()
-        ret = cls.joinAnd([cls.parse(cond_data, parse_context)
-            for cond_data in cond_seq])
         return ret
 
 #===============================================
@@ -192,16 +204,36 @@ class XL_None(XL_Condition):
         XL_Condition.__init__(self)
 
     def addAnd(self, other):
-        return other
+        return self
 
     def addOr(self, other):
         return other
 
     def negative(self):
-        return self
+        return XL_All()
 
     def getCondKind(self):
         return "null"
+
+    def getDruidRepr(self):
+        return None
+
+#===============================================
+class XL_All(XL_Condition):
+    def __init__(self):
+        XL_Condition.__init__(self)
+
+    def addAnd(self, other):
+        return other
+
+    def addOr(self, other):
+        return self
+
+    def negative(self):
+        return XL_None()
+
+    def getCondKind(self):
+        return "all"
 
     def getDruidRepr(self):
         return None

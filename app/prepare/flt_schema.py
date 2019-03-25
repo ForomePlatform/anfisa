@@ -136,7 +136,7 @@ def defineFilterSchema():
 
         filters.multiStatusUnit("ClinVar_Submitters",
             "/view/databases/clinVar_submitters[]",
-            title = "ClinVar Submitters")
+            title = "ClinVar Submitters", compact_mode = True)
 
         # filters.multiStatusUnit("beacons",
         #     "/data/beacon_names",

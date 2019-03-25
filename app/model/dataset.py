@@ -32,6 +32,9 @@ class DataSet:
     def __exit__(self, type, value, traceback):
         self.mLock.release()
 
+    def getApp(self):
+        return self.mDataVault.getApp()
+
     def getDataVault(self):
         return self.mDataVault
 

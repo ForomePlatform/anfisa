@@ -1,14 +1,20 @@
  === REST API specification ===
  
+Terms:
+   * values of parameters or fields are assumed to be either strings or JSON-converted(stringified/dumps) objects
+   * value null is correct only for second case, since we can transfer null via JSON; value null for string value is incorrect, since there is no way to distinguish this value and string constant "null"
+   * term "undefined" for field or parameter measns that is no such field/parameter at all
+   * sign '=' meaning: default value applies if field is undefined
+ 
 1. Methods
 
 ===
 Method "/list"
     -> ws           (= ws_default)
     -> m            (= "")
-    -> filter       (null or name of filter)
-    -> conditions   (null or ConditionList structure)
-    -> zone         (null or Zone structure)
+    -> filter       (name of filter or undefined)
+    -> conditions   (ConditionList structure or null or undefined)
+    -> zone         (Zone structure or null or undefined)
     <-
     { * collection of records restricted by filter/conditions/zone
         "workspace" : <ws name>,
@@ -50,7 +56,7 @@ Method "/dirinfo"
 ===
 Method "/recdata"
     -> ws           (= ws_default)
-    <- rec          (!required)
+    <- rec          (= number of record,  required!)
     -> { * source of annotated JSon for record }
 
 ===
@@ -68,7 +74,7 @@ Method "/reccnt"
             
             ** in case of kind = "table":
             "columns":  int count of columns
-            "colhead":  none or
+            "colhead":  null or
                 [ * column groups
                     [ 
                         0: title, 
@@ -91,7 +97,7 @@ Method "/reccnt"
                 ]
             
             ** in case of kind = "pre"
-            "content":  formatted content of VCF record
+            "content":  formatted content of VCF record, string
         }
     ]
   Notes:
@@ -114,7 +120,7 @@ Method "/vsetup"
             "field": base field or none
             "ignored": bool if aspect is ignored
             "research": bool if aspec is research only
-            "col_groups": none or
+            "col_groups": null or
                 [ * column groups
                     [ 
                         0: title, 
@@ -159,7 +165,7 @@ Method "/stat"
                     0: name of filter
                     1: bool if filter is common
                     2: bool if filter is available to load, see Notes
-                    3: time of latest update in isoformat, of null for common filters
+                    3: time of latest update in isoformat, or null for common filters
                 ], ...
             ]
     }
@@ -182,15 +188,15 @@ Method "/stat"
     -> ws           (= ws_default)
     -> m            (= "")
     -> unit         (unit name)
-    -> conditions   (= null or ConditionList structure)
+    -> conditions   (= ConditionList structure or null or undefined)
     -> ctx          (dictionary with contect options:
     <- UnitStat structure
 ===
 Method "/export"
     -> ws           (= ws_default)
     -> filter       (= null or filter name)
-    -> conditions   (= null or JSon of conditions, see method "/stat")
-    -> zone         (= null or Zone structure)
+    -> conditions   (= list of conditions or null or undefined, see method "/stat")
+    -> zone         (= Zone structure or null or undefined)
     <- { * prepares Excel files and returns
             "kind": "excel"
             "fname": URL for file to download
@@ -199,9 +205,9 @@ Method "/export"
 ===
 Method "/zone_list"
     -> ws           (= ws_default)
-    -> zone         (zone name or null)
+    -> zone         (zone name or undefined)
     <- 
-     [ * if zone name  is null/undefined
+     [ * if zone name  is undefined
         list of ZoneDef structures without variants]
      { * else:
         ZoneDef structure }
@@ -249,7 +255,7 @@ Method "/tags"
 ===
 Method "/tag_select"
     -> ws           (= ws_default)
-    -> tag          (none or tag name)
+    -> tag          (tag name or undefined)
     <- 
         { * data about tags variety and navigation for selected tag
             "tag-list": [* list of all tags available]

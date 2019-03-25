@@ -5,16 +5,15 @@ from ixbz2.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
 from app.model.job_pool import ExecutionTask
 from app.xl.decision import DecisionTree
-from app.xl.xl_cond import XL_Condition
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, dataset, ws_name,
-            base_version = None, conditions = None, markup_batch = None):
+            base_version = None, condition = None, markup_batch = None):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
-        self.mConditions = conditions
+        self.mCondition = condition
         self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
 
@@ -32,16 +31,16 @@ class SecondaryWsCreation(ExecutionTask):
         self.setStatus("Prepare creation")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if (self.mBaseVersion is not None):
-            tree = DecisionTree.parse(
+            tree = DecisionTree.parse(self.mDS.getConvEnv(),
                 self.mDS.getMongoDS().getVersionTree(self.mBaseVersion))
             rec_no_seq = tree.collectRecSeq(self.mDS)
         else:
-            context = {"cond":XL_Condition.parseSeq(
-                json.loads(self.mConditions),
-                self.mDS.getParseContext())}
-            rec_count = self.mDS.evalTotalCount(context)
-            assert rec_count <= AnfisaConfig.configOption("max.ws.size")
-            rec_no_seq = self.mDS.evalRecSeq(context, rec_count)
+            rec_count = self.mDS.evalTotalCount(self.mCondition)
+            if (rec_count < 1 or
+                    rec_count >= AnfisaConfig.configOption("max.ws.size")):
+                self.setStatus("Size is incorrect: %d" % rec_count)
+                return None
+            rec_no_seq = self.mDS.evalRecSeq(self.mCondition, rec_count)
 
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)

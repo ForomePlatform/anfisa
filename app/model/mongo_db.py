@@ -70,10 +70,10 @@ class MongoWSAgent:
                     AnfisaConfig.normalizeTime(it.get("time"))))
         return ret
 
-    def setFilter(self, filter_name, conditions):
+    def setFilter(self, filter_name, cond_seq):
         time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": conditions,
+            {"$set": {"seq": cond_seq,
                 "_tp": "flt", "time": time_label}}, upsert = True)
         return time_label
 
@@ -122,10 +122,10 @@ class MongoDSAgent:
                     AnfisaConfig.normalizeTime(it.get("time"))))
         return ret
 
-    def setFilter(self, filter_name, conditions):
+    def setFilter(self, filter_name, cond_seq):
         time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": conditions, "_tp": "flt", "time": time_label}},
+            {"$set": {"seq": cond_seq, "_tp": "flt", "time": time_label}},
             upsert = True)
         return time_label
 

@@ -7,8 +7,7 @@
     "html-title-xl": "Anfisa-XL",
     "mongo-db": "Anfisa",
     "data-vault": "${WORK}/vault",
-    "default-ws": "Personal_Genome_3140",
-    "default-xl": null,
+    "run-options": ["--no-custom"],
     "link-base": ["anfisa.forome.org", "Local"],
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",

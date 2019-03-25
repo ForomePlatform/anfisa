@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from app.model.a_config import AnfisaConfig
 
-from .xl_cond import XL_Condition, XL_None
+from .xl_cond import XL_None
 #===============================================
 class PointCounter:
     def __init__(self, count = None):
@@ -24,7 +24,10 @@ class CaseStory:
     def getMaster(self):
         if self.mParent is not None:
             return self.mParent.getMaster()
-        return self
+        assert False
+
+    def getCondEnv(self):
+        return self.getMaster().getCondEnv()
 
     def getLevel(self):
         if self.mParent is None:
@@ -125,7 +128,8 @@ class ConditionPoint(CheckPoint):
     def __init__(self, story, prev_point, point_no, condition, count = None):
         CheckPoint.__init__(self, story, prev_point, point_no, count)
         self.mColdCondition = condition
-        self.mCondition = XL_Condition.parse(self.mColdCondition)
+        self.mCondition = self.getStory().getMaster().getCondEnv().parse(
+            self.mColdCondition)
         self.mSubStory = CaseStory(self.getStory(), self)
 
     def getPointKind(self):
@@ -161,11 +165,18 @@ class ConditionPoint(CheckPoint):
 
 #===============================================
 class DecisionTree(CaseStory):
-    def __init__(self, stat = None):
+    def __init__(self, cond_env, stat = None):
         CaseStory.__init__(self, start = None)
         self.mComments = defaultdict(list)
+        self.mCondEnv = cond_env
         self.mPointList = []
         self.mStat = stat
+
+    def getMaster(self):
+        return self
+
+    def getCondEnv(self):
+        return self.mCondEnv
 
     def nextNo(self):
         return len(self.mPointList)
@@ -197,8 +208,8 @@ class DecisionTree(CaseStory):
         return ret
 
     @staticmethod
-    def parse(json_data):
-        ret = DecisionTree()
+    def parse(cond_env, json_data):
+        ret = DecisionTree(cond_env)
         stories = [ret]
         for rec in json_data:
             if rec[0] == "comment":
@@ -224,7 +235,7 @@ class DecisionTree(CaseStory):
             if point.getPointKind() == "cond":
                 if counts[-1] > 0:
                     point_count = dataset.evalTotalCount(
-                        {"cond": point.getWorkCondition()})
+                        point.getWorkCondition())
                 else:
                     point_count = 0
                 #print >> sys.stderr, "Cnt:", flt_count, counts
@@ -246,11 +257,11 @@ class DecisionTree(CaseStory):
         for point in self.mPointList:
             if (point.getPointKind() == "term" and
                     point.getDecision() is True):
-                flt_context = {"cond": point.actualCondition()}
-                point_count = dataset.evalTotalCount(flt_context)
+                condition = point.actualCondition()
+                point_count = dataset.evalTotalCount(condition)
                 assert point_count < max_ws_size
                 if point_count > 0:
-                    seq = dataset.evalRecSeq(flt_context, point_count)
+                    seq = dataset.evalRecSeq(condition, point_count)
                     ret |= set(seq)
             assert len(ret) < max_ws_size
         return sorted(ret)

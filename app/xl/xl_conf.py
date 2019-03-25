@@ -1,8 +1,8 @@
 from app.model.condition import ConditionMaker
 from .decision import DecisionTree
 #===============================================
-def defineDefaultDecisionTree():
-    dtree = DecisionTree()
+def defineDefaultDecisionTree(cond_env):
+    dtree = DecisionTree(cond_env)
 
     dtree.addComment(
         "0.     Quality check")

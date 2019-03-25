@@ -697,7 +697,6 @@ var sOpEnumH = {
             this.mStatusMode = (unit_stat[0] == "status");
             this.mSpecCtrl = null;
         }
-        this.careEnumZeros(false);
         
         list_val_rep = [];
         has_zero = false;
@@ -810,10 +809,10 @@ var sZygosityH = {
     
     setup: function(unit_stat, list_stat_rep) {
         this.mUnitName = unit_stat[1]["name"];
-        this.mFamily = unit_stat[2];
-        this.mDefaultIdxs = unit_stat[3];
-        this.mProblemIdxs = unit_stat[4];
-        this.mZStat = unit_stat[5] ;
+        this.mFamily = unit_stat[1]["family"];
+        this.mDefaultIdxs = unit_stat[1]["affected"];
+        this.mProblemIdxs = unit_stat[2];
+        this.mZStat = unit_stat[3] ;
         if (this.mProblemIdxs == null)
             this.mProblemIdxs = [];
         list_stat_rep.push('<div class="zyg-wrap"><div class="zyg-family">');
@@ -964,7 +963,7 @@ var sZygosityH = {
     },
     
     _refresh: function(info) {
-        this.mZStat = info[5];
+        this.mZStat = info[3];
         rep_list = [];
         this._reportStat(rep_list);
         document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');

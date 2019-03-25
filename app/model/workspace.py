@@ -25,11 +25,11 @@ class Workspace(DataSet):
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
-        for filter_name, conditions, time_label in self.mMongoWS.getFilters():
+        for filter_name, cond_seq, time_label in self.mMongoWS.getFilters():
             if self.mIndex.goodOpFilterName(filter_name):
                 try:
                     self.mIndex.cacheFilter(filter_name,
-                        ConditionMaker.upgradeOldFormatSeq(conditions),
+                        ConditionMaker.upgradeOldFormatSeq(cond_seq),
                         time_label)
                 except Exception as ex:
                     logging.error("Exception on load filter %s:\n %s" %
@@ -128,7 +128,7 @@ class Workspace(DataSet):
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
 
-    def filterOperation(self, instr, filter_name, conditions):
+    def filterOperation(self, instr, filter_name, cond_seq):
         if instr is None:
             return filter_name
         op, q, flt_name = instr.partition('/')
@@ -136,10 +136,10 @@ class Workspace(DataSet):
             return filter_name
         with self:
             if op == "UPDATE":
-                if conditions:
-                    conditions = ConditionMaker.upgradeOldFormatSeq(conditions)
-                time_label = self.mMongoWS.setFilter(flt_name, conditions)
-                self.mIndex.cacheFilter(flt_name, conditions, time_label)
+                if cond_seq:
+                    cond_seq = ConditionMaker.upgradeOldFormatSeq(cond_seq)
+                time_label = self.mMongoWS.setFilter(flt_name, cond_seq)
+                self.mIndex.cacheFilter(flt_name, cond_seq, time_label)
                 filter_name = flt_name
             elif op in {"DROP", "DELETE"}:
                 self.mMongoWS.dropFilter(flt_name)
@@ -148,18 +148,21 @@ class Workspace(DataSet):
                 assert False
         return filter_name
 
+    def _getCond(self, rq_args):
+        if "conditions" in rq_args:
+            cond_seq = json.loads(rq_args["conditions"])
+            return cond_seq, self.getIndex().parseCondSeq(cond_seq)
+        return None, None
+
     #===============================================
     @RestAPI.ws_request
     def rq__list(self, rq_args):
         modes = rq_args.get("m", "").upper()
-        conditions = rq_args.get("conditions")
-        if conditions:
-            conditions = json.loads(conditions)
+        _, condition = self._getCond(rq_args)
         filter_name = rq_args.get("filter")
         if filter_name == "null":
             filter_name = None
-        rec_no_seq = self.mIndex.getRecNoSeq(
-            filter_name, conditions)
+        rec_no_seq = self.mIndex.getRecNoSeq(filter_name, condition)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
@@ -174,13 +177,26 @@ class Workspace(DataSet):
         filter_name = rq_args.get("filter")
         if filter_name == "null":
             filter_name = None
-        conditions = rq_args.get("conditions")
-        if conditions:
-            conditions = json.loads(conditions)
+        cond_seq, condition = self._getCond(rq_args)
         filter_name = self.filterOperation(rq_args.get("instr"),
-            filter_name, conditions)
+            filter_name, cond_seq)
+        if "ctx" in rq_args:
+            repr_context = json.loads(rq_args["ctx"])
+        else:
+            repr_context = dict()
         return self.mIndex.makeStatReport(
-            filter_name, 'R' in modes, conditions)
+            filter_name, 'R' in modes, condition, repr_context)
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__statunit(self, rq_args):
+        _, condition = self._getCond(rq_args)
+        if "ctx" in rq_args:
+            repr_context = json.loads(rq_args["ctx"])
+        else:
+            repr_context = dict()
+        return self.mIndex.makeUnitStatReport(rq_args["unit"],
+            condition, repr_context)
 
     #===============================================
     @RestAPI.ws_request
@@ -233,17 +249,15 @@ class Workspace(DataSet):
         filter_name = rq_args.get("filter")
         if filter_name == "null":
             filter_name = None
-        conditions = rq_args.get("conditions")
-        if conditions:
-            conditions = json.loads(conditions)
+        _, condition = self._getCond(rq_args)
         rec_no_seq = self.getIndex().getRecNoSeq(
-            filter_name, conditions)
+            filter_name, condition)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)
             rec_no_seq = self.getZone(zone_name).restrict(
                 rec_no_seq, variants)
-        fname = self.getDataVault().getApp().makeExcelExport(
+        fname = self.getApp().makeExcelExport(
             self.getName(), self, rec_no_seq, self.mTagsMan)
         return {"kind": "excel", "fname": fname}
 

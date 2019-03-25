@@ -22,8 +22,7 @@ class ConditionMaker:
         return cond_data
 
     @classmethod
-    def upgradeOldFormatSeq(cls, conditions):
-        return [cls.upgradeOldFormat(cond) for cond in conditions]
-
+    def upgradeOldFormatSeq(cls, cond_seq):
+        return [cls.upgradeOldFormat(cond_data) for cond_data in cond_seq]
 
 #===============================================

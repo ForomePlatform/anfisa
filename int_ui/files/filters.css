@@ -158,6 +158,34 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
+div.zyg-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    white-space: nowrap;
+    margin-bottom: 10px;
+}
+
+div.zyg-family {
+    flex: 0 0 100px;
+    border-right: 1px solid black;
+}
+
+div.zyg-fam-member {
+    display: block;
+}
+
+div#zyg-stat {
+    flex: 1 0 200px;
+    margin-top: 20px;
+    margin-left: 20px;
+}
+
+button#zyg_fam_reset {
+    padding: 0px !important;
+    float: right;
+}
+
 span#cond-text {
     color: #8F00E0;
     font-weight: bold;

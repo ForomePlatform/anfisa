@@ -211,20 +211,20 @@ def _formFiltersDiv(output):
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
                     Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
-                        onchange="checkCurEnumZeros();"/>
+                        onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="checkCurCond(\'mode-and\');"/>&nbsp;AND
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;AND
                     </span><br/>
                     <span id="cond-mode-only-span">
                       <input id="cond-mode-only" type="checkbox"
-                        onchange="checkCurCond(\'mode-only\');"/>&nbsp;ONLY
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;ONLY
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="checkCurCond(\'mode-not\');"/>&nbsp;NOT
+                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;NOT
                     </span><br/>
                   </div>
                 </div>

@@ -178,20 +178,20 @@ def checkDataSet(app_config, name, kind):
 #===============================================
 parser = ArgumentParser()
 parser.add_argument("-c", "--config", default = "anfisa.json",
-    help = "Configuration file (anfisa.json)")
+    help = "Configuration file,  default=anfisa.json")
+parser.add_argument("-m", "--mode",
+    help = "Mode: create/drop")
 parser.add_argument("-k", "--kind",  default = "ws",
-    help = "Kind of dataset")
-parser.add_argument("-s", "--source", help="Annotrated json")
+    help = "Kind of dataset: ws/xl, default=ws")
+parser.add_argument("-s", "--source", help="Annotated json")
 parser.add_argument("-f", "--force", action = "store_true",
     help = "Force removal")
 parser.add_argument("-C", "--nocoord", action = "store_true",
     help = "Druid: no use coordinator")
-parser.add_argument("-m", "--mode",
-    help = "Mode: create/drop/check")
 parser.add_argument("--mongo", default = "",
-    help = "Mongo name, by default = name")
+    help = "Mongo name, default=name")
 parser.add_argument("--reportlines", type = int, default = 100,
-    help = "Portion for report lines")
+    help = "Portion for report lines, default=100")
 parser.add_argument("name", nargs = 1, help = "Dataset name")
 run_args = parser.parse_args()
 

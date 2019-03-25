@@ -206,7 +206,7 @@ if __name__ == '__main__':
     host, port = setupHServer(config_file, False)
     httpd = make_server(host, port, application,
         handler_class = _LoggingWSGIRequestHandler)
-    logging.info("HServer listening %s:%d" % (host, port))
+    print >> sys.stderr, "HServer listening %s:%d" % (host, port)
     httpd.serve_forever()
 else:
     logging.basicConfig(level = 10)

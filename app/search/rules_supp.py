@@ -13,6 +13,7 @@ class RulesEvalUnit(MultiSetUnit):
         "false": False,
         "True": True,
         "true": True}
+
     @classmethod
     def normEnumValue(cls, val):
         return cls.sEnumNormValues.get(val, val)

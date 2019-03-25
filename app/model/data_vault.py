@@ -8,14 +8,11 @@ from app.xl.xl_dataset import XLDataset
 
 #===============================================
 class DataVault:
-    def __init__(self, application, vault_dir,
-            default_ws = None, default_xl = None):
+    def __init__(self, application, vault_dir):
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
         self.mLock  = Lock()
         self.mDataSets = dict()
-        self.mDefaultWS = default_ws
-        self.mDefaultXL = default_xl
 
         workspaces = []
         for active_path in glob(self.mVaultDir + "/*/active"):
@@ -53,14 +50,10 @@ class DataVault:
         return self.mVaultDir
 
     def getWS(self, ws_name):
-        if ws_name is None:
-            ws_name = self.mDefaultWS
         ds = self.mDataSets.get(ws_name)
         return ds if ds and ds.getDSKind() == "ws" else None
 
     def getXL(self, ds_name):
-        if ds_name is None:
-            ds_name = self.mDefaultXL
         ds = self.mDataSets.get(ds_name)
         return ds if ds and ds.getDSKind() == "xl" else None
 

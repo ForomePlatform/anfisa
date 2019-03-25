@@ -20,8 +20,8 @@ class DruidAgent:
         druid_cfg = config.get("druid", dict())
         self.mRestAgents = {mode: RestAgent(druid_cfg.get(mode, url), mode)
             for mode, url in self.sDefaultUrls.items()}
-        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(conditions)
-            for flt_name, conditions in STD_XL_FILTERS}
+        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
+            for flt_name, cond_seq in STD_XL_FILTERS}
         self.mVaultPrefix = druid_cfg["vault-prefix"]
 
     def call(self, mode, request_data, method = "POST", add_path = ""):

@@ -20,16 +20,11 @@ parser.add_argument("-c", "--config",
         "use it instead of host/port/database")
 parser.add_argument("-C", "--config_default", action = "store_true",
     help = "Use it for config = ./anfisa.json")
-parser.add_argument("-l", "--legacy", action = "store_true",
-    help = "Legacy storage mode")
 parser.add_argument("command", nargs="+",
     help="Commands, use help command for list")
 run_args = parser.parse_args()
 
 #===============================================
-def reportLegacy():
-    print >> sys.stdout, '"Legacy mode: -l"'
-
 def readContent(content):
     for line in content.split('\n'):
         line = line.strip()
@@ -50,10 +45,8 @@ def updateMRec(agent, obj):
     agent.update({'_id': obj_id}, {"$set": set_data}, upsert = True)
 
 #===============================================
-def clearRecordTags(it, legacy_mode):
+def clearRecordTags(it):
     rec = deepcopy(it)
-    if legacy_mode:
-        rec['_id'] = "rec-" + rec['_id']
     for sub_tags in rec['_h'][1]:
         if '_id' in sub_tags:
             del sub_tags['_id']
@@ -102,11 +95,9 @@ def clearRecordOneTag(rec, tag_name, out_seq):
 class CmdInfo:
     sCmdList = []
 
-    def __init__(self, name, args = "ds", legacy_support = False,
-            create_support = False):
+    def __init__(self, name, args = "ds", create_support = False):
         self.mName = name
         self.mArgs = args
-        self.mLegacySupp = legacy_support
         self.mCreateSupp = create_support
         self.sCmdList.append(self)
 
@@ -118,12 +109,9 @@ class CmdInfo:
     def hasCreateSupport(self):
         return self.mCreateSupp
 
-    def checkArgs(self, cmd_seq, legacy_mode):
+    def checkArgs(self, cmd_seq):
         if len(cmd_seq) < 1 or cmd_seq[0] != self.mName:
             return None
-        if legacy_mode and not self.mLegacySupp:
-            print >> sys.stderr, "No legacy mode for command"
-            return False
         if len(self.mArgs) > 0 and self.mArgs[-1] == "datafile":
             if len(cmd_seq) == 1 + len(self.mArgs):
                 with codecs.open(cmd_seq[-1], "r", encoding = "utf-8") as inp:
@@ -142,9 +130,8 @@ class CmdInfo:
         return False
 
     def report(self, output):
-        legacy_msg = "(legacy supported)" if self.mLegacySupp else ""
-        print >> output, "\t%s %s %s" % (
-            self.mName, " ".join(self.mArgs), legacy_msg)
+        print >> output, "\t%s %s" % (
+            self.mName, " ".join(self.mArgs))
 
     @classmethod
     def reportAll(cls, output):
@@ -152,9 +139,9 @@ class CmdInfo:
             cmd_info.report(output)
 
     @classmethod
-    def checkCall(cls, cmd_seq, legacy_mode):
+    def checkCall(cls, cmd_seq):
         for cmd_info in cls.sCmdList:
-            ret = cmd_info.checkArgs(cmd_seq, legacy_mode)
+            ret = cmd_info.checkArgs(cmd_seq)
             if ret is not None:
                 return (ret, cmd_info.getDSName(cmd_seq),
                     cmd_info.hasCreateSupport())
@@ -180,12 +167,11 @@ CmdInfo("drop-ds", ["ds"])
 
 #===============================================
 if run_args.command[0] == "help":
-    print >> sys.stderr, ' ===Anfisa/MongoDB administation tool==='
+    print >> sys.stderr, ' ===Anfisa/MongoDB administration tool==='
     print >> sys.stderr, ' * List of commands *'
     CmdInfo.reportAll(sys.stderr)
     sys.exit()
-cmd_seq, ds_name, cr_supp = CmdInfo.checkCall(
-    run_args.command, run_args.legacy)
+cmd_seq, ds_name, cr_supp = CmdInfo.checkCall(run_args.command)
 if not cmd_seq:
     sys.exit()
 
@@ -204,89 +190,56 @@ else:
 
 mongo = MongoClient(host,  port)
 if ds_name is not None:
-    if run_args.legacy:
-        if ds_name not in mongo.list_database_names():
-            print >> sys.stderr, "No such (legacy) db:", ds_name
+    m_db = mongo[database]
+    if ds_name not in m_db.list_collection_names():
+        if cr_supp:
+            print >> sys.stderr, ("Workspace %s is possibly creating" %
+                ds_name)
+        else:
+            print >> sys.stderr, "So such workspace:", ds_name
             sys.exit()
-        m_ds_l = mongo[ds_name]
-    else:
-        m_db = mongo[database]
-        if ds_name not in m_db.list_collection_names():
-            if cr_supp:
-                print >> sys.stderr, ("Workspace %s is possibly creating" %
-                    ds_name)
-            else:
-                print >> sys.stderr, "So such workspace:", ds_name
-                sys.exit()
-        m_ds = m_db[ds_name]
-elif not run_args.legacy:
+    m_ds = m_db[ds_name]
+else:
     m_db = mongo[database]
 
 #===============================================
 if cmd_seq[0] == "ds-list":
     ret = []
-    if run_args.legacy:
-        reportLegacy()
-        for db_name in mongo.list_database_names():
-            if len(set(mongo[db_name].list_collection_names()) &
-                {'rec_data', 'filters', 'common'}) > 0:
-                ret.append(db_name)
-    else:
-        for coll_name in m_db.list_collection_names():
-            if coll_name != "system.indexes":
-                ret.append(coll_name)
+    for coll_name in m_db.list_collection_names():
+        if coll_name != "system.indexes":
+            ret.append(coll_name)
     print >> sys.stdout, json.dumps(ret)
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "filter-list":
     ret = []
-    if run_args.legacy:
-        reportLegacy()
-        for it in m_ds_l["filters"].find():
-            ret.append(it['_id'])
-    else:
-        for it in m_ds.find({'_tp' : "flt"}):
-            it_name = it['_id']
-            if it_name.startswith("flt-"):
-                ret.append(it_name[4:])
+    for it in m_ds.find({'_tp' : "flt"}):
+        it_name = it['_id']
+        if it_name.startswith("flt-"):
+            ret.append(it_name[4:])
     print >> sys.stdout, json.dumps(ret, sort_keys = True, indent = 4)
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "tag-list":
     ret = set()
-    if run_args.legacy:
-        reportLegacy()
-        for it in m_ds_l["rec_data"].find():
-            for key in it.keys():
-                if not key.startswith('_'):
-                    ret.add(key)
-    else:
-        for it in m_ds.find():
-            if not it['_id'].startswith("rec-"):
-                continue
-            for key in it.keys():
-                if not key.startswith('_'):
-                    ret.add(key)
+    for it in m_ds.find():
+        if not it['_id'].startswith("rec-"):
+            continue
+        for key in it.keys():
+            if not key.startswith('_'):
+                ret.add(key)
     print >> sys.stdout, json.dumps(sorted(ret))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "dump-filters":
     ret = []
-    if run_args.legacy:
-        reportLegacy()
-        for it in m_ds_l["filters"].find():
-            rec = deepcopy(it)
-            rec['_id'] = "flt-" + rec['_id']
-            rec['_tp'] = "flt"
-            ret.append(rec)
-    else:
-        for it in m_ds.find({'_tp' : "flt"}):
-            it_name = it['_id']
-            if it_name.startswith("flt-"):
-                ret.append(deepcopy(it))
+    for it in m_ds.find({'_tp' : "flt"}):
+        it_name = it['_id']
+        if it_name.startswith("flt-"):
+            ret.append(deepcopy(it))
     for rec in ret:
         print >> sys.stdout, json.dumps(rec)
     sys.exit()
@@ -294,15 +247,10 @@ if cmd_seq[0] == "dump-filters":
 #===============================================
 if cmd_seq[0] == "dump-tags":
     ret = []
-    if run_args.legacy:
-        reportLegacy()
-        for it in m_ds_l["rec_data"].find():
-            ret.append(clearRecordTags(it, True))
-    else:
-        for it in m_ds.find():
-            if not it['_id'].startswith("rec-"):
-                continue
-            ret.append(clearRecordTags(it, False))
+    for it in m_ds.find():
+        if not it['_id'].startswith("rec-"):
+            continue
+        ret.append(clearRecordTags(it, False))
     for rec in ret:
         print >> sys.stdout, json.dumps(rec)
     sys.exit()
@@ -310,15 +258,9 @@ if cmd_seq[0] == "dump-tags":
 #===============================================
 if cmd_seq[0] == "dump-rules":
     ret = None
-    if run_args.legacy:
-        reportLegacy()
-        it = m_ds_l["common"].find_one({'_id': '_params'})
-        if it is not None:
-            ret = deepcopy(it["params"])
-    else:
-        it = m_ds.find_one({'_id': 'params'})
-        if it is not None:
-            ret = deepcopy(it["params"])
+    it = m_ds.find_one({'_id': 'params'})
+    if it is not None:
+        ret = deepcopy(it["params"])
     print >> sys.stdout, json.dumps(ret)
     sys.exit()
 

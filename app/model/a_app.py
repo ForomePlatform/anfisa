@@ -28,6 +28,7 @@ class AnfisaApp:
     sVersionCode = None
     sDataVault = None
     sDruidAgent = None
+    sRunOptions = None
     sJobPool = None
     sTasks = dict()
 
@@ -41,6 +42,10 @@ class AnfisaApp:
         MirrorUiDirectory.setup(cls.sConfig.get("mirror-ui"))
         IntUI.setup(config, in_container)
 
+        cls.sRunOptions = cls.sConfig.get("run-options")
+        if not cls.sRunOptions:
+            cls.sRunOptions = []
+
         cls.sMongoConn = MongoConnector(cls.sConfig["mongo-db"],
             cls.sConfig.get("mongo-host"), cls.sConfig.get("mongo-port"))
 
@@ -49,8 +54,7 @@ class AnfisaApp:
 
         cls.sDruidAgent = DruidAgent(cls.sConfig)
 
-        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"],
-            cls.sConfig.get("default-ws"), cls.sConfig.get("default-xl"))
+        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"])
 
         cls.sJobPool = JobPool(
             AnfisaConfig.configOption("job.pool.threads"),
@@ -118,6 +122,10 @@ class AnfisaApp:
         return cls.sDruidAgent
 
     @classmethod
+    def hasRunOption(cls, name):
+        return name in cls.sRunOptions
+
+    @classmethod
     def request(cls, serv_h, rq_path, rq_args):
         func, agent = RestAPI.lookupRequest(
             rq_path, rq_args, cls.sDataVault)
@@ -145,9 +153,9 @@ class AnfisaApp:
 
     @classmethod
     def startCreateSecondaryWS(cls, dataset, wsname,
-            base_version = None, conditions = None, markup_batch = None):
+            base_version = None, condition = None, markup_batch = None):
         task = SecondaryWsCreation(dataset, wsname,
-            base_version, conditions, markup_batch)
+            base_version, condition, markup_batch)
         cls.sJobPool.putTask(task)
         return str(task.getUID())
 

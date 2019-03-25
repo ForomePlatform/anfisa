@@ -1,9 +1,10 @@
-import json, logging
+import json
 from copy import deepcopy
 
 from app.model.solutions import STD_WS_FILTERS
 from app.model.a_config import AnfisaConfig
 from .column import DataColumnCollecton
+from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
 from .rules_supp import RulesEvalUnit
 #===============================================
@@ -12,32 +13,36 @@ class Index:
 
     def __init__(self, ws_h):
         self.mWS = ws_h
+        self.mCondEnv = WS_CondEnv()
         self.mDCCollection = DataColumnCollecton()
         self.mUnits = [RulesEvalUnit(self, self.mDCCollection, 0)]
         for unit_data in self.mWS.getFltSchema():
-            unit = loadWSFilterUnit(self,
+            unit_h = loadWSFilterUnit(self,
                 self.mDCCollection, unit_data, len(self.mUnits))
-            if unit is not None:
-                self.mUnits.append(unit)
-        self.mUnitDict = {unit.getName(): unit for unit in self.mUnits}
+            if unit_h is not None:
+                self.mUnits.append(unit_h)
+        self.mUnitDict = {unit_h.getName(): unit_h
+            for unit_h in self.mUnits}
         assert len(self.mUnitDict) == len(self.mUnits)
+        for unit_h in self.mUnits:
+            unit_h.setup()
 
         self.mRecords = []
         with self.mWS._openFData() as inp:
             for line in inp:
                 inp_data = json.loads(line.decode("utf-8"))
                 rec = self.mDCCollection.initRecord()
-                for unit in self.mUnits:
-                    unit.fillRecord(inp_data, rec)
+                for unit_h in self.mUnits:
+                    unit_h.fillRecord(inp_data, rec)
                 self.mUnits[0].fillRulesPart(inp_data, rec)
                 self.mRecords.append(rec)
         assert len(self.mRecords) == self.mWS.getTotal()
 
         self.mStdFilters  = deepcopy(STD_WS_FILTERS)
         self.mFilterCache = dict()
-        for filter_name, conditions in self.mStdFilters.items():
+        for filter_name, cond_seq in self.mStdFilters.items():
             self.cacheFilter(self.sStdFMark + filter_name,
-                conditions, None)
+                cond_seq, None)
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
@@ -56,6 +61,9 @@ class Index:
     def getWS(self):
         return self.mWS
 
+    def getCondEnv(self):
+        return self.mCondEnv
+
     def getUnit(self, unit_name):
         return self.mUnitDict[unit_name]
 
@@ -72,82 +80,27 @@ class Index:
     def hasStdFilter(self, filter_name):
         return filter_name in self.mStdFilters
 
-    @staticmethod
-    def numericFilterFunc(bounds, use_undef):
-        bound_min, bound_max = bounds
-        if bound_min is None:
-            if bound_max is None:
-                if use_undef:
-                    return lambda val: val is None
-                assert False
-                return lambda val: True
-            if use_undef:
-                return lambda val: val is None or val <= bound_max
-            return lambda val: val is not None and val <= bound_max
-        if bound_max is None:
-            if use_undef:
-                return lambda val: val is None or bound_min <= val
-            return lambda val: val is not None and bound_min <= val
-        if use_undef:
-            return lambda val: val is None or (
-                bound_min <= val <= bound_max)
-        return lambda val: val is not None and (
-            bound_min <= val <= bound_max)
+    def parseCondSeq(self, cond_seq):
+        return self.mCondEnv.parseSeq(cond_seq)
 
-    @staticmethod
-    def enumFilterFunc(filter_mode, base_idx_set):
-        if filter_mode == "NOT":
-            return lambda idx_set: len(idx_set & base_idx_set) == 0
-        if filter_mode == "ONLY":
-            return lambda idx_set: (len(idx_set) > 0 and
-                len(idx_set - base_idx_set) == 0)
-        if filter_mode == "AND":
-            all_len = len(base_idx_set)
-            return lambda idx_set: len(idx_set & base_idx_set) == all_len
-        return lambda idx_set: len(idx_set & base_idx_set) > 0
-
-    def _applyCondition(self, rec_no_seq, cond_info):
-        cond_type, unit_name = cond_info[:2]
-        unit_h = self.getUnit(unit_name)
-        if cond_type in {"numeric", "int", "float"}:
-            bounds, use_undef = cond_info[2:]
-            if cond_type != "numeric":
-                cond_info[0] = "numeric"
-            filter_func = self.numericFilterFunc(bounds, use_undef)
-        elif cond_type in {"enum", "status"}:
-            filter_mode, variants = cond_info[2:]
-            if cond_type != "enum":
-                cond_info[0] = "enum"
-            filter_func = self.enumFilterFunc(filter_mode,
-                unit_h.getVariantSet().makeIdxSet(variants))
-        else:
-            logging.error("Bad condition: %s" % json.dumps(cond_info))
-            assert False
-        cond_f = unit_h.recordCondFunc(filter_func)
-        flt_rec_no_seq = []
-        for rec_no in rec_no_seq:
-            if cond_f(self.mRecords[rec_no]):
-                flt_rec_no_seq.append(rec_no)
-        return flt_rec_no_seq
-
-    def evalConditions(self, conditions):
-        rec_no_seq = range(self.mWS.getTotal())[:]
-        for cond_info in conditions:
-            rec_no_seq = self._applyCondition(rec_no_seq, cond_info)
-            if len(rec_no_seq) == 0:
-                break
+    def evalCondition(self, condition):
+        rec_no_seq = []
+        for rec_no in range(self.mWS.getTotal()):
+            if condition(self.mRecords[rec_no]):
+                rec_no_seq.append(rec_no)
         return rec_no_seq
 
-    def checkResearchBlock(self, conditions):
-        for cond_info in conditions:
+    def checkResearchBlock(self, cond_seq):
+        for cond_info in cond_seq:
             if self.getUnit(cond_info[1]).checkResearchBlock(False):
                 return True
         return False
 
-    def cacheFilter(self, filter_name, conditions, time_label):
+    def cacheFilter(self, filter_name, cond_seq, time_label):
+        condition = self.mCondEnv.parseSeq(cond_seq)
         self.mFilterCache[filter_name] = (
-            conditions, self.evalConditions(conditions),
-            self.checkResearchBlock(conditions), time_label)
+            cond_seq, self.evalCondition(condition),
+            self.checkResearchBlock(cond_seq), time_label)
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
@@ -163,15 +116,16 @@ class Index:
         return sorted(ret)
 
     def makeStatReport(self, filter_name, research_mode,
-            conditions = None):
-        rec_no_seq = self.getRecNoSeq(filter_name, conditions)
+            condition = None, repr_context = None):
+        rec_no_seq = self.getRecNoSeq(filter_name, condition)
 
         rec_seq = [self.mRecords[rec_no] for rec_no in rec_no_seq]
 
         stat_list = []
-        for unit in self.mUnits:
-            if not unit.checkResearchBlock(research_mode):
-                stat_list.append(unit.collectStatJSon(rec_seq))
+        for unit_h in self.mUnits:
+            if (not unit_h.checkResearchBlock(research_mode) and
+                    not unit_h.isScreened()):
+                stat_list.append(unit_h.makeStat(rec_seq, repr_context))
 
         report = {
             "stat-list": stat_list,
@@ -182,9 +136,14 @@ class Index:
             report["conditions"] = self.mFilterCache[filter_name][0]
         return report
 
-    def getRecNoSeq(self, filter_name = None, conditions = None):
-        if filter_name is None and conditions:
-            return self.evalConditions(conditions)
+    def makeUnitStatReport(self, unit_name, condition, repr_context):
+        rec_seq = [self.mRecords[rec_no]
+            for rec_no in self.getRecNoSeq(None, condition)]
+        return self.mUnitDict[unit_name].makeStat(rec_seq, repr_context)
+
+    def getRecNoSeq(self, filter_name = None, condition = None):
+        if filter_name is None and condition is not None:
+            return self.evalCondition(condition)
         if filter_name in self.mFilterCache:
             return self.mFilterCache[filter_name][1]
         return range(self.mWS.getTotal())[:]
