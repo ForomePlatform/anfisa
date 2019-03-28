@@ -721,8 +721,8 @@ var sZygosityH = {
         return (this.mZStat == null)? []:this.mZStat;
     },
     
-    transCondition: function(condition) {
-        if (condition == null || this.mZStat == mull || this.mZEmpty)
+    transCondition: function(condition_data) {
+        if (condition_data == null || this.mZStat == null || this.mZEmpty)
             return null;
         ret = condition_data.slice();
         ret[0] = "zygosity";
