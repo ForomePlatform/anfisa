@@ -1238,14 +1238,8 @@ function getConditionDescr(cond, short_form) {
         rep_cond.push(cond[1]);
         if (cond[2][1] != null)
             rep_cond.push("&le; " + cond[2][1]);
-        switch (cond[3]) {
-            case true:
-                rep_cond.push("with undef");
-                break
-            case false:
-                rep_cond.push("w/o undef");
-                break;
-        }
+        if (cond[3]) 
+            rep_cond.push("or undef");
         return rep_cond.join(" ");
     }
     rep_cond = (short_form)? []:[cond[1]];

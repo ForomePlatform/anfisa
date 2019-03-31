@@ -195,7 +195,7 @@ def _formFiltersDiv(output):
                 type="text" onchange="checkOpNum();"/>
               <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span>
-              <input id="cond-undef-check" class="num-inp"
+              <input id="cond-undef-check"
                 type="checkbox"  onchange="checkOpNum();"/>
               <span id="cond-undef-count" class="num-count"
                 class="num-count"></span>

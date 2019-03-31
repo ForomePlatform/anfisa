@@ -1,44 +1,16 @@
 import logging
 from app.model.a_config import AnfisaConfig
 from app.model.condition import ConditionMaker
+from app.model.unit import Unit
 from xl_cond import XL_Condition, XL_NumCondition, XL_None
 #===============================================
-class XL_Unit:
+class XL_Unit(Unit):
     def __init__(self, dataset_h, descr, unit_kind = None):
+        Unit.__init__(self, descr, unit_kind)
         self.mDataSet = dataset_h
-        self.mUnitKind  = descr["kind"] if unit_kind is None else unit_kind
-        self.mName  = descr["name"]
-        self.mTitle = descr["title"]
-        self.mNo    = descr["no"]
-        self.mVGroup = descr.get("vgroup")
-        self.mRenderMode = descr.get("render")
-
-    def setup(self):
-        pass
 
     def getDS(self):
         return self.mDataSet
-
-    def getUnitKind(self):
-        return self.mUnitKind
-
-    def getName(self):
-        return self.mName
-
-    def getTitle(self):
-        return self.mTitle
-
-    def getVGroup(self):
-        return self.mVGroup
-
-    def getNo(self):
-        return self.mNo
-
-    def isScreened(self):
-        return False
-
-    def getCondParseSupport(self):
-        return (None, None)
 
     @staticmethod
     def create(dataset_h, descr):
@@ -52,20 +24,11 @@ class XL_Unit:
             return None
         return ret
 
-    def _prepareStat(self):
-        ret = [self.mUnitKind, {
-            "name": self.mName,
-            "vgroup": self.mVGroup}]
-        if self.mTitle and self.mTitle != self.mName:
-            ret[1]["title"] = self.mTitle
-        if self.mRenderMode:
-            ret[1]["render"] = self.mRenderMode
-        return ret
-
 #===============================================
 class XL_NumUnit(XL_Unit):
     def __init__(self, dataset_h, descr):
         XL_Unit.__init__(self, dataset_h, descr)
+        self.getDS().getCondEnv().addNumUnit(self)
 
     def evalStat(self, condition):
         name_cnt = "_cnt_%d" % self.getNo()
@@ -109,6 +72,7 @@ class XL_EnumUnit(XL_Unit):
             for info in descr["variants"]]
         self.mAccumCount = sum([info[1]
             for info in descr["variants"]])
+        self.getDS().getCondEnv().addEnumUnit(self)
 
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
@@ -154,14 +118,13 @@ class XL_ZygosityUnit(XL_Unit):
         if descr.get("family") and self.getDS().getFamilyInfo() is None:
             self.getDS()._setFamilyInfo(descr["family"])
 
-        self.mScreened = self.getDS().getApp().hasRunOption("no-custom")
+        self._setScreened(self.getDS().getApp().hasRunOption("no-custom"))
         self.mIsOK = (self.getDS().getFamilyInfo() is not None and
             len(self.getDS().getFamilyInfo()) > 1)
         self.mLabels = AnfisaConfig.configOption("zygosity.cases")
         self.mConfig = descr.get("config", dict())
         self.mXCondition = None
-        self.getDS().getCondEnv().addSpecialParse(
-            self.getName(), self.parseZCondition)
+        self.getDS().getCondEnv().addSpecialUnit(self)
 
     def setup(self):
         self.mXCondition = self.getDS().getCondEnv().parse(
@@ -170,9 +133,6 @@ class XL_ZygosityUnit(XL_Unit):
 
     def isDummy(self):
         return not self.mIsOK
-
-    def isScreened(self):
-        return False
 
     def conditionZHomoRecess(self, problem_group):
         seq = []
@@ -245,7 +205,7 @@ class XL_ZygosityUnit(XL_Unit):
             stat.append([name, self.getDS().evalTotalCount(condition)])
         return ret + [sorted(p_group), stat]
 
-    def parseZCondition(self, cond_info):
+    def parseCondition(self, cond_info):
         if not self.mIsOK:
             return XL_None()
 

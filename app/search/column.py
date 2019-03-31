@@ -4,6 +4,12 @@ class DataColumnCollecton:
     ATOM_DATA_TYPE_INT   = 2
     ATOM_DATA_TYPE_FLOAT = 3
 
+    @classmethod
+    def ATOM_TYPE_NUM(cls, kind):
+        if kind == "float":
+            return cls.ATOM_DATA_TYPE_FLOAT
+        return cls.ATOM_DATA_TYPE_INT
+
     def __init__(self):
         self.mColumns = []
 

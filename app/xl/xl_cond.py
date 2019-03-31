@@ -1,10 +1,8 @@
+from app.model.cond_env import CondEnv
 #===============================================
-class XL_CondEnv:
+class XL_CondEnv(CondEnv):
     def __init__(self):
-        self.mSpecialParse = dict()
-
-    def addSpecialParse(self, unit_name, func):
-        self.mSpecialParse[unit_name] = func
+        CondEnv.__init__(self)
 
     def parse(self, cond_info):
         if cond_info[0] == "and":
@@ -16,12 +14,14 @@ class XL_CondEnv:
         if cond_info[0] == "not":
             assert len(cond_info) == 2
             return XL_Negation(self.parse(cond_info[1]))
-        if cond_info[1] in self.mSpecialParse:
-            return self.mSpecialParse[cond_info[1]](cond_info)
+        unit_name = cond_info[1]
+        unit_kind, unit_h = self.detectUnit(unit_name, cond_info[0])
+        if (unit_kind == "special"):
+            return unit_h.parseCondition(cond_info)
         if cond_info[0] == "numeric":
             return XL_NumCondition(*cond_info[1:])
         if cond_info[0] == "enum":
-            unit_name, filter_mode, variants = cond_info[1:]
+            filter_mode, variants = cond_info[2:]
             assert filter_mode != "ONLY"
             assert len(variants) > 0
             singles = [XL_EnumSingleCondition(unit_name, variant)

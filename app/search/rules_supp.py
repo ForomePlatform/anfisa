@@ -18,7 +18,7 @@ class RulesEvalUnit(MultiSetUnit):
     def normEnumValue(cls, val):
         return cls.sEnumNormValues.get(val, val)
 
-    def __init__(self, index, dc_collection, unit_idx):
+    def __init__(self, index, dc_collection):
         MultiSetUnit.__init__(self, index, dc_collection, {
             "name": "Rules",
             "title": "Rules",
@@ -27,10 +27,11 @@ class RulesEvalUnit(MultiSetUnit):
             "compact": False,
             "default": None,
             "path": None,
+            "no": -1,
             "research": False,
             "undef": 0,
             "variants": [[func_h.getName(), -1]
-                for func_h in RULES_SETUP.FUNCTIONS]}, unit_idx)
+                for func_h in RULES_SETUP.FUNCTIONS]})
         env_dict = {param_h.getName(): param_h.getValue()
             for param_h in RULES_SETUP.PARAMETERS}
         rules_data = (self.getIndex().getWS().getMongoWS().

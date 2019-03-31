@@ -1,25 +1,8 @@
 from collections import Counter
 
 #===============================================
-class BoolStat:
-    def __init__(self, names):
-        self.mNames = names
-        self.mStat = Counter()
-
-    def isDefined(self):
-        return sum(self.mStat.values()) > 0
-
-    def regValue(self, val):
-        self.mStat[not not val] += 1
-
-    def dump(self, names):
-        return ["bool", self.mNames, self.mStat[True], self.mStat[False]]
-
-#===============================================
 class NumDiapStat:
-    def __init__(self, type_name, names):
-        self.mTypeName = type_name
-        self.mNames = names
+    def __init__(self):
         self.mMin, self.mMax = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -40,16 +23,13 @@ class NumDiapStat:
             elif val > self.mMax:
                 self.mMax = val
 
-    def dump(self):
-        return [self.mTypeName, self.mNames,
-            self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
+    def result(self):
+        return [self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
 
 #===============================================
 class EnumStat:
-    def __init__(self, variant_set, names, enum_type):
+    def __init__(self, variant_set):
         self.mVariantSet = variant_set
-        self.mNames = names
-        self.mEnumType = enum_type
         self.mStat = Counter()
 
     def isDefined(self):
@@ -67,8 +47,8 @@ class EnumStat:
             assert 0 <= val < len(self.mVariantSet)
             self.mStat[val] += count
 
-    def dump(self):
+    def result(self):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             rep_list.append([variant, self.mStat.get(idx, 0)])
-        return [self.mEnumType, self.mNames, rep_list]
+        return [rep_list]

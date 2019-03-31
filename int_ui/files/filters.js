@@ -495,7 +495,7 @@ var sOpNumH = {
                 this.mMessage = "Bounds are mixed up";
         }
         if (this.mMessage == null) {
-            this.mConditionData = [this.mInfo.cur_bounds, this.with_undef]
+            this.mConditionData = [this.mInfo.cur_bounds, this.mInfo.with_undef]
             if (this.mInfo.cur_bounds[0] != null && 
                     this.mInfo.cur_bounds[0] < this.mInfo.val_min &&
                     (this.mInfo.fix_bounds == null || 

@@ -15,10 +15,9 @@ class Index:
         self.mWS = ws_h
         self.mCondEnv = WS_CondEnv()
         self.mDCCollection = DataColumnCollecton()
-        self.mUnits = [RulesEvalUnit(self, self.mDCCollection, 0)]
+        self.mUnits = [RulesEvalUnit(self, self.mDCCollection)]
         for unit_data in self.mWS.getFltSchema():
-            unit_h = loadWSFilterUnit(self,
-                self.mDCCollection, unit_data, len(self.mUnits))
+            unit_h = loadWSFilterUnit(self, self.mDCCollection, unit_data)
             if unit_h is not None:
                 self.mUnits.append(unit_h)
         self.mUnitDict = {unit_h.getName(): unit_h

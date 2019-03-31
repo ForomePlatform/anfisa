@@ -1,23 +1,9 @@
-import logging
+from app.model.cond_env import CondEnv
 
 #===============================================
-class WS_CondEnv:
+class WS_CondEnv(CondEnv):
     def __init__(self):
-        self.mSpecialParse = dict()
-        self.mNumFields = dict()
-        self.mEnumFields = dict()
-
-    def addNumFieldF(self, unit_name, num_f):
-        assert unit_name not in self.mNumFields
-        self.mNumFields[unit_name] = num_f
-
-    def addEnumFieldF(self, unit_name, variant_set, enum_f):
-        assert unit_name not in self.mEnumFields
-        self.mEnumFields[unit_name] = (variant_set, enum_f)
-
-    def addSpecialParse(self, unit_name, func):
-        self.mSpecialParse[unit_name] = func
-
+        CondEnv.__init__(self)
     def parse(self, cond_info):
         if cond_info[0] == "and":
             return WS_Condition.joinAnd(
@@ -28,26 +14,18 @@ class WS_CondEnv:
         if cond_info[0] == "not":
             assert len(cond_info) == 2
             return WS_Negation(self.parse(cond_info[1]))
-        unit_name = cond_info[1]
-        if unit_name in self.mSpecialParse:
-            return self.mSpecialParse[unit_name](cond_info)
-        if cond_info[0] == "numeric":
-            if unit_name not in self.mNumFields:
-                logging.warning(
-                    "Try to use unexistent num unit: %s" % unit_name)
-                if cond_info[2] == "NOT":
-                    return WS_All()
-                return WS_None()
+        pre_unit_kind, unit_name = cond_info[:2]
+        unit_kind, unit_h = self.detectUnit(unit_name, pre_unit_kind)
+        if (unit_kind == "special"):
+            return unit_h.parseCondition(cond_info)
+        if unit_kind == "numeric":
             bounds, use_undef = cond_info[2:]
             return WS_NumCondition(unit_name, bounds, use_undef,
-                self.mNumFields[unit_name])
-        if cond_info[0] == "enum":
-            if unit_name not in self.mNumFields:
-                logging.warning(
-                    "Try to use unexistent enum unit: %s" % unit_name)
+                unit_h.getRecFunc())
+        if unit_kind == "enum":
             filter_mode, variants = cond_info[2:]
             return WS_EnumCondition(unit_name, filter_mode, variants,
-                *self.mEnumFields[unit_name])
+                unit_h.getVariantSet(), unit_h.getRecFunc())
         assert False
         return WS_None()
 
