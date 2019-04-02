@@ -199,10 +199,10 @@ class XL_ZygosityUnit(XL_Unit):
             return ret + [sorted(p_group), None]
         stat = []
         for name, z_condition in self._iterCritSeq(p_group):
-            condition = z_condition
+            cur_cond = z_condition
             if condition is not None:
-                condition = z_condition.addAnd(condition)
-            stat.append([name, self.getDS().evalTotalCount(condition)])
+                cur_cond = condition.addAnd(cur_cond)
+            stat.append([name, self.getDS().evalTotalCount(cur_cond)])
         return ret + [sorted(p_group), stat]
 
     def parseCondition(self, cond_info):
