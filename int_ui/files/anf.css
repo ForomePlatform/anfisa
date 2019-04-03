@@ -21,6 +21,7 @@ body {
 
 #top {
     min-height: 50px;
+    height: 50px;
     display: flex;
     align-items: stretch;
     flex-direction: row;
@@ -29,6 +30,7 @@ body {
     text-align: justify;
     background-color: #333455; 
     color: white;
+    flex-grow: 0;
     border: 1px solid black;
     vertical-align: top; 
     overflow: hidden;
@@ -110,12 +112,13 @@ span#ws-name {
 /********************Left area*****************************/
 div#wrap-rec-list {
     overflow: hidden;
-    display: grid;
     border: 1px solid black;
     white-space: nowrap;
+    display: block;
     width: 250px;
     margin: 0px;
     padding: 0px;
+    overflow: hidden;
 }
 
 div#rec-list  {
@@ -124,6 +127,7 @@ div#rec-list  {
     overflow-y: scroll;
     overflow-x: hidden;
     white-space: nowrap;
+    height: 100%;
     max-height: 100%;
 }
 

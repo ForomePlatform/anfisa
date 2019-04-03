@@ -78,8 +78,13 @@ function setupList(info) {
         sRecSamples = false;
     }
     el.innerHTML = rep;
+    updateSizes();
     sRecList = info["records"];
     refreshRecList();
+}
+
+function updateSizes() {
+    document.getElementById("rec-list").style.height = window.innerHeight - 55;
 }
 
 function refreshRecList() {
@@ -135,6 +140,7 @@ function updateRecordMark(rec_id, rec_marked) {
 }
 
 function changeRec(rec_no) {
+    updateSizes();
     if (sCurRecNo == rec_no) 
         return;
     var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_no]);
