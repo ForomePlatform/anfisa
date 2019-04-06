@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from app.model.a_config import AnfisaConfig
 
-from .xl_cond import XL_None
+from .xl_cond import XL_All
 #===============================================
 class PointCounter:
     def __init__(self, count = None):
@@ -116,8 +116,10 @@ class TerminalPoint(CheckPoint):
         return self.mDecision
 
     def actualCondition(self):
-        if self.mPrevPoint is None:
-            return XL_None()
+        if self.getPrevPoint() is None:
+            return XL_All()
+        if self.getPrevPoint().getLevel() == self.getLevel():
+            return self.getPrevPoint().accumulateConditions().negative()
         return self.getPrevPoint().getWorkCondition()
 
     def dump(self):
@@ -150,15 +152,12 @@ class ConditionPoint(CheckPoint):
             self.mCondition)
 
     def actualCondition(self):
-        if self.mPrevPoint is None:
-            return XL_None()
-        return self.mPrevPoint.accumulateConditions().negative()
+        if self.getPrevPoint() is None:
+            return XL_All()
+        return self.getPrevPoint().accumulateConditions().negative()
 
     def getWorkCondition(self):
-        if self.mPrevPoint is None:
-            return self.mCondition
-        return self.mCondition.addAnd(
-            self.mPrevPoint.accumulateConditions().negative())
+        return self.actualCondition().addAnd(self.mCondition)
 
     def dump(self):
         return CheckPoint.dump(self) + [self.mColdCondition]

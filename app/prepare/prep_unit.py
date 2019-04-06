@@ -79,6 +79,7 @@ class _NumericConvertor(PathValueConvertor):
             self.mMinBound, self.mMaxBound = diap
         else:
             self.mMinBound = None
+        assert default_value is not None
         self.mDefaultValue = default_value
         self.mMinValue, self.mMaxValue = None, None
         self.mCntDef = 0
@@ -89,8 +90,7 @@ class _NumericConvertor(PathValueConvertor):
         return None
 
     def checkSetup(self):
-        if self.mDefaultValue is not None:
-            assert self.mDefaultValue == self.convType(self.mDefaultValue)
+        assert self.mDefaultValue == self.convType(self.mDefaultValue)
         if self.mMinBound is not None:
             assert self.mMinBound == self.convType(self.mMinBound)
             assert self.mMaxBound == self.convType(self.mMaxBound)
