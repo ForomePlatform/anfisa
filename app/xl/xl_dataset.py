@@ -32,10 +32,6 @@ class XLDataset(DataSet):
             for f_name, cond_seq, time_label in self.mMongoDS.getFilters():
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, cond_seq, time_label)
-        self.mOptions = []
-        if (self.getFamilyInfo() is not None and
-                self.getFamilyInfo().getProbandRel()):
-            self.mOptions.append("comp_hets")
 
     def getDruidAgent(self):
         return self.mDruidAgent
@@ -174,8 +170,7 @@ class XLDataset(DataSet):
             "stat-list": self.makeAllStat(condition, repr_context),
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
-            "conditions": cond_seq,
-            "options": self.mOptions}
+            "conditions": cond_seq}
 
     #===============================================
     @RestAPI.xl_request
@@ -254,8 +249,7 @@ class XLDataset(DataSet):
             "counts": tree.getCounts(),
             "stat": tree.getStat(),
             "cur_version": cur_version,
-            "versions": versions_rep,
-            "options": self.mOptions}
+            "versions": versions_rep}
 
     #===============================================
     @RestAPI.xl_request

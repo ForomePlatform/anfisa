@@ -10,7 +10,7 @@ Terms:
 
 ===
 Method "/list"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> filter       (name of filter or undefined)
     -> conditions   (ConditionList structure or null or undefined)
@@ -50,18 +50,21 @@ Method "/dirinfo"
                     "name": <ws name>,
                     "note": <ws notes, string>
                 }, ...
+            ],
+        "xl-datasets":
+            [ * list of xl-datasets, the same format as in workspaces above
             ]
     }
     
 ===
 Method "/recdata"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     <- rec          (= number of record,  required!)
     -> { * source of annotated JSon for record }
 
 ===
 Method "/reccnt"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> rec          (!required)
     <- 
@@ -110,7 +113,7 @@ Method "/reccnt"
     
 ===
 Method "/vsetup"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     <-
     [ * accumulated report for data in data set
         { * data for aspect
@@ -143,7 +146,7 @@ Method "/vsetup"
 
 ===
 Method "/stat"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> filter       (= filter name or undefined)
     -> conditions   (= ConditionList structure or null or undefined)
@@ -154,6 +157,8 @@ Method "/stat"
                             <problem group for zygosity, list of int indexes>})
     <-
     { * collection of data to setup "filter" modal window
+        "total": total count of records
+        "count": count of records in current list
         "stat-list": 
             [ * list UnitStat structures
             ],
@@ -184,16 +189,37 @@ Method "/stat"
     /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
 
 ===
+Method "/xl_filters" = XL-analog for "/stat"
+
+    -> ds           (!required)
+    -> filter       (= filter name or undefined)
+    -> conditions   (= ConditionList structure or null or undefined)
+    -> instr        (filter modifying instruction or null or undefined, see Notes)
+    -> ctx          (dictionary with contect options or null or undefined, 
+                        same as in "/stat")
+    <- { * the same as in method "/stat"
+       }
+        
+===
 Мethod /statunit:
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> unit         (unit name)
     -> conditions   (= ConditionList structure or null or undefined)
     -> ctx          (dictionary with contect options:
     <- UnitStat structure
+
+===
+Method "/xl_statunit" = XL-analog for "/statunit"
+    -> ds           (!required)
+    -> unit         (unit name)
+    -> conditions   (= ConditionList structure or null or undefined)
+    -> ctx          (dictionary with contect options:
+    <- UnitStat structure
+    
 ===
 Method "/export"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> filter       (= null or filter name)
     -> conditions   (= list of conditions or null or undefined, see method "/stat")
     -> zone         (= Zone structure or null or undefined)
@@ -204,7 +230,7 @@ Method "/export"
 
 ===
 Method "/zone_list"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> zone         (zone name or undefined)
     <- 
      [ * if zone name  is undefined
@@ -214,7 +240,7 @@ Method "/zone_list"
 
 ===
 Method "/tags"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> rec          (!required)
     -> tags         (null or "UNDO" / "REDO" / TagList structure see Notes)
@@ -254,7 +280,7 @@ Method "/tags"
     
 ===
 Method "/tag_select"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> tag          (tag name or undefined)
     <- 
         { * data about tags variety and navigation for selected tag
@@ -267,7 +293,7 @@ Method "/tag_select"
         
 ===
 Method "/rules_data"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     <- 
         { * data for rules
             "columns":
@@ -285,7 +311,7 @@ Method "/rules_data"
         
 ===
 Method "/rules_modify"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     -> m            (= "")
     -> it           (required! name of "rule", "--param" currently supported)
     <- 
@@ -296,7 +322,7 @@ Method "/rules_modify"
         
 ===
 Method "/wsnote"
-    -> ws           (= ws_default)
+    -> ws           (!required)
     <-  {
             "name": <ws name>,
             "note": <ws note>

@@ -43,7 +43,6 @@ var sUnitsH = {
     mTotal: null,
     mExportFormed: null,
     mCtx: null,
-    mDSOptions: null,
     
     setup: function(conditions, filter_name, add_instr) {
         args = "ds=" + sDSName;
@@ -65,7 +64,7 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mExportFormed = false;
-        sCreateWsH.reset(info["options"]);
+        sCreateWsH.reset();
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
@@ -1209,7 +1208,6 @@ var sCreateWsH = {
     mWSFormed: false,
     mTaskId: null,
     mTimeH: null,
-    mDSOptions: null,
     
     init: function() {
         this.mSpanModTitle = document.getElementById("create-ws-title");
@@ -1220,9 +1218,8 @@ var sCreateWsH = {
         this.mButtonModCancel = document.getElementById("create-ws-cancel");
     },
     
-    reset: function(ds_options) {
+    reset: function() {
         this.mWSFormed = false;
-        this.mDSOptions  = ds_options;
     },
     
     show: function() {

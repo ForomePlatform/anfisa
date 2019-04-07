@@ -127,6 +127,8 @@ class Index:
                 stat_list.append(unit_h.makeStat(rec_seq, repr_context))
 
         report = {
+            "total": self.mWS.getTotal(),
+            "count": len(rec_seq),
             "stat-list": stat_list,
             "filter-list": self.getFilterList(research_mode),
             "cur-filter": filter_name}
