@@ -1,3 +1,5 @@
+import sys
+
 from .prep_filters import FilterPrepareSetH
 from app.model.condition import ConditionMaker
 #===============================================
@@ -69,9 +71,9 @@ def defineFilterSchema():
 
         filters.intValueUnit("Start_Pos", "/data/start",
             title = "Start Position", research_only = False,
-            render_mode = "neighborhood")
+            render_mode = "neighborhood", default_value=sys.maxint)
         filters.intValueUnit("End_Pos", "/data/end",
-            title = "End Position", research_only = False,
+            title = "End Position", research_only = False, default_value=0,
             render_mode = "neighborhood")
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
             title = "Distance From Intron/Exon Boundary (Canonical)",
@@ -143,10 +145,12 @@ def defineFilterSchema():
         #     title = "Observed at")
 
     with filters.viewGroup("Call_Quality"):
-        filters.intValueUnit("Proband_GQ", "/_filters/proband_gq", title="Genotype Quality (GQ) for Proband", render_mode = "linear,>")
-        filters.intValueUnit("Min_GQ", "/_filters/min_gq", title="Minimum GQ for the family)", render_mode = "linear,>")
-        filters.intValueUnit("QD", "/_filters/qd", title="Quality by Depth", render_mode = "linear,>")
-        filters.intValueUnit("FS", "/_filters/fs", "Fisher Strand Bias", render_mode = "linear,<")
+        filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq", title="Genotype Quality (GQ) for Proband",
+                             render_mode = "linear,>", default_value=float('inf'))
+        filters.floatValueUnit("Min_GQ", "/_filters/min_gq", title="Minimum GQ for the family)", render_mode = "linear,>",
+                             default_value=float('inf'))
+        filters.floatValueUnit("QD", "/_filters/qd", title="Quality by Depth", render_mode = "linear,>", default_value=float('inf'))
+        filters.floatValueUnit("FS", "/_filters/fs", "Fisher Strand Bias", render_mode = "linear,<", default_value=0.)
         filters.multiStatusUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):
