@@ -6,6 +6,7 @@ import time
 from annotations import case_utils, liftover
 from annotations.clinvar import ClinVar
 from annotations.gnomad import GnomAD
+from annotations.spliceai import SpliceAI
 from annotations.gtf import GTF
 from annotations.hgmd import HGMD
 from annotations.record import Variant
@@ -54,14 +55,15 @@ def annotate_json(f, out = None, vcf_header = None, samples = None, case = None,
     l = 0
     hg19_to_38_converter = liftover.Converter()
     beacon = None ## Beacon(resJson=False)
-
     with open(f) as input, open(out, "w") as out1, HGMD() as hgmd, \
                     GnomAD() as gnomAD,  \
                     GTF() as gtf, \
+                    SpliceAI() as spliceAI, \
                     ClinVar() as clinvar:
         cns = {
             "hgmd": hgmd,
             "gnomAD": gnomAD,
+            "spliceAI": spliceAI,
             "liftover": hg19_to_38_converter,
             "clinvar": clinvar,
             "gtf": gtf.prepare_lookup(transcript=True),

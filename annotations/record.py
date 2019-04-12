@@ -7,6 +7,7 @@ from StringIO import StringIO
 import vcf
 
 from annotations import liftover
+from annotations import spliceai 
 from beacons.beacon import Beacon
 
 
@@ -175,6 +176,7 @@ class DBConnectors:
         self.liftover = array.get("liftover")
         self.beacon = array.get("beacon")
         self.gtf = array.get("gtf")
+        self.spliceAI = array.get("spliceAI")
 
 class Variant:
     csq_damaging = [
@@ -301,6 +303,7 @@ class Variant:
 
         self.call_liftover()
         self.call_gnomAD()
+        self.call_Spliceai()   
         self.call_hgmd()
         self.call_clinvar()
         self.call_beacon()
@@ -427,7 +430,30 @@ class Variant:
             self.data["beacon"][alt] = [b for b in beacons if b.response]
             beacon_names += [b.get("name") for b in self.data["beacon"][alt]]
         self.data["beacon_names"] = unique(beacon_names)
-
+    
+    def call_Spliceai(self):       
+        spliceai_data = {} 
+        case = None
+        ds_max = None
+        spliceAI = self.connectors.spliceAI
+        if (not spliceAI):
+            return None
+        '''for alt in self.alt_list():
+            spliceai_data, case, ds_max = spliceAI.get_all(self.chr_num(), self.lowest_coord(), self.ref(), alt) '''
+        spliceai_data, case, ds_max = spliceAI.get_all(self.chr_num(), self.lowest_coord(), self.ref(), self.alt_list())    
+        self.data["spliceAI"]  = spliceai_data
+        self.filters["splice_altering"] = case  
+        self.filters["splice_ai_dsmax"] = ds_max  
+        
+    def list_dsmax(self):
+        dslist = ['DS_AG','DS_AL','DS_DG','DS_DL']
+        dct = {}
+        if not len(self.data["spliceAI"]):
+            return dct
+        for ds in dslist:
+            dct[ds] = max(ls[ds] for ls in self.data["spliceAI"].values())    
+        return dct          
+            
     def call_gnomAD(self):
         gnomAD = self.connectors.gnomAD
         if (not gnomAD):
@@ -1205,7 +1231,15 @@ class Variant:
         data_info["variant_exon_intron_worst"], data_info["total_exon_intron_worst"] = self.get_intron_or_exon("worst")
 
         tab1["igv"] = self.get_igv_url()
+        if self.filters["splice_ai_dsmax"] != None:   
+            if self.filters["splice_ai_dsmax"] >= 0.2:                             
+                tab1["splice_altering"] = self.get_splice_altering() 
+        else: 
+            tab1["splice_altering"] = None
 
+    def get_splice_altering(self):
+        return self.filters.get('splice_altering')    
+    
     def create_quality_tab(self, data_info, view_info):
         tab2 = list()
         view_info["quality_samples"] = tab2
@@ -1365,7 +1399,7 @@ class Variant:
         tab6["other_genes"] = self.get_other_genes()
         tab6['called_by'] = self.get_callers()
         tab6['caller_data'] = self.get_callers_data()
-
+        tab6['splice_ai'] =  self.list_dsmax()                               
 
     def get_view_json(self):
         data_info = self.data.copy()
