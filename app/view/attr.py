@@ -79,6 +79,8 @@ class AttrH:
         try:
             val_obj = obj.get(self.mName) if obj else None
             repr_text = None
+            if val_obj is 0:
+                return ("0", self.getMainKind())
             if val_obj:
                 if self.mIsSeq:
                     seq = []
@@ -89,8 +91,6 @@ class AttrH:
                     repr_text = ', '.join(seq)
                 else:
                     repr_text = self._htmlRepr(val_obj)
-            elif val_obj is 0:
-                repr_text = self._htmlRepr(val_obj)
             if repr_text is None:
                 return ("-", "none")
             if not repr_text:
