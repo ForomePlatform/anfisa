@@ -145,12 +145,17 @@ def defineFilterSchema():
         #     title = "Observed at")
 
     with filters.viewGroup("Call_Quality"):
-        filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq", title="Genotype Quality (GQ) for Proband",
-                             render_mode = "linear,>", default_value=float('inf'))
-        filters.floatValueUnit("Min_GQ", "/_filters/min_gq", title="Minimum GQ for the family)", render_mode = "linear,>",
-                             default_value=float('inf'))
-        filters.floatValueUnit("QD", "/_filters/qd", title="Quality by Depth", render_mode = "linear,>", default_value=float('inf'))
-        filters.floatValueUnit("FS", "/_filters/fs", "Fisher Strand Bias", render_mode = "linear,<", default_value=0.)
+        filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq",
+            title="Genotype Quality (GQ) for Proband",
+            render_mode = "linear,>", default_value = 1000)
+        filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
+            title="Minimum GQ for the family)", render_mode = "linear,>",
+            default_value = 1000)
+        filters.floatValueUnit("QD", "/_filters/qd",
+            title="Quality by Depth", render_mode = "linear,>",
+            default_value=100000.)
+        filters.floatValueUnit("FS", "/_filters/fs",
+            "Fisher Strand Bias", render_mode = "linear,<", default_value = 0.)
         filters.multiStatusUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):
