@@ -29,19 +29,25 @@ fi
 
 
 [ ! -d "data" ] && mkdir data
-[ ! -d "tmp/export/work" ] && mkdir -p tmp/export/work
+[ ! -d "tmp/export/work" ] && mkdir -p export/work
 [ ! -d "logs" ] && mkdir logs
+[ ! -d "vault" ] && mkdir vault
 
+rm vault/*
 cd data
 rm *
-wget https://www.dropbox.com/s/duj0r1ccgjj1olv/PGP3140.json
-cd ../tmp/export
-[ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
+curl -O -L https://www.dropbox.com/s/ekywiywrwr2c8dc/PGP3140.json.gz
+# cd ../tmp/export
+# [ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 
-cd ../..
+cd ..
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
 sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
+echo "Loading Sample Dataset"
+echo "PYTHONPATH=$repo python -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140"
+PYTHONPATH=$repo python -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140
 
 cd $repo
 echo "Run anfisa: env PYTHONPATH="." python app/hserver.py $target/anfisa_$hostname.json"
+echo "Then point your browser to: http://localhost:8190/dir"
