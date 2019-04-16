@@ -80,6 +80,12 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
+    updateSizes();
+}
+
+function updateSizes() {
+    document.getElementById("top").style.height = 60;
+    document.getElementById("rec-list").style.height = window.innerHeight - 61;
 }
 
 function refreshRecList() {
@@ -135,6 +141,7 @@ function updateRecordMark(rec_id, rec_marked) {
 }
 
 function changeRec(rec_no) {
+    updateSizes();
     if (sCurRecNo == rec_no) 
         return;
     var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_no]);
@@ -370,3 +377,8 @@ function wsDropShow(mode) {
     }
 }
 
+//=====================================
+function timeRepr(time_label) {
+    var dt = new Date(time_label);
+    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
+}
