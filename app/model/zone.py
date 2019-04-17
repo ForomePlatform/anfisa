@@ -35,4 +35,4 @@ class FilterZoneH(ZoneH):
 
     def restrict(self, rec_no_seq, variants):
         return self.getWS().getIndex()._applyCondition(rec_no_seq,
-            ConditionMaker.condEnum(self.mUnit.getName(), variants, "OR"))
+            [ConditionMaker.condEnum(self.mUnit.getName(), variants, "OR")])

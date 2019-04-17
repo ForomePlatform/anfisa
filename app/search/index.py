@@ -89,6 +89,15 @@ class Index:
                 rec_no_seq.append(rec_no)
         return rec_no_seq
 
+    def _applyCondition(self, rec_no_seq, cond_seq):
+        condition = self.parseCondSeq(cond_seq)
+        ret = []
+        for rec_no in rec_no_seq:
+            if condition(self.mRecords[rec_no]):
+                ret.append(rec_no)
+        return ret
+
+
     def checkResearchBlock(self, cond_seq):
         for cond_info in cond_seq:
             if self.getUnit(cond_info[1]).checkResearchBlock(False):
