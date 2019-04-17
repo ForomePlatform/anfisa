@@ -27,6 +27,7 @@ function initWin(workspace_name, app_modes) {
     sNodeRulesBack = document.getElementById("rules-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
+    window.onresize  = updateSizes;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
 
     if (sAppModes.toLowerCase().indexOf('r') >= 0) {
@@ -86,6 +87,10 @@ function setupList(info) {
 function updateSizes() {
     document.getElementById("top").style.height = 60;
     document.getElementById("rec-list").style.height = window.innerHeight - 61;
+    
+    zone_mod_height = document.getElementById("zone-mod").getBoundingClientRect().height;
+    document.getElementById("work-zone-area").style.height = zone_mod_height - 60;
+    document.getElementById("work-zone-wrap-list").style.height = zone_mod_height - 125;
 }
 
 function refreshRecList() {
@@ -141,7 +146,6 @@ function updateRecordMark(rec_id, rec_marked) {
 }
 
 function changeRec(rec_no) {
-    updateSizes();
     if (sCurRecNo == rec_no) 
         return;
     var new_rec_el = document.getElementById("li--" + sViewRecNoSeq[rec_no]);
@@ -213,6 +217,7 @@ function _showModal(cur_mode_node) {
         (cur_mode_node == sNodeNoteBack)? "block":"none";
     sNodeRulesBack.style.display = 
         (cur_mode_node == sNodeRulesBack)? "block":"none";
+    updateSizes();
 }
 
 function filterModOn() {
@@ -292,7 +297,6 @@ function openControlMenu() {
     if (sWsDropShown)
         document.getElementById("ws-control-menu").style.display = 
             (sWsDropShown)? "block":"none";
-        
 }
 
 function showExport() {
