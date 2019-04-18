@@ -2,7 +2,7 @@ import gzip, json
 from threading import Lock
 
 from .family import FamilyInfo
-from ixbz2.ixbz2 import IndexBZ2
+from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
 from app.view.attr import AttrH
 #===============================================

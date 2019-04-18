@@ -2,7 +2,7 @@ import sys, json, codecs, gzip
 from datetime import datetime
 from argparse import ArgumentParser
 
-from app.prepare.read_json import JsonLineReader
+from utils.read_json import JsonLineReader
 from .comp_hets import FamilyDataMiner, CompHetsBatch
 #=====================================
 class PostAttonationProcess:

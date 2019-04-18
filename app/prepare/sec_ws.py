@@ -1,7 +1,7 @@
 import os, json, gzip, codecs, logging, re
 from copy import deepcopy
 
-from ixbz2.ixbz2 import FormatterIndexBZ2
+from utils.ixbz2 import FormatterIndexBZ2
 from app.model.a_config import AnfisaConfig
 from app.model.job_pool import ExecutionTask
 from app.xl.decision import DecisionTree
