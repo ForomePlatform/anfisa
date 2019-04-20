@@ -60,7 +60,8 @@ class XL_NumUnit(XL_Unit):
     def makeStat(self, condition, repr_context = None):
         ret = self._prepareStat();
         vmin, vmax, count = self.evalStat(condition)
-        #TRF: count_undef!!!
+        if count == 0:
+            vmin, vmax = None, None
         return ret + [vmin, vmax, count, 0]
 
 #===============================================
