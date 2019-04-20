@@ -2,8 +2,8 @@ from app.model.condition import ConditionMaker
 from .decision import DecisionTree
 #===============================================
 def defineDefaultDecisionTree(cond_env):
-    #return defineHearingLossTree(cond_env)
-    return defineBGMTree(cond_env)
+    return defineHearingLossTree(cond_env)
+    #return defineBGMTree(cond_env)
 
 
 def defineHearingLossTree(cond_env):
