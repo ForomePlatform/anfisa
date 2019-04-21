@@ -383,8 +383,3 @@ function wsDropShow(mode) {
     }
 }
 
-//=====================================
-function timeRepr(time_label) {
-    var dt = new Date(time_label);
-    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
-}

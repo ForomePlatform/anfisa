@@ -275,10 +275,6 @@ input.num-inp {
     width: 100px;
 }
 
-#cond-undef-check {
-    margin-left: 10px;
-}
-
 div#cond-list {
     margin: 0px;
     padding: 0px;
@@ -316,11 +312,6 @@ span.enum-cnt {
 }
 
 span.stat-count, span.stat-comment {
-    font-style: italic;
-}
-
-span.stat-undef-count {
-    color: grey;
     font-style: italic;
 }
 span.stat-ok {

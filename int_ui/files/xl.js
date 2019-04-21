@@ -136,7 +136,7 @@ var sUnitsH = {
         val_min   = unit_stat[2];
         val_max   = unit_stat[3];
         count     = unit_stat[4];
-        cnt_undef = unit_stat[5];
+        //cnt_undef = unit_stat[5];
         if (count == 0) {
             list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
         } else {
@@ -148,9 +148,6 @@ var sUnitsH = {
             }
             list_stat_rep.push(': <span class="stat-count">' + count + 
                 ' records</span>');
-            if (cnt_undef > 0) 
-                list_stat_rep.push('<span class="stat-undef-count">+' + 
-                    cnt_undef + ' undefined</span>');
         }
     },
         
@@ -335,7 +332,7 @@ var sConditionsH = {
             cond = this.mList[idx];
             list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
                 'onclick="sConditionsH.selectCond(\'' + idx + '\');">');
-            list_cond_rep.push('&bull;&emsp;' + getConditionDescr(cond, false));
+            list_cond_rep.push('&bull;&emsp;' + getCondDescription(cond, false));
             list_cond_rep.push('</div>')
         }
         document.getElementById("cond-list").innerHTML = list_cond_rep.join('\n');
@@ -474,7 +471,7 @@ var sOpCondH = {
             
         }
         document.getElementById("cond-text").innerHTML = 
-            (this.mCondition)? getConditionDescr(this.mCondition, true):"";
+            (this.mCondition)? getCondDescription(this.mCondition, true):"";
         message_el = document.getElementById("cond-message");
         message_el.innerHTML = (error_msg)? error_msg:"";
         message_el.className = (this.mCondition == null && 
@@ -524,14 +521,10 @@ var sOpNumH = {
     mInfo: null,
     mInputMin: null,
     mInputMax: null,
-    mCheckUndef: null,
-    mSpanUndefCount: null,
 
     init: function() {
         this.mInputMin   = document.getElementById("cond-min-inp");
         this.mInputMax   = document.getElementById("cond-max-inp");
-        this.mCheckUndef = document.getElementById("cond-undef-check")
-        this.mSpanUndefCount = document.getElementById("cond-undef-count");
     },
     
     getCondType: function() {
@@ -545,51 +538,34 @@ var sOpNumH = {
     
     updateUnit: function(unit_stat) {
         this.mInfo = {
+            update_mode: false,
             cur_bounds: [null, null],
-            fix_bounds: null,
-            with_undef: null,
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
             val_max:    unit_stat[3],
-            count:      unit_stat[4],
-            cnt_undef:  unit_stat[5]}
+            count:      unit_stat[4]}
             
-        if (this.mInfo.cnt_undef > 0) 
-            this.mInfo.with_undef = true;
-
         document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
         document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
         document.getElementById("cond-sign").innerHTML = 
             (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
         this.mInputMin.value = "";
         this.mInputMax.value = "";
-        this.mCheckUndef.checked = (this.mInfo.cnt_undef > 0);
-        this.mSpanUndefCount.innerHTML = (this.mInfo.cnt_undef > 0)?
-            ("undefined:" + this.mInfo.cnt_undef) : "";
     },
 
     updateCondition: function(cond) {
-        this.mInfo.fixed_bounds = [cond[2][0], cond[2][1]];
+        this.mInfo.update_mode = true;
         this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
-        this.mInfo.with_undef   = cond[3];
         this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
             this.mInfo.cur_bounds[0] : "";
         this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
             this.mInfo.cur_bounds[1] : "";
         document.getElementById("cond-sign").innerHTML = "&le;";
-        if (this.mInfo.with_undef != null) {
-            this.mCheckUndef.checked = this.mInfo.with_undef;
-            this.mSpanUndefCount.innerHTML = "undefined:" + this.mInfo.cnt_undef;
-        }
     },
 
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
-        this.mCheckUndef.style.visibility = 
-            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
-        this.mSpanUndefCount.style.visibility = 
-            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
     },
 
     checkControls: function(opt) {
@@ -620,18 +596,14 @@ var sOpNumH = {
                 this.mInfo.cur_bounds[1] = val;
             }
         }
-        if (this.mInfo.with_undef != null) {
-            this.mInfo.with_undef = this.mCheckUndef.checked;
-        }
         if (error_msg == null) {
             if (this.mInfo.cur_bounds[0] == null && 
-                    this.mInfo.cur_bounds[1] == null && 
-                    !this.mInfo.with_undef)
+                    this.mInfo.cur_bounds[1] == null)
                 error_msg = "";            
-            if (this.mInfo.cur_bounds[0] != null && 
+            if (this.mInfo.cur_bounds[0] != null && !this.mInfo.update_mode &&
                     this.mInfo.cur_bounds[0] > this.mInfo.val_max)
                 error_msg = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null && 
+            if (this.mInfo.cur_bounds[1] != null && !this.mInfo.update_mode &&
                     this.mInfo.cur_bounds[1] < this.mInfo.val_min)
                 error_msg = "Upper bound is below minimum value";
             if (this.mInfo.cur_bounds[0] != null && 
@@ -642,16 +614,12 @@ var sOpNumH = {
 
         condition_data = null;
         if (error_msg == null) {
-            condition_data = [this.mInfo.cur_bounds, this.with_undef]
-            if (this.mInfo.cur_bounds[0] != null && 
-                    this.mInfo.cur_bounds[0] < this.mInfo.val_min &&
-                    (this.mInfo.fix_bounds == null || 
-                    this.mInfo.fix_bounds[0] != this.mInfo.cur_bounds[0]))
+            condition_data = [this.mInfo.cur_bounds, null]
+            if (this.mInfo.cur_bounds[0] != null && !this.mInfo.update_mode &&
+                    this.mInfo.cur_bounds[0] < this.mInfo.val_min)
                 error_msg = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null && 
-                    this.mInfo.cur_bounds[1] > this.mInfo.val_max &&
-                    (this.mInfo.fix_bounds == null || 
-                    this.mInfo.fix_bounds[1] != this.mInfo.cur_bounds[1]))
+            if (this.mInfo.cur_bounds[1] != null && !this.mInfo.update_mode &&
+                    this.mInfo.cur_bounds[1] > this.mInfo.val_max)
                 error_msg = "Upper bound is above maximal value";
         }
         sOpCondH.formCondition(
@@ -771,7 +739,6 @@ var sOpEnumH = {
                 this.mOperationMode = 0;
             else
                 this.mOperationMode = opt;
-            
         }
         sel_names = [];
         for (j=0; j < this.mVariants.length; j++) {
@@ -785,12 +752,13 @@ var sOpEnumH = {
         condition_data = null;
         if (sel_names.length > 0) {
             condition_data = [op_mode, sel_names];
-        }
+            err_msg = "";
+        } else
+            err_msg = " Empty selection"
 
-        err_msg = "";
         if (this.mSpecCtrl != null) {
             condition_data = this.mSpecCtrl.transCondition(condition_data);
-            err_msg = this.mSpecCtrl.checkError(condition_data);
+            err_msg = this.mSpecCtrl.checkError(condition_data, err_msg);
         }
         sOpCondH.formCondition(condition_data, err_msg, op_mode, true);
         this.careControls();
@@ -851,15 +819,17 @@ var sZygosityH = {
         return ret;
     },
     
-    checkError: function(condition_data) {
+    checkError: function(condition_data, err_msg) {
         if (this.mZStat == null)
             return " Determine problem group";
         if (this.mZEmpty)
             return "Out of choice";
-        return "";
+        return err_msg;
     },
     
-    getUnitTitle: function(problem_group) {
+    getUnitTitle: function(problem_group, short_form) {
+        if (short_form)
+            return ""
         if (problem_group == undefined)
             problem_group = this.mProblemIdxs;
         return this.mUnitName + '({' + problem_group.join(',') + '})';        
@@ -1512,93 +1482,3 @@ function setupExport(info) {
 }
 
 /*************************************/
-/* Utilities                         */
-/*************************************/
-function getConditionDescr(cond, short_form) {
-    if (cond == null)
-        return "";
-    if (cond != null && cond[0] == "numeric") {
-        rep_cond = [];
-        if (cond[2][0] != null)
-            rep_cond.push(cond[2][0] + " &le;");
-        rep_cond.push(cond[1]);
-        if (cond[2][1] != null)
-            rep_cond.push("&le; " + cond[2][1]);
-        switch (cond[3]) {
-            case true:
-                rep_cond.push("with undef");
-                break
-            case false:
-                rep_cond.push("w/o undef");
-                break;
-        }
-        return rep_cond.join(" ");
-    }
-    rep_cond = (short_form)? []:[cond[1]];
-    if (cond[0] == "enum") {
-        op_mode = cond[2];
-        sel_names = cond[3];
-    } else {
-        if (cond[0] == "zygosity") {
-            op_mode = cond[3];
-            sel_names = cond[4];
-            if (rep_cond.length > 0)
-                rep_cond = [sZygosityH.getUnitTitle(cond[2])];
-        }
-        else {
-            return "???";
-        }
-    }
-    
-    rep_cond.push("IN");
-    if (op_mode && op_mode!="OR") 
-        rep_cond.push('[' + op_mode + ']');
-    if (sel_names.length > 0)
-        rep_cond.push(sel_names[0]);
-    else
-        rep_cond.push("&lt;?&gt;")
-    rep_cond = [rep_cond.join(' ')];        
-    rep_len = rep_cond[0].length;
-    for (j=1; j<sel_names.length; j++) {
-        if (short_form && rep_len > 45) {
-            rep_cond.push('<i>+ ' + (sel_names.length - j) + ' more</i>');
-            break;
-        }
-        rep_len += 2 + sel_names[j].length;
-        rep_cond.push(sel_names[j]);
-    }
-    return rep_cond.join(', ');
-}
-
-/*************************************/
-function checkFilterAsIdent(filter_name) {
-    return /^\S+$/u.test(filter_name) && 
-        (filter_name[0].toLowerCase() != filter_name[0].toUpperCase());
-}
-
-/*************************************/
-function isStrInt(x) {
-    xx = parseInt(x);
-    return !isNaN(xx) && xx.toString() == x;
-}
-
-function isStrFloat(x) {
-    if (isStrInt(x)) 
-        return true;
-    xx = parseFloat(x);
-    return !isNaN(xx) && xx.toString().indexOf('.') != -1;
-}
-
-function toNumeric(tp, x) {
-    if (tp == "int") {
-        if (!isStrInt(x)) return null;
-        return parseInt(x)
-    }
-    if (!isStrFloat(x)) return null;
-    return parseFloat(x);
-}
-
-function timeRepr(time_label) {
-    var dt = new Date(time_label);
-    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
-}

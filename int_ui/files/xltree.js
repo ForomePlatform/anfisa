@@ -95,20 +95,21 @@ var sDecisionTree = {
             if (p_kind == "cond") {
                 list_rep.push('<span class="point-instr">if</span> ');
                 p_cond = it[2];
-                if (p_cond[0] == "and") {
+                if (p_cond[0] == "and" || p_cond[0] == "or") {
                     list_rep.push('<div class="point-block"><div class="point-block1">' + 
-                        '<div class="point-op">and</div><div class="point-list">') 
+                        '<div class="point-op">' + p_cond[0] + 
+                        '</div><div class="point-list">') 
                     for (var j=1; j < p_cond.length; j++) {
                         list_rep.push('<div class="point-cond" id="p_cond__' +
                             p_no + '_' + j + '">' + 
                             this._markEdit(p_cond[j], p_no, j, p_count > 0) +
-                            getConditionDescr(p_cond[j]) + '</div>');
+                            getCondDescription(p_cond[j]) + '</div>');
                     }
                     list_rep.push('</div></div></div>');
                 } else {
                     list_rep.push('<div class="point-cond" id="p_cond__' +
                         p_no + '">' + this._markEdit(p_cond, p_no, -1, p_count > 0) + 
-                        getConditionDescr(p_cond) + '</div>');
+                        getCondDescription(p_cond) + '</div>');
                 }
             } else {
                 p_decision = it[2]? "True": "False";
@@ -268,7 +269,7 @@ var sUnitsH = {
         for (idx = 0; idx < this.mItems.length; idx++) {
             unit_stat = this.mItems[idx];
             unit_type = unit_stat[0];
-            if (unit_type == "zigosity")
+            if (unit_type == "zygosity")
                 continue;
             unit_name   = unit_stat[1]["name"];
             unit_title  = unit_stat[1]["title"];
@@ -322,7 +323,7 @@ var sUnitsH = {
         val_min   = unit_stat[2];
         val_max   = unit_stat[3];
         count     = unit_stat[4];
-        cnt_undef = unit_stat[5];
+        //cnt_undef = unit_stat[5];
         if (count == 0) {
             list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
         } else {
@@ -334,9 +335,6 @@ var sUnitsH = {
             }
             list_stat_rep.push(': <span class="stat-count">' + count + 
                 ' records</span>');
-            if (cnt_undef > 0) 
-                list_stat_rep.push('<span class="stat-undef-count">+' + 
-                    cnt_undef + ' undefined</span>');
         }
     },
         
@@ -446,14 +444,10 @@ var sOpNumH = {
     mInfo: null,
     mInputMin: null,
     mInputMax: null,
-    mCheckUndef: null,
-    mSpanUndefCount: null,
 
     init: function() {
         this.mInputMin   = document.getElementById("cond-min-inp");
         this.mInputMax   = document.getElementById("cond-max-inp");
-        this.mCheckUndef = document.getElementById("cond-undef-check")
-        this.mSpanUndefCount = document.getElementById("cond-undef-count");
     },
     
     getCondType: function() {
@@ -467,51 +461,34 @@ var sOpNumH = {
     
     updateUnit: function(unit_stat) {
         this.mInfo = {
+            update_mode: false,
             cur_bounds: [null, null],
-            fix_bounds: null,
-            with_undef: null,
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
             val_max:    unit_stat[3],
-            count:      unit_stat[4],
-            cnt_undef:  unit_stat[5]}
+            count:      unit_stat[4]}
             
-        if (this.mInfo.cnt_undef > 0) 
-            this.mInfo.with_undef = true;
-
         document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
         document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
         document.getElementById("cond-sign").innerHTML = 
             (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
         this.mInputMin.value = "";
         this.mInputMax.value = "";
-        this.mCheckUndef.checked = (this.mInfo.cnt_undef > 0);
-        this.mSpanUndefCount.innerHTML = (this.mInfo.cnt_undef > 0)?
-            ("undefined:" + this.mInfo.cnt_undef) : "";
     },
 
     updateCondition: function(cond) {
-        this.mInfo.fixed_bounds = [cond[2][0], cond[2][1]];
+        this.mInfo.update_mode = true;
         this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
-        this.mInfo.with_undef   = cond[3];
         this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
             this.mInfo.cur_bounds[0] : "";
         this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
             this.mInfo.cur_bounds[1] : "";
         document.getElementById("cond-sign").innerHTML = "&le;";
-        if (this.mInfo.with_undef != null) {
-            this.mCheckUndef.checked = this.mInfo.with_undef;
-            this.mSpanUndefCount.innerHTML = "undefined:" + this.mInfo.cnt_undef;
-        }
     },
 
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
-        this.mCheckUndef.style.visibility = 
-            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
-        this.mSpanUndefCount.style.visibility = 
-            (this.mInfo && this.mInfo.cnt_undef > 0)? "visible":"hidden";
     },
 
     checkControls: function(opt) {
@@ -542,18 +519,14 @@ var sOpNumH = {
                 this.mInfo.cur_bounds[1] = val;
             }
         }
-        if (this.mInfo.with_undef != null) {
-            this.mInfo.with_undef = this.mCheckUndef.checked;
-        }
         if (error_msg == null) {
             if (this.mInfo.cur_bounds[0] == null && 
-                    this.mInfo.cur_bounds[1] == null && 
-                    !this.mInfo.with_undef)
+                    this.mInfo.cur_bounds[1] == null)
                 error_msg = "";            
-            if (this.mInfo.cur_bounds[0] != null && 
+            if (this.mInfo.cur_bounds[0] != null && !this.update_mode &&
                     this.mInfo.cur_bounds[0] > this.mInfo.val_max)
                 error_msg = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null && 
+            if (this.mInfo.cur_bounds[1] != null && !this.update_mode && 
                     this.mInfo.cur_bounds[1] < this.mInfo.val_min)
                 error_msg = "Upper bound is below minimum value";
             if (this.mInfo.cur_bounds[0] != null && 
@@ -564,16 +537,12 @@ var sOpNumH = {
 
         condition_data = null;
         if (error_msg == null) {
-            condition_data = [this.mInfo.cur_bounds, this.with_undef]
-            if (this.mInfo.cur_bounds[0] != null && 
-                    this.mInfo.cur_bounds[0] < this.mInfo.val_min &&
-                    (this.mInfo.fix_bounds == null || 
-                    this.mInfo.fix_bounds[0] != this.mInfo.cur_bounds[0]))
+            condition_data = [this.mInfo.cur_bounds, null]
+            if (this.mInfo.cur_bounds[0] != null && !this.update_mode &&
+                    this.mInfo.cur_bounds[0] < this.mInfo.val_min)
                 error_msg = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null && 
-                    this.mInfo.cur_bounds[1] > this.mInfo.val_max &&
-                    (this.mInfo.fix_bounds == null || 
-                    this.mInfo.fix_bounds[1] != this.mInfo.cur_bounds[1]))
+            if (this.mInfo.cur_bounds[1] != null &&  !this.update_mode &&
+                    this.mInfo.cur_bounds[1] > this.mInfo.val_max)
                 error_msg = "Upper bound is above maximal value";
         }
         sOpCondH.formCondition(
@@ -1225,86 +1194,4 @@ function startWsCreate() {
     sCreateWsH.startIt();
 }
 
-/*************************************/
-/* Utilities                         */
-/*************************************/
-function getConditionDescr(cond, short_form) {
-    if (cond == null)
-        return "";
-    if (cond != null && cond[0] == "numeric") {
-        rep_cond = [];
-        if (cond[2][0] != null)
-            rep_cond.push(cond[2][0] + " &le;");
-        rep_cond.push(cond[1]);
-        if (cond[2][1] != null)
-            rep_cond.push("&le; " + cond[2][1]);
-        if (cond[3]) 
-            rep_cond.push("or undef");
-        return rep_cond.join(" ");
-    }
-    rep_cond = (short_form)? []:[cond[1]];
-    if (cond != null && cond[0] == "enum") {
-        rep_cond.push("IN");
-        if (cond[2] && cond[2]!="OR") 
-            rep_cond.push('[' + cond[2] + ']');
-        sel_names = cond[3];
-        if (sel_names.length > 0)
-            rep_cond.push(sel_names[0]);
-        else
-            rep_cond.push("&lt;?&gt;")
-        rep_cond = [rep_cond.join(' ')];        
-        rep_len = rep_cond[0].length;
-        for (j=1; j<sel_names.length; j++) {
-            if (short_form && rep_len > 45) {
-                rep_cond.push('<i>+ ' + (sel_names.length - j) + ' more</i>');
-                break;
-            }
-            rep_len += 2 + sel_names[j].length;
-            rep_cond.push(sel_names[j]);
-        }
-        return rep_cond.join(', ');
-    }
-    return ""
-}
 
-/*************************************/
-function isStrInt(x) {
-    xx = parseInt(x);
-    return !isNaN(xx) && xx.toString() == x;
-}
-
-function isStrFloat(x) {
-    if (isStrInt(x)) 
-        return true;
-    xx = parseFloat(x);
-    return !isNaN(xx) && xx.toString().indexOf('.') != -1;
-}
-
-function toNumeric(tp, x) {
-    if (tp == "int") {
-        if (!isStrInt(x)) return null;
-        return parseInt(x)
-    }
-    if (!isStrFloat(x)) return null;
-    return parseFloat(x);
-}
-
-/*************************************/
-var tagsToReplace = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;'
-};
-
-function replaceTag(tag) {
-    return tagsToReplace[tag] || tag;
-}
-
-function escapeText(str) {
-    return str.replace(/[&<>]/g, replaceTag);
-}
-
-function timeRepr(time_label) {
-    var dt = new Date(time_label);
-    return dt.toLocaleString("en-US").replace(/GMT.*/i, "");
-}

@@ -62,8 +62,9 @@ def defineHearingLossTree(cond_env):
         'And: PopMax < 0.01 (minimum 2000 alleles total in ancestral group)')
     dtree.addCondition(["and",
         ConditionMaker.condNum("gnomAD_AF", [None, 0.0007]),
-        ConditionMaker.condNum("gnomAD_PopMax_AN", [2001, None]),
-        ConditionMaker.condNum("gnomAD_PopMax_AF", [None, 0.01])],
+        ["or",
+            ConditionMaker.condNum("gnomAD_PopMax_AN", [None, 2000]),
+            ConditionMaker.condNum("gnomAD_PopMax_AF", [None, 0.01])]],
         decision = True)
     dtree.setFinalDecision(False)
 

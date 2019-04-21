@@ -33,7 +33,7 @@ class Index:
                 rec = self.mDCCollection.initRecord()
                 for unit_h in self.mUnits:
                     unit_h.fillRecord(inp_data, rec)
-                self.mUnits[0].fillRulesPart(inp_data, rec)
+                self.mUnits[0].fillRulesPart(inp_data, rec, len(self.mRecords))
                 self.mRecords.append(rec)
         assert len(self.mRecords) == self.mWS.getTotal()
 
@@ -47,7 +47,8 @@ class Index:
         with self.mWS._openFData() as inp:
             for rec_no, line in enumerate(inp):
                 inp_data = json.loads(line.decode("utf-8"))
-                self.mUnits[0].fillRulesPart(inp_data, self.mRecords[rec_no])
+                self.mUnits[0].fillRulesPart(inp_data,
+                    self.mRecords[rec_no], rec_no)
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
             if any([cond_info[1] == "Rules"

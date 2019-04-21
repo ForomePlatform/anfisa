@@ -125,4 +125,4 @@ class DataCompactColumn(DataColumn):
         idx = self.recordValue(data_record)
         if 0 <= idx < len(self.mPackSetSeq):
             return set(self.mPackSetSeq[idx])
-        return None
+        return set()

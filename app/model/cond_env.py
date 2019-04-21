@@ -24,7 +24,7 @@ class CondEnv:
         if (use_logging and expect_kind is not None and
                 expect_kind != unit_kind and unit_kind != "special"):
             logging.warning("Mix-up in unit kinds for name=%s/%s asked %s" %
-                unit_name, unit_kind, expect_kind)
+                (unit_name, unit_kind, str(expect_kind)))
             return None, None
         return unit_kind, unit_h
 

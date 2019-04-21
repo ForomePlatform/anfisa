@@ -238,10 +238,6 @@ input.num-inp {
     width: 100px;
 }
 
-#cond-undef-check {
-    margin-left: 150px;
-}
-
 div#cond-list {
     margin: 0px;
     padding: 0px;
@@ -267,10 +263,6 @@ span.stat-count {
 span.stat-comment {
     font-style: italic;
     white-space: pre;
-}
-span.stat-undef-count {
-    color: grey;
-    font-style: italic;
 }
 span.stat-ok {
     font-weight: bold;

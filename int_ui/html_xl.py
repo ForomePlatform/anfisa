@@ -4,7 +4,7 @@ from .gen_html import startHtmlPage
 def formXLPage(output, title, common_title, html_base, xl_ds):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css", "xl.css"],
-        js_files = ["xl.js"])
+        js_files = ["xl.js", "flt.js"])
 
     print >> output, ('  <body onload="initXL(\'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title))
@@ -82,9 +82,6 @@ def _formXLPannel(output, ds_name):
                 type="text" onchange="sOpNumH.checkControls();"/>
               <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span>
-              <input id="cond-undef-check" class="num-inp"
-                type="checkbox"  onchange="sOpNumH.checkControls();"/>
-              <span id="cond-undef-count" class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
               <div id="wrap-cond-enum">
@@ -102,15 +99,15 @@ def _formXLPannel(output, ds_name):
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;AND
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;All
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;NOT
+                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;Not
                     </span><br/>
                     <span id="cond-mode-only-span">
                       <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;ONLY
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;Only
                     </span>
                   </div>
                 </div>

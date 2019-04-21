@@ -46,7 +46,7 @@ class RulesEvalUnit(MultiSetUnit):
     def fillRecord(self, inp_data, record):
         pass
 
-    def fillRulesPart(self, inp_data, data_record):
+    def fillRulesPart(self, inp_data, data_record, rec_no):
         if self.mUnitNames is None:
             self.mUnitNames = []
             self.mMultiSetUnits = set()
@@ -56,7 +56,7 @@ class RulesEvalUnit(MultiSetUnit):
                     if not unit.isAtomic():
                         self.mMultiSetUnits.add(unit.getName())
         rules_set = set()
-        value_dict = {"Rules": rules_set}
+        value_dict = {"Rules": rules_set, "_rec": rec_no}
         for name in self.mUnitNames:
             val = inp_data.get(name)
             if val is None:

@@ -30,7 +30,7 @@ def formTopPage(output, title, html_base, workspace):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
-        js_files = ["anf.js", "monitor.js", "filters.js",
+        js_files = ["anf.js", "flt.js", "monitor.js", "filters.js",
             "conditions.js", "zones.js", "rules.js"])
 
     print >> output, ('  <body onload="initWin(\'%s\', \'\');">' %
@@ -195,10 +195,6 @@ def _formFiltersDiv(output):
                 type="text" onchange="checkOpNum();"/>
               <span id="cond-max" class="num-set"></span>
               <span id="num-count" class="num-count"></span>
-              <input id="cond-undef-check"
-                type="checkbox"  onchange="checkOpNum();"/>
-              <span id="cond-undef-count" class="num-count"
-                class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
               <div id="wrap-cond-enum">
@@ -216,15 +212,15 @@ def _formFiltersDiv(output):
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;AND
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;All
                     </span><br/>
                     <span id="cond-mode-only-span">
                       <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;ONLY
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;Only
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;NOT
+                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;Not
                     </span><br/>
                   </div>
                 </div>
