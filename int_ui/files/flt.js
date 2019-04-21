@@ -21,7 +21,8 @@ function getCondDescription(cond, short_form) {
         if (cond[0] == "zygosity") {
             op_mode = cond[3];
             sel_names = cond[4];
-            rep_var = sZygosityH.getUnitTitle(cond[2], short_form);
+            if (!short_form)
+                rep_var = sZygosityH.getUnitTitle(cond[2]);
         }
         else {
             return "???";

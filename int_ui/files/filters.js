@@ -323,11 +323,32 @@ function updateCurCondCtrl() {
     sBtnRedoCond.disabled = (sFilterRedoStack.length == 0);
 }
 
+/*************************************/
+function checkOpNum() {
+    sOpAddIdx = null;
+    sOpNumH.checkControls();
+    cond_data = sOpNumH.getConditionData();
+    sOpCondition = (cond_data == null)? null:
+        ["numeric", sCurStatUnit].concat(cond_data);
+    sOpError = sOpNumH.getMessage();
+    if (sOpCondition != null) {
+        if (sOpUpdateIdx == null)
+            sOpUpdateIdx = findCond(sCurStatUnit);
+        if (sOpUpdateIdx == null)
+            sOpAddIdx = sCurFilterSeq.length;
+    } else {
+        sOpUpdateIdx = null;
+    }
+    updateOpCondText();
+    updateCurCondCtrl();
+}
+
 /**************************************/
 var sOpNumH = {
     mInfo: null,
     mInputMin: null,
     mInputMax: null,
+    mUpdateCondStr: null,
     mConditionData: null,
     mMessage: null,
 
@@ -349,13 +370,13 @@ var sOpNumH = {
     
     updateUnit: function(unit_stat) {
         this.mInfo = {
-            update_mode: false,
             cur_bounds: [null, null],
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
             val_max:    unit_stat[3],
             count:      unit_stat[4]}
         this.mConditionData = null;
+        this.mUpdateCondStr = null;
         this.mMessage = null;
         
         document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
@@ -367,7 +388,7 @@ var sOpNumH = {
     },
 
     updateCondition: function(cond) {
-        this.mInfo.update_mode = true;
+        this.mUpdateCondStr = JSON.stringify(cond.slice(2));
         this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
         this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
             this.mInfo.cur_bounds[0] : "";
@@ -414,10 +435,10 @@ var sOpNumH = {
             if (this.mInfo.cur_bounds[0] == null && 
                     this.mInfo.cur_bounds[1] == null)
                 this.mMessage = "";            
-            if (this.mInfo.cur_bounds[0] != null &&  !this.update_mode &&
+            if (this.mInfo.cur_bounds[0] != null &&  !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[0] > this.mInfo.val_max)
                 this.mMessage = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null &&  !this.update_mode &&
+            if (this.mInfo.cur_bounds[1] != null &&  !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[1] < this.mInfo.val_min)
                 this.mMessage = "Upper bound is below minimum value";
             if (this.mInfo.cur_bounds[0] != null && 
@@ -426,13 +447,18 @@ var sOpNumH = {
                 this.mMessage = "Bounds are mixed up";
         }
         if (this.mMessage == null) {
-            this.mConditionData = [this.mInfo.cur_bounds, null]
-            if (this.mInfo.cur_bounds[0] != null && !this.update_mode &&
+            this.mConditionData = [this.mInfo.cur_bounds, null];
+            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[0] < this.mInfo.val_min)
                 this.mMessage = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null && !this.update_mode &&
+            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[1] > this.mInfo.val_max)
                 this.mMessage = "Upper bound is above maximal value";
+            if (this.mUpdateCondStr && this.mMessage == null &&    
+                    JSON.stringify(this.mConditionData) == this.mUpdateCondStr) {
+                this.mMessage = " ";
+                this.mConditionData = null;
+            }
         }
         this.careControls();
     },
@@ -453,6 +479,7 @@ var sOpEnumH = {
     mDivVarList: null,
     mSpecCtrl: null,
     mStatusMode: null,
+    mUpdateCondStr: null,
 
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
@@ -471,6 +498,7 @@ var sOpEnumH = {
     },
 
     updateUnit: function(unit_stat) {
+        this.mUpdateCondStr = null;
         if (unit_stat[0] == "zygosity") {
             this.mSpecCtrl = sZygosityH;
             this.mVariants = sZygosityH.getVariants(unit_stat);
@@ -503,6 +531,7 @@ var sOpEnumH = {
     },
     
     updateCondition: function(cond) {
+        this.mUpdateCondStr = JSON.stringify(cond);
         if (this.mSpecCtrl != null) {
             this.mSpecCtrl = sZygosityH;
             var_list = this.mSpecCtrl.getCondVarList(cond);
@@ -583,13 +612,19 @@ var sOpEnumH = {
                 message = this.mSpecCtrl.checkError();
         }
         this.careControls();
+        if (this.mUpdateCondStr && !message && condition != null &&
+                JSON.stringify(condition) == this.mUpdateCondStr) {
+            message = " ";
+            condition = null;
+        }
         sOpCondition = condition;
         sOpError = message;
         sOpAddIdx = (sOpCondition != null)? sCurFilterSeq.length : null;
         if (sOpCondition != null) {
             if (sOpUpdateIdx == null)
                 sOpUpdateIdx = findCond(sCurStatUnit);
-        }
+        } else
+            sOpUpdateIdx = null;
         updateOpCondText();
         updateCurCondCtrl();
     },
@@ -667,8 +702,6 @@ var sZygosityH = {
     },
     
     getUnitTitle: function(problem_group) {
-        if (short_form) 
-            return "";
         if (problem_group == undefined)
             problem_group = this.mProblemIdxs;
         return this.mUnitName + '({' + problem_group.join(',') + '})';        

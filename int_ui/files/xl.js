@@ -445,7 +445,7 @@ var sOpCondH = {
         this.mCurTpHandler.checkControls();
     },
     
-    formCondition: function(condition_data, error_msg, cond_mode, add_always) {
+    formCondition: function(condition_data, err_msg, cond_mode, add_always) {
         cur_unit_name = sUnitsH.getCurUnitName();
         this.mCondition   = null;
         this.mIdxToAdd    = null;
@@ -473,9 +473,9 @@ var sOpCondH = {
         document.getElementById("cond-text").innerHTML = 
             (this.mCondition)? getCondDescription(this.mCondition, true):"";
         message_el = document.getElementById("cond-message");
-        message_el.innerHTML = (error_msg)? error_msg:"";
+        message_el.innerHTML = (err_msg)? err_msg:"";
         message_el.className = (this.mCondition == null && 
-            !error_msg.startsWith(' '))? "bad":"message";
+            !err_msg.startsWith(' '))? "bad":"message";
         this.careControls();
     },
     
@@ -521,6 +521,7 @@ var sOpNumH = {
     mInfo: null,
     mInputMin: null,
     mInputMax: null,
+    mUpdateCondStr: null,
 
     init: function() {
         this.mInputMin   = document.getElementById("cond-min-inp");
@@ -538,7 +539,6 @@ var sOpNumH = {
     
     updateUnit: function(unit_stat) {
         this.mInfo = {
-            update_mode: false,
             cur_bounds: [null, null],
             unit_type:  unit_stat[0],
             val_min:    unit_stat[2],
@@ -551,10 +551,11 @@ var sOpNumH = {
             (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
         this.mInputMin.value = "";
         this.mInputMax.value = "";
+        this.mUpdateCondStr = null;
     },
 
     updateCondition: function(cond) {
-        this.mInfo.update_mode = true;
+        this.mUpdateCondStr = JSON.stringify(cond.slice(2));
         this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
         this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
             this.mInfo.cur_bounds[0] : "";
@@ -571,7 +572,7 @@ var sOpNumH = {
     checkControls: function(opt) {
         if (this.mInfo == null) 
             return;
-        var error_msg = null;
+        var err_msg = null;
         if (this.mInputMin.value.trim() == "") {
             this.mInfo.cur_bounds[0] = null;
             this.mInputMin.className = "num-inp";
@@ -579,7 +580,7 @@ var sOpNumH = {
             val = toNumeric(this.mInfo.unit_type, this.mInputMin.value)
             this.mInputMin.className = (val == null)? "num-inp bad":"num-inp";
             if (val == null) 
-                error_msg = "Bad numeric value";
+                err_msg = "Bad numeric value";
             else {
                 this.mInfo.cur_bounds[0] = val;
             }
@@ -591,39 +592,44 @@ var sOpNumH = {
             val = toNumeric(this.mInfo.unit_type, this.mInputMax.value)
             this.mInputMax.className = (val == null)? "num-inp bad":"num-inp";
             if (val == null) 
-                error_msg = "Bad numeric value";
+                err_msg = "Bad numeric value";
             else {
                 this.mInfo.cur_bounds[1] = val;
             }
         }
-        if (error_msg == null) {
+        if (err_msg == null) {
             if (this.mInfo.cur_bounds[0] == null && 
                     this.mInfo.cur_bounds[1] == null)
-                error_msg = "";            
-            if (this.mInfo.cur_bounds[0] != null && !this.mInfo.update_mode &&
+                err_msg = "";            
+            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[0] > this.mInfo.val_max)
-                error_msg = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null && !this.mInfo.update_mode &&
+                err_msg = "Lower bound is above maximum value";
+            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[1] < this.mInfo.val_min)
-                error_msg = "Upper bound is below minimum value";
+                err_msg = "Upper bound is below minimum value";
             if (this.mInfo.cur_bounds[0] != null && 
                     this.mInfo.cur_bounds[1] != null && 
                     this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1])
-                error_msg = "Bounds are mixed up";
+                err_msg = "Bounds are mixed up";
         }
 
         condition_data = null;
-        if (error_msg == null) {
+        if (err_msg == null) {
             condition_data = [this.mInfo.cur_bounds, null]
-            if (this.mInfo.cur_bounds[0] != null && !this.mInfo.update_mode &&
+            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[0] < this.mInfo.val_min)
-                error_msg = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null && !this.mInfo.update_mode &&
+                err_msg = "Lower bound is below minimal value";
+            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr &&
                     this.mInfo.cur_bounds[1] > this.mInfo.val_max)
-                error_msg = "Upper bound is above maximal value";
+                err_msg = "Upper bound is above maximal value";
+            if (this.mUpdateCondStr && !err_msg &&    
+                    (JSON.stringify(condition_data) == this.mUpdateCondStr)) {
+                err_msg = " ";
+                condition_data = null;
+            }
         }
         sOpCondH.formCondition(
-            condition_data, error_msg, this.mInfo.op, false);
+            condition_data, err_msg, this.mInfo.op, false);
         this.careControls();
     }
 };
@@ -635,6 +641,7 @@ var sOpEnumH = {
     mDivVarList: null,
     mSpecCtrl: null,
     mStatusMode: null,
+    mUpdateCondStr: null,
 
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
@@ -653,6 +660,7 @@ var sOpEnumH = {
     },
 
     updateUnit: function(unit_stat) {
+        this.mUpdateCondStr = null;
         if (unit_stat[0] == "zygosity") {
             this.mSpecCtrl = sZygosityH;
             this.mVariants = sZygosityH.getVariants(unit_stat);
@@ -684,6 +692,7 @@ var sOpEnumH = {
     },
     
     updateCondition: function(cond) {
+        this.mUpdateCondStr = JSON.stringify(cond.slice(2));
         if (this.mSpecCtrl != null) {
             this.mSpecCtrl = sZygosityH;
             var_list = this.mSpecCtrl.getCondVarList(cond);
@@ -733,7 +742,7 @@ var sOpEnumH = {
         if (this.mVariants == null) 
             return;
         this.careControls();
-        var error_msg = null;
+        var err_msg = null;
         if (opt != undefined && this.mOperationMode != null) {
             if (this.mOperationMode == opt)
                 this.mOperationMode = 0;
@@ -755,11 +764,16 @@ var sOpEnumH = {
             err_msg = "";
         } else
             err_msg = " Empty selection"
-
         if (this.mSpecCtrl != null) {
             condition_data = this.mSpecCtrl.transCondition(condition_data);
             err_msg = this.mSpecCtrl.checkError(condition_data, err_msg);
         }
+        if (this.mUpdateCondStr && !err_msg && condition_data &&
+                JSON.stringify(condition_data) == this.mUpdateCondStr) {
+            err_msg = " ";
+            condition_data = null;
+        }
+
         sOpCondH.formCondition(condition_data, err_msg, op_mode, true);
         this.careControls();
     }
@@ -827,9 +841,7 @@ var sZygosityH = {
         return err_msg;
     },
     
-    getUnitTitle: function(problem_group, short_form) {
-        if (short_form)
-            return ""
+    getUnitTitle: function(problem_group) {
         if (problem_group == undefined)
             problem_group = this.mProblemIdxs;
         return this.mUnitName + '({' + problem_group.join(',') + '})';        
@@ -1205,15 +1217,15 @@ var sCreateWsH = {
         this.mTaskId = null;
         this.mSpanModTitle.innerHTML = 'Create workspace for ' +
             sUnitsH.mCount + ' of ' + sUnitsH.mTotal;
-        var error_msg = "";
+        var err_msg = "";
         if (sUnitsH.mCount >= 5000)
-            error_msg = "Too many records, try to reduce";
+            err_msg = "Too many records, try to reduce";
         if (sUnitsH.mCount < 1)
-            error_msg = "Empty set";
+            err_msg = "Empty set";
         /*if (sUnitsH.mCount < 10)
-            error_msg = "Too small workspace";*/
-        this.mDivModProblems.innerHTML = error_msg;
-        if (error_msg) {
+            err_msg = "Too small workspace";*/
+        this.mDivModProblems.innerHTML = err_msg;
+        if (err_msg) {
             this.mStage = "BAD";
             this.checkControls();
             sViewH.modalOn(document.getElementById("create-ws-back"));
@@ -1249,13 +1261,13 @@ var sCreateWsH = {
         if (this.mStage == "BAD")
             this.mInputModName.value = "";
         this.mInputModName.disabled = (this.mStage != "READY");
-        error_msg = "";
+        err_msg = "";
         if (this.mStage == "READY") {
             if (this._nameReserved(this.mInputModName.value)) 
-                error_msg = "Name is reserved, try another one";
-            this.mDivModProblems.innerHTML = error_msg;
+                err_msg = "Name is reserved, try another one";
+            this.mDivModProblems.innerHTML = err_msg;
         }
-        this.mButtonModStart.disabled = (this.mStage != "READY" || error_msg);
+        this.mButtonModStart.disabled = (this.mStage != "READY" || err_msg);
         if (this.mStage == "BAD" || this.mStage == "READY") {
             this.mDivModProblems.style.display = "block";
             this.mDivModStatus.style.display = "none";
