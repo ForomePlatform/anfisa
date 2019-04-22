@@ -32,9 +32,8 @@ function loadZone(zone_name){
 function setupZone(info) {
     zone_name = info["zone"];
     sWorkZoneCur = zone_name;
-    sWorkZoneTitle = info["title"];
     variants = info["variants"];
-    sZoneListCache[zone_name] = variants;
+    sZoneListCache[zone_name] = [variants, info["title"]];
     sZoneDictCache[zone_name] = {};
     
     list_val_rep = [];
@@ -56,8 +55,10 @@ function setupZone(info) {
 function checkWorkZone(zone_name) {
     if(zone_name && !sZoneListCache[zone_name]) {
         loadZone(zone_name);
+        return;
     }
     sWorkZoneCur = zone_name;
+    sWorkZoneTitle = (zone_name)? sZoneListCache[zone_name][1]:"";
 
     zone_check_id = "zn-check--" + zone_name;
     checkboxes = document.getElementsByClassName("zone-checkbox");
@@ -110,7 +111,7 @@ function determineZoneData() {
 /*************************************/
 function checkZoneCheck(zone_name, zone_var_idx) {
     if (zone_name == sWorkZoneCur) {
-        val_name = sZoneListCache[zone_name][zone_var_idx];
+        val_name = sZoneListCache[zone_name][0][zone_var_idx];
         if (sZoneSetCache[zone_name])
             idx = sZoneSetCache[zone_name].indexOf(val_name);
         else

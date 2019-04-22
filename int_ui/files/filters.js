@@ -235,8 +235,10 @@ function selectStat(stat_unit, force_it){
     sCurZygName = sZygosityH.checkUnitTitle(stat_unit);
     new_unit_el.className = new_unit_el.className + " cur";
     setupStatUnit();
-    if (force_it || sCurCondNo == null || sCurFilterSeq[sCurCondNo][1] != sCurStatUnit)
-        selectCond(findCond(sCurStatUnit, force_it));
+    if (force_it || sCurCondNo == null || sCurFilterSeq[sCurCondNo][1] != sCurStatUnit) {
+        selectCond(findCond(sCurStatUnit), force_it);
+    }
+    updateCurCondCtrl();
 }
 
 /*************************************/
@@ -266,7 +268,7 @@ function selectCond(cond_no, force_it){
     if (new_cond_el != null) {
         new_cond_el.className = new_cond_el.className + " cur";
         sZygosityH.onSelectCondition(sCurFilterSeq[cond_no]);
-        selectStat(sCurFilterSeq[sCurCondNo][1], true);
+        selectStat(sCurFilterSeq[sCurCondNo][1]);
     }
 }
 

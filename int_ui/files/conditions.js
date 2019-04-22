@@ -32,8 +32,9 @@ function checkCurConditionsProblem() {
 function findCond(unit_name, mode) {
     for (idx = 0; idx < sCurFilterSeq.length; idx++) {
         if (sCurFilterSeq[idx][1] == unit_name) {
-            if (mode == undefined || sCurFilterSeq[idx][2] == mode)
+            if (mode == undefined || sCurFilterSeq[idx][2] == mode){
                 return idx;
+            }
         }
     }
     return null;
