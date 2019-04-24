@@ -1412,8 +1412,8 @@ class Variant:
                         if (score > 0):
                             key2 = "DP_{}".format(s)
                             position = d.get(key2)
-                            if (position and position[0] != '-'):
-                                position = '+' + position
+                            if (position > 0):
+                                position = '+' + str(position)
                             tab6["splice_ai_{}".format(s.lower())].append("{}: {}[{}]".format(evt, str(score), position))
 
     def get_view_json(self):
