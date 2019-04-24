@@ -177,6 +177,11 @@ def defineFilterSchema():
         filters.multiStatusUnit("GeneDx_Significance",
             "/data/gene_dx", title = "Clinical Significance by GeneDx")
 
+        filters.statusUnit("splice_altering", "/_filters/splice_altering",
+                           default_value="No altering", title="Splice AI splice altering")
+        filters.floatValueUnit("splice_ai_dsmax", "/_filters/splice_ai_dsmax",
+                           default_value=0, title="Splice AI splice altering score")
+
         filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]")
         filters.multiStatusUnit("SIFT", "/view/predictions/sift[]")
 
