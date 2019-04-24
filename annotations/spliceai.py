@@ -70,7 +70,7 @@ class SpliceAI(Connection):
         
 
 
-    def __init__(self, host = "localhost",  #   имя боевого хоста "anfisa.forome.org:ip-172-31-24-96"
+    def __init__(self, host = "anfisa.forome.org:ip-172-31-24-96",
             database = "spliceai", port = None, user = "hgmd",
             password = "hgmd", dbms = "MySQL",
             ssh_user = None, driver = None,

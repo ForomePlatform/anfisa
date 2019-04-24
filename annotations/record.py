@@ -1400,14 +1400,21 @@ class Variant:
         tab6['called_by'] = self.get_callers()
         tab6['caller_data'] = self.get_callers_data()
         tab6['splice_ai'] =  self.list_dsmax()
-        for s in ['AG', 'AL', 'DG', 'DL']:
-            key = "DS_{}".format(s)
-            if key in self.data["spliceAI"]:
-                score = float(self.data["spliceAI"][key])
-                if (score > 0):
-                    key2 = "DP_{}".format(s)
-                    position = self.data["spliceAI"].get(key2)
-                    tab6["splice_ai_{}".format(s.lower())] = "{}/{}".format(str(score), position)
+        splice_ai_keys = ['AG', 'AL', 'DG', 'DL']
+        for s in splice_ai_keys:
+            tab6["splice_ai_{}".format(s.lower())] = []
+        if (self.data["spliceAI"]):
+            for evt, d in self.data["spliceAI"].iteritems():
+                for s in splice_ai_keys:
+                    key = "DS_{}".format(s)
+                    if key in d:
+                        score = float(d[key])
+                        if (score > 0):
+                            key2 = "DP_{}".format(s)
+                            position = d.get(key2)
+                            if (position and position[0] != '-'):
+                                position = '+' + position
+                            tab6["splice_ai_{}".format(s.lower())].append("{}: {}[{}]".format(evt, str(score), position))
 
     def get_view_json(self):
         data_info = self.data.copy()
