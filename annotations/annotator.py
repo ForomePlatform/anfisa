@@ -163,12 +163,25 @@ if __name__ == '__main__':
 
     case = args.case if args.case else os.path.basename(dir).split('_')[0]
 
+    platform = None
+    if (args.input):
+        x = args.input.lower().split('_')
+        if ('wgs' in x):
+            platform = 'wgs'
+        elif ('wes'in x):
+            platform = 'wes'
+    if (platform):
+        print "Platform: {}".format(platform)
+    else:
+        platform = "wgs"
+        print "Could not determine platform (WES or WGS), assuming: ".format(platform)
+    case_id = "{}_{}".format(case, platform)
     fam_file = "{}.fam".format(case)
     if (args.vep):
-        filtered_by_bed_vep_input = args.input if args.input else "{}_wgs_xbrowse.vep.filtered.vcf".format(case)
+        filtered_by_bed_vep_input = args.input if args.input else "{}_xbrowse.vep.filtered.vcf".format(case_id)
         filtered_by_bed_vep_output = execute_vep(filtered_by_bed_vep_input, None, args.fork)
     else:
-        filtered_by_bed_vep_output = args.input if args.input else "{}_wgs_xbrowse.vep.filtered.vep.json".format(case)
+        filtered_by_bed_vep_output = args.input if args.input else "{}_xbrowse.vep.filtered.vep.json".format(case_id)
     limit = args.limit
     print "limit = {}".format(limit)
     print "file: {}".format(filtered_by_bed_vep_output)
@@ -202,4 +215,4 @@ if __name__ == '__main__':
                 exit(0)
 
     annotate_json(filtered_by_bed_vep_output, out=output,
-                  vcf_header=header, samples=samples, case="{}_wgs".format(case), limit=limit, start=args.start)
+                  vcf_header=header, samples=samples, case=case_id, limit=limit, start=args.start)
