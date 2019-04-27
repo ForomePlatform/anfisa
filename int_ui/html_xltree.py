@@ -1,14 +1,14 @@
 from .gen_html import startHtmlPage
 
 #===============================================
-def formXLTreePage(output, title, common_title, html_base, xl_ds):
+def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["xltree.css"],
         js_files = ["xltree.js", "flt.js"])
 
     print >> output, (
-        '  <body onload="initXL(\'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title))
+        '  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+        (xl_ds.getName(), common_title, ws_url))
 
     _formXLPannel(output, xl_ds.getName())
     _formCurCondDiv(output)

@@ -5,6 +5,7 @@
     "html-base": "/anfisa/",
     "html-title-ws": "Anfisa",
     "html-title-xl": "Anfisa-XL",
+    "html-ws-url": "ws",
     "mongo-db": "Anfisa",
     "data-vault": "${WORK}/vault",
     "run-options": ["--no-custom"],

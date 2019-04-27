@@ -1,13 +1,13 @@
 from .gen_html import startHtmlPage
 
 #===============================================
-def formXLPage(output, title, common_title, html_base, xl_ds):
+def formXLPage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css", "xl.css"],
         js_files = ["xl.js", "flt.js"])
 
-    print >> output, ('  <body onload="initXL(\'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title))
+    print >> output, ('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+        (xl_ds.getName(), common_title, ws_url))
 
     _formXLPannel(output, xl_ds.getName())
     _formNoteDiv(output)

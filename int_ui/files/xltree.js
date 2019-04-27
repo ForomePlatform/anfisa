@@ -1,9 +1,10 @@
 var sDSName = null;
 var sTitlePrefix = null;
 var sCommonTitle = null;
+var sWsURL = null;
 
 /*************************************/
-function initXL(ds_name, common_title) {
+function initXL(ds_name, common_title, ws_url) {
     sOpCondH.init();
     sOpNumH.init();
     sOpEnumH.init();
@@ -14,6 +15,7 @@ function initXL(ds_name, common_title) {
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
+    sWsURL = ws_url;
     sDSName = ds_name; 
     window.name = sCommonTitle + ":" + sDSName + ":L";
     document.title = sTitlePrefix + "/" + sDSName;
@@ -1055,9 +1057,10 @@ var sCreateWsH = {
             if (info[0] == null) {
                 this.mDivModStatus.innerHTML = info[1];
             } else {
-                this.mDivModStatus.innerHTML = 'Done: <a href="ws?ws=' + 
-                    info[0]["ws"] + '" target="' + sTitlePrefix + '/' + 
-                    info[0]["ws"] + '">Open it</a>';
+                target_ref = (sWsURL != "ws")? '': (' target="' + 
+                    sTitlePrefix + '/' + info[0]["ws"] + '"'); 
+                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsURL + 
+                    '?ws=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
         }
     }

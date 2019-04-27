@@ -9,11 +9,13 @@ class IntUI:
     sHtmlBase = None
     sHtmlTitleWS = None
     sHtmlTitleXL = None
+    sWsURL = None
 
     @classmethod
     def setup(cls, config, in_container):
         cls.sHtmlTitleWS = config["html-title-ws"]
         cls.sHtmlTitleXL = config["html-title-xl"]
+        cls.sWsURL = config.get("html-ws-url", "ws")
         cls.sHtmlBase = (config["html-base"]
             if in_container else None)
         if cls.sHtmlBase and not cls.sHtmlBase.endswith('/'):
@@ -63,7 +65,7 @@ class IntUI:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
             formXLPage(output, cls.sHtmlTitleXL, cls.sHtmlTitleWS,
-                cls.sHtmlBase, xl_ds)
+                cls.sHtmlBase, xl_ds, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/xl_tree":
@@ -72,7 +74,7 @@ class IntUI:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
             formXLTreePage(output, cls.sHtmlTitleXL, cls.sHtmlTitleWS,
-                cls.sHtmlBase, xl_ds)
+                cls.sHtmlBase, xl_ds, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
         return cls.notFoundResponse(serv_h)
 
