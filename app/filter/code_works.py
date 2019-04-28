@@ -12,8 +12,8 @@ def htmlCodePresentation(code):
     global sLexer, sFormatter
     h_lines = highlight("#START\n" + code + "\n#END",
         sLexer, sFormatter).splitlines()
-    assert (h_lines[0] ==
-        '<div class="highlight"><pre><span class="c1">#START</span>')
+    assert (h_lines[0].startswith('<div class="highlight"><pre>') and
+        h_lines[0].endswith('<span class="c1">#START</span>'))
     assert h_lines[-2] == '<span class="c1">#END</span>'
     assert h_lines[-1] == '</pre></div>'
     return h_lines[1:-2]
