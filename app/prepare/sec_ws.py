@@ -2,8 +2,8 @@ import os, json, gzip, codecs, logging, re
 from copy import deepcopy
 
 from utils.ixbz2 import FormatterIndexBZ2
+from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
-from app.model.job_pool import ExecutionTask
 from app.filter.decision import DecisionTree
 #===============================================
 class SecondaryWsCreation(ExecutionTask):

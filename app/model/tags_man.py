@@ -1,7 +1,7 @@
 from collections import defaultdict
 from datetime import datetime
 
-from .a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
 from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):

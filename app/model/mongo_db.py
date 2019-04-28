@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 from datetime import datetime
 
-from .a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
 
 #===============================================
 class MongoConnector:

@@ -5,7 +5,7 @@ from .rest_api import RestAPI
 from .dataset import DataSet
 from .tags_man import TagsManager
 from .zone import FilterZoneH
-from .a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
 from app.filter.condition import ConditionMaker
 from app.search.index import Index
 

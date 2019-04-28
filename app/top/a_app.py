@@ -2,10 +2,10 @@ import sys, os, json, codecs, logging, signal
 from StringIO import StringIO
 
 from app.config.view_schema import defineViewSchema
+from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
-from app.model.a_config import AnfisaConfig
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.sec_ws import SecondaryWsCreation
 from app.filter.druid_agent import DruidAgent
