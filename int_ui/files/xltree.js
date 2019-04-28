@@ -39,47 +39,54 @@ function ajaxCall(rq_name, args, func_eval) {
 
 /**************************************/
 var sDecisionTree = {
+    mTreeCode: null,
     mPoints: null,
-    mTree: null,
+    mMarkers: null,
     mCounts: null,
-    mStat: null,
+    mTotalCount: null,
+    mAcceptedCount: null,
     mCurPointNo: null,
     mOpCond: null,
-    mOpIdx: null,
+    mMarkLoc: null,
     
-    setup: function(tree_descr, version, instruction) {
+    setup: function(tree_code, options) {
         args = "ds=" + sDSName;
-        if (tree_descr) {
-            if (tree_descr == true)
-                tree_descr = JSON.stringify(this.mTree);
-            args += "&tree=" + encodeURIComponent(tree_descr);
+        if (tree_code) {
+            if (tree_code == true)
+                tree_code = this.mTreeCode;
+            args += "&code=" + encodeURIComponent(tree_code);
         }
-        if (version != undefined && version != null)  {
-            args += "&version=" + encodeURIComponent(version);
+        if (options) {
+            if (options["version"])
+                args += "&version=" + encodeURIComponent(options["version"]);
+            if (options["instr"])
+                args += "&instr=" + encodeURIComponent(JSON.stringify(options["instr"]));
+            if (options["std"])
+                args += "&std=" + encodeURIComponent(options["std"]);
         }
-        if (instruction)
-            args += "&instr=" + encodeURIComponent(instruction);
         ajaxCall("xltree", args, function(info){sDecisionTree._setup(info);})
     },
     
     _setup: function(info) {
-        this.mTree = info["tree"];
-        this.mStat = info["stat"];
+        this.mTreeCode = info["code"];
+        this.mTotalCount = info["total"];
         this.mCounts = info["counts"];
-        sTreeCtrlH.update(info["cur_version"], info["versions"])
-        this.mPoints = [];
-        this.mOpIdx = null;
+        this.mPoints = info["points"];
+        this.mMarkers = info["markers"];
+        sTreeCtrlH.update(info["cur_version"], info["versions"]);
+        document.getElementById("std-code-select").value = 
+            info["std_code"]? info["std_code"]:"";
+        this.mAcceptedCount = 0;
+        this.mMarkLoc = null;
         var list_rep = ['<table class="d-tree">'];
-        for (var idx = 0; idx < this.mTree.length; idx++) {
-            it = this.mTree[idx];
-            p_kind = it[0];
-            if (p_kind == "comment") {
-                list_rep.push('<tr><td class="tree-comment" colspan="3" ># ' +
-                    escapeText(it[1]) + '</td></tr>');
-                continue;
-            }
-            p_no = this.mPoints.length; p_lev = it[1]; p_count = this.mCounts[p_no];
-            this.mPoints.push(it);
+        for (var p_no = 0; p_no < this.mPoints.length; p_no++) {
+            point = this.mPoints[p_no];
+            p_kind = point[0];
+            p_lev = point[1];
+            p_decision = point[2];
+            p_cond = point[3];
+            p_html = point[4];
+            p_count = this.mCounts[p_no];
             if (p_count > 0) {
                 list_rep.push('<tr id="p_td__' + p_no + 
                     '" class="active" onclick="sDecisionTree.selectPoint(' + 
@@ -89,43 +96,23 @@ var sDecisionTree = {
             }
             list_rep.push('<td class="point-no" id="p_no__' + p_no + '">' + 
                 (p_no + 1) + '</td>');
-            list_rep.push('<td class="point-cond">')
-            for (var j=0; j < p_lev; j++)
-                list_rep.push('&emsp;');
-            p_count_class = "point-count";
-            p_count_add = "";
-            if (p_kind == "cond") {
-                list_rep.push('<span class="point-instr">if</span> ');
-                p_cond = it[2];
-                if (p_cond[0] == "and" || p_cond[0] == "or") {
-                    list_rep.push('<div class="point-block"><div class="point-block1">' + 
-                        '<div class="point-op">' + p_cond[0] + 
-                        '</div><div class="point-list">') 
-                    for (var j=1; j < p_cond.length; j++) {
-                        list_rep.push('<div class="point-cond" id="p_cond__' +
-                            p_no + '_' + j + '">' + 
-                            this._markEdit(p_cond[j], p_no, j, p_count > 0) +
-                            getCondDescription(p_cond[j]) + '</div>');
-                    }
-                    list_rep.push('</div></div></div>');
-                } else {
-                    list_rep.push('<div class="point-cond" id="p_cond__' +
-                        p_no + '">' + this._markEdit(p_cond, p_no, -1, p_count > 0) + 
-                        getCondDescription(p_cond) + '</div>');
-                }
+            list_rep.push('<td class="point-code"><div class="highlight">' +
+                p_html + '</div></td>');
+            if (p_decision) {
+                this.mAcceptedCount += p_count;
+                list_rep.push('<td class="point-count-accept">+' + p_count + '</td>');
             } else {
-                p_decision = it[2]? "True": "False";
-                p_count_class = it[2]? "point-count-accept":"point-count-reject";
-                p_count_add = it[2]? "+":"-";
-                list_rep.push('<span class="point-instr">return ' + p_decision +
-                    '</span> ');
+                if (p_decision == false) 
+                    list_rep.push(
+                        '<td class="point-count-reject">-' + p_count + '</td>');
+                else 
+                    list_rep.push(
+                        '<td class="point-count">' + p_count + '</td>');
             }
-            list_rep.push('</td><td class="' + p_count_class + '">' + p_count_add + 
-                p_count + '</td></tr>');
+            list_rep.push('</tr>');
         }
         list_rep.push('</table>'); 
         document.getElementById("decision-tree").innerHTML = list_rep.join('\n');
-        //alert("tb:" + list_rep.join('\n'));
         point_no = (this.mCurPointNo)? this.mCurPointNo: 0;
         while (point_no > 0) {
             if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
@@ -136,21 +123,10 @@ var sDecisionTree = {
         this.mCurPointNo = null;
         this.selectPoint(point_no);
         
-        document.getElementById("report-accepted").innerHTML = "" + (this.mStat[1]);
-        rep_rejected = "" + this.mStat[2];
-        if (this.mStat[0] - this.mStat[1] - this.mStat[2] > 0) {
-            rep_rejected += '/' + (this.mStat[0] - this.mStat[1] - this.mStat[2]);
-        }
+        document.getElementById("report-accepted").innerHTML = "" + 
+            (this.mAcceptedCount);
+        rep_rejected = this.mTotalCount - this.mAcceptedCount;
         document.getElementById("report-rejected").innerHTML = rep_rejected;
-    },
-    
-    _markEdit: function(p_cond, point_no, cond_idx, not_empty) {
-        if (!not_empty)
-            return '';
-        if (p_cond[0] == "numeric") 
-            return '<span class="point-edit" onclick="sDecisionTree.editCond(' +
-                point_no + ', ' + cond_idx + ');">&#9874;</span>';
-        return '';
     },
     
     selectPoint: function(point_no) {
@@ -164,7 +140,7 @@ var sDecisionTree = {
         sViewH.modalOff();
         this._highlightCondition(false);
         this.mOpCond = null;
-        this.mOpIdx = null;
+        this.mMarkLoc = null;
         var new_el = document.getElementById("p_td__" + point_no);
         if (new_el == null) 
             return;
@@ -174,57 +150,46 @@ var sDecisionTree = {
         }
         this.mCurPointNo = point_no;
         new_el.className = "cur";
-        sUnitsH.setup(this.mTree, this.mCurPointNo);
+        sUnitsH.setup(this.mTreeCode, this.mCurPointNo);
     },
     
-    editCond: function(point_no, cond_idx) {
+    markEdit: function(point_no, marker_idx) {
         this.selectPoint(point_no);
         if (sUnitsH.postAction(
-                'sDecisionTree.editCond(' + point_no + ', ' + cond_idx + ');'))
+                'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');'))
             return;
         if (this.mCurPointNo != point_no)
             return
-        var point = this.mPoints[point_no];
-        this.mOpCond = point[2];
-        if (cond_idx >= 0)
-            this.mOpCond = this.mOpCond[cond_idx];
-        this.mOpIdx = cond_idx;
-        this._highlightCondition(true);
+        this.mOpCond = this.mMarkers[point_no][marker_idx];
+        this.mMarkLoc = [point_no, marker_idx];
         sOpCondH.show(this.mOpCond);
+        this._highlightCondition(true);
     },
 
     _highlightCondition(mode) {
-        if (this.mOpIdx == null)
+        if (this.mMarkLoc == null)
             return;
-        if (this.mOpIdx >= 0)
-            cond_el = document.getElementById("p_cond__" + 
-                this.mCurPointNo + "_" + this.mOpIdx);
-        else
-            cond_el = document.getElementById("p_cond__" + this.mCurPointNo);
+        mark_el = document.getElementById(
+            '__mark_' + this.mMarkLoc[0] + '_' + this.mMarkLoc[1]);
         if (mode)
-            cond_el.className += " active";
+            mark_el.className += " active";
         else
-            cond_el.className = cond_el.className.replace(" active", "");
+            mark_el.className = mark_el.className.replace(" active", "");
     },
     
     fixCondition: function(new_cond) {
-        if (this.mOpIdx == null)
+        if (this.mMarkLoc == null)
             return;
         sTreeCtrlH.fixCurrent();
-        if (this.mOpIdx >= 0) {
-            this.mPoints[this.mCurPointNo][2][this.mOpIdx] = new_cond;
-        } else {
-            this.mPoints[this.mCurPointNo][2] = new_cond;
-        }
-        this.setup(true);
+        this.setup(true, {"instr": ["mark", self.mMarkLoc, new_cond]});
     },
     
     getAcceptedCount: function() {
-        return this.mStat[1];
+        return this.mAcceptedCount;
     },
     
     getTotalCount: function() {
-        return this.mStat[0];
+        return this.mTotalCount;
     }
 }
 
@@ -236,9 +201,9 @@ var sUnitsH = {
     mWaiting: false,
     mPostAction: null,
     
-    setup: function(decision_tree, point_no) {
-        args = "ds=" + sDSName + "&tree=" +
-            encodeURIComponent(JSON.stringify(decision_tree)) + 
+    setup: function(tree_code, point_no) {
+        args = "ds=" + sDSName + "&code=" +
+            encodeURIComponent(tree_code) + 
             "&no=" + point_no;
         this.mWaiting = true;
         document.body.className = "wait";
@@ -715,8 +680,7 @@ var sTreeCtrlH = {
     },
     
     _evalCurState: function() {
-        return [sDecisionTree.mCurPointNo,
-            JSON.stringify(sDecisionTree.mTree)];
+        return [sDecisionTree.mCurPointNo, sDecisionTree.mTreeCode];
     },
     
     fixCurrent: function() {
@@ -750,7 +714,7 @@ var sTreeCtrlH = {
     
     doSaveVersion: function() {
         if (!this.mCurVersion)
-            sDecisionTree.setup(true, null, "add_version");
+            sDecisionTree.setup(true, {"instr": ["add_version"]});
     },
     
     availableActions: function() {
@@ -864,8 +828,7 @@ var sVersionsH = {
         if (this.mCurCmpVer != null) {
             args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
             if (this.mBaseCmpVer == null) 
-                args += "&tree=" + encodeURIComponent(
-                    JSON.stringify(sDecisionTree.mTree));
+                args += "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
             else
                 args += "&verbase=" + this.mBaseCmpVer;
             ajaxCall("cmptree", args, function(info){sVersionsH._setCmp(info);});
@@ -900,9 +863,8 @@ var sVersionsH = {
     selectVersion: function() {
         if (this.mCurCmpVer != nsull) {
             sViewH.modalOff();
-            sDecisionTree.setup(false, this.mCurCmpVer);
+            sDecisionTree.setup(null, {"version": this.mCurCmpVer});
         }
-        
     },
     
     deleteVersion: function() {
@@ -1115,6 +1077,7 @@ var sViewH = {
         for (idx = 0; idx < this.mModalCtrls.length; idx++) {
             this.mModalCtrls[idx].style.display = "none";
         }
+        sDecisionTree._highlightCondition(false);
     },
     
     blockModal: function(mode) {
@@ -1213,4 +1176,12 @@ function startWsCreate() {
     sCreateWsH.startIt();
 }
 
+function editMark(point_no, instr_idx) {
+    sDecisionTree.markEdit(point_no, instr_idx);
+}
 
+function pickStdCode() {
+    std_name = document.getElementById("std-code-select").value;
+    if (std_name) 
+        sDecisionTree.setup(null, {"std" : std_name});
+}

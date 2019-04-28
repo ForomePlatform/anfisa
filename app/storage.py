@@ -5,12 +5,12 @@ from datetime import datetime
 
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.read_json import JsonLineReader
-from app.model.json_conf import loadJSonConfig
+from utils.json_conf import loadJSonConfig
 from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
-from app.prepare.view_schema import defineViewSchema
-from app.prepare.flt_schema import defineFilterSchema
 from app.prepare.druid_adm import DruidAdmin
+from app.config.flt_schema import defineFilterSchema
+from app.config.view_schema import defineViewSchema
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)

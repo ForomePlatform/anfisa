@@ -1,15 +1,15 @@
 import json
 from md5 import md5
 
-from app.model.a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
-from .decision import DecisionTree
-from .xl_conf import defineDefaultDecisionTree
-from .tree_repr import cmpTrees
-from annotations.post.comp_hets import CompHetsMarkupBatch
+from .comp_hets import CompHetsMarkupBatch
+from app.filter.decision import DecisionTree
+from app.filter.code_works import cmpTrees
+from app.config.solutions import STD_TREE_NAMES, STD_TREE_CODES
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -92,6 +92,11 @@ class XLDataset(DataSet):
     def evalTotalCount(self, condition = None):
         if condition is None:
             return self.getTotal()
+        cond_repr = condition.getDruidRepr()
+        if cond_repr is None:
+            return self.getTotal()
+        if cond_repr is False:
+            return 0
         query = {
             "queryType": "timeseries",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
@@ -107,31 +112,45 @@ class XLDataset(DataSet):
         return ret[0]["result"]["count"]
 
     def _evalRecSeq(self, condition, expect_count):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
         query = {
             "queryType": "search",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
             "limit": expect_count + 5,
-            "filter": condition.getDruidRepr(),
             "intervals": [ self.mDruidAgent.INTERVAL ]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
     def evalRecSeq(self, condition, expect_count):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
         query = {
             "queryType": "topN",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
             "threshold": expect_count + 5,
             "metric": "count",
-            "filter": condition.getDruidRepr(),
             "granularity": self.mDruidAgent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
                 "fieldName": "_ord"}],
             "intervals": [ self.mDruidAgent.INTERVAL ]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         assert len(ret[0]["result"]) == expect_count
@@ -200,62 +219,55 @@ class XLDataset(DataSet):
 
     #===============================================
     @staticmethod
-    def _evalTreeHash(tree):
-        return md5(json.dumps(tree,
-            sort_keys = True, ensure_ascii = False)).hexdigest()
+    def _evalCodeHash(tree_code):
+        return md5(tree_code.strip().hexdigest())
 
     @RestAPI.xl_request
     def rq__xltree(self, rq_args):
-        tree_data = rq_args.get("tree")
+        tree_code = rq_args.get("code")
+        std_name = rq_args.get("std")
         version = rq_args.get("version")
         instr = rq_args.get("instr")
-        versions = self.mMongoDS.getVersionList()
-        tree = None
-        if len(versions) == 0 and tree_data is None:
-            tree = defineDefaultDecisionTree(self.mCondEnv)
-            tree_hash = self._evalTreeHash(tree.dump())
-            version = 0
-            self.mMongoDS.addVersion(version, tree.dump(), tree_hash)
-            versions = self.mMongoDS.getVersionList()
-        elif version is not None:
-            tree = DecisionTree.parse(self.mCondEnv,
-                self.mMongoDS.getVersionTree(int(version)))
-            for ver_info in versions:
-                if ver_info[0] == int(version):
-                    tree_hash = ver_info[2]
-                    break
-        elif tree_data is None:
-            tree = DecisionTree.parse(self.mCondEnv,
-                self.mMongoDS.getVersionTree(versions[-1][0]))
-            tree_hash = versions[-1][2];
+        version_info_seq = self.mMongoDS.getTreeCodeVersionInfoSeq()
+        assert instr is None or tree_code
+        if tree_code:
+            assert not std_name and not version
+            instr = json.loads(instr)
+            if len(instr) == 1 and instr[0] == "add_version":
+                tree_hash = self._evalTreeHash(tree_code)
+                new_ver_no = 0
+                for ver_no, ver_date, ver_hash in version_info_seq:
+                    new_ver_no = ver_no + 1
+                    if tree_hash == ver_hash:
+                        version = str(ver_no)
+                        break
+                if version is None:
+                    version = str(new_ver_no)
+                    self.mMongoDS.addTreeCodeVersion(
+                        new_ver_no, tree_code, tree_hash)
+                version_info_seq = self.mMongoDS.getTreeCodeVersionInfoSeq()
+                instr = None
+        elif std_name:
+            assert version is None
+            tree_code = STD_TREE_CODES[std_name]
         else:
-            tree = DecisionTree.parse(self.mCondEnv, json.loads(tree_data))
-            tree_hash = self._evalTreeHash(tree.dump())
-            if instr == "add_version" and tree_hash not in {
-                ver_info[2] for ver_info in versions}:
-                self.mMongoDS.addVersion(
-                    versions[-1][0] + 1, tree.dump(), tree_hash)
-                versions = self.mMongoDS.getVersionList()
-
-        cur_version = None
-        versions_rep = []
-        for ver_info in versions:
-            versions_rep.append(ver_info[:2])
-            if tree_hash == ver_info[2]:
-                cur_version = ver_info[0]
-        tree.evalCounts(self)
-        return {
-            "tree": tree.dump(),
-            "counts": tree.getCounts(),
-            "stat": tree.getStat(),
-            "cur_version": cur_version,
-            "versions": versions_rep}
+            std_name = STD_TREE_NAMES[0]
+            tree_code = STD_TREE_CODES[std_name]
+        tree = DecisionTree.parse(self.mCondEnv, tree_code, instr)
+        ret = tree.dump()
+        if version is not None:
+            ret["cur_version"] = version
+        if std_name:
+            ret["std_code"] = std_name
+        ret["versions"] = [info[:2] for info in version_info_seq]
+        ret["total"] = self.getTotal()
+        ret["counts"] = tree.evalPointCounts(self)
+        return ret
 
     #===============================================
     @RestAPI.xl_request
     def rq__xlstat(self, rq_args):
-        tree_data = rq_args["tree"]
-        tree = DecisionTree.parse(self.mCondEnv, json.loads(tree_data))
+        tree = DecisionTree.parse(self.mCondEnv, rq_args["code"])
         point_no = int(rq_args["no"])
         condition = tree.actualCondition(point_no)
         count = self.evalTotalCount(condition)
@@ -269,14 +281,13 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__cmptree(self, rq_args):
-        tree_data1 = self.mMongoDS.getVersionTree(
-                int(rq_args["ver"]))
+        tree_code1 = self.mMongoDS.getTreeCodeVersion(int(rq_args["ver"]))
         if "verbase" in rq_args:
-            tree_data2 = self.mMongoDS.getVersionTree(
+            tree_code2 = self.mMongoDS.getTreeCodeVersion(
                 int(rq_args["verbase"]))
         else:
-            tree_data2 = json.loads(rq_args["tree"])
-        return {"cmp": cmpTrees(tree_data1, tree_data2)}
+            tree_code2 = rq_args["code"]
+        return {"cmp": cmpTrees(tree_code1, tree_code2)}
 
     #===============================================
     @RestAPI.xl_request

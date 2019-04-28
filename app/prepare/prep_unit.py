@@ -1,7 +1,7 @@
 import abc, re, sys
 from collections import Counter
 
-from app.model.path_works import AttrFuncPool
+from utils.path_works import AttrFuncPool
 #===============================================
 class ValueConvertor:
     sMAX_BAD_COUNT = 3

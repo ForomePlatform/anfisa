@@ -275,10 +275,19 @@ span.stat-bad {
 }
 
 span.point-edit {
-    color: grey;
+    color: black;
     border: 1px solid grey;
     cursor: pointer;
+    font-size: 140%;
+    vertical-align: super;
 }
+
+span.point-edit.active {
+    color: red;
+    border: 1px solid red;
+    background-color: yellow;
+}
+
 /********************Decision tree*****************************/
 td.tree-comment {
     color: grey;
@@ -338,48 +347,17 @@ span.point-instr {
     font-weight: bold;
 }
 
-div.point-block {
-    display: inline-block;
-}
-
-
-div.point-cond {
+div.point-code {
     display: inline-block;
     color: #000008;
     border: 1px solid white;
 }
 
-div.point-list div.point-cond {
-    display: block;
-}
-
-div.point-cond.active {
+div.point-code.active {
     background-color: #FFFF80;
     border: 1px solid red;
 }
 
-div.point-block1 {
-    display: flex;
-    flex-direction: row;
-    align-items: stretch;
-    white-space: nowrap;
-    height: 100%;
-    width: 100%;
-}
-
-div.point-op {
-    font-weight: bold;
-    font-style: italic;
-    font-size: 80%;
-    height: 100%;
-    width: 30px;
-    padding: 5px;
-}
-
-div.point-list {
-    border-left: 1px solid black;
-    padding-left: 10px;
-}
 /********************Control controls*****************************/
 div#ds-dropdown {
     margin: 0px;

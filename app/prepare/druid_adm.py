@@ -1,7 +1,7 @@
 import os, sys, subprocess, codecs, json
 from datetime import datetime, timedelta
 
-from app.model.druid_agent import DruidAgent
+from app.filter.druid_agent import DruidAgent
 #===============================================
 class DruidAdmin(DruidAgent):
     TIME_START = "2015-01-01"

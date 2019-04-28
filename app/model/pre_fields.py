@@ -1,6 +1,6 @@
 from zlib import crc32
 
-from app.model.path_works import AttrFuncPool
+from utils.path_works import AttrFuncPool
 #===============================================
 class PresentationFieldHash:
     def __init__(self, name, base_name):

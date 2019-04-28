@@ -1,9 +1,10 @@
-from app.model.cond_env import CondEnv
+from app.filter.cond_env import CondEnv
 
 #===============================================
 class WS_CondEnv(CondEnv):
     def __init__(self):
         CondEnv.__init__(self)
+
     def parse(self, cond_info):
         if cond_info[0] == "and":
             return WS_Condition.joinAnd(
@@ -35,6 +36,12 @@ class WS_CondEnv(CondEnv):
         ret = WS_Condition.joinAnd([self.parse(cond_data)
             for cond_data in cond_seq])
         return ret
+
+    def getCondNone(self):
+        return WS_None()
+
+    def getCondAll(self):
+        return WS_All()
 
 #===============================================
 class WS_Condition:

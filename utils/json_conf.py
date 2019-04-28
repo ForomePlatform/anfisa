@@ -5,7 +5,7 @@ def loadJSonConfig(config_file):
     with codecs.open(config_file, "r", encoding = "utf-8") as inp:
         content = inp.read()
     dir_name = os.path.abspath(__file__)
-    for idx in range(3):
+    for idx in range(2):
         dir_name = os.path.dirname(dir_name)
     content = content.replace('${HOME}', dir_name)
     pre_config = json.loads(content)

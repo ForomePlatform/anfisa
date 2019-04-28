@@ -1,7 +1,7 @@
 import sys
 
-from .prep_filters import FilterPrepareSetH
-from app.model.condition import ConditionMaker
+from app.prepare.prep_filters import FilterPrepareSetH
+from app.filter.condition import ConditionMaker
 #===============================================
 def defineFilterSchema():
     filters = FilterPrepareSetH()

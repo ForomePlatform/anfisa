@@ -6,7 +6,7 @@ from .dataset import DataSet
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .a_config import AnfisaConfig
-from .condition import ConditionMaker
+from app.filter.condition import ConditionMaker
 from app.search.index import Index
 
 #===============================================

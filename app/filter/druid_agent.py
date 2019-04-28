@@ -1,8 +1,8 @@
 from copy import deepcopy
 
-from .rest import RestAgent
-from .solutions import STD_XL_FILTERS
-from app.model.a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
+from app.config.solutions import STD_XL_FILTERS
+from utils.rest import RestAgent
 #===============================================
 class DruidAgent:
     GRANULARITY = "all"

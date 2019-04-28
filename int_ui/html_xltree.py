@@ -1,9 +1,11 @@
-from .gen_html import startHtmlPage
+from xml.sax.saxutils import escape
 
+from .gen_html import startHtmlPage
+from app.config.solutions import STD_TREE_NAMES
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
-        css_files = ["xltree.css"],
+        css_files = ["xltree.css", "py_pygments.css"],
         js_files = ["xltree.js", "flt.js"])
 
     print >> output, (
@@ -39,7 +41,15 @@ def _formXLPannel(output, ds_name):
                         class="drop ctrl-menu">Create workspace...</div>
                 </div>
             </span>&emsp;
-            XL dataset: <span id="xl-name"></span>
+            XL dataset: <span id="xl-name"></span><br/>
+            <select id="std-code-select" onchange="pickStdCode();"
+                title="Pick tree code from repository">
+                <option value=""></option>'''
+    for std_name in STD_TREE_NAMES:
+        print >> output, '                <option value="%s">%s</option>' % (
+            escape(std_name), escape(std_name))
+    print >> output, '''
+            </select>
         </div>
         <div id="xl-tree-info">
             Accepted: <span id="report-accepted"></span>&emsp;

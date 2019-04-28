@@ -1,4 +1,4 @@
-from app.model.cond_env import CondEnv
+from app.filter.cond_env import CondEnv
 #===============================================
 class XL_CondEnv(CondEnv):
     def __init__(self):
@@ -41,6 +41,12 @@ class XL_CondEnv(CondEnv):
         ret = XL_Condition.joinAnd([self.parse(cond_data)
             for cond_data in cond_seq])
         return ret
+
+    def getCondNone(self):
+        return XL_None()
+
+    def getCondAll(self):
+        return XL_All()
 
 #===============================================
 class XL_Condition:
@@ -216,7 +222,7 @@ class XL_None(XL_Condition):
         return "null"
 
     def getDruidRepr(self):
-        return None
+        return False
 
 #===============================================
 class XL_All(XL_Condition):

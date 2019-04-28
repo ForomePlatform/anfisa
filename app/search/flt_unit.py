@@ -1,12 +1,12 @@
 #import sys
 import abc
 
-from app.model.variants import VariantSet
-from app.model.a_config import AnfisaConfig
-from app.model.condition import ConditionMaker
-from app.model.unit import Unit
+from app.config.a_config import AnfisaConfig
+from utils.variants import VariantSet
+from app.filter.condition import ConditionMaker
+from app.filter.unit import Unit
 from .val_stat import NumDiapStat, EnumStat
-from .flt_cond import WS_SpecCondition, WS_All, WS_None, WS_EnumCondition
+from .flt_cond import WS_SpecCondition, WS_EnumCondition
 #===============================================
 class FilterUnit(Unit):
     def __init__(self, index, unit_data, unit_kind = None):
@@ -275,8 +275,8 @@ class ZygosityComplexUnit(FilterUnit):
 
         if not self.mIsOK or not p_group:
             if filter_mode == "NOT":
-                return WS_All()
-            return WS_None()
+                return self.getIndex().getCondEnv().getCondAll()
+            return self.getIndex().getCondEnv().getCondNone()
         assert unit_name == self.getName()
         assert len(variants) > 0
 

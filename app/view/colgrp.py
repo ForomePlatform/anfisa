@@ -9,7 +9,7 @@ class ColGroupsH:
         else:
             assert self.mATPairs is not None
 
-    def getCount(self):
+    def getSize(self):
         return len(self.mATPairs)
 
     def getAttr(self, idx):

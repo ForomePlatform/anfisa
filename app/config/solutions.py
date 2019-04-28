@@ -1,4 +1,5 @@
-from .condition import ConditionMaker
+import os, codecs
+from app.filter.condition import ConditionMaker
 
 #===============================================
 STD_WS_FILTERS = {
@@ -19,3 +20,21 @@ STD_WS_FILTERS = {
 
 #===============================================
 STD_XL_FILTERS = {}
+
+#===============================================
+def loadConfigFile(fname):
+    with codecs.open(os.path.dirname(os.path.abspath(__file__)) +
+            "/files/" + fname, "r", encoding = "utf-8") as inp:
+        return inp.read()
+
+def loadConfigFileSeq(fnames):
+    return "\n".join([loadConfigFile(fname) for fname in fnames])
+
+#===============================================
+STD_TREE_CODE_SEQ = [
+    ["BGM Tree", loadConfigFileSeq(["quality.pyt", "bgm.pyt"])],
+    ["Hearing Loss", loadConfigFileSeq(["quality.pyt", "hearing_loss.pyt"])]]
+
+STD_TREE_NAMES = [key for key, code in STD_TREE_CODE_SEQ]
+STD_TREE_CODES = {key: code for key, code in STD_TREE_CODE_SEQ}
+#===============================================

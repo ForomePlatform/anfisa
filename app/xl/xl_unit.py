@@ -1,8 +1,8 @@
 import logging
-from app.model.a_config import AnfisaConfig
-from app.model.condition import ConditionMaker
-from app.model.unit import Unit
-from xl_cond import XL_Condition, XL_NumCondition, XL_None
+from app.config.a_config import AnfisaConfig
+from app.filter.condition import ConditionMaker
+from app.filter.unit import Unit
+from .xl_cond import XL_Condition, XL_NumCondition
 #===============================================
 class XL_Unit(Unit):
     def __init__(self, dataset_h, descr, unit_kind = None):
@@ -51,7 +51,11 @@ class XL_NumUnit(XL_Unit):
                     "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
         if condition is not None:
-            query["filter"] = condition.getDruidRepr()
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return [None, None, 0]
+            if cond_repr is not None:
+                query["filter"] = cond_repr
         rq = druid_agent.call("query", query)
         assert len(rq) == 1
         return [rq[0]["result"][nm] for nm in
@@ -92,7 +96,11 @@ class XL_EnumUnit(XL_Unit):
                 "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
         if condition is not None:
-            query["filter"] = condition.getDruidRepr()
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
+            if cond_repr is not None:
+                query["filter"] = cond_repr
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
@@ -208,7 +216,7 @@ class XL_ZygosityUnit(XL_Unit):
 
     def parseCondition(self, cond_info):
         if not self.mIsOK:
-            return XL_None()
+            return self.getDS().getCondEnv().getCondNone()
 
         assert cond_info[0] == "zygosity"
         unit_name, p_group, filter_mode, variants = cond_info[1:]

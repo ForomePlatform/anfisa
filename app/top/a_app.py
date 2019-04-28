@@ -1,21 +1,20 @@
 import sys, os, json, codecs, logging, signal
 from StringIO import StringIO
 
-from .rest_api import RestAPI
-from .mongo_db import MongoConnector
-from .data_vault import DataVault
-from .druid_agent import DruidAgent
-from .a_config import AnfisaConfig
-from .job_pool import JobPool
-from export.excel import ExcelExport
-from app.view.attr import AttrH
-from int_ui.mirror_dir import MirrorUiDirectory
-from int_ui.ui_requests import IntUI
-
-from app.prepare.view_schema import defineViewSchema
+from app.config.view_schema import defineViewSchema
+from app.model.rest_api import RestAPI
+from app.model.mongo_db import MongoConnector
+from app.model.data_vault import DataVault
+from app.model.a_config import AnfisaConfig
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.sec_ws import SecondaryWsCreation
+from app.filter.druid_agent import DruidAgent
+from app.view.attr import AttrH
 from app.view.asp_set import AspectSetH
+from export.excel import ExcelExport
+from int_ui.mirror_dir import MirrorUiDirectory
+from int_ui.ui_requests import IntUI
+from utils.job_pool import JobPool
 
 #===============================================
 def terminateAll(sig, frame):

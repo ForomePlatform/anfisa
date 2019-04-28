@@ -1,4 +1,4 @@
-from app.model.a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
 def reportRecord(output, workspace, research_mode, rec_no, port):

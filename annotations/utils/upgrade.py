@@ -1,4 +1,3 @@
-import codecs
 import datetime
 import json
 import os
@@ -9,6 +8,7 @@ import sys
 from annotations.annotator import get_md
 from annotations.record import Variant
 from app import storage
+from utils import loadJSonConfig
 
 
 annotation_server="anfisa.forome.org"
@@ -78,25 +78,6 @@ def load(config, workspace):
     print "Importing: {}".format(case)
     storage.dropDataSet(config, case, "ws", False)
     storage.createDataSet(config, case, "ws", case, f, 100)
-
-
-def loadJSonConfig(config_file):
-    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
-        content = inp.read()
-    dir_name = os.path.abspath(__file__)
-    for idx in range(2):
-        dir_name = os.path.dirname(dir_name)
-    content = content.replace('${HOME}', dir_name)
-    pre_config = json.loads(content)
-
-    file_path_def = pre_config.get("file-path-def")
-    if file_path_def:
-        for key, value in file_path_def.items():
-            assert key != "HOME"
-            content = content.replace('${%s}' % key, value)
-    return json.loads(content)
-
-
 
 def copy_data(config, dest):
     updated_config = copy.deepcopy(config)

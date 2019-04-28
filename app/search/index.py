@@ -1,8 +1,8 @@
 import json
 from copy import deepcopy
 
-from app.model.solutions import STD_WS_FILTERS
-from app.model.a_config import AnfisaConfig
+from app.config.a_config import AnfisaConfig
+from app.config.solutions import STD_WS_FILTERS
 from .column import DataColumnCollecton
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit

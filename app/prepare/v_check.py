@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from app.model.types import Types, TypeCounter
+from utils.types import Types, TypeCounter
 from app.view.attr import AttrH
 
 #===============================================
