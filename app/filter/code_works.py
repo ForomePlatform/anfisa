@@ -171,7 +171,8 @@ def _reprConditionCode(cond_data, output, group_mode):
 
 #===============================================
 TAB_LEN = 4
-STR_LEN = 60
+STR_LEN = 70
+
 def _formatRep(text, start_indent, next_indent):
     global TAB_LEN, STR_LEN
     ret = StringIO()
