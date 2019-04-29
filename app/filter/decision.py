@@ -81,7 +81,7 @@ class CheckPoint:
         return self.mFrag.getMarkers()
 
     def getInfo(self, code_lines):
-        line_from, line_to = self.mFrag.getLinesDiap()
+        line_from, line_to = self.mFrag.getFullLineDiap()
         return [self.getPointKind(), self.getLevel(),
             self.getDecision(), self.getCondData(),
             "\n".join(code_lines[line_from - 1: line_to])]
@@ -173,10 +173,15 @@ class DecisionTree(CaseStory):
 
     @staticmethod
     def parse(cond_env, code, instr = None):
-        tree = DecisionTree(cond_env, code)
         parser = DecisionTreeParser(cond_env, code)
         assert parser.getError() is None
         prev_point = None
+        if instr is not None:
+            code = parser.modifyCode(instr)
+            print "Code:\n", code, "\n======="
+            parser = DecisionTreeParser(cond_env, code)
+            assert parser.getError() is None
+        tree = DecisionTree(cond_env, code)
         for instr_no, frag in enumerate(parser.getFragments()):
             if frag.getInstrType() == "If":
                 assert frag.getDecision() is None
@@ -196,9 +201,6 @@ class DecisionTree(CaseStory):
             else:
                 assert False
         assert tree.checkDetermined() is None
-        if instr is not None:
-            #TRF: write it!!!
-            tree.modifyInstr(instr)
         return tree
 
     def evalPointCounts(self, dataset):

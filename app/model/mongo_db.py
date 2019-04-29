@@ -145,17 +145,17 @@ class MongoDSAgent:
             {"$set": {"note": note.strip(), "time": time_label}},
             upsert = True)
 
-    def getTreeCodeVersionInfoSeq(self):
+    def getTreeCodeVersions(self):
         ret = []
         for it in self.mAgent.find({"_tp": "tree"}):
             it_id = it["_id"]
-            if it_id.startswith("ver-"):
-                ret.append((int(it_id[4:]), it["date"], it["hash"]))
+            if it_id.startswith("tree-ver-"):
+                ret.append((int(it_id[9:]), it["date"], it["hash"]))
         return sorted(ret)
 
     def getTreeCodeVersion(self, version):
         for it in self.mAgent.find(
-            {"_tp": "tree", "_id": "ver-" + str(version)}):
+            {"_tp": "tree", "_id": "tree-ver-" + str(version)}):
                 return it["code"]
         return None
 
@@ -163,11 +163,11 @@ class MongoDSAgent:
         if date is None:
             date = datetime.now().isoformat()
         self.mAgent.update(
-            {"_tp": "tree", "_id": "ver-" + str(version)},
+            {"_tp": "tree", "_id": "tree-ver-" + str(version)},
             {"$set": {"hash": hash, "code": code,
                 "date": date, "_tp": "tree"}}, upsert = True)
 
     def dropTreeCodeVersion(self, version):
         self.mAgent.remove(
-            {"_tp": "tree", "_id": "ver-" + str(version)})
+            {"_tp": "tree", "_id": "tree-ver-" + str(version)})
 

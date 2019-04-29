@@ -1,8 +1,15 @@
+import re
+from md5 import md5
+
 from StringIO import StringIO
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 from difflib import Differ
+
+#===============================================
+def codeHash(tree_code):
+    return md5(tree_code.strip()).hexdigest()
 
 #===============================================
 sLexer = PythonLexer()
@@ -67,31 +74,57 @@ def htmlCodeDecoration(code, marker_seq):
     return lines_upd
 
 #===============================================
-
-
-
-
-
-
-
+#===============================================
+def reprConditionCode(cond_data):
+    cond_kind = cond_data[0]
+    if cond_kind not in ("or", "and"):
+        rep = StringIO()
+        rep.write('if ')
+        _reprConditionCode(cond_data, rep, False)
+        rep.write(':')
+        return _formatRep(rep.getvalue(), 0, 2)
+    assert len(cond_data) > 2
+    rep = StringIO()
+    rep.write('if (')
+    _reprConditionCode(cond_data[1], rep, True)
+    rep.write(' ' + cond_kind)
+    ret = [_formatRep(rep.getvalue(), 0, 2)]
+    for idx in range(2, len(cond_data)):
+        rep = StringIO()
+        _reprConditionCode(cond_data[idx], rep, True)
+        if idx + 1 < len(cond_data):
+            rep.write(' ' + cond_kind)
+        else:
+            rep.write('):')
+        ret.append(_formatRep(rep.getvalue(), 1, 2))
+    return "\n".join(ret)
 
 #===============================================
-STR_TAB = "    "
-sDiff = Differ()
-#===============================================
-def _reprCondition(cond, output, repr_level):
-    global STR_TAB
-    cond_kind = cond[0]
+sIdPatt = re.compile("[A-Z_][A-Z0-9_]*", re.I)
+def _reprConditionCode(cond_data, output, group_mode):
+    global sIdPatt
+    cond_kind = cond_data[0]
     if cond_kind in ("or", "and"):
-        cond_seq = cond[1:]
-        output.write('(')
-        _reprCondition(cond_seq[0], output, repr_level)
-        for sub_cond in cond_seq[1:]:
-            output.write('\n' + (repr_level + 1) * STR_TAB + cond_kind + " ")
-            _reprCondition(sub_cond, output, repr_level + 1)
-        output.write(')')
-    elif cond_kind == "numeric":
-        unit_name, bounds, use_undef = cond[1:]
+        if group_mode:
+            output.write('(')
+        q_first = True
+        for sub_cond_data in cond_data[1:]:
+            if q_first:
+                q_first = False
+            else:
+                output.write(" " + cond_kind + "\f")
+            _reprConditionCode(sub_cond_data, output, True)
+        if group_mode:
+            output.write(')')
+        return
+    if cond_data == "not":
+        output.write('not ')
+        _reprConditionCode(cond_data[1], output, True)
+        return
+    if cond_kind == "numeric":
+        if group_mode:
+            output.write('(')
+        unit_name, bounds, use_undef = cond_data[1:]
         seq = []
         if bounds[0] is not None:
             seq.append(str(bounds[0]))
@@ -99,43 +132,85 @@ def _reprCondition(cond, output, repr_level):
         if bounds[1] is not None:
             seq.append(str(bounds[1]))
         assert len(seq) > 1
-        output.write('(' + ' <= '.join(seq) + ')')
-    else:
-        assert cond_kind == "enum"
-        unit_name, filter_mode, variants = cond[1:]
-        output.write('(' + ' '.join([unit_name, 'in',
-            '{' + ', '.join(variants) + '}']) + ')')
+        output.write(' <= '.join(seq))
+        if group_mode:
+            output.write(')')
+        return
+    if cond_kind == "enum":
+        if group_mode:
+            output.write('(')
+        unit_name, op_mode, values = cond_data[1:]
+        if op_mode == "OR":
+            output.write('%s in {' % unit_name)
+            op_close = '}'
+        elif op_mode == "NOT":
+            output.write('%s not in {' % unit_name)
+            op_close = '}'
+        elif op_mode == "AND":
+            output.write('%s in all({' % unit_name)
+            op_close = '})'
+        else:
+            assert op_mode == "only"
+            output.write('%s in only({' % unit_name)
+            op_close = '})'
+        q_first = True
+        for val in values:
+            if q_first:
+                q_first = False
+            else:
+                output.write(",\f")
+            if sIdPatt.match(val):
+                output.write(val)
+            else:
+                output.write('"' + val.replace('"', '\\"') + '"')
+        output.write(op_close)
+        if group_mode:
+            output.write(')')
+        return
+    assert False
 
 #===============================================
-def treeToText(tree_data):
-    global STR_TAB
-    output = StringIO();
-
-    for instr in tree_data:
-        if instr[0] == "comment":
-            print >> output, "# " + instr[1]
+TAB_LEN = 4
+STR_LEN = 60
+def _formatRep(text, start_indent, next_indent):
+    global TAB_LEN, STR_LEN
+    ret = StringIO()
+    cur_len = 0
+    if start_indent > 0:
+        cur_len = TAB_LEN * start_indent
+        if cur_len > 0:
+            ret.write(' ' * cur_len)
+    q_first = True
+    for chunk in text.split('\f'):
+        if q_first:
+            ret.write(chunk)
+            cur_len += len(chunk)
+            q_first = False
             continue
-        point_kind, point_level = instr[:2]
-        if point_level > 0:
-            output.write(point_level * STR_TAB)
-        if point_kind == "Return":
-            p_decision = "True" if instr[2] else "False"
-            print >> output, "return", p_decision
+        if cur_len + len(chunk) < STR_LEN:
+            ret.write(' ')
+            ret.write(chunk)
+            cur_len += 1 + len(chunk)
             continue
-        assert point_kind == "If"
-        output.write("if ")
-        _reprCondition(instr[2], output, point_level)
-        print >> output
+        ret.write('\n')
+        cur_len = TAB_LEN * next_indent
+        if cur_len > 0:
+            ret.write(' ' * cur_len)
+        ret.write(chunk)
+        cur_len += len(chunk)
+    return ret.getvalue()
 
-    return output.getvalue().splitlines()
-
+#===============================================
+#===============================================
+sDiff = Differ()
 
 #===============================================
 def cmpTrees(tree_code1, tree_code2):
     global sDiff
     result = []
     cur_reg = None
-    cmp_res = "\n".join(sDiff.compare(tree_code1, tree_code2))
+    cmp_res = "\n".join(sDiff.compare(
+        tree_code1.splitlines(), tree_code2.splitlines()))
     for line in cmp_res.splitlines():
         if len(line) == 0:
             continue

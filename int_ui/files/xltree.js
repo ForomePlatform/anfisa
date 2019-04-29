@@ -177,11 +177,11 @@ var sDecisionTree = {
             mark_el.className = mark_el.className.replace(" active", "");
     },
     
-    fixCondition: function(new_cond) {
+    editMarkCond: function(new_cond) {
         if (this.mMarkLoc == null)
             return;
         sTreeCtrlH.fixCurrent();
-        this.setup(true, {"instr": ["mark", self.mMarkLoc, new_cond]});
+        this.setup(true, {"instr": ["mark", this.mMarkLoc, new_cond]});
     },
     
     getAcceptedCount: function() {
@@ -397,9 +397,9 @@ var sOpCondH = {
         this.mButtonSet.disabled = (condition_data == null);
     },
     
-    fixCondition: function() {
+    editMarkCond: function() {
         if (this.mNewCondition && this.mNewCondition != this.mCondition)
-            sDecisionTree.fixCondition(this.mNewCondition);
+            sDecisionTree.editMarkCond(this.mNewCondition);
     },
     
     careControls: function() {
@@ -1138,9 +1138,9 @@ function modalOff() {
     sViewH.modalOff();
 }
 
-function fixCond() {
+function fixMark() {
+    sOpCondH.editMarkCond();
     sViewH.modalOff();
-    sOpCondH.fixCondition();
 }
 
 function treeUndo() {

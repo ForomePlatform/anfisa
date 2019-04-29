@@ -1,5 +1,4 @@
 import json
-from md5 import md5
 
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
@@ -8,7 +7,7 @@ from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
 from .comp_hets import CompHetsMarkupBatch
 from app.filter.decision import DecisionTree
-from app.filter.code_works import cmpTrees
+from app.filter.code_works import cmpTrees, codeHash
 from app.config.solutions import STD_TREE_NAMES, STD_TREE_CODES
 #===============================================
 class XLDataset(DataSet):
@@ -218,35 +217,32 @@ class XLDataset(DataSet):
         return self.dump()
 
     #===============================================
-    @staticmethod
-    def _evalCodeHash(tree_code):
-        return md5(tree_code.strip().hexdigest())
-
     @RestAPI.xl_request
     def rq__xltree(self, rq_args):
         tree_code = rq_args.get("code")
         std_name = rq_args.get("std")
         version = rq_args.get("version")
         instr = rq_args.get("instr")
-        version_info_seq = self.mMongoDS.getTreeCodeVersionInfoSeq()
+        version_info_seq = self.mMongoDS.getTreeCodeVersions()
         assert instr is None or tree_code
         if tree_code:
             assert not std_name and not version
-            instr = json.loads(instr)
-            if len(instr) == 1 and instr[0] == "add_version":
-                tree_hash = self._evalTreeHash(tree_code)
-                new_ver_no = 0
-                for ver_no, ver_date, ver_hash in version_info_seq:
-                    new_ver_no = ver_no + 1
-                    if tree_hash == ver_hash:
-                        version = str(ver_no)
-                        break
-                if version is None:
-                    version = str(new_ver_no)
-                    self.mMongoDS.addTreeCodeVersion(
-                        new_ver_no, tree_code, tree_hash)
-                version_info_seq = self.mMongoDS.getTreeCodeVersionInfoSeq()
-                instr = None
+            if instr is not None:
+                instr = json.loads(instr)
+                if len(instr) == 1 and instr[0] == "add_version":
+                    tree_hash = codeHash(tree_code)
+                    new_ver_no = 0
+                    for ver_no, ver_date, ver_hash in version_info_seq:
+                        new_ver_no = ver_no + 1
+                        if tree_hash == ver_hash:
+                            version = str(ver_no)
+                            break
+                    if version is None:
+                        version = str(new_ver_no)
+                        self.mMongoDS.addTreeCodeVersion(
+                            new_ver_no, tree_code, tree_hash)
+                    version_info_seq = self.mMongoDS.getTreeCodeVersions()
+                    instr = None
         elif std_name:
             assert version is None
             tree_code = STD_TREE_CODES[std_name]

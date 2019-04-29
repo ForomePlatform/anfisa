@@ -135,7 +135,7 @@ def _formCurCondDiv(output):
               </div>
             </div>
             <div id="cond-ctrl">
-                <button id="cond-button-set" onclick="fixCond();">
+                <button id="cond-button-set" onclick="fixMark();">
                     Set
                 </button>
                 <button onclick="modalOff();">
