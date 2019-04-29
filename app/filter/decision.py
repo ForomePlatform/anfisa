@@ -178,7 +178,6 @@ class DecisionTree(CaseStory):
         prev_point = None
         if instr is not None:
             code = parser.modifyCode(instr)
-            print "Code:\n", code, "\n======="
             parser = DecisionTreeParser(cond_env, code)
             assert parser.getError() is None
         tree = DecisionTree(cond_env, code)
