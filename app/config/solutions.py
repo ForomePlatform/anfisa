@@ -35,8 +35,8 @@ def loadConfigFileSeq(fnames):
 
 #===============================================
 STD_TREE_CODE_SEQ = [
-    ["Rare Variants", loadConfigFileSeq(["quality.pyt", "rare.pyt"])],
-    ["BGM Tree", loadConfigFileSeq(["quality.pyt", "inheritance.pyt", "rare.pyt"])],
+    ["BGM Candidates", loadConfigFileSeq(["quality.pyt", "inheritance.pyt", "rare.pyt"])],
+    ["All Rare Variants", loadConfigFileSeq(["quality.pyt", "rare.pyt"])],
     ["Hearing Loss", loadConfigFileSeq(["quality.pyt", "hearing_loss.pyt"])]
 ]
 

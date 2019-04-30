@@ -7,9 +7,9 @@ def defineFilterSchema():
     filters = FilterPrepareSetH()
 
     with filters.viewGroup("Inheritance"):
-        filters.zygositySpecialUnit("Custom",
+        filters.zygositySpecialUnit("Inheritance_Mode",
             "/data/zygosity", config = {"x_cond":
-            ConditionMaker.condEnum("Chromosome", ["chrX"])})
+            ConditionMaker.condEnum("Chromosome", ["chrX"])}, title="Inheritance Mode")
         filters.presenceUnit("Compound_heterozygous",
             [("True", "/_filters/nowhere")])
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
