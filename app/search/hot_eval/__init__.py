@@ -59,7 +59,7 @@ class RULES_SETUP:
         RuleFuncH("ACMG59",
             "acmg59", acmg59_evalRec),
         RuleFuncH("HL_All_Genes",
-            "hearing_loss_genes", hearing_loss_genes_evalRec()),
+            "hearing_loss_genes", hearing_loss_genes_evalRec),
         RuleFuncH("HL_Reportable_Genes",
             "hl_reportable", hl_reportable_evalRec),
         RuleFuncH("Quality-PASS",
