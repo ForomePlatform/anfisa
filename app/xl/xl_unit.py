@@ -235,3 +235,14 @@ class XL_ZygosityUnit(XL_Unit):
         if filter_mode == "AND":
             return XL_Condition.joinAnd(singles)
         return XL_Condition.joinOr(singles)
+
+    def processInstr(self, parser, ast_args, op_mode, variants):
+        if len(ast_args) > 1:
+            parser.errorIt(ast_args[1], "Extra argument not expected")
+        if len(ast_args) == 0:
+            p_group = self.getDS().getFamilyInfo().getAffectedGroup()
+        else:
+            p_group = parser.processIntSet(ast_args[0])
+        return ["zygosity", self.getName(),
+            sorted(p_group), op_mode, variants]
+

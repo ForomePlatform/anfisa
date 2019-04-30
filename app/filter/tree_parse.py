@@ -1,4 +1,5 @@
-import sys, ast, traceback
+import sys, ast, traceback, logging
+from StringIO import StringIO
 from collections import defaultdict
 
 from .code_works import reprConditionCode
@@ -92,7 +93,10 @@ class DecisionTreeParser:
             self.setFullDiap()
         except Exception as err:
             if self.mError is None:
-                traceback.print_exc(file = sys.stderr, limit = 30)
+                rep = StringIO()
+                traceback.print_exc(file = rep, limit = 10)
+                logging.error("Exception on parse code. Stack:\n" +
+                    rep.getvalue())
                 raise err
             self.mFragments = None
 
@@ -234,7 +238,7 @@ class DecisionTreeParser:
             op_mode = "OR"
             if isinstance(it_set, ast.Call):
                 if (len(it_set.args) != 1 or len(it_set.keywords) > 0 or
-                        it_set.kvargs or it_set.starargs or
+                        it_set.kwargs or it_set.starargs or
                         not isinstance(it_set.func, ast.Name)):
                     self.errorIt(it_set, "Complex call not supported")
                 if it_set.func.id == "only":
@@ -270,12 +274,12 @@ class DecisionTreeParser:
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
             ret = ["enum", field_name, op_mode, variants]
-            self.getCurFrag().addMarker(ret, it.left)
+            #!self.getCurFrag().addMarker(ret, it.left)
             return ret
 
         if isinstance(it.left, ast.Call):
             if (len(it.left.keywords) > 0 or
-                    it.left.kvargs or it.left.starargs or
+                    it.left.kwargs or it.left.starargs or
                     not isinstance(it.left.func, ast.Name)):
                 self.errorIt(it.left, "Complex call not supported")
             field_name = it.left.func.id
@@ -284,12 +288,11 @@ class DecisionTreeParser:
                 field_name, "special")
             if unit_kind != "special":
                 self.errorIt(it.left, "Improper special field name")
-            ret = unit_h.processInstr(self,
-                it.left.args, field_name, op_mode, variants)
+            ret = unit_h.processInstr(self,it.left.args, op_mode, variants)
             if ret is None:
                 self.errorIt(it.left,
                     "Improper arguments for special field")
-            self.getCurFrag().addMarker(ret, it.left)
+            #!self.getCurFrag().addMarker(ret, it.left)
             return ret
         self.errorIt(it.left, "Name of field is expected")
 

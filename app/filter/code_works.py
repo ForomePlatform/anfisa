@@ -1,4 +1,4 @@
-import re
+import re, ast
 from md5 import md5
 
 from StringIO import StringIO
@@ -32,7 +32,9 @@ def htmlCodeDecoration(code, marker_seq):
             reverse = True, key = lambda info:
             (info[2].lineno, info[2].col_offset)):
         line_text = code_sheet[name_instr.lineno - 1]
-        col_offset = name_instr.col_offset + len(name_instr.id)
+        name_id = (name_instr.func.id if isinstance(name_instr, ast.Call)
+            else name_instr.id)
+        col_offset = name_instr.col_offset + len(name_id)
         code_sheet[name_instr.lineno - 1] = (line_text[:col_offset] +
             ('__%d__%d__' % (check_no, instr_no)) + line_text[col_offset:])
     lines_base = htmlCodePresentation(code.rstrip())
