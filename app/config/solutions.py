@@ -14,6 +14,9 @@ STD_WS_FILTERS = {
     "SEQaBOO_Hearing_Loss_v_03": [
         ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_03"]),
         ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")],
+    "SEQaBOO_Hearing_Loss_v_03_5": [
+        ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_03"]),
+        ConditionMaker.condEnum("Rules", ["HL_All_Genes"])],
     "SEQaBOO_ACMG59": [
         ConditionMaker.condEnum("Rules", ["SEQaBOO_ACMG59"]),
         ConditionMaker.condEnum("Rules", ["ACMG59"], "AND")]}

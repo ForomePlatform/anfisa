@@ -1,5 +1,7 @@
-if ("BGM_BAYES_DE_NOVO" in Callers):
+if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
 
-if Custom({1,2}) in {"homo_recess","dominant"}:
+if Custom() in {"Homozygous Recessive", "Autosomal Dominant"}:
     return True
+
+return False
