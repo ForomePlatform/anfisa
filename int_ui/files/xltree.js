@@ -12,6 +12,7 @@ function initXL(ds_name, common_title, ws_url) {
     sVersionsH.init();
     sViewH.init();
     sCreateWsH.init();
+    sCodeEdit.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
@@ -150,6 +151,7 @@ var sDecisionTree = {
         }
         this.mCurPointNo = point_no;
         new_el.className = "cur";
+        sCodeEdit.setup(this.mTreeCode);
         sUnitsH.setup(this.mTreeCode, this.mCurPointNo);
     },
     
@@ -981,8 +983,7 @@ var sCreateWsH = {
         ajaxCall("xl2ws", "ds=" + sDSName + "&verbase= " + 
             sTreeCtrlH.getCurVersion() + "&ws=" + 
             encodeURIComponent(this.mInputModName.value),
-            function(info) {
-                sCreateWsH._setupTask(info);})
+            function(info) {sCreateWsH._setupTask(info);})
     },
     
     _setupTask: function(info) {
@@ -1025,6 +1026,81 @@ var sCreateWsH = {
                     '?ws=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
         }
+    }
+};
+
+/*************************************/
+var sCodeEdit = {
+    mBaseContent: null,
+    mCurContent: null,
+    mCurError: null,
+    mButtonShow: null,
+    mButtonDrop: null,
+    mSpanError: null,
+    mAreaContent: null,
+    
+    init: function() {
+        this.mButtonShow = document.getElementById("code-edit-show");
+        this.mButtonDrop = document.getElementById("code-edit-drop");
+        this.mSpanError = document.getElementById("code-edit-error");
+        this.mAreaContent = document.getElementById("code-edit-content");
+    },
+    
+    setup: function(tree_code) {
+        this.mBaseContent = tree_code;
+        this.mAreaContent.value = this.mBaseContent;
+        this.mCurContent = this.mBaseContent;
+        this.mCurError = false;
+        this.validateContent(this.mBaseContent);
+    },
+    
+    checkControls: function() {
+        this.mButtonShow.text = (this.mCurError != null)? 
+            "Continue edit code" : "Edit code"; 
+        this.mButtonDrop.disabled = (this.mCurContent != this.mBaseContent);
+        this.mSpanError.innerHTML = (this.mCurError)? this.mCurError:"";
+    },
+    
+    show: function() {
+        sViewH.modalOn(document.getElementById("code-edit-back"));
+    },
+
+    validateContent: function(content) {
+        if (this.mCurError != false && this.mCurContent == content)
+            return;
+        this.mCurContent = content;
+        this.mCurError = false;
+        ajaxCall("xltree_code", "ds=" + sDSName + "&code=" +
+            encodeURIComponent(this.mCurContent), 
+            function(info){sCodeEdit._validation(info);});
+    },
+    
+    _validation: function(info) {
+        if (info["code"] != this.mCurContent) 
+            return;
+        if (info["error"]) {
+            this.mCurError = "At line " + info["line"] + " pos " + info["pos"] + ": " +
+                info["error"];
+        } else {
+            this.mCurError = null;
+        }
+        this.checkControls();
+    },
+    
+    drop: function() {
+        this.mAreaContent.value = this.mBaseContent;
+        this.validateContent(this.mBaseContent);
+        sViewH.modalOff();
+    },
+    
+    checkContent: function() {
+        this.validateContent(this.mAreaContent.value);
+    }, 
+    
+    relax: function() {
+        if (this.mCurError == null && this.mBaseContent != this.mCurContent)
+            sDecisionTree.setup(this.mCurContent);
+        this.checkControls();
     }
 };
 
@@ -1078,6 +1154,7 @@ var sViewH = {
             this.mModalCtrls[idx].style.display = "none";
         }
         sDecisionTree._highlightCondition(false);
+        sCodeEdit.relax();
     },
     
     blockModal: function(mode) {

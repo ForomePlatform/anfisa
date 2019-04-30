@@ -32,7 +32,7 @@ class SecondaryWsCreation(ExecutionTask):
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if (self.mBaseVersion is not None):
             tree = DecisionTree.parse(self.mDS.getCondEnv(),
-                self.mDS.getMongoDS().getVersionTree(self.mBaseVersion))
+                self.mDS.getMongoDS().getTreeCodeVersion(self.mBaseVersion))
             rec_no_seq = tree.collectRecSeq(self.mDS)
         else:
             rec_count = self.mDS.evalTotalCount(self.mCondition)

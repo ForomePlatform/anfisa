@@ -17,6 +17,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     _formVersionsDiv(output)
     _formNoteDiv(output)
     _formCreateWsDiv(output)
+    _formEditCodeDiv(output)
     _formSamplesDiv(output)
 
     print >> output, ' </body>'
@@ -50,6 +51,9 @@ def _formXLPannel(output, ds_name):
             escape(std_name), escape(std_name))
     print >> output, '''
             </select>
+            <button id="code-edit-show" class="action"
+                onclick='sCodeEdit.show();'>Edit code
+            </button>
         </div>
         <div id="xl-tree-info">
             Accepted: <span id="report-accepted"></span>&emsp;
@@ -234,6 +238,33 @@ def _formCreateWsDiv(output):
       </div>
     </div>
 '''
+
+#===============================================
+def _formEditCodeDiv(output):
+    print >> output, '''
+    <div id="code-edit-back" class="modal-back">
+      <div id="code-edit-mod">
+        <div id="code-edit-top">
+            <span id="code-edit-title">Edit decision tree code</span>
+              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+        </div>
+        <div id="code-edit-ctrl">
+            <button id="code-edit-drop" onclick="sCodeEdit.drop();">
+                Drop changes
+            </button>
+            <button onclick="sViewH.modalOff();">
+                Done
+            </button>
+            <span id="code-edit-error"></span>
+        </div>
+        <div id="code-edit-main">
+            <textarea id="code-edit-content"
+                oninput="sCodeEdit.checkContent();"></textarea>
+        </div>
+      </div>
+    </div>
+'''
+
 #===============================================
 def _formSamplesDiv(output):
     pass
