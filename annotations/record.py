@@ -192,11 +192,16 @@ class Variant:
         "inframe_deletion"
     ]
     csq_missense = [
-        "missense_variant"
+        "missense_variant",
+        "protein_altering_variant"
     ]
     csq_benign1 = [
         "splice_region_variant",
         "synonymous_variant",
+        "stop_retained_variant",
+        "coding_sequence_variant",
+        "TF_binding_site_variant",
+        "mature_miRNA_variant"
     ]
     csq_benign2 = [
         "5_prime_UTR_variant",
@@ -206,7 +211,8 @@ class Variant:
         "intron_variant",
         'upstream_gene_variant',
         'downstream_gene_variant',
-        'regulatory_region_variant'
+        'regulatory_region_variant',
+        "intergenic_variant"
     ]
 
     severity = [
