@@ -245,7 +245,7 @@ class ExcelExport:
         tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
         op_tags = ', '.join(tagList)
         check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
-        tags_with_value = ", ".join(map(lambda t: t + ": " + tags[t].replace('\n', ' ').strip(), tagList))
+        tags_with_value = ", ".join(map(lambda t: t + ": " + unicode(tags[t]).replace('\n', ' ').strip(), tagList))
         if tag_group_name:
             if tag_group_name in self.check_tags_mapping:
                 style = self.check_tags_mapping[tag_group_name]
