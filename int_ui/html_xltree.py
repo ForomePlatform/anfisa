@@ -1,7 +1,7 @@
 from xml.sax.saxutils import escape
 
 from .gen_html import startHtmlPage
-from app.config.solutions import STD_TREE_NAMES
+from app.filter.code_works import StdTreeCodes
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
@@ -45,8 +45,8 @@ def _formXLPannel(output, ds_name):
             XL dataset: <span id="xl-name"></span><br/>
             <select id="std-code-select" onchange="pickStdCode();"
                 title="Pick tree code from repository">
-                <option value=""></option>'''
-    for std_name in STD_TREE_NAMES:
+                <option value="">in work</option>'''
+    for std_name in StdTreeCodes.getKeys():
         print >> output, '                <option value="%s">%s</option>' % (
             escape(std_name), escape(std_name))
     print >> output, '''

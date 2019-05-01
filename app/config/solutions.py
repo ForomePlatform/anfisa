@@ -35,11 +35,12 @@ def loadConfigFileSeq(fnames):
 
 #===============================================
 STD_TREE_CODE_SEQ = [
-    ["BGM Candidates", loadConfigFileSeq(["quality.pyt", "inheritance.pyt", "rare.pyt"])],
-    ["All Rare Variants", loadConfigFileSeq(["quality.pyt", "rare.pyt"])],
-    ["Hearing Loss", loadConfigFileSeq(["quality.pyt", "hearing_loss.pyt"])]
+    ["BGM Candidates", loadConfigFileSeq(
+        ["quality.pyt", "inheritance.pyt", "rare.pyt"])],
+    ["All Rare Variants", loadConfigFileSeq(
+        ["quality.pyt", "rare.pyt"])],
+    ["Hearing Loss", loadConfigFileSeq(
+        ["quality.pyt", "hearing_loss.pyt"])]
 ]
 
-STD_TREE_NAMES = [key for key, code in STD_TREE_CODE_SEQ]
-STD_TREE_CODES = {key: code for key, code in STD_TREE_CODE_SEQ}
 #===============================================

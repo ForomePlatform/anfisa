@@ -34,6 +34,8 @@ class AnfisaConfig:
         "report.lines": 100,
         "max.export.size": 300,
 
+        "max.tree.versions": 30,
+
         "filter.std.mark": u"\u23da",
 
         "comp-hets.setup": {

@@ -7,8 +7,7 @@ from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
 from .comp_hets import CompHetsMarkupBatch
 from app.filter.decision import DecisionTree
-from app.filter.code_works import cmpTrees, codeHash
-from app.config.solutions import STD_TREE_NAMES, STD_TREE_CODES
+from app.filter.code_works import cmpTrees, codeHash, StdTreeCodes
 #===============================================
 class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -162,6 +161,21 @@ class XLDataset(DataSet):
             "note": note,
             "time": time_label}
 
+    def _addVersion(self, tree_code, tree_hash, version_info_seq):
+        new_ver_no = 0
+        if len(version_info_seq) > 0:
+            ver_no, ver_data, ver_hash = version_info_seq[-1]
+            if ver_hash == tree_hash:
+                return
+            new_ver_no = ver_no + 1
+        self.mMongoDS.addTreeCodeVersion(
+            new_ver_no, tree_code, tree_hash)
+        while (len(version_info_seq) + 1 >
+                AnfisaConfig.configOption("max.tree.versions")):
+            self.mMongoDS.dropTreeCodeVersion(version_info_seq[0][0])
+            del version_info_seq[0]
+        return self.mMongoDS.getTreeCodeVersions()
+
     #===============================================
     @RestAPI.xl_request
     def rq__xl_filters(self, rq_args):
@@ -225,36 +239,41 @@ class XLDataset(DataSet):
         instr = rq_args.get("instr")
         version_info_seq = self.mMongoDS.getTreeCodeVersions()
         assert instr is None or tree_code
-        if tree_code:
-            assert not std_name and not version
-            if instr is not None:
-                instr = json.loads(instr)
-                if len(instr) == 1 and instr[0] == "add_version":
-                    tree_hash = codeHash(tree_code)
-                    new_ver_no = 0
-                    for ver_no, ver_date, ver_hash in version_info_seq:
-                        new_ver_no = ver_no + 1
-                        if tree_hash == ver_hash:
-                            version = str(ver_no)
-                            break
-                    if version is None:
-                        version = str(new_ver_no)
-                        self.mMongoDS.addTreeCodeVersion(
-                            new_ver_no, tree_code, tree_hash)
-                    version_info_seq = self.mMongoDS.getTreeCodeVersions()
-                    instr = None
-        elif std_name:
-            assert version is None
-            tree_code = STD_TREE_CODES[std_name]
+        if version is not None:
+            assert tree_code is None and std_name is None
+            for ver_no, ver_date, ver_hash in version_info_seq:
+                if ver_no == int(version):
+                    tree_code = self.mMongoDS.getTreeCodeVersion(ver_no)
+                    break
+            assert tree_code is not None
+        if tree_code is None:
+            if std_name is None and len(version_info_seq) > 0:
+                version = version_info_seq[-1][0]
+                tree_code = self.mMongoDS.getTreeCodeVersion(version)
+            else:
+                tree_code = StdTreeCodes.getCode(std_name)
         else:
-            std_name = STD_TREE_NAMES[0]
-            tree_code = STD_TREE_CODES[std_name]
+            assert std_name is None
+        tree_hash = codeHash(tree_code)
+        if instr is not None:
+            instr = json.loads(instr)
+            if len(instr) == 1 and instr[0] == "add_version":
+                version_info_seq = self._addVersion(
+                    tree_code, tree_hash, version_info_seq)
+                version = version_info_seq[-1][0]
+                instr = None
         tree = DecisionTree.parse(self.mCondEnv, tree_code, instr)
         ret = tree.dump()
         if version is not None:
-            ret["cur_version"] = version
-        if std_name:
-            ret["std_code"] = std_name
+            for ver_no, ver_date, ver_hash in version_info_seq[-1::-1]:
+                if ver_hash == tree_hash:
+                    version = ver_no
+                    break
+        if version is not None:
+            ret["cur_version"] = int(version)
+        std_code = StdTreeCodes.getKeyByHash(tree_hash)
+        if std_code:
+            ret["std_code"] = std_code
         ret["versions"] = [info[:2] for info in version_info_seq]
         ret["total"] = self.getTotal()
         ret["counts"] = tree.evalPointCounts(self)

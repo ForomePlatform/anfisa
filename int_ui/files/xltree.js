@@ -136,7 +136,7 @@ var sDecisionTree = {
         if (this.mCounts[point_no] == 0)
             return;
         if (sUnitsH.postAction(
-            'sDecisionTree.selectPoint(' + point_no + ');'))
+            'sDecisionTree.selectPoint(' + point_no + ');', true))
             return;
         sViewH.modalOff();
         this._highlightCondition(false);
@@ -158,7 +158,7 @@ var sDecisionTree = {
     markEdit: function(point_no, marker_idx) {
         this.selectPoint(point_no);
         if (sUnitsH.postAction(
-                'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');'))
+                'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');', true))
             return;
         if (this.mCurPointNo != point_no)
             return
@@ -215,9 +215,12 @@ var sUnitsH = {
         ajaxCall("xlstat", args, function(info){sUnitsH._setup(info);})
     },
 
-    postAction: function(action) {
-        if (this.mWaiting) {
-            this.mPostAction = action;
+    postAction: function(action, no_wait) {
+        if (!no_wait || this.mWaiting) {
+            if (this.mPostAction) 
+                this.mPostAction += "\n" + action;
+            else
+                this.mPostAction = action;
             return true;
         }
         return false;
@@ -348,7 +351,6 @@ var sUnitsH = {
     
     selectUnit: function(stat_unit, force_it) {
     }
-    
 };
     
 /**************************************/
@@ -863,7 +865,7 @@ var sVersionsH = {
     },
     
     selectVersion: function() {
-        if (this.mCurCmpVer != nsull) {
+        if (this.mCurCmpVer != null) {
             sViewH.modalOff();
             sDecisionTree.setup(null, {"version": this.mCurCmpVer});
         }
@@ -907,12 +909,15 @@ var sCreateWsH = {
             sDecisionTree.getAcceptedCount() + ' of ' + 
             sDecisionTree.getTotalCount();
         var err_msg = "";
-        if (!sTreeCtrlH.curVersionSaved())
-            err_msg = "Save current version before";
         if (sDecisionTree.getAcceptedCount() >= 5000)
             err_msg = "Too many records, try to reduce";
         if (sDecisionTree.getAcceptedCount() < 10)
             err_msg = "Too small workspace";
+        if (!sTreeCtrlH.curVersionSaved()) {
+            sUnitsH.postAction("sCreateWsH.show();");
+            treeVersionSave();
+            return;
+        }
         this.mDivModProblems.innerHTML = err_msg;
         if (err_msg) {
             this.mStage = "BAD";
