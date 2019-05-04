@@ -1,4 +1,4 @@
-import re, ast
+import re, ast, tokenize
 from md5 import md5
 
 from StringIO import StringIO
@@ -123,7 +123,7 @@ def reprConditionCode(cond_data):
     return "\n".join(ret)
 
 #===============================================
-sIdPatt = re.compile("[A-Z_][A-Z0-9_]*", re.I)
+sIdPatt = re.compile("^[A-Z_][A-Z0-9_]*$", re.I)
 def _reprConditionCode(cond_data, output, group_mode):
     global sIdPatt
     cond_kind = cond_data[0]
@@ -140,7 +140,7 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write(')')
         return
-    if cond_data == "not":
+    if cond_kind == "not":
         output.write('not ')
         _reprConditionCode(cond_data[1], output, True)
         return
@@ -163,34 +163,51 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write('(')
         unit_name, op_mode, values = cond_data[1:]
-        if op_mode == "OR":
-            output.write('%s in {' % unit_name)
-            op_close = '}'
-        elif op_mode == "NOT":
-            output.write('%s not in {' % unit_name)
-            op_close = '}'
-        elif op_mode == "AND":
-            output.write('%s in all({' % unit_name)
-            op_close = '})'
+        _reprEnumCase(unit_name, op_mode, values, output)
+        if group_mode:
+            output.write(')')
+        return
+    if cond_kind == "zygosity":
+        if group_mode:
+            output.write('(')
+        unit_name, p_group, op_mode, values = cond_data[1:]
+        if not p_group:
+            unit_operand = unit_name + '()'
         else:
-            assert op_mode == "only"
-            output.write('%s in only({' % unit_name)
-            op_close = '})'
-        q_first = True
-        for val in values:
-            if q_first:
-                q_first = False
-            else:
-                output.write(",\f")
-            if sIdPatt.match(val):
-                output.write(val)
-            else:
-                output.write('"' + val.replace('"', '\\"') + '"')
-        output.write(op_close)
+            unit_operand = (unit_name + '({' +
+                ','.join(map(str, sorted(p_group))) + '})')
+        _reprEnumCase(unit_operand, op_mode, values, output)
         if group_mode:
             output.write(')')
         return
     assert False
+
+#===============================================
+def _reprEnumCase(unit_operand, op_mode, values, output):
+    if op_mode in ("OR", ""):
+        output.write('%s in {' % unit_operand)
+        op_close = '}'
+    elif op_mode == "NOT":
+        output.write('%s not in {' % unit_operand)
+        op_close = '}'
+    elif op_mode == "AND":
+        output.write('%s in all({' % unit_operand)
+        op_close = '})'
+    else:
+        assert op_mode == "ONLY"
+        output.write('%s in only({' % unit_operand)
+        op_close = '})'
+    q_first = True
+    for val in values:
+        if q_first:
+            q_first = False
+        else:
+            output.write(",\f")
+        if sIdPatt.match(val):
+            output.write(val)
+        else:
+            output.write('"' + val.replace('"', '\\"') + '"')
+    output.write(op_close)
 
 #===============================================
 TAB_LEN = 4
@@ -223,6 +240,19 @@ def _formatRep(text, start_indent, next_indent):
         ret.write(chunk)
         cur_len += len(chunk)
     return ret.getvalue()
+
+#===============================================
+def findComment(code):
+    if '#' not in code:
+        return None
+    codeObj = StringIO(code)
+    try:
+        for info in tokenize.generate_tokens(codeObj.readline):
+            if info[0] == tokenize.COMMENT:
+                return info[2]
+    except tokenize.TokenError:
+        pass
+    return None
 
 #===============================================
 #===============================================

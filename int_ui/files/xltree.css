@@ -63,6 +63,16 @@ span#list-report {
     padding: 2px 15px 2px 15px;
 }
 
+div.error {
+    width: 100%;
+    background-color: yellow;
+    color: red;
+    font-size: 120%;
+}
+div.error a {
+    text-decoration: underline;
+    cursor: pointer;
+}
 /********************Filter controls*****************************/
 
 div#panel-tree, div#panel-stat  {
@@ -75,9 +85,6 @@ div#panel-tree, div#panel-stat  {
 }
 
 div#condition-change {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
     margin: 0px;
     padding: 0px;
     vertical-align: top;
@@ -90,19 +97,19 @@ div#cond-title-wrap {
     color: #8F00E0;
     font-weight: bold;
     font-size: 15px;
-    flex: 0 0 17px;
-
+    height: 17px;
+    min-height: 17px;
 }
 div#cond-message {
     padding: 5px 10px 4px 10px;
     background-color: #f0f0ff;
     font-style: italic;
     font-size: 13px;
-    flex: 0 0 20px;
+    height: 17px;
+    min-height: 17px;
 }
 div#cond-ctrl {
     padding: 5px 10px 4px 30px;
-    flex: 0 0 17px;
 }
 
 div#stat-list, div#decision-tree {
@@ -171,14 +178,15 @@ div#cur-cond-numeric {
     padding: 0px 10px 0px 30px;
     vertical-align: top;
     overflow: hidden;
-    flex: 1 0 40px;
+    height: 40px;
+    min-height: 40px;
 }
 
 div#cur-cond-enum {
     padding: 0px;
     margin:  0px;
+    margin-left: 5px;
     overflow: hidden;
-    flex: 1 0 200px;
 }
 
 div#wrap-cond-enum {
@@ -191,22 +199,14 @@ div#wrap-cond-enum {
     flex-direction: columns;
 }
 
-div#wrap-cond-enum-list {
-    padding: 0px 5px;
-    margin: 0px;
-    flex-grow: 1;
-    display: grid;
-    overflow: hidden;    
-    border: 1px solid black;
-}
-
 div#cur-cond-enum-list {
     padding: 0px;
     margin: 2px;
     min-width: 200px;
     display: grid;
     vertical-align: top;
-    overflow: hidden;
+    overflow: auto;
+    border: 1px solid black;
 }
 
 div#op-enum-list {
@@ -217,7 +217,8 @@ div#op-enum-list {
 }
 
 div#cur-cond-enum-ctrl {
-    width: 100px;
+    width: 80px;
+    min-width: 80px;
     vertical-align: top;
     overflow: hidden;
     margin: 10px 5px;
@@ -358,6 +359,52 @@ div.point-code.active {
     border: 1px solid red;
 }
 
+div#zyg-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    white-space: nowrap;
+    margin-bottom: 5px;
+}
+
+div#zyg-problem {
+    white-space: nowrap;
+    text-align: left;
+}
+
+div#cur-cond-zyg-problem-group{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    white-space: nowrap;
+    margin-bottom: 5px;
+    font-size: 90%;
+}
+
+div.zyg-family {
+    flex: 0 0 100px;
+    border-right: 1px solid black;
+    margin-right: 5px;
+    padding-right: 5px;
+}
+
+div.zyg-fam-member {
+    display: block;
+}
+
+div#zyg-stat {
+    flex: 1 0 200px;
+    margin-top: 10px;
+}
+
+div#zyg-stat ul {
+    padding-left: 20px;
+}
+
+button#zyg-fam-reset {
+    padding: 0px !important;
+}
+
 /********************Control controls*****************************/
 div#ds-dropdown {
     margin: 0px;
@@ -419,7 +466,7 @@ div.ctrl-menu:hover {
     padding: 0px;
     border: 1px solid black;
     border-radius: 7px;
-    width: 40%;
+    width: 47%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
     overflow: hidden;
 }
@@ -430,8 +477,8 @@ div.ctrl-menu:hover {
 }
 
 #cur-cond-mod.enum {
-    height: 400px;
-    min-height: 400px;
+    height: 90%;
+    min-height: 90%;
 }
 
 
@@ -724,15 +771,14 @@ div#code-edit-ctrl {
     height: 25px;
     margin: 5px;
     padding: 5px;
-    text-align: center;
 }
 
 span#code-edit-error {
     background-color: yellow;
     color: red;
     font-weight: bold;
-    width: 100%;
     margin-left: 10px;
+    cursor: pointer;
 }
 
 div#code-edit-main {
@@ -749,9 +795,6 @@ textarea#code-edit-content {
     font-size: 16px;
 }
 
-button#code-edit-show {
-    display: none;
-}
 /********************common controls*****************************/
 div.modal-back {
     display: none;
@@ -768,7 +811,7 @@ div.modal-back {
 
 span.close-it {
     color: #aaa;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     margin: 0px 10px 0px 10px;
     float: right;

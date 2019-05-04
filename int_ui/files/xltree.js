@@ -18,26 +18,13 @@ function initXL(ds_name, common_title, ws_url) {
     sCommonTitle = common_title;
     sWsURL = ws_url;
     sDSName = ds_name; 
+    window.onresize  = updateSizes;
     window.name = sCommonTitle + ":" + sDSName + ":L";
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
     sDecisionTree.setup();
 }
     
-/**************************************/
-function ajaxCall(rq_name, args, func_eval) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            func_eval(info);
-        }
-    };
-    xhttp.open("POST", rq_name, true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(args); 
-}
-
 /**************************************/
 var sDecisionTree = {
     mTreeCode: null,
@@ -49,6 +36,7 @@ var sDecisionTree = {
     mCurPointNo: null,
     mOpCond: null,
     mMarkLoc: null,
+    mErrorMode: null,
     
     setup: function(tree_code, options) {
         args = "ds=" + sDSName;
@@ -71,14 +59,47 @@ var sDecisionTree = {
     _setup: function(info) {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
-        this.mCounts = info["counts"];
-        this.mPoints = info["points"];
-        this.mMarkers = info["markers"];
         sTreeCtrlH.update(info["cur_version"], info["versions"]);
         document.getElementById("std-code-select").value = 
             info["std_code"]? info["std_code"]:"";
-        this.mAcceptedCount = 0;
         this.mMarkLoc = null;
+        if (info["error"]) {
+            this.mErrorMode = true;
+            this.mCounts = [];
+            this.mPoints = [];
+            this.mMarkers = [];
+            this._fillNoTree();
+        }
+        else {
+            this.mErrorMode = false;
+            this.mCounts = info["counts"];
+            this.mPoints = info["points"];
+            this.mMarkers = info["markers"];
+            this._fillTreeTable();
+        }
+        
+        point_no = (this.mCurPointNo)? this.mCurPointNo: 0;
+        while (point_no >= 0) {
+            if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
+                point_no--;
+            else
+                break;
+        }
+        this.mCurPointNo = null;
+        this.selectPoint(point_no);
+        
+        document.getElementById("report-accepted").innerHTML =  
+            (this.mErrorMode)? "?" : ("" + this.mAcceptedCount);
+        if (this.mErrorMode)
+            rep_rejected = "?"
+        else
+            rep_rejected = this.mTotalCount - this.mAcceptedCount;
+        document.getElementById("report-rejected").innerHTML = rep_rejected;
+        updateSizes();
+    },
+
+    _fillTreeTable: function() {
+        this.mAcceptedCount = 0;
         var list_rep = ['<table class="d-tree">'];
         for (var p_no = 0; p_no < this.mPoints.length; p_no++) {
             point = this.mPoints[p_no];
@@ -114,26 +135,20 @@ var sDecisionTree = {
         }
         list_rep.push('</table>'); 
         document.getElementById("decision-tree").innerHTML = list_rep.join('\n');
-        point_no = (this.mCurPointNo)? this.mCurPointNo: 0;
-        while (point_no > 0) {
-            if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
-                point_no--;
-            else
-                break;
-        }
-        this.mCurPointNo = null;
-        this.selectPoint(point_no);
-        
-        document.getElementById("report-accepted").innerHTML = "" + 
-            (this.mAcceptedCount);
-        rep_rejected = this.mTotalCount - this.mAcceptedCount;
-        document.getElementById("report-rejected").innerHTML = rep_rejected;
+    },
+    
+    _fillNoTree: function() {
+        this.mAcceptedCount = 0;
+        document.getElementById("decision-tree").innerHTML = 
+            '<div class="error">Tree code has errors, <br/>' +
+            '<a onclick="sCodeEdit.show();">Edit</a> ' +
+            'or choose another code from repository</div>';
     },
     
     selectPoint: function(point_no) {
         if (this.mCurPointNo == point_no) 
             return;
-        if (this.mCounts[point_no] == 0)
+        if (point_no >=0 && this.mCounts[point_no] == 0)
             return;
         if (sUnitsH.postAction(
             'sDecisionTree.selectPoint(' + point_no + ');', true))
@@ -142,15 +157,18 @@ var sDecisionTree = {
         this._highlightCondition(false);
         this.mOpCond = null;
         this.mMarkLoc = null;
-        var new_el = document.getElementById("p_td__" + point_no);
-        if (new_el == null) 
-            return;
-        if (this.mCurPointNo != null) {
+        if (point_no >= 0) {
+            var new_el = document.getElementById("p_td__" + point_no);
+            if (new_el == null) 
+                return;
+        }
+        if (this.mCurPointNo != null && this.mCurPointNo >= 0) {
             var prev_el = document.getElementById("p_td__" + this.mCurPointNo);
             prev_el.className = "active";
         }
         this.mCurPointNo = point_no;
-        new_el.className = "cur";
+        if (point_no >= 0)
+            new_el.className = "cur";
         sCodeEdit.setup(this.mTreeCode);
         sUnitsH.setup(this.mTreeCode, this.mCurPointNo);
     },
@@ -160,7 +178,7 @@ var sDecisionTree = {
         if (sUnitsH.postAction(
                 'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');', true))
             return;
-        if (this.mCurPointNo != point_no)
+        if (this.mCurPointNo != point_no || this.mCurPointNo < 0)
             return
         this.mOpCond = this.mMarkers[point_no][marker_idx];
         this.mMarkLoc = [point_no, marker_idx];
@@ -200,13 +218,17 @@ var sUnitsH = {
     mItems: null,
     mUnitMap: null,
     mCurUnit: null,
+    mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
+    mCtx: null,
     
     setup: function(tree_code, point_no) {
         args = "ds=" + sDSName + "&code=" +
             encodeURIComponent(tree_code) + 
             "&no=" + point_no;
+        if (this.mCtx != null)
+            args += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         this.mWaiting = true;
         document.body.className = "wait";
         document.getElementById("stat-list").className = "wait";
@@ -234,49 +256,11 @@ var sUnitsH = {
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
             
+        this.mCtx = null;
         this.mItems = info["stat-list"];
         this.mUnitMap = {}
         var list_stat_rep = [];
-        var group_title = false;
-        for (idx = 0; idx < this.mItems.length; idx++) {
-            unit_stat = this.mItems[idx];
-            unit_type = unit_stat[0];
-            if (unit_type == "zygosity")
-                continue;
-            unit_name   = unit_stat[1]["name"];
-            unit_title  = unit_stat[1]["title"];
-            unit_vgroup = unit_stat[1]["vgroup"];
-            this.mUnitMap[unit_name] = idx;
-            if (group_title != unit_vgroup || unit_vgroup == null) {
-                if (group_title != false) {
-                    list_stat_rep.push('</div>');
-                }
-                group_title = unit_vgroup;
-                list_stat_rep.push('<div class="stat-group">');
-                if (group_title != null) {
-                    list_stat_rep.push('<div class="stat-group-title">' + 
-                        group_title + '</div>');
-                }
-            }
-            list_stat_rep.push('<div id="stat--' + unit_name + 
-                '" class="stat-unit" onclick="sUnitsH.selectUnit(\'' + 
-                unit_name + '\');">');
-            list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
-                unit_name + '</span>');
-            if (unit_title)
-                list_stat_rep.push('<span class="stat-unit-title">' + 
-                    unit_title + '</span>');
-            list_stat_rep.push('</div>')
-            if (unit_type == "long" || unit_type == "float") {
-                this._fillStatRepNum(unit_stat, list_stat_rep);
-            } else {
-                this._fillStatRepEnum(unit_stat, list_stat_rep);
-            }
-            list_stat_rep.push('</div>')
-        }
-        if (group_title != false) {
-            list_stat_rep.push('</div>')
-        }
+        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep);
         document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
         
         this.mCurUnit = null;        
@@ -291,54 +275,8 @@ var sUnitsH = {
             eval(post_action);
     },
 
-    _fillStatRepNum: function(unit_stat, list_stat_rep) {
-        val_min   = unit_stat[2];
-        val_max   = unit_stat[3];
-        count     = unit_stat[4];
-        //cnt_undef = unit_stat[5];
-        if (count == 0) {
-            list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
-        } else {
-            if (val_min == val_max) {
-                list_stat_rep.push('<span class="stat-ok">' + val_min + '</span>');
-            } else {
-                list_stat_rep.push('<span class="stat-ok">' + val_min + 
-                    ' =< ...<= ' + val_max + ' </span>');
-            }
-            list_stat_rep.push(': <span class="stat-count">' + count + 
-                ' records</span>');
-        }
-    },
-        
-    _fillStatRepEnum: function(unit_stat, list_stat_rep) {
-        var_list = unit_stat[2];
-        list_count = 0;
-        for (j = 0; j < var_list.length; j++) {
-            if (var_list[j][1] > 0)
-                list_count++;
-        }
-        if (list_count > 0) {
-            list_stat_rep.push('<ul>');
-            view_count = (list_count > 6)? 3: list_count; 
-            for (j = 0; j < var_list.length && view_count > 0; j++) {
-                var_name = var_list[j][0];
-                var_count = var_list[j][1];
-                if (var_count == 0)
-                    continue;
-                view_count -= 1;
-                list_count--;
-                list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-                    '<span class="stat-count">' +
-                    var_count + ' records</span></li>');
-            }
-            list_stat_rep.push('</ul>');
-            if (list_count > 0) {
-                list_stat_rep.push('<p><span class="stat-comment">...and ' + 
-                    list_count + ' variants more...</span></p>');
-            }
-        } else {
-            list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
-        }
+    getCurUnitTitle: function() {
+        return (this.mCurZygName == null)? this.mCurUnit: this.mCurZygName;
     },
     
     getCurUnitName: function() {
@@ -350,6 +288,17 @@ var sUnitsH = {
     },
     
     selectUnit: function(stat_unit, force_it) {
+    },
+    
+    updateZygUnit: function(zyg_name) {
+        if (this.mCurZygName != null) {
+            this.mCurZygName = zyg_name;
+            this.selectUnit(this.mCurUnit, true);
+        }
+    },
+    
+    setCtx: function(ctx) {
+        this.mCtx = ctx;
     }
 };
     
@@ -385,6 +334,7 @@ var sOpCondH = {
         this.mCurTpHandler.checkControls();
         document.getElementById("cur-cond-mod").className = mode;
         sViewH.modalOn(document.getElementById("cur-cond-back"), "flex");
+        updateSizes();
     },
     
     formCondition: function(condition_data, err_msg, cond_mode, add_always) {
@@ -408,247 +358,6 @@ var sOpCondH = {
     
     careControls: function() {
     }
-};
-
-/**************************************/
-var sOpNumH = {
-    mInfo: null,
-    mInputMin: null,
-    mInputMax: null,    
-    mUpdateCondStr: null,
-
-    init: function() {
-        this.mInputMin   = document.getElementById("cond-min-inp");
-        this.mInputMax   = document.getElementById("cond-max-inp");
-    },
-    
-    getCondType: function() {
-        return "numeric";
-    },
-
-    suspend: function() {
-        this.mInfo = null;
-        this.careControls();
-    },
-    
-    updateUnit: function(unit_stat) {
-        this.mUpdateCondStr = null;
-        this.mInfo = {
-            cur_bounds: [null, null],
-            unit_type:  unit_stat[0],
-            val_min:    unit_stat[2],
-            val_max:    unit_stat[3],
-            count:      unit_stat[4]}
-            
-        document.getElementById("cond-min").innerHTML = this.mInfo.val_min;
-        document.getElementById("cond-max").innerHTML = this.mInfo.val_max;
-        document.getElementById("cond-sign").innerHTML = 
-            (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
-        this.mInputMin.value = "";
-        this.mInputMax.value = "";
-    },
-
-    updateCondition: function(cond) {
-        this.mUpdateCondStr = JSON.stringify(cond.slice(2));
-        this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
-        this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
-            this.mInfo.cur_bounds[0] : "";
-        this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
-            this.mInfo.cur_bounds[1] : "";
-        document.getElementById("cond-sign").innerHTML = "&le;";
-    },
-
-    careControls: function() {
-        document.getElementById("cur-cond-numeric").style.display = 
-            (this.mInfo == null)? "none":"block";
-    },
-
-    checkControls: function(opt) {
-        if (this.mInfo == null) 
-            return;
-        var err_msg = null;
-        if (this.mInputMin.value.trim() == "") {
-            this.mInfo.cur_bounds[0] = null;
-            this.mInputMin.className = "num-inp";
-        } else {
-            val = toNumeric(this.mInfo.unit_type, this.mInputMin.value)
-            this.mInputMin.className = (val == null)? "num-inp bad":"num-inp";
-            if (val == null) 
-                err_msg = "Bad numeric value";
-            else {
-                this.mInfo.cur_bounds[0] = val;
-            }
-        }
-        if (this.mInputMax.value.trim() == "") {
-            this.mInfo.cur_bounds[1] = null;
-            this.mInputMax.className = "num-inp";
-        } else {
-            val = toNumeric(this.mInfo.unit_type, this.mInputMax.value)
-            this.mInputMax.className = (val == null)? "num-inp bad":"num-inp";
-            if (val == null) 
-                err_msg = "Bad numeric value";
-            else {
-                this.mInfo.cur_bounds[1] = val;
-            }
-        }
-        if (err_msg == null) {
-            if (this.mInfo.cur_bounds[0] == null && 
-                    this.mInfo.cur_bounds[1] == null)
-                err_msg = "";            
-            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[0] > this.mInfo.val_max)
-                err_msg = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr && 
-                    this.mInfo.cur_bounds[1] < this.mInfo.val_min)
-                err_msg = "Upper bound is below minimum value";
-            if (this.mInfo.cur_bounds[0] != null && 
-                    this.mInfo.cur_bounds[1] != null && 
-                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1])
-                err_msg = "Bounds are mixed up";
-        }
-
-        condition_data = null;
-        if (err_msg == null) {
-            condition_data = [this.mInfo.cur_bounds, null]
-            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[0] < this.mInfo.val_min)
-                err_msg = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null &&  !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[1] > this.mInfo.val_max)
-                err_msg = "Upper bound is above maximal value";
-        }
-        if (this.mUpdateCondStr && !err_msg && condition_data &&
-                JSON.stringify(condition_data) == this.mUpdateCondStr) {
-            err_msg = " ";
-            condition_data = null;
-        }
-        sOpCondH.formCondition(
-            condition_data, err_msg, this.mInfo.op, false);
-        this.careControls();
-    }
-};
-
-/**************************************/
-var sOpEnumH = {
-    mVariants: null,
-    mOperationMode: null,
-    mDivVarList: null,
-    mUpdateCondStr: null,
-
-    init: function() {
-        this.mDivVarList = document.getElementById("op-enum-list");
-    },
-    
-    getType: function() {
-        return "enum";
-    },
-
-    suspend: function() {
-        this.mVariants = null;
-        this.mOperationMode = null;
-        this.careControls();
-    },
-
-    updateUnit: function(unit_stat) {
-        this.mUpdateCondStr = null;
-        this.mVariants = unit_stat[2];
-        this.mOperationMode = (unit_stat[0] == "status")? null:0;
-        this.careEnumZeros(false);
-        
-        list_val_rep = [];
-        has_zero = false;
-        for (j = 0; j < this.mVariants.length; j++) {
-            var_name = this.mVariants[j][0];
-            var_count = this.mVariants[j][1];
-            has_zero |= (var_count == 0);
-            list_val_rep.push('<div class="enum-val' + 
-                ((var_count==0)? " zero":"") +'">' +
-                '<input id="elcheck--' + j + '" type="checkbox" ' + 
-                'onchange="sOpEnumH.checkControls();"/>&emsp;' + var_name + 
-                '<span class="enum-cnt">(' + var_count + ')</span></div>');
-        }
-        this.mDivVarList.innerHTML = list_val_rep.join('\n');
-        document.getElementById("cur-cond-enum-zeros").style.display = 
-            (has_zero)? "block":"none";            
-        this.careEnumZeros(false);
-    },
-    
-    updateCondition: function(cond) {
-        this.mUpdateCondStr = JSON.stringify(cond.slice(2));
-        if (this.mOperationMode != null)
-            this.mOperationMode = ["", "AND", "ONLY", "NOT"].indexOf(cond[2]);
-        var_list = cond[3];
-        needs_zeros = false;
-        for (j = 0; j < this.mVariants.length; j++) {
-            var_name = this.mVariants[j][0];
-            if (var_list.indexOf(var_name) < 0)
-                continue;
-            needs_zeros |= (this.mVariants[j][1] == 0);
-            document.getElementById("elcheck--" + j).checked = true;
-        }
-        this.careEnumZeros(needs_zeros);
-    },
-    
-    careControls: function() {
-        document.getElementById("cur-cond-enum").style.display = 
-            (this.mVariants == null)? "none":"block";
-        for (idx = 1; idx < 4; idx++) {
-            vmode = ["or", "and", "only", "not"][idx];
-            document.getElementById("cond-mode-" + vmode + "-span").
-                style.visibility = (this.mOperationMode == null)? "hidden":"visible";
-            document.getElementById("cond-mode-" + vmode).checked =
-                (idx == this.mOperationMode);
-        }
-    },
-
-    careEnumZeros: function(opt) {
-        var check_enum_z = document.getElementById("cur-enum-zeros");
-        if (opt == undefined) {
-            show_zeros = check_enum_z.checked;
-        } else {
-            show_zeros = opt;
-            check_enum_z.checked = show_zeros;
-        }
-        this.mDivVarList.className = (show_zeros)? "":"no-zeros";
-    },
-    
-    checkControls: function(opt) {
-        if (this.mVariants == null) 
-            return;
-        this.careControls();
-        var err_msg = null;
-        if (opt != undefined && this.mOperationMode != null) {
-            if (this.mOperationMode == opt)
-                this.mOperationMode = 0;
-            else
-                this.mOperationMode = opt;
-            
-        }
-        sel_names = [];
-        for (j=0; j < this.mVariants.length; j++) {
-            if (document.getElementById("elcheck--" + j).checked)
-                sel_names.push(this.mVariants[j][0]);
-        }
-        op_mode = "";
-        if (this.mOperationMode != null)
-            op_mode = ["", "AND", "ONLY", "NOT"][this.mOperationMode];
-        
-        condition_data = null;
-        if (sel_names.length > 0) {
-            condition_data = [op_mode, sel_names];
-            err_msg = "";
-        } else
-            err_msg = " Empty selection"
-        if (this.mUpdateCondStr && !err_msg && condition_data &&
-                JSON.stringify(condition_data) == this.mUpdateCondStr) {
-            err_msg = " ";
-            condition_data = null;
-        }
-
-        sOpCondH.formCondition(condition_data, "", op_mode, true);
-        this.careControls();
-    }
-
 };
 
 /**************************************/
@@ -688,6 +397,8 @@ var sTreeCtrlH = {
     },
     
     fixCurrent: function() {
+        if (this.mCurPointNo < 0)
+            return;
         this.mHistory.push(this._evalCurState());
         while (this.mHistory.length > 50)
             this.mHistory.shift();
@@ -876,177 +587,22 @@ var sVersionsH = {
     }
 };
 
-/**************************************/
-var sCreateWsH = {
-    mStage: null,
-    mDSNames: null,
-    mSpanModTitle: null,
-    mInputModName: null,
-    mDivModProblems: null,
-    mDivModStatus: null,
-    mButtonModStart: null,
-    mButtonModCancel: null,
-    mTaskId: null,
-    mTimeH: null,
-    
-    init: function() {
-        this.mSpanModTitle = document.getElementById("create-ws-title");
-        this.mInputModName = document.getElementById("create-ws-name");
-        this.mDivModProblems = document.getElementById("create-ws-problems");
-        this.mDivModStatus = document.getElementById("create-ws-status");
-        this.mButtonModStart = document.getElementById("create-ws-start");
-        this.mButtonModCancel = document.getElementById("create-ws-cancel");
-    },
-    
-    show: function() {
-        if (this.mTimeH != null) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
-        this.mDSNames = null;
-        this.mTaskId = null;
-        this.mSpanModTitle.innerHTML = 'Create workspace for ' +
-            sDecisionTree.getAcceptedCount() + ' of ' + 
-            sDecisionTree.getTotalCount();
-        var err_msg = "";
-        if (sDecisionTree.getAcceptedCount() >= 5000)
-            err_msg = "Too many records, try to reduce";
-        if (sDecisionTree.getAcceptedCount() < 10)
-            err_msg = "Too small workspace";
-        if (!sTreeCtrlH.curVersionSaved()) {
-            sUnitsH.postAction("sCreateWsH.show();");
-            treeVersionSave();
-            return;
-        }
-        this.mDivModProblems.innerHTML = err_msg;
-        if (err_msg) {
-            this.mStage = "BAD";
-            this.checkControls();
-            sViewH.modalOn(document.getElementById("create-ws-back"));
-            return;
-        }
-        this.mStage = "NAMES";
-        ajaxCall("dirinfo", "", function(info) {
-            sCreateWsH._setupName(info);})
-    },
-    
-    _nameReserved: function(dsname) {
-        return this.mDSNames.indexOf(dsname) >= 0;
-    },
-    
-    _setupName: function(dirinfo) {
-        this.mDSNames = [];
-        for (idx = 0; idx < dirinfo["xl-datasets"].length; idx++)
-            this.mDSNames.push(dirinfo["xl-datasets"][idx]["name"]);
-        for (idx = 0; idx < dirinfo["workspaces"].length; idx++)
-            this.mDSNames.push(dirinfo["workspaces"][idx]["name"]);
-        var no = 1;
-        var own_name = sDSName.match(/\_(.*)$/)[1];
-        var ws_name;
-        while (true) {
-            ws_name = "ws" + no + '_' + own_name;
-            if (!this._nameReserved(ws_name))
-                break;
-            no += 1;
-        }
-        this.mInputModName.value = ws_name;
-        this.mStage = "READY";
-        this.checkControls();
-        sViewH.modalOn(document.getElementById("create-ws-back"));
-    },
-    
-    checkControls: function() {
-        if (this.mStage == "BAD")
-            this.mInputModName.value = "";
-        this.mInputModName.disabled = (this.mStage != "READY");
-        err_msg = "";
-        if (this.mStage == "READY") {
-            if (this._nameReserved(this.mInputModName.value)) 
-                err_msg = "Name is reserved, try another one";
-            this.mDivModProblems.innerHTML = err_msg;
-        }
-        this.mButtonModStart.disabled = (this.mStage != "READY" || err_msg);
-        if (this.mStage == "BAD" || this.mStage == "READY") {
-            this.mDivModProblems.style.display = "block";
-            this.mDivModStatus.style.display = "none";
-            this.mDivModStatus.innerHTML = "";
-        } else {
-            this.mDivModProblems.style.display = "none";
-            this.mDivModStatus.style.display = "block";
-        }
-        this.mButtonModCancel.disabled = (this.mStage == "WAIT");
-    },
-    
-    startIt: function() {
-        if (this.mStage != "READY")
-            return;
-         this.checkControls();
-        if (this.mButtonModStart.disabled)
-            return;
-        sViewH.blockModal(true);
-        this.mStage = "WAIT";
-        ajaxCall("xl2ws", "ds=" + sDSName + "&verbase= " + 
-            sTreeCtrlH.getCurVersion() + "&ws=" + 
-            encodeURIComponent(this.mInputModName.value),
-            function(info) {sCreateWsH._setupTask(info);})
-    },
-    
-    _setupTask: function(info) {
-        this.mTaskId = info["task_id"];
-        this.checkTask();
-    },
-    
-    checkTask: function() {
-        if (this.mTaskId == null)
-            return;
-        ajaxCall("job_status", "task=" + this.mTaskId,
-            function(info) {
-                sCreateWsH._checkTask(info);})
-    },
-    
-    _checkTask: function(info) {
-        if (info != null && info[0] == false) {
-            this.mDivModStatus.innerHTML = info[1];
-            if (this.mTimeH == null)
-                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 3000);
-            this.checkControls();
-            return;
-        }
-        if (this.mTimeH != null) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
-        this.mStage = "DONE";
-        sViewH.blockModal(false);
-        this.checkControls();
-        if (info == null) {
-            this.mDivModStatus.innerHTML = "Task information lost";
-        } else {
-            if (info[0] == null) {
-                this.mDivModStatus.innerHTML = info[1];
-            } else {
-                target_ref = (sWsURL != "ws")? '': (' target="' + 
-                    sTitlePrefix + '/' + info[0]["ws"] + '"'); 
-                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsURL + 
-                    '?ws=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
-            }
-        }
-    }
-};
-
 /*************************************/
 var sCodeEdit = {
     mBaseContent: null,
     mCurContent: null,
-    mCurError: null,
+    mCurError: false,
     mButtonShow: null,
     mButtonDrop: null,
+    mSpanPos: null,
     mSpanError: null,
     mAreaContent: null,
+    mErrorPos: null,
     
     init: function() {
         this.mButtonShow = document.getElementById("code-edit-show");
         this.mButtonDrop = document.getElementById("code-edit-drop");
+        this.mSpanPos = document.getElementById("code-edit-pos");
         this.mSpanError = document.getElementById("code-edit-error");
         this.mAreaContent = document.getElementById("code-edit-content");
     },
@@ -1056,13 +612,14 @@ var sCodeEdit = {
         this.mAreaContent.value = this.mBaseContent;
         this.mCurContent = this.mBaseContent;
         this.mCurError = false;
+        this.mErrorPos = null;
         this.validateContent(this.mBaseContent);
     },
     
     checkControls: function() {
         this.mButtonShow.text = (this.mCurError != null)? 
             "Continue edit code" : "Edit code"; 
-        this.mButtonDrop.disabled = (this.mCurContent != this.mBaseContent);
+        this.mButtonDrop.disabled = (this.mCurContent == this.mBaseContent);
         this.mSpanError.innerHTML = (this.mCurError)? this.mCurError:"";
     },
     
@@ -1075,9 +632,10 @@ var sCodeEdit = {
             return;
         this.mCurContent = content;
         this.mCurError = false;
+        this.mErrorPos = null;
         ajaxCall("xltree_code", "ds=" + sDSName + "&code=" +
             encodeURIComponent(this.mCurContent), 
-            function(info){sCodeEdit._validation(info);});
+            function(info) {sCodeEdit._validation(info);});
     },
     
     _validation: function(info) {
@@ -1086,10 +644,31 @@ var sCodeEdit = {
         if (info["error"]) {
             this.mCurError = "At line " + info["line"] + " pos " + info["pos"] + ": " +
                 info["error"];
+            this.mErrorPos = [info["line"], info["pos"]];
         } else {
             this.mCurError = null;
+            this.mErrorPos = null;
         }
         this.checkControls();
+    },
+    
+    posError: function() {
+        if (this.mErrorPos == null) 
+            return;
+        var content = this.mCurContent;
+        var nlines = this.mErrorPos[0];
+        var idx = 0;
+        while (nlines > 1) {
+            idx = content.indexOf('\n', idx);
+            if (idx < 0)
+                return;
+            idx++;
+            nlines--;
+        }
+        idx += this.mErrorPos[1];
+        var a_c = this.mAreaContent;
+        setTimeout(function() {  
+            a_c.selectionStart = idx; a_c.selectionEnd = idx; a_c.focus()}, 1);
     },
     
     drop: function() {
@@ -1109,74 +688,45 @@ var sCodeEdit = {
     }
 };
 
-/*************************************/
-/* Top controls                      */
-/*************************************/
-var sViewH = {
-    mShowToDrop: null,
-    mDropCtrls: [],
-    mModalCtrls: [],
-    mBlock: false,
-    
-    init: function() {
-        window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
-        this.addToDrop(document.getElementById("ds-control-menu"));
-    },
+/**************************************/
+function wsCreate() {
+    sCreateWsH.show();
+}
 
-    addToDrop: function(ctrl) {
-        this.mDropCtrls.push(ctrl);
-    },
+function startWsCreate() {
+    sCreateWsH.startIt();
+}
 
-    dropOn: function(ctrl) {
-        if (ctrl.style.display == "block") {
-            this.dropOff();
-        } else {
-            this.dropOff();
-            ctrl.style.display = "block";
-            this.mShowToDrop = true;
-        }
-    },
-    
-    dropOff: function() {
-        this.mShowToDrop = false;
-        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
-            this.mDropCtrls[idx].style.display = "none";
-        }
-    },
-    
-    modalOn: function(ctrl, disp_mode) {
-        this.mBlock = false;
-        if (this.mModalCtrls.indexOf(ctrl) < 0)
-            this.mModalCtrls.push(ctrl);
-        this.modalOff();
-        ctrl.style.display = (disp_mode)? disp_mode: "block";
-    },
-    
-    modalOff: function() {
-        if (this.mBlock)
-            return;
-        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
-            this.mModalCtrls[idx].style.display = "none";
-        }
-        sDecisionTree._highlightCondition(false);
-        sCodeEdit.relax();
-    },
-    
-    blockModal: function(mode) {
-        this.mBlock = mode;
-        document.body.className = (mode)? "wait":"";
-    },
-    
-    onclick: function(event_ms) {
-        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
-            if (event_ms.target == this.mModalCtrls[idx]) 
-                this.modalOff();
-        }
-        if (this.mShowToDrop && !event_ms.target.matches('.drop')) {
-            this.dropOff();
-        }
+function _prepareWsCreate() {
+    if (!sTreeCtrlH.curVersionSaved()) {
+        sUnitsH.postAction("sCreateWsH.show();");
+        treeVersionSave();
+        return null;
     }
-};
+    return [sDecisionTree.getAcceptedCount(), sDecisionTree.getTotalCount()];
+}
+
+function _callWsArgs() {
+    return "&verbase= " + sTreeCtrlH.getCurVersion();
+}
+
+/**************************************/
+function updateSizes() {
+    el_cond_mod = document.getElementById("cur-cond-mod");
+    if (el_cond_mod.className == "enum") {
+        cond_mod_height = el_cond_mod.offsetHeight;
+        el_zyp_problem = document.getElementById("cur-cond-zyg-problem-group");
+        if (el_zyp_problem.style.display != "none") 
+            cond_mod_height -= el_zyp_problem.getBoundingClientRect().height;
+        document.getElementById("wrap-cond-enum").style.height = 
+            Math.max(10, cond_mod_height - 110);
+    }
+}
+
+function onModalOff() {
+    sDecisionTree._highlightCondition(false);
+    sCodeEdit.relax();
+}
 
 function openControlMenu() {
     sViewH.dropOn(document.getElementById("ds-control-menu"));
@@ -1247,15 +797,6 @@ function versionSelect() {
 
 function versionDelete() {
     sVersionsH.deleteVersion();
-}
-
-function wsCreate() {
-    sCreateWsH.show();
-}
-
-
-function startWsCreate() {
-    sCreateWsH.startIt();
 }
 
 function editMark(point_no, instr_idx) {

@@ -6,7 +6,7 @@ from app.filter.code_works import StdTreeCodes
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["xltree.css", "py_pygments.css"],
-        js_files = ["xltree.js", "flt.js"])
+        js_files = ["xltree.js", "fctrl.js", "flt.js"])
 
     print >> output, (
         '  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
@@ -109,12 +109,11 @@ def _formCurCondDiv(output):
               <span id="num-count" class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
+              <div id="cur-cond-zyg-problem-group"></div>
               <div id="wrap-cond-enum">
-                <div id="wrap-cond-enum-list">
-                  <div id="cur-cond-enum-list">
-                     <div id="op-enum-list">
-                     </div>
-                  </div>
+                <div id="cur-cond-enum-list">
+                    <div id="op-enum-list">
+                    </div>
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
@@ -124,15 +123,15 @@ def _formCurCondDiv(output):
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;All
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;all
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;Not
+                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;not
                     </span><br/>
                     <span id="cond-mode-only-span">
                       <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;Only
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;only
                     </span>
                   </div>
                 </div>
@@ -210,7 +209,6 @@ def _formNoteDiv(output):
     </div>
 '''
 
-
 #===============================================
 def _formCreateWsDiv(output):
     print >> output, '''
@@ -255,7 +253,8 @@ def _formEditCodeDiv(output):
             <button onclick="sViewH.modalOff();">
                 Done
             </button>
-            <span id="code-edit-error"></span>
+            <span id="code-edit-error"
+                onclick="sCodeEdit.posError();"></span>
         </div>
         <div id="code-edit-main">
             <textarea id="code-edit-content"

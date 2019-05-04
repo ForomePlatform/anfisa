@@ -7,6 +7,7 @@ from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
 from .comp_hets import CompHetsMarkupBatch
 from app.filter.decision import DecisionTree
+from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.code_works import cmpTrees, codeHash, StdTreeCodes
 #===============================================
 class XLDataset(DataSet):
@@ -262,8 +263,15 @@ class XLDataset(DataSet):
                     tree_code, tree_hash, version_info_seq)
                 version = version_info_seq[-1][0]
                 instr = None
-        tree = DecisionTree.parse(self.mCondEnv, tree_code, instr)
-        ret = tree.dump()
+        parsed = ParsedDecisionTree.parse(self.mCondEnv, tree_code, instr)
+        if parsed.getError() is not None:
+            ret = {"code": parsed.getTreeCode(),
+                "error": parsed.getError()[-1]}
+        else:
+            tree = DecisionTree(parsed)
+            ret = tree.dump()
+            ret["counts"] = tree.evalPointCounts(self)
+
         if version is not None:
             for ver_no, ver_date, ver_hash in version_info_seq[-1::-1]:
                 if ver_hash == tree_hash:
@@ -274,23 +282,41 @@ class XLDataset(DataSet):
         std_code = StdTreeCodes.getKeyByHash(tree_hash)
         if std_code:
             ret["std_code"] = std_code
-        ret["versions"] = [info[:2] for info in version_info_seq]
         ret["total"] = self.getTotal()
-        ret["counts"] = tree.evalPointCounts(self)
+        ret["versions"] = [info[:2] for info in version_info_seq]
         return ret
 
     #===============================================
     @RestAPI.xl_request
     def rq__xlstat(self, rq_args):
-        tree = DecisionTree.parse(self.mCondEnv, rq_args["code"])
         point_no = int(rq_args["no"])
-        condition = tree.actualCondition(point_no)
+        if point_no >=0:
+            tree = DecisionTree(ParsedDecisionTree
+                (self.mCondEnv, rq_args["code"]))
+            condition = tree.actualCondition(point_no)
+        else:
+            condition = self.mCondEnv.getCondNone()
+        if "ctx" in rq_args:
+            repr_context = json.loads(rq_args["ctx"])
+        else:
+            repr_context = dict()
         count = self.evalTotalCount(condition)
-        ret = {
+        return {
             "total": self.getTotal(),
-            "count": count}
-        if count > 0:
-            ret["stat-list"] = self.makeAllStat(condition)
+            "count": count,
+            "stat-list": self.makeAllStat(condition, repr_context)}
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xltree_code(self, rq_args):
+        tree_code = rq_args["code"]
+        parser = ParsedDecisionTree(self.mCondEnv, tree_code)
+        ret = {"code": tree_code}
+        if parser.getError() is not None:
+            msg_text, lineno, col_offset = parser.getError()
+            ret["line"] = lineno
+            ret["pos"] = col_offset
+            ret["error"] = msg_text
         return ret
 
     #===============================================

@@ -4,7 +4,7 @@ from .gen_html import startHtmlPage
 def formXLPage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css", "xl.css"],
-        js_files = ["xl.js", "flt.js"])
+        js_files = ["xl.js", "fctrl.js", "flt.js"])
 
     print >> output, ('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title, ws_url))
@@ -99,15 +99,15 @@ def _formXLPannel(output, ds_name):
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;All
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;all
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;Not
+                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;not
                     </span><br/>
                     <span id="cond-mode-only-span">
                       <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;Only
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;only
                     </span>
                   </div>
                 </div>

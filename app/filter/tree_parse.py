@@ -2,21 +2,22 @@ import sys, ast, traceback, logging
 from StringIO import StringIO
 from collections import defaultdict
 
-from .code_works import reprConditionCode
+from .code_works import reprConditionCode, findComment
 #===============================================
 class TreeFragment:
-    def __init__(self, level, type, line_from):
+    def __init__(self, level, type, base_instr):
         self.mLevel = level
         self.mType = type
-        self.mBaseLine = line_from
-        self.mBaseLineDiap = [line_from, line_from]
+        self.mBaseInstr = base_instr
+        self.mBaseLineDiap = None
         self.mFullLineDiap = None
         self.mCondData = None
         self.mDecision = None
         self.mMarkers = []
 
-    def setFullLineDiap(self, diap):
-        self.mFullLineDiap = diap
+    def setLineDiap(self, base_diap, full_diap):
+        self.mBaseLineDiap = base_diap
+        self.mFullLineDiap = full_diap
 
     def getLevel(self):
         return self.mLevel
@@ -24,8 +25,8 @@ class TreeFragment:
     def getInstrType(self):
         return self.mType
 
-    def getBaseLineNo(self):
-        return self.mBaseLine
+    def getBaseInstr(self):
+        return self.mBaseInstr
 
     def getBaseLineDiap(self):
         return self.mBaseLineDiap
@@ -38,10 +39,6 @@ class TreeFragment:
 
     def getDecision(self):
         return self.mDecision
-
-    def regIt(self, it):
-        assert it.lineno >= self.mBaseLineDiap[0]
-        self.mBaseLineDiap[1] = max(self.mBaseLineDiap[1], it.lineno)
 
     def addMarker(self, point_cond, name_instr):
         self.mMarkers.append([point_cond, name_instr])
@@ -70,7 +67,18 @@ class TreeFragment:
         self.mDecision = decision
 
 #===============================================
-class DecisionTreeParser:
+class ParsedDecisionTree:
+    @staticmethod
+    def parse(cond_env, code, instr):
+        parser = ParsedDecisionTree(cond_env, code)
+        if parser.getError() is not None:
+            return parser
+        if instr is not None:
+            code = parser.modifyCode(instr)
+            parser = ParsedDecisionTree(cond_env, code)
+        return parser
+
+    #===============================================
     def __init__(self, cond_env, code):
         self.mCondEnv = cond_env
         self.mFragments = []
@@ -90,7 +98,8 @@ class DecisionTreeParser:
             last_instr = len(top_d.body) - 1
             for idx, instr_d in enumerate(top_d.body):
                 self.processInstr(instr_d, idx == last_instr)
-            self.setFullDiap()
+            if self.mError is None:
+                self.arrangeDiapasons()
         except Exception as err:
             if self.mError is None:
                 rep = StringIO()
@@ -103,11 +112,14 @@ class DecisionTreeParser:
     def getError(self):
         return self.mError
 
+    def getTreeCode(self):
+        return self.mCode
+
+    def getCondEnv(self):
+        return self.mCondEnv
+
     def getFragments(self):
         return self.mFragments
-
-    def regIt(self, it):
-        self.mFragments[-1].regIt(it)
 
     def getCurFrag(self):
         return self.mFragments[-1]
@@ -116,15 +128,17 @@ class DecisionTreeParser:
         self.mError = (msg_text, it.lineno, it.col_offset)
         raise RuntimeError()
 
+    def errorMsg(self, line_no, col_offset, msg_text):
+        self.mError = (msg_text, line_no, col_offset)
+        raise RuntimeError()
+
+
     #===============================================
     def processInstr(self, instr, q_last_instr):
-        if (len(self.mFragments) > 0 and
-                instr.lineno <= self.getCurFrag().getBaseLineDiap()[1]):
-            self.errorIt(instr, "Please split line before instruction")
         if q_last_instr:
             if isinstance(instr, ast.Return):
                 self.mFragments.append(
-                    TreeFragment(0, "Return", instr.lineno))
+                    TreeFragment(0, "Return", instr))
                 self.getCurFrag().setDecision(
                     self.getReturnValue(instr))
             else:
@@ -133,7 +147,7 @@ class DecisionTreeParser:
         else:
             if isinstance(instr, ast.If):
                 self.mFragments.append(
-                    TreeFragment(0, "If", instr.lineno))
+                    TreeFragment(0, "If", instr))
                 self._processIf(instr)
             else:
                 self.errorIt(instr,
@@ -144,7 +158,7 @@ class DecisionTreeParser:
         self.getCurFrag().setCondData(
             self._processCondition(instr.test))
         self.mFragments.append(TreeFragment(1, "Return",
-            instr.body[0].lineno))
+            instr.body[0]))
         self.getCurFrag().setDecision(
             self.getSingleReturnValue(instr.body))
         if len(instr.orelse) > 0:
@@ -152,34 +166,61 @@ class DecisionTreeParser:
                 "Else instruction is not supported")
 
     #===============================================
-    def setFullDiap(self):
+    def arrangeDiapasons(self):
         if len(self.mFragments) == 0:
             return
-        empty_lines = set()
+        lines = self.mCode.splitlines()
+        empty_lines_no = set()
+        comment_lines_no = set()
         max_line_no = None
-        for line_idx, line in enumerate(self.mCode.splitlines()):
-            if not line.strip():
-                empty_lines.add(line_idx + 1)
+        for line_idx, line in enumerate(lines):
+            stripped = line.strip()
+            if not stripped:
+                empty_lines_no.add(line_idx + 1)
             else:
                 max_line_no = line_idx + 1
-        prev_diap = self.mFragments[0].getBaseLineDiap()[:]
-        prev_diap[0] = 1
-        for idx in range(1, len(self.mFragments)):
-            cur_diap = self.mFragments[idx].getBaseLineDiap()[:]
-            while (cur_diap[0] - 1 > prev_diap[1] and
-                    cur_diap[0] - 1 not in empty_lines):
-                cur_diap[0] -= 1
-            prev_diap[1] = cur_diap[0] - 1
-            self.mFragments[idx - 1].setFullLineDiap(prev_diap)
-            prev_diap = cur_diap
-        prev_diap[1] = max_line_no
-        self.mFragments[-1].setFullLineDiap(prev_diap)
+                if stripped.startswith('#'):
+                    comment_lines_no.add(line_idx + 1)
+        diap_seq = []
+        for frag in self.mFragments:
+            base_instr = frag.getBaseInstr()
+            line_no, offset = base_instr.lineno, base_instr.col_offset
+            if offset > 0 and not lines[line_no - 1][:offset - 1].isspace():
+                self.errorIt(base_instr, "Split line before instruction")
+            cur_diap = [line_no, line_no]
+            if len(diap_seq) == 0:
+                cur_diap[0] = 1
+            else:
+                while (cur_diap[0] - 1 > diap_seq[-1][1] and
+                        cur_diap[0] - 1 in comment_lines_no):
+                    cur_diap[0] -= 1
+                diap_seq[-1][1] = cur_diap[0] - 1
+            diap_seq.append(cur_diap)
+        diap_seq[-1][1] = max_line_no
+
+        for idx, frag in enumerate(self.mFragments):
+            full_diap = diap_seq[idx]
+            base_diap = full_diap[:]
+            while (base_diap[0] in empty_lines_no or
+                    base_diap[0] in comment_lines_no):
+                base_diap[0] += 1
+                assert base_diap[0] <= base_diap[1]
+            while (base_diap[1] in empty_lines_no or
+                    base_diap[1] in comment_lines_no):
+                base_diap[1] -= 1
+                assert base_diap[0] <= base_diap[1]
+            loc = findComment("\n".join(
+                lines[base_diap[0] - 1: base_diap[1]]))
+            if loc is not None:
+                line_no, offset = loc
+                self.errorMsg(base_diap[0] + line_no - 1, offset,
+                    "Sorry, no comments inside instructions")
+            frag.setLineDiap(base_diap, full_diap)
 
     #===============================================
     #===============================================
     def getReturnValue(self, instr):
         if isinstance(instr.value, ast.Name):
-            self.regIt(instr.value)
             result = instr.value.id
             if result in ("True", "False"):
                 return result == "True"
@@ -199,7 +240,6 @@ class DecisionTreeParser:
 
     #===============================================
     def _processCondition(self, it):
-        self.regIt(it)
         if isinstance(it, ast.BoolOp):
             if isinstance(it.op, ast.And):
                 seq = ["and"]
@@ -274,7 +314,7 @@ class DecisionTreeParser:
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
             ret = ["enum", field_name, op_mode, variants]
-            #!self.getCurFrag().addMarker(ret, it.left)
+            self.getCurFrag().addMarker(ret, it.left)
             return ret
 
         if isinstance(it.left, ast.Call):
@@ -292,7 +332,7 @@ class DecisionTreeParser:
             if ret is None:
                 self.errorIt(it.left,
                     "Improper arguments for special field")
-            #!self.getCurFrag().addMarker(ret, it.left)
+            self.getCurFrag().addMarker(ret, it.left)
             return ret
         self.errorIt(it.left, "Name of field is expected")
 
@@ -409,7 +449,7 @@ class DecisionTreeParser:
 
 if __name__ == '__main__':
     source = sys.stdin.read()
-    parser = DecisionTreeParser(None, source)
+    parser = ParsedDecisionTree(None, source)
 
     if parser.getError() is not None:
         print >> sys.stdout, "Error:", parser.getError()

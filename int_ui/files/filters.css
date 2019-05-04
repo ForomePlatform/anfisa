@@ -158,17 +158,22 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
-div.zyg-wrap {
+div#zyg-wrap {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: flex-start;
     white-space: nowrap;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
+}
+
+div#zyg-problem {
+    white-space: nowrap;
 }
 
 div.zyg-family {
     flex: 0 0 100px;
     border-right: 1px solid black;
+    padding-right: 5px;
 }
 
 div.zyg-fam-member {
@@ -178,10 +183,13 @@ div.zyg-fam-member {
 div#zyg-stat {
     flex: 1 0 200px;
     margin-top: 20px;
-    margin-left: 20px;
 }
 
-button#zyg_fam_reset {
+div#zyg-stat ul {
+    padding-left: 20px;
+}
+
+button#zyg-fam-reset {
     padding: 0px !important;
     float: right;
 }

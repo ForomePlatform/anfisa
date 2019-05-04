@@ -4,6 +4,7 @@ from copy import deepcopy
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
+from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.decision import DecisionTree
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
@@ -31,8 +32,9 @@ class SecondaryWsCreation(ExecutionTask):
         self.setStatus("Prepare creation")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if (self.mBaseVersion is not None):
-            tree = DecisionTree.parse(self.mDS.getCondEnv(),
-                self.mDS.getMongoDS().getTreeCodeVersion(self.mBaseVersion))
+            tree = DecisionTree(ParsedDecisionTree(
+                self.mDS.getCondEnv(),
+                self.mDS.getMongoDS().getTreeCodeVersion(self.mBaseVersion)))
             rec_no_seq = tree.collectRecSeq(self.mDS)
         else:
             rec_count = self.mDS.evalTotalCount(self.mCondition)

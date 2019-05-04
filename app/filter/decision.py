@@ -1,5 +1,4 @@
 from app.config.a_config import AnfisaConfig
-from .tree_parse import DecisionTreeParser
 from .code_works import htmlCodeDecoration
 #===============================================
 class CaseStory:
@@ -135,11 +134,31 @@ class ConditionPoint(CheckPoint):
 
 #===============================================
 class DecisionTree(CaseStory):
-    def __init__(self, cond_env, code):
+    def __init__(self, parsed):
         CaseStory.__init__(self)
-        self.mCondEnv = cond_env
-        self.mCode = code
+        self.mCondEnv = parsed.getCondEnv()
+        self.mCode = parsed.getTreeCode()
         self.mPointList = []
+        prev_point = None
+        for instr_no, frag in enumerate(parsed.getFragments()):
+            if frag.getInstrType() == "If":
+                assert frag.getDecision() is None
+                cond_point = ConditionPoint(self, frag, prev_point, instr_no)
+                self._addPoint(cond_point)
+                prev_point = cond_point
+                continue
+            elif frag.getInstrType() == "Return":
+                assert frag.getCondData() is None
+                if frag.getLevel() != 0:
+                    assert frag.getLevel() == 1
+                    prev_point.getSubStory()._addPoint(TerminalPoint(
+                        prev_point.getSubStory(), frag, prev_point, instr_no))
+                else:
+                    self._addPoint(TerminalPoint(self,
+                        frag, prev_point, instr_no))
+            else:
+                assert False
+        assert self.checkDetermined() is None
 
     def getMaster(self):
         return self
@@ -170,37 +189,6 @@ class DecisionTree(CaseStory):
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
             "code": self.mCode}
-
-    @staticmethod
-    def parse(cond_env, code, instr = None):
-        parser = DecisionTreeParser(cond_env, code)
-        assert parser.getError() is None
-        prev_point = None
-        if instr is not None:
-            code = parser.modifyCode(instr)
-            parser = DecisionTreeParser(cond_env, code)
-            assert parser.getError() is None
-        tree = DecisionTree(cond_env, code)
-        for instr_no, frag in enumerate(parser.getFragments()):
-            if frag.getInstrType() == "If":
-                assert frag.getDecision() is None
-                cond_point = ConditionPoint(tree, frag, prev_point, instr_no)
-                tree._addPoint(cond_point)
-                prev_point = cond_point
-                continue
-            elif frag.getInstrType() == "Return":
-                assert frag.getCondData() is None
-                if frag.getLevel() != 0:
-                    assert frag.getLevel() == 1
-                    prev_point.getSubStory()._addPoint(TerminalPoint(
-                        prev_point.getSubStory(), frag, prev_point, instr_no))
-                else:
-                    tree._addPoint(TerminalPoint(tree,
-                        frag, prev_point, instr_no))
-            else:
-                assert False
-        assert tree.checkDetermined() is None
-        return tree
 
     def evalPointCounts(self, dataset):
         counts = [None] * len(self.mPointList)

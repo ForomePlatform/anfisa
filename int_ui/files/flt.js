@@ -1,6 +1,20 @@
 /*************************************/
 /* Utilities                         */
 /*************************************/
+function ajaxCall(rq_name, args, func_eval) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+            var info = JSON.parse(this.responseText);
+            func_eval(info);
+        }
+    };
+    xhttp.open("POST", rq_name, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send(args); 
+}
+
+/**************************************/
 function getCondDescription(cond, short_form) {
     if (cond == null)
         return "";
@@ -104,3 +118,69 @@ function escapeText(str) {
     return str.replace(/[&<>]/g, _replaceCtrlSym);
 }
 
+/*************************************/
+function normFloatLongTail(val, to_up) {
+    var ret = val.toString();
+    var vv = ret.split('.');
+    if (vv.length < 2 || vv[1].length < 6)
+        return ret
+    if (to_up)
+        return (val + .000005).toFixed(5);
+    return val.toFixed(5);
+}
+
+/*************************************/
+function fillStatRepNum(unit_stat, list_stat_rep) {
+    val_min   = unit_stat[2];
+    val_max   = unit_stat[3];
+    count     = unit_stat[4];
+    //cnt_undef = unit_stat[5];
+    if (count == 0) {
+        list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+    } else {
+        if (val_min == val_max) {
+            list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
+                '</span>');
+        } else {
+            list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
+                ' =< ...<= ' + normFloatLongTail(val_max, true) + ' </span>');
+        }
+        list_stat_rep.push(': <span class="stat-count">' + count + 
+            ' records</span>');
+    }
+}
+
+function fillStatRepEnum(unit_stat, list_stat_rep) {
+    var_list = unit_stat[2];
+    list_count = 0;
+    for (j = 0; j < var_list.length; j++) {
+        if (var_list[j][1] > 0)
+            list_count++;
+    }
+    if (list_count > 0) {
+        list_stat_rep.push('<ul>');
+        view_count = (list_count > 6)? 3: list_count; 
+        for (j = 0; j < var_list.length && view_count > 0; j++) {
+            var_name = var_list[j][0];
+            var_count = var_list[j][1];
+            if (var_count == 0)
+                continue;
+            view_count -= 1;
+            list_count--;
+            list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
+                '<span class="stat-count">' +
+                var_count + ' records</span></li>');
+        }
+        list_stat_rep.push('</ul>');
+        if (list_count > 0) {
+            list_stat_rep.push('<p><span class="stat-comment">...and ' + 
+                list_count + ' variants more...</span></p>');
+        }
+    } else {
+        list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+    }
+}
+
+    
+
+        

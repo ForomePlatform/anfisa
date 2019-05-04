@@ -124,57 +124,10 @@ function setupStatList(info) {
         if (unit_type == "zygosity") 
             sZygosityH.setup(unit_stat, list_stat_rep);
         else {
-            if (unit_type == "int" || unit_type == "float") {
-                val_min   = unit_stat[2];
-                val_max   = unit_stat[3];
-                count     = unit_stat[4];
-                //cnt_undef = unit_stat[5];
-                if (count == 0) {
-                    list_stat_rep.push(
-                        '<span class="stat-bad">Out of choice</span>');
-                } else {
-                    if (val_min == val_max) {
-                        list_stat_rep.push('<span class="stat-ok">' + 
-                            val_min + '</span>');
-                    } else {
-                        list_stat_rep.push('<span class="stat-ok">' + 
-                            val_min + ' =< ...<= ' + val_max + ' </span>');
-                    }
-                    list_stat_rep.push(': <span class="stat-count">' + count + 
-                        ' records</span>');
-                }
-            } else {
-                var_list = unit_stat[2];
-                list_count = 0;
-                for (j = 0; j < var_list.length; j++) {
-                    if (var_list[j][1] > 0)
-                        list_count++;
-                }
-                if (list_count > 0) {
-                    list_stat_rep.push('<ul>');
-                    view_count = (list_count > 6)? 3: list_count; 
-                    for (j = 0; j < var_list.length && view_count > 0; j++) {
-                        var_name = var_list[j][0];
-                        var_count = var_list[j][1];
-                        if (var_count == 0)
-                            continue;
-                        view_count -= 1;
-                        list_count --;
-                        list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-                            '<span class="stat-count">' +
-                            var_count + ' records</span></li>');
-                    }
-                    list_stat_rep.push('</ul>');
-                    if (list_count > 0) {
-                        list_stat_rep.push(
-                            '<p><span class="stat-comment">...and ' + 
-                            list_count + ' variants more...</span></p>');
-                    }
-                } else {
-                    list_stat_rep.push(
-                        '<span class="stat-bad">Out of choice</span>');
-                }
-            }
+            if (unit_type == "int" || unit_type == "float") 
+                fillStatRepNum(unit_stat, list_stat_rep);
+            else 
+                fillStatRepEnum(unit_stat, list_stat_rep);
         }
         list_stat_rep.push('</div>')
     }
@@ -657,7 +610,7 @@ var sZygosityH = {
         this.mZStat = unit_stat[3] ;
         if (this.mProblemIdxs == null)
             this.mProblemIdxs = [];
-        list_stat_rep.push('<div class="zyg-wrap"><div class="zyg-family">');
+        list_stat_rep.push('<div id="zyg-wrap"><div class="zyg-family">');
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             q_checked = (this.mProblemIdxs.indexOf(idx)>=0)? " checked":"";
             list_stat_rep.push('<div class="zyg-fam-member">' + 
@@ -691,7 +644,8 @@ var sZygosityH = {
             return null;
         ret = condition_data.slice();
         ret[0] = "zygosity";
-        ret.splice(2, 0, this.mProblemIdxs.slice());
+        ret.splice(0, 0, (this.mProblemIdxs == this.mDefaultIdxs)? 
+            null: this.mProblemIdxs.slice());
         return ret;
     },
     
@@ -704,8 +658,8 @@ var sZygosityH = {
     },
     
     getUnitTitle: function(problem_group) {
-        if (problem_group == undefined)
-            problem_group = this.mProblemIdxs;
+        if (problem_group == undefined || problem_group == this.mDefaultIdxs)
+            return this.mUnitName + '()';        
         return this.mUnitName + '({' + problem_group.join(',') + '})';        
     },
     
