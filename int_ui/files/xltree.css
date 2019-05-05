@@ -10,10 +10,6 @@ body {
     font-family: sans-serif;
 }
 
-body.wait {
-    cursor: wait;
-}
-
 #xl-ctrl {
     width: 100%;
     background-color: #333455; 
@@ -118,10 +114,6 @@ div#stat-list, div#decision-tree {
     white-space: nowrap;
     overflow: auto;
     font-size: 12px;
-}
-
-div#stat-list.wait {
-    background-color: #E0E0E0;
 }
 
 div.stat-group {

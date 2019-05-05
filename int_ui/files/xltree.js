@@ -221,7 +221,7 @@ var sUnitsH = {
     mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
-    mCtx: {"timeout": 2},
+    mCtx: {"timeout": 1},
     mRqId: null,
     mUnitsDelay: null,
     mTimeH: null,
@@ -230,10 +230,6 @@ var sUnitsH = {
         args = "ds=" + sDSName + "&code=" + encodeURIComponent(tree_code) + 
             "&no=" + point_no
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
-        document.body.className = "wait";
-        document.getElementById("stat-list").className = "wait";
-        document.getElementById("list-report").innerHTML = 
-            '<marquee behavior="alternate" direction="right">| - | -</marquee>';
         this.mRqId = false;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
@@ -257,8 +253,6 @@ var sUnitsH = {
     _setup: function(info) {
         this.mWaiting = false;
         this.mRqId  = info["rq_id"];
-        document.body.className = "";
-        document.getElementById("stat-list").className = "";
         count = info["count"];
         total = info["total"];
         document.getElementById("list-report").innerHTML = (count == total)?
