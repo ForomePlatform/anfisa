@@ -78,7 +78,7 @@ var sDecisionTree = {
             this._fillTreeTable();
         }
         
-        point_no = (this.mCurPointNo)? this.mCurPointNo: 0;
+        point_no = (this.mCurPointNo>=0)? this.mCurPointNo: 0;
         while (point_no >= 0) {
             if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
                 point_no--;
@@ -289,9 +289,14 @@ var sUnitsH = {
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
         this.mWaiting = true;
+        var ctx0 = {};
+        for (key in this.mCtx)
+            ctx0[key] = this.mCtx[key];
+        key["timeout"] = 0;
+        
         ajaxCall("xl_statunits", "ds=" + sDSName + 
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(ctx0)) +
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
             "&code=" + encodeURIComponent(tree_code) + 
             "&no=" + point_no, 

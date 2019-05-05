@@ -94,10 +94,14 @@ var sUnitsH = {
         this.mTimeH = null;
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
+        var ctx0 = {};
+        for (key in this.mCtx)
+            ctx0[key] = this.mCtx[key];
+        key["timeout"] = 0;
         this.mWaiting = true;
         ajaxCall("xl_statunits", "ds=" + sDSName + 
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(ctx0)) +
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
             "&conditions=" + encodeURIComponent(
                 JSON.stringify(sConditionsH.getConditions())), 
