@@ -114,7 +114,7 @@ def _formXLPannel(output, ds_name):
               </div>
             </div>
             <div id="cur-cond-loading">
-               <div class="loading">Loading data...</span>
+               <div class="loading">Loading data...</div>
             </div>
           </div>
           <div id="filters-ctrl">

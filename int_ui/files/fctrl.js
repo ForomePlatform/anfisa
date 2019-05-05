@@ -286,9 +286,9 @@ var sZygosityH = {
         this.mDefaultIdxs = unit_stat[1]["affected"];
         this.mDefaultRepr = this.mDefaultIdxs.join(',');
         this.mProblemIdxs = unit_stat[2];
-        this.mZStat = unit_stat[3] ;
         if (this.mProblemIdxs == null)
-            this.mProblemIdxs = [];
+            this.mProblemIdxs = this.mDefaultIdxs.slice();
+        this.mZStat = unit_stat[3] ;
         list_stat_rep.push('<div id="zyg-wrap">');
         list_stat_rep.push('<div id="zyg-problem">');
         this._fillProblemGroup(this.mFamily, this.mProblemIdxs, list_stat_rep);
@@ -375,10 +375,15 @@ var sZygosityH = {
     onSelectCondition: function(condition_data) {
         if (condition_data[1] != this.mUnitName)
             return;
-        if (this.mProblemIdxs.join(",") != condition_data[2].join(",")) {
-            this.mProblemIdxs = condition_data[2];
-            this._reselectFamily();
+        if (condition_data[2] == null) {
+            if (this.mProblemIdxs.join(",") == this.mDefaultRepr)
+                return;
+        } else {
+            if (this.mProblemIdxs.join(",") == condition_data[2].join(","))
+                return;
         }
+        this.mProblemIdxs = condition_data[2];
+        this._reselectFamily();
     },
     
     _reselectFamily: function() {

@@ -223,6 +223,9 @@ class XL_ZygosityUnit(XL_Unit):
         assert filter_mode != "ONLY"
         assert len(variants) > 0
 
+        if p_group is None:
+            p_group = self.getDS().getFamilyInfo().getAffectedGroup()
+
         singles = []
         for name, z_condition in self._iterCritSeq(p_group):
             if name in variants:
