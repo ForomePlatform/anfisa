@@ -5,6 +5,7 @@ var sWsURL = null;
 
 /*************************************/
 function initXL(ds_name, common_title, ws_url) {
+    sUnitsH.init();
     sOpCondH.init();
     sOpNumH.init();
     sOpEnumH.init();
@@ -78,7 +79,7 @@ var sDecisionTree = {
             this._fillTreeTable();
         }
         
-        point_no = (this.mCurPointNo>=0)? this.mCurPointNo: 0;
+        point_no = (this.mCurPointNo && this.mCurPointNo>0)? this.mCurPointNo: 0;
         while (point_no >= 0) {
             if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
                 point_no--;
@@ -210,31 +211,41 @@ var sDecisionTree = {
     
     getTotalCount: function() {
         return this.mTotalCount;
+    },
+    
+    getTreeCode: function() {
+        return this.mTreeCode;
     }
 }
 
 /**************************************/
 var sUnitsH = {
+    mDivList: null,
     mItems: null,
     mUnitMap: null,
     mCurUnit: null,
     mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
-    mCtx: {"timeout": 1},
+    mCtx: {},
     mRqId: null,
     mUnitsDelay: null,
     mTimeH: null,
     
+    init: function() {
+        this.mDivList = document.getElementById("stat-list");
+    },
+    
     setup: function(tree_code, point_no) {
         args = "ds=" + sDSName + "&code=" + encodeURIComponent(tree_code) + 
-            "&no=" + point_no
+            "&no=" + point_no + "&tm=0" +
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         this.mRqId = false;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
+        this.mDivList.className = "wait";
         this.mWaiting = true;
         ajaxCall("xlstat", args, function(info){sUnitsH._setup(info);})
     },
@@ -263,8 +274,8 @@ var sUnitsH = {
         this.mUnitsDelay = [];
         var list_stat_rep = [];
         fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
-        document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
-        
+        this.mDivList.className = "";
+        this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
         
         if (this.mCurUnit == null)
@@ -289,16 +300,12 @@ var sUnitsH = {
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
         this.mWaiting = true;
-        var ctx0 = {};
-        for (key in this.mCtx)
-            ctx0[key] = this.mCtx[key];
-        key["timeout"] = 0;
         
-        ajaxCall("xl_statunits", "ds=" + sDSName + 
+        ajaxCall("xl_statunits", "ds=" + sDSName + "&tm=1" +
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(ctx0)) +
-            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
-            "&code=" + encodeURIComponent(tree_code) + 
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
+            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay.splice(0, 1))) +
+            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode()) + 
             "&no=" + point_no, 
             function(info){sUnitsH._loadUnits(info);})
     },
@@ -327,6 +334,7 @@ var sUnitsH = {
                 cur_top = cur_el.getBoundingClientRect().top;
                 el_list.scrollTop += cur_top - prev_top;
             }
+            sOpCondH.checkDelay(unit_name);
         }
         this.checkDelayed();
     },
@@ -339,18 +347,29 @@ var sUnitsH = {
         return this.mCurUnit;
     },
     
+    getCurUnitStat: function() {
+        if (this.mCurUnit == null)
+            return null;
+        return this.mItems[this.mUnitMap[this.mCurUnit]];
+    },
+    
     getUnitStat: function(unit_name) {
+        this.checkUnitDelay(unit_name);
         return this.mItems[this.mUnitMap[unit_name]];
     },
     
-    selectUnit: function(stat_unit, force_it) {
-        var pos = this.mUnitsDelay.indexOf(stat_unit);
+    checkUnitDelay: function(unit_name) {
+        var pos = this.mUnitsDelay.indexOf(unit_name);
         if (pos >= 0) {
             this.mUnitsDelay.splice(pos, 1);
-            this.mUnitsDelay.splice(0, 0, stat_unit);
+            this.mUnitsDelay.splice(0, 0, unit_name);
         }
         if (pos >= 0) 
             this.checkDelayed();
+    },
+    
+    selectUnit: function(stat_unit, force_it) {
+        this.checkUnitDelay(stat_unit);
     },
     
     updateZygUnit: function(zyg_name) {
@@ -371,22 +390,29 @@ var sOpCondH = {
     mCondition: null,
     mNewCondition: null,
     mButtonSet: null,
+    mCurUnitName: null,
 
     init: function() {
         this.mButtonSet   = document.getElementById("cond-button-set");
     },
     
+    checkDelay: function(unit_name) {
+        if (unit_name == this.mCurUnitName && 
+                document.getElementById("cur-cond-back").style.display != "none")
+            this.show(this.mCondition);
+    },
+    
     show: function(condition) {
         this.mCondition = condition;
         this.mNewCondition = null;
-        unit_name = this.mCondition[1];
-        document.getElementById("cond-title").innerHTML = unit_name;
-        unit_stat = sUnitsH.getCurUnitStat();
+        this.mCurUnitName = this.mCondition[1];
+        document.getElementById("cond-title").innerHTML = this.mCurUnitName;
+        unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
         unit_type = unit_stat[0];
         mode = "num";
-        if (unit_stat.length == 2)
+        if (unit_stat.length == 2) {
             this.mCurTpHandler = null;
-        else {
+        } else {
             if (unit_type == "long" || unit_type == "float") 
                 this.mCurTpHandler = sOpNumH;
             else {
@@ -402,11 +428,7 @@ var sOpCondH = {
             (this.mCurTpHandler)? "none":"block";
         if (this.mCurTpHandler) {
             this.mCurTpHandler.updateUnit(unit_stat);
-            if (sConditionsH.getCurCondNo() != null) {
-                cond = sConditionsH.getCurCond();
-                if (cond[1] == unit_name)
-                    this.mCurTpHandler.updateCondition(cond);
-            }
+            this.mCurTpHandler.updateCondition(this.mCondition);
             this.mCurTpHandler.checkControls();
         }
         document.getElementById("cur-cond-mod").className = mode;

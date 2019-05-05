@@ -1,3 +1,4 @@
+import logging
 from app.config.a_config import AnfisaConfig
 from .code_works import htmlCodeDecoration
 #===============================================
@@ -136,6 +137,12 @@ class ConditionPoint(CheckPoint):
 class DecisionTree(CaseStory):
     def __init__(self, parsed):
         CaseStory.__init__(self)
+        if parsed.getError() is not None:
+            msg_text, lineno, offset = parsed.getError()
+            logging.error(("Error in tree code: (%d:%d) %s\n" %
+                (lineno, offset, msg_text)) + "Code:\n======\n" +
+                parsed.getTreeCode() + "\n======")
+            assert False
         self.mCondEnv = parsed.getCondEnv()
         self.mCode = parsed.getTreeCode()
         self.mPointList = []

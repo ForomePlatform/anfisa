@@ -47,11 +47,8 @@ class XLDataset(DataSet):
     def getUnit(self, name):
         return self.mUnitDict.get(name)
 
-    def makeAllStat(self, condition, repr_context = None):
+    def makeAllStat(self, condition, time_end, repr_context = None):
         ret = []
-        time_end = None
-        if repr_context is not None and "timeout" in repr_context:
-            time_end = time() + repr_context["timeout"]
         for unit_h in self.mUnits:
             if unit_h.isScreened():
                 continue
@@ -64,11 +61,9 @@ class XLDataset(DataSet):
                     time_end = False
         return ret
 
-    def makeSelectedStat(self, unit_names, condition, repr_context = None):
+    def makeSelectedStat(self, unit_names, condition,
+            time_end, repr_context = None):
         ret = []
-        time_end = None
-        if repr_context is not None and "timeout" in repr_context:
-            time_end = time() + repr_context["timeout"]
         for unit_name in unit_names:
             unit_h = self.getUnit(unit_name)
             assert not unit_h.isScreened()
@@ -204,11 +199,15 @@ class XLDataset(DataSet):
     @RestAPI.xl_request
     def rq__xl_filters(self, rq_args):
         self.sStatRqCount += 1
-        filter_name = rq_args.get("filter")
+        if "tm" in rq_args:
+            time_end = time() + float(rq_args["tm"]) + 1E-5
+        else:
+            time_end = None
         if "conditions" in rq_args:
             cond_seq = json.loads(rq_args["conditions"])
         else:
             cond_seq = None
+        filter_name = rq_args.get("filter")
         filter_name = self.filterOperation(
             filter_name, cond_seq, rq_args.get("instr"))
         if self.mDruidAgent.hasStdFilter(filter_name):
@@ -224,7 +223,7 @@ class XLDataset(DataSet):
         return {
             "total": self.getTotal(),
             "count": self.evalTotalCount(condition),
-            "stat-list": self.makeAllStat(condition, repr_context),
+            "stat-list": self.makeAllStat(condition, time_end, repr_context),
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
             "conditions": cond_seq,
@@ -245,6 +244,10 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl_statunits(self, rq_args):
+        if "tm" in rq_args:
+            time_end = time() + float(rq_args["tm"]) + 1E-5
+        else:
+            time_end = None
         if "conditions" in rq_args:
             condition = self.mCondEnv.parseSeq(
                 json.loads(rq_args["conditions"]))
@@ -263,7 +266,7 @@ class XLDataset(DataSet):
         return {
             "rq_id": rq_args.get("rq_id"),
             "units": self.makeSelectedStat(json.loads(rq_args["units"]),
-                condition, repr_context)}
+                condition, time_end, repr_context)}
 
     #===============================================
     @RestAPI.xl_request
@@ -332,6 +335,10 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xlstat(self, rq_args):
+        if "tm" in rq_args:
+            time_end = time() + float(rq_args["tm"]) + 1E-5
+        else:
+            time_end = None
         self.sStatRqCount += 1
         point_no = int(rq_args["no"])
         if point_no >=0:
@@ -348,7 +355,8 @@ class XLDataset(DataSet):
         return {
             "total": self.getTotal(),
             "count": count,
-            "stat-list": self.makeAllStat(condition, repr_context),
+            "stat-list": self.makeAllStat(
+                condition, time_end, repr_context),
             "rq_id": str(self.sStatRqCount) + '/' + str(time())}
 
     #===============================================

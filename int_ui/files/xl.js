@@ -6,6 +6,7 @@ var sWsURL = null;
 /*************************************/
 function initXL(ds_name, common_title, ws_url) {
     sFiltersH.init();
+    sUnitsH.init();
     sOpNumH.init();
     sOpEnumH.init();
     sViewH.init();
@@ -23,6 +24,7 @@ function initXL(ds_name, common_title, ws_url) {
     
 /**************************************/
 var sUnitsH = {
+    mDivList: null,
     mItems: null,
     mUnitMap: null,
     mCurUnit: null,
@@ -30,14 +32,19 @@ var sUnitsH = {
     mCounts: null,
     mTotal: null,
     mExportFormed: null,
-    mCtx: {"timeout": 1},
+    mCtx: {},
     mRqId: null,
     mUnitsDelay: null,
     mWaiting: null,
     mTimeH: null,
     
+    init: function() {
+        this.mDivList = document.getElementById("stat-list");
+    },
+    
     setup: function(conditions, filter_name, add_instr) {
-        args = "ds=" + sDSName + "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+        args = "ds=" + sDSName + "&tm=0" +
+        "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
         } else {
@@ -52,6 +59,7 @@ var sUnitsH = {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
+        this.mDivList.className = "wait";
         this.mWaiting = true;
         ajaxCall("xl_filters", args, function(info){sUnitsH._setup(info);})
     },
@@ -71,7 +79,8 @@ var sUnitsH = {
         var list_stat_rep = [];
         this.mUnitsDelay = [];
         fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
-        document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
+        this.mDivList.className = "";
+        this.mDivList.innerHTML = list_stat_rep.join('\n');
         
         this.mCurUnit = null;
         this.mCurZygName = null;
@@ -94,14 +103,10 @@ var sUnitsH = {
         this.mTimeH = null;
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
-        var ctx0 = {};
-        for (key in this.mCtx)
-            ctx0[key] = this.mCtx[key];
-        key["timeout"] = 0;
         this.mWaiting = true;
-        ajaxCall("xl_statunits", "ds=" + sDSName + 
+        ajaxCall("xl_statunits", "ds=" + sDSName + "&tm=1" + 
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(ctx0)) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
             "&conditions=" + encodeURIComponent(
                 JSON.stringify(sConditionsH.getConditions())), 

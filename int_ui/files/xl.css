@@ -102,6 +102,10 @@ div#stat-list {
     font-size: 12px;
 }
 
+div#stat-list.wait {
+    background-color: #E0E0E0;
+}
+
 div.stat-group {
     border: 1px solid #333455;
     margin: 0px;
