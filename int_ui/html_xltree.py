@@ -136,6 +136,9 @@ def _formCurCondDiv(output):
                   </div>
                 </div>
               </div>
+              <div id="cur-cond-loading">
+                <div class="loading">Loading data...</div>
+              </div>
             </div>
             <div id="cond-ctrl">
                 <button id="cond-button-set" onclick="fixMark();">

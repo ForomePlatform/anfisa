@@ -245,8 +245,17 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl_statunits(self, rq_args):
-        condition = self.mCondEnv.parseSeq(
-            json.loads(rq_args["conditions"]))
+        if "conditions" in rq_args:
+            condition = self.mCondEnv.parseSeq(
+                json.loads(rq_args["conditions"]))
+        else:
+            point_no = int(rq_args["no"])
+            if point_no >=0:
+                tree = DecisionTree(ParsedDecisionTree
+                    (self.mCondEnv, rq_args["code"]))
+                condition = tree.actualCondition(point_no)
+            else:
+                condition = self.mCondEnv.getCondNone()
         if "ctx" in rq_args:
             repr_context = json.loads(rq_args["ctx"])
         else:

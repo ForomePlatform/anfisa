@@ -221,18 +221,25 @@ var sUnitsH = {
     mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
-    mCtx: {"interval": 0},
+    mCtx: {"timeout": 2},
+    mRqId: null,
+    mUnitsDelay: null,
+    mTimeH: null,
     
     setup: function(tree_code, point_no) {
-        args = "ds=" + sDSName + "&code=" +
-            encodeURIComponent(tree_code) + 
+        args = "ds=" + sDSName + "&code=" + encodeURIComponent(tree_code) + 
             "&no=" + point_no
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
-        this.mWaiting = true;
         document.body.className = "wait";
         document.getElementById("stat-list").className = "wait";
         document.getElementById("list-report").innerHTML = 
             '<marquee behavior="alternate" direction="right">| - | -</marquee>';
+        this.mRqId = false;
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mWaiting = true;
         ajaxCall("xlstat", args, function(info){sUnitsH._setup(info);})
     },
 
@@ -248,17 +255,20 @@ var sUnitsH = {
     },
     
     _setup: function(info) {
+        this.mWaiting = false;
+        this.mRqId  = info["rq_id"];
         document.body.className = "";
         document.getElementById("stat-list").className = "";
         count = info["count"];
-        total = info["total"]
+        total = info["total"];
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
             
         this.mItems = info["stat-list"];
-        this.mUnitMap = {}
+        this.mUnitMap = {};
+        this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep);
+        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
         
         this.mCurUnit = null;        
@@ -266,13 +276,62 @@ var sUnitsH = {
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0][1]["name"]);
         
+        this.checkDelayed();
+    },
+
+    checkDelayed: function() {
         var post_action = this.mPostAction;
-        this.mWaiting = false;
         this.mPostAction = null;
         if (post_action)
             eval(post_action);
+        if (this.mWaiting || this.mTimeH != null || this.mUnitsDelay.length == 0)
+            return;
+        this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
-
+    
+    loadUnits: function() {
+        clearInterval(this.mTimeH);
+        this.mTimeH = null;
+        if (this.mWaiting || this.mUnitsDelay.length == 0)
+            return;
+        this.mWaiting = true;
+        ajaxCall("xl_statunits", "ds=" + sDSName + 
+            "&rq_id=" + encodeURIComponent(this.mRqId) + 
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
+            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
+            "&code=" + encodeURIComponent(tree_code) + 
+            "&no=" + point_no, 
+            function(info){sUnitsH._loadUnits(info);})
+    },
+    
+    _loadUnits: function(info) {
+        if (info["rq_id"] != this.mRqId) 
+            return;
+        this.mWaiting = false;
+        el_list = document.getElementById("stat-list");
+        var cur_el = (this.mCurUnit)? document.getElementById("stat--" + this.mCurUnit): null;
+        if (cur_el)
+            var prev_top = cur_el.getBoundingClientRect().top;
+        var prev_unit = this.mCurUnit;
+        var prev_h =  (this.mCurUnit)? topUnitStat(this.mCurUnit):null;
+        for (var idx = 0; idx < info["units"].length; idx++) {
+            unit_stat = info["units"][idx];
+            refillUnitStat(unit_stat);
+            unit_name = unit_stat[1]["name"];
+            var pos = this.mUnitsDelay.indexOf(unit_name);
+            if (pos >= 0)
+                this.mUnitsDelay.splice(pos, 1);
+            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
+            if (this.mCurUnit == unit_name)
+                this.selectUnit(unit_name, true);
+            if (cur_el) {
+                cur_top = cur_el.getBoundingClientRect().top;
+                el_list.scrollTop += cur_top - prev_top;
+            }
+        }
+        this.checkDelayed();
+    },
+    
     getCurUnitTitle: function() {
         return (this.mCurZygName == null)? this.mCurUnit: this.mCurZygName;
     },
@@ -286,6 +345,13 @@ var sUnitsH = {
     },
     
     selectUnit: function(stat_unit, force_it) {
+        var pos = this.mUnitsDelay.indexOf(stat_unit);
+        if (pos >= 0) {
+            this.mUnitsDelay.splice(pos, 1);
+            this.mUnitsDelay.splice(0, 0, stat_unit);
+        }
+        if (pos >= 0) 
+            this.checkDelayed();
     },
     
     updateZygUnit: function(zyg_name) {
@@ -316,20 +382,34 @@ var sOpCondH = {
         this.mNewCondition = null;
         unit_name = this.mCondition[1];
         document.getElementById("cond-title").innerHTML = unit_name;
-        unit_stat = sUnitsH.getUnitStat(unit_name);
+        unit_stat = sUnitsH.getCurUnitStat();
         unit_type = unit_stat[0];
-        if (unit_type == "long" || unit_type == "float") {
-            sOpEnumH.suspend();
-            this.mCurTpHandler = sOpNumH;
-            mode = "num";
-        } else {
-            sOpNumH.suspend();
-            this.mCurTpHandler = sOpEnumH;
-            mode = "enum";
+        mode = "num";
+        if (unit_stat.length == 2)
+            this.mCurTpHandler = null;
+        else {
+            if (unit_type == "long" || unit_type == "float") 
+                this.mCurTpHandler = sOpNumH;
+            else {
+                this.mCurTpHandler = sOpEnumH;
+                mode = "enum";
+            }
         }
-        this.mCurTpHandler.updateUnit(unit_stat);
-        this.mCurTpHandler.updateCondition(this.mCondition);
-        this.mCurTpHandler.checkControls();
+        if (this.mCurTpHandler != sOpNumH)
+            sOpNumH.suspend();
+        if (this.mCurTpHandler != sOpEnumH)
+            sOpEnumH.suspend();
+        document.getElementById("cur-cond-loading").style.display = 
+            (this.mCurTpHandler)? "none":"block";
+        if (this.mCurTpHandler) {
+            this.mCurTpHandler.updateUnit(unit_stat);
+            if (sConditionsH.getCurCondNo() != null) {
+                cond = sConditionsH.getCurCond();
+                if (cond[1] == unit_name)
+                    this.mCurTpHandler.updateCondition(cond);
+            }
+            this.mCurTpHandler.checkControls();
+        }
         document.getElementById("cur-cond-mod").className = mode;
         sViewH.modalOn(document.getElementById("cur-cond-back"), "flex");
         updateSizes();

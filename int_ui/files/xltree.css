@@ -257,6 +257,19 @@ span.enum-cnt {
     margin: 10px;
 }
 
+div.stat-unit-data {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.loading {
+    margin: 5px 15px;
+    color: #333455;
+    font-style: italic;
+    font-size: 90%;
+    cursor: progress;
+}
+
 span.stat-count {
     font-style: italic;
 }

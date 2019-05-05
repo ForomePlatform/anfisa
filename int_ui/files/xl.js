@@ -30,7 +30,7 @@ var sUnitsH = {
     mCounts: null,
     mTotal: null,
     mExportFormed: null,
-    mCtx: {"timeout": 0},
+    mCtx: {"timeout": 1},
     mRqId: null,
     mUnitsDelay: null,
     mWaiting: null,
@@ -153,7 +153,7 @@ var sUnitsH = {
             this.mUnitsDelay.splice(0, 0, stat_unit);
         }
         if (pos >= 0) 
-            this.loadUnits(this.mUnitsDelay.slice(0, 2));
+            this.checkDelayed();
         if (this.mCurUnit == stat_unit && !force_it) 
             return;
         var new_unit_el = document.getElementById("stat--" + stat_unit);
