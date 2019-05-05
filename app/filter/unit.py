@@ -37,7 +37,7 @@ class Unit:
     def _setScreened(self, value = True):
         self.mScreened = value
 
-    def _prepareStat(self):
+    def prepareStat(self):
         ret = [self.mUnitKind, {
             "name": self.mName,
             "vgroup": self.mVGroup}]

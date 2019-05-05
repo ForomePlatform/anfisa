@@ -54,7 +54,7 @@ class NumericValueUnit(FilterUnit):
         stat = NumDiapStat()
         for data_rec in data_records:
             stat.regValue(self.mColumn.recordValue(data_rec))
-        ret = self._prepareStat() + stat.result()
+        ret = self.prepareStat() + stat.result()
         return ret
 
     def fillRecord(self, inp_data, record):
@@ -84,7 +84,7 @@ class _EnumUnit(FilterUnit):
         rec_func = self.getRecFunc()
         for data_rec in data_records:
             stat.regValues(rec_func((data_rec)))
-        return self._prepareStat() + stat.result()
+        return self.prepareStat() + stat.result()
 
 #===============================================
 class StatusUnit(_EnumUnit):
@@ -236,7 +236,7 @@ class ZygosityComplexUnit(FilterUnit):
             self.conditionZCompens(p_group)]
 
     def makeStat(self, data_records, repr_context = None):
-        ret = self._prepareStat()
+        ret = self.prepareStat()
         ret[1]["family"] = self.mFamilyInfo.getTitles()
         ret[1]["affected"] = self.mFamilyInfo.getAffectedGroup()
 

@@ -113,11 +113,11 @@ def _formXLPannel(output, ds_name):
                 </div>
               </div>
             </div>
+            <div id="cur-cond-loading">
+               <div class="loading">Loading data...</span>
+            </div>
           </div>
           <div id="filters-ctrl">
-            <!--button class="op-button" onclick="filterModOff();">
-                Done
-            </button-->
             <button id="filter-clear-all-cond" class="op-button"
                 onclick='sOpFilterH.modify(\"clear-all\");'>
                 Clear

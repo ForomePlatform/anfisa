@@ -154,6 +154,19 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
+div.stat-unit-data {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.loading {
+    margin: 5px 15px;
+    color: #333455;
+    font-style: italic;
+    font-size: 90%;
+    cursor: progress;
+}
+
 span#cond-text {
     color: #8F00E0;
     font-weight: bold;
@@ -223,7 +236,8 @@ div#op-enum-list {
 }
 
 div#cur-cond-enum-ctrl {
-    width: 100px;
+    width: 80px;
+    min-width: 80px;
     vertical-align: top;
     overflow: hidden;
     margin: 10px 5px;
@@ -333,11 +347,13 @@ div#zyg-wrap {
 
 div#zyg-problem {
     white-space: nowrap;
+    text-align: left;
 }
 
 div.zyg-family {
     flex: 0 0 100px;
     border-right: 1px solid black;
+    margin-right: 5px;
     padding-right: 5px;
 }
 
@@ -347,8 +363,8 @@ div.zyg-fam-member {
 
 div#zyg-stat {
     flex: 1 0 200px;
-    margin-top: 20px;
-}
+    margin-top: 10px;
+}}
 
 div#zyg-stat ul {
     padding-left: 20px;
@@ -356,7 +372,6 @@ div#zyg-stat ul {
 
 button#zyg_fam_reset {
     padding: 0px !important;
-    float: right;
 }
 
 /********************Control controls*****************************/
@@ -528,7 +543,7 @@ div#create-ws-status {
     font-size: 28px;
     font-weight: bold;
     margin: 0px 10px 0px 10px;
-"zyg_fam_reset"}
+}
 
 #close-note:hover, #close-note:focus {
     color: black;
@@ -578,7 +593,7 @@ div.modal-back {
 
 span.close-it {
     color: #aaa;
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     margin: 0px 10px 0px 10px;
     float: right;

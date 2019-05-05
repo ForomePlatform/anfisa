@@ -221,14 +221,13 @@ var sUnitsH = {
     mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
-    mCtx: null,
+    mCtx: {"interval": 0},
     
     setup: function(tree_code, point_no) {
         args = "ds=" + sDSName + "&code=" +
             encodeURIComponent(tree_code) + 
-            "&no=" + point_no;
-        if (this.mCtx != null)
-            args += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+            "&no=" + point_no
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         this.mWaiting = true;
         document.body.className = "wait";
         document.getElementById("stat-list").className = "wait";
@@ -256,7 +255,6 @@ var sUnitsH = {
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
             
-        this.mCtx = null;
         this.mItems = info["stat-list"];
         this.mUnitMap = {}
         var list_stat_rep = [];
@@ -297,8 +295,8 @@ var sUnitsH = {
         }
     },
     
-    setCtx: function(ctx) {
-        this.mCtx = ctx;
+    setCtxPar: function(key, val) {
+        this.mCtx[key] = val;
     }
 };
     

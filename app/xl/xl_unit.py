@@ -62,7 +62,7 @@ class XL_NumUnit(XL_Unit):
             (name_min, name_max, name_cnt)]
 
     def makeStat(self, condition, repr_context = None):
-        ret = self._prepareStat();
+        ret = self.prepareStat();
         vmin, vmax, count = self.evalStat(condition)
         if count == 0:
             vmin, vmax = None, None
@@ -116,7 +116,7 @@ class XL_EnumUnit(XL_Unit):
             for var in self.mVariants]
 
     def makeStat(self, condition, repr_context = None):
-        ret = self._prepareStat();
+        ret = self.prepareStat();
         ret.append(self.evalStat(condition))
         return ret
 
@@ -178,7 +178,6 @@ class XL_ZygosityUnit(XL_Unit):
             if idx in problem_group:
                 seq.append(XL_NumCondition(dim_name, [None, 0]))
             else:
-                # z >= 1
                 seq.append(XL_NumCondition(dim_name, [1, None]))
         return XL_Condition.joinAnd(seq)
 
@@ -192,9 +191,9 @@ class XL_ZygosityUnit(XL_Unit):
         yield (self.mLabels["compens"],
             self.conditionZCompens(p_group))
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, repr_context = None):
         assert self.mIsOK
-        ret = self._prepareStat()
+        ret = self.prepareStat()
         ret[-1]["family"] = self.getDS().getFamilyInfo().getTitles()
         ret[-1]["affected"] = self.getDS().getFamilyInfo().getAffectedGroup()
         if repr_context is None or "problem_group" not in repr_context:

@@ -1,4 +1,5 @@
 import json
+from time import time
 
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
@@ -11,6 +12,7 @@ from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.code_works import cmpTrees, codeHash, StdTreeCodes
 #===============================================
 class XLDataset(DataSet):
+    sStatRqCount = 0
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.mMongoDS = (self.getApp().getMongoConnector().
@@ -23,9 +25,10 @@ class XLDataset(DataSet):
             xl_unit = XL_Unit.create(self, unit_data)
             if xl_unit is not None:
                 self.mUnits.append(xl_unit)
+        self.mUnitDict = {unit_h.getName(): unit_h
+            for unit_h in self.mUnits}
         for unit_h in self.mUnits:
             unit_h.setup()
-
         self.mFilterCache = dict()
         if self.mMongoDS is not None:
             for f_name, cond_seq, time_label in self.mMongoDS.getFilters():
@@ -42,16 +45,36 @@ class XLDataset(DataSet):
         return self.mCondEnv
 
     def getUnit(self, name):
-        for unit_h in self.mUnits:
-            if unit_h.getName() == name:
-                return unit_h
-        return None
+        return self.mUnitDict.get(name)
 
     def makeAllStat(self, condition, repr_context = None):
         ret = []
+        time_end = None
+        if repr_context is not None and "timeout" in repr_context:
+            time_end = time() + repr_context["timeout"]
         for unit_h in self.mUnits:
-            if not unit_h.isScreened():
-                ret.append(unit_h.makeStat(condition, repr_context))
+            if unit_h.isScreened():
+                continue
+            if time_end is False:
+                ret.append(unit_h.prepareStat())
+                continue
+            ret.append(unit_h.makeStat(condition, repr_context))
+            if time_end is not None:
+                if time() > time_end:
+                    time_end = False
+        return ret
+
+    def makeSelectedStat(self, unit_names, condition, repr_context = None):
+        ret = []
+        time_end = None
+        if repr_context is not None and "timeout" in repr_context:
+            time_end = time() + repr_context["timeout"]
+        for unit_name in unit_names:
+            unit_h = self.getUnit(unit_name)
+            assert not unit_h.isScreened()
+            ret.append(unit_h.makeStat(condition, repr_context))
+            if time_end is not None and time() > time_end:
+                break
         return ret
 
     def filterOperation(self, filter_name, cond_seq, instr):
@@ -180,6 +203,7 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl_filters(self, rq_args):
+        self.sStatRqCount += 1
         filter_name = rq_args.get("filter")
         if "conditions" in rq_args:
             cond_seq = json.loads(rq_args["conditions"])
@@ -203,7 +227,8 @@ class XLDataset(DataSet):
             "stat-list": self.makeAllStat(condition, repr_context),
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
-            "conditions": cond_seq}
+            "conditions": cond_seq,
+            "rq_id": str(self.sStatRqCount) + '/' + str(time())}
 
     #===============================================
     @RestAPI.xl_request
@@ -214,13 +239,22 @@ class XLDataset(DataSet):
             repr_context = json.loads(rq_args["ctx"])
         else:
             repr_context = dict()
-        unit_name = rq_args["unit"]
-        the_unit = None
-        for unit_h in self.mUnits:
-            if unit_h.getName() == unit_name:
-                the_unit = unit_h
-                break
+        the_unit = self.getUnit(rq_args["unit"])
         return the_unit.makeStat(condition, repr_context)
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_statunits(self, rq_args):
+        condition = self.mCondEnv.parseSeq(
+            json.loads(rq_args["conditions"]))
+        if "ctx" in rq_args:
+            repr_context = json.loads(rq_args["ctx"])
+        else:
+            repr_context = dict()
+        return {
+            "rq_id": rq_args.get("rq_id"),
+            "units": self.makeSelectedStat(json.loads(rq_args["units"]),
+                condition, repr_context)}
 
     #===============================================
     @RestAPI.xl_request
@@ -289,6 +323,7 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xlstat(self, rq_args):
+        self.sStatRqCount += 1
         point_no = int(rq_args["no"])
         if point_no >=0:
             tree = DecisionTree(ParsedDecisionTree
@@ -304,7 +339,8 @@ class XLDataset(DataSet):
         return {
             "total": self.getTotal(),
             "count": count,
-            "stat-list": self.makeAllStat(condition, repr_context)}
+            "stat-list": self.makeAllStat(condition, repr_context),
+            "rq_id": str(self.sStatRqCount) + '/' + str(time())}
 
     #===============================================
     @RestAPI.xl_request

@@ -30,10 +30,14 @@ var sUnitsH = {
     mCounts: null,
     mTotal: null,
     mExportFormed: null,
-    mCtx: null,
+    mCtx: {"timeout": 0},
+    mRqId: null,
+    mUnitsDelay: null,
+    mWaiting: null,
+    mTimeH: null,
     
     setup: function(conditions, filter_name, add_instr) {
-        args = "ds=" + sDSName;
+        args = "ds=" + sDSName + "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
         } else {
@@ -41,27 +45,32 @@ var sUnitsH = {
                 args += "&conditions=" + 
                     encodeURIComponent(JSON.stringify(conditions)); 
         }
-        if (this.mCtx != null)
-            args += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (add_instr)
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
+        this.mRqId = false;
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mWaiting = true;
         ajaxCall("xl_filters", args, function(info){sUnitsH._setup(info);})
     },
 
     _setup: function(info) {
+        this.mWaiting = false;
         this.mCount = info["count"];
         this.mTotal = info["total"];
+        this.mRqId  = info["rq_id"];
         this.mExportFormed = false;
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
-
-        this.mCtx = null;
         this.mItems = info["stat-list"];
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         this.mUnitMap = {}
         var list_stat_rep = [];
-        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep);
+        this.mUnitsDelay = [];
+        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         document.getElementById("stat-list").innerHTML = list_stat_rep.join('\n');
         
         this.mCurUnit = null;
@@ -71,56 +80,56 @@ var sUnitsH = {
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0][1]["name"]);
         sFiltersH.update();
+        this.checkDelayed();
     },
 
-    _fillStatRepNum: function(unit_stat, list_stat_rep) {
-        val_min   = unit_stat[2];
-        val_max   = unit_stat[3];
-        count     = unit_stat[4];
-        //cnt_undef = unit_stat[5];
-        if (count == 0) {
-            list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
-        } else {
-            if (val_min == val_max) {
-                list_stat_rep.push('<span class="stat-ok">' + val_min + '</span>');
-            } else {
-                list_stat_rep.push('<span class="stat-ok">' + val_min + 
-                    ' =< ...<= ' + val_max + ' </span>');
-            }
-            list_stat_rep.push(': <span class="stat-count">' + count + 
-                ' records</span>');
-        }
+    checkDelayed: function() {
+        if (this.mWaiting || this.mTimeH != null || this.mUnitsDelay.length == 0)
+            return;
+        this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
-        
-    _fillStatRepEnum: function(unit_stat, list_stat_rep) {
-        var_list = unit_stat[2];
-        list_count = 0;
-        for (j = 0; j < var_list.length; j++) {
-            if (var_list[j][1] > 0)
-                list_count++;
-        }
-        if (list_count > 0) {
-            list_stat_rep.push('<ul>');
-            view_count = (list_count > 6)? 3: list_count; 
-            for (j = 0; j < var_list.length && view_count > 0; j++) {
-                var_name = var_list[j][0];
-                var_count = var_list[j][1];
-                if (var_count == 0)
-                    continue;
-                view_count -= 1;
-                list_count--;
-                list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-                    '<span class="stat-count">' +
-                    var_count + ' records</span></li>');
+    
+    loadUnits: function() {
+        clearInterval(this.mTimeH);
+        this.mTimeH = null;
+        if (this.mWaiting || this.mUnitsDelay.length == 0)
+            return;
+        this.mWaiting = true;
+        ajaxCall("xl_statunits", "ds=" + sDSName + 
+            "&rq_id=" + encodeURIComponent(this.mRqId) + 
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
+            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
+            "&conditions=" + encodeURIComponent(
+                JSON.stringify(sConditionsH.getConditions())), 
+            function(info){sUnitsH._loadUnits(info);})
+    },
+
+    _loadUnits: function(info) {
+        if (info["rq_id"] != this.mRqId) 
+            return;
+        this.mWaiting = false;
+        el_list = document.getElementById("stat-list");
+        var cur_el = (this.mCurUnit)? document.getElementById("stat--" + this.mCurUnit): null;
+        if (cur_el)
+            var prev_top = cur_el.getBoundingClientRect().top;
+        var prev_unit = this.mCurUnit;
+        var prev_h =  (this.mCurUnit)? topUnitStat(this.mCurUnit):null;
+        for (var idx = 0; idx < info["units"].length; idx++) {
+            unit_stat = info["units"][idx];
+            refillUnitStat(unit_stat);
+            unit_name = unit_stat[1]["name"];
+            var pos = this.mUnitsDelay.indexOf(unit_name);
+            if (pos >= 0)
+                this.mUnitsDelay.splice(pos, 1);
+            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
+            if (this.mCurUnit == unit_name)
+                this.selectUnit(unit_name, true);
+            if (cur_el) {
+                cur_top = cur_el.getBoundingClientRect().top;
+                el_list.scrollTop += cur_top - prev_top;
             }
-            list_stat_rep.push('</ul>');
-            if (list_count > 0) {
-                list_stat_rep.push('<p><span class="stat-comment">...and ' + 
-                    list_count + ' variants more...</span></p>');
-            }
-        } else {
-            list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
         }
+        this.checkDelayed();
     },
     
     getCurUnitTitle: function() {
@@ -138,6 +147,13 @@ var sUnitsH = {
     },
     
     selectUnit: function(stat_unit, force_it) {
+        var pos = this.mUnitsDelay.indexOf(stat_unit);
+        if (pos >= 0) {
+            this.mUnitsDelay.splice(pos, 1);
+            this.mUnitsDelay.splice(0, 0, stat_unit);
+        }
+        if (pos >= 0) 
+            this.loadUnits(this.mUnitsDelay.slice(0, 2));
         if (this.mCurUnit == stat_unit && !force_it) 
             return;
         var new_unit_el = document.getElementById("stat--" + stat_unit);
@@ -161,8 +177,12 @@ var sUnitsH = {
         }
     },
     
-    setCtx: function(ctx) {
-        this.mCtx = ctx;
+    getCtx: function() {
+        return this.mCtx;
+    },
+    
+    setCtxPar: function(key, val) {
+        this.mCtx[key] = val;
     }
     
 };
@@ -258,7 +278,6 @@ var sOpFilterH = {
             }
         }        
     }
-
 };
     
 /**************************************/
@@ -369,21 +388,30 @@ var sOpCondH = {
         } 
         unit_stat = sUnitsH.getCurUnitStat();
         unit_type = unit_stat[0];
-        if (unit_type == "long" || unit_type == "float") {
-            sOpEnumH.suspend();
-            this.mCurTpHandler = sOpNumH;
-        } else {
+    
+        if (unit_stat.length == 2)
+            this.mCurTpHandler = null;
+        else {
+            if (unit_type == "long" || unit_type == "float") 
+                this.mCurTpHandler = sOpNumH;
+            else
+                this.mCurTpHandler = sOpEnumH;
+        }
+        if (this.mCurTpHandler != sOpNumH)
             sOpNumH.suspend();
-            this.mCurTpHandler = sOpEnumH;
+        if (this.mCurTpHandler != sOpEnumH)
+            sOpEnumH.suspend();
+        document.getElementById("cur-cond-loading").style.display = 
+            (this.mCurTpHandler)? "none":"block";
+        if (this.mCurTpHandler) {
+            this.mCurTpHandler.updateUnit(unit_stat);
+            if (sConditionsH.getCurCondNo() != null) {
+                cond = sConditionsH.getCurCond();
+                if (cond[1] == unit_name)
+                    this.mCurTpHandler.updateCondition(cond);
+            }
+            this.mCurTpHandler.checkControls();
         }
-        this.mCurTpHandler.updateUnit(unit_stat);
-
-        if (sConditionsH.getCurCondNo() != null) {
-            cond = sConditionsH.getCurCond();
-            if (cond[1] == unit_name)
-                this.mCurTpHandler.updateCondition(cond);
-        }
-        this.mCurTpHandler.checkControls();
     },
     
     formCondition: function(condition_data, err_msg, cond_mode, add_always) {
@@ -422,7 +450,7 @@ var sOpCondH = {
     
     availableActions: function() {
         ret = []
-        if (this.mCondition != null) {
+        if (this.mCurTpHandler && this.mCondition != null) {
             if (this.mIdxToAdd != null)
                 ret.push("add");
             if (this.mIdxToUpdate != null)

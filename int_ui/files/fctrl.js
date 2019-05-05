@@ -296,7 +296,7 @@ var sZygosityH = {
         list_stat_rep.push('<div id="zyg-stat">');
         this._reportStat(list_stat_rep);
         list_stat_rep.push('</div></div>');
-        sUnitsH.setCtx({"problem_group": this.mProblemIdxs.slice()})
+        sUnitsH.setCtxPar("problem_group", this.mProblemIdxs.slice())
     },
     
     _fillProblemGroup: function(family, problem_idxs, list_stat_rep) {
@@ -445,12 +445,11 @@ var sZygosityH = {
         if (this.mDefaultIdxs.length > 0)
             document.getElementById("zyg-fam-reset").disabled = 
                 (this.mDefaultRepr == this.mProblemIdxs.join(','));
-        var ctx = {"problem_group": this.mProblemIdxs.slice()};
-        sUnitsH.setCtx(ctx);
+        sUnitsH.setCtxPar("problem_group", this.mProblemIdxs.slice());
 
         args = "ds=" + sDSName + "&unit=" + this.mUnitName + "&conditions=" +
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
-            "&ctx=" + encodeURIComponent(JSON.stringify(ctx));
+            "&ctx=" + encodeURIComponent(JSON.stringify(sUnitsH.getCtx()));
         ajaxCall("xl_statunit", args, function(info){sZygosityH._refresh(info);})
     },
     
@@ -465,7 +464,7 @@ var sZygosityH = {
 
 /*************************************/
 /*************************************/
-function fillEnumStat(items, unit_map, list_stat_rep) {
+function fillEnumStat(items, unit_map, list_stat_rep, unit_names_to_load) {
     var group_title = false;
     for (idx = 0; idx < items.length; idx++) {
         unit_stat = items[idx];
@@ -499,19 +498,45 @@ function fillEnumStat(items, unit_map, list_stat_rep) {
                 '<span id="flt-run-rules" title="Rules evaluation setup" ' +
                 ' onclick="rulesModOn();">&#9874;</span>')
         }
-        if (unit_type == "zygosity") 
-            sZygosityH.setup(unit_stat, list_stat_rep);
-        else {
-            if (unit_type == "long" || unit_type == "float") 
-                fillStatRepNum(unit_stat, list_stat_rep);
-            else
-                fillStatRepEnum(unit_stat, list_stat_rep);
+        list_stat_rep.push('<div id="stat-data--' + unit_name + '" class="stat-unit-data">');
+        if (unit_stat.length == 2) {
+            unit_names_to_load.push(unit_name);
+            list_stat_rep.push('<div class="loading">Loading data...</div>');
+        } else {
+            if (unit_type == "zygosity") 
+                sZygosityH.setup(unit_stat, list_stat_rep);
+            else {
+                if (unit_type == "long" || unit_type == "float") 
+                    fillStatRepNum(unit_stat, list_stat_rep);
+                else
+                    fillStatRepEnum(unit_stat, list_stat_rep);
+            }
         }
-        list_stat_rep.push('</div>')
+        list_stat_rep.push('</div></div>')
     }
     if (group_title != false) {
         list_stat_rep.push('</div>')
     }
+}
+
+function refillUnitStat(unit_stat) {
+    unit_type = unit_stat[0];
+    unit_name = unit_stat[1]["name"];
+    div_el = document.getElementById("stat-data--" + unit_name);
+    list_stat_rep = [];
+    if (unit_type == "zygosity") 
+        sZygosityH.setup(unit_stat, list_stat_rep);
+    else {
+        if (unit_type == "long" || unit_type == "float") 
+            fillStatRepNum(unit_stat, list_stat_rep);
+        else
+            fillStatRepEnum(unit_stat, list_stat_rep);
+    }
+    div_el.innerHTML = list_stat_rep.join('\n');
+}
+
+function topUnitStat(unit_stat) {
+    return document.getElementById("stat--" + unit_name).getBoundingClientRect().top;
 }
 
 /**************************************/

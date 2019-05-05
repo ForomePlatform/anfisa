@@ -168,11 +168,13 @@ div#zyg-wrap {
 
 div#zyg-problem {
     white-space: nowrap;
+    text-align: left;
 }
 
 div.zyg-family {
     flex: 0 0 100px;
     border-right: 1px solid black;
+    margin-right: 5px;
     padding-right: 5px;
 }
 
@@ -191,7 +193,6 @@ div#zyg-stat ul {
 
 button#zyg-fam-reset {
     padding: 0px !important;
-    float: right;
 }
 
 span#cond-text {
