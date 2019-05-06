@@ -410,10 +410,6 @@ div#zyg-stat ul {
     padding-left: 20px;
 }
 
-button#zyg-fam-reset {
-    padding: 0px !important;
-}
-
 /********************Control controls*****************************/
 div#ds-dropdown {
     margin: 0px;

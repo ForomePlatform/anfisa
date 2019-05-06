@@ -13,7 +13,7 @@ function initXL(ds_name, common_title, ws_url) {
     sVersionsH.init();
     sViewH.init();
     sCreateWsH.init();
-    sCodeEdit.init();
+    sCodeEditH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
@@ -96,6 +96,7 @@ var sDecisionTree = {
         else
             rep_rejected = this.mTotalCount - this.mAcceptedCount;
         document.getElementById("report-rejected").innerHTML = rep_rejected;
+        sCodeEditH.setup(this.mTreeCode);
         updateSizes();
     },
 
@@ -142,7 +143,7 @@ var sDecisionTree = {
         this.mAcceptedCount = 0;
         document.getElementById("decision-tree").innerHTML = 
             '<div class="error">Tree code has errors, <br/>' +
-            '<a onclick="sCodeEdit.show();">Edit</a> ' +
+            '<a onclick="sCodeEditH.show();">Edit</a> ' +
             'or choose another code from repository</div>';
     },
     
@@ -170,7 +171,6 @@ var sDecisionTree = {
         this.mCurPointNo = point_no;
         if (point_no >= 0)
             new_el.className = "cur";
-        sCodeEdit.setup(this.mTreeCode);
         sUnitsH.setup(this.mTreeCode, this.mCurPointNo);
     },
     
@@ -687,20 +687,25 @@ var sVersionsH = {
 };
 
 /*************************************/
-var sCodeEdit = {
+var sCodeEditH = {
     mBaseContent: null,
     mCurContent: null,
     mCurError: false,
     mButtonShow: null,
     mButtonDrop: null,
+    mButtonSave: null,
     mSpanPos: null,
     mSpanError: null,
     mAreaContent: null,
     mErrorPos: null,
+    mTimeH: null,
+    mWaiting: null,
+    mNeedsSave: null,
     
     init: function() {
         this.mButtonShow = document.getElementById("code-edit-show");
         this.mButtonDrop = document.getElementById("code-edit-drop");
+        this.mButtonSave = document.getElementById("code-edit-save");
         this.mSpanPos = document.getElementById("code-edit-pos");
         this.mSpanError = document.getElementById("code-edit-error");
         this.mAreaContent = document.getElementById("code-edit-content");
@@ -712,13 +717,22 @@ var sCodeEdit = {
         this.mCurContent = this.mBaseContent;
         this.mCurError = false;
         this.mErrorPos = null;
+        this.mWaiting = false;
+        this.mNeedsSave = false;
         this.validateContent(this.mBaseContent);
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.checkControls();
     },
     
     checkControls: function() {
-        this.mButtonShow.text = (this.mCurError != null)? 
-            "Continue edit code" : "Edit code"; 
-        this.mButtonDrop.disabled = (this.mCurContent == this.mBaseContent);
+        var same_cnt = (this.mBaseContent == this.mCurContent);
+        this.mButtonShow.innerText = (same_cnt)? "Edit code":"Continue edit code"; 
+        this.mButtonShow.setAttribute("class", (this.mCurError)? "bad":"");
+        this.mButtonDrop.disabled = same_cnt;
+        this.mButtonSave.disabled = same_cnt|| this.mCurError; 
         this.mSpanError.innerHTML = (this.mCurError)? this.mCurError:"";
     },
     
@@ -726,20 +740,32 @@ var sCodeEdit = {
         sViewH.modalOn(document.getElementById("code-edit-back"));
     },
 
-    validateContent: function(content) {
-        if (this.mCurError != false && this.mCurContent == content)
+    validateContent: function(code_content) {
+        if (this.mCurError != false && this.mCurContent == code_content) {
+            this.checkControls();
             return;
-        this.mCurContent = content;
+        }
+        if (this.mTimeH != null)
+            clearInterval(this.mTimeH);
+        this.mCurContent = code_content;
+        this.mTimeH = setInterval(function(){sCodeEditH.validation();}, 300);
+    },
+    
+    validation: function() {
+        clearInterval(this.mTimeH);
+        this.mTimeH = null;
         this.mCurError = false;
         this.mErrorPos = null;
+        this.mWaiting = true;
         ajaxCall("xltree_code", "ds=" + sDSName + "&code=" +
             encodeURIComponent(this.mCurContent), 
-            function(info) {sCodeEdit._validation(info);});
+            function(info) {sCodeEditH._validation(info);});
     },
     
     _validation: function(info) {
         if (info["code"] != this.mCurContent) 
             return;
+        this.mWaiting = false;
         if (info["error"]) {
             this.mCurError = "At line " + info["line"] + " pos " + info["pos"] + ": " +
                 info["error"];
@@ -749,6 +775,11 @@ var sCodeEdit = {
             this.mErrorPos = null;
         }
         this.checkControls();
+        if (this.mNeedsSave) {
+            this.mNeedsSave = false;
+            this.setupContent();
+            sViewH.modalOff();
+        }
     },
     
     posError: function() {
@@ -780,11 +811,21 @@ var sCodeEdit = {
         this.validateContent(this.mAreaContent.value);
     }, 
     
-    relax: function() {
+    save: function() {
+        this.mNeedsSave = true;
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+        }
+        if (!this.mWaiting)
+            this.validation();            
+    },
+    
+    setupContent: function() {
         if (this.mCurError == null && this.mBaseContent != this.mCurContent)
             sDecisionTree.setup(this.mCurContent);
         this.checkControls();
     }
+    
 };
 
 /**************************************/
@@ -824,7 +865,6 @@ function updateSizes() {
 
 function onModalOff() {
     sDecisionTree._highlightCondition(false);
-    sCodeEdit.relax();
 }
 
 function openControlMenu() {

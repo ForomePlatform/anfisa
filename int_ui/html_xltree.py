@@ -5,7 +5,7 @@ from app.filter.code_works import StdTreeCodes
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
-        css_files = ["xltree.css", "py_pygments.css"],
+        css_files = ["xltree.css", "py_pygments.css", "base.css"],
         js_files = ["xltree.js", "fctrl.js", "flt.js"])
 
     print >> output, (
@@ -51,8 +51,8 @@ def _formXLPannel(output, ds_name):
             escape(std_name), escape(std_name))
     print >> output, '''
             </select>
-            <button id="code-edit-show" class="action"
-                onclick='sCodeEdit.show();'>Edit code
+            <button id="code-edit-show" onclick='sCodeEditH.show();'>
+                Edit code
             </button>
         </div>
         <div id="xl-tree-info">
@@ -250,18 +250,21 @@ def _formEditCodeDiv(output):
               <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
         </div>
         <div id="code-edit-ctrl">
-            <button id="code-edit-drop" onclick="sCodeEdit.drop();">
+            <button id="code-edit-drop" onclick="sCodeEditH.drop();">
                 Drop changes
             </button>
             <button onclick="sViewH.modalOff();">
                 Done
             </button>
+            <button id="code-edit-save" onclick="sCodeEditH.save();">
+                Save
+            </button>
             <span id="code-edit-error"
-                onclick="sCodeEdit.posError();"></span>
+                onclick="sCodeEditH.posError();"></span>
         </div>
         <div id="code-edit-main">
             <textarea id="code-edit-content"
-                oninput="sCodeEdit.checkContent();"></textarea>
+                oninput="sCodeEditH.checkContent();"></textarea>
         </div>
       </div>
     </div>
