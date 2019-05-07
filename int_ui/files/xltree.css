@@ -246,7 +246,6 @@ div#cond-list {
     max-width: 100%;
 }
 
-
 span.enum-cnt {
     color: grey;
     font-style: italic;
@@ -270,10 +269,11 @@ span.stat-count {
     font-style: italic;
 }
 
-span.stat-comment {
+p.stat-comment {
     font-style: italic;
     white-space: pre;
 }
+
 span.stat-ok {
     font-weight: bold;
     margin: 1px 5px 1px 5px;
@@ -296,6 +296,15 @@ span.point-edit.active {
     color: red;
     border: 1px solid red;
     background-color: yellow;
+}
+
+div.enum-exp {
+    position: relative;
+    float: left;
+    background-color: #f0f0f0;
+    border:2px solid #E0E0E0;
+    padding: 3px;
+    cursor: pointer;
 }
 
 /********************Decision tree*****************************/

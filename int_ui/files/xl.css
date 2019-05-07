@@ -298,8 +298,13 @@ span.enum-cnt {
     margin: 10px;
 }
 
-span.stat-count, span.stat-comment {
+span.stat-count{
     font-style: italic;
+}
+
+p.stat-comment {
+    font-style: italic;
+    white-space: pre;
 }
 
 span.stat-ok {

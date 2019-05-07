@@ -467,7 +467,8 @@ var sZygosityH = {
 
 /*************************************/
 /*************************************/
-function fillEnumStat(items, unit_map, list_stat_rep, unit_names_to_load) {
+function fillEnumStat(items, unit_map, list_stat_rep, 
+        unit_names_to_load, expand_mode) {
     var group_title = false;
     for (idx = 0; idx < items.length; idx++) {
         unit_stat = items[idx];
@@ -512,7 +513,7 @@ function fillEnumStat(items, unit_map, list_stat_rep, unit_names_to_load) {
                 if (unit_type == "long" || unit_type == "float") 
                     fillStatRepNum(unit_stat, list_stat_rep);
                 else
-                    fillStatRepEnum(unit_stat, list_stat_rep);
+                    fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
             }
         }
         list_stat_rep.push('</div></div>')
@@ -522,7 +523,7 @@ function fillEnumStat(items, unit_map, list_stat_rep, unit_names_to_load) {
     }
 }
 
-function refillUnitStat(unit_stat) {
+function refillUnitStat(unit_stat, expand_mode) {
     unit_type = unit_stat[0];
     unit_name = unit_stat[1]["name"];
     div_el = document.getElementById("stat-data--" + unit_name);
@@ -533,8 +534,16 @@ function refillUnitStat(unit_stat) {
         if (unit_type == "long" || unit_type == "float") 
             fillStatRepNum(unit_stat, list_stat_rep);
         else
-            fillStatRepEnum(unit_stat, list_stat_rep);
+            fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
     }
+    div_el.innerHTML = list_stat_rep.join('\n');
+}
+
+function exposeEnumUnitStat(unit_stat, expand_mode) {
+    unit_name = unit_stat[1]["name"];
+    list_stat_rep = [];
+    fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
+    div_el = document.getElementById("stat-data--" + unit_name);
     div_el.innerHTML = list_stat_rep.join('\n');
 }
 

@@ -150,34 +150,45 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
     }
 }
 
-function fillStatRepEnum(unit_stat, list_stat_rep) {
+function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     var_list = unit_stat[2];
     list_count = 0;
     for (j = 0; j < var_list.length; j++) {
         if (var_list[j][1] > 0)
             list_count++;
     }
-    if (list_count > 0) {
-        list_stat_rep.push('<ul>');
-        view_count = (list_count > 6)? 3: list_count; 
-        for (j = 0; j < var_list.length && view_count > 0; j++) {
-            var_name = var_list[j][0];
-            var_count = var_list[j][1];
-            if (var_count == 0)
-                continue;
-            view_count -= 1;
-            list_count--;
-            list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-                '<span class="stat-count">' +
-                var_count + ' records</span></li>');
-        }
-        list_stat_rep.push('</ul>');
-        if (list_count > 0) {
-            list_stat_rep.push('<p><span class="stat-comment">...and ' + 
-                list_count + ' variants more...</span></p>');
-        }
-    } else {
+    if (list_count == 0) {
         list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+        return;
+    }
+    needs_expand = list_count > 6 && expand_mode;
+    if (expand_mode == 2) 
+        view_count = list_count
+    else
+        view_count = (list_count > 6)? 3: list_count; 
+        
+    if (list_count > 6 && expand_mode) {
+        unit_name = unit_stat[1]["name"];
+        list_stat_rep.push('<div onclick="exposeEnum(\'' + unit_name + 
+            '\',' + (3 - expand_mode) + ');" class="enum-exp">' + 
+            ((expand_mode==1)?'+':'-') + '</div>');
+    }
+    list_stat_rep.push('<ul>');
+    for (j = 0; j < var_list.length && view_count > 0; j++) {
+        var_name = var_list[j][0];
+        var_count = var_list[j][1];
+        if (var_count == 0)
+            continue;
+        view_count -= 1;
+        list_count--;
+        list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
+            '<span class="stat-count">' +
+            var_count + ' records</span></li>');
+    }
+    list_stat_rep.push('</ul>');
+    if (list_count > 0) {
+        list_stat_rep.push('<p class="stat-comment">...and ' + 
+            list_count + ' variants more...</p>');
     }
 }
 

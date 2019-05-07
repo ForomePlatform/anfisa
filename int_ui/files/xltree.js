@@ -350,7 +350,7 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
+        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 1);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
@@ -402,7 +402,7 @@ var sUnitsH = {
         var prev_h =  (this.mCurUnit)? topUnitStat(this.mCurUnit):null;
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
-            refillUnitStat(unit_stat);
+            refillUnitStat(unit_stat, 1);
             unit_name = unit_stat[1]["name"];
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
@@ -1035,4 +1035,8 @@ function pickStdCode() {
     std_name = document.getElementById("std-code-select").value;
     if (std_name) 
         sDecisionTree.setup(null, {"std" : std_name});
+}
+
+function exposeEnum(unit_name, expand_mode) {
+    exposeEnumUnitStat(sUnitsH.getUnitStat(unit_name), expand_mode);
 }
