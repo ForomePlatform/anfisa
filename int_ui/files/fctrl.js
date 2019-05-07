@@ -451,15 +451,13 @@ var sZygosityH = {
             document.getElementById("zyg-fam-reset").disabled = 
                 (this.mDefaultRepr == this.mProblemIdxs.join(','));
         sUnitsH.setCtxPar("problem_group", this.mProblemIdxs.slice());
-
-        args = "ds=" + sDSName + "&unit=" + this.mUnitName + "&conditions=" +
-            encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
-            "&ctx=" + encodeURIComponent(JSON.stringify(sUnitsH.getCtx()));
-        ajaxCall("xl_statunit", args, function(info){sZygosityH._refresh(info);})
+        ajaxCall("xl_statunits", sUnitsH.getRqArgs() + 
+            "&units=" + encodeURIComponent(JSON.stringify([this.mUnitName])), 
+            function(info){sZygosityH._refresh(info);})
     },
     
     _refresh: function(info) {
-        this.mZStat = info[3];
+        this.mZStat = info["units"][0][3];
         rep_list = [];
         this._reportStat(rep_list);
         document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');

@@ -38,9 +38,12 @@ var sDecisionTree = {
     mOpCond: null,
     mMarkLoc: null,
     mErrorMode: null,
+    mPointDelay: null,
+    mRqId: null,
+    mPostTreeAction: null,
     
     setup: function(tree_code, options) {
-        args = "ds=" + sDSName;
+        args = "ds=" + sDSName + "&tm=0";
         if (tree_code) {
             if (tree_code == true)
                 tree_code = this.mTreeCode;
@@ -60,10 +63,13 @@ var sDecisionTree = {
     _setup: function(info) {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
+        this.mRqId = info["rq_id"];
         sTreeCtrlH.update(info["cur_version"], info["versions"]);
         document.getElementById("std-code-select").value = 
             info["std_code"]? info["std_code"]:"";
         this.mMarkLoc = null;
+        this.mPostTreeAction = null;
+        this.mPointDelay = [];
         if (info["error"]) {
             this.mErrorMode = true;
             this.mCounts = [];
@@ -89,15 +95,10 @@ var sDecisionTree = {
         this.mCurPointNo = null;
         this.selectPoint(point_no);
         
-        document.getElementById("report-accepted").innerHTML =  
-            (this.mErrorMode)? "?" : ("" + this.mAcceptedCount);
-        if (this.mErrorMode)
-            rep_rejected = "?"
-        else
-            rep_rejected = this.mTotalCount - this.mAcceptedCount;
-        document.getElementById("report-rejected").innerHTML = rep_rejected;
         sCodeEditH.setup(this.mTreeCode);
         updateSizes();
+        this.careControls();
+        this.loadDelayed();
     },
 
     _fillTreeTable: function() {
@@ -111,7 +112,7 @@ var sDecisionTree = {
             p_cond = point[3];
             p_html = point[4];
             p_count = this.mCounts[p_no];
-            if (p_count > 0) {
+            if (p_count != 0) {
                 list_rep.push('<tr id="p_td__' + p_no + 
                     '" class="active" onclick="sDecisionTree.selectPoint(' + 
                     p_no + ');">');
@@ -122,16 +123,21 @@ var sDecisionTree = {
                 (p_no + 1) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
                 p_html + '</div></td>');
+            if (p_count == null) {
+                this.mPointDelay.push(p_no);
+                count_repr = '<span id="p_count__' + p_no + '">...</span>';
+            } else 
+                count_repr = p_count;
             if (p_decision) {
                 this.mAcceptedCount += p_count;
-                list_rep.push('<td class="point-count-accept">+' + p_count + '</td>');
+                list_rep.push('<td class="point-count-accept">+' + count_repr + '</td>');
             } else {
                 if (p_decision == false) 
                     list_rep.push(
-                        '<td class="point-count-reject">-' + p_count + '</td>');
+                        '<td class="point-count-reject">-' + count_repr + '</td>');
                 else 
                     list_rep.push(
-                        '<td class="point-count">' + p_count + '</td>');
+                        '<td class="point-count">' + count_repr + '</td>');
             }
             list_rep.push('</tr>');
         }
@@ -146,8 +152,69 @@ var sDecisionTree = {
             '<a onclick="sCodeEditH.show();">Edit</a> ' +
             'or choose another code from repository</div>';
     },
+
+    loadDelayed: function(post_tree_action) {
+        if (this.mPointDelay.length == 0) {
+            eval(post_tree_action);
+            return;
+        }
+        args = "ds=" + sDSName + "&code=" + encodeURIComponent(this.mTreeCode) + 
+            "&points=" + encodeURIComponent(JSON.stringify(this.mPointDelay)) + 
+            "&rq_id=" + encodeURIComponent(this.mRqId);
+        if (!post_tree_action)
+            args += "&tm=1";
+        else
+            this.mPostTreeAction = post_tree_action;
+        ajaxCall("xltree_counts", args, function(info){sDecisionTree._loadDelayed(info);})
+    },
+    
+    _loadDelayed: function(info) {
+        if (info["rq_id"] != this.mRqId)
+            return;
+        for (var p_no = 0; p_no < info["counts"].length; p_no++) {
+            p_count = info["counts"][p_no];
+            if (p_count == null)
+                continue;
+            pos = this.mPointDelay.indexOf(p_no);
+            if (pos < 0)
+                continue;
+            this.mPointDelay.splice(pos, 1);
+            this.mCounts[p_no] = p_count;
+            if (this.mPoints[p_no][2]) 
+                this.mAcceptedCount += p_count;
+            document.getElementById("p_count__" + p_no).innerHTML = "" + p_count;
+        }
+        this.careControls();
+        if (this.mPointDelay.length > 0) {
+            this.loadDelayed()
+            return;
+        }
+        if (this.mPostTreeAction) {
+            post_tree_action = this.mPostTreeAction;
+            this.mPostTreeAction = null;
+            eval(post_tree_action);
+        }
+    },
+    
+    careControls: function() {
+        var accepted = this.getAcceptedCount();
+        if (accepted != null) {
+            rep_accepted = accepted;
+            rep_rejected = this.mTotalCount - accepted;
+        } else {
+            rep_accepted = "?";
+            rep_rejected = "?";
+        }
+        document.getElementById("report-accepted").innerHTML = rep_accepted;
+        document.getElementById("report-rejected").innerHTML = rep_rejected;
+    },
     
     selectPoint: function(point_no) {
+        var pos = this.mPointDelay.indexOf(point_no);
+        if ( pos > 0) {
+            this.mPointDelay.splice(pos, 1);
+            this.mPointDelay.splice(0, 0, point_no);
+        }
         if (this.mCurPointNo == point_no) 
             return;
         if (point_no >=0 && this.mCounts[point_no] == 0)
@@ -206,7 +273,13 @@ var sDecisionTree = {
     },
     
     getAcceptedCount: function() {
+        if (this.mErrorMode || this.mPointDelay.length > 0)
+            return null;
         return this.mAcceptedCount;
+    },
+    
+    hasError: function() {
+        return this.mErrorMode;
     },
     
     getTotalCount: function() {
@@ -215,6 +288,10 @@ var sDecisionTree = {
     
     getTreeCode: function() {
         return this.mTreeCode;
+    },
+    
+    getCurPointNo: function() {
+        return this.mCurPointNo;
     }
 }
 
@@ -294,6 +371,12 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
+    getRqArgs: function() {
+        return "ds=" + sDSName + "&no=" + sDecisionTree.getCurPointNo() +
+            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode()) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+    },
+    
     loadUnits: function() {
         clearInterval(this.mTimeH);
         this.mTimeH = null;
@@ -301,12 +384,9 @@ var sUnitsH = {
             return;
         this.mWaiting = true;
         
-        ajaxCall("xl_statunits", "ds=" + sDSName + "&tm=1" +
-            "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
-            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay.splice(0, 1))) +
-            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode()) + 
-            "&no=" + point_no, 
+        ajaxCall("xl_statunits", this.getRqArgs() + 
+            "&tm=1" + "&rq_id=" + encodeURIComponent(this.mRqId) + 
+            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)),
             function(info){sUnitsH._loadUnits(info);})
     },
     
@@ -777,8 +857,8 @@ var sCodeEditH = {
         this.checkControls();
         if (this.mNeedsSave) {
             this.mNeedsSave = false;
-            this.setupContent();
-            sViewH.modalOff();
+            if (this.setupContent())
+                sViewH.modalOff();
         }
     },
     
@@ -821,9 +901,11 @@ var sCodeEditH = {
     },
     
     setupContent: function() {
-        if (this.mCurError == null && this.mBaseContent != this.mCurContent)
+        var ret = this.mCurError == null && this.mBaseContent != this.mCurContent;
+        if (ret)
             sDecisionTree.setup(this.mCurContent);
         this.checkControls();
+        return ret;
     }
     
 };
@@ -838,6 +920,13 @@ function startWsCreate() {
 }
 
 function _prepareWsCreate() {
+    if (sDecisionTree.hasError())
+        return null;
+    accepted = sDecisionTree.getAcceptedCount();
+    if (accepted == null) {
+        sDecisionTree.loadDelayed("sCreateWsH.show();");
+        return null;
+    }
     if (!sTreeCtrlH.curVersionSaved()) {
         sUnitsH.postAction("sCreateWsH.show();");
         treeVersionSave();

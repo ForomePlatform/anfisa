@@ -98,18 +98,21 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
+    getRqArgs: function() {
+        return "ds=" + sDSName + "&conditions=" + 
+            encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
+            "&ctx=" + encodeURIComponent(JSON.stringify(sUnitsH.getCtx()));
+    },
+    
     loadUnits: function() {
         clearInterval(this.mTimeH);
         this.mTimeH = null;
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
         this.mWaiting = true;
-        ajaxCall("xl_statunits", "ds=" + sDSName + "&tm=1" + 
-            "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx)) +
-            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)) +
-            "&conditions=" + encodeURIComponent(
-                JSON.stringify(sConditionsH.getConditions())), 
+        ajaxCall("xl_statunits", this.getRqArgs() +
+            "&tm=1" + "&rq_id=" + encodeURIComponent(this.mRqId) + 
+            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)), 
             function(info){sUnitsH._loadUnits(info);})
     },
 

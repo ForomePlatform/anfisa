@@ -167,6 +167,9 @@ class DecisionTree(CaseStory):
                 assert False
         assert self.checkDetermined() is None
 
+    def __len__(self):
+        return len(self.mPointList)
+
     def getMaster(self):
         return self
 
@@ -196,17 +199,6 @@ class DecisionTree(CaseStory):
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
             "code": self.mCode}
-
-    def evalPointCounts(self, dataset):
-        counts = [None] * len(self.mPointList)
-        for idx, point in enumerate(self.mPointList):
-            point_count = dataset.evalTotalCount(point.actualCondition())
-            if point_count == 0 and point.getPointKind() == "If":
-                for j in range(idx, len(self.mPoints)):
-                    counts[j] = 0
-                break
-            counts[idx] = point_count
-        return counts
 
     def collectRecSeq(self, dataset):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")

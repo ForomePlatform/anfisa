@@ -56,9 +56,8 @@ class XLDataset(DataSet):
                 ret.append(unit_h.prepareStat())
                 continue
             ret.append(unit_h.makeStat(condition, repr_context))
-            if time_end is not None:
-                if time() > time_end:
-                    time_end = False
+            if time_end is not None and time() > time_end:
+                time_end = False
         return ret
 
     def makeSelectedStat(self, unit_names, condition,
@@ -195,6 +194,35 @@ class XLDataset(DataSet):
             del version_info_seq[0]
         return self.mMongoDS.getTreeCodeVersions()
 
+    def evalPointCounts(self, tree, time_end):
+        counts = [None] * len(tree)
+        for idx in range(len(tree)):
+            if time_end is not None and time() > time_end:
+                break
+            counts[idx] = self.evalTotalCount(tree.actualCondition(idx))
+            if counts[idx] == 0:
+                for idx1 in range(idx, len(tree)):
+                    counts[idx1] = 0
+                break
+        return counts
+
+    def evalTreeSelectedCounts(self, tree, point_idxs, time_end):
+        counts = [None] * len(tree)
+        has_some = False
+        zero_idx = None
+        for idx in point_idxs:
+            if has_some and time_end is not None and time() > time_end:
+                break
+            if zero_idx is not None and idx >= zero_idx:
+                continue
+            counts[idx] = self.evalTotalCount(tree.actualCondition(idx))
+            has_some = True
+            if counts[idx] == 0:
+                zero_idx = idx
+                for idx1 in range(zero_idx, len(tree)):
+                    counts[idx1] = 0
+        return counts
+
     #===============================================
     @RestAPI.xl_request
     def rq__xl_filters(self, rq_args):
@@ -263,10 +291,11 @@ class XLDataset(DataSet):
             repr_context = json.loads(rq_args["ctx"])
         else:
             repr_context = dict()
-        return {
+        ret = {
             "rq_id": rq_args.get("rq_id"),
             "units": self.makeSelectedStat(json.loads(rq_args["units"]),
                 condition, time_end, repr_context)}
+        return ret
 
     #===============================================
     @RestAPI.xl_request
@@ -284,6 +313,11 @@ class XLDataset(DataSet):
         std_name = rq_args.get("std")
         version = rq_args.get("version")
         instr = rq_args.get("instr")
+        if "tm" in rq_args:
+            time_end = time() + float(rq_args["tm"]) + 1E-5
+        else:
+            time_end = None
+        self.sStatRqCount += 1
         version_info_seq = self.mMongoDS.getTreeCodeVersions()
         assert instr is None or tree_code
         if version is not None:
@@ -316,7 +350,7 @@ class XLDataset(DataSet):
         else:
             tree = DecisionTree(parsed)
             ret = tree.dump()
-            ret["counts"] = tree.evalPointCounts(self)
+            ret["counts"] = self.evalPointCounts(tree, time_end)
 
         if version is not None:
             for ver_no, ver_date, ver_hash in version_info_seq[-1::-1]:
@@ -330,7 +364,22 @@ class XLDataset(DataSet):
             ret["std_code"] = std_code
         ret["total"] = self.getTotal()
         ret["versions"] = [info[:2] for info in version_info_seq]
+        ret["rq_id"] = str(self.sStatRqCount) + '/' + str(time())
         return ret
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xltree_counts(self, rq_args):
+        if "tm" in rq_args:
+            time_end = time() + float(rq_args["tm"]) + 1E-5
+        else:
+            time_end = None
+        tree = DecisionTree(ParsedDecisionTree
+            (self.mCondEnv, rq_args["code"]))
+        return {
+            "rq_id": rq_args.get("rq_id"),
+            "counts": self.evalTreeSelectedCounts(tree,
+                json.loads(rq_args["points"]), time_end)}
 
     #===============================================
     @RestAPI.xl_request
