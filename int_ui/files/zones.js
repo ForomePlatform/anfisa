@@ -8,7 +8,7 @@ var sWorkZoneCur   = null;
 var sZoneTagsIntVersion = null;
 
 /*************************************/
-function checkCurZoneProblem() {
+function checkCurZoneStatus() {
     if (sWorkZoneDescr == null)
         return "not set";
     return null;

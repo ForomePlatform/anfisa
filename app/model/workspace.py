@@ -175,9 +175,7 @@ class Workspace(DataSet):
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
         filter_name = rq_args.get("filter")
-        if filter_name == "null":
-            filter_name = None
-        cond_seq, condition = self._getCond(rq_args)
+        cond_seq, _ = self._getCond(rq_args)
         filter_name = self.filterOperation(rq_args.get("instr"),
             filter_name, cond_seq)
         if "ctx" in rq_args:
@@ -185,7 +183,7 @@ class Workspace(DataSet):
         else:
             repr_context = dict()
         return self.mIndex.makeStatReport(
-            filter_name, 'R' in modes, condition, repr_context)
+            filter_name, 'R' in modes, cond_seq, repr_context)
 
     #===============================================
     @RestAPI.ws_request
@@ -197,6 +195,20 @@ class Workspace(DataSet):
             repr_context = dict()
         return self.mIndex.makeUnitStatReport(rq_args["unit"],
             condition, repr_context)
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__statunits(self, rq_args):
+        _, condition = self._getCond(rq_args)
+        if "ctx" in rq_args:
+            repr_context = json.loads(rq_args["ctx"])
+        else:
+            repr_context = dict()
+        return {
+            "rq_id": rq_args.get("rq_id"),
+            "units": [self.mIndex.makeUnitStatReport(
+                unit_name, condition, repr_context)
+                for unit_name in json.loads(rq_args["units"])]}
 
     #===============================================
     @RestAPI.ws_request

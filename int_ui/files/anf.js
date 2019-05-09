@@ -19,6 +19,7 @@ function initWin(workspace_name, app_modes) {
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sWorkspaceName = workspace_name; 
+    sUnitsH.init("stat", "statunits", "ws=" + sWorkspaceName, false);
     window.name = sTitlePrefix + "/" + sWorkspaceName;
     sAppModes = app_modes;
     sNodeFilterBack  = document.getElementById("filter-back");
@@ -39,7 +40,6 @@ function initWin(workspace_name, app_modes) {
     }
         
     initMonitor();
-    initFilters();
     checkWorkZone(null);
     wsDropShow(false);
 }
@@ -55,10 +55,7 @@ function loadList(filter_name, zone_data) {
     };
     xhttp.open("POST", "list", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = formFilterRequestArgs(filter_name);
-    if (zone_data)
-        args += "&zone=" + encodeURIComponent(JSON.stringify(zone_data));
-    xhttp.send(args); 
+    xhttp.send(sConditionsH.getCondRqArgs(filter_name, zone_data)); 
 }
 
 function setupList(info) {

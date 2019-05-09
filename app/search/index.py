@@ -125,7 +125,12 @@ class Index:
         return sorted(ret)
 
     def makeStatReport(self, filter_name, research_mode,
-            condition = None, repr_context = None):
+            cond_seq, repr_context):
+        if filter_name in self.mStdFilters:
+            cond_seq = self.mStdFilters[filter_name]
+        elif filter_name in self.mFilterCache:
+            cond_seq = self.mFilterCache[filter_name][0]
+        condition = self.mCondEnv.parseSeq(cond_seq)
         rec_no_seq = self.getRecNoSeq(filter_name, condition)
 
         rec_seq = [self.mRecords[rec_no] for rec_no in rec_no_seq]
@@ -136,16 +141,13 @@ class Index:
                     not unit_h.isScreened()):
                 stat_list.append(unit_h.makeStat(rec_seq, repr_context))
 
-        report = {
+        return {
             "total": self.mWS.getTotal(),
             "count": len(rec_seq),
             "stat-list": stat_list,
             "filter-list": self.getFilterList(research_mode),
-            "cur-filter": filter_name}
-        if (filter_name and filter_name in self.mFilterCache and
-                not filter_name.startswith('_')):
-            report["conditions"] = self.mFilterCache[filter_name][0]
-        return report
+            "cur-filter": filter_name,
+            "conditions": cond_seq}
 
     def makeUnitStatReport(self, unit_name, condition, repr_context):
         rec_seq = [self.mRecords[rec_no]

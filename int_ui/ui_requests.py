@@ -1,3 +1,4 @@
+import logging
 from StringIO import StringIO
 
 from .gen_html import formTopPage, noRecords, dirPage, notFound
@@ -76,5 +77,6 @@ class IntUI:
             formXLTreePage(output, cls.sHtmlTitleXL, cls.sHtmlTitleWS,
                 cls.sHtmlBase, xl_ds, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
+        logging.error("BAD server request: " + rq_path);
         return cls.notFoundResponse(serv_h)
 

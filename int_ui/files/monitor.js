@@ -2,9 +2,6 @@ var sCurTag = null;
 var sCurFilterName = null;
 var sTagRecList = null;
 var sNavSheet = null;
-var sAllFilters = [];
-var sOpFilters = [];
-var sLoadFilters = [];
 var sFltTimeDict = [];
 var sCurZoneData = null;
 
@@ -182,39 +179,25 @@ function updateTagNavigation() {
     }
 }
 
-function setupNamedFilters(filter_list) {
-    clearFilterOpMode();
-    q_same = (filter_list.length == sAllFilters.length)
-    sOpFilters = [];
-    sLoadFilters = [];
-    sFltTimeDict = {};
-    var all_filters = [];
-    for (idx = 0; idx < filter_list.length; idx++) {
-        flt_name = filter_list[idx][0];
-        all_filters.push(flt_name);
-        q_same &= (flt_name == sAllFilters[idx]);
-        if (!filter_list[idx][1])
-            sOpFilters.push(flt_name);
-        if (filter_list[idx][2])
-            sLoadFilters.push(flt_name);
-        sFltTimeDict[flt_name] = filter_list[idx][3];
-    }
-    if (q_same)
-        return sAllFilters;
-    sAllFilters = all_filters;
+function clearFilterOpMode() {
+    sFiltersH.update();
+    wsDropShow(false);
+}
+
+function onFilterListChange() {
+    var all_filters = sFiltersH.getAllList();
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
         sSelectFltNamed.remove(idx);
     }
-    for (idx = 0; idx < sAllFilters.length; idx++) {
-        flt_name = sAllFilters[idx];
+    for (idx = 0; idx < all_filters.length; idx++) {
+        flt_name = all_filters[idx];
         var option = document.createElement('option');
         option.innerHTML = flt_name;
         option.value = flt_name;
         sSelectFltNamed.append(option)
     }
-    sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
+    sSelectFltNamed.selectedIndex = all_filters.indexOf(sCurFilterName) + 1;
     clearFilterOpMode();
-    return sAllFilters;
 }
 
 function checkTabNavigation(tag_name) {
@@ -223,50 +206,48 @@ function checkTabNavigation(tag_name) {
     }
 }
 
+function pickNamedFilter() {
+    updateCurFilter(sSelectFltNamed.value);
+}
+
 function checkCurFilters(mode_filter) {
     if (mode_filter == 0) {
         updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
     } else {
-        updateCurFilter((sCheckFltCurrent.checked)? "_current_":"");
+        updateCurFilter((sCheckFltCurrent.checked)? "":null);
     }
-}
-
-function pickNamedFilter() {
-    updateCurFilter(sSelectFltNamed.value);
 }
 
 function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
-    cur_flt_problems = checkCurConditionsProblem();
-    if (filter_name == "_current_" && cur_flt_problems)
-        filter_name = "";
+    cur_flt_status = sConditionsH.report();
     sCurFilterName = filter_name;
     loadList(sCurFilterName, sCurZoneData);
-    sSelectFltNamed.selectedIndex = sAllFilters.indexOf(sCurFilterName) + 1;
-    if (cur_flt_problems) {
-        sElFltCurState.innerHTML = cur_flt_problems;
-        sElFltCurState.className = "problems";
+    sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
+    if (cur_flt_status) {
+        sElFltCurState.innerHTML = cur_flt_status;
+        sElFltCurState.className = "status";
         sCheckFltCurrent.disabled = true;
         sCheckFltCurrent.checked = false;
     } else {
-        sElFltCurState.innerHTML = sCurFilterSeq.length + " condition" +
-            ((sCurFilterSeq.length>1)? "s":"");
+        cond_len = sConditionsH.getSeqLength();
+        sElFltCurState.innerHTML = cond_len + " condition" + ((cond_len>1)? "s":"");
         sElFltCurState.className = "";
         sCheckFltCurrent.disabled = false;
-        sCheckFltCurrent.checked = (sCurFilterName == "_current_");
+        sCheckFltCurrent.checked = (sCurFilterName == "");
     } 
-    sCheckFltNamed.checked = (sCurFilterName != "_current_");
+    sCheckFltNamed.checked = !!sCurFilterName;
 }
 
 function updateCurZone(mode_on){
-    cur_zone_problem = checkCurZoneProblem();
+    cur_zone_status = checkCurZoneStatus();
     prev_zone_data = sCurZoneData;
     document.getElementById("zone-cur-title").innerHTML = 
         (sWorkZoneTitle)? sWorkZoneTitle:"";
-    if (cur_zone_problem) {
-        sElZoneCurState.innerHTML = cur_zone_problem;
-        sElZoneCurState.className = "problems";
+    if (cur_zone_status) {
+        sElZoneCurState.innerHTML = cur_zone_status;
+        sElZoneCurState.className = "status";
         sCheckZoneCur.disabled = true;
         sCurZoneData = null;
     } else {
@@ -293,11 +274,22 @@ function doExport() {
             setupExport(info);
         }
     };
-    add_instr = null;
-    if (sCurZoneData)
-        add_instr = ["zone", JSON.stringify(sCurZoneData)];    
     xhttp.open("POST", "export", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(formFilterRequestArgs(sCurFilterName, add_instr)); 
+    xhttp.send(sConditionsH.getCondRqArgs(sCurFilterName, sCurZoneData)); 
 }
 
+//=====================================
+var sViewH = {
+    mDropCtrls: [],
+    
+    addToDrop: function(ctrl) {
+        this.mDropCtrls.push(ctrl);
+    },
+
+    dropOff: function() {
+        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
+            this.mDropCtrls[idx].style.display = "none";
+        }
+    }
+};

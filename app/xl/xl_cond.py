@@ -22,7 +22,6 @@ class XL_CondEnv(CondEnv):
             return XL_NumCondition(*cond_info[1:])
         if cond_info[0] == "enum":
             filter_mode, variants = cond_info[2:]
-            assert filter_mode != "ONLY"
             assert len(variants) > 0
             singles = [XL_EnumSingleCondition(unit_name, variant)
                 for variant in variants]
@@ -31,6 +30,10 @@ class XL_CondEnv(CondEnv):
                     [cond.negative() for cond in singles])
             if filter_mode == "AND":
                 return XL_Condition.joinAnd(singles)
+            if filter_mode == "ONLY":
+                XL_Condition.joinAnd([XL_Condition.joinOr(singles),
+                    XL_Condition.joinAnd(
+                    [cond.negative() for cond in singles]).negative()])
             return XL_Condition.joinOr(singles)
         assert False
         return XL_None()

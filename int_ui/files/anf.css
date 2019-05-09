@@ -259,7 +259,7 @@ span#flt-current-state, span#zone-descr {
     width: 100%;
 }
 
-span#flt-current-state.problems, span#zone-descr.problems {
+span#flt-current-state.status, span#zone-descr.status {
     font-style: italic;
     color: grey;
 }

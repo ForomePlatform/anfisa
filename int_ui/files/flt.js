@@ -55,9 +55,6 @@ function getCondDescription(cond, short_form) {
         case "NOT":
             rep_cond = rep_var + '&nbsp;not&nbsp;in&nbsp;' + selection;
             break;
-        case "ONLY":
-            rep_cond = rep_var + '&nbsp;in&nbsp;only(' + selection + ')';
-            break;
         case "AND":
             rep_cond = rep_var + '&nbsp;in&nbsp;all(' + selection + ')';
             break;

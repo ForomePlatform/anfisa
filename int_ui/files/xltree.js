@@ -461,6 +461,30 @@ var sUnitsH = {
     
     setCtxPar: function(key, val) {
         this.mCtx[key] = val;
+    },
+    
+    prepareWsCreate: function() {
+        if (sDecisionTree.hasError())
+            return null;
+        accepted = sDecisionTree.getAcceptedCount();
+        if (accepted == null) {
+            sDecisionTree.loadDelayed("sCreateWsH.show();");
+            return null;
+        }
+        if (!sTreeCtrlH.curVersionSaved()) {
+            this.postAction("sCreateWsH.show();");
+            treeVersionSave();
+            return null;
+        }
+        return [sDecisionTree.getAcceptedCount(), sDecisionTree.getTotalCount()];
+    },
+    
+    getWsCreateArgs: function() {
+        return this.mCallDS + "&verbase= " + sTreeCtrlH.getCurVersion();
+    },
+
+    getCallPartStat: function() {
+        return "xl_statunits";
     }
 };
     
@@ -917,26 +941,6 @@ function wsCreate() {
 
 function startWsCreate() {
     sCreateWsH.startIt();
-}
-
-function _prepareWsCreate() {
-    if (sDecisionTree.hasError())
-        return null;
-    accepted = sDecisionTree.getAcceptedCount();
-    if (accepted == null) {
-        sDecisionTree.loadDelayed("sCreateWsH.show();");
-        return null;
-    }
-    if (!sTreeCtrlH.curVersionSaved()) {
-        sUnitsH.postAction("sCreateWsH.show();");
-        treeVersionSave();
-        return null;
-    }
-    return [sDecisionTree.getAcceptedCount(), sDecisionTree.getTotalCount()];
-}
-
-function _callWsArgs() {
-    return "&verbase= " + sTreeCtrlH.getCurVersion();
 }
 
 /**************************************/

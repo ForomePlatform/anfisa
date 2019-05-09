@@ -30,13 +30,16 @@ def formTopPage(output, title, html_base, workspace):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
-        js_files = ["anf.js", "flt.js", "monitor.js", "filters.js",
-            "conditions.js", "zones.js", "rules.js"])
+        js_files = ["anf.js", "monitor.js",
+            "flt.js", "fctrl.js", "filters.js",
+            "zones.js", "rules.js"])
 
     print >> output, ('  <body onload="initWin(\'%s\', \'\');">' %
         (workspace.getName()))
     _formMainDiv(output, workspace.getName())
-    _formFiltersDiv(output)
+    print >> output, '    <div id="filter-back">'
+    formFilterPannel(output);
+    print >> output, '    </div>'
     _formZonesDiv(output, workspace.iterZones())
     _formNoteDiv(output)
     _formRulesDiv(output)
@@ -148,131 +151,6 @@ def _formMainDiv(output, workspace_name):
         </div>
       </div>
     </div>''' % {"ws": workspace_name}
-
-#===============================================
-def _formFiltersDiv(output):
-    print >> output, '''
-    <div id="filter-back">
-      <div id="filter-mod">
-        <div id="filter-stat">
-          <div id="stat-list">
-          </div>
-        </div>
-        <div id="filter-conditions">
-          <div id="filter-ctrl">
-            <span id="cond-title"></span>
-            <button id="filter-add-cond" onclick="filterAddCond();">
-              Add
-            </button>
-            <button id="filter-update-cond" onclick="filterUpdateCond();">
-              Update
-            </button>
-            <button id="filter-delete-cond"
-                onclick="filterDeleteCond();">
-              Delete
-            </button>
-            <button id="filter-undo-cond" title="Undo"
-                onclick="filterUndoCond();">
-              &#8630;
-            </button>
-            <button id="filter-redo-cond" title="Redo"
-                onclick="filterRedoCond();">
-              &#8631;
-            </button>
-            <span id="close-filter" onclick="filterModOff();">&times;</span>
-          </div>
-          <div id="filter-cur-cond-text">
-            <span id="cond-text"></span>
-            <span id="cond-message"></span>
-          </div>
-          <div id="filter-cur-cond">
-            <div id="cur-cond-numeric">
-              <span id="cond-min" class="num-set"></span>
-              <input id="cond-min-inp" class="num-inp"
-                type="text" onchange="checkOpNum();"/>
-              <span id="cond-sign"></span>
-              <input id="cond-max-inp" class="num-inp"
-                type="text" onchange="checkOpNum();"/>
-              <span id="cond-max" class="num-set"></span>
-              <span id="num-count" class="num-count"></span>
-            </div>
-            <div id="cur-cond-enum">
-              <div id="wrap-cond-enum">
-                <div id="wrap-cond-enum-list">
-                  <div id="cur-cond-enum-list">
-                     <div id="op-enum-list">
-                     </div>
-                  </div>
-                </div>
-                <div id="cur-cond-enum-ctrl">
-                  <div id="cur-cond-enum-zeros">
-                    Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
-                        onchange="sOpEnumH.careEnumZeros();"/>
-                  </div>
-                  <div id="cur-cond-enum-mode">
-                    <span id="cond-mode-and-span">
-                      <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;All
-                    </span><br/>
-                    <span id="cond-mode-only-span">
-                      <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;Only
-                    </span><br/>
-                    <span id="cond-mode-not-span">
-                      <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;Not
-                    </span><br/>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div id="filters-ctrl">
-            <button class="op-button"
-                onclick="filterModOff();">
-                Done
-            </button>
-            <button id="filter-clear-all" class="op-button"
-                onclick="filterClearAll();">
-                Clear
-            </button>
-            <div class="dropdown">
-              <button id="filter-filters-operations" class="op-button drop"
-                    onclick="filtersOpMenu();">
-                Filters...
-              </button>
-              <div id="filters-op-list" class="dropdown-content drop">
-                <a class="drop" id="filters-op-load"
-                    onclick="filterOpStartLoad();">Load</a>
-                <a class="drop" id="filters-op-create"
-                    onclick="filterOpStartCreate();">Create</a>
-                <a class="drop"  id="filters-op-modify"
-                    onclick="filterOpStartModify();">Modify</a>
-                <a class="drop"  id="filters-op-delete"
-                    onclick="filterOpDelete();">Delete</a>
-              </div>
-            </div>
-            <div id="filter-name-combo" class="combobox">
-              <select id="filter-name-filter-list"
-                  onchange="fltFilterListSel();">
-                <option value=""></option>
-              <input id="filter-name-filter" type="text" />
-              </select>
-            </div>
-            <button id="filter-flt-op" class="op-button"
-                onclick="filterFiltersOperation();">
-              ...
-            </button>
-          </div>
-          <div id="filter-wrap-list-conditions">
-            <div id="filter-list-conditions">
-              <div id="cond-list">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>'''
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -510,3 +388,117 @@ def notFound(output, title, html_base):
   </body>
 </html>''' % (title + "/dir")
 
+#===============================================
+def formFilterPannel(output):
+    print >> output, '''
+    <div id="filter-mod">
+        <div id="filter-stat">
+          <div id="stat-list">
+          </div>
+        </div>
+        <div id="filter-conditions">
+          <div id="filter-ctrl">
+            <span id="cond-title"></span>
+            <button id="filter-add-cond"
+                onclick='sOpFilterH.modify(\"add\");'> Add
+            </button>
+            <button id="filter-update-cond"
+                onclick='sOpFilterH.modify(\"update\");'> Update
+            </button>
+            <button id="filter-delete-cond"
+                onclick='sOpFilterH.modify(\"delete\");'> Delete
+            </button>
+            <button id="filter-undo-cond" title="Undo"
+                onclick='sOpFilterH.modify(\"undo\");'> &#8630;
+            </button>
+            <button id="filter-redo-cond" title="Redo"
+                onclick='sOpFilterH.modify(\"redo\");'> &#8631;
+            </button>
+            <span id="close-filter" onclick="filterModOff();">&times;</span>
+          </div>
+          <div id="filter-cur-cond-text">
+            <span id="cond-text"></span>
+            <span id="cond-message"></span>
+          </div>
+          <div id="filter-cur-cond">
+            <div id="cur-cond-numeric">
+              <span id="cond-min" class="num-set"></span>
+              <input id="cond-min-inp" class="num-inp"
+                type="text" onchange="sOpNumH.checkControls();"/>
+              <span id="cond-sign"></span>
+              <input id="cond-max-inp" class="num-inp"
+                type="text" onchange="sOpNumH.checkControls();"/>
+              <span id="cond-max" class="num-set"></span>
+              <span id="num-count" class="num-count"></span>
+            </div>
+            <div id="cur-cond-enum">
+              <div id="wrap-cond-enum">
+                <div id="wrap-cond-enum-list">
+                  <div id="cur-cond-enum-list">
+                     <div id="op-enum-list">
+                     </div>
+                  </div>
+                </div>
+                <div id="cur-cond-enum-ctrl">
+                  <div id="cur-cond-enum-zeros">
+                    Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
+                        onchange="sOpEnumH.careEnumZeros();"/>
+                  </div>
+                  <div id="cur-cond-enum-mode">
+                    <span id="cond-mode-and-span">
+                      <input id="cond-mode-and" type="checkbox"
+                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;all
+                    </span><br/>
+                    <span id="cond-mode-not-span">
+                      <input id="cond-mode-not" type="checkbox"
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;not
+                    </span><br/>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="cur-cond-loading">
+               <div class="loading">Loading data...</div>
+            </div>
+          </div>
+          <div id="filters-ctrl">
+            <button id="filter-clear-all-cond" class="op-button"
+                onclick='sOpFilterH.modify(\"clear-all\");'>
+                Clear
+            </button>
+            <div class="dropdown">
+              <button id="filter-filters-operations" class="op-button drop"
+                    onclick="sFiltersH.menu();">
+                Filters...
+              </button>
+              <div id="filters-op-list" class="dropdown-content drop">
+                <a class="drop" id="filters-op-load"
+                    onclick="sFiltersH.startLoad();">Load</a>
+                <a class="drop" id="filters-op-create"
+                    onclick="sFiltersH.startCreate();">Create</a>
+                <a class="drop"  id="filters-op-modify"
+                    onclick="sFiltersH.startModify();">Modify</a>
+                <a class="drop"  id="filters-op-delete"
+                    onclick="sFiltersH.deleteIt();">Delete</a>
+              </div>
+            </div>
+            <div id="filter-name-combo" class="combobox">
+              <select id="filter-name-filter-list"
+                  onchange="sFiltersH.select();">
+                <option value=""></option>
+              <input id="filter-name-filter" type="text" />
+              </select>
+            </div>
+            <button id="filter-flt-op" class="op-button"
+                onclick="sFiltersH.action();">
+              ...
+            </button>
+          </div>
+          <div id="filter-wrap-list-conditions">
+            <div id="filter-list-conditions">
+              <div id="cond-list">
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>'''

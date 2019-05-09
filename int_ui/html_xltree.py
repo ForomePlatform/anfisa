@@ -6,7 +6,7 @@ from app.filter.code_works import StdTreeCodes
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["xltree.css", "py_pygments.css", "base.css"],
-        js_files = ["xltree.js", "fctrl.js", "flt.js"])
+        js_files = ["xltree.js", "fctrl.js", "flt.js", "xl_ctrl.js"])
 
     print >> output, (
         '  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
@@ -127,12 +127,8 @@ def _formCurCondDiv(output):
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(3);"/>&nbsp;not
+                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;not
                     </span><br/>
-                    <span id="cond-mode-only-span">
-                      <input id="cond-mode-only" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;only
-                    </span>
                   </div>
                 </div>
               </div>
