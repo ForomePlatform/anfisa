@@ -150,9 +150,11 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
 function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     var_list = unit_stat[2];
     list_count = 0;
-    for (j = 0; j < var_list.length; j++) {
-        if (var_list[j][1] > 0)
-            list_count++;
+    if (var_list) {
+        for (j = 0; j < var_list.length; j++) {
+            if (var_list[j][1] > 0)
+                list_count++;
+        }
     }
     if (list_count == 0) {
         list_stat_rep.push('<span class="stat-bad">Out of choice</span>');

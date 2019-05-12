@@ -200,7 +200,7 @@ class XLDataset(DataSet):
             if time_end is not None and time() > time_end:
                 break
             counts[idx] = self.evalTotalCount(tree.actualCondition(idx))
-            if counts[idx] == 0:
+            if counts[idx] == 0 and tree.checkZeroAfter(idx):
                 for idx1 in range(idx, len(tree)):
                     counts[idx1] = 0
                 break
@@ -217,7 +217,7 @@ class XLDataset(DataSet):
                 continue
             counts[idx] = self.evalTotalCount(tree.actualCondition(idx))
             has_some = True
-            if counts[idx] == 0:
+            if counts[idx] == 0 and tree.checkZeroAfter(idx):
                 zero_idx = idx
                 for idx1 in range(zero_idx, len(tree)):
                     counts[idx1] = 0

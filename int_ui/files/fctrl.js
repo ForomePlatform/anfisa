@@ -131,6 +131,7 @@ var sOpEnumH = {
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
         this.mDivZygPGroup = document.getElementById("cur-cond-zyg-problem-group");
+        sZygosityH.init(!!this.mDivZygPGroup);
     },
     
     getCondType: function() {
@@ -144,7 +145,13 @@ var sOpEnumH = {
         this.mOperationMode = null;
         this.careControls();
     },
-
+    
+    readyForCondition: function(unit_stat, condition) {
+        if (unit_stat[0] == "zygosity")
+            return sZygosityH.readyForCondition(unit_stat, condition);
+        return true;
+    },
+    
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
         if (unit_stat[0] == "zygosity") {
@@ -175,6 +182,7 @@ var sOpEnumH = {
                 '<span class="enum-cnt">(' + var_count + ')</span></div>');
         }
         this.mDivVarList.innerHTML = list_val_rep.join('\n');
+        this.mDivVarList.className = "";
         
         document.getElementById("cur-cond-enum-zeros").style.display = 
             (has_zero)? "block":"none";            
@@ -267,95 +275,214 @@ var sOpEnumH = {
 
         sOpCondH.formCondition(condition_data, err_msg, op_mode, true);
         this.careControls();
+    },
+    
+    waitForUpdate: function(unit_name) {
+        this.mDivVarList.className = "wait";
     }
 };
 
 /**************************************/
+/**************************************/
+function newZygStat(stat) {
+    var size = 0;
+    if (stat) {
+        for (var j = 0; j < stat.length; j++) {
+            if (stat[j][1] > 0)
+                size++;
+        }
+    }
+    return {mStat: stat, mSize: size};
+}
+
+function zygStatStatList(zyg_stat) {
+    return (zyg_stat.mStat == null)? []:zyg_stat.mStat;
+}
+
+function zygStatReportValues(zyg_stat, list_stat_rep) {
+    if (zyg_stat.mStat == null) {
+        list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
+        return;
+    } 
+    if (zyg_stat.mSize == 0) {
+        list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+        return;
+    }
+    list_stat_rep.push('<ul>');
+    for (var j = 0; j < zyg_stat.mStat.length; j++) {
+        var_name = zyg_stat.mStat[j][0];
+        var_count = zyg_stat.mStat[j][1];
+        if (var_count == 0)
+            continue;
+        list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
+            '<span class="stat-count">' + var_count + ' records</span></li>');
+    }
+}
+        
+function zygStatCheckError(zyg_stat, err_msg) {
+    if (zyg_stat.mStat == null)
+        return " Determine problem group";
+    if (zyg_stat.mSize == 0)
+        return "Out of choice";
+    return err_msg;
+}
+
+/**************************************/
+function newZygCase(base, problem_idxs, stat_data, mode_op) {
+    return {
+        mBase: base,
+        mModeOp: mode_op,
+        mProblemIdxs: (problem_idxs == null)? this.mBase.mDefaultIdxs:problem_idxs,
+        mStat: newZygStat(stat_data)};
+}
+
+function zygCaseSameCase(zyg_case, problem_idxs) {
+    if (problem_idxs == null) 
+        return (zygCaseProblemIdxs(zyg_case, true) == null);
+    return problem_idxs.join(',') == zyg_case.mProblemIdxs.join(',');
+}
+
+
+function zygCaseProblemIdxs(zyg_case, check_default) {
+    if (check_default && zyg_case.mBase.mDefaultRepr == zyg_case.mProblemIdxs.join(','))
+        return null;
+    return zyg_case.mProblemIdxs.slice();
+}
+        
+function zygCaseFilIt(zyg_case, list_stat_rep) {
+    if (zyg_case.mModeOp && zyg_case.mBase.mSeparateOp) {
+        id_prefix = "zyg-fam-op-m__";
+        button_id = "zyg-fam-op-reset";
+        mode_op = 1;
+    } else {
+        id_prefix = "zyg-fam-m__";
+        button_id = "zyg-fam-reset";
+        mode_op = 0;
+    }
+    list_stat_rep.push('<div class="zyg-family">');
+    for (var idx = 0; idx < zyg_case.mBase.mFamily.length; idx++) {
+        q_checked = (zyg_case.mProblemIdxs.indexOf(idx)>=0)? " checked":"";
+        list_stat_rep.push('<div class="zyg-fam-member">' + 
+            '<input type="checkbox" id="' + id_prefix + idx + '" ' + q_checked + 
+            ' onchange="sZygosityH.loadCase(' + mode_op + ');" />' +
+            zyg_case.mBase.mFamily[idx] + '</div>');
+    }
+    list_stat_rep.push('</div>');
+    if (zyg_case.mBase.mDefaultIdxs.length > 0) {
+        reset_dis = (zygCaseProblemIdxs(zyg_case, true) == null)? 'disabled="true"':'';
+        list_stat_rep.push('<button id="' + button_id + '"' +
+            ' title="Reset affected group" ' + reset_dis + 
+            ' onclick="sZygosityH.resetGrp(' + mode_op + ')">Reset</button>');
+    }
+}
+
+/**************************************/
 var sZygosityH = {
-    mFamily: null,
-    mProblemIdxs: null,
+    mSeparateOp: false,
     mUnitName: null,
+    mFamily: null,
     mDefaultIdxs: null,
     mDefaultRepr: null,
-    mZStat: null,
-    mZEmpty: null,
+    mCases: [null, null],
+    mWaitIdxs: [null, null],
+    mTimeH: null,
+    mOpBaseUnitStat: null,
+    mOpBaseCondition: null,
+    mOpSetUp: null,
     
-    setup: function(unit_stat, list_stat_rep) {
+    init: function(separate_op) {
+        this.mSeparateOp = separate_op;
+    },
+    
+    _baseSetup: function(unit_stat) {
         this.mUnitName = unit_stat[1]["name"];
         this.mFamily = unit_stat[1]["family"];
         this.mDefaultIdxs = unit_stat[1]["affected"];
         this.mDefaultRepr = this.mDefaultIdxs.join(',');
-        this.mProblemIdxs = unit_stat[2];
-        if (this.mProblemIdxs == null)
-            this.mProblemIdxs = this.mDefaultIdxs.slice();
-        this.mZStat = unit_stat[3];
-        list_stat_rep.push('<div id="zyg-wrap">');
-        list_stat_rep.push('<div id="zyg-problem">');
-        this._fillProblemGroup(this.mFamily, this.mProblemIdxs, list_stat_rep);
-        list_stat_rep.push('</div>');
-        list_stat_rep.push('<div id="zyg-stat">');
-        this._reportStat(list_stat_rep);
-        list_stat_rep.push('</div></div>');
-        sUnitsH.setCtxPar("problem_group", this.mProblemIdxs.slice())
     },
     
-    _fillProblemGroup: function(family, problem_idxs, list_stat_rep) {
-        list_stat_rep.push('<div class="zyg-family">');
-        for (var idx = 0; idx < family.length; idx++) {
-            q_checked = (problem_idxs.indexOf(idx)>=0)? " checked":"";
-            list_stat_rep.push('<div class="zyg-fam-member">' + 
-                '<input type="checkbox" id="zyg-fam_m__' + idx + '" ' + q_checked + 
-                ' onchange="sZygosityH.checkMember(' + idx + ');" />' +
-                family[idx] + '</div>');
+    readyForCondition: function(unit_stat, condition_data) {
+        if (!this.mSeparateOp)
+            return true;
+        if (this.mOpBaseUnitStat == unit_stat && condition_data == this.mOpBaseCondition)
+            return true;
+        this.mOpSetUp = false;
+        this.mOpBaseUnitStat = unit_stat;
+        this.mOpBaseCondition = condition_data;
+        if (this.mUnitName == null) {
+            this._baseSetup(unit_stat);
         }
-        list_stat_rep.push('</div>');
-        if (this.mDefaultIdxs.length > 0) {
-            reset_dis = (this.mDefaultIdxs.join(',') == problem_idxs.join(','))?
-                'disabled="true"':'';
-            list_stat_rep.push('<button id="zyg-fam-reset" ' +
-                'title="Reset affected group" ' + reset_dis + 
-                ' onclick="sZygosityH.resetGrp()">Reset</button>');
+        var cond_problem_idxs = condition_data[2];
+        if (JSON.stringify(cond_problem_idxs) == JSON.stringify(unit_stat[2])) {
+            this.mCases[1] = newZygCase(this, unit_stat[2], unit_stat[3], 1);
+            return true;
         }
+        this.reload(1, (cond_problem_idxs == null)? this.mDefaultIdxs:cond_problem_idxs);
+        return false;
     },
+    
+    setup: function(unit_stat, list_stat_rep) {
+        if (this.mTimeH) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this._baseSetup(unit_stat);
+        this.mCases[0] = newZygCase(this, unit_stat[2], unit_stat[3], 0);
+        if (this.mSeparateOp && this.mOpBaseUnitStat) {
+            if (JSON.stringify(unit_stat) != JSON.stringify(this.mOpBaseUnitStat)) {
+                this.mOpBaseUnitStat = null;
+                this.mOpBaseCondition = null;
+                this.mCases[1] = null;
+            } else 
+                this.mOpBaseUnitStat = unit_stat;
+        }
+            
+        list_stat_rep.push('<div id="zyg-wrap">');
+        list_stat_rep.push('<div id="zyg-problem">');
+        zygCaseFilIt(this.mCases[0], list_stat_rep);
+        list_stat_rep.push('</div>');
+        list_stat_rep.push('<div id="zyg-stat">');
+        zygStatReportValues(this.mCases[0].mStat, list_stat_rep);
+        list_stat_rep.push('</div></div>');
+        sUnitsH.setCtxPar("problem_group", zygCaseProblemIdxs(this.mCases[0]))
+    },    
     
     getCondType: function() {
         return "zygosity";
     },
     
     setupVariants: function(unit_stat, div_pgroup) {
-        if (div_pgroup) {
+        var mode_op = (this.mSeparateOp)? 1:0;
+        if (div_pgroup && !this.mOpSetUp) {
             list_stat_rep = [];
-            problem_idxs = unit_stat[2];
-            if (problem_idxs == null)
-                problem_idxs = this.mDefaultIdxs;
-            this._fillProblemGroup(this.mFamily, problem_idxs, list_stat_rep);
+            zygCaseFilIt(this.mCases[mode_op], list_stat_rep);
             div_pgroup.innerHTML = list_stat_rep.join('\n');
             div_pgroup.style.display = "flex";
+            if (this.mSeparateOp)
+                this.mOpSetUp = true;
         }
-        return (this.mZStat == null)? []:this.mZStat;
+        return zygStatStatList(this.mCases[mode_op].mStat);
     },
     
     transCondition: function(condition_data) {
         if (condition_data == null)
             return null;
         ret = condition_data.slice();
-        ret.splice(0, 0, (this.mProblemIdxs.join(',') == this.mDefaultRepr)? 
-            null: this.mProblemIdxs.slice());
+        ret.splice(0, 0, zygCaseProblemIdxs(this.mCases[(this.mSeparateOp)? 1:0], true));
         return ret;
     },
     
     checkError: function(condition_data, err_msg) {
-        if (this.mZStat == null)
-            return " Determine problem group";
-        if (this.mZEmpty)
-            return "Out of choice";
-        return err_msg;
+        return zygStatCheckError(this.mCases[(this.mSeparateOp)? 1:0].mStat, err_msg);
     },
     
-    getUnitTitle: function(problem_group) {
-        if (problem_group == undefined || problem_group.join(',') == this.mDefaultRepr)
+    getUnitTitle: function(problem_idxs) {
+        if (problem_idxs == null) 
+            return this.mUnitName + '()';
+        var problem_repr = problem_idxs.join(',');
+        if (problem_repr == this.mDefaultRepr)
             return this.mUnitName + '()';        
-        return this.mUnitName + '({' + problem_group.join(',') + '})';        
+        return this.mUnitName + '({' + problem_repr + '})';        
     },
     
     checkUnitTitle: function(unit_name) {
@@ -375,93 +502,92 @@ var sZygosityH = {
     onSelectCondition: function(condition_data) {
         if (condition_data[1] != this.mUnitName)
             return;
-        if (condition_data[2] == null) {
-            if (this.mProblemIdxs.join(",") == this.mDefaultRepr)
+        this.reSelect(0, condition_data[2]);
+        this.loadCase(0);
+    },
+    
+    resetGrp: function(mode_op) {
+        this.reSelect(mode_op, this.mDefaultIdxs);
+        this.loadCase(mode_op);
+    },
+
+    reSelect: function(mode_op, problem_idxs) {
+        if (problem_idxs == null)
+            problem_idxs = this.mDefaultIdxs;
+        var id_prefix = (mode_op)?"zyg-fam-op-m__" : "zyg-fam-m__";
+        for (var idx = 0; idx < this.mFamily.length; idx++)
+            document.getElementById(id_prefix + idx).checked =
+                (problem_idxs.indexOf(idx) >= 0);
+    },
+    
+    collectIdxs: function(mode_op) {
+        var id_prefix = (mode_op)?"zyg-fam-op-m__" : "zyg-fam-m__";
+        var problem_idxs = [];
+        for (var idx = 0; idx < this.mFamily.length; idx++) {
+            if (document.getElementById(id_prefix + idx).checked)
+                problem_idxs.push(idx);
+        }
+        return problem_idxs;
+    },
+    
+    loadCase: function(mode_op) {
+        if (this.mTimeH == null)
+            this.mTimeH = setInterval(function(){sZygosityH.reload(mode_op);}, 30)
+        document.getElementById((mode_op)? "zyg-fam-op-reset":"zyg-fam-reset").disabled = 
+            zygCaseProblemIdxs(this.mCases[mode_op], true) == null;
+    },
+
+    reload: function(mode_op, problem_idxs) {
+        clearInterval(this.mTimeH);
+        this.mTimeH = null;
+        var check_same = true;
+        if (problem_idxs == undefined) 
+            var problem_idxs = this.collectIdxs(mode_op);
+        else
+            check_same = false;
+        if (check_same && this.mCases[mode_op] && 
+                zygCaseSameCase(this.mCases[mode_op], problem_idxs)) {
+            if (this.mCases[1 - mode_op] == null) 
                 return;
-        } else {
-            if (this.mProblemIdxs.join(",") == condition_data[2].join(","))
+            problem_idxs = this.collectIdxs(1 - mode_op);
+            if (zygCaseSameCase(this.mCases[1-mode_op], problem_idxs))
                 return;
+            mode_op = 1 - mode_op;
         }
-        this.mProblemIdxs = condition_data[2];
-        this._reselectFamily();
+        if (mode_op == 0) {
+            sUnitsH.setCtxPar("problem_group", problem_idxs);
+            document.getElementById("stat-data--" + this.mUnitName).className = "wait";
+        }
+        if (mode_op || !self.mSeparateOp) 
+            document.getElementById("zyg-stat").className = "wait";
+        var args = sUnitsH.getRqArgs(mode_op == 1) + 
+            "&units=" + encodeURIComponent(JSON.stringify([this.mUnitName]));
+        sOpEnumH.waitForUpdate();
+        if (mode_op == 1) {
+            args += "&ctx=" + encodeURIComponent(
+                JSON.stringify({"problem_group": problem_idxs}));
+        }
+        ajaxCall(sUnitsH.getCallPartStat(), args, 
+            function(info){sZygosityH._reload(info, mode_op);})
     },
     
-    _reselectFamily: function() {
-        for (var m_idx = 0; m_idx < this.mFamily.length; m_idx++)
-            document.getElementById("zyg-fam_m__" + m_idx).checked =
-                (this.mProblemIdxs.indexOf(m_idx) >= 0);
-        this.refreshContext();
-    },
-    
-    _reportStat: function(list_stat_rep) {
-        this.mZEmpty = true;
-        if (this.mZStat == null) {
-            list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
+    _reload: function(info, mode_op) {
+        var unit_stat = info["units"][0];
+        this.mCases[mode_op] = newZygCase(this, unit_stat[2], unit_stat[3], mode_op);
+        if (mode_op == 0) {
+            rep_list = [];
+            zygStatReportValues(this.mCases[0].mStat, rep_list);
+            zyg_div = document.getElementById("zyg-stat");
+            zyg_div.innerHTML = rep_list.join('\n');
+            zyg_div.className = "";
+            sUnitsH.updateZygUnit(this.mUnitName, unit_stat);
+            if (!self.mSeparateOp) 
+                refillUnitStat(unit_stat);
         } else {
-            list_count = 0;
-            for (j = 0; j < this.mZStat.length; j++) {
-                if (this.mZStat[j][1] > 0)
-                    list_count++;
-            }
-            if (list_count > 0) {
-                list_stat_rep.push('<ul>');
-                for (j = 0; j < this.mZStat.length; j++) {
-                    var_name = this.mZStat[j][0];
-                    var_count = this.mZStat[j][1];
-                    if (var_count == 0)
-                        continue;
-                    this.mZEmpty = false;
-                    list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-                        '<span class="stat-count">' +
-                        var_count + ' records</span></li>');
-                }
-            } else {
-                list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
-            }
+            updateZygCondStat(this.mUnitName);
         }
-    },
-    
-    resetGrp: function() {
-        if (this.mDefaultRepr != this.mProblemIdxs.join(',')) {
-            this.mProblemIdxs = this.mDefaultIdxs;
-            this._reselectFamily();
-            return;
-        }
-    },
-    
-    checkMember: function(m_idx) {
-        m_checked = document.getElementById("zyg-fam_m__" + m_idx).checked;
-        if (m_checked && this.mProblemIdxs.indexOf(m_idx) < 0) {
-            this.mProblemIdxs.push(m_idx);
-            this.mProblemIdxs.sort();
-            this.refreshContext();
-            return;
-        } 
-        if (!m_checked) {
-            pos = this.mProblemIdxs.indexOf(m_idx);
-            if (pos >= 0) {
-                this.mProblemIdxs.splice(pos, 1);
-                this.refreshContext();
-            }
-        }
-    },
-    
-    refreshContext: function() {
-        if (this.mDefaultIdxs.length > 0)
-            document.getElementById("zyg-fam-reset").disabled = 
-                (this.mDefaultRepr == this.mProblemIdxs.join(','));
-        sUnitsH.setCtxPar("problem_group", this.mProblemIdxs.slice());
-        ajaxCall(sUnitsH.getCallPartStat(), sUnitsH.getRqArgs() + 
-            "&units=" + encodeURIComponent(JSON.stringify([this.mUnitName])), 
-            function(info){sZygosityH._refresh(info);})
-    },
-    
-    _refresh: function(info) {
-        this.mZStat = info["units"][0][3];
-        rep_list = [];
-        this._reportStat(rep_list);
-        document.getElementById("zyg-stat").innerHTML = rep_list.join('\n');
-        sUnitsH.updateZygUnit(this.getUnitTitle());
+        if (this.mCases[1 - mode_op])
+            this.loadCase(1-mode_op);
     }
 };
 
@@ -537,6 +663,7 @@ function refillUnitStat(unit_stat, expand_mode) {
             fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
     }
     div_el.innerHTML = list_stat_rep.join('\n');
+    div_el.className = "";
 }
 
 function exposeEnumUnitStat(unit_stat, expand_mode) {

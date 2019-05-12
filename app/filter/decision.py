@@ -183,6 +183,9 @@ class DecisionTree(CaseStory):
     def actualCondition(self, point_no):
         return self.mPointList[point_no].actualCondition()
 
+    def checkZeroAfter(self, point_no):
+        return self.mPointList[point_no].getPointKind() == "If"
+
     def dump(self):
         marker_seq = []
         marker_dict = {}

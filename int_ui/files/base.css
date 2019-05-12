@@ -141,3 +141,7 @@ span.note-time {
     font-size: 80%;
     font-style: italic;
 }
+
+div#wait {
+    background-color: #E0E0E0;
+}

@@ -35,7 +35,6 @@ var sDecisionTree = {
     mTotalCount: null,
     mAcceptedCount: null,
     mCurPointNo: null,
-    mOpCond: null,
     mMarkLoc: null,
     mErrorMode: null,
     mPointDelay: null,
@@ -85,12 +84,12 @@ var sDecisionTree = {
             this._fillTreeTable();
         }
         
-        point_no = (this.mCurPointNo && this.mCurPointNo>0)? this.mCurPointNo: 0;
-        while (point_no >= 0) {
-            if (point_no >= this.mPoints.length || this.mCounts[point_no] == 0)
-                point_no--;
+        point_no = 0;
+        if (this.mCurPointNo && this.mCurPointNo >= 0) {
+            if (this.mCurPointNo >= this.mPoints.length)
+                point_no = this.mPoints.length - 1;
             else
-                break;
+                point_no = this.mCurPointNo;
         }
         this.mCurPointNo = null;
         this.selectPoint(point_no);
@@ -112,13 +111,8 @@ var sDecisionTree = {
             p_cond = point[3];
             p_html = point[4];
             p_count = this.mCounts[p_no];
-            if (p_count != 0) {
-                list_rep.push('<tr id="p_td__' + p_no + 
-                    '" class="active" onclick="sDecisionTree.selectPoint(' + 
-                    p_no + ');">');
-            } else {
-                list_rep.push('<tr>');
-            }
+            list_rep.push('<tr id="p_td__' + p_no + 
+                '" class="active" onclick="sDecisionTree.selectPoint(' + p_no + ');">');
             list_rep.push('<td class="point-no" id="p_no__' + p_no + '">' + 
                 (p_no + 1) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
@@ -217,14 +211,11 @@ var sDecisionTree = {
         }
         if (this.mCurPointNo == point_no) 
             return;
-        if (point_no >=0 && this.mCounts[point_no] == 0)
-            return;
         if (sUnitsH.postAction(
             'sDecisionTree.selectPoint(' + point_no + ');', true))
             return;
         sViewH.modalOff();
         this._highlightCondition(false);
-        this.mOpCond = null;
         this.mMarkLoc = null;
         if (point_no >= 0) {
             var new_el = document.getElementById("p_td__" + point_no);
@@ -246,12 +237,14 @@ var sDecisionTree = {
         if (sUnitsH.postAction(
                 'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');', true))
             return;
-        if (this.mCurPointNo != point_no || this.mCurPointNo < 0)
-            return
-        this.mOpCond = this.mMarkers[point_no][marker_idx];
         this.mMarkLoc = [point_no, marker_idx];
-        sOpCondH.show(this.mOpCond);
+        sOpCondH.show(this.mMarkers[point_no][marker_idx]);
         this._highlightCondition(true);
+    },
+    
+    markRenewEdit: function() {
+        if (this.mMarkLoc) 
+            this.markEdit(this.mMarkLoc[0], this.mMarkLoc[1]);
     },
 
     _highlightCondition(mode) {
@@ -346,7 +339,7 @@ var sUnitsH = {
         document.getElementById("list-report").innerHTML = (count == total)?
             total : count + "/" + total;
             
-        this.mItems = info["stat-list"];
+        this.mItems = info["stat-list"].slice();
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
@@ -371,10 +364,12 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
-    getRqArgs: function() {
-        return "ds=" + sDSName + "&no=" + sDecisionTree.getCurPointNo() +
-            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode()) +
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+    getRqArgs: function(no_ctx) {
+        ret = "ds=" + sDSName + "&no=" + sDecisionTree.getCurPointNo() +
+            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode());
+        if (!no_ctx)
+            ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+        return ret;
     },
     
     loadUnits: function() {
@@ -455,6 +450,7 @@ var sUnitsH = {
     updateZygUnit: function(zyg_name) {
         if (this.mCurZygName != null) {
             this.mCurZygName = zyg_name;
+            this.mItems[this.mUnitMap[zyg_name]] = unit_stat;
             this.selectUnit(this.mCurUnit, true);
         }
     },
@@ -520,8 +516,12 @@ var sOpCondH = {
             if (unit_type == "long" || unit_type == "float") 
                 this.mCurTpHandler = sOpNumH;
             else {
-                this.mCurTpHandler = sOpEnumH;
-                mode = "enum";
+                if (sOpEnumH.readyForCondition(unit_stat, this.mCondition)) {
+                    this.mCurTpHandler = sOpEnumH;
+                    mode = "enum";
+                } else {
+                    this.mCurTpHandler = null;
+                }
             }
         }
         if (this.mCurTpHandler != sOpNumH)
@@ -881,7 +881,7 @@ var sCodeEditH = {
         this.checkControls();
         if (this.mNeedsSave) {
             this.mNeedsSave = false;
-            if (this.setupContent())
+            if (this.setupContent()) 
                 sViewH.modalOff();
         }
     },
@@ -927,7 +927,7 @@ var sCodeEditH = {
     setupContent: function() {
         var ret = this.mCurError == null && this.mBaseContent != this.mCurContent;
         if (ret)
-            sDecisionTree.setup(this.mCurContent);
+            sDecisionTree.setup(this.mCurContent, {"instr": ["add_version"]});
         this.checkControls();
         return ret;
     }
@@ -996,6 +996,10 @@ function loadNote(content) {
         document.getElementById("note-time").innerHTML = 
             (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
     });
+}
+
+function updateZygCondStat(unit_name) {
+    sDecisionTree.markRenewEdit();
 }
 
 function modalOff() {

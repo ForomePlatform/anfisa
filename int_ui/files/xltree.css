@@ -116,7 +116,7 @@ div#stat-list, div#decision-tree {
     font-size: 12px;
 }
 
-div#stat-list.wait {
+div#wait {
     background-color: #E0E0E0;
 }
 

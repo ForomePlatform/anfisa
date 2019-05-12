@@ -94,10 +94,12 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
-    getRqArgs: function() {
-        return this.mCallDS + "&conditions=" + 
-            encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) +
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+    getRqArgs: function(no_ctx) {
+        ret = this.mCallDS + "&conditions=" + 
+            encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
+        if (!no_ctx)
+            ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+        return ret;
     },
     
     loadUnits: function() {
@@ -179,9 +181,10 @@ var sUnitsH = {
         sOpCondH.updateUnit(this.mCurUnit);
     },
     
-    updateZygUnit: function(zyg_name) {
+    updateZygUnit: function(zyg_name, unit_stat) {
         if (this.mCurZygName != null) {
             this.mCurZygName = zyg_name;
+            this.mItems[this.mUnitMap[zyg_name]] = unit_stat;
             this.selectUnit(this.mCurUnit, true);
         }
     },
