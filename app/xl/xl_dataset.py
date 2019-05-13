@@ -16,6 +16,7 @@ class XLDataset(DataSet):
     sStatRqCount = 0
     sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
     sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
+    sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
 
 
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -357,7 +358,7 @@ class XLDataset(DataSet):
         if len(rec_no_seq) > self.sViewCountFull:
             rec_no_seq = rec_no_seq[:self.sViewCountSamples]
             q_samples, q_full = True, False
-        elif len(rec_no_seq) <= self.sViewCountSamples:
+        elif len(rec_no_seq) <= self.sViewMinSamples:
             q_samples, q_full = False, True
         else:
             q_samples, q_full = True, True

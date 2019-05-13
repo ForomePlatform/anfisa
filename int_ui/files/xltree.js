@@ -342,6 +342,7 @@ var sUnitsH = {
         this.mTotal = info["total"];
         document.getElementById("list-report").innerHTML = (this.mCount == this.mTotal)?
             this.mTotal : this.mCount + "/" + this.mTotal;
+        sSubViewH.reset(this.mCount);
             
         this.mItems = info["stat-list"].slice();
         this.mUnitMap = {};

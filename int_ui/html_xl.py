@@ -118,8 +118,8 @@ def formSubViewDiv(output):
                     onchange="sSubViewH.setMode(0);"/>
                 <span id="sub-view-mod-full">Full list</span><br/>
                 <input id="sub-view-check-samples" type="checkbox"
-                    onchange="sSubViewH.setMode(0);"/>
-                <span id="sub-view-mod-samples">Samples-30</span><br/>
+                    onchange="sSubViewH.setMode(1);"/>
+                <span id="sub-view-mod-samples">Samples-25</span><br/>
             </div>
             <div id="sub-view-wrap-list">
                 <div id="sub-view-list">

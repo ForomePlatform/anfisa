@@ -35,7 +35,8 @@ class AnfisaConfig:
         "max.export.size": 300,
 
         "xl.view.count.full": 300,
-        "xl.view.count.samples": 30,
+        "xl.view.count.samples": 25,
+        "xl.view.min.samples": 50,
 
         "max.tree.versions": 30,
 

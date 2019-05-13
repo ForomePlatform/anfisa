@@ -70,7 +70,7 @@ var sUnitsH = {
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
         if (sSubViewH)
-            sSubViewH.reset(this.mTotal);
+            sSubViewH.reset(this.mCount);
         this.mItems = info["stat-list"];
         sConditionsH.setup(info["conditions"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
