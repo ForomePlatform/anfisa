@@ -14,12 +14,14 @@ function initXL(ds_name, common_title, ws_url) {
     sViewH.init();
     sCreateWsH.init();
     sCodeEditH.init();
+    sSubViewH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
     sWsURL = ws_url;
     sDSName = ds_name; 
     window.onresize  = updateSizes;
+    window.onkey = onKey;
     window.name = sCommonTitle + ":" + sDSName + ":L";
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
@@ -292,6 +294,8 @@ var sDecisionTree = {
 var sUnitsH = {
     mDivList: null,
     mItems: null,
+    mCount: null,
+    mTotal: null,
     mUnitMap: null,
     mCurUnit: null,
     mCurZygName: null,
@@ -334,10 +338,10 @@ var sUnitsH = {
     _setup: function(info) {
         this.mWaiting = false;
         this.mRqId  = info["rq_id"];
-        count = info["count"];
-        total = info["total"];
-        document.getElementById("list-report").innerHTML = (count == total)?
-            total : count + "/" + total;
+        this.mCount = info["count"];
+        this.mTotal = info["total"];
+        document.getElementById("list-report").innerHTML = (this.mCount == this.mTotal)?
+            this.mTotal : this.mCount + "/" + this.mTotal;
             
         this.mItems = info["stat-list"].slice();
         this.mUnitMap = {};
@@ -481,6 +485,10 @@ var sUnitsH = {
 
     getCallPartStat: function() {
         return "xl_statunits";
+    },
+    
+    getCurCount: function() {
+        return this.mCount;
     }
 };
     
@@ -954,6 +962,11 @@ function updateSizes() {
         document.getElementById("wrap-cond-enum").style.height = 
             Math.max(10, cond_mod_height - 110);
     }
+    sSubViewH.updateSize();
+}
+
+function onKey(key_event) {
+    sSubViewH.onKey(key_event);
 }
 
 function onModalOff() {

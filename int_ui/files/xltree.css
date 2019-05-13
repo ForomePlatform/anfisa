@@ -1,6 +1,7 @@
 /********************Modal Filter*****************************/
 body {
     display: flex;
+    font-family: sans-serif;
     flex-direction: column;
     align-items: stretch;
     white-space: nowrap;
@@ -192,7 +193,7 @@ div#wrap-cond-enum {
     overflow: hidden;
     height: 100%;
     display: flex;
-    flex-direction: columns;
+    flex-direction: column;
 }
 
 div#cur-cond-enum-list {

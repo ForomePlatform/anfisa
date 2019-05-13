@@ -69,6 +69,8 @@ var sUnitsH = {
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
+        if (sSubViewH)
+            sSubViewH.reset(this.mTotal);
         this.mItems = info["stat-list"];
         sConditionsH.setup(info["conditions"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
@@ -204,6 +206,10 @@ var sUnitsH = {
     getWsCreateArgs: function() {
         return this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
+    },
+    
+    getCurCount: function() {
+        return this.mCount;
     }
 };
 

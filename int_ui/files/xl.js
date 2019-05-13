@@ -14,10 +14,13 @@ function initXL(ds_name, common_title, ws_url) {
     sOpEnumH.init();
     sViewH.init();
     sCreateWsH.init()
+    sSubViewH.init();
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sCommonTitle = common_title;
     window.name = sCommonTitle + ":" + sDSName + ":R";
+    window.onresize  = updateSizes;
+    window.onkeydown  = onKey;
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;
     sUnitsH.setup();
@@ -122,3 +125,11 @@ function setupExport(info) {
 }
 
 /*************************************/
+/**************************************/
+function updateSizes() {
+    sSubViewH.updateSize();
+}
+
+function onKey(event_key) {
+    sSubViewH.onKey(event_key);
+}

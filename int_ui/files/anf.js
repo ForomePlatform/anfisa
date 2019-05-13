@@ -15,6 +15,8 @@ var sNodeZoneBack  = null;
 var sNodeNoteBack = null;
 var sNodeRulesBack = null;
 
+var sSubViewH = null;
+
 function initWin(workspace_name, app_modes) {
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;

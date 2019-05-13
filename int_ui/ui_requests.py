@@ -4,7 +4,7 @@ from StringIO import StringIO
 from .gen_html import formTopPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage
 from .html_xltree import formXLTreePage
-from .record import reportRecord
+from .record import reportWsRecord, reportXlRecord
 #===============================================
 class IntUI:
     sHtmlBase = None
@@ -47,7 +47,15 @@ class IntUI:
             port = rq_args.get("port")
             if workspace:
                 output = StringIO()
-                reportRecord(output, workspace, 'R' in modes, rec_no, port)
+                reportWsRecord(output, workspace, 'R' in modes, rec_no, port)
+                return serv_h.makeResponse(content = output.getvalue())
+
+        if rq_path == "/xl_rec":
+            dataset = data_vault.getXL(rq_args.get("ds"))
+            rec_no = int(rq_args.get("rec"))
+            if dataset:
+                output = StringIO()
+                reportXlRecord(output, dataset, rec_no)
                 return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/dir":

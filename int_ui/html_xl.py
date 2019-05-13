@@ -11,9 +11,9 @@ def formXLPage(output, title, common_title, html_base, xl_ds, ws_url):
         (xl_ds.getName(), common_title, ws_url))
 
     _formXLPannel(output, xl_ds.getName())
-    _formNoteDiv(output)
-    _formCreateWsDiv(output)
-    _formSamplesDiv(output)
+    formNoteDiv(output)
+    formCreateWsDiv(output)
+    formSubViewDiv(output)
 
     print >> output, ' </body>'
     print >> output, '</html>'
@@ -43,30 +43,32 @@ def _formXLPannel(output, ds_name):
             XL dataset: <span id="xl-name"></span><br/>
             Records: <span id="list-report"></span>
         </div>
+        <div id="xl-list">
+            <button id="xl-sub-view"
+                onclick="sSubViewH.show()">View variants</button>
+        </div>
       </div>'''
     formFilterPannel(output)
 
 #===============================================
-def _formNoteDiv(output):
+def formNoteDiv(output):
     print >> output, '''
     <div id="note-back" class="modal-back">
       <div id="note-mod">
         <div id="note-top">
             <p id="note-title">Dataset
                 <span id="note-ds-name"></span> note
-              <span id="close-note" onclick="sViewH.modalOff();">&times;</span>
+              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
             <textarea id="note-content"></textarea>
         </div>
         <div id="work-note-ctrl">
-              <button class="op-button"
-                  onclick="saveNote();">
+              <button onclick="saveNote();">
                 Save
               </button>
-              <button class="op-button"
-                  onclick="sViewH.modalOff();">
+              <button onclick="sViewH.modalOff();">
                 Done
               </button>
               <span id="note-time"></span>
@@ -77,7 +79,7 @@ def _formNoteDiv(output):
     </div>
 '''
 #===============================================
-def _formCreateWsDiv(output):
+def formCreateWsDiv(output):
     print >> output, '''
     <div id="create-ws-back" class="modal-back">
       <div id="create-ws-mod">
@@ -88,7 +90,6 @@ def _formCreateWsDiv(output):
         <div id="create-ws-main">
             <div>Workspace name:
                 <input id="create-ws-name" type="text"/>
-                </span>
             </div>
             <div id="create-ws-problems"></div>
             <div id="create-ws-status"></div>
@@ -104,6 +105,38 @@ def _formCreateWsDiv(output):
       </div>
     </div>
 '''
+
 #===============================================
-def _formSamplesDiv(output):
-    pass
+def formSubViewDiv(output):
+    print >> output, '''
+    <div id="sub-view-back" class="modal-back">
+      <div id="sub-view-mod">
+        <div id="sub-view-left">
+            <div id="sub-view-ctrl">
+                <span id="sub-view-list-report"></span><br/>
+                <input id="sub-view-check-full" type="checkbox"
+                    onchange="sSubViewH.setMode(0);"/>
+                <span id="sub-view-mod-full">Full list</span><br/>
+                <input id="sub-view-check-samples" type="checkbox"
+                    onchange="sSubViewH.setMode(0);"/>
+                <span id="sub-view-mod-samples">Samples-30</span><br/>
+            </div>
+            <div id="sub-view-wrap-list">
+                <div id="sub-view-list">
+                </div>
+            </div>
+        </div>
+        <div id="sub-view-right">
+            <div id="sub-view-rec-info">
+                <span id="sub-view-title"></span>
+                <span class="close-it"
+                    onclick="sViewH.modalOff();">&times;</span>
+            </div>
+            <div id="sub-view-rec-wrap">
+                <iframe id="sub-view-rec-frame"
+                    name="rec-frame1" src="norecords">
+                </iframe>
+        </div>
+      </div>
+    </div>
+'''

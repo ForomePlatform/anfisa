@@ -147,6 +147,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
     }
 }
 
+/*************************************/
 function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     var_list = unit_stat[2];
     list_count = 0;
@@ -188,6 +189,22 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     if (list_count > 0) {
         list_stat_rep.push('<p class="stat-comment">...and ' + 
             list_count + ' variants more...</p>');
+    }
+}
+
+/*************************************/
+function softScroll(nd) {
+    if (nd == null) 
+        return;
+    var rect = nd.getBoundingClientRect();
+    var rect_parent = nd.parentNode.getBoundingClientRect();
+    if (rect.top - 10 < rect_parent.top) {
+        nd.scrollIntoView(
+            {behavior: 'auto', block: 'start', inline: 'center'});
+    }
+    else if (rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
+        nd.scrollIntoView(
+            {behavior: 'auto', block: 'start', inline: 'center'});
     }
 }
 

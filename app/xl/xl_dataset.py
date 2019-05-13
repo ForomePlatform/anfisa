@@ -1,5 +1,6 @@
 import json
 from time import time
+from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
@@ -13,6 +14,10 @@ from app.filter.code_works import cmpTrees, codeHash, StdTreeCodes
 #===============================================
 class XLDataset(DataSet):
     sStatRqCount = 0
+    sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
+    sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
+
+
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.mMongoDS = (self.getApp().getMongoConnector().
@@ -147,7 +152,7 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def evalRecSeq(self, condition, expect_count):
+    def evalSamples(self, condition, expect_count):
         if condition is None:
             cond_repr = None
         else:
@@ -170,6 +175,30 @@ class XLDataset(DataSet):
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         assert len(ret[0]["result"]) == expect_count
+        return [int(it["_ord"]) for it in ret[0]["result"]]
+
+    def evalSampleList(self, condition):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
+        query = {
+            "queryType": "topN",
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
+            "dimension": "_ord",
+            "threshold": self.sViewCountFull + 5,
+            "metric": "max_rand",
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "aggregations": [{
+                "type": "longMax", "name": "max_rand",
+                "fieldName": "_rand"}],
+            "intervals": [ self.mDruidAgent.INTERVAL ]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
     def dump(self):
@@ -222,6 +251,18 @@ class XLDataset(DataSet):
                 for idx1 in range(zero_idx, len(tree)):
                     counts[idx1] = 0
         return counts
+
+    def retrieveListKeys(self, rec_no_seq):
+        rec_no_dict = {rec_no: None for rec_no in rec_no_seq}
+        with self._openPData() as inp:
+            for rec_no, line in enumerate(inp):
+                if rec_no not in rec_no_dict:
+                    continue
+                pre_data = json.loads(line.decode("utf-8"))
+                rec_no_dict[rec_no] = [rec_no,
+                    escape(pre_data.get("_label")),
+                    AnfisaConfig.normalizeColorCode(pre_data.get("_color"))]
+        return rec_no_dict
 
     #===============================================
     @RestAPI.xl_request
@@ -295,6 +336,39 @@ class XLDataset(DataSet):
             "rq_id": rq_args.get("rq_id"),
             "units": self.makeSelectedStat(json.loads(rq_args["units"]),
                 condition, time_end, repr_context)}
+        return ret
+
+    #===============================================
+    @RestAPI.xl_request
+    def rq__xl_list(self, rq_args):
+        if "conditions" in rq_args:
+            condition = self.mCondEnv.parseSeq(
+                json.loads(rq_args["conditions"]))
+        else:
+            point_no = int(rq_args["no"])
+            if point_no >=0:
+                tree = DecisionTree(ParsedDecisionTree
+                    (self.mCondEnv, rq_args["code"]))
+                condition = tree.actualCondition(point_no)
+            else:
+                condition = self.mCondEnv.getCondNone()
+        rec_no_seq = self.evalSampleList(condition)
+
+        if len(rec_no_seq) > self.sViewCountFull:
+            rec_no_seq = rec_no_seq[:self.sViewCountSamples]
+            q_samples, q_full = True, False
+        elif len(rec_no_seq) <= self.sViewCountSamples:
+            q_samples, q_full = False, True
+        else:
+            q_samples, q_full = True, True
+        rec_no_dict = self.retrieveListKeys(rec_no_seq)
+        ret = dict()
+        if q_samples:
+            ret["samples"] = [rec_no_dict[rec_no]
+                for rec_no in rec_no_seq[:self.sViewCountSamples]]
+        if q_full:
+            ret["records"] = [rec_no_dict[rec_no]
+                for rec_no in sorted(rec_no_seq)]
         return ret
 
     #===============================================

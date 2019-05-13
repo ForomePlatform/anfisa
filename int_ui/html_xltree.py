@@ -1,6 +1,7 @@
 from xml.sax.saxutils import escape
 
 from .gen_html import startHtmlPage
+from .html_xl import formNoteDiv, formCreateWsDiv, formSubViewDiv
 from app.filter.code_works import StdTreeCodes
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
@@ -15,10 +16,10 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     _formXLPannel(output, xl_ds.getName())
     _formCurCondDiv(output)
     _formVersionsDiv(output)
-    _formNoteDiv(output)
-    _formCreateWsDiv(output)
     _formEditCodeDiv(output)
-    _formSamplesDiv(output)
+    formNoteDiv(output)
+    formCreateWsDiv(output)
+    formSubViewDiv(output)
 
     print >> output, ' </body>'
     print >> output, '</html>'
@@ -182,61 +183,6 @@ def _formVersionsDiv(output):
 '''
 
 #===============================================
-def _formNoteDiv(output):
-    print >> output, '''
-    <div id="note-back" class="modal-back">
-      <div id="note-mod">
-        <div id="note-top">
-            <p id="note-title">Dataset
-                <span id="note-ds-name"></span> note
-              <span class="close-it" onclick="modalOff();">&times;</span>
-            </p>
-        </div>
-        <div id="work-note-area">
-            <textarea id="note-content"></textarea>
-        </div>
-        <div id="work-note-ctrl">
-            <button onclick="saveNote();">
-              Save
-            </button>
-            <button onclick="modalOff();">
-              Done
-            </button>
-            <span id="note-time"></span>
-        </div>
-      </div>
-    </div>
-'''
-
-#===============================================
-def _formCreateWsDiv(output):
-    print >> output, '''
-    <div id="create-ws-back" class="modal-back">
-      <div id="create-ws-mod">
-        <div id="create-ws-top">
-            <span id="create-ws-title"></span>
-              <span class="close-it" onclick="modalOff();">&times;</span>
-        </div>
-        <div id="create-ws-main">
-            <div>Workspace name:
-                <input id="create-ws-name" type="text"/>
-            </div>
-            <div id="create-ws-problems"></div>
-            <div id="create-ws-status"></div>
-        </div>
-        <div id="create-ws-ctrl">
-            <button id="create-ws-start" onclick="startWsCreate();">
-              Start...
-            </button>
-            <button id="create-ws-cancel" onclick="sViewH.modalOff();">
-              Cancel
-            </button>
-        </div>
-      </div>
-    </div>
-'''
-
-#===============================================
 def _formEditCodeDiv(output):
     print >> output, '''
     <div id="code-edit-back" class="modal-back">
@@ -266,6 +212,3 @@ def _formEditCodeDiv(output):
     </div>
 '''
 
-#===============================================
-def _formSamplesDiv(output):
-    pass

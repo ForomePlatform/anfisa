@@ -1,7 +1,7 @@
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
-def reportRecord(output, workspace, research_mode, rec_no, port):
+def reportWsRecord(output, workspace, research_mode, rec_no, port):
     startHtmlPage(output,
         css_files = ["base.css", "a_rec.css", "tags.css"],
         js_files = ["a_rec.js", "tags.js"])
@@ -40,6 +40,37 @@ def reportRecord(output, workspace, research_mode, rec_no, port):
     print >> output, ('<div id="a--%s" class="r-tabcnt">' %
         tags_asp_name)
     tagsBlock(output)
+    print >> output, '</div>'
+
+    print >> output, '</div>'
+    print >> output, '</body>'
+    print >> output, '</html>'
+
+#===============================================
+def reportXlRecord(output, dataset, rec_no):
+    startHtmlPage(output,
+        css_files = ["base.css", "a_rec.css"],
+        js_files = ["xl_rec.js"])
+    print >> output, (
+        '<body onload="init_r(\'%s\', \'%s\', %d);">' %
+        (dataset.getFirstAspectID(), dataset.getName(), rec_no))
+    print >> output, '<div class="r-tab">'
+    print >> output, ('<span id="img-wrap" onclick="tabCfgChange();">'
+        '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>')
+    asp_data_seq = dataset.getViewRepr(rec_no, True)
+    for asp_data in asp_data_seq:
+        print >> output, ('<button class="r-tablnk %s" id="la--%s" '
+            'onclick="pickAspect(\'%s\')">%s</button>' %
+            (asp_data["kind"], asp_data["name"], asp_data["name"],
+            AnfisaConfig.decorText(asp_data["title"])))
+    print >> output, '</div>'
+
+    print >> output, '<div id="r-cnt-container">'
+    for asp_data in asp_data_seq:
+        print >> output, ('<div id="a--%s" class="r-tabcnt">' %
+            asp_data["name"])
+        _reportAspect(output, asp_data)
+        print >> output, '</div>'
     print >> output, '</div>'
 
     print >> output, '</div>'

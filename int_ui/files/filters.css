@@ -234,7 +234,7 @@ div#wrap-cond-enum {
     overflow: hidden;
     height: 100%;
     display: flex;
-    flex-direction: columns;
+    flex-direction: row;
 }
 
 div#wrap-cond-enum-list {
