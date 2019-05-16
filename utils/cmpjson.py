@@ -144,4 +144,4 @@ if __name__ == "__main__":
                     prev_line_ok = None
                 cur_diff = True
                 print >> sys.stdout, line
-            print >> sys.stdout, "=============Done====================="
+        print >> sys.stdout, "=============Done====================="
