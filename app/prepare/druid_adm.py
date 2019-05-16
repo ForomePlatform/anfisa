@@ -34,6 +34,9 @@ class DruidAdmin(DruidAgent):
             filter_name = (druid_dataset_name + "__" +
                 os.path.basename(fdata_name))
             cmd = [self.mScpConfig["exe"]]
+            if not cmd[0]:
+                print >> sys.stderr, "Undefined parameter scp/exe"
+                assert False
             if self.mScpConfig.get("key"):
                 cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd.append(fdata_name)

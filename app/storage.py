@@ -2,8 +2,8 @@ import sys, gzip, codecs, json, os, shutil, re
 from argparse import ArgumentParser
 from StringIO import StringIO
 from datetime import datetime
+from subprocess import Popen, PIPE
 
-from utils.ixbz2 import FormatterIndexBZ2
 from utils.read_json import JsonLineReader
 from utils.json_conf import loadJSonConfig
 from app.model.pre_fields import PresentationData
@@ -66,11 +66,15 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
         print >> sys.stderr, "Processing..."
 
     data_rec_no = 0
-    fdata_out = gzip.open(ds_dir + "/fdata.json.gz", 'wb')
-    pdata_out = gzip.open(ds_dir + "/pdata.json.gz", 'wb')
-    input = JsonLineReader(source)
     metadata_record = None
-    with FormatterIndexBZ2(ds_dir + "/vdata.ixbz2") as vdata_out:
+
+    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " +
+        ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
+        stdin = PIPE, stderr = PIPE)
+
+    with    gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_out, \
+            gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_out, \
+            JsonLineReader(source) as input:
         for inp_rec_no, record in enumerate(input):
             if post_proc is not None:
                 post_proc.transform(inp_rec_no, record)
@@ -80,7 +84,8 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
                 filter_set.setMeta(metadata_record)
                 continue
             view_checker.regValue(data_rec_no, record)
-            vdata_out.putLine(json.dumps(record, ensure_ascii = False))
+            print >> vdata_out.stdin, (
+                json.dumps(record, ensure_ascii = False).encode("utf-8"))
             flt_data = filter_set.process(data_rec_no, record)
             pre_data = PresentationData.make(record)
             if DRUID_ADM is not None:
@@ -92,9 +97,11 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
                 print >> sys.stderr, "\r%d lines..." % data_rec_no,
     if report_lines:
         print >> sys.stderr, "\nTotal lines: %d" % data_rec_no
-    input.close()
-    fdata_out.close()
-    pdata_out.close()
+
+    _, vreport_data = vdata_out.communicate()
+    for line in vreport_data.splitlines():
+        print >> sys.stderr, line
+    vdata_out.wait()
 
     rep_out = StringIO()
     is_ok = view_checker.finishUp(rep_out)

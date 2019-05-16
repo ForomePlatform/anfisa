@@ -142,6 +142,8 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--block",  type = int, default = 2**19,
         help = "block size before compress")
+    parser.add_argument("--calm",  action = "store_true",
+        help = "calm mode")
     parser.add_argument("-o", "--output", default = "",
         help = "output file name")
     parser.add_argument("file", nargs = 1, help = "File name")
@@ -155,13 +157,13 @@ if __name__ == "__main__":
 
     out_fname = run_args.output
     if not out_fname:
-        assert run_args.file[0] != "-"
+        assert run_args.file[0] != "/dev/stdin"
         out_fname = run_args.file[0] + '.ixbz2'
 
     report = []
     done_blocks = None
 
-    if run_args.file[0] == "-":
+    if run_args.file[0] == "/dev/stdin":
         inp = sys.stdin
     else:
         inp = codecs.open(run_args.file[0], 'r', encoding = 'utf-8')
@@ -171,8 +173,9 @@ if __name__ == "__main__":
             form.putLine(line.rstrip())
             if form.getDoneBlocks() != done_blocks:
                 done_blocks = form.getDoneBlocks()
-                print >> sys.stderr, "...%d blocks - %d lines\r" % (
-                    done_blocks, form.getDoneLines()),
+                if not run_args.calm:
+                    print >> sys.stderr, "...%d blocks - %d lines\r" % (
+                        done_blocks, form.getDoneLines()),
     if inp is not sys.stdin:
         inp.close()
 
