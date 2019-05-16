@@ -108,7 +108,7 @@ if __name__ == "__main__":
     if run_args.output:
         for idx in range(collector1.getSize()):
             rec_no = collector1.getRecIdx(idx)
-            assert rec_no == collector2.getRecIdx()
+            assert rec_no == collector2.getRecIdx(idx)
             fname1 = run_args.output + ("1_%d.json" % rec_no)
             fname2 = run_args.output + ("2_%d.json" % rec_no)
             print >> sys.stderr, "Preparing %s / %s" % (fname1, fname2)
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         diff = Differ()
         for idx in range(collector1.getSize()):
             rec_no = collector1.getRecIdx(idx)
-            assert rec_no == collector2.getRecIdx()
+            assert rec_no == collector2.getRecIdx(idx)
             repr1 = json.dumps(collector1.getRecord(idx),
                 sort_keys=True, indent = 4)
             repr2 = json.dumps(collector2.getRecord(idx),
