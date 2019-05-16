@@ -124,13 +124,13 @@ if __name__ == "__main__":
             rec_no = collector1.getRecIdx(idx)
             assert rec_no == collector2.getRecIdx(idx)
             repr1 = json.dumps(collector1.getRecord(idx),
-                sort_keys=True, indent = 4)
+                sort_keys = True, indent = 4)
             repr2 = json.dumps(collector2.getRecord(idx),
-                sort_keys=True, indent = 4)
+                sort_keys = True, indent = 4)
             print >> sys.stdout, "==========Cmp rec_no=%d===============" % rec_no
             cur_diff = False
             prev_line_ok = None
-            for line in diff.compare(repr1, repr2):
+            for line in diff.compare(repr1.splitlines(), repr2.splitlines()):
                 if line.startswith(' '):
                     if not cur_diff:
                         prev_line_ok = line
