@@ -25,10 +25,10 @@ class SamplesRandomCollector:
 
     def addRecord(self, record):
         rec_no = self.mCount
-        if rec_no + 1 < self.mSize:
+        if rec_no < self.mSize:
             self.mSamples.append((rec_no, record))
         else:
-            pos = self.mRH.randint(0, self.mCount - 1)
+            pos = self.mRH.randint(0, self.mCount)
             if pos < self.mSize:
                 self.mSamples[pos] = ((rec_no, record))
         self.mCount += 1
