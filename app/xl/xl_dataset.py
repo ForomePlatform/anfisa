@@ -373,6 +373,18 @@ class XLDataset(DataSet):
         return ret
 
     #===============================================
+    @RestAPI.ws_request
+    def rq__xl_recdata(self, rq_args):
+        return self.getRecordData(int(rq_args.get("rec")))
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__xl_reccnt(self, rq_args):
+        modes = rq_args.get("m", "").upper()
+        rec_no = int(rq_args.get("rec"))
+        return self.getViewRepr(rec_no, 'R' in modes)
+
+    #===============================================
     @RestAPI.xl_request
     def rq__dsnote(self, rq_args):
         note = rq_args.get("note")

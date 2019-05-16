@@ -21,7 +21,7 @@ function initXL(ds_name, common_title, ws_url) {
     sWsURL = ws_url;
     sDSName = ds_name; 
     window.onresize  = updateSizes;
-    window.onkey = onKey;
+    window.onkeydown = onKey;
     window.name = sCommonTitle + ":" + sDSName + ":L";
     document.title = sTitlePrefix + "/" + sDSName;
     document.getElementById("xl-name").innerHTML = sDSName;

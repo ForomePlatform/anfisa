@@ -205,7 +205,6 @@ class Workspace(DataSet):
         else:
             repr_context = dict()
         return {
-            "rq_id": rq_args.get("rq_id"),
             "units": [self.mIndex.makeUnitStatReport(
                 unit_name, condition, repr_context)
                 for unit_name in json.loads(rq_args["units"])]}

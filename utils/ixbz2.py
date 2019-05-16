@@ -135,6 +135,7 @@ if __name__ == "__main__":
     import sys, codecs
     from argparse import ArgumentParser
 
+    sys.stdin  = codecs.getreader('utf8')(sys.stdin)
     sys.stderr = codecs.getwriter('utf8')(sys.stderr)
     sys.stdout = codecs.getwriter('utf8')(sys.stdout)
 
@@ -154,22 +155,28 @@ if __name__ == "__main__":
 
     out_fname = run_args.output
     if not out_fname:
+        assert run_args.file[0] != "-"
         out_fname = run_args.file[0] + '.ixbz2'
 
     report = []
     done_blocks = None
-    with FormatterIndexBZ2(out_fname,
-            run_args.block, report) as form:
-        with codecs.open(run_args.file[0], 'r', encoding = 'utf-8') as inp:
-            for line in inp:
-                form.putLine(line.rstrip())
-                if form.getDoneBlocks() != done_blocks:
-                    done_blocks = form.getDoneBlocks()
-                    print >> sys.stderr, "...%d blocks - %d lines\r" % (
-                        done_blocks, form.getDoneLines()),
+
+    if run_args.file[0] == "-":
+        inp = sys.stdin
+    else:
+        inp = codecs.open(run_args.file[0], 'r', encoding = 'utf-8')
+
+    with FormatterIndexBZ2(out_fname, run_args.block, report) as form:
+        for line in inp:
+            form.putLine(line.rstrip())
+            if form.getDoneBlocks() != done_blocks:
+                done_blocks = form.getDoneBlocks()
+                print >> sys.stderr, "...%d blocks - %d lines\r" % (
+                    done_blocks, form.getDoneLines()),
+    if inp is not sys.stdin:
+        inp.close()
 
     print >> sys.stderr, ""
-
     total_inp, total_outp, n_lines, n_blocks = report[0][:4]
     min_chunk_size, max_chunk_size = report[0][4:6]
     min_comp, max_comp, avg_comp = report[0][6:]

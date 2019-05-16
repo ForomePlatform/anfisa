@@ -28,19 +28,23 @@ class DruidAdmin(DruidAgent):
     #===============================================
     def uploadDataset(self, dataset_name, flt_data, fdata_name,
             report_name = None):
-        filter_name = os.path.basename(fdata_name)
+        druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
+            filter_name = (druid_dataset_name + "__" +
+                os.path.basename(fdata_name))
             cmd = [self.mScpConfig["exe"]]
             if self.mScpConfig.get("key"):
                 cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd.append(fdata_name)
-            cmd.append(self.mScpConfig["host"] + ':' + base_dir)
+            cmd.append(self.mScpConfig["host"] + ':' + base_dir + "/" +
+                filter_name)
             print >> sys.stderr, "Remote copying:", ' '.join(cmd)
             print >> sys.stderr, "Scp started at", datetime.now()
             subprocess.call(' '.join(cmd), shell = True)
         else:
             base_dir = os.path.dirname(fdata_name)
+            filter_name = os.path.basename(fdata_name)
 
         dim_container = [
             {"name": "_ord", "type": "long"},
@@ -69,7 +73,7 @@ class DruidAdmin(DruidAgent):
             "type" : "index",
             "spec" : {
                 "dataSchema" : {
-                    "dataSource" : self.normDataSetName(dataset_name),
+                    "dataSource" : druid_dataset_name,
                     "parser" : {
                         "type" : "string",
                         "parseSpec" : {
@@ -111,12 +115,13 @@ class DruidAdmin(DruidAgent):
         return True
 
     def dropDataset(self, dataset_name):
+        druid_dataset_name = self.normDataSetName(dataset_name)
         if not self.mNoCoord:
             self.call("coord", None, "DELETE", "/datasources/" +
-                self.normDataSetName(dataset_name))
+                druid_dataset_name)
         self.call("index", {
             "type": "kill",
-            "dataSource": self.normDataSetName(dataset_name),
+            "dataSource": druid_dataset_name,
             "interval" : self.INTERVAL})
 
     def listDatasets(self):
