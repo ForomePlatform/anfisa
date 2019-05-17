@@ -137,3 +137,4 @@ class JobPool:
                 return self.mResults[task_uid]
             if task_uid in self.mActiveTasks:
                 return [False, self.mActiveTasks[task_uid].getStatus()]
+        return None

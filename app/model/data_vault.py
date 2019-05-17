@@ -5,7 +5,7 @@ from threading import Lock
 from .workspace import Workspace
 from .rest_api import RestAPI
 from app.xl.xl_dataset import XLDataset
-
+from app.filter.code_works import StdTreeCodes
 #===============================================
 class DataVault:
     def __init__(self, application, vault_dir):
@@ -102,4 +102,9 @@ class DataVault:
     @RestAPI.vault_request
     def rq__job_status(self, rq_args):
         return self.mApp.askJobStatus(rq_args["task"])
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__stdtrees(self, rq_args):
+        return StdTreeCodes
 
