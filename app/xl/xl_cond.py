@@ -1,4 +1,5 @@
 from app.filter.cond_env import CondEnv
+from app.config.solutions import STD_ENUM_PANNELS
 #===============================================
 class XL_CondEnv(CondEnv):
     def __init__(self):
@@ -22,19 +23,20 @@ class XL_CondEnv(CondEnv):
             return XL_NumCondition(*cond_info[1:])
         if cond_info[0] == "enum":
             filter_mode, variants = cond_info[2:]
-            assert len(variants) > 0
-            singles = [XL_EnumSingleCondition(unit_name, variant)
-                for variant in variants]
-            if filter_mode == "NOT":
-                return XL_Condition.joinAnd(
-                    [cond.negative() for cond in singles])
+            if isinstance(variants, unicode):
+                variants = STD_ENUM_PANNELS[unit_name][variants]
+            if len(variants) == 0:
+                return XL_All() if filter_mode == "NOT" else XL_None()
             if filter_mode == "AND":
-                return XL_Condition.joinAnd(singles)
-            if filter_mode == "ONLY":
-                XL_Condition.joinAnd([XL_Condition.joinOr(singles),
-                    XL_Condition.joinAnd(
-                    [cond.negative() for cond in singles]).negative()])
-            return XL_Condition.joinOr(singles)
+                return XL_Condition.joinAnd([XL_EnumSingleCondition(
+                    unit_name, variant) for variant in variants])
+            if len(variants) == 1:
+                cond = XL_EnumSingleCondition(unit_name, variants[0])
+            else:
+                cond = XL_EnumInCondition(unit_name, variants)
+            if filter_mode == "NOT":
+                return XL_Negation(cond)
+            return cond
         assert False
         return XL_None()
 
@@ -144,6 +146,22 @@ class XL_EnumSingleCondition(XL_Condition):
             "type": "selector",
             "dimension": self.mUnitName,
             "value": self.mVariant }
+
+#===============================================
+class XL_EnumInCondition(XL_Condition):
+    def __init__(self, unit_name, variants):
+        XL_Condition.__init__(self)
+        self.mUnitName = unit_name
+        self.mVariants = variants[:]
+
+    def getCondKind(self):
+        return "enum-in"
+
+    def getDruidRepr(self):
+        return {
+            "type": "selector",
+            "dimension": self.mUnitName,
+            "values": self.mVariants }
 
 #===============================================
 class XL_Negation(XL_Condition):

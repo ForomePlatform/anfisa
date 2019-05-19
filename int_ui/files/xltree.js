@@ -481,7 +481,7 @@ var sUnitsH = {
     },
     
     getWsCreateArgs: function() {
-        return this.mCallDS + "&verbase= " + sTreeCtrlH.getCurVersion();
+        return "ds=" + sDSName + "&verbase=" + sTreeCtrlH.getCurVersion();
     },
 
     getCallPartStat: function() {
@@ -832,11 +832,11 @@ var sCodeEditH = {
         this.mErrorPos = null;
         this.mWaiting = false;
         this.mNeedsSave = false;
-        this.validateContent(this.mBaseContent);
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
+        this.validateContent(this.mBaseContent);
         this.checkControls();
     },
     
@@ -876,7 +876,7 @@ var sCodeEditH = {
     },
     
     _validation: function(info) {
-        if (info["code"] != this.mCurContent) 
+        if (info["code"] != this.mCurContent)
             return;
         this.mWaiting = false;
         if (info["error"]) {

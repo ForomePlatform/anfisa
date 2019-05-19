@@ -153,7 +153,7 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return [int(it["value"]) for it in ret[0]["result"]]
 
-    def evalSamples(self, condition, expect_count):
+    def evalRecSeq(self, condition, expect_count):
         if condition is None:
             cond_repr = None
         else:
@@ -452,6 +452,7 @@ class XLDataset(DataSet):
         ret["total"] = self.getTotal()
         ret["versions"] = [info[:2] for info in version_info_seq]
         ret["rq_id"] = str(self.sStatRqCount) + '/' + str(time())
+        print "Error:", ret.get("error")
         return ret
 
     #===============================================
