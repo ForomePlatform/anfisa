@@ -452,7 +452,6 @@ class XLDataset(DataSet):
         ret["total"] = self.getTotal()
         ret["versions"] = [info[:2] for info in version_info_seq]
         ret["rq_id"] = str(self.sStatRqCount) + '/' + str(time())
-        print "Error:", ret.get("error")
         return ret
 
     #===============================================

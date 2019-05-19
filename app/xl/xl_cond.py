@@ -159,7 +159,7 @@ class XL_EnumInCondition(XL_Condition):
 
     def getDruidRepr(self):
         return {
-            "type": "selector",
+            "type": "in",
             "dimension": self.mUnitName,
             "values": self.mVariants }
 
