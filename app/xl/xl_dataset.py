@@ -17,7 +17,7 @@ class XLDataset(DataSet):
     sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
     sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
     sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
-
+    sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
 
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
@@ -265,14 +265,16 @@ class XLDataset(DataSet):
                     AnfisaConfig.normalizeColorCode(pre_data.get("_color"))]
         return rec_no_dict
 
+    def _prepareTimeEnd(self, rq_args):
+        if "tm" in rq_args:
+            return time() + (self.sTimeCoeff * float(rq_args["tm"])) + 1E-5
+        return None
+
     #===============================================
     @RestAPI.xl_request
     def rq__xl_filters(self, rq_args):
         self.sStatRqCount += 1
-        if "tm" in rq_args:
-            time_end = time() + float(rq_args["tm"]) + 1E-5
-        else:
-            time_end = None
+        time_end = self. _prepareTimeEnd(rq_args)
         if "conditions" in rq_args:
             cond_seq = json.loads(rq_args["conditions"])
         else:
@@ -314,10 +316,7 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl_statunits(self, rq_args):
-        if "tm" in rq_args:
-            time_end = time() + float(rq_args["tm"]) + 1E-5
-        else:
-            time_end = None
+        time_end = self. _prepareTimeEnd(rq_args)
         if "conditions" in rq_args:
             condition = self.mCondEnv.parseSeq(
                 json.loads(rq_args["conditions"]))
@@ -400,10 +399,7 @@ class XLDataset(DataSet):
         std_name = rq_args.get("std")
         version = rq_args.get("version")
         instr = rq_args.get("instr")
-        if "tm" in rq_args:
-            time_end = time() + float(rq_args["tm"]) + 1E-5
-        else:
-            time_end = None
+        time_end = self. _prepareTimeEnd(rq_args)
         self.sStatRqCount += 1
         version_info_seq = self.mMongoDS.getTreeCodeVersions()
         assert instr is None or tree_code
@@ -457,10 +453,7 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xltree_counts(self, rq_args):
-        if "tm" in rq_args:
-            time_end = time() + float(rq_args["tm"]) + 1E-5
-        else:
-            time_end = None
+        time_end = self. _prepareTimeEnd(rq_args)
         tree = DecisionTree(ParsedDecisionTree
             (self.mCondEnv, rq_args["code"]))
         return {
@@ -471,10 +464,7 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xlstat(self, rq_args):
-        if "tm" in rq_args:
-            time_end = time() + float(rq_args["tm"]) + 1E-5
-        else:
-            time_end = None
+        time_end = self. _prepareTimeEnd(rq_args)
         self.sStatRqCount += 1
         point_no = int(rq_args["no"])
         if point_no >=0:

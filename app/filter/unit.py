@@ -2,6 +2,8 @@ class Unit:
     def __init__(self, descr, unit_kind = None):
         self.mDescr = descr
         self.mUnitKind  = descr["kind"] if unit_kind is None else unit_kind
+        if self.mUnitKind == "long":
+            self.mUnitKind = "int"
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]

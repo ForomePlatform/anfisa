@@ -383,6 +383,7 @@ var sUnitsH = {
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
         this.mWaiting = true;
+        this.sortVisibleDelays();
         
         ajaxCall("xl_statunits", this.getRqArgs() + 
             "&tm=1" + "&rq_id=" + encodeURIComponent(this.mRqId) + 
@@ -390,12 +391,16 @@ var sUnitsH = {
             function(info){sUnitsH._loadUnits(info);})
     },
     
+    _unitDivEl: function(unit_name) {
+        return document.getElementById("stat--" + unit_name);
+    },
+    
     _loadUnits: function(info) {
         if (info["rq_id"] != this.mRqId) 
             return;
         this.mWaiting = false;
         el_list = document.getElementById("stat-list");
-        var cur_el = (this.mCurUnit)? document.getElementById("stat--" + this.mCurUnit): null;
+        var cur_el = (this.mCurUnit)? this._unitDivEl(this.mCurUnit): null;
         if (cur_el)
             var prev_top = cur_el.getBoundingClientRect().top;
         var prev_unit = this.mCurUnit;
@@ -490,6 +495,20 @@ var sUnitsH = {
     
     getCurCount: function() {
         return this.mCount;
+    },
+    
+    sortVisibleDelays: function() {
+        var view_height = this.mDivList.getBoundingClientRect().height;
+        view_seq = [];
+        hidden_seq = [];
+        for (var idx=0; idx < this.mUnitsDelay.length; idx++) {
+            var rect = this._unitDivEl(this.mUnitsDelay[idx]).getBoundingClientRect();
+            if ((rect.top + rect.height < 0) || (rect.top > view_height))
+                hidden_seq.push(this.mUnitsDelay[idx]);
+            else
+                view_seq.push(this.mUnitsDelay[idx]);
+        }
+        this.mUnitsDelay = view_seq.concat(hidden_seq);
     }
 };
     
@@ -522,7 +541,7 @@ var sOpCondH = {
         if (unit_stat.length == 2) {
             this.mCurTpHandler = null;
         } else {
-            if (unit_type == "long" || unit_type == "float") 
+            if (unit_type == "int" || unit_type == "float") 
                 this.mCurTpHandler = sOpNumH;
             else {
                 if (sOpEnumH.readyForCondition(unit_stat, this.mCondition)) {

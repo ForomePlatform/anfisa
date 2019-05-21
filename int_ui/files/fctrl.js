@@ -636,7 +636,7 @@ function fillEnumStat(items, unit_map, list_stat_rep,
             if (unit_type == "zygosity") 
                 sZygosityH.setup(unit_stat, list_stat_rep);
             else {
-                if (unit_type == "long" || unit_type == "float") 
+                if (unit_type == "int" || unit_type == "float") 
                     fillStatRepNum(unit_stat, list_stat_rep);
                 else
                     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
@@ -657,7 +657,7 @@ function refillUnitStat(unit_stat, expand_mode) {
     if (unit_type == "zygosity") 
         sZygosityH.setup(unit_stat, list_stat_rep);
     else {
-        if (unit_type == "long" || unit_type == "float") 
+        if (unit_type == "int" || unit_type == "float") 
             fillStatRepNum(unit_stat, list_stat_rep);
         else
             fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);

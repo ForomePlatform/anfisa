@@ -30,6 +30,8 @@ class AnfisaConfig:
         "rand.min.size":    100,
         "rand.sample.size": 100,
 
+        "tm.coeff": .33,
+
         "max.ws.size":  5000,
         "report.lines": 100,
         "max.export.size": 300,

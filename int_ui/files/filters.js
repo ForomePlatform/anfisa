@@ -110,6 +110,7 @@ var sUnitsH = {
         if (this.mWaiting || this.mUnitsDelay.length == 0)
             return;
         this.mWaiting = true;
+        this.sortVisibleDelays();
         ajaxCall(this.mCallPartStat, this.getRqArgs() +
             ((this.mDelayMode)? "&tm=1":"") + 
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
@@ -117,12 +118,15 @@ var sUnitsH = {
             function(info){sUnitsH._loadUnits(info);})
     },
 
+    _unitDivEl: function(unit_name) {
+        return document.getElementById("stat--" + unit_name);
+    },
+    
     _loadUnits: function(info) {
         if (info["rq_id"] != this.mRqId) 
             return;
         this.mWaiting = false;
-        el_list = document.getElementById("stat-list");
-        var cur_el = (this.mCurUnit)? document.getElementById("stat--" + this.mCurUnit): null;
+        var cur_el = (this.mCurUnit)? this._unitDivEl(this.mCurUnit): null;
         if (cur_el)
             var prev_top = cur_el.getBoundingClientRect().top;
         var prev_unit = this.mCurUnit;
@@ -139,7 +143,7 @@ var sUnitsH = {
                 this.selectUnit(unit_name, true);
             if (cur_el) {
                 cur_top = cur_el.getBoundingClientRect().top;
-                el_list.scrollTop += cur_top - prev_top;
+                this.mDivList.scrollTop += cur_top - prev_top;
             }
         }
         this.checkDelayed();
@@ -161,7 +165,7 @@ var sUnitsH = {
     
     selectUnit: function(stat_unit, force_it) {
         var pos = this.mUnitsDelay.indexOf(stat_unit);
-        if (pos >= 0) {
+        if (pos > 0) {
             this.mUnitsDelay.splice(pos, 1);
             this.mUnitsDelay.splice(0, 0, stat_unit);
         }
@@ -169,11 +173,11 @@ var sUnitsH = {
             this.checkDelayed();
         if (this.mCurUnit == stat_unit && !force_it) 
             return;
-        var new_unit_el = document.getElementById("stat--" + stat_unit);
+        var new_unit_el = this._unitDivEl(stat_unit);
         if (new_unit_el == null) 
             return;
         if (this.mCurUnit != null) {
-            var prev_el = document.getElementById("stat--" + this.mCurUnit);
+            var prev_el = this._unitDivEl(this.mCurUnit);
             prev_el.className = prev_el.className.replace(" cur", "");
         }
         this.mCurUnit = stat_unit;
@@ -210,6 +214,20 @@ var sUnitsH = {
     
     getCurCount: function() {
         return this.mCount;
+    },
+    
+    sortVisibleDelays: function() {
+        var view_height = this.mDivList.getBoundingClientRect().height;
+        view_seq = [];
+        hidden_seq = [];
+        for (var idx=0; idx < this.mUnitsDelay.length; idx++) {
+            var rect = this._unitDivEl(this.mUnitsDelay[idx]).getBoundingClientRect();
+            if ((rect.top + rect.height < 0) || (rect.top > view_height))
+                hidden_seq.push(this.mUnitsDelay[idx]);
+            else
+                view_seq.push(this.mUnitsDelay[idx]);
+        }
+        this.mUnitsDelay = view_seq.concat(hidden_seq);
     }
 };
 
@@ -435,7 +453,7 @@ var sOpCondH = {
         if (unit_stat.length == 2)
             this.mCurTpHandler = null;
         else {
-            if (unit_type == "long" || unit_type == "float") 
+            if (unit_type == "int" || unit_type == "float") 
                 this.mCurTpHandler = sOpNumH;
             else
                 this.mCurTpHandler = sOpEnumH;

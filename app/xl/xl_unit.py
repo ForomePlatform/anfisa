@@ -7,10 +7,14 @@ from .xl_cond import XL_Condition, XL_NumCondition
 class XL_Unit(Unit):
     def __init__(self, dataset_h, descr, unit_kind = None):
         Unit.__init__(self, descr, unit_kind)
+        self.mDruidKind = descr["kind"]
         self.mDataSet = dataset_h
 
     def getDS(self):
         return self.mDataSet
+
+    def getDruidKind(self):
+        return self.mDruidKind
 
     @staticmethod
     def create(dataset_h, descr):
@@ -43,10 +47,10 @@ class XL_NumUnit(XL_Unit):
             "aggregations": [
                 { "type": "count", "name": name_cnt,
                     "fieldName": self.getName()},
-                { "type": "%sMin" % self.getUnitKind(),
+                { "type": "%sMin" % self.getDruidKind(),
                     "name": name_min,
                     "fieldName": self.getName()},
-                { "type": "%sMax" % self.getUnitKind(),
+                { "type": "%sMax" % self.getDruidKind(),
                     "name": name_max,
                     "fieldName": self.getName()}],
             "intervals": [ druid_agent.INTERVAL ]}
