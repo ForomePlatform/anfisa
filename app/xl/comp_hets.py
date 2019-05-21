@@ -20,12 +20,13 @@ class CompHetsMarkupBatch:
     def feed(self, rec_no, rec_fdata):
         self.mCounts[0] += 1
         z_p, z_f, z_m = [rec_fdata[key] for key in self.mF_zFamily]
-        if  z_f > 0 and z_m < 1:
-            self._regIt(self.mGenesF, rec_no, rec_fdata)
-            self.mCounts[1] += 1
-        elif z_f < 1 and z_m > 0:
-            self._regIt(self.mGenesM, rec_no, rec_fdata)
-            self.mCounts[2] += 1
+        if z_p == 1:
+            if  z_f > 0 and z_m == 0:
+                self._regIt(self.mGenesF, rec_no, rec_fdata)
+                self.mCounts[1] += 1
+            elif z_f == 0 and z_m > 0:
+                self._regIt(self.mGenesM, rec_no, rec_fdata)
+                self.mCounts[2] += 1
 
     def _regIt(self, registry, rec_no, rec_fdata):
         genes = rec_fdata.get(self.mF_Genes)
