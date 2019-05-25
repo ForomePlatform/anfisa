@@ -260,7 +260,7 @@ var sSubViewH = {
     },
     
     onKey: function(event_key) {
-        if (this.mDivBack.style.display == "none")
+        if (this.mDivBack.style.display == "none" || this.mInfo == null)
             return;
         if (event_key.code == "ArrowUp" && this.mCurRecIdx > 0)
             this.selectRec(this.mCurRecIdx - 1);

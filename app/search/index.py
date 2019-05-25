@@ -2,7 +2,7 @@ import json
 from copy import deepcopy
 
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import STD_WS_FILTERS
+from app.config.solutions import Solutions
 from .column import DataColumnCollecton
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
@@ -37,7 +37,7 @@ class Index:
                 self.mRecords.append(rec)
         assert len(self.mRecords) == self.mWS.getTotal()
 
-        self.mStdFilters  = deepcopy(STD_WS_FILTERS)
+        self.mStdFilters  = deepcopy(Solutions.getWsFilters())
         self.mFilterCache = dict()
         for filter_name, cond_seq in self.mStdFilters.items():
             self.cacheFilter(self.sStdFMark + filter_name,

@@ -1,6 +1,7 @@
 import os, codecs
-from app.filter.condition import ConditionMaker
+from md5 import md5
 
+from app.filter.condition import ConditionMaker
 #===============================================
 STD_WS_FILTERS = {
     "Candidates_BGM": [
@@ -108,3 +109,56 @@ STD_ENUM_PANNELS = {
             "ATP7B"]
     }
 }
+
+STD_ENUM_PANNELS_REF = {
+    unit_name: sorted([key for key, value in unit_dict.items()])
+    for unit_name, unit_dict in STD_ENUM_PANNELS.items()}
+
+#===============================================
+def codeHash(tree_code):
+    return md5(tree_code.strip()).hexdigest()
+
+#===============================================
+class StdTreeCodes:
+    sKeys = [key for key, code in STD_TREE_CODE_SEQ]
+    sCodes = {key: (code, codeHash(code))
+        for key, code in STD_TREE_CODE_SEQ}
+    sHashCodes = {info[1]: key for key, info in sCodes.items()}
+
+    @classmethod
+    def getKeys(cls):
+        return cls.sKeys
+
+    @classmethod
+    def getCode(cls, key = None):
+        if key is None:
+            key = cls.sKeys[0]
+        return cls.sCodes[key][0]
+
+    @classmethod
+    def getKeyByHash(cls, hash_code):
+        return cls.sHashCodes.get(hash_code)
+
+#===============================================
+class Solutions:
+    @staticmethod
+    def report():
+        global STD_ENUM_PANNELS_REF
+        return {
+            "codes": StdTreeCodes.getKeys(),
+            "panels": STD_ENUM_PANNELS_REF}
+
+    @staticmethod
+    def getWsFilters():
+        global STD_WS_FILTERS
+        return STD_WS_FILTERS
+
+    @staticmethod
+    def getXlFilters():
+        global STD_XL_FILTERS
+        return STD_XL_FILTERS
+
+    @staticmethod
+    def getPanel(unit_name, panel_name):
+        global STD_ENUM_PANNELS
+        return STD_ENUM_PANNELS.get(unit_name, dict()).get(panel_name)

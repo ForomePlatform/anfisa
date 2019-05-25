@@ -5,7 +5,12 @@ class XL_CondEnv(CondEnv):
     def __init__(self):
         CondEnv.__init__(self)
 
-    def parse(self, cond_info):
+    def parse(self, cond_info, operatonal_data = None):
+        if len(cond_info) == 0:
+            return XL_None()
+        if cond_info[0] == "all":
+            assert len(cond_info) == 1
+            return XL_All()
         if cond_info[0] == "and":
             return XL_Condition.joinAnd(
                 [self.parse(cc) for cc in cond_info[1:]])
@@ -17,7 +22,12 @@ class XL_CondEnv(CondEnv):
             return XL_Negation(self.parse(cond_info[1]))
         unit_name = cond_info[1]
         unit_kind, unit_h = self.detectUnit(unit_name, cond_info[0])
-        if (unit_kind == "special"):
+        if unit_kind == "operational":
+            return unit_h.parseCondition(
+                cond_info, operatonal_data[unit_name])
+        if unit_kind == "reserved":
+            unit_kind = cond_info[0]
+        if unit_kind == "special":
             return unit_h.parseCondition(cond_info)
         if cond_info[0] == "numeric":
             return XL_NumCondition(*cond_info[1:])
@@ -152,7 +162,7 @@ class XL_EnumInCondition(XL_Condition):
     def __init__(self, unit_name, variants):
         XL_Condition.__init__(self)
         self.mUnitName = unit_name
-        self.mVariants = variants[:]
+        self.mVariants = sorted(variants)
 
     def getCondKind(self):
         return "enum-in"

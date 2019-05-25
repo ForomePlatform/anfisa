@@ -558,8 +558,11 @@ Method /cmptree
     Method compares current version of decision tree code with one versioned
     
 ===
-Method /stdtrees
-    <- [ * list of all standard codes for decision trees available]
+Method /solutions
+    <- {
+        "codes": [ * list of all standard codes for decision trees available]
+        "panels": {dict of dicts: names of panels provided for enum units}
+    }
 
 ====================================
 2. Compex structures

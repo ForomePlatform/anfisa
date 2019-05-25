@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import STD_XL_FILTERS
+from app.config.solutions import Solutions
 from utils.rest import RestAgent
 #===============================================
 class DruidAgent:
@@ -21,7 +21,7 @@ class DruidAgent:
         self.mRestAgents = {mode: RestAgent(druid_cfg.get(mode, url), mode)
             for mode, url in self.sDefaultUrls.items()}
         self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
-            for flt_name, cond_seq in STD_XL_FILTERS}
+            for flt_name, cond_seq in Solutions.getXlFilters()}
         self.mVaultPrefix = druid_cfg["vault-prefix"]
 
     def call(self, mode, request_data, method = "POST", add_path = ""):

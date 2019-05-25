@@ -251,4 +251,3 @@ class XL_ZygosityUnit(XL_Unit):
             p_group = parser.processIntSet(ast_args[0])
         return ["zygosity", self.getName(),
             sorted(p_group), op_mode, variants]
-

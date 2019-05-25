@@ -160,7 +160,7 @@ class HServHandler:
             return self.mApplication.request(resp_h, path, query_args)
         except Exception:
             rep = StringIO()
-            traceback.print_exc(file = rep)
+            traceback.print_exc(file = rep, limit = 20)
             log_record = rep.getvalue()
             logging.error(
                 "Exception on request evaluation:\n " + log_record)

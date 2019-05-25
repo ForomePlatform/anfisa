@@ -1,36 +1,10 @@
 import re, ast, tokenize
-from md5 import md5
 
 from StringIO import StringIO
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
 from difflib import Differ
-from app.config.solutions import STD_TREE_CODE_SEQ
-#===============================================
-def codeHash(tree_code):
-    return md5(tree_code.strip()).hexdigest()
-
-#===============================================
-class StdTreeCodes:
-    sKeys = [key for key, code in STD_TREE_CODE_SEQ]
-    sCodes = {key: (code, codeHash(code))
-        for key, code in STD_TREE_CODE_SEQ}
-    sHashCodes = {info[1]: key for key, info in sCodes.items()}
-
-    @classmethod
-    def getKeys(cls):
-        return cls.sKeys
-
-    @classmethod
-    def getCode(cls, key = None):
-        if key is None:
-            key = cls.sKeys[0]
-        return cls.sCodes[key][0]
-
-    @classmethod
-    def getKeyByHash(cls, hash_code):
-        return cls.sHashCodes.get(hash_code)
 
 #===============================================
 sLexer = PythonLexer()

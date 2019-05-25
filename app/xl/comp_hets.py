@@ -1,11 +1,13 @@
-import logging
+import logging, json
 from collections import defaultdict
 
 from app.config.a_config import AnfisaConfig
+from app.filter.condition import ConditionMaker
+from app.filter.unit import Unit
 #=====================================
 class CompHetsMarkupBatch:
     def __init__(self, proband_rel):
-        setup = AnfisaConfig.configOption("comp-hets.setup")
+        setup = AnfisaConfig.configOption("zygosity.setup")
         self.mF_zFamily = [setup["zygosity"] + '_' + str(member_idx)
             for member_idx in proband_rel]
         self.mF_Genes = setup["Genes"]
@@ -21,10 +23,10 @@ class CompHetsMarkupBatch:
         self.mCounts[0] += 1
         z_p, z_f, z_m = [rec_fdata[key] for key in self.mF_zFamily]
         if z_p == 1:
-            if  z_f > 0 and z_m == 0:
+            if  z_f == 1 and z_m == 0:
                 self._regIt(self.mGenesF, rec_no, rec_fdata)
                 self.mCounts[1] += 1
-            elif z_f == 0 and z_m > 0:
+            elif z_f == 0 and z_m == 1:
                 self._regIt(self.mGenesM, rec_no, rec_fdata)
                 self.mCounts[2] += 1
 
@@ -84,3 +86,112 @@ class CompHetsMarkupBatch:
         if rec_no in self.mResTab:
             rec_data["data"][self.mView_Result] = ", ".join(
                 sorted(self.mResTab[rec_no]))
+
+#=====================================
+class CompHetsUnit(Unit):
+    sSetup = AnfisaConfig.configOption("zygosity.setup")
+
+    def __init__(self, ds):
+        Unit.__init__(self, {
+            "name": self.sSetup["Compound_heterozygous"],
+            "title": self.sSetup["Compound_heterozygous"],
+            "kind": "enum",
+            "research": False,
+            "no": -1})
+        self.mDS = ds
+
+    def getDS(self):
+        return self.mDS
+
+    def isActual(self):
+        return len(self.mDS.getFamilyInfo()) == 3
+
+    def getReservedNames(self):
+        return ["%s_%d" % (self.sSetup["zygosity"], idx)
+            for idx in range(3)]
+
+    def _prepareZygConditions(self):
+        dim0 = "%s_0" % self.sSetup["zygosity"]
+        dim1 = "%s_1" % self.sSetup["zygosity"]
+        dim2 = "%s_2" % self.sSetup["zygosity"]
+        return (
+            ConditionMaker.condNum(dim0, [1, 1]),
+            ["and", ConditionMaker.condNum(dim1, [1, 1]),
+                ConditionMaker.condNum(dim2, [0, 0])],
+            ["and", ConditionMaker.condNum(dim1, [0, 0]),
+                ConditionMaker.condNum(dim2, [1, 1])])
+
+    def compile(self, actual_cond_data):
+        assert self.isActual()
+        logging.info("Comp-hets: actual\n" +json.dumps(actual_cond_data))
+        c_proband, c_parent1, c_parent2 = self._prepareZygConditions()
+
+        genes_unit = self.mDS.getUnit(self.sSetup["Genes"])
+        genes1 = set()
+        for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
+                ["and", actual_cond_data, c_proband, c_parent1])):
+            if count > 0:
+                genes1.add(gene)
+        logging.info("Eval genes1 for comp-hets: %d" % len(genes1))
+        if len(genes1) == None:
+            return []
+        genes2 = set()
+        for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
+                ["and", actual_cond_data, c_proband, c_parent2])):
+            if count > 0:
+                genes2.add(gene)
+        logging.info("Eval genes2 for comp-hets: %d" % len(genes2))
+        actual_genes = genes1 & genes2
+        logging.info("Result genes for comp-hets: %d" % len(actual_genes))
+        if len(actual_genes) == 0:
+            return []
+
+        cond_genes_data = ["and", actual_cond_data, c_proband,
+            ["or", c_parent1, c_parent2],
+            ConditionMaker.condEnum(genes_unit.getName(),
+            sorted(actual_genes))]
+        cond_genes = self.mDS.getCondEnv().parse(cond_genes_data)
+
+        res_count = self.mDS.evalTotalCount(cond_genes)
+        logging.info("Eval count for comp-hets: %d" % res_count)
+
+        if res_count == 0:
+            return []
+
+        if False: # Druid seems does not provides correct support....
+            if res_count > self.sSetup["comp-hets-max-rec"]:
+                logging.info("Comp hets: too many records, "
+                    "return gene-based cond")
+                return ["genes", cond_genes_data]
+
+            rec_no_seq = self.mDS.evalRecSeq(cond_genes, res_count)
+            logging.info("Comp hets: return record-based cond: %d" %
+                len(rec_no_seq))
+            cond_rec_data = ConditionMaker.condEnum("_ord", rec_no_seq)
+
+            res_count1 = self.mDS.evalTotalCount(
+                self.mDS.getCondEnv().parse(cond_rec_data))
+            logging.info("Comp hets check: %d" % res_count1)
+            return ["records", cond_rec_data]
+
+        logging.info("Return gene-based cond")
+        return ["genes", cond_genes_data]
+
+    def makeCompStat(self, condition, calc_data, repr_context):
+        ret = self.prepareStat()
+        if len(calc_data) > 0:
+            cond = self.mDS.getCondEnv().parse(calc_data[1])
+            if condition is not None:
+                cond = condition.addAnd(cond)
+            good_count = self.mDS.evalTotalCount(cond)
+        else:
+            good_count = 0
+        return ret + [[["True", good_count]]]
+
+    def parseCondition(self, cond_data, comp_data):
+        assert cond_data[1] == self.getName()
+        cond = self.mDS.getCondEnv().parse(comp_data[1]
+            if "True" in cond_data[3] and len(comp_data) > 0 else [])
+        if cond_data[2] == "not":
+            return cond.negate()
+        return cond

@@ -3,14 +3,15 @@ from time import time
 from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
+from app.config.solutions import codeHash, StdTreeCodes
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
-from .comp_hets import CompHetsMarkupBatch
+from .comp_hets import CompHetsUnit, CompHetsMarkupBatch
 from app.filter.decision import DecisionTree
 from app.filter.tree_parse import ParsedDecisionTree
-from app.filter.code_works import cmpTrees, codeHash, StdTreeCodes
+from app.filter.code_works import cmpTrees
 #===============================================
 class XLDataset(DataSet):
     sStatRqCount = 0
@@ -26,8 +27,23 @@ class XLDataset(DataSet):
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mCondEnv = XL_CondEnv()
 
+        reserved_names = set()
+        self.mOpUnits = []
+        supp_h = CompHetsUnit(self)
+        reserved_names.add(supp_h.getName())
+        if supp_h.isActual():
+            self.mOpUnits.append(supp_h)
+            self.mCondEnv.addOperativeUnit(supp_h)
+            for nm in supp_h.getReservedNames():
+                self.mCondEnv.addReservedName(nm)
+        else:
+            self.mCondEnv.addReservedName(supp_h.getName())
+        self.mCondEnv.addReservedName("_ord")
+
         self.mUnits = []
         for unit_data in self.getFltSchema():
+            if unit_data["name"] in reserved_names:
+                continue
             xl_unit = XL_Unit.create(self, unit_data)
             if xl_unit is not None:
                 self.mUnits.append(xl_unit)
@@ -41,6 +57,7 @@ class XLDataset(DataSet):
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, cond_seq, time_label)
 
+
     def getDruidAgent(self):
         return self.mDruidAgent
 
@@ -53,8 +70,25 @@ class XLDataset(DataSet):
     def getUnit(self, name):
         return self.mUnitDict.get(name)
 
-    def makeAllStat(self, condition, time_end, repr_context = None):
+    def getOptionalUnit(self, unit_name):
+        for op_unit in self.mOpUnits:
+            if op_unit.getName() == unit_name:
+                return op_unit
+        return None
+
+    def makeAllStat(self, condition, time_end,
+            repr_context = None, tree = None, point_no = None):
         ret = []
+        if tree is not None:
+            for op_info in tree.getActiveOperativeUnits(point_no):
+                p_no, unit_h, unit_comp = op_info
+                if time_end is False:
+                    ret.append(unit_h.prepareStat())
+                else:
+                    ret.append(unit_h.makeCompStat(
+                        condition, unit_comp, repr_context))
+                if time_end is not None and time() > time_end:
+                    time_end = False
         for unit_h in self.mUnits:
             if unit_h.isScreened():
                 continue
@@ -66,13 +100,21 @@ class XLDataset(DataSet):
                 time_end = False
         return ret
 
-    def makeSelectedStat(self, unit_names, condition,
-            time_end, repr_context = None):
+    def makeSelectedStat(self, unit_names, condition, time_end,
+            repr_context = None, tree = None, point_no = None):
         ret = []
+        op_dict = dict()
+        if tree is not None:
+            for op_info in tree.getActiveOperativeUnits(point_no):
+                op_dict[op_info[1].getName()] = op_info
         for unit_name in unit_names:
-            unit_h = self.getUnit(unit_name)
-            assert not unit_h.isScreened()
-            ret.append(unit_h.makeStat(condition, repr_context))
+            if unit_name in op_dict:
+                ret.append(op_info[1].makeCompStat(
+                    condition, op_info[2], repr_context))
+            else:
+                unit_h = self.getUnit(unit_name)
+                assert not unit_h.isScreened()
+                ret.append(unit_h.makeStat(condition, repr_context))
             if time_end is not None and time() > time_end:
                 break
         return ret
@@ -227,6 +269,9 @@ class XLDataset(DataSet):
     def evalPointCounts(self, tree, time_end):
         counts = [None] * len(tree)
         for idx in range(len(tree)):
+            if tree.pointNotActive(idx):
+                counts[idx] = 0
+                continue
             if time_end is not None and time() > time_end:
                 break
             counts[idx] = self.evalTotalCount(tree.actualCondition(idx))
@@ -241,6 +286,9 @@ class XLDataset(DataSet):
         has_some = False
         zero_idx = None
         for idx in point_idxs:
+            if tree.pointNotActive(idx):
+                counts[idx] = 0
+                continue
             if has_some and time_end is not None and time() > time_end:
                 break
             if zero_idx is not None and idx >= zero_idx:
@@ -317,14 +365,19 @@ class XLDataset(DataSet):
     @RestAPI.xl_request
     def rq__xl_statunits(self, rq_args):
         time_end = self. _prepareTimeEnd(rq_args)
+        if "compiled" in rq_args:
+            comp_data = json.loads(rq_args["compiled"])
+        else:
+            comp_data = None
         if "conditions" in rq_args:
             condition = self.mCondEnv.parseSeq(
                 json.loads(rq_args["conditions"]))
+            tree, point_no = None, None
         else:
             point_no = int(rq_args["no"])
             if point_no >=0:
                 tree = DecisionTree(ParsedDecisionTree
-                    (self.mCondEnv, rq_args["code"]))
+                    (self.mCondEnv, rq_args["code"]), comp_data)
                 condition = tree.actualCondition(point_no)
             else:
                 condition = self.mCondEnv.getCondNone()
@@ -335,20 +388,25 @@ class XLDataset(DataSet):
         ret = {
             "rq_id": rq_args.get("rq_id"),
             "units": self.makeSelectedStat(json.loads(rq_args["units"]),
-                condition, time_end, repr_context)}
+                condition, time_end, repr_context, tree, point_no)}
         return ret
 
     #===============================================
     @RestAPI.xl_request
     def rq__xl_list(self, rq_args):
+        if "compiled" in rq_args:
+            comp_data = json.loads(rq_args["compiled"])
+        else:
+            comp_data = None
         if "conditions" in rq_args:
             condition = self.mCondEnv.parseSeq(
                 json.loads(rq_args["conditions"]))
+            tree = None
         else:
             point_no = int(rq_args["no"])
             if point_no >=0:
                 tree = DecisionTree(ParsedDecisionTree
-                    (self.mCondEnv, rq_args["code"]))
+                    (self.mCondEnv, rq_args["code"]), comp_data)
                 condition = tree.actualCondition(point_no)
             else:
                 condition = self.mCondEnv.getCondNone()
@@ -430,6 +488,7 @@ class XLDataset(DataSet):
         if parsed.getError() is not None:
             ret = {"code": parsed.getTreeCode(),
                 "error": parsed.getError()[-1]}
+            tree = None
         else:
             tree = DecisionTree(parsed)
             ret = tree.dump()
@@ -448,14 +507,19 @@ class XLDataset(DataSet):
         ret["total"] = self.getTotal()
         ret["versions"] = [info[:2] for info in version_info_seq]
         ret["rq_id"] = str(self.sStatRqCount) + '/' + str(time())
+        tree.reportCompData(ret)
         return ret
 
     #===============================================
     @RestAPI.xl_request
     def rq__xltree_counts(self, rq_args):
+        if "compiled" in rq_args:
+            comp_data = json.loads(rq_args["compiled"])
+        else:
+            comp_data = None
         time_end = self. _prepareTimeEnd(rq_args)
         tree = DecisionTree(ParsedDecisionTree
-            (self.mCondEnv, rq_args["code"]))
+            (self.mCondEnv, rq_args["code"]), comp_data)
         return {
             "rq_id": rq_args.get("rq_id"),
             "counts": self.evalTreeSelectedCounts(tree,
@@ -467,9 +531,13 @@ class XLDataset(DataSet):
         time_end = self. _prepareTimeEnd(rq_args)
         self.sStatRqCount += 1
         point_no = int(rq_args["no"])
+        if "compiled" in rq_args:
+            comp_data = json.loads(rq_args["compiled"])
+        else:
+            comp_data = None
         if point_no >=0:
             tree = DecisionTree(ParsedDecisionTree
-                (self.mCondEnv, rq_args["code"]))
+                (self.mCondEnv, rq_args["code"]), comp_data)
             condition = tree.actualCondition(point_no)
         else:
             condition = self.mCondEnv.getCondNone()
@@ -478,12 +546,14 @@ class XLDataset(DataSet):
         else:
             repr_context = dict()
         count = self.evalTotalCount(condition)
-        return {
+        ret = {
             "total": self.getTotal(),
             "count": count,
             "stat-list": self.makeAllStat(
-                condition, time_end, repr_context),
+                condition, time_end, repr_context, tree, point_no),
             "rq_id": str(self.sStatRqCount) + '/' + str(time())}
+        return ret
+
 
     #===============================================
     @RestAPI.xl_request

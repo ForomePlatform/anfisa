@@ -2,6 +2,7 @@ import sys, ast, traceback, logging
 from StringIO import StringIO
 from collections import defaultdict
 
+from app.config.solutions import Solutions
 from .code_works import reprConditionCode, findComment
 #===============================================
 class TreeFragment:
@@ -13,6 +14,7 @@ class TreeFragment:
         self.mFullLineDiap = None
         self.mCondData = None
         self.mDecision = None
+        self.mImportUnits = None
         self.mMarkers = []
 
     def setLineDiap(self, base_diap, full_diap):
@@ -40,6 +42,9 @@ class TreeFragment:
     def getDecision(self):
         return self.mDecision
 
+    def getImportUnits(self):
+        return self.mImportUnits
+
     def addMarker(self, point_cond, name_instr):
         self.mMarkers.append([point_cond, name_instr])
 
@@ -66,6 +71,10 @@ class TreeFragment:
         assert self.mDecision is None
         self.mDecision = decision
 
+    def setImportUnits(self, import_units):
+        self.mImportUnits = import_units
+
+
 #===============================================
 class ParsedDecisionTree:
     @staticmethod
@@ -84,6 +93,7 @@ class ParsedDecisionTree:
         self.mFragments = []
         self.mCode = code
         self.mError = None
+        self.mImportFragments = {}
 
         try:
             top_d = ast.parse(self.mCode)
@@ -132,7 +142,6 @@ class ParsedDecisionTree:
         self.mError = (msg_text, line_no, col_offset)
         raise RuntimeError()
 
-
     #===============================================
     def processInstr(self, instr, q_last_instr):
         if q_last_instr:
@@ -149,6 +158,10 @@ class ParsedDecisionTree:
                 self.mFragments.append(
                     TreeFragment(0, "If", instr))
                 self._processIf(instr)
+            elif isinstance(instr, ast.Import):
+                self.mFragments.append(
+                    TreeFragment(0, "Import", instr))
+                self._processImport(instr)
             else:
                 self.errorIt(instr,
                     "Instructon must be of if-type")
@@ -164,6 +177,27 @@ class ParsedDecisionTree:
         if len(instr.orelse) > 0:
             self.errorIt(instr.orelse[0],
                 "Else instruction is not supported")
+
+    #===============================================
+    def _processImport(self, instr):
+        import_entries = []
+        import_units = []
+        for entry in instr.names:
+            if entry.asname is not None:
+                self.errorIt(instr, "entry with path not supported")
+            if (entry.name in self.mImportFragments or
+                    entry.name in import_entries):
+                self.errorIt(instr, "duplicate import: " + entry.name)
+            unit_kind, unit_h = self.mCondEnv.detectUnit(entry.name)
+            if unit_kind == "reserved":
+                self.errorIt(instr, "Case does not provide: " + entry.name)
+            if unit_kind != "operational":
+                self.errorIt(instr, "improper name for import: " + entry.name)
+            import_entries.append(entry.name)
+            import_units.append(unit_h)
+        self.mFragments[-1].setImportUnits(import_units)
+        for nm in import_entries:
+            self.mImportFragments[nm] = self.mFragments[-1]
 
     #===============================================
     def arrangeDiapasons(self):
@@ -271,51 +305,78 @@ class ParsedDecisionTree:
     def _processEnumInstr(self, it):
         assert len(it.comparators) == 1
         it_set = it.comparators[0]
+        panel_name = None
         if isinstance(it.ops[0], ast.NotIn):
             op_mode = "NOT"
         else:
             assert isinstance(it.ops[0], ast.In)
             op_mode = "OR"
-            if isinstance(it_set, ast.Call):
-                if (len(it_set.args) != 1 or len(it_set.keywords) > 0 or
-                        it_set.kwargs or it_set.starargs or
-                        not isinstance(it_set.func, ast.Name)):
-                    self.errorIt(it_set, "Complex call not supported")
-                if it_set.func.id == "only":
-                    op_mode = True
-                elif it_set.func.id == "all":
-                    op_mode = "AND"
-                else:
-                    self.errorIt(it_set,
-                        "Only pseudo-functions all/only supported")
-                it_set = it_set.args[0]
 
-        if not (isinstance(it_set, ast.List) or
-                isinstance(it_set, ast.Set)):
-            self.errorIt(it_set, "Set (or list) expected")
-        variants = []
-        for el in it_set.elts:
-            if isinstance(el, ast.Str):
-                val = el.s
-            elif isinstance(el, ast.Name):
-                val = el.id
+        if isinstance(it_set, ast.Call):
+            if (len(it_set.args) != 1 or len(it_set.keywords) > 0 or
+                    it_set.kwargs or it_set.starargs or
+                    not it_set.func or
+                    not isinstance(it_set.func, ast.Name)):
+                self.errorIt(it_set, "Complex call not supported")
+            if it_set.func.id == "all":
+                if op_mode == "NOT":
+                    self.errorIt(it_set, "Complex call not supported")
+                op_mode = "AND"
+                it_set = it_set.args[0]
+            elif  it_set.func.id == "panel":
+                if self.mCondEnv is None:
+                    self.errorIt(it_set, "No panel support")
+                it_set = it_set.args[0]
+                if isinstance(it_set, ast.Str):
+                    panel_name = it_set.s
+                elif isinstance(it_set, ast.Name):
+                    panel_name = it_set.id
+                else:
+                    self.errorIt(it_set, "Panel id expected")
             else:
-                self.errorIt(el, "Name or string is expected as variant")
-            if val in variants:
-                self.errorIt(el, "Duplicated variant")
-            variants.append(val)
-        if len(variants) == 0:
-            self.errorIt(it_set, "Empty set")
+                self.errorIt(it_set,
+                    "Only pseudo-functions all/panel supported")
+
+        if panel_name is None:
+            if not (isinstance(it_set, ast.List) or
+                    isinstance(it_set, ast.Set)):
+                self.errorIt(it_set, "Set (or list) expected")
+            variants = []
+            for el in it_set.elts:
+                if isinstance(el, ast.Str):
+                    val = el.s
+                elif isinstance(el, ast.Name):
+                    val = el.id
+                else:
+                    self.errorIt(el, "Name or string is expected as variant")
+                if val in variants:
+                    self.errorIt(el, "Duplicated variant")
+                variants.append(val)
+            if len(variants) == 0:
+                self.errorIt(it_set, "Empty set")
 
         if isinstance(it.left, ast.Name):
             field_name = it.left.id
             if self.mCondEnv is not None:
-                unit_kind, _ = self.mCondEnv.detectUnit(field_name, "enum")
+                unit_kind, unit_h = self.mCondEnv.detectUnit(field_name, "enum")
+                if unit_kind == "operational":
+                    if field_name not in self.mImportFragments:
+                        self.errorIt(it.left,
+                            "Field %s not imported" % field_name)
+                    return ["operational", field_name, op_mode, variants]
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
+            if panel_name is not None:
+                variants = Solutions.getPanel(field_name, panel_name)
+                if variants is None:
+                    self.errorIt(it_set, "Panel not found")
             ret = ["enum", field_name, op_mode, variants]
-            self.getCurFrag().addMarker(ret, it.left)
+            if panel_name is None:
+                self.getCurFrag().addMarker(ret, it.left)
             return ret
+
+        if panel_name is not None:
+            self.errorIt(it_set, "Panel supported only for enumerated fields")
 
         if isinstance(it.left, ast.Call):
             if (len(it.left.keywords) > 0 or

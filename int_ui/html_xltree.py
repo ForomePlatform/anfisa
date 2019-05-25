@@ -2,7 +2,7 @@ from xml.sax.saxutils import escape
 
 from .gen_html import startHtmlPage
 from .html_xl import formNoteDiv, formCreateWsDiv, formSubViewDiv
-from app.filter.code_works import StdTreeCodes
+from app.config.solutions import StdTreeCodes
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,

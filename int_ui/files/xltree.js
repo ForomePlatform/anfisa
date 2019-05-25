@@ -42,6 +42,7 @@ var sDecisionTree = {
     mPointDelay: null,
     mRqId: null,
     mPostTreeAction: null,
+    mCompData: null,
     
     setup: function(tree_code, options) {
         args = "ds=" + sDSName + "&tm=0";
@@ -65,6 +66,7 @@ var sDecisionTree = {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
         this.mRqId = info["rq_id"];
+        this.mCompData = info["compiled"];
         sTreeCtrlH.update(info["cur_version"], info["versions"]);
         document.getElementById("std-code-select").value = 
             info["std_code"]? info["std_code"]:"";
@@ -113,10 +115,15 @@ var sDecisionTree = {
             p_cond = point[3];
             p_html = point[4];
             p_count = this.mCounts[p_no];
+            if (p_kind == "Import") {
+                list_rep.push('<tr><td class="point-no">' + (p_no + 1) + '</td>' +
+                    '<td class="point-code"><div class="highlight">' + p_html + '</div></td>' +
+                    '<td class="point-count-undef">---</td></tr>');
+                continue
+            }
             list_rep.push('<tr id="p_td__' + p_no + 
                 '" class="active" onclick="sDecisionTree.selectPoint(' + p_no + ');">');
-            list_rep.push('<td class="point-no" id="p_no__' + p_no + '">' + 
-                (p_no + 1) + '</td>');
+            list_rep.push('<td class="point-no">' + (p_no + 1) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
                 p_html + '</div></td>');
             if (p_count == null) {
@@ -149,12 +156,20 @@ var sDecisionTree = {
             'or choose another code from repository</div>';
     },
 
+    getTreeRqArgs: function(no_comp) {
+        args = "ds=" + sDSName + "&no=" + this.mCurPointNo+
+            "&code=" + encodeURIComponent(this.mTreeCode);
+        if (this.mCompData && !no_comp)
+            args += "&compiled=" + encodeURIComponent(JSON.stringify(this.mCompData));
+        return args;
+    },
+    
     loadDelayed: function(post_tree_action) {
         if (this.mPointDelay.length == 0) {
             eval(post_tree_action);
             return;
         }
-        args = "ds=" + sDSName + "&code=" + encodeURIComponent(this.mTreeCode) + 
+        args = this.getTreeRqArgs() +
             "&points=" + encodeURIComponent(JSON.stringify(this.mPointDelay)) + 
             "&rq_id=" + encodeURIComponent(this.mRqId);
         if (!post_tree_action)
@@ -231,7 +246,7 @@ var sDecisionTree = {
         this.mCurPointNo = point_no;
         if (point_no >= 0)
             new_el.className = "cur";
-        sUnitsH.setup(this.mTreeCode, this.mCurPointNo);
+        sUnitsH.setup();
     },
     
     markEdit: function(point_no, marker_idx) {
@@ -310,9 +325,8 @@ var sUnitsH = {
         this.mDivList = document.getElementById("stat-list");
     },
     
-    setup: function(tree_code, point_no) {
-        args = "ds=" + sDSName + "&code=" + encodeURIComponent(tree_code) + 
-            "&no=" + point_no + "&tm=0" +
+    setup: function() {
+        args = sDecisionTree.getTreeRqArgs() + "&tm=0" +
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         this.mRqId = false;
         if (this.mTimeH != null) {
@@ -370,8 +384,7 @@ var sUnitsH = {
     },
     
     getRqArgs: function(no_ctx) {
-        ret = "ds=" + sDSName + "&no=" + sDecisionTree.getCurPointNo() +
-            "&code=" + encodeURIComponent(sDecisionTree.getTreeCode());
+        ret = sDecisionTree.getTreeRqArgs();
         if (!no_ctx)
             ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         return ret;

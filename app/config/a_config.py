@@ -44,11 +44,12 @@ class AnfisaConfig:
 
         "filter.std.mark": u"\u23da",
 
-        "comp-hets.setup": {
+        "zygosity.setup": {
             "zygosity": "Inheritance_Mode",
             "Genes": "Genes",
             "Compound_heterozygous": "Compound_heterozygous",
-            "ws_compound_heterosygotes": "ws_compound_heterosygotes"
+            "ws_compound_heterosygotes": "ws_compound_heterosygotes",
+            "comp-hets-max-rec": 1000
         },
 
         "job.pool.size":    3,

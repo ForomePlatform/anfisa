@@ -341,7 +341,7 @@ td.point-cond {
     text-align: left;
 }
 
-td.point-count, td.point-count-accept, td.point-count-reject {
+td.point-count, td.point-count-accept, td.point-count-reject, td.point-count-undef {
     width: 60px;
 }
 
@@ -349,6 +349,11 @@ td.point-count {
     text-align: right;
     font-style: italic;
     color: #000080;
+}
+
+td.point-count-undef {
+    text-align: center;
+    color: #A0A0A0;
 }
 
 td.point-count-accept {

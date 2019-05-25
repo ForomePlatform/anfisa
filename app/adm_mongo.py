@@ -45,7 +45,7 @@ def updateMRec(agent, obj):
     agent.update({'_id': obj_id}, {"$set": set_data}, upsert = True)
 
 #===============================================
-def clearRecordTags(it):
+def cleanRecordTags(it):
     rec = deepcopy(it)
     for sub_tags in rec['_h'][1]:
         if '_id' in sub_tags:
@@ -250,7 +250,7 @@ if cmd_seq[0] == "dump-tags":
     for it in m_ds.find():
         if not it['_id'].startswith("rec-"):
             continue
-        ret.append(clearRecordTags(it, False))
+        ret.append(cleanRecordTags(it))
     for rec in ret:
         print >> sys.stdout, json.dumps(rec)
     sys.exit()
