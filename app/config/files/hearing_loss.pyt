@@ -1,3 +1,7 @@
+#Exclude  variants not in hearing loss panel
+if Genes not in panel(All_Hearing_Loss):
+    return False
+
 #Include Present in HGMD as "DM"
 if HGMD_Tags in {"DM"}:
     return True

@@ -104,7 +104,10 @@ class CompHetsUnit(Unit):
         return self.mDS
 
     def isActual(self):
-        return len(self.mDS.getFamilyInfo()) == 3
+        try:
+            return len(self.mDS.getFamilyInfo()) == 3
+        except:
+            raise
 
     def getReservedNames(self):
         return ["%s_%d" % (self.sSetup["zygosity"], idx)

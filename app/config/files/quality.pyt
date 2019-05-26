@@ -5,4 +5,3 @@ if FS >= 30.0001:
     return False
 if QD <= 3.99999:
     return False
-

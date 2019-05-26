@@ -16,15 +16,18 @@ class XL_CondEnv(CondEnv):
                 [self.parse(cc) for cc in cond_info[1:]])
         if cond_info[0] == "or":
             return XL_Condition.joinOr(
-                [self.parse(cc) for cc in cond_info[1:]])
+                [self.parse(cc, operatonal_data=operatonal_data) for cc in cond_info[1:]])
         if cond_info[0] == "not":
             assert len(cond_info) == 2
             return XL_Negation(self.parse(cond_info[1]))
         unit_name = cond_info[1]
         unit_kind, unit_h = self.detectUnit(unit_name, cond_info[0])
-        if unit_kind == "operational":
-            return unit_h.parseCondition(
-                cond_info, operatonal_data[unit_name])
+        try:
+            if unit_kind == "operational":
+                return unit_h.parseCondition(
+                    cond_info, operatonal_data[unit_name])
+        except:
+            raise
         if unit_kind == "reserved":
             unit_kind = cond_info[0]
         if unit_kind == "special":
