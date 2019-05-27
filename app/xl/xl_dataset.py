@@ -487,7 +487,7 @@ class XLDataset(DataSet):
         parsed = ParsedDecisionTree.parse(self.mCondEnv, tree_code, instr)
         if parsed.getError() is not None:
             ret = {"code": parsed.getTreeCode(),
-                "error": parsed.getError()[-1]}
+                "error": True}
             tree = None
         else:
             tree = DecisionTree(parsed)
