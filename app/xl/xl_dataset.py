@@ -507,7 +507,8 @@ class XLDataset(DataSet):
         ret["total"] = self.getTotal()
         ret["versions"] = [info[:2] for info in version_info_seq]
         ret["rq_id"] = str(self.sStatRqCount) + '/' + str(time())
-        tree.reportCompData(ret)
+        if tree is not None:
+            tree.reportCompData(ret)
         return ret
 
     #===============================================
