@@ -5,7 +5,7 @@ class XL_CondEnv(CondEnv):
     def __init__(self):
         CondEnv.__init__(self)
 
-    def parse(self, cond_info, operatonal_data = None):
+    def parse(self, cond_info, op_data = None):
         if len(cond_info) == 0:
             return XL_None()
         if cond_info[0] == "all":
@@ -13,19 +13,19 @@ class XL_CondEnv(CondEnv):
             return XL_All()
         if cond_info[0] == "and":
             return XL_Condition.joinAnd(
-                [self.parse(cc) for cc in cond_info[1:]])
+                [self.parse(cc, op_data) for cc in cond_info[1:]])
         if cond_info[0] == "or":
             return XL_Condition.joinOr(
-                [self.parse(cc, operatonal_data=operatonal_data) for cc in cond_info[1:]])
+                [self.parse(cc, op_data) for cc in cond_info[1:]])
         if cond_info[0] == "not":
             assert len(cond_info) == 2
-            return XL_Negation(self.parse(cond_info[1]))
+            return XL_Negation(self.parse(cond_info[1], op_data))
         unit_name = cond_info[1]
         unit_kind, unit_h = self.detectUnit(unit_name, cond_info[0])
         try:
             if unit_kind == "operational":
                 return unit_h.parseCondition(
-                    cond_info, operatonal_data[unit_name])
+                    cond_info, op_data[unit_name])
         except:
             raise
         if unit_kind == "reserved":
@@ -53,10 +53,10 @@ class XL_CondEnv(CondEnv):
         assert False
         return XL_None()
 
-    def parseSeq(self, cond_seq):
+    def parseSeq(self, cond_seq, op_data = None):
         if not cond_seq:
             return XL_All()
-        ret = XL_Condition.joinAnd([self.parse(cond_data)
+        ret = XL_Condition.joinAnd([self.parse(cond_data, op_data)
             for cond_data in cond_seq])
         return ret
 
