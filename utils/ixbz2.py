@@ -1,4 +1,5 @@
-import bz2, threading, time
+import bz2, threading
+from time import time
 from array import array
 from bisect import bisect
 from threading import Lock
@@ -135,36 +136,63 @@ class InputReader(threading.Thread):
     def __init__(self, stream):
         threading.Thread.__init__(self)
 
-        self.mThrCondition = threading.Condition()
+        self.mLock = threading.Lock()
+        self.mThrCondEmpty = threading.Condition()
+        self.mThrCondOver = threading.Condition()
         self.mStream = stream
         self.mLines = []
         self.mFinish = False
+        self.mCnt = 0
+        self.mDelayEmpty = 0.
+        self.mDelayOver = 0.
+        self.mCntEmpty = 0
+        self.mCntOver = 0
         self.start()
 
     def readline(self):
         while True:
-            with self.mThrCondition:
+            with self.mLock:
+                self.mCnt += 1
                 if len(self.mLines) > 0:
-                    return self.mLines.pop(0)
-                if self.mFinish:
+                    ret = self.mLines.pop(0)
+                    with self.mThrCondOver:
+                        self.mThrCondOver.notify()
+                    return ret
+                elif self.mFinish:
                     return None
-
+            with self.mThrCondEmpty:
+                tm0 = time()
+                self.mThrCondEmpty.wait()
+                self.mDelayEmpty += (time() - tm0)
+                self.mCntEmpty += 1
 
     def run(self):
         for line in self.mStream:
-            with self.mThrCondition:
-                self.mLines.append(line)
-                self.mThrCondition.notify()
-        with self.mThrCondition:
+            while True:
+                with self.mLock:
+                    if len(self.mLines) < 1000:
+                        self.mLines.append(line)
+                        with self.mThrCondEmpty:
+                            self.mThrCondEmpty.notify()
+                        break
+                with self.mThrCondOver:
+                    tm0 = time()
+                    self.mThrCondOver.wait()
+                    self.mDelayOver += (time() - tm0)
+                    self.mCntOver += 1
+        with self.mLock:
             self.mFinish = True
-            self.mThrCondition.notify()
+            with self.mThrCondEmpty:
+                self.mThrCondEmpty.notify()
 
     def close(self):
         for cnt in range(1000):
-            with self.mThrCondition:
+            with self.mLock:
                 if not self.is_alive():
-                    return
+                    break
             time.sleep(.001)
+        print >> sys.stderr, "Delays: empty = %.01f/%d full = %.01f/%d" % (
+            self.mDelayEmpty, self.mCntEmpty, self.mDelayOver, self.mCntOver)
 
 #===============================================
 if __name__ == "__main__":

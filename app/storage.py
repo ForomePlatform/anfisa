@@ -71,7 +71,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " +
         ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
         stdin = PIPE, stderr = PIPE,
-        bufsize = 1024 * 1024 * 16, universal_newlines = True, # line buffer
+        bufsize = 1, universal_newlines = True, # line buffer
         close_fds = True)
 
     with    gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_out, \
