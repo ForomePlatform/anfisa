@@ -1,4 +1,4 @@
-import bz2
+import bz2, threading, time
 from array import array
 from bisect import bisect
 from threading import Lock
@@ -131,6 +131,42 @@ class FormatterIndexBZ2:
                 self.mBlockAccumComp * 4 / len(self.mIdxTable)))
 
 #===============================================
+class InputReader(threading.Thread):
+    def __init__(self, stream):
+        threading.Thread.__init__(self)
+
+        self.mThrCondition = threading.Condition()
+        self.mStream = stream
+        self.mLines = []
+        self.mFinish = False
+        self.start()
+
+    def readline(self):
+        while True:
+            with self.mThrCondition:
+                if len(self.mLines) > 0:
+                    return self.mLines.pop(0)
+                if self.mFinish:
+                    return None
+
+
+    def run(self):
+        for line in self.mStream:
+            with self.mThrCondition:
+                self.mLines.append(line)
+                self.mThrCondition.notify()
+        with self.mThrCondition:
+            self.mFinish = True
+            self.mThrCondition.notify()
+
+    def close(self):
+        for cnt in range(1000):
+            with self.mThrCondition:
+                if not self.is_alive():
+                    return
+            time.sleep(.001)
+
+#===============================================
 if __name__ == "__main__":
     import sys, codecs
     from argparse import ArgumentParser
@@ -159,25 +195,26 @@ if __name__ == "__main__":
     if not out_fname:
         assert run_args.file[0] != "/dev/stdin"
         out_fname = run_args.file[0] + '.ixbz2'
-
     report = []
     done_blocks = None
 
     if run_args.file[0] == "/dev/stdin":
-        inp = sys.stdin
+        inp = InputReader(sys.stdin)
     else:
         inp = codecs.open(run_args.file[0], 'r', encoding = 'utf-8')
 
     with FormatterIndexBZ2(out_fname, run_args.block, report) as form:
-        for line in inp:
+        while True:
+            line = inp.readline()
+            if not line:
+                break
             form.putLine(line.rstrip())
             if form.getDoneBlocks() != done_blocks:
                 done_blocks = form.getDoneBlocks()
                 if not run_args.calm:
                     print >> sys.stderr, "...%d blocks - %d lines\r" % (
                         done_blocks, form.getDoneLines()),
-    if inp is not sys.stdin:
-        inp.close()
+    inp.close()
 
     print >> sys.stderr, ""
     total_inp, total_outp, n_lines, n_blocks = report[0][:4]
