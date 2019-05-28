@@ -17,7 +17,7 @@ class WS_CondEnv(CondEnv):
             return WS_Negation(self.parse(cond_info[1]))
         pre_unit_kind, unit_name = cond_info[:2]
         unit_kind, unit_h = self.detectUnit(unit_name, pre_unit_kind)
-        if (unit_kind == "special"):
+        if unit_kind == "special":
             return unit_h.parseCondition(cond_info)
         if unit_kind == "numeric":
             bounds, use_undef = cond_info[2:]

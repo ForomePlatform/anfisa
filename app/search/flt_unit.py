@@ -273,6 +273,9 @@ class ZygosityComplexUnit(FilterUnit):
         assert cond_info[0] == "zygosity"
         unit_name, p_group, filter_mode, variants = cond_info[1:]
 
+        if p_group is None:
+            p_group = self.mFamilyInfo.getAffectedGroup()
+
         if not self.mIsOK or not p_group:
             if filter_mode == "NOT":
                 return self.getIndex().getCondEnv().getCondAll()
