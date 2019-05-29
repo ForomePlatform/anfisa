@@ -14,7 +14,7 @@ class TreeFragment:
         self.mFullLineDiap = None
         self.mCondData = None
         self.mDecision = None
-        self.mImportUnits = None
+        self.mImportEntries = None
         self.mMarkers = []
 
     def setLineDiap(self, base_diap, full_diap):
@@ -42,8 +42,8 @@ class TreeFragment:
     def getDecision(self):
         return self.mDecision
 
-    def getImportUnits(self):
-        return self.mImportUnits
+    def getImportEntries(self):
+        return self.mImportEntries
 
     def addMarker(self, point_cond, name_instr):
         self.mMarkers.append([point_cond, name_instr])
@@ -181,21 +181,19 @@ class ParsedDecisionTree:
     #===============================================
     def _processImport(self, instr):
         import_entries = []
-        import_units = []
         for entry in instr.names:
             if entry.asname is not None:
                 self.errorIt(instr, "entry with path not supported")
             if (entry.name in self.mImportFragments or
                     entry.name in import_entries):
                 self.errorIt(instr, "duplicate import: " + entry.name)
-            unit_kind, unit_h = self.mCondEnv.detectUnit(entry.name)
-            if unit_kind == "reserved":
+            unit_kind, _ = self.mCondEnv.detectUnit(entry.name)
+            if unit_kind in (None, "reserved"):
                 self.errorIt(instr, "Case does not provide: " + entry.name)
             if unit_kind != "operational":
                 self.errorIt(instr, "improper name for import: " + entry.name)
             import_entries.append(entry.name)
-            import_units.append(unit_h)
-        self.mFragments[-1].setImportUnits(import_units)
+        self.mFragments[-1].setImportEntries(import_entries)
         for nm in import_entries:
             self.mImportFragments[nm] = self.mFragments[-1]
 
@@ -370,8 +368,9 @@ class ParsedDecisionTree:
                 variants = Solutions.getPanel(field_name, panel_name)
                 if variants is None:
                     self.errorIt(it_set, "Panel not found")
-            ret = ["enum", field_name, op_mode, variants]
-            if panel_name is None:
+                ret = ["panel", field_name, op_mode, panel_name]
+            else:
+                ret = ["enum", field_name, op_mode, variants]
                 self.getCurFrag().addMarker(ret, it.left)
             return ret
 

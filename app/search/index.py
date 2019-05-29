@@ -3,6 +3,7 @@ from copy import deepcopy
 
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import Solutions
+from app.filter.cond_op import CondOpEnv
 from .column import DataColumnCollecton
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
@@ -37,11 +38,12 @@ class Index:
                 self.mRecords.append(rec)
         assert len(self.mRecords) == self.mWS.getTotal()
 
-        self.mStdFilters  = deepcopy(Solutions.getWsFilters())
+        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
+            for flt_name, cond_seq in Solutions.getWsFilters()}
+
         self.mFilterCache = dict()
         for filter_name, cond_seq in self.mStdFilters.items():
-            self.cacheFilter(self.sStdFMark + filter_name,
-                cond_seq, None)
+            self.cacheFilter(filter_name, cond_seq, None)
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
@@ -52,11 +54,12 @@ class Index:
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
             if any([cond_info[1] == "Rules"
-                    for cond_info in filter_info[0]]):
+                    for cond_info in filter_info[0].getCondSeq()]):
                 to_update.append(filter_name)
         for filter_name in to_update:
             filter_info = self.mFilterCache[filter_name]
-            self.cacheFilter(filter_name, filter_info[0], filter_info[3])
+            self.cacheFilter(filter_name,
+                filter_info[0].getCondSeq(), filter_info[3])
 
     def getWS(self):
         return self.mWS
@@ -80,9 +83,6 @@ class Index:
     def hasStdFilter(self, filter_name):
         return filter_name in self.mStdFilters
 
-    def parseCondSeq(self, cond_seq):
-        return self.mCondEnv.parseSeq(cond_seq)
-
     def evalCondition(self, condition):
         rec_no_seq = []
         for rec_no in range(self.mWS.getTotal()):
@@ -91,13 +91,13 @@ class Index:
         return rec_no_seq
 
     def _applyCondition(self, rec_no_seq, cond_seq):
-        condition = self.parseCondSeq(cond_seq)
+        op_env = CondOpEnv(self.mCondEnv, None, cond_seq)
+        condition = op_env.getResult()
         ret = []
         for rec_no in rec_no_seq:
             if condition(self.mRecords[rec_no]):
                 ret.append(rec_no)
         return ret
-
 
     def checkResearchBlock(self, cond_seq):
         for cond_info in cond_seq:
@@ -106,9 +106,9 @@ class Index:
         return False
 
     def cacheFilter(self, filter_name, cond_seq, time_label):
-        condition = self.mCondEnv.parseSeq(cond_seq)
+        op_env = CondOpEnv(self.mCondEnv, None, cond_seq)
         self.mFilterCache[filter_name] = (
-            cond_seq, self.evalCondition(condition),
+            op_env, self.evalCondition(op_env.getResult()),
             self.checkResearchBlock(cond_seq), time_label)
 
     def dropFilter(self, filter_name):
@@ -125,29 +125,29 @@ class Index:
         return sorted(ret)
 
     def makeStatReport(self, filter_name, research_mode,
-            cond_seq, repr_context):
-        if filter_name in self.mStdFilters:
-            cond_seq = self.mStdFilters[filter_name]
-        elif filter_name in self.mFilterCache:
-            cond_seq = self.mFilterCache[filter_name][0]
-        condition = self.mCondEnv.parseSeq(cond_seq)
+            op_env, repr_context):
+        if filter_name in self.mFilterCache:
+            op_env = self.mFilterCache[filter_name][0]
+        condition = op_env.getResult()
         rec_no_seq = self.getRecNoSeq(filter_name, condition)
-
         rec_seq = [self.mRecords[rec_no] for rec_no in rec_no_seq]
-
         stat_list = []
+        for unit_h, unit_comp in op_env.getActiveOperativeUnits():
+            stat_list.append(unit_h.makeCompStat(
+                condition, unit_comp, repr_context))
         for unit_h in self.mUnits:
             if (not unit_h.checkResearchBlock(research_mode) and
                     not unit_h.isScreened()):
                 stat_list.append(unit_h.makeStat(rec_seq, repr_context))
-
-        return {
+        ret = {
             "total": self.mWS.getTotal(),
             "count": len(rec_seq),
             "stat-list": stat_list,
             "filter-list": self.getFilterList(research_mode),
             "cur-filter": filter_name,
-            "conditions": cond_seq}
+            "conditions": op_env.getCondSeq()}
+        op_env.report(ret, False)
+        return ret
 
     def makeUnitStatReport(self, unit_name, condition, repr_context):
         rec_seq = [self.mRecords[rec_no]

@@ -141,6 +141,15 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write(')')
         return
+    if cond_kind == "panel":
+        if group_mode:
+            output.write('(')
+        unit_name, op_mode, panel_name = cond_data[1:]
+        _reprEnumCase(unit_name, op_mode, None, output,
+            panel_name = panel_name)
+        if group_mode:
+            output.write(')')
+        return
     if cond_kind == "zygosity":
         if group_mode:
             output.write('(')
@@ -157,7 +166,7 @@ def _reprConditionCode(cond_data, output, group_mode):
     assert False
 
 #===============================================
-def _reprEnumCase(unit_operand, op_mode, values, output):
+def _reprEnumCase(unit_operand, op_mode, values, output, panel_name = None):
     if op_mode in ("OR", ""):
         output.write('%s in {' % unit_operand)
         op_close = '}'
@@ -171,16 +180,19 @@ def _reprEnumCase(unit_operand, op_mode, values, output):
         assert op_mode == "ONLY"
         output.write('%s in only({' % unit_operand)
         op_close = '})'
-    q_first = True
-    for val in values:
-        if q_first:
-            q_first = False
-        else:
-            output.write(",\f")
-        if sIdPatt.match(val):
-            output.write(val)
-        else:
-            output.write('"' + val.replace('"', '\\"') + '"')
+    if panel_name is not None:
+        output.write('panel(' + panel_name + ')')
+    else:
+        q_first = True
+        for val in values:
+            if q_first:
+                q_first = False
+            else:
+                output.write(",\f")
+            if sIdPatt.match(val):
+                output.write(val)
+            else:
+                output.write('"' + val.replace('"', '\\"') + '"')
     output.write(op_close)
 
 #===============================================

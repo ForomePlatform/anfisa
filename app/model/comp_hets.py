@@ -109,10 +109,6 @@ class CompHetsUnit(Unit):
         except:
             raise
 
-    def getReservedNames(self):
-        return ["%s_%d" % (self.sSetup["zygosity"], idx)
-            for idx in range(3)]
-
     def _prepareZygConditions(self):
         dim0 = "%s_0" % self.sSetup["zygosity"]
         dim1 = "%s_1" % self.sSetup["zygosity"]
@@ -124,32 +120,35 @@ class CompHetsUnit(Unit):
             ["and", ConditionMaker.condNum(dim1, [0, 0]),
                 ConditionMaker.condNum(dim2, [1, 1])])
 
-    def compile(self, actual_cond_data):
+    def compile(self, actual_cond_data = None, keep_actual = True):
         assert self.isActual()
         logging.info("Comp-hets: actual\n" +json.dumps(actual_cond_data))
+        instr_and = ["and"]
+        if not ConditionMaker.isAll(actual_cond_data):
+            instr_and.append(actual_cond_data)
         c_proband, c_parent1, c_parent2 = self._prepareZygConditions()
 
         genes_unit = self.mDS.getUnit(self.sSetup["Genes"])
         genes1 = set()
         for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
-                ["and", actual_cond_data, c_proband, c_parent1])):
+                instr_and +[c_proband, c_parent1])):
             if count > 0:
                 genes1.add(gene)
         logging.info("Eval genes1 for comp-hets: %d" % len(genes1))
         if len(genes1) == None:
-            return []
+            return ConditionMaker.condNone()
         genes2 = set()
         for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
-                ["and", actual_cond_data, c_proband, c_parent2])):
+                instr_and + [c_proband, c_parent2])):
             if count > 0:
                 genes2.add(gene)
         logging.info("Eval genes2 for comp-hets: %d" % len(genes2))
         actual_genes = genes1 & genes2
         logging.info("Result genes for comp-hets: %d" % len(actual_genes))
         if len(actual_genes) == 0:
-            return []
+            return ConditionMaker.condNone()
 
-        cond_genes_data = ["and", actual_cond_data, c_proband,
+        cond_genes_data = instr_and + [c_proband,
             ["or", c_parent1, c_parent2],
             ConditionMaker.condEnum(genes_unit.getName(),
             sorted(actual_genes))]
@@ -159,7 +158,7 @@ class CompHetsUnit(Unit):
         logging.info("Eval count for comp-hets: %d" % res_count)
 
         if res_count == 0:
-            return []
+            return ConditionMaker.condNone()
 
         if False: # Druid seems does not provides correct support....
             if res_count > self.sSetup["comp-hets-max-rec"]:
@@ -178,6 +177,8 @@ class CompHetsUnit(Unit):
             return ["records", cond_rec_data]
 
         logging.info("Return gene-based cond")
+        if not keep_actual and len(instr_and) > 1:
+            del cond_genes_data[1]
         return ["genes", cond_genes_data]
 
     def makeCompStat(self, condition, calc_data, repr_context):
@@ -196,5 +197,5 @@ class CompHetsUnit(Unit):
         cond = self.mDS.getCondEnv().parse(comp_data[1]
             if "True" in cond_data[3] and len(comp_data) > 0 else [])
         if cond_data[2] == "not":
-            return cond.negate()
+            return cond.negative()
         return cond

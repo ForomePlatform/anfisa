@@ -15,6 +15,28 @@ If UI does not support asyncronous calls - just dont't use tm parameter. Otherwi
 
 API does not guarantee that the exact value of "tm" parameter. For really long calls real timeout will be slightly more than the value of tm. In case of tm=0 there is no guarantee that all portions will be in incomplete state.  
 
+* Note for parameter groups
+ Some methods, especially in XL mode require groups of parameters as input. 
+ In call of some methods (/xl_statunits, /xl_list) either one or another 
+ parameter group should be set:
+ 
+     -> conditions/compiled 
+     This group describes current selection in XL-filtering panel
+     One needs to find values of these parameters in return data of /xl_stat method:
+       - "conditions": is neccessary to define this group
+       - "compiled": see Note below
+     
+     -> code/no/compiled
+     This group describes selection that coresponds to a point in the decision tree
+     One needs to find values of code/compile parameters in return value of /xl_tree method:
+       - "code": is string with the whole code of the tree
+       - "compiled": see Note below
+     Parameter "no" should be correct one: it should represent index of a point in tree 
+     in "points" array with kind of any but "Index" one.
+
+    Note: "compiled" appears in return data of methods in complex cases.If it appears
+    just use it. Otherwise do not set "compiled" as a parameter
+   
 1. Methods
 
 ===
@@ -51,9 +73,10 @@ Method "/list"
 ===
 Method "/xl_list" - partial XL-analog for "/stat"
     -> ds           (!required)
-    -> conditions   (= ConditionList structure or null or undefined)
-    -> code         (= Code of decision tree or undefined)
-    -> no           (= point no in decision tree, use it with code)
+    -> conditions/compiled   (either: 
+                            ConditionList structure or empty/compiled info)
+    -> code/no/compiled      (or: 
+                            Code of decision tree/point no/compiled info)
     <-
     { 
         "records": 
@@ -222,6 +245,8 @@ Method "/stat"
                     3: time of latest update in isoformat, or null for common filters
                 ], ...
             ]
+        "bad_idxs":  undefined or list of indexes of bad conditions in "conitions"
+        "avail_import":   undefined or list of operational units available to import/activate 
     }
     
   Notes:
@@ -242,7 +267,7 @@ Method "/stat"
     
 
 ===
-Method "/xl_filters" = XL-analog for "/stat"
+Method "/xl_stat" = XL-analog for "/stat"
 
     -> ds           (!required)
     -> filter       (= filter name or undefined)
@@ -252,8 +277,10 @@ Method "/xl_filters" = XL-analog for "/stat"
                         same as in "/stat")
     -> tm           (optional float, tm=0 recommended, see Asyncronous calls)
     <- { * the same as in method "/stat" but 
-            a) "stat-list" might contain entries in incomplete state, if tm is set
-            b) returns additional option "rq_id"  
+         * "stat-list" might contain entries in incomplete state, if tm is set
+         * returns additional options:
+           "rq_id"      request id for possible secondary calls of /xl_statunits
+           "compiled"   compiled info if neccessary
        }
         
     Note: This method might spend too much time for its evaluation, so we provide tm parameter: time estimation in seconds for evaluation. When this parameter is set,  
@@ -273,9 +300,10 @@ Method "/xl_filters" = XL-analog for "/stat"
 Method "/xl_statunits" = XL-analog for "/statunits"
     -> ds           (!required)
     -> units        (list of unit names)
-    -> conditions   (= ConditionList structure or null or undefined)
-    -> code         (= Code of decision tree or undefined)
-    -> no           (= point no in decision tree, use it with code)
+    -> conditions/compiled   (either: 
+                            ConditionList structure or empty/compiled info)
+    -> code/no/compiled      (or: 
+                            Code of decision tree/point no/compiled info)
     -> ctx          (dictionary with context options)
     -> tm           (optional float, tm=1 recommended for lons "units" list, 
                         see Asyncronous calls)
@@ -294,7 +322,7 @@ Method "/xl_statunits" = XL-analog for "/statunits"
        - or we have decision tree: "code" and "no", and we do not need "conditions".
     * UI might use this method in two (other) contexts: 
        - either we have to collect information about units that we have just got 
-       from primary calls (/xl_filters or /xl_tree) in incomplete state, in this 
+       from primary calls (/xl_stat or /xl_tree) in incomplete state, in this 
        case we use tm and rq_id parameters
        - or we have to collect information about zygocity unit after chnage of 
        problem_group, in this case "units" contains only one zygosity unit, and there 
@@ -458,8 +486,10 @@ Method "/single_cnt"
 ===
 Method /xl2ws
     -> ds           (!required)
-    -> conditions   (= list of conditions or null or undefined, see method "/stat")
-    -> verbase      (= version of tree code, integer)
+    -> conditions/compiled  (either:
+                    ConditionList structure or empty/compiled info)
+    -> verbase              (or 
+                    Version of tree code, integer)
     -> ws           (= name of creating ws, required)
     <- 
     {
@@ -521,9 +551,29 @@ Method /xltree
     construction: markers[point_no][marker_idx]
 
 ===
+Method /xltree_stat
+    -> ds           (!required)
+    -> code/no/compiled      (Code of decision tree/point no/compiled info)
+    -> ctx          (dictionary with contect options or null or undefined, 
+                        same as in "/stat")
+    -> tm           (optional float, tm=0 recommended) 
+    <- {
+        "total": total count of records
+        "count": count of records in current list
+        "stat-list": 
+            [ * list UnitStat structures, 
+                might contain entries in incomplete state, if tm is set
+            ],
+        "rq_id":   unique id for serie for secondary calls /xl_statunits
+    }
+    Note. The method is analog for /xl_stat in part. In case of decision tree
+    it retrieves information of the current selection of records based on
+    position ("no") on decision tree
+
+===
 Method /xltree_counts
     -> ds           (!required)
-    -> code         (=code of tree decision, required)
+    -> code/compiled (=code of tree decision, required/compiled info)
     -> points       (list of point indexes to evaluate)
     -> rq_id        (optional id of call serie)
     -> tm           (optional float, tm=1 recommended) 
@@ -703,7 +753,7 @@ Structure DecisionTreePoint
 
     Handles one "point" of decision tree in compiled state:
     [
-        0: point kind, currently "If"/"Return"
+        0: point kind, currently "If"/"Return"/"Import"
         1: level of depth (0 or 1)
         2: decision: null/true/false
         3: condition: full condition determines the selection of recorde BEFORE instruction

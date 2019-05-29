@@ -68,8 +68,14 @@ var sDecisionTree = {
         this.mRqId = info["rq_id"];
         this.mCompData = info["compiled"];
         sTreeCtrlH.update(info["cur_version"], info["versions"]);
-        document.getElementById("std-code-select").value = 
-            info["std_code"]? info["std_code"]:"";
+        var select_el = document.getElementById("std-code-select");
+        if (info["std_code"]) {
+            select_el.value = info["std_code"];
+            select_el.options[0].disabled = true;
+        } else {
+            select_el.value = "";
+            select_el.options[0].disabled = false;
+        }
         this.mMarkLoc = null;
         this.mPostTreeAction = null;
         this.mPointDelay = [];
@@ -335,7 +341,7 @@ var sUnitsH = {
         }
         this.mDivList.className = "wait";
         this.mWaiting = true;
-        ajaxCall("xlstat", args, function(info){sUnitsH._setup(info);})
+        ajaxCall("xltree_stat", args, function(info){sUnitsH._setup(info);})
     },
 
     postAction: function(action, no_wait) {
@@ -967,8 +973,10 @@ var sCodeEditH = {
     
     setupContent: function() {
         var ret = this.mCurError == null && this.mBaseContent != this.mCurContent;
-        if (ret)
+        if (ret) {
+            sTreeCtrlH.fixCurrent();
             sDecisionTree.setup(this.mCurContent, {"instr": ["add_version"]});
+        }
         this.checkControls();
         return ret;
     }
@@ -1087,8 +1095,10 @@ function editMark(point_no, instr_idx) {
 
 function pickStdCode() {
     std_name = document.getElementById("std-code-select").value;
-    if (std_name) 
+    if (std_name) {
+        sTreeCtrlH.fixCurrent();
         sDecisionTree.setup(null, {"std" : std_name});
+    }
 }
 
 function exposeEnum(unit_name, expand_mode) {

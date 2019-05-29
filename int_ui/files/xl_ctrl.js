@@ -290,6 +290,7 @@ var sViewH = {
     mDropCtrls: [],
     mModalCtrls: [],
     mBlock: false,
+    mSubViewTab: null,
     
     init: function() {
         window.onclick = function(event_ms) {sViewH.onclick(event_ms);}

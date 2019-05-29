@@ -10,6 +10,26 @@ class ConditionMaker:
         return ["enum", unit_name, join_mode, variants]
 
     @staticmethod
+    def isAll(cond_data):
+        return not cond_data
+
+    @staticmethod
+    def condAll():
+        return []
+
+    @staticmethod
+    def condNone():
+        return [None]
+
+    @staticmethod
+    def joinAnd(cond_seq):
+        if len(cond_seq) == 0:
+            return []
+        if len(cond_seq) == 1:
+            return cond_seq[0]
+        return ["and"] + cond_seq[:]
+
+    @staticmethod
     def upgradeOldFormat(cond_data):
         if cond_data[0] in {"int", "float"}:
             cond_data[0] = "numeric"

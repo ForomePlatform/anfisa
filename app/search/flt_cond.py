@@ -5,43 +5,20 @@ class WS_CondEnv(CondEnv):
     def __init__(self):
         CondEnv.__init__(self)
 
-    def parse(self, cond_info):
-        if cond_info[0] == "and":
-            return WS_Condition.joinAnd(
-                [self.parse(cc) for cc in cond_info[1:]])
-        if cond_info[0] == "or":
-            return WS_Condition.joinOr(
-                [self.parse(cc) for cc in cond_info[1:]])
-        if cond_info[0] == "not":
-            assert len(cond_info) == 2
-            return WS_Negation(self.parse(cond_info[1]))
-        pre_unit_kind, unit_name = cond_info[:2]
-        unit_kind, unit_h = self.detectUnit(unit_name, pre_unit_kind)
-        if unit_kind == "special":
-            return unit_h.parseCondition(cond_info)
-        if unit_kind == "numeric":
-            bounds, use_undef = cond_info[2:]
-            return WS_NumCondition(unit_name, bounds, use_undef,
-                unit_h.getRecFunc())
-        if unit_kind == "enum":
-            filter_mode, variants = cond_info[2:]
-            return WS_EnumCondition(unit_name, filter_mode, variants,
-                unit_h.getVariantSet(), unit_h.getRecFunc())
-        assert False
-        return WS_None()
-
-    def parseSeq(self, cond_seq):
-        if not cond_seq:
-            return WS_All()
-        ret = WS_Condition.joinAnd([self.parse(cond_data)
-            for cond_data in cond_seq])
-        return ret
-
     def getCondNone(self):
         return WS_None()
 
     def getCondAll(self):
         return WS_All()
+
+    def makeNumericCond(self, unit_h, bounds, use_undef):
+        return WS_NumCondition(unit_h.getName(), bounds, use_undef,
+                unit_h.getRecFunc())
+
+    def makeEnumCond(self, unit_h, filter_mode, variants):
+        return WS_EnumCondition(unit_h.getName(), filter_mode, variants,
+            unit_h.getVariantSet(), unit_h.getRecFunc())
+
 
 #===============================================
 class WS_Condition:
@@ -82,19 +59,11 @@ class WS_Condition:
     def __call__(self, record):
         assert False
 
-    @classmethod
-    def joinAnd(self, seq):
-        ret = WS_All()
-        for cond in seq:
-            ret = ret.addAnd(cond)
-        return ret
+    def getCondNone(self):
+        return WS_None()
 
-    @classmethod
-    def joinOr(self, seq):
-        ret = WS_None()
-        for cond in seq:
-            ret = ret.addOr(cond)
-        return ret
+    def getCondAll(self):
+        return WS_All()
 
 #===============================================
 class WS_NumCondition(WS_Condition):

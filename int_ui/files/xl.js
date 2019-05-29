@@ -9,7 +9,7 @@ function initXL(ds_name, common_title, ws_url) {
     sDSName = ds_name; 
     document.getElementById("close-filter").style.display = "none";
     sFiltersH.init();
-    sUnitsH.init("xl_filters", "xl_statunits", "ds=" + sDSName, true);
+    sUnitsH.init("xl_stat", "xl_statunits", "ds=" + sDSName, true);
     sOpNumH.init();
     sOpEnumH.init();
     sViewH.init();

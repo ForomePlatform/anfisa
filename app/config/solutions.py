@@ -581,12 +581,12 @@ class Solutions:
     @staticmethod
     def getWsFilters():
         global STD_WS_FILTERS
-        return STD_WS_FILTERS
+        return STD_WS_FILTERS.items()
 
     @staticmethod
     def getXlFilters():
         global STD_XL_FILTERS
-        return STD_XL_FILTERS
+        return STD_XL_FILTERS.items()
 
     @staticmethod
     def getPanel(unit_name, panel_name):

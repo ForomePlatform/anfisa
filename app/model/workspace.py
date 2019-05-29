@@ -7,6 +7,7 @@ from .tags_man import TagsManager
 from .zone import FilterZoneH
 from app.config.a_config import AnfisaConfig
 from app.filter.condition import ConditionMaker
+from app.filter.cond_op import CondOpEnv
 from app.search.index import Index
 
 #===============================================
@@ -148,17 +149,25 @@ class Workspace(DataSet):
                 assert False
         return filter_name
 
-    def _getCond(self, rq_args):
-        if "conditions" in rq_args:
-            cond_seq = json.loads(rq_args["conditions"])
-            return cond_seq, self.getIndex().parseCondSeq(cond_seq)
-        return None, None
+    #===============================================
+    def _prepareContext(self, rq_args):
+        if "ctx" in rq_args:
+            return json.loads(rq_args["ctx"])
+        return dict()
+
+    def _prepareConditions(self, rq_args):
+        comp_data = (json.loads(rq_args["compiled"])
+            if "compiled" in rq_args else None)
+        op_cond = CondOpEnv(self.mIndex.getCondEnv(), comp_data,
+            json.loads(rq_args["conditions"])
+            if "conditions" in rq_args else ConditionMaker.condAll())
+        return op_cond, op_cond.getResult()
 
     #===============================================
     @RestAPI.ws_request
     def rq__list(self, rq_args):
         modes = rq_args.get("m", "").upper()
-        _, condition = self._getCond(rq_args)
+        _, condition = self._prepareConditions(rq_args)
         filter_name = rq_args.get("filter")
         if filter_name == "null":
             filter_name = None
@@ -175,35 +184,26 @@ class Workspace(DataSet):
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
         filter_name = rq_args.get("filter")
-        cond_seq, _ = self._getCond(rq_args)
+        op_env, _ = self._prepareConditions(rq_args)
         filter_name = self.filterOperation(rq_args.get("instr"),
-            filter_name, cond_seq)
-        if "ctx" in rq_args:
-            repr_context = json.loads(rq_args["ctx"])
-        else:
-            repr_context = dict()
+            filter_name, op_env.getCondSeq())
+        repr_context = self._prepareContext(rq_args)
         return self.mIndex.makeStatReport(
-            filter_name, 'R' in modes, cond_seq, repr_context)
+            filter_name, 'R' in modes, op_env, repr_context)
 
     #===============================================
     @RestAPI.ws_request
     def rq__statunit(self, rq_args):
-        _, condition = self._getCond(rq_args)
-        if "ctx" in rq_args:
-            repr_context = json.loads(rq_args["ctx"])
-        else:
-            repr_context = dict()
+        _, condition = self._prepareConditions(rq_args)
+        repr_context = self._prepareContext(rq_args)
         return self.mIndex.makeUnitStatReport(rq_args["unit"],
             condition, repr_context)
 
     #===============================================
     @RestAPI.ws_request
     def rq__statunits(self, rq_args):
-        _, condition = self._getCond(rq_args)
-        if "ctx" in rq_args:
-            repr_context = json.loads(rq_args["ctx"])
-        else:
-            repr_context = dict()
+        _, condition = self._prepareConditions(rq_args)
+        repr_context = self._prepareContext(rq_args)
         return {
             "units": [self.mIndex.makeUnitStatReport(
                 unit_name, condition, repr_context)
@@ -260,9 +260,8 @@ class Workspace(DataSet):
         filter_name = rq_args.get("filter")
         if filter_name == "null":
             filter_name = None
-        _, condition = self._getCond(rq_args)
-        rec_no_seq = self.getIndex().getRecNoSeq(
-            filter_name, condition)
+        _, condition = self._prepareConditions(rq_args)
+        rec_no_seq = self.getIndex().getRecNoSeq(filter_name, condition)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
             zone_name, variants = json.loads(zone_data)

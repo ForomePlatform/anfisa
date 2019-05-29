@@ -167,6 +167,9 @@ class ZygosityComplexUnit(FilterUnit):
         self.mVariantSet = VariantSet([labels[key]
             for key in ("homo_recess", "x_linked", "dominant", "compens")])
         self.getIndex().getCondEnv().addSpecialUnit(self)
+        for idx in range(len(self.mFamilyInfo)):
+            self.getIndex().getCondEnv().addReservedName(
+                "%s_%d" % (self.getName(), idx))
 
     def setup(self):
         self.mXCondition = self.getIndex().getCondEnv().parse(

@@ -1,70 +1,31 @@
 from app.filter.cond_env import CondEnv
-from app.config.solutions import STD_ENUM_PANNELS
 #===============================================
 class XL_CondEnv(CondEnv):
     def __init__(self):
         CondEnv.__init__(self)
-
-    def parse(self, cond_info, op_data = None):
-        if len(cond_info) == 0:
-            return XL_None()
-        if cond_info[0] == "all":
-            assert len(cond_info) == 1
-            return XL_All()
-        if cond_info[0] == "and":
-            return XL_Condition.joinAnd(
-                [self.parse(cc, op_data) for cc in cond_info[1:]])
-        if cond_info[0] == "or":
-            return XL_Condition.joinOr(
-                [self.parse(cc, op_data) for cc in cond_info[1:]])
-        if cond_info[0] == "not":
-            assert len(cond_info) == 2
-            return XL_Negation(self.parse(cond_info[1], op_data))
-        unit_name = cond_info[1]
-        unit_kind, unit_h = self.detectUnit(unit_name, cond_info[0])
-        try:
-            if unit_kind == "operational":
-                return unit_h.parseCondition(
-                    cond_info, op_data[unit_name])
-        except:
-            raise
-        if unit_kind == "reserved":
-            unit_kind = cond_info[0]
-        if unit_kind == "special":
-            return unit_h.parseCondition(cond_info)
-        if cond_info[0] == "numeric":
-            return XL_NumCondition(*cond_info[1:])
-        if cond_info[0] == "enum":
-            filter_mode, variants = cond_info[2:]
-            if isinstance(variants, unicode):
-                variants = STD_ENUM_PANNELS[unit_name][variants]
-            if len(variants) == 0:
-                return XL_All() if filter_mode == "NOT" else XL_None()
-            if filter_mode == "AND":
-                return XL_Condition.joinAnd([XL_EnumSingleCondition(
-                    unit_name, variant) for variant in variants])
-            if len(variants) == 1:
-                cond = XL_EnumSingleCondition(unit_name, variants[0])
-            else:
-                cond = XL_EnumInCondition(unit_name, variants)
-            if filter_mode == "NOT":
-                return XL_Negation(cond)
-            return cond
-        assert False
-        return XL_None()
-
-    def parseSeq(self, cond_seq, op_data = None):
-        if not cond_seq:
-            return XL_All()
-        ret = XL_Condition.joinAnd([self.parse(cond_data, op_data)
-            for cond_data in cond_seq])
-        return ret
 
     def getCondNone(self):
         return XL_None()
 
     def getCondAll(self):
         return XL_All()
+
+    def makeNumericCond(self, unit_h, bounds, use_undef):
+        return XL_NumCondition(unit_h.getName(), bounds, use_undef)
+
+    def makeEnumCond(self, unit_h, filter_mode, variants):
+        if len(variants) == 0:
+            return XL_All() if filter_mode == "NOT" else XL_None()
+        if filter_mode == "AND":
+            return self.joinAnd([XL_EnumSingleCondition(
+                unit_h.getName(), variant) for variant in variants])
+        if len(variants) == 1:
+            cond = XL_EnumSingleCondition(unit_h.getName(), variants[0])
+        else:
+            cond = XL_EnumInCondition(unit_h.getName(), variants)
+        if filter_mode == "NOT":
+            return XL_Negation(cond)
+        return cond
 
 #===============================================
 class XL_Condition:
@@ -104,20 +65,6 @@ class XL_Condition:
 
     def getDruidRepr(self):
         assert False
-
-    @classmethod
-    def joinAnd(self, seq):
-        ret = XL_All()
-        for cond in seq:
-            ret = ret.addAnd(cond)
-        return ret
-
-    @classmethod
-    def joinOr(self, seq):
-        ret = XL_None()
-        for cond in seq:
-            ret = ret.addOr(cond)
-        return ret
 
 #===============================================
 class XL_NumCondition(XL_Condition):

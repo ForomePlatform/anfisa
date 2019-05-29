@@ -1,5 +1,7 @@
 import logging
 from app.config.a_config import AnfisaConfig
+from .cond_op import CondOpEnv
+from .condition import ConditionMaker
 from .code_works import htmlCodeDecoration
 #===============================================
 class CaseStory:
@@ -13,8 +15,8 @@ class CaseStory:
             return self.mParent.getMaster()
         assert False
 
-    def getCondEnv(self):
-        return self.getMaster().getCondEnv()
+    def getCondOpEnv(self):
+        return self.getMaster().getCondOpEnv()
 
     def getLevel(self):
         if self.mParent is None:
@@ -103,12 +105,12 @@ class CheckPoint:
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getCondEnv().getCondAll()
+            return self.getStory().getCondOpEnv().getCondAll()
         return self.getPrevPoint()._accumulateConditions().negative()
 
     def actualCondData(self):
         if self.getPrevPoint() is None:
-            return ["all"]
+            return ConditionMaker.condAll()
         return ["not",self.getPrevPoint()._accumulateCondData()]
 
     def getInfo(self, code_lines):
@@ -138,14 +140,14 @@ class TerminalPoint(CheckPoint):
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getCondEnv().getCondAll()
+            return self.getStory().getCondOpEnv().getCondAll()
         if self.getPrevPoint().getLevel() == self.getLevel():
             return self.getPrevPoint()._accumulateConditions().negative()
         return self.getPrevPoint().getAppliedCondition()
 
     def actualCondData(self):
         if self.getPrevPoint() is None:
-            return ["all"]
+            return ConditionMaker.condAll()
         if self.getPrevPoint().getLevel() == self.getLevel():
             return ["not", self.getPrevPoint()._accumulateCondData()]
         return self.getPrevPoint().getAppliedCondData()
@@ -154,8 +156,8 @@ class TerminalPoint(CheckPoint):
 class ConditionPoint(CheckPoint):
     def __init__(self, story, frag, prev_point, point_no):
         CheckPoint.__init__(self, story, frag, prev_point, point_no)
-        self.mCondition = self.getStory().getMaster().getCondEnv().parse(
-            self.getCondData(), self.getStory().getCompData())
+        self.mCondition = self.getStory().getMaster().getCondOpEnv().parse(
+            self.getCondData())
         self.mSubStory = CaseStory(self.getStory(), self)
 
     def getPointKind(self):
@@ -185,28 +187,18 @@ class DecisionTree(CaseStory):
                 (lineno, offset, msg_text)) + "Code:\n======\n" +
                 parsed.getTreeCode() + "\n======")
             assert False
-        self.mCondEnv = parsed.getCondEnv()
+        self.mCondOpEnv = CondOpEnv(parsed.getCondEnv(), comp_data)
         self.mCode = parsed.getTreeCode()
         self.mPointList = []
-        self.mOperativeUnitSeq = []
-        self.mCompData = comp_data if comp_data is not None else dict()
-        self.mCompChanged = False
         prev_point = None
         for instr_no, frag in enumerate(parsed.getFragments()):
             if frag.getInstrType() == "Import":
                 assert frag.getDecision() is None
                 self._addPoint(ImportPoint(self,
                     frag, prev_point, instr_no))
-                for unit_h in frag.getImportUnits():
-                    if unit_h.getName() in self.mCompData:
-                        unit_comp_data = self.mCompData[unit_h.getName()]
-                    else:
-                        unit_comp_data = unit_h.compile(
-                            self.actualCondData(instr_no))
-                        self.mCompData[unit_h.getName()] = unit_comp_data
-                        self.mCompChanged = True
-                    self.mOperativeUnitSeq.append(
-                        [instr_no, unit_h, unit_comp_data])
+                for unit_name in frag.getImportEntries():
+                    self.mCondOpEnv.importUnit(instr_no, unit_name,
+                        self.actualCondData(instr_no))
                 continue
             if frag.getInstrType() == "If":
                 assert frag.getDecision() is None
@@ -233,11 +225,8 @@ class DecisionTree(CaseStory):
     def getMaster(self):
         return self
 
-    def getCondEnv(self):
-        return self.mCondEnv
-
-    def getActiveOperativeUnits(self, point_no):
-        return self.mOperativeUnitSeq
+    def getCondOpEnv(self):
+        return self.mCondOpEnv
 
     def regPoint(self, point):
         assert point.getPointNo() == len(self.mPointList)
@@ -254,16 +243,6 @@ class DecisionTree(CaseStory):
 
     def checkZeroAfter(self, point_no):
         return self.mPointList[point_no].getPointKind() == "If"
-
-    def compChanged(self):
-        return self.mCompChanged
-
-    def getCompData(self):
-        return self.mCompData
-
-    def reportCompData(self, ret_handle):
-        if self.mCompChanged:
-            ret_handle["compiled"] = self.mCompData
 
     def dump(self):
         marker_seq = []
