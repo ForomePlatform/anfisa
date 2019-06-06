@@ -37,7 +37,7 @@ class CondOpEnv:
     def getActiveOperativeUnits(self, instr_no = None):
         ret = []
         for unit_no, unit_h, cond_data in self.mOperativeUnitSeq:
-            if instr_no is not None and instr_no > unit_no:
+            if instr_no is not None and instr_no < unit_no:
                 break
             ret.append((unit_h, cond_data))
         return ret
@@ -47,7 +47,7 @@ class CondOpEnv:
 
     def importUnit(self, instr_no, unit_name,
             actual_cond_data, keep_actual = True):
-        unit_h, _ = self.mCondEnv.detectUnit(unit_name, "operational")
+        _, unit_h = self.mCondEnv.detectUnit(unit_name, "operational")
         assert unit_h is not None
         if unit_h.getName() in self.mCompData:
             unit_comp_data = self.mCompData[unit_h.getName()]

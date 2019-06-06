@@ -75,7 +75,7 @@ class AttrH:
             is_seq = data["is_seq"])
 
     #===============================================
-    def htmlRepr(self, obj):
+    def htmlRepr(self, obj, top_rec_obj):
         try:
             val_obj = obj.get(self.mName) if obj else None
             repr_text = None

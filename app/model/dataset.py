@@ -5,6 +5,7 @@ from .family import FamilyInfo
 from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
 from app.view.attr import AttrH
+from app.config.view_tune import tuneAspects
 #===============================================
 class DataSet:
     def __init__(self, data_vault, dataset_info, dataset_path):
@@ -20,6 +21,8 @@ class DataSet:
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
         self.mFamilyInfo = FamilyInfo.load(dataset_info.get("family"))
+        tuneAspects(self, self.mAspects)
+
 
     def _setFamilyInfo(self, members):
         assert self.mFamilyInfo is None

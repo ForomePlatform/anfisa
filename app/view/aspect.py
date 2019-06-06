@@ -27,14 +27,26 @@ class AspectH:
         if attrs is not None:
             self.setAttributes(attrs)
 
+    def __getitem__(self, idx):
+        return self.mAttrs[idx]
+
+    def find(self, name):
+        for idx, attr_h in enumerate(self.mAttrs):
+            if attr_h.getName() == name:
+                return idx
+        return -1
+
     def setAttributes(self, attrs):
         self.mAttrs = attrs
         for attr_h in self.mAttrs:
             attr_h.setAspect(self)
 
-    def addAttr(self, attr_h):
+    def addAttr(self, attr_h, idx = -1):
         attr_h.setAspect(self)
-        self.mAttrs.append(attr_h)
+        if idx < 0:
+            self.mAttrs.append(attr_h)
+        else:
+            self.mAttrs.insert(idx, attr_h)
 
     def delAttr(self, attr_h):
         self.mAttrs.remove(attr_h)
@@ -119,7 +131,7 @@ class AspectH:
                     attr.checkResearchBlock(research_mode) or
                     attr.hasKind("hidden")):
                 continue
-            values = [attr.htmlRepr(obj) for obj in objects]
+            values = [attr.htmlRepr(obj, rec_data) for obj in objects]
             if any([vv != ('-', "none") for vv in values]):
                 fld_data[attr.getName()] = values
         rows = []

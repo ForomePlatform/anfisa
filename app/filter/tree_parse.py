@@ -71,8 +71,8 @@ class TreeFragment:
         assert self.mDecision is None
         self.mDecision = decision
 
-    def setImportUnits(self, import_units):
-        self.mImportUnits = import_units
+    def setImportEntries(self, import_entries):
+        self.mImportEntries = import_entries
 
 
 #===============================================
