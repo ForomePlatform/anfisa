@@ -154,8 +154,9 @@ class DictTypeChecker:
                 attr_h = a_check.getBaseAttr()
                 assert self.mBaseAsp is not None
                 if a_type is None:
-                    self.mBaseAsp.delAttr(attr_h)
-                    master.problem("empty", a_check, self)
+                    if not attr_h.hasKind("place"):
+                        self.mBaseAsp.delAttr(attr_h)
+                        master.problem("empty", a_check, self)
                     a_check.setStatus("empty")
                 else:
                     a_seq, a_kind = a_type

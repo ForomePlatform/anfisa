@@ -64,11 +64,12 @@ def defineViewSchema():
             title = "Variant Intron (Worst Annotation)", is_seq = True),
         AttrH("variant_intron_canonical",
             title = "Variant Intron (Canonical)", is_seq = True),
+        AttrH("gene_panels", title = "Gene panels", is_seq = True),
         AttrH(None),
         AttrH("proband_genotype", title = "Proband Genotype"),
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
-        AttrH("igv", title = "IGV", kind="link")])
+        AttrH("igv", title = "IGV", kind = "place")])
 
     aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),

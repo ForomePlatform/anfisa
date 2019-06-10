@@ -85,10 +85,10 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
                 metadata_record = record
                 filter_set.setMeta(metadata_record)
                 continue
+            flt_data = filter_set.process(data_rec_no, record)
             view_checker.regValue(data_rec_no, record)
             print >> vdata_out.stdin, (
                 json.dumps(record, ensure_ascii = False).encode("utf-8"))
-            flt_data = filter_set.process(data_rec_no, record)
             pre_data = PresentationData.make(record)
             if DRUID_ADM is not None:
                 DRUID_ADM.addFieldsToRec(flt_data, pre_data, data_rec_no)

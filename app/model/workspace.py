@@ -158,6 +158,7 @@ class Workspace(DataSet):
     def _prepareConditions(self, rq_args):
         comp_data = (json.loads(rq_args["compiled"])
             if "compiled" in rq_args else None)
+        print "C:", rq_args.get("conditions")
         op_cond = CondOpEnv(self.mIndex.getCondEnv(), comp_data,
             json.loads(rq_args["conditions"])
             if "conditions" in rq_args else ConditionMaker.condAll())

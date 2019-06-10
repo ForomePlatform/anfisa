@@ -57,8 +57,11 @@ def defineFilterSchema():
                                      "intergenic_variant",
                                      "undefined"], default_value="undefined")
 
-    filters.multiStatusUnit("Genes", "/view/general/genes[]",
-        compact_mode = True)
+    with filters.viewGroup("Genes"):
+        genes_unit = filters.multiStatusUnit("Genes", "/view/general/genes[]",
+            compact_mode = True)
+        filters.panelStatusUnit("Panels", genes_unit,
+            view_path = "/view/general/gene_panels")
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",

@@ -166,6 +166,8 @@ class Index:
         for filter_name, flt_info in self.mFilterCache.items():
             if not research_mode and flt_info[2]:
                 continue
+            if rec_no not in flt_info[1]:
+                continue
             if self.hasStdFilter(filter_name):
                 ret0.append(filter_name)
             elif self.goodOpFilterName(filter_name):

@@ -120,3 +120,8 @@ class Solutions:
     def getPanel(unit_name, panel_name):
         global STD_ENUM_PANNELS
         return STD_ENUM_PANNELS.get(unit_name, dict()).get(panel_name)
+
+    @staticmethod
+    def getPanelNames(unit_name):
+        global STD_ENUM_PANNELS
+        return STD_ENUM_PANNELS[unit_name].keys()

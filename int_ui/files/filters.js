@@ -81,11 +81,13 @@ var sUnitsH = {
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         
+        var unit_name = this.mCurUnit;
+        if (! unit_name) 
+            unit_name = this.mItems[0][1]["name"];
         this.mCurUnit = null;
         this.mCurZygName = null;
         
-        if (this.mCurUnit == null)
-            this.selectUnit(this.mItems[0][1]["name"]);
+        this.selectUnit(unit_name);
         sFiltersH.update();
         this.checkDelayed();
     },

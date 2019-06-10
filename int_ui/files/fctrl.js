@@ -623,7 +623,7 @@ function fillEnumStat(items, unit_map, list_stat_rep,
             list_stat_rep.push('<span class="stat-unit-title">' + 
                 unit_title + '</span>');
         list_stat_rep.push('</div>')
-        if (false && unit_name == "Rules") {
+        if (unit_name == "Rules") {
             list_stat_rep.push(
                 '<span id="flt-run-rules" title="Rules evaluation setup" ' +
                 ' onclick="rulesModOn();">&#9874;</span>')

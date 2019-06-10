@@ -2,6 +2,7 @@ import abc, re, sys
 from collections import Counter
 
 from utils.path_works import AttrFuncPool
+from app.config.solutions import Solutions
 #===============================================
 class ValueConvertor:
     sMAX_BAD_COUNT = 3
@@ -333,4 +334,52 @@ class ZygosityConvertor(ValueConvertor):
             ret["config"] = self.mConfig
         ret["size"] = (len(self.mFamilyMembers)
                 if self.mFamilyMembers is not None else 0)
+        return ret
+
+#===============================================
+class PanelConvertor(ValueConvertor):
+    def __init__(self, name, title, unit_no, vgroup,
+            render_mode, research_only, unit_base, view_path = None):
+        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
+            render_mode, research_only)
+        self.mBaseUnitName = unit_base.getName()
+        self.mPanelSets = {
+            pname: set(Solutions.getPanel(self.mBaseUnitName, pname))
+            for pname in Solutions.getPanelNames(self.mBaseUnitName)}
+        self.mCntUndef = 0
+        self.mVarCount = Counter()
+        self.mViewPath = None
+        if view_path is not None:
+            assert view_path.startswith('/')
+            self.mViewPath = view_path.split('/')[1:]
+
+    def process(self, rec_no, rec_data, result):
+        pitems = result.get(self.mBaseUnitName)
+        if pitems:
+            pitems = set(pitems)
+            res_val = []
+            for pname, pset in self.mPanelSets.items():
+                if len(pitems & pset) > 0:
+                    res_val.append(pname)
+                    self.mVarCount[pname] += 1
+            if res_val:
+                res_val.sort()
+                result[self.getName()] = res_val
+                if self.mViewPath:
+                    data = rec_data
+                    for nm in self.mViewPath[:-1]:
+                        data = data[nm]
+                    data[self.mViewPath[-1]] = res_val
+
+    def dump(self):
+        ret = ValueConvertor.dump(self)
+        ret["kind"] = "enum"
+        ret["atomic"] = False
+        ret["compact"] = False
+        ret["default"] = None
+        ret["undef"] = self.mCntUndef
+        variants = []
+        for var in sorted(self.mVarCount.keys()):
+            variants.append([var, self.mVarCount[var]])
+        ret["variants"] = variants
         return ret
