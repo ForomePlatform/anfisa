@@ -112,8 +112,7 @@ var sOpNumH = {
                 condition_data = null;
             }
         }
-        sOpCondH.formCondition(
-            condition_data, err_msg, this.mInfo.op, false);
+        sOpCondH.formCondition(condition_data, err_msg, this.mInfo.op, false);
         this.careControls();
     }
 };

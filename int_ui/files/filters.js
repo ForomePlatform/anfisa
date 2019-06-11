@@ -185,8 +185,8 @@ var sUnitsH = {
         this.mCurUnit = stat_unit;
         this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
-        sConditionsH.correctCurUnit(this.mCurUnit);
-        sOpCondH.updateUnit(this.mCurUnit);
+        sConditionsH.onUnitSelect();
+        sOpCondH.onUnitSelect();
     },
     
     updateZygUnit: function(zyg_name, unit_stat) {
@@ -330,7 +330,7 @@ var sOpFilterH = {
 /**************************************/
 var sConditionsH = {
     mList: [],
-    mCurNo: null,
+    mCurCondIdx: null,
 
     setup: function(cond_list) {
         this.mList = (cond_list)? cond_list:[];
@@ -343,13 +343,15 @@ var sConditionsH = {
             list_cond_rep.push('</div>')
         }
         document.getElementById("cond-list").innerHTML = list_cond_rep.join('\n');
-        this.mCurNo = null;
-        if (this.mList.length > 0) 
-            this.selectCond(this.mList.length - 1);
+        var cond_idx = (this.mCurCondIdx != null && this.mCurCondIdx < this.mList.length)?
+            this.mCurCondIdx: this.mList.length - 1;
+        this.mCurCondIdx = null;
+        if (cond_idx >= 0)
+            this.selectCond(cond_idx);
     },
     
     selectCond: function(cond_no, force_it) {
-        if (!force_it && this.mCurNo == cond_no) 
+        if (!force_it && this.mCurCondIdx == cond_no) 
             return;
         if (cond_no != null) {
             new_cond_el = document.getElementById("cond--" + cond_no);
@@ -358,11 +360,11 @@ var sConditionsH = {
         } else {
             new_cond_el = null;
         }
-        if (this.mCurNo != null) {
-            var prev_el = document.getElementById("cond--" + this.mCurNo);
+        if (this.mCurCondIdx != null) {
+            var prev_el = document.getElementById("cond--" + this.mCurCondIdx);
             prev_el.className = prev_el.className.replace(" cur", "");
         }
-        this.mCurNo = cond_no;
+        this.mCurCondIdx = cond_no;
         if (new_cond_el != null) {
             new_cond_el.className = new_cond_el.className + " cur";
             sZygosityH.onSelectCondition(this.mList[cond_no]);
@@ -386,21 +388,25 @@ var sConditionsH = {
     },
     
     getCurCondNo: function() {
-        return this.mCurNo;
+        return this.mCurCondIdx;
     },
 
     getCurCond: function() {
-        if (this.mCurNo == null)
+        if (this.mCurCondIdx == null)
             return null;
-        return this.mList[this.mCurNo];
+        return this.mList[this.mCurCondIdx];
     },
     
-    correctCurUnit: function(unit_name) {
-        if (this.mCurNo == null || this.mList[this.mCurNo][1] != unit_name)
-            this.selectCond(this.findCond(unit_name));
+    onUnitSelect: function() {
+        if (this.mCurCondIdx == null || 
+                this.mList[this.mCurCondIdx][1] != sUnitsH.getCurUnitName())
+            this.selectCond(this.findCond(sUnitsH.getCurUnitName()));
     },
 
     findCond: function(unit_name, cond_mode) {
+        if (this.mCurCondIdx != null && 
+                this.mList[this.mCurCondIdx][1] == unit_name)
+            return this.mCurCondIdx;
         for (idx = 0; idx < this.mList.length; idx++) {
             if (this.mList[idx][1] == unit_name) {
                 if (cond_mode == undefined || this.mList[idx][2] == cond_mode)
@@ -429,6 +435,10 @@ var sConditionsH = {
         if (cur_filter)
             return cur_filter + " in work";
         return null;
+    },
+    
+    preSelectCond: function(idx) {
+        this.mCurCondIdx = idx;
     }
 };
 
@@ -439,7 +449,7 @@ var sOpCondH = {
     mIdxToUpdate: null,
     mIdxToAdd: null,
     
-    updateUnit: function() {
+    onUnitSelect: function() {
         unit_title = sUnitsH.getCurUnitTitle();
         unit_name = sUnitsH.getCurUnitName();
         document.getElementById("cond-title").innerHTML = (unit_title)? unit_title:"";
@@ -526,11 +536,13 @@ var sOpCondH = {
         if ( func_name == "add" && this.mIdxToAdd != null) {
             new_seq = condition_seq.slice();
             new_seq.splice(this.mIdxToAdd, 0, this.mCondition);
+            sConditionsH.preSelectCond(this.mIdxToAdd);
             return new_seq;
         }
         if ( func_name == "update" && this.mIdxToUpdate != null) {
             new_seq = condition_seq.slice();
             new_seq[this.mIdxToUpdate] = this.mCondition;
+            sConditionsH.preSelectCond(this.mIdxToUpdate);
             return new_seq;
         }
         return null;
