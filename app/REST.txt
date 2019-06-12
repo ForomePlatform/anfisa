@@ -627,6 +627,7 @@ Structure UnitStat
             "title": title of unit
             "vgroup": view group name or null
             "render": render options or undefined
+            "tooltip": tooltip or undefined
             ... and more options special for type "zygosity"
         }
     
