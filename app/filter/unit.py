@@ -10,6 +10,7 @@ class Unit:
         self.mVGroup = descr.get("vgroup")
         self.mResearchOnly = descr["research"]
         self.mRenderMode = descr.get("render")
+        self.mToolTip = descr.get("tooltip")
         self.mScreened = False
 
     def setup(self):
@@ -30,6 +31,9 @@ class Unit:
     def getVGroup(self):
         return self.mVGroup
 
+    def getToolTip(self):
+        return self.mToolTip
+
     def getNo(self):
         return self.mNo
 
@@ -47,6 +51,8 @@ class Unit:
             ret[1]["title"] = self.mTitle
         if self.mRenderMode:
             ret[1]["render"] = self.mRenderMode
+        if self.mToolTip:
+            ret[1]["tooltip"] = self.mToolTip
         return ret
 
     def checkResearchBlock(self, research_mode):

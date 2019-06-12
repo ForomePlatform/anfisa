@@ -31,7 +31,7 @@ def defineViewSchema():
 
     aspects["view_gen"].setAttributes([
         AttrH("genes", title = "Gene(s)", is_seq = True),
-        AttrH("hg19"),
+        AttrH("hg19", tooltip = "Tooltip for hg19"),
         AttrH("hg38"),
         AttrH("worst_annotation", title = "Worst Annotation"),
         AttrH("canonical_annotation", title = "Canonical Annotation"),

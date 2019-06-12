@@ -38,56 +38,57 @@ class FilterPrepareSetH:
 
     def intValueUnit(self, name, path, title = None,
             default_value = None, diap = None,
-            render_mode = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.IntConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup, render_mode,
+            len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, default_value, diap))
 
     def floatValueUnit(self, name, path, title = None,
             default_value = None, diap = None,
-            render_mode = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.FloatConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup, render_mode,
+            len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, default_value, diap))
 
     def statusUnit(self, name, path, title = None,
             variants = None, default_value = "False",
             accept_other_values = False,
-            render_mode = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup, render_mode,
+            len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, True, variants, default_value,
             accept_other_values = accept_other_values))
 
     def presenceUnit(self, name, var_info_seq, title = None,
-            render_mode = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.PresenceConvertor(name, title,
-            len(self.mUnits), self.mCurVGroup, render_mode,
+            len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, var_info_seq))
 
     def multiStatusUnit(self, name, path, title = None,
             variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False,
-            render_mode = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
-            len(self.mUnits), self.mCurVGroup, render_mode,
+            len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, False, variants, default_value,
             separators = separators, compact_mode = compact_mode,
             accept_other_values = accept_other_values))
 
     def zygositySpecialUnit(self, name, path, title = None,
             default_value = None, config = None,
-            render_mode = None, research_only = False,):
+            render_mode = None, tooltip = None, research_only = False,):
         return self._addUnit(prep_unit.ZygosityConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup,
-            render_mode, research_only, config, self))
+            render_mode, tooltip, research_only, config, self))
 
     def panelStatusUnit(self, name, unit_base, title = None,
-            render_mode = None, research_only = False, view_path = None):
+            render_mode = None, tooltip = None,
+            research_only = False, view_path = None):
         return self._addUnit(prep_unit.PanelConvertor(name, title,
             len(self.mUnits), self.mCurVGroup,
-            render_mode, research_only, unit_base, view_path))
+            render_mode, tooltip, research_only, unit_base, view_path))
 
     def process(self, rec_no, rec_data):
         result = dict()

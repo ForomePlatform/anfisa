@@ -144,5 +144,7 @@ class AspectH:
                 rows.append([a_name, escape(attr.getTitle()),
                 [[val, class_name]
                     for val, class_name in fld_data[a_name]]])
+                if attr.getToolTip():
+                    rows[-1].append(attr.getToolTip())
         ret["rows"] = rows
         return ret

@@ -17,7 +17,8 @@ def defineFilterSchema():
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     with filters.viewGroup("Variant"):
-        filters.statusUnit("Variant_Class", "/data/variant_class")
+        filters.statusUnit("Variant_Class", "/data/variant_class",
+            tooltip = "Tooltip for Variant class")
         filters.statusUnit("Most_Severe_Consequence",
                            "/data/most_severe_consequence",
                            variants=["transcript_ablation",

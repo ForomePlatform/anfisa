@@ -24,11 +24,12 @@ class AttrH:
 
     #===============================================
     def __init__(self, name, kind = None, title = None,
-            is_seq = False):
+            is_seq = False, tooltip = None):
         self.mAspect = None
         self.mName = name
         self.mTitle = (title if title is not None else name)
         self.mKinds = kind.split() if kind else ["norm"]
+        self.mToolTip = tooltip
         self.mIsSeq = is_seq
         self.mResearchOnly = "research" in self.mKinds
 
@@ -48,6 +49,9 @@ class AttrH:
     def isSeq(self):
         return self.mIsSeq
 
+    def getToolTip(self):
+        return self.mToolTip
+
     def hasKind(self, kind):
         return kind in self.mKinds
 
@@ -65,14 +69,17 @@ class AttrH:
 
     #===============================================
     def dump(self):
-        return {
+        ret = {
             "name": self.mName, "kind": " ".join(self.mKinds),
             "title": self.mTitle, "is_seq": self.mIsSeq}
+        if self.mToolTip:
+            ret["tooltip"] = self.mToolTip
+        return ret
 
     @classmethod
     def load(cls, data):
         return cls(data["name"], data["kind"], data["title"],
-            is_seq = data["is_seq"])
+            is_seq = data["is_seq"], tooltip = data.get("tooltip"))
 
     #===============================================
     def htmlRepr(self, obj, top_rec_obj):

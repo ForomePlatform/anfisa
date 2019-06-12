@@ -1,3 +1,4 @@
+from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
@@ -96,7 +97,11 @@ def _reportAspect(output, rep_data):
                     (n_col + 1))
                 continue
             print >> output, '<tr>'
-            print >> output, '<td class="title">%s</td>' % attr_data[1]
+            if len(attr_data) > 3:
+                print >> output, '<td class="title" title="%s">%s</td>' % (
+                    escape(attr_data[3]), attr_data[1])
+            else:
+                print >> output, '<td class="title">%s</td>' % attr_data[1]
             for val, class_name in attr_data[2]:
                 print >> output, '<td class="%s">%s</td>' % (class_name, val)
             print >> output, '</tr>'

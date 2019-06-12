@@ -601,6 +601,7 @@ function fillEnumStat(items, unit_map, list_stat_rep,
         unit_name   = unit_stat[1]["name"];
         unit_title  = unit_stat[1]["title"];
         unit_vgroup = unit_stat[1]["vgroup"];
+        unit_tooltip = unit_stat[1]["tooltip"];
         unit_map[unit_name] = idx;
         if (group_title != unit_vgroup || unit_vgroup == null) {
             if (group_title != false) {
@@ -614,11 +615,14 @@ function fillEnumStat(items, unit_map, list_stat_rep,
             }
         }
         list_stat_rep.push('<div id="stat--' + unit_name + 
-            '" class="stat-unit" onclick="sUnitsH.selectUnit(\'' + 
-            unit_name + '\');">');
+            '" class="stat-unit" ');
+        if (unit_tooltip) 
+            list_stat_rep.push('title="' + escapeText(unit_tooltip) + '" ');
+
+        list_stat_rep.push('onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
         list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
             unit_name + '</span>');
-        if (unit_title)
+        if (unit_title) 
             list_stat_rep.push('<span class="stat-unit-title">' + 
                 unit_title + '</span>');
         list_stat_rep.push('</div>')

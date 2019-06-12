@@ -160,6 +160,7 @@ Method "/reccnt"
                                 1: kind (*)
                             ]
                           ], ...
+                        3: (if present) tooltip
                     ], ...
                 ]
             
