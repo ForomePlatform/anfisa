@@ -90,7 +90,7 @@ def defineFilterSchema():
         filters.floatValueUnit("gnomAD_AF",
             "/_filters/gnomad_af_fam",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (family)",
+            title = "gnomAD Allele Frequency (family)", tooltip="gnomAD Overall Allele Frequency",
             render_mode = "log,<")
         filters.floatValueUnit("gnomAD_AF_Exomes",
             "/_filters/gnomad_db_exomes_af",
@@ -105,16 +105,16 @@ def defineFilterSchema():
         filters.floatValueUnit("gnomAD_AF_Proband",
             "/_filters/gnomad_af_pb",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (proband)",
+            title = "gnomAD Allele Frequency (proband)", tooltip="gnomAD Overall Allele Frequency for the allele present in proband",
             render_mode = "log,<")
         filters.floatValueUnit("gnomAD_PopMax_AF",
-            "/_filters/gnomad_popmax_af",
+            "/_filters/gnomad_popmax_af", tooltip="Maximum allele frequency across all populations",
             diap = (0., 1.), default_value = 0.,
             title = "gnomAD PopMax Allele Frequency",
             render_mode = "log,<")
         filters.statusUnit("gnomAD_PopMax",
             "/_filters/gnomad_popmax", default_value = "None",
-            title = "gnomAD PopMax Ancestry")
+            title = "gnomAD PopMax Ancestry", tooltip="Population that has the maximum allele frequency")
         filters.intValueUnit("gnomAD_PopMax_AN",
             "/_filters/gnomad_popmax_an",
             default_value = 0,
