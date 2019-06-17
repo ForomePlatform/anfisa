@@ -51,7 +51,8 @@ if __name__ == '__main__':
     app_config = loadJSonConfig(run_args.config)
     mode = run_args.mode
 
-    cases = read_vault(app_config["data-vault"], run_args.names)
+    vault = app_config["data-vault"]
+    cases = read_vault(vault, run_args.names)
     n = 0
     for c in cases:
         p = find_json(c, path_to_json)
@@ -59,6 +60,7 @@ if __name__ == '__main__':
             print "Annotated json not found for: {}, skipping".format(c)
             continue
         refresh_case(app_config, c, p, mode)
+        os.chmod(os.path.join(vault,c), 777)
         n = n + 1
         print "Refreshed: {}, {}/{}".format(c, n, len(cases))
 
