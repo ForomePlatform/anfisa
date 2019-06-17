@@ -60,7 +60,7 @@ if __name__ == '__main__':
             print "Annotated json not found for: {}, skipping".format(c)
             continue
         refresh_case(app_config, c, p, mode)
-        os.chmod(os.path.join(vault,c), 777)
+        #os.chmod(os.path.join(vault,c), 777)
         n = n + 1
         print "Refreshed: {}, {}/{}".format(c, n, len(cases))
 
