@@ -23,7 +23,9 @@ def find_json(case_name, path_pattern):
     f = "{}.gz".format(f)
     if (os.path.isfile(f)):
         return f
-    raise Exception("Annotated json not found: {}".format(f))
+    #raise Exception("Annotated json not found: {}".format(f))
+    return None
+
 
 def refresh_case(app_config, case_name, path_to_json, mode):
     dropDataSet(app_config, case_name, mode, True)
@@ -53,6 +55,8 @@ if __name__ == '__main__':
     n = 0
     for c in cases:
         p = find_json(c, path_to_json)
+        if (not p):
+            print "Annotated json not found for: {}, skipping".format(c)
         refresh_case(app_config, c, p, mode)
         n = n + 1
         print "Refreshed: {}, {}/{}".format(c, n, len(cases))
