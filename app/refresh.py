@@ -57,6 +57,7 @@ if __name__ == '__main__':
         p = find_json(c, path_to_json)
         if (not p):
             print "Annotated json not found for: {}, skipping".format(c)
+            continue
         refresh_case(app_config, c, p, mode)
         n = n + 1
         print "Refreshed: {}, {}/{}".format(c, n, len(cases))
