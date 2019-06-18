@@ -107,9 +107,13 @@ class Index:
 
     def cacheFilter(self, filter_name, cond_seq, time_label):
         op_env = CondOpEnv(self.mCondEnv, None, cond_seq)
-        self.mFilterCache[filter_name] = (
-            op_env, self.evalCondition(op_env.getResult()),
-            self.checkResearchBlock(cond_seq), time_label)
+        try:
+            cond_entry = (op_env, self.evalCondition(op_env.getResult()),
+                self.checkResearchBlock(cond_seq), time_label)
+        except:
+            return False
+        self.mFilterCache[filter_name] = cond_entry
+        return True
 
     def dropFilter(self, filter_name):
         if filter_name in self.mFilterCache:
