@@ -185,49 +185,50 @@ def checkDataSet(app_config, name, kind):
         os.path.exists(ds_dir), os.path.exists(ds_dir + "/active")
 
 #===============================================
-parser = ArgumentParser()
-parser.add_argument("-c", "--config", default = "anfisa.json",
-    help = "Configuration file,  default=anfisa.json")
-parser.add_argument("-m", "--mode",
-    help = "Mode: create/drop")
-parser.add_argument("-k", "--kind",  default = "ws",
-    help = "Kind of dataset: ws/xl, default=ws")
-parser.add_argument("-s", "--source", help="Annotated json")
-parser.add_argument("-f", "--force", action = "store_true",
-    help = "Force removal")
-parser.add_argument("-C", "--nocoord", action = "store_true",
-    help = "Druid: no use coordinator")
-parser.add_argument("--mongo", default = "",
-    help = "Mongo name, default=name")
-parser.add_argument("--reportlines", type = int, default = 100,
-    help = "Portion for report lines, default=100")
-parser.add_argument("name", nargs = 1, help = "Dataset name")
-run_args = parser.parse_args()
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument("-c", "--config", default = "anfisa.json",
+        help = "Configuration file,  default=anfisa.json")
+    parser.add_argument("-m", "--mode",
+        help = "Mode: create/drop")
+    parser.add_argument("-k", "--kind",  default = "ws",
+        help = "Kind of dataset: ws/xl, default=ws")
+    parser.add_argument("-s", "--source", help="Annotated json")
+    parser.add_argument("-f", "--force", action = "store_true",
+        help = "Force removal")
+    parser.add_argument("-C", "--nocoord", action = "store_true",
+        help = "Druid: no use coordinator")
+    parser.add_argument("--mongo", default = "",
+        help = "Mongo name, default=name")
+    parser.add_argument("--reportlines", type = int, default = 100,
+        help = "Portion for report lines, default=100")
+    parser.add_argument("name", nargs = 1, help = "Dataset name")
+    run_args = parser.parse_args()
 
-app_config = loadJSonConfig(run_args.config)
+    app_config = loadJSonConfig(run_args.config)
 
-assert os.path.isdir(app_config["data-vault"])
+    assert os.path.isdir(app_config["data-vault"])
 
-if run_args.kind == "xl":
-    DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
+    if run_args.kind == "xl":
+        DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
 
-if run_args.mode == "create":
-    if run_args.force:
-        dropDataSet(app_config, run_args.name[0],
-            run_args.kind, True)
-    time_start = datetime.now()
-    print >> sys.stderr, "Started at", time_start
-    createDataSet(app_config, run_args.name[0], run_args.kind,
-        run_args.mongo, run_args.source, run_args.reportlines)
-    time_done = datetime.now()
-    print >> sys.stderr, "Finished at", time_done, "for", \
-        (time_done - time_start)
-elif run_args.mode == "drop":
-    dropDataSet(app_config, run_args.name[0], run_args.kind, False)
-elif run_args.mode == "check":
-    checkDataSet(app_config, run_args.name[0], run_args.kind)
-else:
-    print >> sys.stderr, "Bad mode:", run_args.mode
+    if run_args.mode == "create":
+        if run_args.force:
+            dropDataSet(app_config, run_args.name[0],
+                run_args.kind, True)
+        time_start = datetime.now()
+        print >> sys.stderr, "Started at", time_start
+        createDataSet(app_config, run_args.name[0], run_args.kind,
+            run_args.mongo, run_args.source, run_args.reportlines)
+        time_done = datetime.now()
+        print >> sys.stderr, "Finished at", time_done, "for", \
+            (time_done - time_start)
+    elif run_args.mode == "drop":
+        dropDataSet(app_config, run_args.name[0], run_args.kind, False)
+    elif run_args.mode == "check":
+        checkDataSet(app_config, run_args.name[0], run_args.kind)
+    else:
+        print >> sys.stderr, "Bad mode:", run_args.mode
 
 #===============================================
 

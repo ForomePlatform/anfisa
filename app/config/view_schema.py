@@ -30,9 +30,9 @@ def defineViewSchema():
             mode = "string")])
 
     aspects["view_gen"].setAttributes([
-        AttrH("genes", title = "Gene(s)", is_seq = True),
-        AttrH("hg19", tooltip = "Tooltip for hg19"),
-        AttrH("hg38"),
+        AttrH("genes", title = "Gene(s)", is_seq = True, tooltip = "Gene Symbol (Ensembl classification)"),
+        AttrH("hg19", tooltip = "Genetic coordinates in HG19 Assembly"),
+        AttrH("hg38", tooltip = "Genetic coordinates in HG38 Assembly"),
         AttrH("worst_annotation", title = "Worst Annotation"),
         AttrH("canonical_annotation", title = "Canonical Annotation"),
         AttrH("refseq_transcript_canonical",
@@ -69,19 +69,21 @@ def defineViewSchema():
         AttrH("proband_genotype", title = "Proband Genotype"),
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
-        AttrH("igv", title = "IGV", kind = "place")])
+        AttrH("igv", title = "IGV", kind = "place",
+              tooltip = "Open this variant in local IGV (https://software.broadinstitute.org/software/igv/)")])
 
     aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),
-        AttrH("qd", title = "Quality by Depth"),
+        AttrH("qd", title = "Quality by Depth",
+              tooltip = "The QUAL score normalized by allele depth (AD) for a variant. This annotation puts the variant confidence QUAL score into perspective by normalizing for the amount of coverage available. Because each read contributes a little to the QUAL score, variants in regions with deep coverage can have artificially inflated QUAL scores, giving the impression that the call is supported by more evidence than it really is. To compensate for this, we normalize the variant confidence by depth, which gives us a more objective picture of how well supported the call is."),
         AttrH("mq", title = "Mapping Quality"),
-        AttrH("variant_call_quality", title = "Variant Call Quality"),
-        AttrH("strand_odds_ratio", title = "Strand Odds Ratio"),
-        AttrH("fs", title = "Fisher Strand Bias"),
-        AttrH("allelic_depth", title = "Allelic Depth", is_seq = True),
-        AttrH("read_depth", title = "Read Depth"),
-        AttrH("ft", title = "FILTERs"),
-        AttrH("genotype_quality", title = "Genotype Quality")])
+        AttrH("variant_call_quality", title = "Variant Call Quality", tooltip = "QUAL tells you how confident we are that there is some kind of variation at a given site. The variation may be present in one or more samples."),
+        AttrH("strand_odds_ratio", title = "Strand Odds Ratio", tooltip = ""),
+        AttrH("fs", title = "Fisher Strand Bias", tooltip = ""),
+        AttrH("allelic_depth", title = "Allelic Depth", is_seq = True, tooltip = "AD is the unfiltered allele depth, i.e. the number of reads that support each of the reported alleles. All reads at the position (including reads that did not pass the variant caller's filters) are included in this number, except reads that were considered uninformative. Reads are considered uninformative when they do not provide enough statistical evidence to support one allele over another."),
+        AttrH("read_depth", title = "Read Depth", tooltip="DP - is a number of times that base pair locus was read"),
+        AttrH("ft", title = "FILTERs", tooltip = "This field contains the name(s) of any filter(s) that the variant fails to pass, or the value PASS if the variant passed all filters. If the FILTER value is ., then no filtering has been applied to the records."),
+        AttrH("genotype_quality", title = "Genotype Quality", tooltip = "GQ tells you how confident we are that the genotype we assigned to a particular sample is correct. It is simply the second lowest PL, because it is the difference between the second lowest PL and the lowest PL (always 0).")])
 
     aspects["view_gnomAD"].setAttributes([
         AttrH("allele", title = "Allele"),

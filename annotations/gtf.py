@@ -138,3 +138,34 @@ if __name__ == '__main__':
         print lookup.lookup(pos=16371067, args={"gene":"CLCNKB", "transcript":"ENST00000375679"})
 
         print gtf.get_gene(5, 70818177)
+
+        print "==================================="
+
+        lookup = gtf.prepare_lookup(gene=True)
+        lookup.verbose = True
+        print lookup.lookup(pos=6484880, args={"gene":"HES2"})
+        print lookup.lookup(pos=6484880, args={"gene":"ESPN"})
+        print lookup.lookup(pos=6500660, args={"gene":"ESPN"})
+        print lookup.lookup(pos=6501044, args={"gene":"ESPN"})
+        print lookup.lookup(pos=6520312, args={"gene":"ESPN"})
+        print lookup.lookup(pos=12058802, args={"gene":"MFN2"})
+        print lookup.lookup(pos=12062017, args={"gene":"MFN2"})
+        print lookup.lookup(pos=12065841, args={"gene":"MFN2"})
+        print lookup.lookup(pos=16360550, args={"gene":"CLCNKA"})
+        print lookup.lookup(pos=16370215, args={"gene":"CLCNKB"})
+        print lookup.lookup(pos=16371067, args={"gene":"CLCNKB"})
+
+        print "==================================="
+
+        lookup = gtf.prepare_lookup(chromosome=True)
+        lookup.verbose = True
+        print lookup.lookup(pos=6484880, args={"chromosome":"1"})
+        print lookup.lookup(pos=6484880, args={"chromosome":"1"})
+        print lookup.lookup(pos=6500660, args={"chromosome":"1"})
+        print lookup.lookup(pos=6501044, args={"chromosome":"1"})
+        print lookup.lookup(pos=6520312, args={"chromosome":"1"})
+        print lookup.lookup(pos=12058802, args={"chromosome":"1"})
+        print lookup.lookup(pos=12062017, args={"chromosome":"1"})
+        print lookup.lookup(pos=16360550, args={"chromosome":"1"})
+        print lookup.lookup(pos=16370215, args={"chromosome":"1"})
+        print lookup.lookup(pos=16371067, args={"chromosome":"1"})
