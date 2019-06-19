@@ -35,9 +35,13 @@ class IGV_AttrH(AttrH):
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             top_rec_obj["data"]["seq_region_name"],
             max(0, start - 250), end + 250)
-        return ('<span title="Run IGV application...">' +
-            ('<a href="%s">link</a>' % link) +
-            '<span class="igv_comment">(for this link to work, make sure ' +
-            '<a href="https://software.broadinstitute.org/software/igv/' +
-            'download" target="_blank"> the IGV app</a> '+
-            'is running on your computer)</span></span>', "norm")
+        # return ('<span title="Run IGV application...">' +
+        #     ('<a href="%s">link</a>' % link) +
+        #     '<span class="igv_comment">(for this link to work, make sure ' +
+        #     '<a href="https://software.broadinstitute.org/software/igv/' +
+        #     'download" target="_blank"> the IGV app</a> '+
+        #     'is running on your computer)</span></span>', "norm")
+        return ('<table><tr><td><span title="For this link to work, make sure that IGV is running on your computer">' +
+            ('<a href="%s">View Variant in IGV</a>' % link) + ' </span></td>' +
+            '<td><a href="https://software.broadinstitute.org/software/igv/download" target="_blank">' +
+            'Download IGV</a></td></tr></table>', "norm")
