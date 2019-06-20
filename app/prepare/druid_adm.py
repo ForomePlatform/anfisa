@@ -87,7 +87,10 @@ class DruidAdmin(DruidAgent):
                                 "spatialDimensions" : []},
                             "timestampSpec": {
                                 "column": "time"}}},
-                    "metricsSpec" : [],
+                    "metricsSpec" : [{
+                        "type" : "count",
+                        "name" : "count"
+                    },],
                     "granularitySpec" : {
                         "type" : "uniform",
                         "segmentGranularity" : self.GRANULARITY,
