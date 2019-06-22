@@ -96,7 +96,7 @@ class CompHetsUnit(Unit):
         var_names = cls.sSetup["op-variables"][:]
         if use_default:
             var_names.insert(0, cls.sSetup["Compound_heterozygous"])
-        if len(ds.getFamilyInfo()) != 3:
+        if not ds.getFamilyInfo() or len(ds.getFamilyInfo()) != 3:
             for name in var_names:
                 cond_env.addReservedName(name)
             return False
