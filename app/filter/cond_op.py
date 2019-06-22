@@ -1,3 +1,5 @@
+import traceback, logging
+from StringIO import StringIO
 from .condition import ConditionMaker
 #===============================================
 class CondOpEnv:
@@ -22,24 +24,23 @@ class CondOpEnv:
     def getResult(self):
         return self.mCondEnv.joinAnd(self.mSeq)
 
-    def report(self, ret_handle, with_comp = True):
-        if with_comp and self.mCompChanged:
+    def report(self, ret_handle):
+        if self.mCompData:
             ret_handle["compiled"] = self.mCompData
         if self.mBadIdxs:
             ret_handle["bad_idxs"] = self.mBadIdxs
         names = []
-        for nm in self.mCondEnv.getOperativeNames():
-            if nm not in self.mCompData:
-                names.append(nm)
+        for op_unit in self.mCondEnv.iterOpUnits():
+            if op_unit.getName() not in self.mCompData:
+                names.append(op_unit.getName())
         if names:
             ret_handle["avail_import"] = names
 
     def getActiveOperativeUnits(self, instr_no = None):
         ret = []
-        for unit_no, unit_h, cond_data in self.mOperativeUnitSeq:
-            if instr_no is not None and instr_no < unit_no:
-                break
-            ret.append((unit_h, cond_data))
+        for unit_instr_no, unit_h, cond_data in self.mOperativeUnitSeq:
+            if instr_no is None or instr_no >= unit_instr_no:
+                ret.append((unit_h, cond_data))
         return ret
 
     def parse(self, cond_data):
@@ -68,12 +69,24 @@ class CondOpEnv:
                 else:
                     cond = self.parse(cond_data)
                     self.mSeq.append(cond)
-                actual_cond_data.append(cond_data)
+                    actual_cond_data.append(cond_data)
             except Exception:
+                rep = StringIO()
+                print >> rep, "Bad idx:", cond_data
+                traceback.print_exc(file = rep)
                 self.mBadIdxs.append(idx)
+                logging.warning(rep.getvalue())
 
     def getCondAll(self):
         return self.mCondEnv.getCondAll()
 
     def getCondNone(self):
         return self.mCondEnv.getCondNone()
+
+    def reportAvailImport(self, stat_list):
+        used_names = {stat[1]["name"] for stat  in stat_list}
+        ret = []
+        for unit_h in self.mCondEnv.iterOpUnits():
+            if unit_h.getName() not in used_names:
+                ret.append(unit_h.getName())
+        return ret

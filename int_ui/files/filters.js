@@ -17,6 +17,7 @@ var sUnitsH = {
     mWaiting: null,
     mTimeH: null,
     mDelayMode: null,
+    mCompData: null,
     
     init: function(call_all_stat, call_part_stat, call_ds, delay_mode) {
         this.mCallAllStat = call_all_stat;
@@ -25,14 +26,15 @@ var sUnitsH = {
         this.mDivList = document.getElementById("stat-list");
         this.mDelayMode = delay_mode;
         sFiltersH.init();
+        sOpCondH.init();
         sOpNumH.init();
         sOpEnumH.init();
         this.setup();
     },
     
-    formRqArgs: function(conditions, filter_name, use_ctx, use_delay, add_instr) {
+    formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
         args =  this.mCallDS +
-        "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
         } else {
@@ -40,6 +42,8 @@ var sUnitsH = {
                 args += "&conditions=" + 
                     encodeURIComponent(JSON.stringify(conditions)); 
         }
+        if (this.mCompData)
+            args += "&compiled=" + encodeURIComponent(JSON.stringify(this.mCompData));        
         if (add_instr)
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
         if (use_delay && this.mDelayMode)
@@ -56,7 +60,7 @@ var sUnitsH = {
         this.mDivList.className = "wait";
         this.mWaiting = true;
         ajaxCall(this.mCallAllStat, 
-            this.formRqArgs(conditions, filter_name, true, true, add_instr), 
+            this.formRqArgs(conditions, filter_name, true, add_instr), 
             function(info){sUnitsH._setup(info);})
     },
 
@@ -65,6 +69,7 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mRqId  = info["rq_id"];
+        this.mCompData = info["compiled"];
         this.mExportFormed = false;
         document.getElementById("list-report").innerHTML = 
             (this.mCount == this.mTotal)? 
@@ -72,16 +77,28 @@ var sUnitsH = {
         if (sSubViewH)
             sSubViewH.reset(this.mCount);
         this.mItems = info["stat-list"];
-        sConditionsH.setup(info["conditions"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
+        sOpCondH.setupAvailImport(info["avail-import"]);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
         fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
+        sConditionsH.setup(info["conditions"], info["bad_idxs"]);
         
         var unit_name = this.mCurUnit;
+        if (unit_name) {
+            var unit_idx = null;
+            for (idx = 0; idx < this.mItems.length; idx++) {
+                if (unit_name == this.mItems[idx][1]["name"]) {
+                    unit_idx = idx;
+                    break;
+                }                    
+            }
+            unit_name = (unit_idx !=null)? unit_name:null;
+        }
+        
         if (! unit_name) 
             unit_name = this.mItems[0][1]["name"];
         this.mCurUnit = null;
@@ -101,8 +118,12 @@ var sUnitsH = {
     getRqArgs: function(no_ctx) {
         ret = this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
-        if (!no_ctx)
+        if (!no_ctx) {
             ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+            if (this.mCompData)
+                ret += "&compiled=" + 
+                    encodeURIComponent(JSON.stringify(this.mCompData));        
+        }
         return ret;
     },
     
@@ -180,7 +201,8 @@ var sUnitsH = {
             return;
         if (this.mCurUnit != null) {
             var prev_el = this._unitDivEl(this.mCurUnit);
-            prev_el.className = prev_el.className.replace(" cur", "");
+            if (prev_el)
+                prev_el.className = prev_el.className.replace(" cur", "");
         }
         this.mCurUnit = stat_unit;
         this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
@@ -286,6 +308,21 @@ var sOpFilterH = {
         this._onChangeFilter();
     },
 
+    addCondition: function(new_cond, idx) {
+        new_seq = sConditionsH.getConditions().slice();
+        if (idx == undefined)
+            new_seq.push(new_cond);
+        else
+            new_seq.splice(idx, 0, new_cond);
+        this._updateConditions(new_seq);
+    },
+    
+    deleteCondition: function(idx_to_remove) {
+        new_seq = sConditionsH.getConditions().slice();
+        new_seq.splice(idx_to_remove, 1);
+        this._updateConditions(new_seq);
+    },
+    
     modify: function(action) {
         if (action == "add" || action == "update") {
             new_seq = sOpCondH.applyCondition(
@@ -330,30 +367,38 @@ var sOpFilterH = {
 /**************************************/
 var sConditionsH = {
     mList: [],
+    mBadIdxs: null,
     mCurCondIdx: null,
 
-    setup: function(cond_list) {
+    setup: function(cond_list, bad_idxs) {
         this.mList = (cond_list)? cond_list:[];
+        this.mBadIdxs = (bad_idxs)? bad_idxs:[];
         var list_cond_rep = [];
         for (idx = 0; idx < this.mList.length; idx++) {
             cond = this.mList[idx];
             list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
-                'onclick="sConditionsH.selectCond(\'' + idx + '\');">');
-            list_cond_rep.push('&bull;&emsp;' + getCondDescription(cond, false));
+                'onclick="sConditionsH.selectCond(\'' + idx + '\');">&bull;&emsp;');
+            var descr = getCondDescription(cond, false);
+            if (this.mBadIdxs.indexOf(idx) >= 0) {
+                list_cond_rep.push('<button onclick="sConditionsH.delBadCond(' + idx + 
+                    ')">delete it</button>&emsp;<s>' + descr + '</s>');
+            } else {
+                list_cond_rep.push(descr)
+            }
             list_cond_rep.push('</div>')
         }
         document.getElementById("cond-list").innerHTML = list_cond_rep.join('\n');
         var cond_idx = (this.mCurCondIdx != null && this.mCurCondIdx < this.mList.length)?
             this.mCurCondIdx: this.mList.length - 1;
         this.mCurCondIdx = null;
-        if (cond_idx >= 0)
-            this.selectCond(cond_idx);
+        if (cond_idx >= 0 && this.mBadIdxs.indexOf(cond_idx) < 0)
+            this.selectCond(cond_idx, true);
     },
     
     selectCond: function(cond_no, force_it) {
         if (!force_it && this.mCurCondIdx == cond_no) 
             return;
-        if (cond_no != null) {
+        if (cond_no != null && this.mBadIdxs.indexOf(cond_no) < 0) {
             new_cond_el = document.getElementById("cond--" + cond_no);
             if (new_cond_el == null) 
                 return;
@@ -380,7 +425,7 @@ var sConditionsH = {
             conditions = this.mList;
         }
         add_instr = (zone_data == null)? null: ["zone", JSON.stringify(zone_data)];
-        return sUnitsH.formRqArgs(conditions, filter_name, false, false, add_instr);
+        return sUnitsH.formRqArgs(conditions, filter_name, false, add_instr);
     },
         
     getConditions: function() {
@@ -405,10 +450,16 @@ var sConditionsH = {
 
     findCond: function(unit_name, cond_mode) {
         if (this.mCurCondIdx != null && 
-                this.mList[this.mCurCondIdx][1] == unit_name)
+                this.mBadIdxs.indexOf(this.mCurCondIdx) < 0 &&
+                this.mList[this.mCurCondIdx][1] == unit_name &&
+                this.mList[this.mCurCondIdx][0] != "import")
             return this.mCurCondIdx;
         for (idx = 0; idx < this.mList.length; idx++) {
+            if (this.mBadIdxs.indexOf(idx) >= 0)
+                continue;
             if (this.mList[idx][1] == unit_name) {
+                if (this.mList[idx][0] == "import")
+                    continue;
                 if (cond_mode == undefined || this.mList[idx][2] == cond_mode)
                     return idx;
             }
@@ -436,9 +487,17 @@ var sConditionsH = {
             return cur_filter + " in work";
         return null;
     },
-    
+
     preSelectCond: function(idx) {
         this.mCurCondIdx = idx;
+    },
+
+    delBadCond: function(idx) {
+        if (this.mBadIdxs.indexOf(idx) < 0)
+            return;
+        if (this.mCurCondIdx != null && this.mCurCondIdx > idx)
+            this.mCurCondIdx -= 1;
+        sOpFilterH.deleteCondition(idx);
     }
 };
 
@@ -448,6 +507,31 @@ var sOpCondH = {
     mCondition: null,
     mIdxToUpdate: null,
     mIdxToAdd: null,
+    mBtnImportMenu: null,
+    mDivImportList: null,
+    mAvailImportList: null,
+    
+    init: function() {
+        this.mBtnImportMenu = document.getElementById("filter-import-op");
+        this.mDivImportList = document.getElementById("filters-import-op-list");
+    },
+    
+    setupAvailImport: function(avail_list) {
+        this.mDivImportList.style.display = "hidden";
+        this.mAvailImportList = avail_list;
+        if (this.mAvailImportList) {
+            var rep = [];
+            for (var j = 0; j < this.mAvailImportList.length; j++)
+                rep.push('<a class="drop" onclick="sOpCondH.doImport(\'' + 
+                    this.mAvailImportList[j] + '\');">import ' + 
+                    this.mAvailImportList[j] + '</a>');            
+            this.mDivImportList.innerHTML = rep.join('\n');
+            this.mBtnImportMenu.disabled = false;
+        } else {
+            this.mDivImportList.innerHTML = "";
+            this.mBtnImportMenu.disabled = true;
+        }
+    },
     
     onUnitSelect: function() {
         unit_title = sUnitsH.getCurUnitTitle();
@@ -557,6 +641,11 @@ var sOpCondH = {
             document.getElementById("filter-" + action + "-cond").disabled = 
                 avail_actions.indexOf(action) < 0;
         }
+    },
+    
+    doImport: function(imp_name) {
+        sConditionsH.preSelectCond(sConditionsH.getConditions().length);
+        sOpFilterH.addCondition(["import", imp_name])
     }
 };
 
@@ -566,7 +655,6 @@ var sFiltersH = {
     mCurOp: null,
     mSelName: null,
     mComboName: null,
-    mDivOpList: null,
     mBtnOp: null,
     
     mAllList: [],
@@ -578,9 +666,7 @@ var sFiltersH = {
         this.mInpName   = document.getElementById("filter-name-filter");
         this.mSelName   = document.getElementById("filter-name-filter-list");
         this.mComboName = document.getElementById("filter-name-combo");
-        this.mDivOpList  = document.getElementById("filters-op-list");
         this.mBtnOp     = document.getElementById("filter-flt-op");
-        sViewH.addToDrop(this.mDivOpList);
     },
 
     setup: function(filter_list) { // reduced monitor.js//setupNamedFilters()
@@ -668,17 +754,6 @@ var sFiltersH = {
     },
     
     clearOpMode: function() {
-    },
-
-    menu: function() {
-        if (this.mDivOpList.style.display != "none") {
-            sViewH.dropOff();
-            this.update();
-            return;
-        }
-        this.update();
-        sViewH.dropOff();
-        this.mDivOpList.style.display = "block";
     },
 
     select: function() {

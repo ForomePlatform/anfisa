@@ -27,21 +27,12 @@ class XLDataset(DataSet):
             getDSAgent(self.getMongoName()))
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mCondEnv = XL_CondEnv()
-
-        reserved_names = set()
-        self.mOpUnits = []
-        supp_h = CompHetsUnit(self)
-        reserved_names.add(supp_h.getName())
-        if supp_h.isActual():
-            self.mOpUnits.append(supp_h)
-            self.mCondEnv.addOperativeUnit(supp_h)
-        else:
-            self.mCondEnv.addReservedName(supp_h.getName())
         self.mCondEnv.addReservedName("_ord")
+        CompHetsUnit.setupCondEnv(self.mCondEnv, self, True)
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
-            if unit_data["name"] in reserved_names:
+            if self.mCondEnv.nameIsReserved(unit_data["name"]):
                 continue
             xl_unit = XL_Unit.create(self, unit_data)
             if xl_unit is not None:
@@ -56,7 +47,6 @@ class XLDataset(DataSet):
                 if self.mDruidAgent.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, cond_seq, time_label)
 
-
     def getDruidAgent(self):
         return self.mDruidAgent
 
@@ -69,23 +59,21 @@ class XLDataset(DataSet):
     def getUnit(self, name):
         return self.mUnitDict.get(name)
 
-    def getOptionalUnit(self, unit_name):
-        for op_unit in self.mOpUnits:
-            if op_unit.getName() == unit_name:
-                return op_unit
-        return None
+    def getIndex(self):
+        return self
 
     def makeAllStat(self, condition, repr_context,
             op_env, time_end, point_no = None):
-        ret = []
+        active_stat_list = []
         for unit_h, unit_comp in op_env.getActiveOperativeUnits(point_no):
             if time_end is False:
-                ret.append(unit_h.prepareStat())
+                active_stat_list.append(unit_h.prepareStat())
             else:
-                ret.append(unit_h.makeCompStat(
+                active_stat_list.append(unit_h.makeCompStat(
                     condition, unit_comp, repr_context))
             if time_end is not None and time() > time_end:
                 time_end = False
+        ret = []
         for unit_h in self.mUnits:
             if unit_h.isScreened():
                 continue
@@ -95,6 +83,12 @@ class XLDataset(DataSet):
             ret.append(unit_h.makeStat(condition, repr_context))
             if time_end is not None and time() > time_end:
                 time_end = False
+        for act_stat in active_stat_list:
+            pos_ins = 0
+            for idx, stat in enumerate(ret):
+                if stat[1].get("vgroup") == act_stat[1].get("vgroup"):
+                    pos_ins = idx + 1
+            ret.insert(pos_ins, act_stat)
         return ret
 
     def makeSelectedStat(self, unit_names, condition, repr_context,
@@ -357,11 +351,12 @@ class XLDataset(DataSet):
                 cond_seq = self.mFilterCache[filter_name][0]
         op_env = CondOpEnv(self.mCondEnv, None, cond_seq)
         condition = op_env.getResult()
+        stat_list = self.makeAllStat(condition, repr_context, op_env, time_end)
         ret = {
             "total": self.getTotal(),
             "count": self.evalTotalCount(condition),
-            "stat-list": self.makeAllStat(condition, repr_context,
-                op_env, time_end),
+            "stat-list": stat_list,
+            "avail-import": op_env.reportAvailImport(stat_list),
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
             "conditions": cond_seq,

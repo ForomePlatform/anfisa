@@ -40,6 +40,11 @@ div#xl-list {
     flex-grow: 1;
 }
 
+div#filters-import-op-list {
+    left: -200px;
+    text-align: left;
+}
+
 /********************Top controls*****************************/
 div#xl-info {
     padding: 3px 10px;

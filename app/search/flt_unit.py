@@ -37,6 +37,9 @@ class FilterUnit(Unit):
     def fillRecord(self, obj, record):
         assert False
 
+    def evalStat(self, condition):
+        return self.mIndex.evalStat(self, condition)
+
 #===============================================
 class NumericValueUnit(FilterUnit):
     def __init__(self, index, dc_collection, unit_data):
@@ -167,9 +170,9 @@ class ZygosityComplexUnit(FilterUnit):
         self.mVariantSet = VariantSet([labels[key]
             for key in ("homo_recess", "x_linked", "dominant", "compens")])
         self.getIndex().getCondEnv().addSpecialUnit(self)
-        for idx in range(len(self.mFamilyInfo)):
+        for idx, col in enumerate(self.mColumns):
             self.getIndex().getCondEnv().addReservedName(
-                "%s_%d" % (self.getName(), idx))
+                col.getName(), col.recordValue)
 
     def setup(self):
         self.mXCondition = self.getIndex().getCondEnv().parse(

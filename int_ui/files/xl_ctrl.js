@@ -191,7 +191,7 @@ var sSubViewH = {
             sViewH.modalOn(this.mDivBack);
             this.updateSize();
         } else
-            ajaxCall("xl_list", sUnitsH.getRqArgs(false), 
+            ajaxCall("xl_list", sUnitsH.getRqArgs(), 
                 function(info){sSubViewH._load(info);})            
     },
 

@@ -26,6 +26,7 @@ class Workspace(DataSet):
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
+        self.mIndex.setup()
         for filter_name, cond_seq, time_label in self.mMongoWS.getFilters():
             if self.mIndex.goodOpFilterName(filter_name):
                 try:

@@ -39,6 +39,8 @@ function getCondDescription(cond, short_form) {
                 rep_var = sZygosityH.getUnitTitle(cond[2]);
         }
         else {
+            if (cond[0] == "import")
+                return "import " + cond[1];
             return "???";
         }
     }

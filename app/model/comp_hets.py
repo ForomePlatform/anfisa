@@ -91,23 +91,32 @@ class CompHetsMarkupBatch:
 class CompHetsUnit(Unit):
     sSetup = AnfisaConfig.configOption("zygosity.setup")
 
-    def __init__(self, ds):
+    @classmethod
+    def setupCondEnv(cls, cond_env, ds, use_default = False):
+        var_names = cls.sSetup["op-variables"][:]
+        if use_default:
+            var_names.insert(0, cls.sSetup["Compound_heterozygous"])
+        if len(ds.getFamilyInfo()) != 3:
+            for name in var_names:
+                cond_env.addReservedName(name)
+            return False
+        for nm in var_names:
+            cond_env.addOperativeUnit(cls(ds, nm))
+        return True
+
+    def __init__(self, ds, name):
         Unit.__init__(self, {
-            "name": self.sSetup["Compound_heterozygous"],
-            "title": self.sSetup["Compound_heterozygous"],
+            "name": name,
+            "title": name,
             "kind": "enum",
+            "vgroup": self.sSetup["vgroup"],
             "research": False,
             "no": -1})
         self.mDS = ds
+        self.mIndex = ds.getIndex()
 
     def getDS(self):
         return self.mDS
-
-    def isActual(self):
-        try:
-            return len(self.mDS.getFamilyInfo()) == 3
-        except:
-            raise
 
     def _prepareZygConditions(self):
         dim0 = "%s_0" % self.sSetup["zygosity"]
@@ -121,24 +130,25 @@ class CompHetsUnit(Unit):
                 ConditionMaker.condNum(dim2, [1, 1])])
 
     def compile(self, actual_cond_data = None, keep_actual = True):
-        assert self.isActual()
         logging.info("Comp-hets: actual\n" +json.dumps(actual_cond_data))
         instr_and = ["and"]
         if not ConditionMaker.isAll(actual_cond_data):
             instr_and.append(actual_cond_data)
         c_proband, c_parent1, c_parent2 = self._prepareZygConditions()
 
-        genes_unit = self.mDS.getUnit(self.sSetup["Genes"])
+        genes_unit = self.mIndex.getUnit(self.sSetup["Genes"])
         genes1 = set()
-        for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
-                instr_and +[c_proband, c_parent1])):
+        for gene, count in genes_unit.evalStat(
+                self.mIndex.getCondEnv().parse(
+                instr_and + [c_proband, c_parent1])):
             if count > 0:
                 genes1.add(gene)
         logging.info("Eval genes1 for comp-hets: %d" % len(genes1))
         if len(genes1) == None:
             return ConditionMaker.condNone()
         genes2 = set()
-        for gene, count in genes_unit.evalStat(self.mDS.getCondEnv().parse(
+        for gene, count in genes_unit.evalStat(
+                self.mIndex.getCondEnv().parse(
                 instr_and + [c_proband, c_parent2])):
             if count > 0:
                 genes2.add(gene)
@@ -152,9 +162,9 @@ class CompHetsUnit(Unit):
             ["or", c_parent1, c_parent2],
             ConditionMaker.condEnum(genes_unit.getName(),
             sorted(actual_genes))]
-        cond_genes = self.mDS.getCondEnv().parse(cond_genes_data)
+        cond_genes = self.mIndex.getCondEnv().parse(cond_genes_data)
 
-        res_count = self.mDS.evalTotalCount(cond_genes)
+        res_count = self.mIndex.evalTotalCount(cond_genes)
         logging.info("Eval count for comp-hets: %d" % res_count)
 
         if res_count == 0:
@@ -166,13 +176,13 @@ class CompHetsUnit(Unit):
                     "return gene-based cond")
                 return ["genes", cond_genes_data]
 
-            rec_no_seq = self.mDS.evalRecSeq(cond_genes, res_count)
+            rec_no_seq = self.mIndex.evalRecSeq(cond_genes, res_count)
             logging.info("Comp hets: return record-based cond: %d" %
                 len(rec_no_seq))
             cond_rec_data = ConditionMaker.condEnum("_ord", rec_no_seq)
 
-            res_count1 = self.mDS.evalTotalCount(
-                self.mDS.getCondEnv().parse(cond_rec_data))
+            res_count1 = self.mIndex.evalTotalCount(
+                self.mIndex.getCondEnv().parse(cond_rec_data))
             logging.info("Comp hets check: %d" % res_count1)
             return ["records", cond_rec_data]
 
@@ -183,18 +193,18 @@ class CompHetsUnit(Unit):
 
     def makeCompStat(self, condition, calc_data, repr_context):
         ret = self.prepareStat()
-        if len(calc_data) > 0:
-            cond = self.mDS.getCondEnv().parse(calc_data[1])
+        if len(calc_data) > 1:
+            cond = self.mIndex.getCondEnv().parse(calc_data[1])
             if condition is not None:
                 cond = condition.addAnd(cond)
-            good_count = self.mDS.evalTotalCount(cond)
+            good_count = self.mIndex.evalTotalCount(cond)
         else:
             good_count = 0
         return ret + [[["True", good_count]]]
 
     def parseCondition(self, cond_data, comp_data):
         assert cond_data[1] == self.getName()
-        cond = self.mDS.getCondEnv().parse(comp_data[1]
+        cond = self.mIndex.getCondEnv().parse(comp_data[1]
             if "True" in cond_data[3] and len(comp_data) > 0 else [])
         if cond_data[2] == "not":
             return cond.negative()

@@ -390,7 +390,7 @@ var sUnitsH = {
     },
     
     getRqArgs: function(no_ctx) {
-        ret = sDecisionTree.getTreeRqArgs();
+        ret = sDecisionTree.getTreeRqArgs(no_ctx);
         if (!no_ctx)
             ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         return ret;
@@ -689,34 +689,6 @@ var sTreeCtrlH = {
         if (this.mRedoStack.length > 0)
             ret.push("redo");
         return ret;
-    },
-    
-    _updateConditions: function(new_seq, filter_name) {
-        this.mHistory.push(
-            [this.mCurFilter, sConditionsH.getConditions()]);
-        this.mRedoStack = [];
-        sUnitsH.setup(new_seq, filter_name);
-    },
-
-    modify: function(action) {
-        if (action == "undo") {
-            if (this.mHistory.length > 0) {
-                this.mRedoStack.push(
-                    [this.mCurFilter, sConditionsH.getConditions()]);
-                hinfo = this.mHistory.pop();
-                sUnitsH.setup(hinfo[1], hinfo[0]);
-                this._onChangeFilter();
-            }
-        }
-        if (action == "redo") {
-            if (this.mRedoStack.length > 0) {
-                this.mHistory.push(
-                    [this.mCurFilter, sConditionsH.getConditions()]);
-                hinfo = this.mRedoStack.pop();
-                sUnitsH.setup(hinfo[1], hinfo[0]);
-                this._onChangeFilter();
-            }
-        }        
     }
 };
 

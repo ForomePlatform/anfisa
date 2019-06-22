@@ -23,7 +23,6 @@ class DataSet:
         self.mFamilyInfo = FamilyInfo.load(dataset_info.get("family"))
         tuneAspects(self, self.mAspects)
 
-
     def _setFamilyInfo(self, members):
         assert self.mFamilyInfo is None
         self.mFamilyInfo = FamilyInfo(members, members, [], None)
@@ -94,6 +93,3 @@ class DataSet:
                 for key in sorted(versions.keys()):
                     ret.append([key, versions[key]])
         return ret
-
-    def getOptionalUnit(self, unit_name):
-        return None

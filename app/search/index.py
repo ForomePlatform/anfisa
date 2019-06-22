@@ -4,6 +4,7 @@ from copy import deepcopy
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import Solutions
 from app.filter.cond_op import CondOpEnv
+from app.model.comp_hets import CompHetsUnit
 from .column import DataColumnCollecton
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
@@ -26,6 +27,9 @@ class Index:
         assert len(self.mUnitDict) == len(self.mUnits)
         for unit_h in self.mUnits:
             unit_h.setup()
+
+    def setup(self):
+        CompHetsUnit.setupCondEnv(self.mCondEnv, self.mWS)
 
         self.mRecords = []
         with self.mWS._openFData() as inp:
@@ -90,6 +94,15 @@ class Index:
                 rec_no_seq.append(rec_no)
         return rec_no_seq
 
+    def evalTotalCount(self, condition):
+        if condition is None:
+            return self.mWS.getTotal()
+        ret = 0
+        for rec_no in range(self.mWS.getTotal()):
+            if condition(self.mRecords[rec_no]):
+                ret += 1
+        return ret
+
     def _applyCondition(self, rec_no_seq, cond_seq):
         op_env = CondOpEnv(self.mCondEnv, None, cond_seq)
         condition = op_env.getResult()
@@ -128,6 +141,11 @@ class Index:
                 research_mode or not flt_info[2], flt_info[3]])
         return sorted(ret)
 
+    def evalStat(self, unit_h, condition):
+        rec_no_seq = self.getRecNoSeq(None, condition)
+        return unit_h.makeStat(
+            [self.mRecords[rec_no] for rec_no in rec_no_seq])[2]
+
     def makeStatReport(self, filter_name, research_mode,
             op_env, repr_context):
         if filter_name in self.mFilterCache:
@@ -135,22 +153,30 @@ class Index:
         condition = op_env.getResult()
         rec_no_seq = self.getRecNoSeq(filter_name, condition)
         rec_seq = [self.mRecords[rec_no] for rec_no in rec_no_seq]
-        stat_list = []
+        active_stat_list = []
         for unit_h, unit_comp in op_env.getActiveOperativeUnits():
-            stat_list.append(unit_h.makeCompStat(
+            active_stat_list.append(unit_h.makeCompStat(
                 condition, unit_comp, repr_context))
+        stat_list = []
         for unit_h in self.mUnits:
             if (not unit_h.checkResearchBlock(research_mode) and
                     not unit_h.isScreened()):
                 stat_list.append(unit_h.makeStat(rec_seq, repr_context))
+        for act_stat in active_stat_list:
+            pos_ins = 0
+            for idx, stat in enumerate(stat_list):
+                if stat[1].get("vgroup") == act_stat[1].get("vgroup"):
+                    pos_ins = idx + 1
+            stat_list.insert(pos_ins, act_stat)
         ret = {
             "total": self.mWS.getTotal(),
             "count": len(rec_seq),
             "stat-list": stat_list,
+            "avail-import": op_env.reportAvailImport(stat_list),
             "filter-list": self.getFilterList(research_mode),
             "cur-filter": filter_name,
             "conditions": op_env.getCondSeq()}
-        op_env.report(ret, False)
+        op_env.report(ret)
         return ret
 
     def makeUnitStatReport(self, unit_name, condition, repr_context):

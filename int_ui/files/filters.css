@@ -40,6 +40,11 @@
     cursor: pointer;
 } 
 
+div#filters-import-op-list {
+    left: -100px;
+    text-align: left;
+}
+
 /********************Filter controls*****************************/
 
 div#filter-stat, div#filter-conditions {

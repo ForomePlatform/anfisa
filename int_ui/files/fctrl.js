@@ -201,12 +201,14 @@ var sOpEnumH = {
         if (this.mOperationMode != null)
             this.mOperationMode = ["OR", "AND", "NOT"].indexOf(op_mode);
         needs_zeros = false;
-        for (j = 0; j < this.mVariants.length; j++) {
-            var_name = this.mVariants[j][0];
-            if (var_list.indexOf(var_name) < 0)
-                continue;
-            needs_zeros |= (this.mVariants[j][1] == 0);
-            document.getElementById("elcheck--" + j).checked = true;
+        if (var_list) {
+            for (j = 0; j < this.mVariants.length; j++) {
+                var_name = this.mVariants[j][0];
+                if (var_list.indexOf(var_name) < 0)
+                    continue;
+                needs_zeros |= (this.mVariants[j][1] == 0);
+                document.getElementById("elcheck--" + j).checked = true;
+            }
         }
         this.careEnumZeros(needs_zeros);
         this.checkControls();

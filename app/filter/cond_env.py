@@ -8,6 +8,7 @@ class CondEnv:
         self.mEnumUnits = dict()
         self.mOperativeUnits = dict()
         self.mReservedNames = dict()
+        self.mOpUnitSeq = []
 
     def addNumUnit(self, unit_h):
         assert unit_h.getName() not in self.mNumUnits
@@ -24,13 +25,18 @@ class CondEnv:
     def addOperativeUnit(self, unit_h):
         assert unit_h.getName() not in self.mOperativeUnits
         self.mOperativeUnits[unit_h.getName()] = unit_h
+        self.mOpUnitSeq.append(unit_h)
 
-    def addReservedName(self, unit_name):
+    def addReservedName(self, unit_name, rec_func = None):
         if unit_name not in self.mReservedNames:
-            self.mReservedNames[unit_name] = _ReservedUnit(unit_name)
+            self.mReservedNames[unit_name] = _ReservedUnit(
+                unit_name, rec_func)
 
-    def getOperativeNames(self):
-        return sorted(self.mOperativeUnits.keys())
+    def iterOpUnits(self):
+        return iter(self.mOpUnitSeq)
+
+    def nameIsReserved(self, name):
+        return name in self.mReservedNames
 
     def detectUnit(self, unit_name,
             expect_kind = None, use_logging = True):
@@ -109,8 +115,12 @@ class CondEnv:
 
 #===============================================
 class _ReservedUnit:
-    def __init__(self, name):
+    def __init__(self, name, rec_func = None):
         self.mName = name
+        self.mRecFunc = rec_func
 
     def getName(self):
         return self.mName
+
+    def getRecFunc(self):
+        return self.mRecFunc

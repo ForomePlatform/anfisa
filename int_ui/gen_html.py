@@ -414,6 +414,14 @@ def formFilterPannel(output):
             <button id="filter-redo-cond" title="Redo"
                 onclick='sOpFilterH.modify(\"redo\");'> &#8631;
             </button>
+            <div class="dropdown">
+              <button id="filter-import-op" class="op-button drop"
+                    title="Special instructions">
+                &#8285;
+              </button>
+              <div id="filters-import-op-list" class="dropdown-content">
+              </div>
+            </div>
             <span id="close-filter" onclick="filterModOff();">&times;</span>
           </div>
           <div id="filter-cur-cond-text">
@@ -462,16 +470,15 @@ def formFilterPannel(output):
             </div>
           </div>
           <div id="filters-ctrl">
-            <button id="filter-clear-all-cond" class="op-button"
+            <button id="filter-clear-all-cond" class="op-button drop"
                 onclick='sOpFilterH.modify(\"clear-all\");'>
                 Clear
             </button>
             <div class="dropdown">
-              <button id="filter-filters-operations" class="op-button drop"
-                    onclick="sFiltersH.menu();">
+              <button id="filter-filters-operations" class="op-button drop">
                 Filters...
               </button>
-              <div id="filters-op-list" class="dropdown-content drop">
+              <div id="filters-op-list" class="dropdown-content">
                 <a class="drop" id="filters-op-load"
                     onclick="sFiltersH.startLoad();">Load</a>
                 <a class="drop" id="filters-op-create"

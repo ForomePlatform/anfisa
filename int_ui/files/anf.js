@@ -378,7 +378,6 @@ function wsDropShow(mode) {
     if (!sWsDropShown) {
         document.getElementById("ws-control-menu").style.display = "none";
         document.getElementById("ws-export-result").style.display = "none";
-        document.getElementById("filters-op-list").style.display = "none";
     }
 }
 
