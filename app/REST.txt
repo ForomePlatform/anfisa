@@ -246,8 +246,9 @@ Method "/stat"
                     3: time of latest update in isoformat, or null for common filters
                 ], ...
             ]
-        "bad_idxs":  undefined or list of indexes of bad conditions in "conitions"
-        "avail_import":   undefined or list of operational units available to import/activate 
+        "compiled"   compiled info if neccessary
+        "bad-idxs":  undefined or list of indexes of bad conditions in "conitions"
+        "avail-import":   undefined or list of operational units available to import/activate 
     }
     
   Notes:
@@ -265,6 +266,8 @@ Method "/stat"
       /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
     * This method does not work with parameter tm, so it always returns complete entries in 
       "stat-list" 
+    * "bad-idxs" sign bad conditions from "conditions" array; these conditions are just ignored
+      and the single reasonable action for such a condition is to remove it from the list
     
 
 ===
@@ -281,7 +284,6 @@ Method "/xl_stat" = XL-analog for "/stat"
          * "stat-list" might contain entries in incomplete state, if tm is set
          * returns additional options:
            "rq_id"      request id for possible secondary calls of /xl_statunits
-           "compiled"   compiled info if neccessary
        }
         
     Note: This method might spend too much time for its evaluation, so we provide tm parameter: time estimation in seconds for evaluation. When this parameter is set,  
@@ -291,12 +293,16 @@ Method "/xl_stat" = XL-analog for "/stat"
     -> ws           (!required)
     -> m            (= "")
     -> units        (list of unit names)
-    -> conditions   (= ConditionList structure or null or undefined)
+    -> conditions/compiled   (= ConditionList structure or null or undefined)
     -> ctx          (dictionary with contect options:
     <- {
         "units":   (= list of UnitStat structures)
     }
 
+    Note: "compiled" argument is optional. If it is defined, it must be equal to
+    the content of "compiled" data of /stat call. However, the call works well 
+    (slightly longer) without this option.
+    
 ===
 Method "/xl_statunits" = XL-analog for "/statunits"
     -> ds           (!required)
@@ -491,6 +497,8 @@ Method /xl2ws
                     ConditionList structure or empty/compiled info)
     -> verbase              (or 
                     Version of tree code, integer)
+    -> std_name             (or
+                    Name of standard code)
     -> ws           (= name of creating ws, required)
     <- 
     {
@@ -680,14 +688,22 @@ Structure Conditions
         2: current problem group - array of int indexes
         3: "OR" / "AND" / "NOT" - operation mode (see Note)
         4: [ * list of value variants ]
-    ],...
+    ],
+    [ or special instruction:
+        0: "import"
+        1: operative unit value 
+    ]
+    ...
 ]
 
-    Notes on operational mode: 
+    Notes:
+    * on operational mode: 
      - "OR" is equivalent to ""
      - "AND" is out of sense in case of type="status"
      - mode "ONLY" IS DEPRECATED
-    
+    * on import instruction
+     - if import instruction is to add to the list of conditions,
+       it must be one from "avail-import" list of /stat or /xl_stat calls
 
 === 
 Structure Zone

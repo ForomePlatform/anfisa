@@ -28,13 +28,13 @@ class CondOpEnv:
         if self.mCompData:
             ret_handle["compiled"] = self.mCompData
         if self.mBadIdxs:
-            ret_handle["bad_idxs"] = self.mBadIdxs
+            ret_handle["bad-idxs"] = self.mBadIdxs
         names = []
         for op_unit in self.mCondEnv.iterOpUnits():
             if op_unit.getName() not in self.mCompData:
                 names.append(op_unit.getName())
         if names:
-            ret_handle["avail_import"] = names
+            ret_handle["avail-import"] = names
 
     def getActiveOperativeUnits(self, instr_no = None):
         ret = []

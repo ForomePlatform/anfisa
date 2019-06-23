@@ -56,8 +56,8 @@ var sDecisionTree = {
                 args += "&version=" + encodeURIComponent(options["version"]);
             if (options["instr"])
                 args += "&instr=" + encodeURIComponent(JSON.stringify(options["instr"]));
-            if (options["std"])
-                args += "&std=" + encodeURIComponent(options["std"]);
+            if (options["std_name"])
+                args += "&std_name=" + encodeURIComponent(options["std_name"]);
         }
         ajaxCall("xltree", args, function(info){sDecisionTree._setup(info);})
     },
@@ -1069,7 +1069,7 @@ function pickStdCode() {
     std_name = document.getElementById("std-code-select").value;
     if (std_name) {
         sTreeCtrlH.fixCurrent();
-        sDecisionTree.setup(null, {"std" : std_name});
+        sDecisionTree.setup(null, {"std_name" : std_name});
     }
 }
 

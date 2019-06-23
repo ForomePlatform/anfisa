@@ -440,7 +440,7 @@ class XLDataset(DataSet):
     @RestAPI.xl_request
     def rq__xltree(self, rq_args):
         tree_code = rq_args.get("code")
-        std_name = rq_args.get("std")
+        std_name = rq_args.get("std_name")
         version = rq_args.get("version")
         instr = rq_args.get("instr")
         time_end = self. _prepareTimeEnd(rq_args)
@@ -552,11 +552,12 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl2ws(self, rq_args):
+        base_version, condition, std_name = None, None, None
         if "verbase" in rq_args:
             base_version = int(rq_args["verbase"])
-            condition = None
+        elif "std_name" in rq_args:
+            std_name = rq_args["std_name"]
         else:
-            base_version = None
             _, condition = self._prepareConditions(rq_args)
         markup_batch = None
         if self.getFamilyInfo() is not None:
@@ -564,8 +565,9 @@ class XLDataset(DataSet):
             if proband_rel:
                 markup_batch = CompHetsMarkupBatch(proband_rel)
         task_id = self.getApp().startCreateSecondaryWS(
-            self, rq_args["ws"], base_version = base_version,
-            condition = condition, markup_batch = markup_batch)
+            self, rq_args["ws"],
+            base_version = base_version, condition = condition,
+            std_name = std_name, markup_batch = markup_batch)
         return {"task_id" : task_id}
 
     #===============================================
