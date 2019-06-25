@@ -2,7 +2,6 @@ import abc, re, sys
 from collections import Counter
 
 from utils.path_works import AttrFuncPool
-from app.config.solutions import Solutions
 #===============================================
 class ValueConvertor:
     sMAX_BAD_COUNT = 3
@@ -344,14 +343,14 @@ class ZygosityConvertor(ValueConvertor):
 
 #===============================================
 class PanelConvertor(ValueConvertor):
-    def __init__(self, name, title, unit_no, vgroup,
+    def __init__(self, cond_env, name, title, unit_no, vgroup,
             render_mode, tooltip, research_only, unit_base, view_path = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip, research_only)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelSets = {
-            pname: set(Solutions.getPanel(self.mBaseUnitName, pname))
-            for pname in Solutions.getPanelNames(self.mBaseUnitName)}
+            pname: set(cond_env.getUnitPanel(self.mBaseUnitName, pname))
+            for pname in cond_env.getUnitPanelNames(self.mBaseUnitName)}
         self.mCntUndef = 0
         self.mVarCount = Counter()
         self.mViewPath = None

@@ -618,6 +618,7 @@ Method /cmptree
     
 ===
 Method /solutions
+    -> ds           (ws or ds, required!)
     <- {
         "codes": [ * list of all standard codes for decision trees available]
         "panels": {dict of dicts: names of panels provided for enum units}

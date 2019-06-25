@@ -1,9 +1,9 @@
 import json
 from time import time
+from copy import deepcopy
 from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import codeHash, StdTreeCodes
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
@@ -13,6 +13,7 @@ from app.filter.cond_op import CondOpEnv
 from app.filter.decision import DecisionTree
 from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.code_works import cmpTrees
+from app.filter.sol_pack import codeHash
 #===============================================
 class XLDataset(DataSet):
     sStatRqCount = 0
@@ -21,6 +22,8 @@ class XLDataset(DataSet):
     sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
     sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
 
+    sStdFMark = AnfisaConfig.configOption("filter.std.mark")
+
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.mMongoDS = (self.getApp().getMongoConnector().
@@ -28,7 +31,7 @@ class XLDataset(DataSet):
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mCondEnv = XL_CondEnv()
         self.mCondEnv.addReservedName("_ord")
-        CompHetsUnit.setupCondEnv(self.mCondEnv, self, True)
+        CompHetsUnit.setupCondEnv(self.mCondEnv, self)
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
@@ -41,10 +44,17 @@ class XLDataset(DataSet):
             for unit_h in self.mUnits}
         for unit_h in self.mUnits:
             unit_h.setup()
+
+        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
+            for flt_name, cond_seq in self.mCondEnv.getXlFilters()}
+
         self.mFilterCache = dict()
+        for filter_name, cond_seq in self.mStdFilters.items():
+            self.cacheFilter(filter_name, cond_seq, None)
+
         if self.mMongoDS is not None:
             for f_name, cond_seq, time_label in self.mMongoDS.getFilters():
-                if self.mDruidAgent.goodOpFilterName(f_name):
+                if self.goodOpFilterName(f_name):
                     self.cacheFilter(f_name, cond_seq, time_label)
 
     def getDruidAgent(self):
@@ -113,7 +123,7 @@ class XLDataset(DataSet):
         if instr is None:
             return filter_name
         op, q, flt_name = instr.partition('/')
-        if self.mDruidAgent.goodOpFilterName(flt_name):
+        if self.goodOpFilterName(flt_name):
             with self:
                 if op == "UPDATE":
                     time_label = self.mMongoDS.setFilter(flt_name, cond_seq)
@@ -133,14 +143,20 @@ class XLDataset(DataSet):
         if filter_name in self.mFilterCache:
             del self.mFilterCache[filter_name]
 
-    def getFilterList(self):
+    def goodOpFilterName(self, flt_name):
+        return (flt_name and not flt_name.startswith(self.sStdFMark)
+            and flt_name[0].isalpha() and ' ' not in flt_name)
+
+    def hasStdFilter(self, filter_name):
+        return filter_name in self.mStdFilters
+
+    def getFilterList(self, research_mode = True):
         ret = []
-        for filter_name in self.mDruidAgent.getStdFilterNames():
-            ret.append([filter_name, True, True])
-        for f_name, flt_info in self.mFilterCache.items():
-            if f_name.startswith('_'):
+        for filter_name, flt_info in self.mFilterCache.items():
+            if filter_name.startswith('_'):
                 continue
-            ret.append([f_name, False, True, flt_info[1]])
+            ret.append([filter_name, self.hasStdFilter(filter_name),
+                True, flt_info[1]])
         return sorted(ret)
 
     def evalTotalCount(self, condition = None):
@@ -344,8 +360,8 @@ class XLDataset(DataSet):
         filter_name = rq_args.get("filter")
         filter_name = self.filterOperation(
             filter_name, cond_seq, rq_args.get("instr"))
-        if self.mDruidAgent.hasStdFilter(filter_name):
-            cond_seq = self.mDruidAgent.getStdFilterConditions(filter_name)
+        if self.hasStdFilter(filter_name):
+            cond_seq = self.mStdFilters.get(filter_name)
         else:
             if filter_name in self.mFilterCache:
                 cond_seq = self.mFilterCache[filter_name][0]
@@ -459,7 +475,7 @@ class XLDataset(DataSet):
                 version = version_info_seq[-1][0]
                 tree_code = self.mMongoDS.getTreeCodeVersion(version)
             else:
-                tree_code = StdTreeCodes.getCode(std_name)
+                tree_code = self.mCondEnv.getStdTreeCode(std_name)
         else:
             assert std_name is None
         tree_hash = codeHash(tree_code)
@@ -488,7 +504,7 @@ class XLDataset(DataSet):
                     break
         if version is not None:
             ret["cur_version"] = int(version)
-        std_code = StdTreeCodes.getKeyByHash(tree_hash)
+        std_code = self.mCondEnv.getStdTreeNameByHash(tree_hash)
         if std_code:
             ret["std_code"] = std_code
         ret["total"] = self.getTotal()

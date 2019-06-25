@@ -2,7 +2,6 @@ import sys, ast, traceback, logging
 from StringIO import StringIO
 from collections import defaultdict
 
-from app.config.solutions import Solutions
 from .code_works import reprConditionCode, findComment
 #===============================================
 class TreeFragment:
@@ -365,7 +364,7 @@ class ParsedDecisionTree:
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
             if panel_name is not None:
-                variants = Solutions.getPanel(field_name, panel_name)
+                variants = self.mCondEnv.getUnitPanel(field_name, panel_name)
                 if variants is None:
                     self.errorIt(it_set, "Panel not found")
                 ret = ["panel", field_name, op_mode, panel_name]

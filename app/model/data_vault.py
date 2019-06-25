@@ -5,7 +5,6 @@ from threading import Lock
 from .workspace import Workspace
 from .rest_api import RestAPI
 from app.xl.xl_dataset import XLDataset
-from app.config.solutions import Solutions
 #===============================================
 class DataVault:
     def __init__(self, application, vault_dir):
@@ -48,6 +47,9 @@ class DataVault:
 
     def getDir(self):
         return self.mVaultDir
+
+    def getSolutionPack(self, name = None):
+        return self.mSolutions[name]
 
     def getWS(self, ws_name):
         ds = self.mDataSets.get(ws_name)
@@ -106,5 +108,5 @@ class DataVault:
     #===============================================
     @RestAPI.vault_request
     def rq__solutions(self, rq_args):
-        return Solutions.report()
-
+        ds = self.mDataSets[rq_args["ds"]]
+        return ds.getIndex().getCondEnv().reportSolutions()

@@ -92,14 +92,13 @@ class CompHetsUnit(Unit):
     sSetup = AnfisaConfig.configOption("zygosity.setup")
 
     @classmethod
-    def setupCondEnv(cls, cond_env, ds, use_default = False):
+    def setupCondEnv(cls, cond_env, ds):
         var_names = cls.sSetup["op-variables"][:]
-        if use_default:
-            var_names.insert(0, cls.sSetup["Compound_heterozygous"])
         if not ds.getFamilyInfo() or len(ds.getFamilyInfo()) != 3:
             for name in var_names:
                 cond_env.addReservedName(name)
             return False
+        cond_env.addMode("trio")
         for nm in var_names:
             cond_env.addOperativeUnit(cls(ds, nm))
         return True

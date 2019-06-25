@@ -11,6 +11,7 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
+from app.config.solutions import prepareSolutions
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin)
 sys.stderr = codecs.getwriter('utf8')(sys.stderr)
@@ -57,6 +58,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
 
+    prepareSolutions()
     post_proc = None
     view_aspects = defineViewSchema()
     view_checker = ViewDataChecker(view_aspects)

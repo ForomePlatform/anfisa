@@ -1,13 +1,15 @@
 import app.prepare.prep_unit as prep_unit
 from app.model.family import FamilyInfo
+from app.filter.cond_env import CondEnv
 #===============================================
 class FilterPrepareSetH:
-    def __init__(self):
+    def __init__(self, solution_name = None):
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
         self.mMeta = None
         self.mFamilyInfo = None
+        self.mCondEnv = CondEnv(solution_name)
 
     def setMeta(self, meta):
         self.mMeta = meta
@@ -86,8 +88,8 @@ class FilterPrepareSetH:
     def panelStatusUnit(self, name, unit_base, title = None,
             render_mode = None, tooltip = None,
             research_only = False, view_path = None):
-        return self._addUnit(prep_unit.PanelConvertor(name, title,
-            len(self.mUnits), self.mCurVGroup,
+        return self._addUnit(prep_unit.PanelConvertor(self.mCondEnv,
+            name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, research_only, unit_base, view_path))
 
     def process(self, rec_no, rec_data):

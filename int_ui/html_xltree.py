@@ -2,7 +2,6 @@ from xml.sax.saxutils import escape
 
 from .gen_html import startHtmlPage
 from .html_xl import formNoteDiv, formCreateWsDiv, formSubViewDiv
-from app.config.solutions import StdTreeCodes
 #===============================================
 def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     startHtmlPage(output, title, html_base,
@@ -13,7 +12,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
         '  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title, ws_url))
 
-    _formXLPannel(output, xl_ds.getName())
+    _formXLPannel(output, xl_ds)
     _formCurCondDiv(output)
     _formVersionsDiv(output)
     _formEditCodeDiv(output)
@@ -25,7 +24,7 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     print >> output, '</html>'
 
 #===============================================
-def _formXLPannel(output, ds_name):
+def _formXLPannel(output, ds):
     print >> output, '''
       <div id="xl-ctrl">
         <div id="xl-info">
@@ -47,7 +46,7 @@ def _formXLPannel(output, ds_name):
             <select id="std-code-select" onchange="pickStdCode();"
                 title="Pick tree code from repository">
                 <option value="">in work</option>'''
-    for std_name in StdTreeCodes.getKeys():
+    for std_name in ds.getCondEnv().getStdTreeCodeNames():
         print >> output, '                <option value="%s">%s</option>' % (
             escape(std_name), escape(std_name))
     print >> output, '''

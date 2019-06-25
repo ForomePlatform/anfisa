@@ -2,7 +2,6 @@ import json
 from copy import deepcopy
 
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import Solutions
 from app.filter.cond_op import CondOpEnv
 from app.model.comp_hets import CompHetsUnit
 from .column import DataColumnCollecton
@@ -43,7 +42,7 @@ class Index:
         assert len(self.mRecords) == self.mWS.getTotal()
 
         self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
-            for flt_name, cond_seq in Solutions.getWsFilters()}
+            for flt_name, cond_seq in self.mCondEnv.getWsFilters()}
 
         self.mFilterCache = dict()
         for filter_name, cond_seq in self.mStdFilters.items():

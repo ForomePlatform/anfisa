@@ -4,7 +4,6 @@ from copy import deepcopy
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import StdTreeCodes
 from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.decision import DecisionTree
 
@@ -40,7 +39,7 @@ class SecondaryWsCreation(ExecutionTask):
             rec_no_seq = tree.collectRecSeq(self.mDS)
         elif self.mStdName is not None:
             tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
-                StdTreeCodes.getCode(self.mStdName)))
+                self.mDS.getCondEnv().getStdTreeCode(self.mStdName)))
             rec_no_seq = tree.collectRecSeq(self.mDS)
         else:
             rec_count = self.mDS.evalTotalCount(self.mCondition)
