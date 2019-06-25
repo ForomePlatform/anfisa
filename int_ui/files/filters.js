@@ -77,6 +77,7 @@ var sUnitsH = {
         if (sSubViewH)
             sSubViewH.reset(this.mCount);
         this.mItems = info["stat-list"];
+        sConditionsH.setup(info["conditions"], info["bad_idxs"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         sOpCondH.setupAvailImport(info["avail-import"]);
         this.mUnitMap = {}
@@ -85,7 +86,6 @@ var sUnitsH = {
         fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
-        sConditionsH.setup(info["conditions"], info["bad_idxs"]);
         
         var unit_name = this.mCurUnit;
         if (unit_name) {

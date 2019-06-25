@@ -48,9 +48,6 @@ class DataVault:
     def getDir(self):
         return self.mVaultDir
 
-    def getSolutionPack(self, name = None):
-        return self.mSolutions[name]
-
     def getWS(self, ws_name):
         ds = self.mDataSets.get(ws_name)
         return ds if ds and ds.getDSKind() == "ws" else None
