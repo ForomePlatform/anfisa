@@ -61,18 +61,30 @@ class CondOpEnv:
 
     def parseSeq(self, cond_seq):
         actual_cond_data = []
+        imp_op_units = set()
+        for cond_data in cond_seq:
+            if cond_data[0] == "import":
+                imp_op_units.add(cond_data[1])
+        for op_unit_name in (set(self.mCompData.keys()) - imp_op_units):
+            del self.mCompData[op_unit_name]
+        used_op_units = set()
         for idx, cond_data in enumerate(cond_seq):
-            try:
-                if cond_data[0] == "import":
-                    cond_data = self.importUnit(idx, cond_data[1],
-                        ConditionMaker.joinAnd(actual_cond_data), False)
+            if cond_data[0] == "import":
+                op_unit_name = cond_data[1]
+                if op_unit_name in used_op_units:
+                    self.mBadIdxs.append(idx)
                 else:
-                    cond = self.parse(cond_data)
-                    self.mSeq.append(cond)
-                    actual_cond_data.append(cond_data)
+                    self.importUnit(idx, op_unit_name,
+                        ConditionMaker.joinAnd(actual_cond_data), False)
+                    used_op_units.add(op_unit_name)
+                continue
+            try:
+                cond = self.parse(cond_data)
+                self.mSeq.append(cond)
+                actual_cond_data.append(cond_data)
             except Exception:
                 rep = StringIO()
-                print >> rep, "Bad idx:", cond_data
+                print >> rep, "Bad instruction:", cond_data
                 traceback.print_exc(file = rep)
                 self.mBadIdxs.append(idx)
                 logging.warning(rep.getvalue())
@@ -83,10 +95,3 @@ class CondOpEnv:
     def getCondNone(self):
         return self.mCondEnv.getCondNone()
 
-    def reportAvailImport(self, stat_list):
-        used_names = {stat[1]["name"] for stat  in stat_list}
-        ret = []
-        for unit_h in self.mCondEnv.iterOpUnits():
-            if unit_h.getName() not in used_names:
-                ret.append(unit_h.getName())
-        return ret

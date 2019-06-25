@@ -372,7 +372,6 @@ class XLDataset(DataSet):
             "total": self.getTotal(),
             "count": self.evalTotalCount(condition),
             "stat-list": stat_list,
-            "avail-import": op_env.reportAvailImport(stat_list),
             "filter-list": self.getFilterList(),
             "cur-filter": filter_name,
             "conditions": cond_seq,

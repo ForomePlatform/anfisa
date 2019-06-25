@@ -18,6 +18,7 @@ var sUnitsH = {
     mTimeH: null,
     mDelayMode: null,
     mCompData: null,
+    mOffline: false,
     
     init: function(call_all_stat, call_part_stat, call_ds, delay_mode) {
         this.mCallAllStat = call_all_stat;
@@ -65,6 +66,7 @@ var sUnitsH = {
     },
 
     _setup: function(info) {
+        this.mOffline = true;
         this.mWaiting = false;
         this.mCount = info["count"];
         this.mTotal = info["total"];
@@ -77,7 +79,7 @@ var sUnitsH = {
         if (sSubViewH)
             sSubViewH.reset(this.mCount);
         this.mItems = info["stat-list"];
-        sConditionsH.setup(info["conditions"], info["bad_idxs"]);
+        sConditionsH.setup(info["conditions"], info["bad-idxs"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         sOpCondH.setupAvailImport(info["avail-import"]);
         this.mUnitMap = {}
@@ -104,6 +106,7 @@ var sUnitsH = {
         this.mCurUnit = null;
         this.mCurZygName = null;
         
+        this.mOffline = false;
         this.selectUnit(unit_name);
         sFiltersH.update();
         this.checkDelayed();
@@ -187,6 +190,10 @@ var sUnitsH = {
     },
     
     selectUnit: function(stat_unit, force_it) {
+        if (this.mOffline) {
+            this.mCurUnit = stat_unit;
+            return;
+        }
         var pos = this.mUnitsDelay.indexOf(stat_unit);
         if (pos > 0) {
             this.mUnitsDelay.splice(pos, 1);
@@ -207,6 +214,7 @@ var sUnitsH = {
         this.mCurUnit = stat_unit;
         this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
+        new_unit_el.scrollIntoView();
         sConditionsH.onUnitSelect();
         sOpCondH.onUnitSelect();
     },

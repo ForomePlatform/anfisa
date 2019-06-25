@@ -171,7 +171,6 @@ class Index:
             "total": self.mWS.getTotal(),
             "count": len(rec_seq),
             "stat-list": stat_list,
-            "avail-import": op_env.reportAvailImport(stat_list),
             "filter-list": self.getFilterList(research_mode),
             "cur-filter": filter_name,
             "conditions": op_env.getCondSeq()}
