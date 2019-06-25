@@ -1,6 +1,8 @@
 if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
 
+import Compound_Het
+
 # Inheritance Mode
 if Inheritance_Mode() in {"Homozygous Recessive"}:
     return True
