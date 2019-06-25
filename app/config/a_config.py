@@ -51,7 +51,7 @@ class AnfisaConfig:
             "ws_compound_heterosygotes": "ws_compound_heterosygotes",
             "comp-hets-max-rec": 1000,
             "vgroup": "Inheritance",
-            "op-variables": ["Compound_H1", "Compound_H2"]
+            "op-variables": ["Compound_Het", "Compound_Het2"]
         },
 
         "job.pool.size":    3,
