@@ -156,9 +156,9 @@ class Workspace(DataSet):
             return json.loads(rq_args["ctx"])
         return dict()
 
-    def _prepareConditions(self, rq_args):
+    def _prepareConditions(self, rq_args, with_comp = True):
         comp_data = (json.loads(rq_args["compiled"])
-            if "compiled" in rq_args else None)
+            if with_comp and "compiled" in rq_args else None)
         op_cond = CondOpEnv(self.mIndex.getCondEnv(), comp_data,
             json.loads(rq_args["conditions"])
             if "conditions" in rq_args else ConditionMaker.condAll())
@@ -185,7 +185,7 @@ class Workspace(DataSet):
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
         filter_name = rq_args.get("filter")
-        op_env, _ = self._prepareConditions(rq_args)
+        op_env, _ = self._prepareConditions(rq_args, False)
         filter_name = self.filterOperation(rq_args.get("instr"),
             filter_name, op_env.getCondSeq())
         repr_context = self._prepareContext(rq_args)

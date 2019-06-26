@@ -189,7 +189,7 @@ class ZygosityComplexUnit(FilterUnit):
         for col_h in self.mColumns:
             col_h.setValue(record, inp_data.get(col_h.getName()))
 
-    def _makeCrit(self, idx, min_v, max_v = None):
+    def _makeCrit(self, idx, min_v, max_v):
         column = self.mColumns[idx]
         if min_v is not None:
             return lambda record: column.recordValue(record) >= min_v
@@ -205,7 +205,7 @@ class ZygosityComplexUnit(FilterUnit):
             if idx in problem_group:
                 seq.append(self._makeCrit(idx, 2, None))
             else:
-                seq.append(self._makeCrit(idx, None, 1))
+                seq.append(self._makeCrit(idx, 0, 1))
         return WS_SpecCondition("ZHomoRecess", self._joinAnd(seq))
 
     def _condZDominant(self, problem_group):
@@ -214,7 +214,7 @@ class ZygosityComplexUnit(FilterUnit):
             if idx in problem_group:
                 seq.append(self._makeCrit(idx, 1, None))
             else:
-                seq.append(self._makeCrit(idx, None, 0))
+                seq.append(self._makeCrit(idx, 0, 0))
         return WS_SpecCondition("ZDominant", self._joinAnd(seq))
 
     def condZDominant(self, problem_group):
@@ -229,7 +229,7 @@ class ZygosityComplexUnit(FilterUnit):
         seq = []
         for idx in range(len(self.mFamilyInfo)):
             if idx in problem_group:
-                seq.append(self._makeCrit(idx, None, 0))
+                seq.append(self._makeCrit(idx, 0, 0))
             else:
                 seq.append(self._makeCrit(idx, 1, None))
         return WS_SpecCondition("ZCompens", self._joinAnd(seq))

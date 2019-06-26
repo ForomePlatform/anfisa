@@ -324,12 +324,15 @@ class ZygosityConvertor(ValueConvertor):
             self.mFamilyMembers = self.mMaster.getFamilyInfo().getMembers()
         if len(self.mFamilyMembers) < 2:
             return
-        zig_distr_seq = self.mPathF(rec_data)
-        assert len(zig_distr_seq) == 1
-        zig_distr = zig_distr_seq[0]
-        assert len(zig_distr.keys()) == len(self.mFamilyMembers)
+        zyg_distr_seq = self.mPathF(rec_data)
+        assert len(zyg_distr_seq) == 1
+        zyg_distr = zyg_distr_seq[0]
+        assert len(zyg_distr.keys()) == len(self.mFamilyMembers)
         for idx, member in enumerate(self.mFamilyMembers):
-            result["%s_%d" % (self.getName(), idx)] = zig_distr[member]
+            zyg_val = zyg_distr[member]
+            if zyg_val is None:
+                zyg_val = -1
+            result["%s_%d" % (self.getName(), idx)] = zyg_val
 
     def dump(self):
         ret = ValueConvertor.dump(self)
