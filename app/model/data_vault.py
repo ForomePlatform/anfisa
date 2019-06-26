@@ -60,17 +60,30 @@ class DataVault:
         with self:
             return ds_name not in self.mDataSets
 
-    def loadNewWS(self, wsname):
-        ds_path = self.mVaultDir + '/' + wsname
+    def loadDS(self, ds_name, ds_kind = None):
+        ds_path = self.mVaultDir + '/' + ds_name
         info_path =  ds_path + "/dsinfo.json"
         with codecs.open(info_path, "r", encoding = "utf-8") as inp:
             ds_info = json.loads(inp.read())
-        assert ds_info["kind"] == "ws" and ds_info["name"] == wsname
+        assert ds_info["name"] == ds_name
+        assert not ds_kind or ds_info["kind"] == "ws"
         with self:
             assert ds_info["name"] not in self.mDataSets
-            self.mDataSets[ds_info["name"]] = Workspace(
-                self, ds_info, ds_path)
-        return wsname
+            if ds_info["kind"] == "xl":
+                ds = XLDataset(self, ds_info, ds_path)
+            else:
+                assert ds_info["kind"] == "ws"
+                ds = Workspace(self, ds_info, ds_path)
+            self.mDataSets[ds_info["name"]] = ds
+        return ds_name
+
+    def unloadDS(self, ds_name, ds_kind = None):
+        with self:
+            ds = self.mDataSets[ds_name]
+            assert not ds_kind or (
+                ds_kind == "ws" and isinstance(ds, Workspace)) or (
+                ds_kind == "xl" and isinstance(ds, XLDataset))
+            del self.mDataSets[ds_name]
 
     #===============================================
     @RestAPI.vault_request
@@ -107,3 +120,16 @@ class DataVault:
     def rq__solutions(self, rq_args):
         ds = self.mDataSets[rq_args["ds"]]
         return ds.getIndex().getCondEnv().reportSolutions()
+
+    #===============================================
+    # Administrator authorization required
+    #@RestAPI.vault_request
+    #def rq__adm_load(self, rq_args):
+    #    self.loadDS(rq_args["ds"])
+    #    return []
+
+    #===============================================
+    #@RestAPI.vault_request
+    #def rq__adm_unload(self, rq_args):
+    #    self.unloadDS(rq_args["ds"])
+    #    return []

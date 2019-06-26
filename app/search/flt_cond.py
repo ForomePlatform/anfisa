@@ -2,8 +2,8 @@ from app.filter.cond_env import CondEnv
 
 #===============================================
 class WS_CondEnv(CondEnv):
-    def __init__(self):
-        CondEnv.__init__(self)
+    def __init__(self, modes):
+        CondEnv.__init__(self, modes)
 
     def getCondNone(self):
         return WS_None()

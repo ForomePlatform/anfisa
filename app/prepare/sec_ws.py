@@ -107,6 +107,7 @@ class SecondaryWsCreation(ExecutionTask):
             "flt_schema": flt_schema,
             "total": len(rec_no_seq),
             "mongo": self.mWSName,
+            "modes": ["secondary"],
             "family": (self.mDS.getFamilyInfo().dump()
                 if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta")}
@@ -120,7 +121,7 @@ class SecondaryWsCreation(ExecutionTask):
                 "w", encoding = "utf-8") as outp:
             print >> outp, ""
 
-        self.mDS.getDataVault().loadNewWS(self.mWSName)
+        self.mDS.getDataVault().loadDS(self.mWSName, "ws")
 
         self.setStatus("Done")
         return {"ws": self.mWSName}

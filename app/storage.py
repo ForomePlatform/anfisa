@@ -125,6 +125,7 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             "flt_schema": flt_data,
             "total": data_rec_no,
             "mongo": mongo,
+            "modes": [],
             "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record}
         with codecs.open(ds_dir + "/dsinfo.json",

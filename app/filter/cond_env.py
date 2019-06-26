@@ -3,15 +3,15 @@ import logging
 from .sol_pack import SolutionPack
 #===============================================
 class CondEnv:
-    def __init__(self, solution_name = None):
-        self.mSolPack = SolutionPack.select(solution_name)
+    def __init__(self, modes):
+        self.mSolPack = SolutionPack.select(modes)
         self.mSpecialUnits = dict()
         self.mNumUnits = dict()
         self.mEnumUnits = dict()
         self.mOperativeUnits = dict()
         self.mReservedNames = dict()
         self.mOpUnitSeq = []
-        self.mModes = set()
+        self.mModes = set(modes) if modes else set()
 
     def addMode(self, mode):
         self.mModes.add(mode)

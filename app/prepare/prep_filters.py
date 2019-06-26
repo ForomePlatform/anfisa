@@ -3,13 +3,13 @@ from app.model.family import FamilyInfo
 from app.filter.cond_env import CondEnv
 #===============================================
 class FilterPrepareSetH:
-    def __init__(self, solution_name = None):
+    def __init__(self, modes = None):
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
         self.mMeta = None
         self.mFamilyInfo = None
-        self.mCondEnv = CondEnv(solution_name)
+        self.mCondEnv = CondEnv(modes)
 
     def setMeta(self, meta):
         self.mMeta = meta

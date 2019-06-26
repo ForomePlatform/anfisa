@@ -29,7 +29,8 @@ class XLDataset(DataSet):
         self.mMongoDS = (self.getApp().getMongoConnector().
             getDSAgent(self.getMongoName()))
         self.mDruidAgent = self.getApp().getDruidAgent()
-        self.mCondEnv = XL_CondEnv()
+        self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
+        self.mCondEnv.addMode("XL")
         self.mCondEnv.addReservedName("_ord")
         CompHetsUnit.setupCondEnv(self.mCondEnv, self)
 

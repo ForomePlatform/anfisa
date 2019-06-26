@@ -64,8 +64,12 @@ class SolutionPack:
         cls.sPacks[None] = solution_pack
 
     @classmethod
-    def select(cls, name = None):
-        return cls.sPacks[name]
+    def select(cls, modes = None):
+        if modes:
+            for mode in modes:
+                if mode in cls.sPacks:
+                    return cls.sPacks[mode]
+        return cls.sPacks[None]
 
     #===============================================
     def __init__(self, name):

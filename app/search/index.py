@@ -14,7 +14,8 @@ class Index:
 
     def __init__(self, ws_h):
         self.mWS = ws_h
-        self.mCondEnv = WS_CondEnv()
+        self.mCondEnv = WS_CondEnv(self.mWS.getDataInfo().get("modes"))
+        self.mCondEnv.addMode("WS")
         self.mDCCollection = DataColumnCollecton()
         self.mUnits = [RulesEvalUnit(self, self.mDCCollection)]
         for unit_data in self.mWS.getFltSchema():
