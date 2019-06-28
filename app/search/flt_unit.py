@@ -193,7 +193,7 @@ class ZygosityComplexUnit(FilterUnit):
         column = self.mColumns[idx]
         if min_v is not None:
             return lambda record: column.recordValue(record) >= min_v
-        return lambda record: column.recordValue(record) <= max_v
+        return lambda record: min_v <= column.recordValue(record) <= max_v
 
     @staticmethod
     def _joinAnd(seq):
