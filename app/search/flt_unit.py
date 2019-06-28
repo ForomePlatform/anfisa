@@ -189,10 +189,11 @@ class ZygosityComplexUnit(FilterUnit):
         for col_h in self.mColumns:
             col_h.setValue(record, inp_data.get(col_h.getName()))
 
-    def _makeCrit(self, idx, min_v, max_v):
+    def _makeCrit(self, idx, min_v, max_v = None):
         column = self.mColumns[idx]
-        if min_v is not None:
-            return lambda record: column.recordValue(record) >= min_v
+        assert min_v is not None
+        if max_v is None:
+            return lambda record: min_v <= column.recordValue(record)
         return lambda record: min_v <= column.recordValue(record) <= max_v
 
     @staticmethod
