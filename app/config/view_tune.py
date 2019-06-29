@@ -2,15 +2,38 @@ from app.view.attr import AttrH
 
 #===============================================
 def tuneAspects(dataset, aspects):
+    view_gen = aspects["view_gen"]
+    ucsc_idx = view_gen.find("ucsc")
+    if ucsc_idx >= 0:
+        view_gen.delAttr(view_gen[ucsc_idx])
+    view_gen.addAttr(UCSC_AttrH(view_gen), ucsc_idx)
+
     if "meta" not in dataset.getDataInfo():
         return
     case = dataset.getDataInfo()["meta"].get("case")
     samples = dataset.getDataInfo()["meta"].get("samples")
-    view_gen = aspects["view_gen"]
     igv_idx = view_gen.find("igv")
     if igv_idx >= 0:
         view_gen.delAttr(view_gen[igv_idx])
     view_gen.addAttr(IGV_AttrH(view_gen, case, samples), igv_idx)
+
+
+#===============================================
+class UCSC_AttrH(AttrH):
+    UCSC_URL = "https://genome.ucsc.edu/cgi-bin/hgTracks?" + \
+               "db={assembly}&position={a}%3A{a}%2D{a}" \
+                   .format(assembly="hg19", a="{}")
+
+    def __init__(self, view_gen):
+        AttrH.__init__(self, "UCSC")
+        self.setAspect(view_gen)
+
+    def htmlRepr(self, obj, top_rec_obj):
+        start = int(top_rec_obj["data"]["start"])
+        end = int(top_rec_obj["data"]["end"])
+        link = self.UCSC_URL.format(top_rec_obj["data"]["seq_region_name"], max(0, start - 250), end + 250)
+        return ('<span title="UCSC">' + ('<a href="%s" target="UCSC">View in UCSC</a>' % link) + '</span>', "norm")
+
 
 #===============================================
 class IGV_AttrH(AttrH):

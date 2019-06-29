@@ -175,7 +175,7 @@ def defineFilterSchema():
         filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
             default_value = "None")
         filters.multiStatusUnit("ClinVar_Significance",
-            "/data/clinvar_significance[]", title = "Clinical Significance in CLinVar")
+            "/data/clinvar_significance[]", title = "Clinical Significance in ClinVar")
         filters.multiStatusUnit("LMM_Significance",
             "/data/lmm", title = "Clinical Significance by LMM")
         filters.multiStatusUnit("GeneDx_Significance",

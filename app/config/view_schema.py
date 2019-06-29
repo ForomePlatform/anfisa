@@ -70,7 +70,9 @@ def defineViewSchema():
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
         AttrH("igv", title = "IGV", kind = "place",
-              tooltip = "Open this variant in local IGV (https://software.broadinstitute.org/software/igv/)")])
+              tooltip = "Open this variant in local IGV (https://software.broadinstitute.org/software/igv/)"),
+        AttrH("ucsc", title="View in UCSC", kind="place", tooltip="View this variant in UCSC Browser")
+    ])
 
     aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),

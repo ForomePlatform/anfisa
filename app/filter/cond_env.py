@@ -154,7 +154,7 @@ class CondEnv:
             if it.getName() == unit_name:
                 if it.getData()[0] == panel_name:
                     return it.getData()[1]
-        assert False
+        assert False, "{} Panel {} not found".format(unit_name, panel_name)
 
     def getStdTreeCodeNames(self):
         return [it.getName() for it in

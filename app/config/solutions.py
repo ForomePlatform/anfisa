@@ -42,6 +42,20 @@ def prepareSolutions():
 
     #base_pack.regFilterXL(?, ?)
 
+    # Production Decision Trees
+    base_pack.regTreeCode("Trio Candidates",
+        cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
+        requires = {"trio"})
+    base_pack.regTreeCode("All Rare Variants",
+        cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
+    base_pack.regTreeCode("Hearing Loss, v.4",
+        cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
+    base_pack.regTreeCode("Hearing Loss, v.2",
+        cfgPathSeq(["quality.pyt", "hearing_loss_v2.pyt"]))
+    base_pack.regTreeCode("ACMG59",
+        cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
+
+    # Test trees
     base_pack.regTreeCode("Q Test",
         cfgPathSeq(["quality.pyt", "return_true.pyt"]))
     base_pack.regTreeCode("R Test",
@@ -51,13 +65,6 @@ def prepareSolutions():
         requires = {"trio"})
     base_pack.regTreeCode("H Test",
         [cfgPath("hearing_loss.pyt")])
-    base_pack.regTreeCode("Trio Candidates",
-        cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
-        requires = {"trio"})
-    base_pack.regTreeCode("All Rare Variants",
-        cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
-    base_pack.regTreeCode("Hearing Loss",
-        cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
 
     base_pack.regPanel("Genes", "ACMG59",
         cfgPath("acmg59.lst"))
