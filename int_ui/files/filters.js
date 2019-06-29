@@ -480,7 +480,7 @@ var sConditionsH = {
     },
     
     isEmpty: function() {
-        return !this.mList;
+        return (this.mList.length == 0);
     },
     
     getSeqLength: function() {
