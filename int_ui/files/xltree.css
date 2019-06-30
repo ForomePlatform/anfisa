@@ -566,7 +566,6 @@ div#sub-view-rec-wrap {
     width: 100%;
     margin: 0px;
     padding: 0px;
-    display: grid;
 }
 
 div#sub-view-list  {
@@ -580,11 +579,11 @@ div#sub-view-list  {
     width: 100%;
 }
 
-frame#sub-view-rec-frame {
-    height: 100%;
-    width: 100%;
+iframe#sub-view-rec-frame {
     margin: 0px;
     padding: 0px;
+    height: 100%;
+    width: 100%;
 }
 
 input#list-rand-portion {
