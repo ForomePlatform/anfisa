@@ -32,20 +32,30 @@ function loadZone(zone_name){
 function setupZone(info) {
     zone_name = info["zone"];
     sWorkZoneCur = zone_name;
-    variants = info["variants"];
+    var variants = info["variants"];
     sZoneListCache[zone_name] = [variants, info["title"]];
     sZoneDictCache[zone_name] = {};
+    var sel_variants = sZoneSetCache[sWorkZoneCur];
+    if (sel_variants == undefined)
+        sel_variants = [];
+    var new_sel = [];
     
     list_val_rep = [];
     for (j = 0; j < variants.length; j++) {
         val_name = variants[j];
+        var check_mark = "";
+        if (sel_variants.indexOf(val_name) >= 0) {
+            new_sel.push(val_name);
+            check_mark = "checked ";
+        }
         sZoneDictCache[zone_name][val_name] = j;
         list_val_rep.push('<div class="zone-enum-val">' +
             '<input id="zn--' + zone_name + '-check--' + j + 
-            '" type="checkbox" class="zn-check-val" ' + 
+            '" type="checkbox" class="zn-check-val" ' + check_mark +
             'onchange="checkZoneCheck(\'' + zone_name + '\',' + 
             j + ');"/>&emsp;' + val_name + '</div>');
     }
+    sZoneSetCache[sWorkZoneCur] = new_sel;
     document.getElementById("zn-div--" + zone_name).innerHTML =
         list_val_rep.join('\n');
     checkWorkZone(sWorkZoneCur);
@@ -87,10 +97,15 @@ function determineZoneData() {
             rep.push("<i>Select a variant</i>");
             sWorkZoneDescr = null;            
         } else {
-            sWorkZoneDescr = variants[0];
             sWorkZoneData = [sWorkZoneCur, variants];
-            if (variants.length == 1) {
-                rep.push("= <b>" + variants[0] + "</b>");
+            if (variants.length < 2) {
+                if (variants.length == 1) {
+                    sWorkZoneDescr = variants[0];
+                    rep.push("= <b>" + variants[0] + "</b>");
+                } else {
+                    rep.push("<i>lost selection</i>");
+                    sWorkZoneDescr = "*lost selection*";
+                }
             } else {
                 sWorkZoneDescr += " <i>+" + (variants.length - 1) + " more</i>";
                 rep.push("<i>In:</i><br/>");
@@ -169,6 +184,7 @@ function checkZoneTagsIntVersion(tags_int_version) {
     if (tags_int_version != sZoneTagsIntVersion) {
         if (sZoneListCache["_tags"]) {
             delete sZoneListCache["_tags"];
+            loadZone("_tags");
         }
         sZoneTagsIntVersion = tags_int_version;
     }
