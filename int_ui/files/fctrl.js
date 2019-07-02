@@ -221,7 +221,7 @@ var sOpEnumH = {
             vmode = ["or", "and", "not"][idx];
             document.getElementById("cond-mode-" + vmode + "-span").
                 style.visibility = (this.mOperationMode == null ||
-                    (this.mStatusMode && idx != 3))? "hidden":"visible";
+                    (this.mStatusMode && idx != 2))? "hidden":"visible";
             document.getElementById("cond-mode-" + vmode).checked =
                 (idx == this.mOperationMode);
         }
