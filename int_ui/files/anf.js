@@ -7,7 +7,7 @@ var sCurRandPortion = 1;
 var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
-var sAppModes = null;
+var sAppModeRq = null;
 var sWsDropShown = null;
 
 var sNodeFilterBack  = null;
@@ -18,12 +18,13 @@ var sNodeRulesBack = null;
 var sSubViewH = null;
 
 function initWin(workspace_name, app_modes) {
+    sAppModeRq = (app_modes)? ("&m=" + app_modes) : "";
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     sWorkspaceName = workspace_name; 
     sUnitsH.init("stat", "statunits", "ws=" + sWorkspaceName, false);
     window.name = sTitlePrefix + "/" + sWorkspaceName;
-    sAppModes = app_modes;
+    
     sNodeFilterBack  = document.getElementById("filter-back");
     sNodeZoneBack    = document.getElementById("zone-back");
     sNodeNoteBack    = document.getElementById("note-back");
@@ -33,7 +34,7 @@ function initWin(workspace_name, app_modes) {
     window.onresize  = updateSizes;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
 
-    if (sAppModes.toLowerCase().indexOf('r') >= 0) {
+    if (sAppModeRq.toLowerCase().indexOf('r') >= 0) {
         document.getElementById("res-mode-check").style.visibility = "visible";
         document.getElementById("ws-control-open").className = "drop res-mode";
     } else { 
@@ -158,12 +159,10 @@ function changeRec(rec_no) {
     sCurRecID = sViewRecNoSeq[sCurRecNo];
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    window.frames['rec-frame1'].location.replace(
-        "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
-        "&rec=" + sCurRecID + "&port=1");
-    window.frames['rec-frame2'].location.replace(
-        "rec?ws=" + sWorkspaceName + "&m=" + sAppModes + 
-        "&rec=" + sCurRecID + "&port=2");
+    window.frames['rec-frame1'].location.replace("rec?ws=" + sWorkspaceName + 
+        sAppModeRq + "&rec=" + sCurRecID + "&port=1");
+    window.frames['rec-frame2'].location.replace("rec?ws=" + sWorkspaceName + 
+        sAppModeRq + "&rec=" + sCurRecID + "&port=2");
     updateTagNavigation();
 }
 
@@ -324,13 +323,13 @@ function saveNote() {
 
 function switchResMode() {
     wsDropShow();
-    var idx = sAppModes.toLowerCase().indexOf('r');
-    if ( idx >= 0) {
-        app_modes = sAppModes.substr(0, idx) + sAppModes.substr(idx + 1);
+    var idx = sAppModeRq.toLowerCase().indexOf('r');
+    if (idx >= 0) {
+        app_mode = "";
     } else {
-        app_modes = sAppModes + 'r';
+        app_mode = ((sAppModeRq)? sAppModeRq.substr(3):"") + "r";
     }
-    initWin(sWorkspaceName, app_modes);
+    initWin(sWorkspaceName, app_mode);
 }
 
 function setupExport(info) {

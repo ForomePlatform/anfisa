@@ -2,6 +2,7 @@ var sDSName = null;
 var sTitlePrefix = null;
 var sCommonTitle = null;
 var sWsURL = null;
+var sAppModeRq = "";
 
 /*************************************/
 function initXL(ds_name, common_title, ws_url) {

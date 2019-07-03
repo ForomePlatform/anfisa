@@ -34,7 +34,7 @@ var sUnitsH = {
     },
     
     formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
-        args =  this.mCallDS +
+        args =  this.mCallDS + sAppModeRq +
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
@@ -119,7 +119,7 @@ var sUnitsH = {
     },
     
     getRqArgs: function(no_ctx) {
-        ret = this.mCallDS + "&conditions=" + 
+        ret = this.mCallDS + sAppModeRq + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
         if (!no_ctx) {
             ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
@@ -240,7 +240,7 @@ var sUnitsH = {
     },
     
     getWsCreateArgs: function() {
-        return this.mCallDS + "&conditions=" + 
+        return this.mCallDS + sAppModeRq + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
     },
     
