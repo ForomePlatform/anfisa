@@ -153,6 +153,31 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
     print >> sys.stdout, rep_out.getvalue()
 
 #===============================================
+def pushDruid(app_config, name):
+    vault_dir = app_config["data-vault"]
+    if not os.path.isdir(vault_dir):
+        print >> sys.stderr, "No vault directory:", vault_dir
+        assert False
+    checkDSName(name, "xl")
+
+    druid_datasets = DRUID_ADM.listDatasets()
+    if name in druid_datasets:
+        DRUID_ADM.dropDataset(name)
+
+
+    ds_dir = vault_dir + "/" + name
+    with codecs.open(ds_dir + "/dsinfo.json",
+            "r", encoding = "utf-8") as inp:
+        ds_info = json.loads(inp.read())
+    is_ok = DRUID_ADM.uploadDataset(name, ds_info["flt_schema"],
+        os.path.abspath(ds_dir + "/fdata.json.gz"),
+        os.path.abspath(ds_dir + "/druid_rq.json"))
+    if is_ok:
+        print >> sys.stdout, "Druid dataset %s pushed" % name
+    else:
+        print >> sys.stdout, "Process failed"
+
+#===============================================
 def dropDataSet(app_config, name, kind, calm_mode):
     global DRUID_ADM
     assert kind in ("ws", "xl")
@@ -193,7 +218,7 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--config", default = "anfisa.json",
         help = "Configuration file,  default=anfisa.json")
     parser.add_argument("-m", "--mode",
-        help = "Mode: create/drop")
+        help = "Mode: create/drop/druid-push")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default=ws")
     parser.add_argument("-s", "--source", help="Annotated json")
@@ -212,8 +237,12 @@ if __name__ == '__main__':
 
     assert os.path.isdir(app_config["data-vault"])
 
-    if run_args.kind == "xl":
+    if run_args.kind == "xl" or run_args.mode == "druid-push":
         DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
+
+    if run_args.mode == "druid-push":
+        pushDruid(app_config, run_args.name[0])
+        sys.exit()
 
     if run_args.mode == "create":
         if run_args.force:
