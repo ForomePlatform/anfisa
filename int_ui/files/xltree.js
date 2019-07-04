@@ -164,10 +164,9 @@ var sDecisionTree = {
     },
 
     getTreeRqArgs: function(no_comp) {
-        args = "ds=" + sDSName + "&code=" + encodeURIComponent(this.mTreeCode);
-        if (this.mCurPointNo != null)
-            args += "&no=" + this.mCurPointNo;
-            
+        args = "ds=" + sDSName + "&no=" + 
+            ((this.mCurPointNo == null)? -1:this.mCurPointNo)  +
+            "&code=" + encodeURIComponent(this.mTreeCode);
         if (this.mCompData && !no_comp)
             args += "&compiled=" + encodeURIComponent(JSON.stringify(this.mCompData));
         return args;
