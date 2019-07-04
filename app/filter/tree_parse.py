@@ -255,7 +255,7 @@ class ParsedDecisionTree:
             result = instr.value.id
             if result in ("True", "False"):
                 return result == "True"
-        self.errorIt(instr.value,
+        self.errorIt(instr,
             "Only boolean return (True/False) is expected here")
 
     #===============================================
