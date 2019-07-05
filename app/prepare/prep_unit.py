@@ -76,7 +76,7 @@ class PathValueConvertor(ValueConvertor):
 class _NumericConvertor(PathValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
             render_mode, tooltip, research_only,
-            default_value = None, diap = None):
+            default_value = None, diap = None, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
             vgroup, render_mode, tooltip, research_only)
         if diap is not None:
@@ -85,6 +85,7 @@ class _NumericConvertor(PathValueConvertor):
             self.mMinBound = None
         assert default_value is not None
         self.mDefaultValue = default_value
+        self.mConvFunc = conv_func
         self.mMinValue, self.mMaxValue = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -103,6 +104,8 @@ class _NumericConvertor(PathValueConvertor):
 
     def convert(self, values, rec_no):
         try:
+            if self.mConvFunc is not None:
+                values = self.mConvFunc(values)
             if len(values) == 0:
                 if self.mDefaultValue is None:
                     self.mCntUndef += 1
@@ -143,9 +146,10 @@ class _NumericConvertor(PathValueConvertor):
 class FloatConvertor(_NumericConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
             render_mode, tooltip, research_only,
-            default_value = None, diap = None):
+            default_value = None, diap = None, conv_func = None):
         _NumericConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only, default_value, diap)
+            vgroup, render_mode, tooltip, research_only,
+            default_value, diap, conv_func)
         self.checkSetup()
 
     def convType(self, val):
@@ -160,9 +164,10 @@ class FloatConvertor(_NumericConvertor):
 class IntConvertor(_NumericConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
             render_mode, tooltip, research_only,
-            default_value = None, diap = None):
+            default_value = None, diap = None, conv_func = None):
         _NumericConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only, default_value, diap)
+            vgroup, render_mode, tooltip, research_only,
+            default_value, diap, conv_func)
         self.checkSetup()
 
     def convType(self, val):

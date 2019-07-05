@@ -15,6 +15,8 @@ def defineFilterSchema():
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by", research_only = False)
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
+        #filters.intValueUnit("zyg_len", "/data/zygosity", conversion = "len",
+        #    default_value = 0)
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",

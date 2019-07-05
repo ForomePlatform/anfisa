@@ -1,6 +1,21 @@
 import app.prepare.prep_unit as prep_unit
 from app.model.family import FamilyInfo
 from app.filter.cond_env import CondEnv
+
+#===============================================
+def convLen(values):
+    if values is None:
+        return [0]
+    return [len(values[0])]
+
+CONV_FUNC_DICT = {"len": convLen}
+
+def _getConvFunc(conversion):
+    global CONV_FUNC_DICT
+    if conversion is None:
+        return None
+    return CONV_FUNC_DICT[conversion]
+
 #===============================================
 class FilterPrepareSetH:
     def __init__(self, modes = None):
@@ -39,18 +54,18 @@ class FilterPrepareSetH:
         return unit
 
     def intValueUnit(self, name, path, title = None,
-            default_value = None, diap = None,
+            default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.IntConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            research_only, default_value, diap))
+            research_only, default_value, diap, _getConvFunc(conversion)))
 
     def floatValueUnit(self, name, path, title = None,
-            default_value = None, diap = None,
+            default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.FloatConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            research_only, default_value, diap))
+            research_only, default_value, diap, _getConvFunc(conversion)))
 
     def statusUnit(self, name, path, title = None,
             variants = None, default_value = "False",
