@@ -8,6 +8,26 @@ if HGMD_Tags in {"DM"}:
 
 #Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')
+
+if (ClinVar_Significance in {
+            "Pathogenic",
+            "Pathogenic, protective",
+            "Pathogenic, risk factor",
+            "Likely pathogenic",
+            "Likely pathogenic, risk factor"
+        }):
+    return True
+
+if (ClinVar_Significance in {
+            "Uncertain significance"
+        } and
+        Clinvar_Trusted_Benign in {"False", "No data"}):
+    return True
+
+#Exclude variants farther then 5pb from intronic/exonic border
+if (not Region in {"exon"}) and Dist_from_Exon >= 26:
+    return False
+
 if (Clinvar_Benign in {"False"} and
         Clinvar_Trusted_Benign in {"False", "No data"}):
     return True

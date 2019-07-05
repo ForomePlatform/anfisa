@@ -43,7 +43,7 @@ if (not Most_Severe_Consequence in {
         "inframe_insertion",
         "inframe_deletion",
         "missense_variant",
-        "protein_altering_variant"
+        "protein_altering_variant",
         "splice_region_variant",
         "synonymous_variant",
         "stop_retained_variant",
