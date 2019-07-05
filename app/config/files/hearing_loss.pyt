@@ -39,7 +39,7 @@ if (Most_Severe_Consequence in {
 
 # 3.a. Leave only:
 #   "Missense", "synonymous" and "splice region" variants
-if (not Most_Severe_Consequence in {
+if (Most_Severe_Consequence not in {
         "inframe_insertion",
         "inframe_deletion",
         "missense_variant",
