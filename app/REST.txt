@@ -624,6 +624,16 @@ Method /solutions
         "panels": {dict of dicts: names of panels provided for enum units}
     }
 
+===
+Method /adm_ds_on
+    -> ds           (ws or ds, required!)
+Makes existing workspace online
+
+Method /adm_ds_off
+    -> ds           (ws or ds, required!)
+Makes dataset offline
+
+    
 ====================================
 2. Compex structures
 

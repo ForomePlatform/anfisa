@@ -123,13 +123,13 @@ class DataVault:
 
     #===============================================
     # Administrator authorization required
-    #@RestAPI.vault_request
-    #def rq__adm_load(self, rq_args):
-    #    self.loadDS(rq_args["ds"])
-    #    return []
+    @RestAPI.vault_request
+    def rq__adm_ds_on(self, rq_args):
+        self.loadDS(rq_args["ds"])
+        return []
 
     #===============================================
-    #@RestAPI.vault_request
-    #def rq__adm_unload(self, rq_args):
-    #    self.unloadDS(rq_args["ds"])
-    #    return []
+    @RestAPI.vault_request
+    def rq__adm_ds_off(self, rq_args):
+        self.unloadDS(rq_args["ds"])
+        return []
