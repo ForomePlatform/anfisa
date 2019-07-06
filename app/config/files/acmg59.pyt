@@ -25,7 +25,7 @@ if (ClinVar_Significance in {
     return True
 
 #Exclude variants farther then 5pb from intronic/exonic border
-if (not Region in {"exon"}) and Dist_from_Exon >= 26:
+if (Region not in {"exon"}) and Dist_from_Exon >= 26:
     return False
 
 if (Clinvar_Benign in {"False"} and

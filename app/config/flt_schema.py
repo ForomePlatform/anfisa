@@ -15,12 +15,13 @@ def defineFilterSchema():
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by", research_only = False)
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
-        #filters.intValueUnit("zyg_len", "/data/zygosity", conversion = "len",
-        #    default_value = 0)
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",
-            tooltip = "Tooltip for Variant class")
+            tooltip = "Variant class as returned by VEP. The class of a variant is based on Sequence "
+                      + "Ontology and is called according to its component alleles and its "
+                      + "mapping to the reference genome. "
+                      + "https://useast.ensembl.org/info/genome/variation/prediction/classification.html#classes")
         filters.statusUnit("Most_Severe_Consequence",
                            "/data/most_severe_consequence",
                            variants=["transcript_ablation",
@@ -59,6 +60,8 @@ def defineFilterSchema():
                                      "feature_truncation",
                                      "intergenic_variant",
                                      "undefined"], default_value="undefined")
+        #filters.intValueUnit("zyg_len", "/data/zygosity", conversion = "len",
+        #    default_value = 0)
 
     with filters.viewGroup("Genes"):
         genes_unit = filters.multiStatusUnit("Genes", "/view/general/genes[]",
@@ -145,6 +148,12 @@ def defineFilterSchema():
         filters.multiStatusUnit("ClinVar_Submitters",
             "/view/databases/clinVar_submitters[]",
             title = "ClinVar Submitters", compact_mode = True)
+        filters.intValueUnit("Number_submitters", "/view/databases/clinVar_submitters", conversion = "len",
+                             title="Number of ClinVar Submitters",
+                             default_value = 0)
+        filters.intValueUnit("Number_pmid", "/view/databases/hgmd_pmids", conversion = "len",
+                             title="Number of PMIDs in HGMD",
+                             default_value = 0)
 
         # filters.multiStatusUnit("beacons",
         #     "/data/beacon_names",
