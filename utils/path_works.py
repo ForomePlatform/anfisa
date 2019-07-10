@@ -1,5 +1,6 @@
 #import sys
 import re, logging
+from app.view import evaluations
 
 #===============================================
 def _checkNotNone(obj):
@@ -53,6 +54,18 @@ class KeyF(_AttrFunc):
                     ret.append(val)
         return ret
 
+class EvalF(_AttrFunc):
+    def __init__(self, path, parent):
+        _AttrFunc.__init__(self, path, parent)
+        assert path[-1].startswith('$')
+        self.mName = path[-1][1:]
+
+    def __call__(self, obj):
+        value = evaluations.get_color_code(obj)
+        if value:
+            pass
+        return [value]
+
 #===============================================
 class SeqF(_AttrFunc):
     def __init__(self, path, parent):
@@ -83,6 +96,8 @@ class AttrFuncPool:
             ret_f = SeqF(path, parent_f)
         elif path[-1].startswith('/'):
             ret_f = KeyF(path, parent_f)
+        elif path[-1].startswith('$'):
+            ret_f = EvalF(path, parent_f)
         else:
             assert False
         cls.sPoolF[path_str] = ret_f
@@ -104,6 +119,10 @@ class AttrFuncPool:
                 else:
                     path.append(path_str[idx:])
                     idx = None
+                if path_str == "/data/color_code":
+                    cls._makeF(path)
+                    path.append("$code")
+
                 ret_func = cls._makeF(path)
                 if path_str[idx:].startswith("[]"):
                     path
