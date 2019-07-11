@@ -1,4 +1,4 @@
-import codecs, os, json
+import sys, os, codecs, json, re
 
 #========================================
 def loadJSonConfig(config_file):
@@ -16,3 +16,38 @@ def loadJSonConfig(config_file):
             assert key != "HOME"
             content = content.replace('${%s}' % key, value)
     return json.loads(content)
+
+#========================================
+sCommentLinePatt = re.compile("^\s*//.*$")
+
+def loadDatasetInventory(inv_file):
+    global sCommentLinePatt
+
+    # Check file path correctness
+    dir_name = os.path.basename(os.path.dirname(inv_file))
+    base_name, _, ext = os.path.basename(inv_file).partition('.')
+    if dir_name != base_name or ext != "inv":
+        print >> sys.stderr, "Improper dataset inventory path:", inv_file
+
+    # Collect lines without comments
+    lines = []
+    with codecs.open(inv_file, "r", encoding = "utf-8") as inp:
+        for line in inp:
+            if not sCommentLinePatt.match(line):
+                lines.append(line)
+    content = lines.join()
+
+    # Replace ${NAME}
+    content = content.replace('${NAME}', base_name)
+    pre_config = json.loads(content)
+
+    # Replace predefined names
+    prenames = pre_config.get("prenames")
+    if prenames:
+        for key, value in prenames.items():
+            assert key != "NAME"
+            content = content.replace('${%s}' % key, value)
+
+    # Ready to go
+    return json.loads(content)
+
