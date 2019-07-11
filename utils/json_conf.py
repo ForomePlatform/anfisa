@@ -24,6 +24,7 @@ def loadDatasetInventory(inv_file):
     global sCommentLinePatt
 
     # Check file path correctness
+    dir_path = os.path.dirname(inv_file)
     dir_name = os.path.basename(os.path.dirname(inv_file))
     base_name, _, ext = os.path.basename(inv_file).partition('.')
     if dir_name != base_name or ext != "inv":
@@ -37,8 +38,9 @@ def loadDatasetInventory(inv_file):
                 lines.append(line)
     content = lines.join()
 
-    # Replace ${NAME}
+    # Replace ${NAME}, ${DIR}
     content = content.replace('${NAME}', base_name)
+    content = content.replace('${DIR}', dir_path)
     pre_config = json.loads(content)
 
     # Replace predefined names
