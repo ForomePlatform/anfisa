@@ -84,7 +84,7 @@ class AnfisaApp:
         dir_name += '/'
         for no in range(10000):
             fname = "%s_%04d.xlsx" % (prefix, no)
-            debug_file_name = "%s_%04d.json" % (prefix, no)
+            #debug_file_name = "%s_%04d.json" % (prefix, no)
             if os.path.exists(dir_name + fname):
                 fname = None
             else:
@@ -96,15 +96,15 @@ class AnfisaApp:
 
         export_h = ExcelExport(export_setup["excel-template"],
             version_info = version_info, tags_info = tags_info)
-        exp_rep = _ExportReport(dir_name + debug_file_name,
-            version_info, tags_info)
+        #exp_rep = _ExportReport(dir_name + debug_file_name,
+        #    version_info, tags_info)
         for rec_no in rec_no_seq:
             rec_data = ds_h.getRecordData(rec_no)
             tags_data = tags_man.getRecTags(rec_no) if tags_man else None
             export_h.add_variant(rec_data, tags_data)
-            exp_rep.record(rec_data, tags_data)
+            #exp_rep.record(rec_data, tags_data)
         export_h.save(dir_name + fname)
-        exp_rep.close()
+        #exp_rep.close()
         return 'excel/' + fname
 
     @classmethod
