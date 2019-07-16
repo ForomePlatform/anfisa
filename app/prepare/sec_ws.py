@@ -1,4 +1,4 @@
-import os, json, gzip, codecs, logging, re
+import os, json, gzip, codecs, logging, re, shutil
 from copy import deepcopy
 
 from utils.ixbz2 import FormatterIndexBZ2
@@ -10,7 +10,8 @@ from app.filter.decision import DecisionTree
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, dataset, ws_name, base_version = None,
-            condition = None, std_name = None, markup_batch = None):
+            condition = None, std_name = None,
+            markup_batch = None, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
@@ -19,6 +20,7 @@ class SecondaryWsCreation(ExecutionTask):
         self.mStdName = std_name
         self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
+        self.mForceMode = force_mode
 
     sID_Pattern = re.compile('^\\S+$', re.U)
     @classmethod
@@ -52,6 +54,10 @@ class SecondaryWsCreation(ExecutionTask):
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
+        if os.path.exists(ws_dir) and self.mForceMode:
+            if self.mDS.getDataVault().getWS(self.mWSName):
+                self.mDS.getDataVault().unloadDS(self.mWSName, "ws")
+            shutil.rmtree(ws_dir)
         if os.path.exists(ws_dir):
             self.setStatus("Dataset already exists")
             return None

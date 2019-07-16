@@ -583,7 +583,8 @@ class XLDataset(DataSet):
         task_id = self.getApp().startCreateSecondaryWS(
             self, rq_args["ws"],
             base_version = base_version, condition = condition,
-            std_name = std_name, markup_batch = markup_batch)
+            std_name = std_name, markup_batch = markup_batch,
+            force_mode = "force" in rq_args)
         return {"task_id" : task_id}
 
     #===============================================

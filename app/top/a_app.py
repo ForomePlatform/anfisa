@@ -156,9 +156,9 @@ class AnfisaApp:
     @classmethod
     def startCreateSecondaryWS(cls, dataset, wsname,
             base_version = None, condition = None, std_name = None,
-            markup_batch = None):
+            markup_batch = None, force_mode = False):
         task = SecondaryWsCreation(dataset, wsname,
-            base_version, condition, std_name, markup_batch)
+            base_version, condition, std_name, markup_batch, force_mode)
         cls.sJobPool.putTask(task)
         return str(task.getUID())
 

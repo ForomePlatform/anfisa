@@ -500,6 +500,7 @@ Method /xl2ws
     -> std_name             (or
                     Name of standard code)
     -> ws           (= name of creating ws, required)
+    -> force        Force mode: remove WS if present, or undefined
     <- 
     {
         "task_id":   <id of the creation task>
