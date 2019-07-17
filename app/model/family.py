@@ -47,6 +47,9 @@ class FamilyInfo:
 
     @staticmethod
     def detect(samples):
+        if "id" in samples[sorted(samples.keys())[0]]:
+            samples = {it["id"]: it
+                for it in samples.values()}
         members = sorted(samples.keys())
         if not members[0].endswith("a1"):
             proband_idx = None
