@@ -214,7 +214,7 @@ var sUnitsH = {
         this.mCurUnit = stat_unit;
         this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
-        softScroll(new_unit_el);
+        softScroll(new_unit_el, 1);
         sConditionsH.onUnitSelect();
         sOpCondH.onUnitSelect();
     },

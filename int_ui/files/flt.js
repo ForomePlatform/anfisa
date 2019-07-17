@@ -195,16 +195,17 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 }
 
 /*************************************/
-function softScroll(nd) {
+function softScroll(nd, upper_level) {
     if (nd == null) 
         return;
     var rect = nd.getBoundingClientRect();
-    var rect_parent = nd.parentNode.getBoundingClientRect();
-    if (rect.top - 10 < rect_parent.top) {
-        nd.scrollIntoView(
-            {behavior: 'auto', block: 'start', inline: 'center'});
-    }
-    else if (rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
+    var parent_nd = nd.parentNode;
+    if (upper_level)
+        for (var j=0; j<upper_level; j++)
+            parent_nd = parent_nd.parentNode;
+    var rect_parent = parent_nd.getBoundingClientRect();
+    if (rect.top - 10 < rect_parent.top ||
+            rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
         nd.scrollIntoView(
             {behavior: 'auto', block: 'start', inline: 'center'});
     }

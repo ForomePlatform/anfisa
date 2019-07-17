@@ -191,6 +191,7 @@ function onClick(event_ms) {
     }
 }
 
+/*
 function softScroll(nd) {
     if (nd == null) 
         return;
@@ -205,6 +206,7 @@ function softScroll(nd) {
             {behavior: 'auto', block: 'start', inline: 'center'});
     }
 }
+*/
 
 function _showModal(cur_mode_node) {
     sNodeFilterBack.style.display = 
