@@ -331,9 +331,9 @@ class XLDataset(DataSet):
             return json.loads(rq_args["ctx"])
         return dict()
 
-    def _prepareTree(self, rq_args):
+    def _prepareTree(self, rq_args, with_point = True):
         point_no = int(rq_args["no"])
-        if point_no < 0:
+        if with_point and point_no < 0:
             return None, point_no, self.mCondEnv.getCondNone()
         comp_data = (json.loads(rq_args["compiled"])
             if "compiled" in rq_args else None)
@@ -518,7 +518,7 @@ class XLDataset(DataSet):
     @RestAPI.xl_request
     def rq__xltree_counts(self, rq_args):
         time_end = self. _prepareTimeEnd(rq_args)
-        tree, point_no, condition = self._prepareTree(rq_args)
+        tree, point_no, condition = self._prepareTree(rq_args, False)
         return {
             "rq_id": rq_args.get("rq_id"),
             "counts": self.evalTreeSelectedCounts(tree,
