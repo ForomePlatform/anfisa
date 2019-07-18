@@ -162,8 +162,9 @@ class CondEnv:
 
     def getStdTreeCode(self, code_name):
         for it in self.mSolPack.iterItems("tree_code", self.testRequirements):
-            if it.getName() == code_name:
+            if it.getName() == code_name or code_name is None:
                 return it.getData()
+        logging.error("Request for bad std tree: " + code_name)
         assert False
 
     def getStdTreeNameByHash(self, hash_code):
