@@ -174,19 +174,40 @@ def defineFilterSchema():
         filters.multiStatusUnit("FT", "/_filters/filters[]", title="FILTER")
 
     with filters.viewGroup("Predictions"):
+        filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign", title="Categorized Benign in HGMD",
+            default_value = "Not in HGMD")
+        filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
+            default_value = "None")
+
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar", title="Categorized Benign in ClinVar by all submitters")
+        filters.multiStatusUnit("ClinVar_Significance",
+            "/data/clinvar_significance[]", title = "Clinical Significance in ClinVar")
+        filters.statusUnit("Clinvar_stars",
+            "/_filters/clinvar_stars",
+            default_value = "No data",
+            title = "ClinVar Stars")
+        filters.intValueUnit("Number_of_clinvar_submitters", "/_filters/num_clinvar_submitters", render_mode="log,>",
+                           default_value=0, title="ClinVar: Number of Submitters")
+        filters.statusUnit("Clinvar_review_status",
+            "/_filters/clinvar_review_status",
+            default_value = "No data",
+            title = "ClinVar Review Status")
+        filters.statusUnit("Clinvar_criteria_provided",
+            "/_filters/clinvar_criteria_provided",
+            default_value = "Not Provided",
+            title = "ClinVar Criteria")
+        filters.statusUnit("Clinvar_conflicts",
+            "/_filters/clinvar_conflicts",
+            default_value = "Criteria not Provided",
+            title = "ClinVar Conflicts")
+        filters.multiStatusUnit("Clinvar_acmg_guidelines", "/_filters/clinvar_acmg_guidelines[]",
+            default_value = "None")
+
         filters.statusUnit("Clinvar_Trusted_Benign",
             "/_filters/clinvar_trusted_benign",
             default_value = "No data",
             title = "Categorized Benign by Clinvar Trusted Submitters")
-        filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign", title="Categorized Benign in HGMD",
-            default_value = "Not in HGMD")
-
-        filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
-            default_value = "None")
-        filters.multiStatusUnit("ClinVar_Significance",
-            "/data/clinvar_significance[]", title = "Clinical Significance in ClinVar")
         filters.multiStatusUnit("LMM_Significance",
             "/data/lmm", title = "Clinical Significance by LMM")
         filters.multiStatusUnit("GeneDx_Significance",
@@ -206,6 +227,9 @@ def defineFilterSchema():
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/view/predictions/polyphen2_hdiv[]",
             separators = "[\s\,]", default_value = "undef")
+
+    filters.floatValueUnit("GERP_score", "/view/bioinformatics/gerp_rs", render_mode="linear,>",
+                           default_value=0, title="GERP Score")
 
     with filters.viewGroup("Debug_Info"):
         filters.intValueUnit("Severity", "/_filters/severity",
