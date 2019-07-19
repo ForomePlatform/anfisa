@@ -257,6 +257,8 @@ var sOpEnumH = {
         op_mode = "";
         if (this.mOperationMode != null)
             op_mode = ["", "AND", "NOT"][this.mOperationMode];
+        if (!op_mode)
+            op_mode = "";
         
         condition_data = null;
         if (sel_names.length > 0) {

@@ -588,11 +588,10 @@ var sOpCondH = {
             this.mCondition = [this.mCurTpHandler.getCondType(), cur_unit_name].concat(
                 condition_data);
             this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode);
-            
             if (this.mIdxToUpdate == null) {
-                if (add_always) 
+                if (add_always) { 
                     this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name);
-                else {
+                } else {
                     this.mIdxToAdd = sConditionsH.findCond(cur_unit_name);
                     if (this.mIdxToAdd == null)
                         this.mIdxToAdd = sConditionsH.nextIdx();
