@@ -11,7 +11,7 @@ def connect(port = 3306, user = "hgmd", password = "hgmd"):
         host="localhost",
         user=user,
         passwd=password,
-        database="hgmd_pro",
+        database="hgmd_pro0",
         port = port
     )
     return connection
@@ -20,12 +20,12 @@ def connect(port = 3306, user = "hgmd", password = "hgmd"):
 
 
 class HGMD:
-    SQL_ACC_NUM = "select acc_num from `hgmd_pro`.`hg19_coords`  where chromosome = %s and coordSTART = %s and coordEND = %s"
-    SQL_PMID = "SELECT distinct disease, PMID, Tag from hgmd_pro.mutation where acc_num = %s"
+    SQL_ACC_NUM = "select acc_num from `hgmd_pro0`.`hg19_coords`  where chromosome = %s and coordSTART = %s and coordEND = %s"
+    SQL_PMID = "SELECT distinct disease, PMID, Tag from hgmd_pro0.mutation where acc_num = %s"
     SQL_PHEN = "SELECT distinct phenotype " + \
-               "FROM hgmd_phenbase.hgmd_mutation as m join hgmd_phenbase.hgmd_phenotype as p on p.phen_id = m.phen_id " + \
+               "FROM hgmd_phenbase0.hgmd_mutation as m join hgmd_phenbase0.hgmd_phenotype as p on p.phen_id = m.phen_id " + \
                "WHERE acc_num = %s"
-    SQL_HG38 = "SELECT coordSTART, coordEND FROM `hgmd_pro`.`hg38_coords` WHERE acc_num = %s"
+    SQL_HG38 = "SELECT coordSTART, coordEND FROM `hgmd_pro0`.`hg38_coords` WHERE acc_num = %s"
 
     def __init__(self):
         self.tunnel = None
