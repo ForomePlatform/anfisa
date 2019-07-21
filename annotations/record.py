@@ -454,6 +454,8 @@ class Variant:
     def list_dsmax(self):
         dslist = ['DS_AG','DS_AL','DS_DG','DS_DL']
         dct = {}
+        if not ("spliceAI" in self.data):
+            return dct
         if not len(self.data["spliceAI"]):
             return dct
         for ds in dslist:
@@ -1237,8 +1239,8 @@ class Variant:
         data_info["variant_exon_intron_worst"], data_info["total_exon_intron_worst"] = self.get_intron_or_exon("worst")
 
         tab1["igv"] = self.get_igv_url()
-        if self.filters["splice_ai_dsmax"] != None:   
-            if self.filters["splice_ai_dsmax"] >= 0.2:                             
+        if ("splice_ai_dsmax" in self.filters):
+            if self.filters["splice_ai_dsmax"] >= 0.2:
                 tab1["splice_altering"] = self.get_splice_altering() 
         else: 
             tab1["splice_altering"] = None
@@ -1409,7 +1411,7 @@ class Variant:
         splice_ai_keys = ['AG', 'AL', 'DG', 'DL']
         for s in splice_ai_keys:
             tab6["splice_ai_{}".format(s.lower())] = []
-        if (self.data["spliceAI"]):
+        if ("spliceAI" in self.data):
             for evt, d in self.data["spliceAI"].iteritems():
                 for s in splice_ai_keys:
                     key = "DS_{}".format(s)

@@ -3,7 +3,7 @@ from annotations.db_connect import Connection
 
 
 class ClinVar(Connection):
-    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar`.`CV_Submitters_A` NATURAL JOIN `clinvar`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN ({})"
+    SUBMITTER_QUERY = "SELECT SubmitterName, ClinicalSignificance FROM `clinvar_old`.`CV_Submitters_A` NATURAL JOIN `clinvar_old`.`ClinVar2Sub_Sig_A` WHERE RCVaccession IN ({})"
 
     QUERY_BASE = "SELECT " \
                 "`Start`," \
@@ -17,7 +17,7 @@ class ClinVar(Connection):
                 "RCVaccession, " \
                 "ReferenceAllele, " \
                 "VariationID " \
-            "FROM clinvar.variant_summary AS v " \
+            "FROM clinvar_old.variant_summary AS v " \
             "WHERE " \
                 "Assembly = 'GRCh37' AND " \
                 "Chromosome={} AND " \
