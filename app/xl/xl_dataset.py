@@ -1,6 +1,7 @@
 import json
 from time import time
 from copy import deepcopy
+from io import TextIOWrapper
 from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
@@ -311,10 +312,12 @@ class XLDataset(DataSet):
     def retrieveListKeys(self, rec_no_seq):
         rec_no_dict = {rec_no: None for rec_no in rec_no_seq}
         with self._openPData() as inp:
-            for rec_no, line in enumerate(inp):
+            pdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            for rec_no, line in enumerate(pdata_inp):
                 if rec_no not in rec_no_dict:
                     continue
-                pre_data = json.loads(line.decode("utf-8"))
+                pre_data = json.loads(line.strip())
                 rec_no_dict[rec_no] = [rec_no,
                     escape(pre_data.get("_label")),
                     AnfisaConfig.normalizeColorCode(pre_data.get("_color"))]

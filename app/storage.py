@@ -134,18 +134,15 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             "modes": [],
             "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record}
-        with open(ds_dir + "/dsinfo.json",
-                "w", encoding = "utf-8") as outp:
+        with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)
 
-        with open(ds_dir + "/stat.json",
-                "w", encoding = "utf-8") as outp:
+        with open(ds_dir + "/stat.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(view_checker.dump(), sort_keys = True,
                 indent = 4), file = outp)
 
-        with open(ds_dir + "/active",
-                "w", encoding = "utf-8") as outp:
+        with open(ds_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
         print("Dataset %s kind=%s succesively created" % (
             name, kind), file = rep_out)

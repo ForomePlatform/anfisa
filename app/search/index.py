@@ -1,5 +1,6 @@
 import json
 from copy import deepcopy
+from io import TextIOWrapper
 
 from app.config.a_config import AnfisaConfig
 from app.filter.cond_op import CondOpEnv
@@ -33,8 +34,10 @@ class Index:
 
         self.mRecords = []
         with self.mWS._openFData() as inp:
-            for line in inp:
-                inp_data = json.loads(line.decode("utf-8"))
+            fdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            for line in fdata_inp:
+                inp_data = json.loads(line.strip())
                 rec = self.mDCCollection.initRecord()
                 for unit_h in self.mUnits:
                     unit_h.fillRecord(inp_data, rec)
@@ -51,8 +54,10 @@ class Index:
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
-            for rec_no, line in enumerate(inp):
-                inp_data = json.loads(line.decode("utf-8"))
+            fdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            for rec_no, line in enumerate(fdata_inp):
+                inp_data = json.loads(line.strip())
                 self.mUnits[0].fillRulesPart(inp_data,
                     self.mRecords[rec_no], rec_no)
         to_update = []

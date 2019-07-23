@@ -294,7 +294,7 @@ class ExcelExport:
     def save(self, file):
         ws = self.workbook.active
         self._decor_lines(ws)
-        for column, width in self.column_widths.iteritems():
+        for column, width in self.column_widths.items():
             ws.column_dimensions[openpyxl.utils.get_column_letter(column)].width = min(12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
         ws.auto_filter.ref = 'A1:' + max_column + str(len(ws['A']))
@@ -304,7 +304,11 @@ class ExcelExport:
         if isinstance(value, str) and value.startswith("http"):
             return '=HYPERLINK("{0}","{0}")'.format(value)
         if isinstance(value, dict):
-            return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
+            if "link" in value:
+                return '=HYPERLINK("{}","{}")'.format(value["link"],
+                    value.get("title", ""))
+            return " ".join(sorted(["%s=%s" % (key, val)
+                for key, val in value.items()]))
         return value
 
 if __name__ == '__main__':

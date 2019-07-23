@@ -1,5 +1,6 @@
 import os, json, gzip, logging, re, shutil
 from copy import deepcopy
+from io import TextIOWrapper
 
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
@@ -64,7 +65,9 @@ class SecondaryWsCreation(ExecutionTask):
 
         fdata_seq = []
         with self.mDS._openFData() as inp:
-            for rec_no, line in enumerate(inp):
+            fdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            for rec_no, line in enumerate(fdata_inp):
                 if rec_no in rec_no_set:
                     fdata_seq.append(json.loads(line.rstrip()))
         assert len(fdata_seq) == len(rec_no_seq)
@@ -92,17 +95,23 @@ class SecondaryWsCreation(ExecutionTask):
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
         self.setStatus("Prepare fdata")
-        with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
+        with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_stream:
+            fdata_out = TextIOWrapper(fdata_stream,
+                encoding = "utf-8", line_buffering = True)
             for fdata in fdata_seq:
-                print(json.dumps(fdata, ensure_ascii = False,
-                    file = fdata_out))
+                print(json.dumps(fdata, ensure_ascii = False),
+                    file = fdata_out)
 
         self.setStatus("Prepare pdata")
-        with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
-            with self.mDS._openPData() as inp:
-                for rec_no, line in enumerate(inp):
-                    if rec_no in rec_no_set:
-                        print(line.rstrip(), file = fdata_out)
+        with self.mDS._openPData() as inp, \
+                gzip.open(ws_dir + "/pdata.json.gz", 'wb') as outp:
+            pdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            pdata_outp = TextIOWrapper(outp,
+                encoding = "utf-8", line_buffering = True)
+            for rec_no, line in enumerate(pdata_inp):
+                if rec_no in rec_no_set:
+                    print(line.rstrip(), file = pdata_outp)
 
         self.setStatus("Finishing...")
         logging.info("Finishing up workspace %s" % self.mWSName)
@@ -119,13 +128,11 @@ class SecondaryWsCreation(ExecutionTask):
                 if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta")}
 
-        with open(ws_dir + "/dsinfo.json",
-                "w", encoding = "utf-8") as outp:
+        with open(ws_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)
 
-        with open(ws_dir + "/active",
-                "w", encoding = "utf-8") as outp:
+        with open(ws_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
 
         self.mDS.getDataVault().loadDS(self.mWSName, "ws")
