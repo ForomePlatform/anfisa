@@ -1,5 +1,5 @@
 import logging, traceback
-from StringIO import StringIO
+from io import StringIO
 
 from .view_repr import jsonHtmlRepr, htmlEscape
 #===============================================

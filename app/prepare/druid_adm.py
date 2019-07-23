@@ -1,4 +1,4 @@
-import os, sys, subprocess, codecs, json
+import os, sys, subprocess, json
 from datetime import datetime, timedelta
 
 from app.filter.druid_agent import DruidAgent
@@ -35,15 +35,15 @@ class DruidAdmin(DruidAgent):
                 os.path.basename(fdata_name))
             cmd = [self.mScpConfig["exe"]]
             if not cmd[0]:
-                print >> sys.stderr, "Undefined parameter scp/exe"
+                print("Undefined parameter scp/exe", file = sys.stderr)
                 assert False
             if self.mScpConfig.get("key"):
                 cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd.append(fdata_name)
             cmd.append(self.mScpConfig["host"] + ':' + base_dir + "/" +
                 filter_name)
-            print >> sys.stderr, "Remote copying:", ' '.join(cmd)
-            print >> sys.stderr, "Scp started at", datetime.now()
+            print("Remote copying:", ' '.join(cmd), file = sys.stderr)
+            print("Scp started at", datetime.now(), file = sys.stderr)
             subprocess.call(' '.join(cmd), shell = True)
         else:
             base_dir = os.path.dirname(fdata_name)
@@ -111,12 +111,12 @@ class DruidAdmin(DruidAgent):
                     "forceExtendableShardSpecs" : True}}}
 
         if report_name is not None:
-            with codecs.open(report_name, "w", encoding="utf-8") as outp:
+            with open(report_name, "w", encoding="utf-8") as outp:
                 outp.write(json.dumps(schema_request, ensure_ascii = False))
-            print >> sys.stderr, "Report stored:", report_name
+            print("Report stored:", report_name, file = sys.stderr)
 
-        print >> sys.stderr, "Upload to Druid", dataset_name, \
-            "started at ", datetime.now()
+        print("Upload to Druid", dataset_name,
+            "started at ", datetime.now(), file = sys.stderr)
         self.call("index", schema_request)
         return True
 

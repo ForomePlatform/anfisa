@@ -1,5 +1,5 @@
 import threading, logging, abc, traceback, time
-from StringIO import StringIO
+from io import StringIO
 from uuid import uuid4
 
 #===============================================

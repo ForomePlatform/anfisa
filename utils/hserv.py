@@ -1,6 +1,6 @@
-import sys, os, traceback, logging, codecs
-from StringIO import StringIO
-from urlparse import parse_qs
+import sys, os, traceback, logging
+from io import StringIO
+from urllib.parse import parse_qs
 from cgi import parse_header, parse_multipart
 import logging.config
 
@@ -102,6 +102,7 @@ class HServHandler:
                     ctype, pdict = parse_header(content_type)
                     if ctype == 'multipart/form-data':
                         for a, v in parse_multipart(environ['wsgi.input'], pdict).items():
+                            print ("a=", a,"v=", v)
                             query_args[a] = v[0]
                     elif ctype != 'application/x-www-form-urlencoded':
                         logging.error("Bad content type for POST: " + ctype)
@@ -111,7 +112,7 @@ class HServHandler:
                     rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
                     rq_body = environ['wsgi.input'].read(rq_body_size)
                     for a, v in parse_qs(rq_body).items():
-                        query_args[a] = v[0].decode("utf-8")
+                        query_args[a.decode('utf-8')] = v[0].decode("utf-8")
             except Exception:
                 rep = StringIO()
                 traceback.print_exc(file = rep)
@@ -130,7 +131,7 @@ class HServHandler:
             inp = open(fpath, "rb")
             content = inp.read()
         else:
-            with codecs.open(fpath, "r", encoding = "utf-8") as inp:
+            with open(fpath, "r", encoding = "utf-8") as inp:
                 content = inp.read()
         inp.close()
 

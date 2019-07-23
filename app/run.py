@@ -28,7 +28,7 @@ if __name__ == '__main__':
     host, port = setupHServer(AnfisaApp, config_file, False)
     httpd = make_server(host, port, application,
         handler_class = _LoggingWSGIRequestHandler)
-    print >> sys.stderr, "HServer listening %s:%d" % (host, port)
+    print("HServer listening %s:%d" % (host, port), file = sys.stderr)
     httpd.serve_forever()
 else:
     logging.basicConfig(level = 10)

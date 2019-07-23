@@ -116,8 +116,8 @@ class FilterPrepareSetH:
     def reportProblems(self, output):
         for unit in self.mUnits:
             if unit.getErrorCount() > 0:
-                print >> output, "Field %s: %d bad conversions" % (
-                    unit.getName(), unit.getErrorCount())
+                print("Field %s: %d bad conversions" % (
+                    unit.getName(), unit.getErrorCount()), file = output)
         return True
 
     def dump(self):

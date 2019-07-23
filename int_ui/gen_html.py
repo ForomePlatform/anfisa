@@ -4,26 +4,27 @@ from .mirror_dir import MirrorUiDirectory
 #===============================================
 def startHtmlPage(output, title = None, html_base = None,
         css_files = None, js_files = None):
-    print >> output, '''
+    print('''
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">'''
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">''',
+    file = output)
     if title:
-        print >> output, '    <title>%s</title>' % escape(title)
+        print('    <title>%s</title>' % escape(title), file = output)
     if html_base:
-        print >> output, '    <base href="%s" />' % html_base
+        print('    <base href="%s" />' % html_base, file = output)
     if css_files:
         for name in css_files:
-            print >> output, ('    <link rel="stylesheet" '
+            print('    <link rel="stylesheet" '
                 'href="ui/%s" type="text/css" media="all"/>' %
-                MirrorUiDirectory.transform(name))
+                MirrorUiDirectory.transform(name), file = output)
     if js_files:
         for name in js_files:
-            print >> output, ('    <script type="text/javascript" '
+            print('    <script type="text/javascript" '
                 'src="ui/%s"></script>' %
-                MirrorUiDirectory.transform(name))
-    print >> output, '  </head>'
+                MirrorUiDirectory.transform(name), file = output)
+    print('  </head>', file = output)
 
 #===============================================
 def formTopPage(output, title, html_base, workspace):
@@ -34,22 +35,22 @@ def formTopPage(output, title, html_base, workspace):
             "flt.js", "fctrl.js", "filters.js",
             "zones.js", "rules.js"])
 
-    print >> output, ('  <body onload="initWin(\'%s\', \'\');">' %
-        (workspace.getName()))
+    print('  <body onload="initWin(\'%s\', \'\');">' %
+        workspace.getName(), file = output)
     _formMainDiv(output, workspace.getName())
-    print >> output, '    <div id="filter-back">'
+    print('    <div id="filter-back">', file = output)
     formFilterPannel(output);
-    print >> output, '    </div>'
+    print('    </div>', file = output)
     _formZonesDiv(output, workspace.iterZones())
     _formNoteDiv(output)
     _formRulesDiv(output)
 
-    print >> output, ' </body>'
-    print >> output, '</html>'
+    print(' </body>', file = output)
+    print('</html>', file = output)
 
 #===============================================
 def _formMainDiv(output, workspace_name):
-    print >> output, '''
+    print('''
     <div id="all">
       <div id="top">
         <div id="top-ws">
@@ -150,7 +151,7 @@ def _formMainDiv(output, workspace_name):
             </iframe>
         </div>
       </div>
-    </div>''' % {"ws": workspace_name}
+    </div>''' % {"ws": workspace_name}, file = output)
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -167,7 +168,7 @@ def _formZonesDiv(output, zones):
         "check_zones": "\n".join(rep_check_zones),
         "div_zones": "\n".join(rep_div_zones)}
 
-    print >> output, '''
+    print('''
     <div id="zone-back">
       <div id="zone-mod">
         <div id="zone-top">
@@ -201,11 +202,11 @@ def _formZonesDiv(output, zones):
         </div>
       </div>
     </div>
-''' % params
+''' % params, file = output)
 
 #===============================================
 def _formNoteDiv(output):
-    print >> output, '''
+    print('''
     <div id="note-back">
       <div id="note-mod">
         <div id="note-top">
@@ -232,11 +233,11 @@ def _formNoteDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)
 
 #===============================================
 def _formRulesDiv(output):
-    print >> output, '''
+    print('''
     <div id="rules-back">
       <div id="rules-mod">
         <div id="rules-top">
@@ -275,11 +276,11 @@ def _formRulesDiv(output):
           </div>
         </div>
       </div>
-    </div>'''
+    </div>''', file = output)
 
 #===============================================
 def tagsBlock(output):
-    print >> output, '''
+    print('''
 <div id="tg-all">
   <div id="tg-wrap-filters">
     <div id="tg-filters">
@@ -348,12 +349,12 @@ def tagsBlock(output):
       </div>
     </div>
   </div>
-</div>'''
+</div>''', file = output)
 
 #===============================================
 def noRecords(output):
     startHtmlPage(output, css_files = ["anf.css"])
-    print >> output, '''
+    print('''
   <body>
     <h3>No records available</h3>
     <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
@@ -362,35 +363,35 @@ def noRecords(output):
         <button onclick='parent.window.updateCurFilter("");'
             >filter</button>.</p>
   </body>
-</html>'''
+</html>''', file = output)
 
 #===============================================
 def dirPage(output, title, html_base):
     startHtmlPage(output, title, html_base,
         css_files = ["dir.css"], js_files = ["dir.js"])
-    print >> output, '''
+    print('''
   <body onload="setup();">
     <h2>%s home directory</h2>
     <p id="p-version">System version: <span id="span-version"></span></p>
     <div id="div-main">
     </div>
   </body>
-</html>''' % title
+</html>''' % title, file = output)
 
 #===============================================
 def notFound(output, title, html_base):
     startHtmlPage(output, title + ": Page not found", html_base,
         css_files = ["dir.css"])
-    print >> output, '''
+    print('''
   <body>
     <h2>Page not found</h2>
     <p><a href="dir" target="%s">Anfisa home</a></p>
   </body>
-</html>''' % (title + "/dir")
+</html>''' % (title + "/dir"), file = output)
 
 #===============================================
 def formFilterPannel(output):
-    print >> output, '''
+    print('''
     <div id="filter-mod">
         <div id="filter-stat">
           <div id="stat-list">
@@ -508,4 +509,4 @@ def formFilterPannel(output):
             </div>
           </div>
         </div>
-    </div>'''
+    </div>''', file = output)

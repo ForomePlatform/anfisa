@@ -8,9 +8,8 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
         css_files = ["xltree.css", "py_pygments.css", "base.css"],
         js_files = ["xltree.js", "fctrl.js", "flt.js", "xl_ctrl.js"])
 
-    print >> output, (
-        '  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title, ws_url))
+    print('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+        (xl_ds.getName(), common_title, ws_url), file = output)
 
     _formXLPannel(output, xl_ds)
     _formCurCondDiv(output)
@@ -20,12 +19,12 @@ def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
     formCreateWsDiv(output)
     formSubViewDiv(output)
 
-    print >> output, ' </body>'
-    print >> output, '</html>'
+    print(' </body>', file = output)
+    print('</html>', file = output)
 
 #===============================================
 def _formXLPannel(output, ds):
-    print >> output, '''
+    print('''
       <div id="xl-ctrl">
         <div id="xl-info">
             <span id="ds-control-wrap" title="Control Menu..." class="drop">
@@ -45,11 +44,11 @@ def _formXLPannel(output, ds):
             XL dataset: <span id="xl-name"></span><br/>
             <select id="std-code-select" onchange="pickStdCode();"
                 title="Pick tree code from repository">
-                <option value="">in work</option>'''
+                <option value="">in work</option>''', file = output)
     for std_name in ds.getCondEnv().getStdTreeCodeNames():
-        print >> output, '                <option value="%s">%s</option>' % (
-            escape(std_name), escape(std_name))
-    print >> output, '''
+        print('                <option value="%s">%s</option>' % (
+            escape(std_name), escape(std_name)), file = output)
+    print('''
             </select>
             <button id="code-edit-show" onclick='sCodeEditH.show();'>
                 Edit code
@@ -87,11 +86,11 @@ def _formXLPannel(output, ds):
           <div id="stat-list">
           </div>
         </div>
-      </div>'''
+      </div>''', file = output)
 
 #===============================================
 def _formCurCondDiv(output):
-    print >> output, '''
+    print('''
     <div id="cur-cond-back">
       <div id="cur-cond-mod">
         <div id="condition-change">
@@ -148,11 +147,11 @@ def _formCurCondDiv(output):
             </div>
         </div>
       </div>
-    </div>'''
+    </div>''', file = output)
 
 #===============================================
 def _formVersionsDiv(output):
-    print >> output, '''
+    print('''
     <div id="versions-back" class="modal-back">
       <div id="versions-mod">
         <div id="versions-title">
@@ -181,11 +180,11 @@ def _formVersionsDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)
 
 #===============================================
 def _formEditCodeDiv(output):
-    print >> output, '''
+    print('''
     <div id="code-edit-back" class="modal-back">
       <div id="code-edit-mod">
         <div id="code-edit-top">
@@ -211,5 +210,5 @@ def _formEditCodeDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)
 

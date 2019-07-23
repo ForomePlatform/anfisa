@@ -14,7 +14,7 @@ class Types:
             return [2]
         elif isinstance(value, dict):
             return [3]
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             if not value:
                 return [4, 5, 6]
             elif value.startswith("http"):

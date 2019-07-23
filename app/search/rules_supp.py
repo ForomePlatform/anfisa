@@ -1,4 +1,4 @@
-from StringIO import StringIO
+from io import StringIO
 
 from .flt_unit import MultiSetUnit
 from app.eval.params import parseParams
@@ -64,7 +64,7 @@ class RulesEvalUnit(MultiSetUnit):
                     val = set()
             elif isinstance(val, list):
                 val = set(map(self.normEnumValue, val))
-            elif isinstance(val, basestring):
+            elif isinstance(val, str):
                 val = self.normEnumValue(val)
             value_dict[name] = val
         pre_rec = PresentationObj(value_dict)
@@ -89,8 +89,8 @@ class RulesEvalUnit(MultiSetUnit):
         for param_h in RULES_SETUP.PARAMETERS:
             if not research_mode and param_h.isResearch():
                 continue
-            print >> param_rep, ("%s=%s" % (param_h.getName(),
-                str(self.mEnv.get(param_h.getName()))))
+            print("%s=%s" % (param_h.getName(),
+                str(self.mEnv.get(param_h.getName()))), file = param_rep)
         ret["params"] = param_rep.getvalue()
         return ret
 

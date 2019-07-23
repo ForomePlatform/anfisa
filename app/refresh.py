@@ -57,12 +57,12 @@ if __name__ == '__main__':
     for c in cases:
         p = find_json(c, path_to_json)
         if (not p):
-            print "Annotated json not found for: {}, skipping".format(c)
+            print("Annotated json not found for: {}, skipping".format(c))
             continue
         refresh_case(app_config, c, p, mode)
         #os.chmod(os.path.join(vault,c), 777)
         n = n + 1
-        print "Refreshed: {}, {}/{}".format(c, n, len(cases))
+        print("Refreshed: {}, {}/{}".format(c, n, len(cases)))
 
-    print "Refreshed {} cases".format(n)
+    print("Refreshed {} cases".format(n))
 

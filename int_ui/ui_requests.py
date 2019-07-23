@@ -1,5 +1,5 @@
 import logging
-from StringIO import StringIO
+from io import StringIO
 
 from .gen_html import formTopPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage

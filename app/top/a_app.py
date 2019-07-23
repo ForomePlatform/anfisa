@@ -1,5 +1,5 @@
-import sys, os, json, codecs, logging, signal
-from StringIO import StringIO
+import sys, os, json, logging, signal
+from io import StringIO
 
 from app.config.view_schema import defineViewSchema
 from app.config.a_config import AnfisaConfig
@@ -36,7 +36,7 @@ class AnfisaApp:
     def setup(cls, config, in_container):
         prepareSolutions()
 
-        with codecs.open(os.path.dirname(os.path.abspath(__file__)) +
+        with open(os.path.dirname(os.path.abspath(__file__)) +
             "/../VERSION", "r", encoding = "utf-8") as inp:
             cls.sVersionCode = inp.read().strip()
 
@@ -174,11 +174,11 @@ class _ExportReport:
         if not self.sActive:
             self.mOutput = None
             return
-        self.mOutput = codecs.open(debug_file_path, "w", encoding = "utf-8")
-        print >> self.mOutput, "@VERSIONS"
-        print >> self.mOutput, json.dumps(version_info, ensure_ascii = False)
-        print >> self.mOutput, "@TAGS_CFG"
-        print >> self.mOutput, json.dumps(tags_info, ensure_ascii = False)
+        self.mOutput = open(debug_file_path, "w", encoding = "utf-8")
+        print("@VERSIONS",file = self.mOutput)
+        print(json.dumps(version_info, ensure_ascii = False),file = self.mOutput)
+        print("@TAGS_CFG",file = self.mOutput)
+        print(json.dumps(tags_info, ensure_ascii = False),file = self.mOutput)
 
     def close(self):
         if self.mOutput is not None:
@@ -188,8 +188,8 @@ class _ExportReport:
     def record(self, rec_data, tags_data):
         if self.mOutput is None:
             return
-        print >> self.mOutput, "@RECORD"
-        print >> self.mOutput, json.dumps(rec_data, ensure_ascii = False)
-        print >> self.mOutput, "@TAGS"
-        print >> self.mOutput, json.dumps(tags_data, ensure_ascii = False)
+        print("@RECORD",file = self.mOutput)
+        print(json.dumps(rec_data, ensure_ascii = False),file = self.mOutput)
+        print("@TAGS",file = self.mOutput)
+        print(json.dumps(tags_data, ensure_ascii = False),file = self.mOutput)
 

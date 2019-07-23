@@ -204,14 +204,14 @@ class EnumConvertor(PathValueConvertor):
                 assert self.mDefaultValue in self.mVariantSet
         self.mVarCount = Counter()
         if self.mDefaultValue is not None:
-            assert isinstance(self.mDefaultValue, basestring)
+            assert isinstance(self.mDefaultValue, str)
             if not self.mAtomicMode:
                 self.mDefaultRet = [self.mDefaultValue]
             else:
                 self.mDefaultRet = self.mDefaultValue
         if self.mPreVariants is not None:
             for var in self.mPreVariants:
-                assert isinstance(var, basestring)
+                assert isinstance(var, str)
 
     def isAtomic(self):
         return self.mAtomicMode
@@ -227,7 +227,7 @@ class EnumConvertor(PathValueConvertor):
                         if v:
                             mod_values.append(v)
             is_ok = True
-            mod_values = map(unicode, mod_values)
+            mod_values = map(str, mod_values)
             for val in set(mod_values):
                 if (self.mVariantSet is not None and
                         val not in self.mVariantSet):
@@ -324,7 +324,8 @@ class ZygosityConvertor(ValueConvertor):
     def process(self, rec_no, rec_data, result):
         if self.mFamilyMembers is None:
             if self.mMaster.getFamilyInfo() is None:
-                print >> sys.stderr, "No dataset metadata with samples info"
+                print("No dataset metadata with samples info",
+                    file = sys.stderr)
                 assert False
             self.mFamilyMembers = self.mMaster.getFamilyInfo().getMembers()
         if len(self.mFamilyMembers) < 2:

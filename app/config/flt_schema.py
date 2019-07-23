@@ -80,7 +80,7 @@ def defineFilterSchema():
 
         filters.intValueUnit("Start_Pos", "/data/start",
             title = "Start Position", research_only = False,
-            render_mode = "neighborhood", default_value=sys.maxint)
+            render_mode = "neighborhood", default_value=sys.maxsize)
         filters.intValueUnit("End_Pos", "/data/end",
             title = "End Position", research_only = False, default_value=0,
             render_mode = "neighborhood")

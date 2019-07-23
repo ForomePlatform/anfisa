@@ -1,10 +1,10 @@
-import gzip, bz2, codecs, json
+import gzip, bz2, json
 from glob import glob
 
 #===============================================
 class PlainFileReader:
     def __init__(self, fname):
-        self.mInput = codecs.open(fname, 'r', encoding = 'utf-8')
+        self.mInput = open(fname, 'r', encoding = 'utf-8')
 
     def next(self):
         return self.mInput.readline()
@@ -95,7 +95,7 @@ def readJSonRecords(src):
                 for line in inp:
                     yield json.loads(line.decode('utf-8'))
         else:
-            with codecs.open(nm, 'r', encoding = 'utf-8') as inp:
+            with open(nm, 'r', encoding = 'utf-8') as inp:
                 for line in inp:
                     yield json.loads(line)
 

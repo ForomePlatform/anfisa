@@ -1,4 +1,4 @@
-import os, codecs
+import os
 
 from .acmg59 import evalRec as acmg59_evalRec
 from .hl_reportable import evalRec as hl_reportable_evalRec
@@ -98,6 +98,6 @@ class RULES_SETUP:
 
     @classmethod
     def getSrcContent(cls, key):
-        with codecs.open(cls.sPath + "/" + key + ".py",
+        with open(cls.sPath + "/" + key + ".py",
                 "r", encoding = "utf-8") as inp:
             return inp.read()

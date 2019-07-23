@@ -1,5 +1,5 @@
 import sys, ast, traceback, logging
-from StringIO import StringIO
+from io import StringIO
 from collections import defaultdict
 
 from .code_works import reprConditionCode, findComment
@@ -470,15 +470,13 @@ class ParsedDecisionTree:
 
     #===============================================
     def processInt(self, it):
-        if not isinstance(it, ast.Num) or not any(
-                [isinstance(it.n, tp) for tp in (int, long)]):
+        if not isinstance(it, ast.Num) or not isinstance(it.n, int):
             self.errorIt(it, "Integer is expected")
         return it.n
 
     #===============================================
     def processFloat(self, it):
-        if not isinstance(it, ast.Num) or not any(
-                [isinstance(it.n, tp) for tp in (int, long, float)]):
+        if not isinstance(it, ast.Num) or not isinstance(it.n, int):
             self.errorIt(it, "Int or float is expected: %r" % it.n)
         return it.n
 
@@ -511,6 +509,6 @@ if __name__ == '__main__':
     parser = ParsedDecisionTree(None, source)
 
     if parser.getError() is not None:
-        print >> sys.stdout, "Error:", parser.getError()
+        print("Error:", parser.getError())
     if parser.getFragments() is not None:
-        print >> sys.stdout, "Done:", len(parser.getFragments())
+        print("Done:", len(parser.getFragments()))

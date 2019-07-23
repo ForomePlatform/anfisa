@@ -1,9 +1,8 @@
-import codecs
-from md5 import md5
+from hashlib import md5
 
 #===============================================
 def codeHash(tree_code):
-    return md5(tree_code.strip()).hexdigest()
+    return md5(bytes(tree_code.strip(), 'utf-8')).hexdigest()
 
 #===============================================
 class SolutionItem:
@@ -32,7 +31,7 @@ class SolutionItem:
 class SolutionPack:
     @classmethod
     def readFile(cls,fname):
-        with codecs.open(fname, "r", encoding = "utf-8") as inp:
+        with open(fname, "r", encoding = "utf-8") as inp:
             return inp.read()
         assert False
 
@@ -43,7 +42,7 @@ class SolutionPack:
     @classmethod
     def readListFile(cls, fname):
         ret = []
-        with codecs.open(fname, "r", encoding = "utf-8") as inp:
+        with open(fname, "r", encoding = "utf-8") as inp:
             for line in inp:
                 val = line.partition('#')[0].strip()
                 if val:

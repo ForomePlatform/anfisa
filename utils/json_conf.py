@@ -1,8 +1,8 @@
-import sys, os, codecs, json, re
+import sys, os, json, re
 
 #========================================
 def loadJSonConfig(config_file):
-    with codecs.open(config_file, "r", encoding = "utf-8") as inp:
+    with open(config_file, "r", encoding = "utf-8") as inp:
         content = inp.read()
     dir_name = os.path.abspath(__file__)
     for idx in range(2):
@@ -28,11 +28,11 @@ def loadDatasetInventory(inv_file):
     dir_name = os.path.basename(os.path.dirname(inv_file))
     base_name, _, ext = os.path.basename(inv_file).partition('.')
     if dir_name != base_name or ext != "inv":
-        print >> sys.stderr, "Improper dataset inventory path:", inv_file
+        print("Improper dataset inventory path:", inv_file, file = sys.stderr)
 
     # Collect lines without comments
     lines = []
-    with codecs.open(inv_file, "r", encoding = "utf-8") as inp:
+    with open(inv_file, "r", encoding = "utf-8") as inp:
         for line in inp:
             if not sCommentLinePatt.match(line):
                 lines.append(line)

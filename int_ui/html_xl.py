@@ -7,20 +7,20 @@ def formXLPage(output, title, common_title, html_base, xl_ds, ws_url):
         js_files = ["xl.js", "filters.js",
             "fctrl.js", "flt.js", "xl_ctrl.js"])
 
-    print >> output, ('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title, ws_url))
+    print('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+        (xl_ds.getName(), common_title, ws_url), file = output)
 
     _formXLPannel(output, xl_ds.getName())
     formNoteDiv(output)
     formCreateWsDiv(output)
     formSubViewDiv(output)
 
-    print >> output, ' </body>'
-    print >> output, '</html>'
+    print(' </body>', file = output)
+    print('</html>', file = output)
 
 #===============================================
 def _formXLPannel(output, ds_name):
-    print >> output, '''
+    print('''
       <div id="xl-ctrl">
         <div id="xl-info">
             <span id="ds-control-wrap" title="Control Menu..." class="drop">
@@ -47,12 +47,12 @@ def _formXLPannel(output, ds_name):
             <button id="xl-sub-view"
                 onclick="sSubViewH.show()">View variants</button>
         </div>
-      </div>'''
+      </div>''', file = output)
     formFilterPannel(output)
 
 #===============================================
 def formNoteDiv(output):
-    print >> output, '''
+    print('''
     <div id="note-back" class="modal-back">
       <div id="note-mod">
         <div id="note-top">
@@ -77,10 +77,10 @@ def formNoteDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)
 #===============================================
 def formCreateWsDiv(output):
-    print >> output, '''
+    print('''
     <div id="create-ws-back" class="modal-back">
       <div id="create-ws-mod">
         <div id="create-ws-top">
@@ -104,11 +104,11 @@ def formCreateWsDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)
 
 #===============================================
 def formSubViewDiv(output):
-    print >> output, '''
+    print('''
     <div id="sub-view-back" class="modal-back">
       <div id="sub-view-mod">
         <div id="sub-view-left">
@@ -139,4 +139,4 @@ def formSubViewDiv(output):
         </div>
       </div>
     </div>
-'''
+''', file = output)

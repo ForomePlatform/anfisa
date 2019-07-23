@@ -162,10 +162,11 @@ class DictTypeChecker:
                     a_seq, a_kind = a_type
                     if (a_check.getErrorCount() > 0 or
                             a_seq != attr_h.isSeq()):
-                        print >> rep_output, ("Update field %s:" % self.mName),\
-                            attr_h.getMainKind(), "is_seq=", attr_h.isSeq(), \
-                            "->", a_kind, "is_seq=", a_seq, \
-                            "errors=", a_check.getErrorCount()
+                        print(("Update field %s:" % self.mName),
+                            attr_h.getMainKind(), "is_seq=", attr_h.isSeq(),
+                            "->", a_kind, "is_seq=", a_seq,
+                            "errors=", a_check.getErrorCount(),
+                            file = rep_output)
                         attr_h.reset(a_kind, a_seq)
                         master.problem("updated", a_check, self)
                         a_check.setStatus("updated")
@@ -253,18 +254,18 @@ class ViewDataChecker(DictTypeChecker):
 
     def finishUp(self, rep_output):
         self.fixUp(self, rep_output)
-        print >> rep_output, "Data check result:"
+        print("Data check result:", file = rep_output)
         group_name = None
         for code in sorted(self.mProblems.keys()):
             names = self.mProblems[code]
-            print >> rep_output, "\t", code, len(names)
+            print("\t", code, len(names), file = rep_output)
             for nm in names:
                 grp, q, name = nm.partition('.')
                 if grp != group_name:
-                    print >> rep_output, "\t\t", grp
+                    print("\t\t", grp, file = rep_output)
                     group_name = grp
                 if name is not None:
-                    print >> rep_output, "\t\t\t", name
+                    print("\t\t\t", name, file = rep_output)
         return "fatal" not in self.mProblems
 
 #===============================================

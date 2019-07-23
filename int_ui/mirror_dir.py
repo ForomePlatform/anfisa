@@ -24,8 +24,6 @@ class MirrorUiDirectory:
             fname = fpath.rpartition('/')[2]
             if cls.sRegExpSrcFName.match(fname) is not None:
                 fnames_sheet[fname] = []
-            else:
-                print ("Ignored:", fname)
         cls.sFileTab = dict()
         extra_files = []
         count_keep, count_update = 0, 0
@@ -64,7 +62,6 @@ class MirrorUiDirectory:
             else:
                 ver = 0
             dest_fname = cls.getVerName(fname, ver)
-            print ("W:", dest_fname)
             with open(dir_dest + "/" + dest_fname, "wb") as outp:
                 outp.write(src_content)
             cls.sFileTab[fname] = dest_fname

@@ -233,7 +233,7 @@ class ExcelExport:
                 continue
             value = self.__to_excel(build_value(data, key))
             cell = ws.cell(row=new_row, column=column, value=value)
-            if isinstance(value, basestring):
+            if isinstance(value, str):
                 self.column_widths[cell.column] = max(
                     self.column_widths[cell.column], len(value))
             _setStyle(cell, style)
@@ -245,7 +245,7 @@ class ExcelExport:
         tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
         op_tags = ', '.join(tagList)
         check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
-        tags_with_value = ", ".join(map(lambda t: t + ": " + unicode(tags[t]).replace('\n', ' ').strip(), tagList))
+        tags_with_value = ", ".join(map(lambda t: t + ": " + str(tags[t]).replace('\n', ' ').strip(), tagList))
         if tag_group_name:
             if tag_group_name in self.check_tags_mapping:
                 style = self.check_tags_mapping[tag_group_name]
@@ -317,9 +317,9 @@ if __name__ == '__main__':
 
     def processing(args):
         start_time = time.time()
-        print "parsing template {} ...".format(args.template)
+        print("parsing template {} ...".format(args.template))
         export = ExcelExport(args.template, verbose_mode = args.verbose)
-        print "export variants from {} ...".format(args.input)
+        print("export variants from {} ...".format(args.input))
         with open(args.input) as json_file:
             mode = LoadMode.RECORD
             record = None
@@ -340,20 +340,26 @@ if __name__ == '__main__':
                 if args.limit and idx >= args.limit:
                     break
                 if args.verbose and idx > 0 and idx % 100 == 0:
-                    print "export lines: {}".format(idx)
+                    print("export lines: {}".format(idx))
 
-            print "total export line: {}".format(idx)
+            print("total export line: {}".format(idx))
 
-        print "save {}".format(args.output)
+        print("save {}".format(args.output))
         export.save(args.output)
-        print "complete (execution time: {0:.3f} s)".format(time.time() - start_time)
+        print("complete (execution time: {0:.3f} s)".format(
+            time.time() - start_time))
 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-t", "--template", help="template file", required=True)
-    parser.add_argument("-i", "--input", help="input file with json lines", required=True)
-    parser.add_argument("-o", "--output", help="result file name", required=True)
-    parser.add_argument("-l", "--limit", help="maximum number of rows to export", type=int)
-    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    parser.add_argument("-t", "--template",
+        help = "template file", required=True)
+    parser.add_argument("-i", "--input",
+        help = "input file with json lines", required=True)
+    parser.add_argument("-o", "--output",
+        help = "result file name", required=True)
+    parser.add_argument("-l", "--limit",
+        help = "maximum number of rows to export", type=int)
+    parser.add_argument("-v", "--verbose",
+        help = "increase output verbosity", action="store_true")
     args = parser.parse_args()
     processing(args)

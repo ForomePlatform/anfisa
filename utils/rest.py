@@ -1,6 +1,6 @@
 import json, logging
-from urlparse import urlsplit
-from httplib import HTTPConnection
+from urllib.parse import urlsplit
+from http.client import HTTPConnection
 
 #==================================
 class RestAgent:
@@ -39,4 +39,4 @@ class RestAgent:
             res.close()
         if method == "DELETE":
             return None
-        return json.loads(content)
+        return json.loads(str(content, 'utf-8'))

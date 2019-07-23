@@ -1,5 +1,5 @@
 import traceback, logging
-from StringIO import StringIO
+from io import StringIO
 from .condition import ConditionMaker
 #===============================================
 class CondOpEnv:
@@ -84,7 +84,7 @@ class CondOpEnv:
                 actual_cond_data.append(cond_data)
             except Exception:
                 rep = StringIO()
-                print >> rep, "Bad instruction:", cond_data
+                print("Bad instruction:", cond_data, file = rep)
                 traceback.print_exc(file = rep)
                 self.mBadIdxs.append(idx)
                 logging.warning(rep.getvalue())

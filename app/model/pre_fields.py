@@ -8,7 +8,8 @@ class PresentationFieldHash:
         self.mBaseName = base_name
 
     def process(self, rec_data, result):
-        result[self.mName] = crc32(result[self.mBaseName]) % (1<<32)
+        result[self.mName] = crc32(
+            bytes(result[self.mBaseName], 'utf-8')) % (1<<32)
 
 #===============================================
 class PresentationFieldPath:

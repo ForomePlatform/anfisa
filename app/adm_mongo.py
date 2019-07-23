@@ -4,9 +4,9 @@ from copy import deepcopy
 from pymongo import MongoClient
 
 #=====================================
-sys.stdin  = codecs.getreader('utf8')(sys.stdin)
-sys.stderr = codecs.getwriter('utf8')(sys.stderr)
-sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
+sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
+sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
 #===============================================
 parser = ArgumentParser()
 parser.add_argument("-H", "--host",  default = "localhost",
@@ -31,7 +31,7 @@ def readContent(content):
         if not line:
             continue
         obj = json.loads(line)
-        if obj is None or isinstance(obj, basestring):
+        if obj is None or isinstance(obj, str):
             continue
         yield obj
 
@@ -114,7 +114,7 @@ class CmdInfo:
             return None
         if len(self.mArgs) > 0 and self.mArgs[-1] == "datafile":
             if len(cmd_seq) == 1 + len(self.mArgs):
-                with codecs.open(cmd_seq[-1], "r", encoding = "utf-8") as inp:
+                with open(cmd_seq[-1], "r", encoding = "utf-8") as inp:
                     content = inp.read()
                 cmd_seq[-1] = content
                 return cmd_seq
@@ -122,16 +122,15 @@ class CmdInfo:
                 content = sys.stdin.read()
                 cmd_seq.append(content)
                 return cmd_seq
-            print >> sys.stderr, "Improper call arguments"
+            print("Improper call arguments", file = sys.stderr)
             return False
         if len(cmd_seq) == 1 + len(self.mArgs):
             return cmd_seq
-        print >> sys.stderr, "Improper call arguments"
+        print("Improper call arguments", file = sys.stderr)
         return False
 
     def report(self, output):
-        print >> output, "\t%s %s" % (
-            self.mName, " ".join(self.mArgs))
+        print("\t%s %s" % (self.mName, " ".join(self.mArgs)), file = output)
 
     @classmethod
     def reportAll(cls, output):
@@ -145,7 +144,7 @@ class CmdInfo:
             if ret is not None:
                 return (ret, cmd_info.getDSName(cmd_seq),
                     cmd_info.hasCreateSupport())
-        print >> sys.stderr, "Command not supported"
+        print("Command not supported", file = sys.stderr)
         return False, None, None
 
 #===============================================
@@ -167,8 +166,8 @@ CmdInfo("drop-ds", ["ds"])
 
 #===============================================
 if run_args.command[0] == "help":
-    print >> sys.stderr, ' ===Anfisa/MongoDB administration tool==='
-    print >> sys.stderr, ' * List of commands *'
+    print(' ===Anfisa/MongoDB administration tool===', file = sys.stderr)
+    print(' * List of commands *', file = sys.stderr)
     CmdInfo.reportAll(sys.stderr)
     sys.exit()
 cmd_seq, ds_name, cr_supp = CmdInfo.checkCall(run_args.command)
@@ -180,7 +179,7 @@ if run_args.config_default:
 else:
     config_path = run_args.config
 if config_path:
-    with codecs.open(config_path, "r", encoding = "utf-8") as inp:
+    with open(config_path, "r", encoding = "utf-8") as inp:
         cfg = json.loads(inp.read())
     database = cfg["mongo-db"]
     host, port = cfg.get("mongo-host"), cfg.get("mongo-port")
@@ -193,10 +192,10 @@ if ds_name is not None:
     m_db = mongo[database]
     if ds_name not in m_db.list_collection_names():
         if cr_supp:
-            print >> sys.stderr, ("Workspace %s is possibly creating" %
-                ds_name)
+            print("DS %s is possibly creating" % ds_name,
+                file = sys.stderr)
         else:
-            print >> sys.stderr, "So such workspace:", ds_name
+            print("DS not found", ds_name, file = sys.stderr)
             sys.exit()
     m_ds = m_db[ds_name]
 else:
@@ -208,7 +207,7 @@ if cmd_seq[0] == "ds-list":
     for coll_name in m_db.list_collection_names():
         if coll_name != "system.indexes":
             ret.append(coll_name)
-    print >> sys.stdout, json.dumps(ret)
+    print(json.dumps(ret))
     sys.exit()
 
 #===============================================
@@ -218,7 +217,7 @@ if cmd_seq[0] == "filter-list":
         it_name = it['_id']
         if it_name.startswith("flt-"):
             ret.append(it_name[4:])
-    print >> sys.stdout, json.dumps(ret, sort_keys = True, indent = 4)
+    print(json.dumps(ret, sort_keys = True, indent = 4))
     sys.exit()
 
 #===============================================
@@ -230,7 +229,7 @@ if cmd_seq[0] == "tag-list":
         for key in it.keys():
             if not key.startswith('_'):
                 ret.add(key)
-    print >> sys.stdout, json.dumps(sorted(ret))
+    print(json.dumps(sorted(ret)))
     sys.exit()
 
 #===============================================
@@ -241,7 +240,7 @@ if cmd_seq[0] == "dump-filters":
         if it_name.startswith("flt-"):
             ret.append(deepcopy(it))
     for rec in ret:
-        print >> sys.stdout, json.dumps(rec)
+        print(json.dumps(rec))
     sys.exit()
 
 #===============================================
@@ -252,7 +251,7 @@ if cmd_seq[0] == "dump-tags":
             continue
         ret.append(cleanRecordTags(it))
     for rec in ret:
-        print >> sys.stdout, json.dumps(rec)
+        print(json.dumps(rec))
     sys.exit()
 
 #===============================================
@@ -261,7 +260,7 @@ if cmd_seq[0] == "dump-rules":
     it = m_ds.find_one({'_id': 'params'})
     if it is not None:
         ret = deepcopy(it["params"])
-    print >> sys.stdout, json.dumps(ret)
+    print(json.dumps(ret))
     sys.exit()
 
 #===============================================
@@ -271,7 +270,7 @@ if cmd_seq[0] == "load-filters":
         assert instr['_tp'] == "flt"
         updateMRec(m_ds, instr)
         cnt += 1
-    print >> sys.stdout, json.dumps("FILTERS LOADED: %d" % cnt)
+    print(json.dumps("FILTERS LOADED: %d" % cnt))
     sys.exit()
 
 #===============================================
@@ -281,7 +280,7 @@ if cmd_seq[0] == "load-tags":
         assert instr['_id'].startswith("rec-")
         updateMRec(m_ds, instr)
         cnt += 1
-    print >> sys.stdout, json.dumps("TAGS LOADED: %d" % cnt)
+    print(json.dumps("TAGS LOADED: %d" % cnt))
     sys.exit()
 
 #===============================================
@@ -292,14 +291,14 @@ if cmd_seq[0] == "load-rules":
         m_ds.update({'_id': "params"},
             {"$set": {'params': data}}, upsert = True)
         cnt += 1
-    print >> sys.stdout, json.dumps("RULES LOADED: %d" % cnt)
+    print(json.dumps("RULES LOADED: %d" % cnt))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "del-filter":
     filter_name = cmd_seq[2]
     m_ds.remove({'_id': "flt-" + filter_name})
-    print >> sys.stdout, json.dumps("FILTER %s DELETED" % filter_name)
+    print(json.dumps("FILTER %s DELETED" % filter_name))
     sys.exit()
 
 #===============================================
@@ -314,34 +313,34 @@ if cmd_seq[0] == "del-tag":
             m_ds.update({'_id': rec_id}, instr, upsert = True)
         else:
             m_ds.remove({'_id': rec_id})
-    print >> sys.stdout, json.dumps("TAG %s DELETED: %d records" %
-        (tag_name, len(seq_update)))
+    print(json.dumps("TAG %s DELETED: %d records" %
+        (tag_name, len(seq_update))))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "drop-filters":
     m_ds.remove({'_tp': "flt"})
-    print >> sys.stdout, json.dumps("FILTERS DROPPED")
+    print(json.dumps("FILTERS DROPPED"))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "drop-tags":
     m_ds.remove({'_id': {"$regex": "^rec-"}})
-    print >> sys.stdout, json.dumps("TAGS DROPPED")
+    print(json.dumps("TAGS DROPPED"))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "drop-rules":
     m_ds.remove({'_id': 'params'})
-    print >> sys.stdout, json.dumps("RULES PARAMS DROPPED")
+    print(json.dumps("RULES PARAMS DROPPED"))
     sys.exit()
 
 #===============================================
 if cmd_seq[0] == "drop-ds":
     m_ds.drop()
-    print >> sys.stdout, json.dumps("DATASET DROPPED")
+    print(json.dumps("DATASET DROPPED"))
     sys.exit()
 
 #===============================================
-print >> sys.stderr, "Oops: command not supported"
+print("Oops: command not supported", file = sys.stderr)
 

@@ -1,5 +1,5 @@
 import numbers
-from StringIO import StringIO
+from io import StringIO
 from xml.sax.saxutils import escape
 
 #===============================================
@@ -8,13 +8,13 @@ def htmlEscape(val):
         return "null"
     if val == "":
         return ""
-    return escape(unicode(val))
+    return escape(str(val))
 
 #===============================================
 def jsonHtmlRepr(obj, level = 0):
     if obj is None:
         return "null"
-    if isinstance(obj, basestring):
+    if isinstance(obj, str):
         return htmlEscape(obj)
     if isinstance(obj, numbers.Number):
         return str(obj)
@@ -57,27 +57,27 @@ def vcfRepr(vcf_content):
             if len(collect_str) < 60:
                 collect_str += "\t" + fld
             else:
-                print >> output, collect_str[1:]
+                print(collect_str[1:], file = output)
                 collect_str = "\t" + fld
             continue
         if collect_str:
-            print >> output, collect_str[1:]
+            print(collect_str[1:], file = output)
             collect_str = ""
         for vv in fld.split(';'):
             var, q, val = vv.partition('=')
             if var == "CSQ":
-                print >> output, "==v====SCQ======v========"
+                print("==v====SCQ======v========", file = output)
                 for idx, dt in enumerate(val.split(',')):
                     ddd = dt.split('|')
-                    print >> output, "%d:\t%s" % (idx, '|'.join(ddd[:12]))
-                    print >> output, "\t|%s" % ('|'.join(ddd[12:29]))
-                    print >> output, "\t|%s" % ('|'.join(ddd[28:33]))
-                    print >> output, "\t|%s" % ('|'.join(ddd[33:40]))
-                    print >> output, "\t|%s" % ('|'.join(ddd[40:50]))
-                    print >> output, "\t|%s" % ('|'.join(ddd[50:]))
-                print >> output, "==^====SCQ======^========"
+                    print("%d:\t%s" % (idx, '|'.join(ddd[:12])), file = output)
+                    print("\t|%s" % ('|'.join(ddd[12:29])), file = output)
+                    print("\t|%s" % ('|'.join(ddd[28:33])), file = output)
+                    print("\t|%s" % ('|'.join(ddd[33:40])), file = output)
+                    print("\t|%s" % ('|'.join(ddd[40:50])), file = output)
+                    print("\t|%s" % ('|'.join(ddd[50:])), file = output)
+                print("==^====SCQ======^========", file = output)
             else:
-                print >> output, vv
+                print(vv, file = output)
     if collect_str:
-        print >> output, collect_str[1:]
+        print(collect_str[1:], file = output)
     return output.getvalue()

@@ -9,7 +9,7 @@ class IndexBZ2:
     def __init__(self, fname):
         self.mFile = open(fname, 'r+b')
         self.mLock = Lock()
-        assert 'IdxBZ2' == self._read(0, 6)
+        assert b'IdxBZ2' == self._read(0, 6)
         tab_loc = array('L')
         tab_loc.fromstring(self._read(6, 16))
         pos, length = tab_loc
@@ -53,8 +53,8 @@ class FormatterIndexBZ2:
     def __init__(self, fname, block_size = 2*19, report_output = None):
         self.mBlockSize = block_size
         self.mFile = open(fname, 'wb')
-        self.mFile.write('IdxBZ2')
-        self.mFile.write(' ' * 16)
+        self.mFile.write(b'IdxBZ2')
+        self.mFile.write(b' ' * 16)
         self.mIdxTable = array('L')
         self.mDoneIdx = 0
         self.mCurLines = []
@@ -191,17 +191,18 @@ class InputReader(threading.Thread):
                 if not self.is_alive():
                     break
             time.sleep(.001)
-        print >> sys.stderr, "Delays: empty = %.01f/%d full = %.01f/%d" % (
-            self.mDelayEmpty, self.mCntEmpty, self.mDelayOver, self.mCntOver)
+        print("Delays: empty = %.01f/%d full = %.01f/%d" % (
+            self.mDelayEmpty, self.mCntEmpty, self.mDelayOver, self.mCntOver),
+            file = sys.stderr)
 
 #===============================================
 if __name__ == "__main__":
     import sys, codecs
     from argparse import ArgumentParser
 
-    sys.stdin  = codecs.getreader('utf8')(sys.stdin)
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr)
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
+    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
+    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
 
     parser = ArgumentParser()
     parser.add_argument("--block",  type = int, default = 2**19,
@@ -216,7 +217,7 @@ if __name__ == "__main__":
     if run_args.file[0].endswith('.ixbz2'):
         with IndexBZ2(run_args.file[0]) as index:
             for idx in range(len(index)):
-                print >> sys.stdout, index[idx]
+                print(index[idx])
         sys.exit()
 
     out_fname = run_args.output
@@ -229,7 +230,7 @@ if __name__ == "__main__":
     if run_args.file[0] == "/dev/stdin":
         inp = InputReader(sys.stdin)
     else:
-        inp = codecs.open(run_args.file[0], 'r', encoding = 'utf-8')
+        inp = open(run_args.file[0], 'r', encoding = 'utf-8')
 
     with FormatterIndexBZ2(out_fname, run_args.block, report) as form:
         while True:
@@ -240,22 +241,25 @@ if __name__ == "__main__":
             if form.getDoneBlocks() != done_blocks:
                 done_blocks = form.getDoneBlocks()
                 if not run_args.calm:
-                    print >> sys.stderr, "...%d blocks - %d lines\r" % (
-                        done_blocks, form.getDoneLines()),
+                    sys.stderr.write("...%d blocks - %d lines\r" % (
+                        done_blocks, form.getDoneLines()))
     inp.close()
 
-    print >> sys.stderr, ""
+    print("", file = sys.stderr)
     total_inp, total_outp, n_lines, n_blocks = report[0][:4]
     min_chunk_size, max_chunk_size = report[0][4:6]
     min_comp, max_comp, avg_comp = report[0][6:]
 
-    print >> sys.stderr, "Prepared file:", out_fname
-    print >> sys.stderr, "Counts: lines=%d blocks=%d" % (
-        n_lines, n_blocks)
-    print >> sys.stderr, "Sizes: decomp=%d -> comp=%d (%.01f%s)" % (total_inp,
-        total_outp, (100. * total_outp)/(total_inp + .001), '%')
-    print >> sys.stderr, "Compresssed block sizes: min=%d avg=%d max=%d" % (
+    print("Prepared file:", out_fname, file = sys.stderr)
+    print("Counts: lines=%d blocks=%d" % (
+        n_lines, n_blocks), file = sys.stderr)
+    print("Sizes: decomp=%d -> comp=%d (%.01f%s)" % (total_inp,
+        total_outp, (100. * total_outp)/(total_inp + .001), '%'),
+        file = sys.stderr)
+    print("Compresssed block sizes: min=%d avg=%d max=%d" % (
         min_chunk_size,
-        int((total_outp) / (n_blocks + .01)), max_chunk_size)
-    print >> sys.stderr, "Compression: min=%.01f%s avg=%.01f%s max=%.01f%s" % (
-        min_comp * 100, '%', avg_comp * 100, '%', max_comp * 100, '%')
+        int((total_outp) / (n_blocks + .01)), max_chunk_size),
+        file = sys.stderr)
+    print("Compression: min=%.01f%s avg=%.01f%s max=%.01f%s" % (
+        min_comp * 100, '%', avg_comp * 100, '%', max_comp * 100, '%'),
+        file = sys.stderr)

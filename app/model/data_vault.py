@@ -1,4 +1,4 @@
-import os, codecs, json, logging
+import os, json, logging
 from glob import glob
 from threading import Lock
 
@@ -19,7 +19,7 @@ class DataVault:
             info_path =  ds_path + "/dsinfo.json"
             if not os.path.exists(info_path):
                 continue
-            with codecs.open(info_path, "r", encoding = "utf-8") as inp:
+            with open(info_path, "r", encoding = "utf-8") as inp:
                 ds_info = json.loads(inp.read())
             if ds_info["kind"] == "xl":
                 assert ds_info["name"] not in self.mDataSets
@@ -63,7 +63,7 @@ class DataVault:
     def loadDS(self, ds_name, ds_kind = None):
         ds_path = self.mVaultDir + '/' + ds_name
         info_path =  ds_path + "/dsinfo.json"
-        with codecs.open(info_path, "r", encoding = "utf-8") as inp:
+        with open(info_path, "r", encoding = "utf-8") as inp:
             ds_info = json.loads(inp.read())
         assert ds_info["name"] == ds_name
         assert not ds_kind or ds_info["kind"] == "ws"

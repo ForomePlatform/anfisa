@@ -1,6 +1,6 @@
 import re, ast, tokenize
 
-from StringIO import StringIO
+from io import StringIO
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter

@@ -1,4 +1,4 @@
-import os, json, gzip, codecs, logging, re, shutil
+import os, json, gzip, logging, re, shutil
 from copy import deepcopy
 
 from utils.ixbz2 import FormatterIndexBZ2
@@ -94,14 +94,15 @@ class SecondaryWsCreation(ExecutionTask):
         self.setStatus("Prepare fdata")
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
             for fdata in fdata_seq:
-                print >> fdata_out, json.dumps(fdata, ensure_ascii = False)
+                print(json.dumps(fdata, ensure_ascii = False,
+                    file = fdata_out))
 
         self.setStatus("Prepare pdata")
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
                 for rec_no, line in enumerate(inp):
                     if rec_no in rec_no_set:
-                        print >> fdata_out, line.rstrip()
+                        print(line.rstrip(), file = fdata_out)
 
         self.setStatus("Finishing...")
         logging.info("Finishing up workspace %s" % self.mWSName)
@@ -118,14 +119,14 @@ class SecondaryWsCreation(ExecutionTask):
                 if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta")}
 
-        with codecs.open(ws_dir + "/dsinfo.json",
+        with open(ws_dir + "/dsinfo.json",
                 "w", encoding = "utf-8") as outp:
-            print >> outp, json.dumps(ds_info,
-                sort_keys = True, indent = 4)
+            print(json.dumps(ds_info, sort_keys = True, indent = 4),
+                file = outp)
 
-        with codecs.open(ws_dir + "/active",
+        with open(ws_dir + "/active",
                 "w", encoding = "utf-8") as outp:
-            print >> outp, ""
+            print("", file = outp)
 
         self.mDS.getDataVault().loadDS(self.mWSName, "ws")
 
