@@ -123,6 +123,6 @@ class DataCompactColumn(DataColumn):
 
     def recordValues(self, data_record):
         idx = self.recordValue(data_record)
-        if 0 <= idx < len(self.mPackSetSeq):
+        if idx is not None and 0 <= idx < len(self.mPackSetSeq):
             return set(self.mPackSetSeq[idx])
         return set()

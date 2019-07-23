@@ -304,7 +304,11 @@ class ExcelExport:
         if isinstance(value, str) and value.startswith("http"):
             return '=HYPERLINK("{0}","{0}")'.format(value)
         if isinstance(value, dict):
-            return '=HYPERLINK("{}","{}")'.format(value["link"], value["title"])
+            if "link" in value:
+                return '=HYPERLINK("{}","{}")'.format(value["link"],
+                    value.get("title", ""))
+            return " ".join(sorted(["%s=%s" % (key, val)
+                for key, val in value.items()]))
         return value
 
 if __name__ == '__main__':
