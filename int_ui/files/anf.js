@@ -355,7 +355,7 @@ function loadNote(content) {
             setupNote(info);
         }
     };
-    xhttp.open("POST", "wsnote", true);
+    xhttp.open("POST", "dsinfo", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     args = "ws=" + sWorkspaceName;
     if (content)
@@ -367,7 +367,7 @@ function setupNote(info) {
     document.getElementById("note-ws-name").innerHTML = info["name"];
     document.getElementById("note-content").value = info["note"];
     document.getElementById("note-time").innerHTML = 
-        (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
+        (info["date-note"] == null)? "" : "Modified at " + timeRepr(info["date-note"]);
 }
 
 //=====================================

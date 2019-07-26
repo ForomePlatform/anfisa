@@ -131,7 +131,7 @@ def _setStyle(cell, style):
 
 class ExcelExport:
     def __init__(self, template_file, tags_info = None,
-            version_info = None, verbose_mode = False):
+            source_versions = None, verbose_mode = False):
         self.mapping, self.check_tags_mapping = read_mappings(
             template_file, verbose_mode)
         self.workbook = None
@@ -145,7 +145,7 @@ class ExcelExport:
                     column, self.mapping[column]))
         self.workbook = openpyxl.Workbook()
         self._createVariantSheet()
-        self._createVersionSheet(version_info)
+        self._createVersionSheet(source_versions)
         self._createKeySheet()
 
     def _createVariantSheet(self, title=None):
@@ -168,10 +168,10 @@ class ExcelExport:
         self.column_widths[cell.column] = len(cell.value)
         ws.freeze_panes = 'D2'
 
-    def _createVersionSheet(self, version_info):
+    def _createVersionSheet(self, source_versions):
         ws = self.workbook.create_sheet("version")
-        if version_info:
-            for idx, pair in enumerate(version_info):
+        if source_versions:
+            for idx, pair in enumerate(source_versions):
                 ws.cell(row=idx + 1, column=1, value = pair[0])
                 ws.cell(row=idx + 1, column=2, value = pair[1])
 

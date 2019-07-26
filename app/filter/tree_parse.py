@@ -251,10 +251,9 @@ class ParsedDecisionTree:
     #===============================================
     #===============================================
     def getReturnValue(self, instr):
-        if isinstance(instr.value, ast.Name):
-            result = instr.value.id
-            if result in ("True", "False"):
-                return result == "True"
+        if isinstance(instr.value, ast.NameConstant):
+            if instr.value.value in (True, False):
+                return instr.value.value
         self.errorIt(instr,
             "Only boolean return (True/False) is expected here")
 
@@ -311,7 +310,6 @@ class ParsedDecisionTree:
 
         if isinstance(it_set, ast.Call):
             if (len(it_set.args) != 1 or len(it_set.keywords) > 0 or
-                    it_set.kwargs or it_set.starargs or
                     not it_set.func or
                     not isinstance(it_set.func, ast.Name)):
                 self.errorIt(it_set, "Complex call not supported")
@@ -344,6 +342,8 @@ class ParsedDecisionTree:
                     val = el.s
                 elif isinstance(el, ast.Name):
                     val = el.id
+                elif isinstance(el, ast.NameConstant):
+                    val = str(el.value)
                 else:
                     self.errorIt(el, "Name or string is expected as variant")
                 if val in variants:
@@ -378,7 +378,6 @@ class ParsedDecisionTree:
 
         if isinstance(it.left, ast.Call):
             if (len(it.left.keywords) > 0 or
-                    it.left.kwargs or it.left.starargs or
                     not isinstance(it.left.func, ast.Name)):
                 self.errorIt(it.left, "Complex call not supported")
             field_name = it.left.func.id
@@ -476,7 +475,8 @@ class ParsedDecisionTree:
 
     #===============================================
     def processFloat(self, it):
-        if not isinstance(it, ast.Num) or not isinstance(it.n, int):
+        if not isinstance(it, ast.Num) or (
+                not isinstance(it.n, int) and not isinstance(it.n, float)):
             self.errorIt(it, "Int or float is expected: %r" % it.n)
         return it.n
 

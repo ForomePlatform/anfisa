@@ -20,15 +20,14 @@ class Workspace(DataSet):
         self.mTabRecColor  = []
         self.mTabRecLabel = []
 
-        self.mMongoWS = (self.mDataVault.getApp().getMongoConnector().
-            getWSAgent(self.getMongoName()))
         self.mIndex = Index(self)
         self._loadPData()
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
 
         self.mIndex.setup()
-        for filter_name, cond_seq, time_label in self.mMongoWS.getFilters():
+        for filter_name, cond_seq, time_label in \
+                self.getMongoAgent().getFilters():
             if self.mIndex.goodOpFilterName(filter_name):
                 try:
                     self.mIndex.cacheFilter(filter_name,
@@ -70,9 +69,6 @@ class Workspace(DataSet):
     def getTagsMan(self):
         return self.mTagsMan
 
-    def getMongoWS(self):
-        return self.mMongoWS
-
     def iterZones(self):
         return iter(self.mZoneHandlers)
 
@@ -85,18 +81,11 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
-    def dump(self):
-        note, time_label = self.mMongoWS.getWSNote()
-        return {
-            "name": self.mName,
-            "note": note,
-            "time": time_label}
-
     def getMongoRecData(self, key):
-        return self.mMongoWS.getRecData(key)
+        return self.getMongoAgent().getRecData(key)
 
     def setMongoRecData(self, key, data, prev_data = False):
-        self.mMongoWS.setRecData(key, data, prev_data)
+        self.getMongoAgent().setRecData(key, data, prev_data)
 
     def _reportListKeys(self, rec_no_seq):
         marked_set = self.mTagsMan.getMarkedSet()
@@ -143,11 +132,11 @@ class Workspace(DataSet):
             if op == "UPDATE":
                 if cond_seq:
                     cond_seq = ConditionMaker.upgradeOldFormatSeq(cond_seq)
-                time_label = self.mMongoWS.setFilter(flt_name, cond_seq)
+                time_label = self.getMongoAgent().setFilter(flt_name, cond_seq)
                 self.mIndex.cacheFilter(flt_name, cond_seq, time_label)
                 filter_name = flt_name
             elif op in {"DROP", "DELETE"}:
-                self.mMongoWS.dropFilter(flt_name)
+                self.getMongoAgent().dropFilter(flt_name)
                 self.mIndex.dropFilter(flt_name)
             else:
                 assert False
@@ -281,22 +270,15 @@ class Workspace(DataSet):
         return self.getViewSetupReport()
 
     #===============================================
-    @RestAPI.ws_request
-    def rq__recdata(self, rq_args):
-        return self.getRecordData(int(rq_args.get("rec")))
-
-    #===============================================
-    @RestAPI.ws_request
-    def rq__reccnt(self, rq_args):
-        modes = rq_args.get("m", "").upper()
-        rec_no = int(rq_args.get("rec"))
-        return self.getViewRepr(rec_no, 'R' in modes)
-
-    #===============================================
+    # Deprecated
     @RestAPI.ws_request
     def rq__wsnote(self, rq_args):
         note = rq_args.get("note")
         if note is not None:
             with self:
-                self.mMongoWS.setWSNote(note)
-        return self.dump()
+                self.getMongoAgent().setNote(note)
+        note, time_label = self.getMongoAgent().getNote()
+        return {
+            "name": self.mName,
+            "note": note,
+            "time": time_label}

@@ -97,6 +97,12 @@ def reprConditionCode(cond_data):
     return "\n".join(ret)
 
 #===============================================
+def reprFilterCondition(cond_data):
+    rep = StringIO()
+    _reprConditionCode(cond_data, rep, False)
+    return rep.getvalue()
+
+#===============================================
 sIdPatt = re.compile("^[A-Z_][A-Z0-9_]*$", re.I)
 def _reprConditionCode(cond_data, output, group_mode):
     global sIdPatt

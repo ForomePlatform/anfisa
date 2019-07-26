@@ -61,31 +61,6 @@ function goToTree() {
 }
 
 /*************************************/
-function openNote() {
-    sViewH.dropOff();
-    loadNote();
-    sViewH.modalOn(document.getElementById("note-back"));
-}
-
-function saveNote() {
-    sViewH.dropOff();
-    loadNote(document.getElementById("note-content").value);
-    sViewH.modalOff();
-}
-
-function loadNote(content) {
-    args = "ds=" + sDSName;
-    if (content) 
-        args += "&note=" + encodeURIComponent(content);        
-    ajaxCall("dsnote", args, function(info) {
-        document.getElementById("note-ds-name").innerHTML = info["name"];
-        document.getElementById("note-content").value = info["note"];
-        document.getElementById("note-time").innerHTML = 
-            (info["time"] == null)? "" : "Modified at " + timeRepr(info["time"]);
-    });
-}
-
-/*************************************/
 function showExport() {
     sViewH.dropOff();
     if (sUnitsH.mExportFormed) {

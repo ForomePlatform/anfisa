@@ -91,13 +91,13 @@ class AnfisaApp:
                 break
         if fname is None:
             return None
-        version_info = ds_h.getVersionData()
+        source_versions = ds_h.getSourceVersions()
         tags_info = tags_man.getTagListInfo() if tags_man is not None else None
 
         export_h = ExcelExport(export_setup["excel-template"],
-            version_info = version_info, tags_info = tags_info)
+            source_versions = source_versions, tags_info = tags_info)
         #exp_rep = _ExportReport(dir_name + debug_file_name,
-        #    version_info, tags_info)
+        #    source_versions, tags_info)
         for rec_no in rec_no_seq:
             rec_data = ds_h.getRecordData(rec_no)
             tags_data = tags_man.getRecTags(rec_no) if tags_man else None
@@ -155,10 +155,10 @@ class AnfisaApp:
 
     @classmethod
     def startCreateSecondaryWS(cls, dataset, wsname,
-            base_version = None, condition = None, std_name = None,
+            base_version = None, op_cond = None, std_name = None,
             markup_batch = None, force_mode = False):
         task = SecondaryWsCreation(dataset, wsname,
-            base_version, condition, std_name, markup_batch, force_mode)
+            base_version, op_cond, std_name, markup_batch, force_mode)
         cls.sJobPool.putTask(task)
         return str(task.getUID())
 
@@ -170,13 +170,13 @@ class AnfisaApp:
 class _ExportReport:
     sActive = True
 
-    def __init__(self, debug_file_path, version_info, tags_info):
+    def __init__(self, debug_file_path, source_versions, tags_info):
         if not self.sActive:
             self.mOutput = None
             return
         self.mOutput = open(debug_file_path, "w", encoding = "utf-8")
         print("@VERSIONS",file = self.mOutput)
-        print(json.dumps(version_info, ensure_ascii = False),file = self.mOutput)
+        print(json.dumps(source_versions, ensure_ascii = False),file = self.mOutput)
         print("@TAGS_CFG",file = self.mOutput)
         print(json.dumps(tags_info, ensure_ascii = False),file = self.mOutput)
 

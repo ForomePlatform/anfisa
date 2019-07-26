@@ -34,7 +34,7 @@ class RulesEvalUnit(MultiSetUnit):
                 for func_h in RULES_SETUP.FUNCTIONS]})
         env_dict = {param_h.getName(): param_h.getValue()
             for param_h in RULES_SETUP.PARAMETERS}
-        rules_data = (self.getIndex().getWS().getMongoWS().
+        rules_data = (self.getIndex().getWS().getMongoAgent().
             getRulesParamValues())
         if rules_data is not None:
             for key, val in rules_data:
@@ -108,7 +108,7 @@ class RulesEvalUnit(MultiSetUnit):
             return {"status": "FAILED", "error": error}
         for key, value in rules_data:
             self.mEnv.set(key, value)
-        self.getIndex().getWS().getMongoWS().setRulesParamValues(
+        self.getIndex().getWS().getMongoAgent().setRulesParamValues(
             rules_data)
         self.getIndex().updateRulesEnv()
         return {"status": "OK"}

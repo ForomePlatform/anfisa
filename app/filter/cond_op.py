@@ -1,6 +1,7 @@
 import traceback, logging
 from io import StringIO
 from .condition import ConditionMaker
+from .code_works import reprFilterCondition
 #===============================================
 class CondOpEnv:
     def __init__(self, cond_env, comp_data = None, cond_seq = None):
@@ -89,9 +90,11 @@ class CondOpEnv:
                 self.mBadIdxs.append(idx)
                 logging.warning(rep.getvalue())
 
+    def getPresentation(self):
+        return [reprFilterCondition(instr) for instr in self.mCondSeq]
+
     def getCondAll(self):
         return self.mCondEnv.getCondAll()
 
     def getCondNone(self):
         return self.mCondEnv.getCondNone()
-

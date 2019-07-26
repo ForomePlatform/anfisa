@@ -85,6 +85,13 @@ class DataVault:
                 ds_kind == "xl" and isinstance(ds, XLDataset))
             del self.mDataSets[ds_name]
 
+    def _prepareDS(self, rq_args):
+        kind = "ws" if "ws" in rq_args else "ds"
+        ds = self.mDataSets[rq_args[kind]]
+        assert kind == "ds" or ds.getKind().lower() == "ws"
+        return ds
+
+
     #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
@@ -96,12 +103,36 @@ class DataVault:
         for ds_name in sorted(self.mDataSets.keys()):
             ds_h = self.mDataSets[ds_name]
             if ds_h.getDSKind() == "ws":
-                rep["workspaces"].append(ds_h.dump())
+                rep["workspaces"].append(ds_h.getDSInfo())
             else:
-                rep["xl-datasets"].append(ds_h.dump())
+                rep["xl-datasets"].append(ds_h.getDSInfo())
         for reserved_path in glob(self.mVaultDir + "/*"):
             rep["reserved"].append(os.path.basename(reserved_path))
         return rep
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__recdata(self, rq_args):
+        ds = self._prepareDS(rq_args)
+        return ds.getRecordData(int(rq_args.get("rec")))
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__reccnt(self, rq_args):
+        ds = self._prepareDS(rq_args)
+        modes = rq_args.get("m", "").upper()
+        return ds.getViewRepr(int(rq_args.get("rec")),
+            'R' in modes or ds.getKind().lower == "xl")
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__dsinfo(self, rq_args):
+        ds = self._prepareDS(rq_args)
+        note = rq_args.get("note")
+        if note is not None:
+            with ds:
+                ds.getMongoAgent().setNote(note)
+        return ds.getDSInfo()
 
     #===============================================
     @RestAPI.vault_request

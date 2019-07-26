@@ -9,9 +9,11 @@ from utils.json_conf import loadJSonConfig
 from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
+from app.prepare.html_report import reportDS
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
 from app.config.solutions import prepareSolutions
+from app.model.mongo_db import MongoConnector
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
 sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
@@ -42,7 +44,8 @@ def checkDSName(name, kind):
         assert False
 
 #===============================================
-def createDataSet(app_config, name, kind, mongo, source, report_lines):
+def createDataSet(app_config, name, kind, mongo,
+        source, report_lines, date_loaded):
     global DRUID_ADM
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
@@ -133,7 +136,8 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
             "mongo": mongo,
             "modes": [],
             "family": filter_set.getFamilyInfo().dump(),
-            "meta": metadata_record}
+            "meta": metadata_record,
+            "date_loaded": date_loaded}
         with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)
@@ -141,6 +145,23 @@ def createDataSet(app_config, name, kind, mongo, source, report_lines):
         with open(ds_dir + "/stat.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(view_checker.dump(), sort_keys = True,
                 indent = 4), file = outp)
+
+        mongo_conn = MongoConnector(app_config["mongo-db"],
+            app_config.get("mongo-host"), app_config.get("mongo-port"))
+        mongo_agent = mongo_conn.getDSAgent(name, kind)
+        mongo_agent.checkCreationDate(date_loaded)
+        date_created = mongo_agent.getCreationDate()
+        if date_created == date_loaded:
+            date_loaded = None
+
+        os.mkdir(ds_dir + "/doc")
+        with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
+            reportDS(outp, {
+                "name": name,
+                "kind": kind.upper(),
+                "count": data_rec_no,
+                "date-created": date_created,
+                "date-reloaded": date_loaded})
 
         with open(ds_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
@@ -254,7 +275,8 @@ if __name__ == '__main__':
         time_start = datetime.now()
         print("Started at", time_start, file = sys.stderr)
         createDataSet(app_config, run_args.name[0], run_args.kind,
-            run_args.mongo, run_args.source, run_args.reportlines)
+            run_args.mongo, run_args.source, run_args.reportlines,
+            time_start.isoformat())
         time_done = datetime.now()
         print("Finished at", time_done, "for", (time_done - time_start),
             file = sys.stderr)

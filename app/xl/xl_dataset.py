@@ -27,8 +27,7 @@ class XLDataset(DataSet):
 
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
-        self.mMongoDS = (self.getApp().getMongoConnector().
-            getDSAgent(self.getMongoName()))
+        self.mDruidAgent = self.getApp().getDruidAgent()
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
@@ -54,16 +53,12 @@ class XLDataset(DataSet):
         for filter_name, cond_seq in self.mStdFilters.items():
             self.cacheFilter(filter_name, cond_seq, None)
 
-        if self.mMongoDS is not None:
-            for f_name, cond_seq, time_label in self.mMongoDS.getFilters():
-                if self.goodOpFilterName(f_name):
-                    self.cacheFilter(f_name, cond_seq, time_label)
+        for f_name, cond_seq, time_label in self.getMongoAgent().getFilters():
+            if self.goodOpFilterName(f_name):
+                self.cacheFilter(f_name, cond_seq, time_label)
 
     def getDruidAgent(self):
         return self.mDruidAgent
-
-    def getMongoDS(self):
-        return self.mMongoDS
 
     def getCondEnv(self):
         return self.mCondEnv
@@ -128,11 +123,12 @@ class XLDataset(DataSet):
         if self.goodOpFilterName(flt_name):
             with self:
                 if op == "UPDATE":
-                    time_label = self.mMongoDS.setFilter(flt_name, cond_seq)
+                    time_label = self.getMongoAgent.setFilter(
+                        flt_name, cond_seq)
                     self.cacheFilter(flt_name, cond_seq, time_label)
                     filter_name = flt_name
                 elif op == "DROP":
-                    self.mMongoDS.dropFilter(flt_name)
+                    self.getMongoAgent().dropFilter(flt_name)
                     self.dropFilter(flt_name)
                 else:
                     assert False
@@ -252,13 +248,6 @@ class XLDataset(DataSet):
         assert len(ret) == 1
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
-    def dump(self):
-        note, time_label = self.mMongoDS.getDSNote()
-        return {
-            "name": self.mName,
-            "note": note,
-            "time": time_label}
-
     def _addVersion(self, tree_code, tree_hash, version_info_seq):
         new_ver_no = 0
         if len(version_info_seq) > 0:
@@ -266,13 +255,13 @@ class XLDataset(DataSet):
             if ver_hash == tree_hash:
                 return version_info_seq
             new_ver_no = ver_no + 1
-        self.mMongoDS.addTreeCodeVersion(
+        self.getMongoAgent().addTreeCodeVersion(
             new_ver_no, tree_code, tree_hash)
         while (len(version_info_seq) + 1 >
                 AnfisaConfig.configOption("max.tree.versions")):
-            self.mMongoDS.dropTreeCodeVersion(version_info_seq[0][0])
+            self.getMongoAgent().dropTreeCodeVersion(version_info_seq[0][0])
             del version_info_seq[0]
-        return self.mMongoDS.getTreeCodeVersions()
+        return self.getMongoAgent().getTreeCodeVersions()
 
     def evalPointCounts(self, tree, time_end):
         counts = [None] * len(tree)
@@ -435,27 +424,6 @@ class XLDataset(DataSet):
         return ret
 
     #===============================================
-    @RestAPI.ws_request
-    def rq__xl_recdata(self, rq_args):
-        return self.getRecordData(int(rq_args.get("rec")))
-
-    #===============================================
-    @RestAPI.ws_request
-    def rq__xl_reccnt(self, rq_args):
-        modes = rq_args.get("m", "").upper()
-        rec_no = int(rq_args.get("rec"))
-        return self.getViewRepr(rec_no, 'R' in modes)
-
-    #===============================================
-    @RestAPI.xl_request
-    def rq__dsnote(self, rq_args):
-        note = rq_args.get("note")
-        if note is not None:
-            with self:
-                self.mMongoDS.setDSNote(note)
-        return self.dump()
-
-    #===============================================
     @RestAPI.xl_request
     def rq__xltree(self, rq_args):
         tree_code = rq_args.get("code")
@@ -464,19 +432,19 @@ class XLDataset(DataSet):
         instr = rq_args.get("instr")
         time_end = self. _prepareTimeEnd(rq_args)
         self.sStatRqCount += 1
-        version_info_seq = self.mMongoDS.getTreeCodeVersions()
+        version_info_seq = self.getMongoAgent().getTreeCodeVersions()
         assert instr is None or tree_code
         if version is not None:
             assert tree_code is None and std_name is None
             for ver_no, ver_date, ver_hash in version_info_seq:
                 if ver_no == int(version):
-                    tree_code = self.mMongoDS.getTreeCodeVersion(ver_no)
+                    tree_code = self.getMongoAgent().getTreeCodeVersion(ver_no)
                     break
             assert tree_code is not None
         if tree_code is None:
             if std_name is None and len(version_info_seq) > 0:
                 version = version_info_seq[-1][0]
-                tree_code = self.mMongoDS.getTreeCodeVersion(version)
+                tree_code = self.getMongoAgent().getTreeCodeVersion(version)
             else:
                 tree_code = self.mCondEnv.getStdTreeCode(std_name)
         else:
@@ -560,9 +528,10 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__cmptree(self, rq_args):
-        tree_code1 = self.mMongoDS.getTreeCodeVersion(int(rq_args["ver"]))
+        tree_code1 = self.getMongoAgent().getTreeCodeVersion(
+            int(rq_args["ver"]))
         if "verbase" in rq_args:
-            tree_code2 = self.mMongoDS.getTreeCodeVersion(
+            tree_code2 = self.getMongoAgent().getTreeCodeVersion(
                 int(rq_args["verbase"]))
         else:
             tree_code2 = rq_args["code"]
@@ -571,13 +540,13 @@ class XLDataset(DataSet):
     #===============================================
     @RestAPI.xl_request
     def rq__xl2ws(self, rq_args):
-        base_version, condition, std_name = None, None, None
+        base_version, op_cond, std_name = None, None, None
         if "verbase" in rq_args:
             base_version = int(rq_args["verbase"])
         elif "std_name" in rq_args:
             std_name = rq_args["std_name"]
         else:
-            _, condition = self._prepareConditions(rq_args)
+            op_cond, _ = self._prepareConditions(rq_args)
         markup_batch = None
         if self.getFamilyInfo() is not None:
             proband_rel = self.getFamilyInfo().getProbandRel()
@@ -585,7 +554,7 @@ class XLDataset(DataSet):
                 markup_batch = CompHetsMarkupBatch(proband_rel)
         task_id = self.getApp().startCreateSecondaryWS(
             self, rq_args["ws"],
-            base_version = base_version, condition = condition,
+            base_version = base_version, op_cond = op_cond,
             std_name = std_name, markup_batch = markup_batch,
             force_mode = "force" in rq_args)
         return {"task_id" : task_id}

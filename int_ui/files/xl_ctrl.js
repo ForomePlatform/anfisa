@@ -283,6 +283,33 @@ var sSubViewH = {
 };
 
 /*************************************/
+/* Notes                             */
+/*************************************/
+function openNote() {
+    sViewH.dropOff();
+    loadNote();
+    sViewH.modalOn(document.getElementById("note-back"));
+}
+
+function saveNote() {
+    sViewH.dropOff();
+    loadNote(document.getElementById("note-content").value);
+    sViewH.modalOff();
+}
+
+function loadNote(content) {
+    args = "ds=" + sDSName;
+    if (content) 
+        args += "&note=" + encodeURIComponent(content);        
+    ajaxCall("dsinfo", args, function(info) {
+        document.getElementById("note-ds-name").innerHTML = info["name"];
+        document.getElementById("note-content").value = info["note"];
+        document.getElementById("note-time").innerHTML = 
+            (info["date-note"] == null)? "" : "Modified at " + timeRepr(info["date-note"]);
+    });
+}
+
+/*************************************/
 /* Top control                       */
 /*************************************/
 var sViewH = {

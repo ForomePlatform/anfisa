@@ -2,7 +2,7 @@ import logging
 from app.config.a_config import AnfisaConfig
 from .cond_op import CondOpEnv
 from .condition import ConditionMaker
-from .code_works import htmlCodeDecoration
+from .code_works import htmlCodeDecoration, htmlCodePresentation
 #===============================================
 class CaseStory:
     def __init__(self, parent = None, start = None):
@@ -114,10 +114,13 @@ class CheckPoint:
         return ["not",self.getPrevPoint()._accumulateCondData()]
 
     def getInfo(self, code_lines):
-        line_from, line_to = self.mFrag.getFullLineDiap()
         return [self.getPointKind(), self.getLevel(),
             self.getDecision(), self.getCondData(),
-            "\n".join(code_lines[line_from - 1: line_to])]
+            self.getCodeFrag(code_lines)]
+
+    def getCodeFrag(self, code_lines):
+        line_from, line_to = self.mFrag.getFullLineDiap()
+        return "\n".join(code_lines[line_from - 1: line_to])
 
 #===============================================
 class ImportPoint(CheckPoint):
@@ -264,14 +267,23 @@ class DecisionTree(CaseStory):
     def collectRecSeq(self, dataset):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")
         ret = set()
+        info_seq = []
+        html_lines = htmlCodePresentation(self.mCode).splitlines()
+
         for point in self.mPointList:
-            if point.isActive() and point.getDecision() is True:
+            info_seq.append([point.getCodeFrag(html_lines), None, None])
+            if not point.isActive:
+                continue
+            condition = point.actualCondition()
+            point_count = dataset.evalTotalCount(condition)
+            info_seq[-1][1] = point_count
+            if point.getPointKind() == "Return":
+                info_seq[-1][2] = point.getDecision()
+            if point.getDecision() is True:
                 assert point.getPointKind() == "Return"
-                condition = point.actualCondition()
-                point_count = dataset.evalTotalCount(condition)
                 assert point_count < max_ws_size
                 if point_count > 0:
                     seq = dataset.evalRecSeq(condition, point_count)
                     ret |= set(seq)
             assert len(ret) < max_ws_size
-        return sorted(ret)
+        return sorted(ret), info_seq

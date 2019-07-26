@@ -23,14 +23,21 @@ class MongoConnector:
                 self.mMongo[self.mPath][name], name)
         return self.mAgents[name]
 
-    def getDSAgent(self, name):
+    def getXLAgent(self, name):
         if name not in self.mAgents:
-            self.mAgents[name] = MongoDSAgent(self,
+            self.mAgents[name] = MongoXLAgent(self,
                 self.mMongo[self.mPath][name], name)
         return self.mAgents[name]
 
+    def getDSAgent(self, name, kind):
+        if kind.lower() == "ws":
+            return self.getWSAgent(name)
+        if kind.lower() == "xl":
+            return self.getXLAgent(name)
+        assert False
+
 #===============================================
-class MongoWSAgent:
+class MongoDSAgent:
     def __init__(self, connector, agent, name):
         self.mConnector = connector
         self.mAgent = agent
@@ -39,6 +46,71 @@ class MongoWSAgent:
     def getName(self):
         return self.mName
 
+    def getAgent(self):
+        return self.mAgent
+
+    def getKind(self):
+        assert False
+
+    #===== CreationDate
+    def getCreationDate(self):
+        it = self.mAgent.find_one({"_id": "created"})
+        if it is not None:
+            return AnfisaConfig.normalizeTime(it.get("time"))
+        return None
+
+    def checkCreationDate(self, time_label = None):
+        it = self.mAgent.find_one({"_id": "created"})
+        if it is None:
+            if time_label is None:
+                time_label = datetime.now().isoformat()
+            self.mAgent.update({"_id": "created"},
+                {"$set": {"time": time_label}},
+                    upsert = True)
+
+    #===== Note
+    def getNote(self):
+        it = self.mAgent.find_one({"_id": "note"})
+        if it is not None:
+            return (it["note"].strip(),
+                AnfisaConfig.normalizeTime(it.get("time")))
+        return ("", None)
+
+    def setNote(self, note):
+        time_label = datetime.now().isoformat()
+        self.mAgent.update({"_id": "note"},
+            {"$set": {"note": note.strip(), "time": time_label}},
+                upsert = True)
+
+    #===== Filters
+    def getFilters(self):
+        ret = []
+        for it in self.mAgent.find({"_tp": "flt"}):
+            it_id = it["_id"]
+            if it_id.startswith("flt-"):
+                ret.append((it_id[4:], it["seq"],
+                    AnfisaConfig.normalizeTime(it.get("time"))))
+        return ret
+
+    def setFilter(self, filter_name, cond_seq):
+        time_label = datetime.now().isoformat()
+        self.mAgent.update({"_id": "flt-" + filter_name},
+            {"$set": {"seq": cond_seq, "_tp": "flt", "time": time_label}},
+            upsert = True)
+        return time_label
+
+    def dropFilter(self, filter_name):
+        self.mAgent.remove({"_id": "flt-" + filter_name})
+
+#===============================================
+class MongoWSAgent(MongoDSAgent):
+    def __init__(self, connector, agent, name):
+        MongoDSAgent.__init__(self, connector, agent, name)
+
+    def getKind(self):
+        return "WS"
+
+    #===== RecData
     def getRecData(self, rec_key):
         return self.mAgent.find_one({"_id": "rec-" + rec_key})
 
@@ -61,25 +133,7 @@ class MongoWSAgent:
             self.mAgent.update(
                 {"_id": "rec-" + rec_key}, update_instr, upsert = True)
 
-    def getFilters(self):
-        ret = []
-        for it in self.mAgent.find({"_tp": "flt"}):
-            it_id = it["_id"]
-            if it_id.startswith("flt-"):
-                ret.append((it_id[4:], it["seq"],
-                    AnfisaConfig.normalizeTime(it.get("time"))))
-        return ret
-
-    def setFilter(self, filter_name, cond_seq):
-        time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": cond_seq,
-                "_tp": "flt", "time": time_label}}, upsert = True)
-        return time_label
-
-    def dropFilter(self, filter_name):
-        self.mAgent.remove({"_id": "flt-" + filter_name})
-
+    #===== RulesParamValues
     def getRulesParamValues(self):
         it = self.mAgent.find_one({"_id": "params"})
         if it is not None:
@@ -90,61 +144,15 @@ class MongoWSAgent:
         self.mAgent.update({"_id": "params"},
             {"$set": {"params": param_values}}, upsert = True)
 
-    def getWSNote(self):
-        it = self.mAgent.find_one({"_id": "note"})
-        if it is not None:
-            return (it["note"].strip(),
-                AnfisaConfig.normalizeTime(it.get("time")))
-        return ("", None)
-
-    def setWSNote(self, note):
-        time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "note"},
-            {"$set": {"note": note.strip(), "time": time_label}},
-                upsert = True)
-
 #===============================================
-class MongoDSAgent:
+class MongoXLAgent(MongoDSAgent):
     def __init__(self, connector, agent, name):
-        self.mConnector = connector
-        self.mAgent = agent
-        self.mName = name
+        MongoDSAgent.__init__(self, connector, agent, name)
 
-    def getName(self):
-        return self.mName
+    def getKind(self):
+        return "XL"
 
-    def getFilters(self):
-        ret = []
-        for it in self.mAgent.find({"_tp": "flt"}):
-            it_id = it["_id"]
-            if it_id.startswith("flt-"):
-                ret.append((it_id[4:], it["seq"],
-                    AnfisaConfig.normalizeTime(it.get("time"))))
-        return ret
-
-    def setFilter(self, filter_name, cond_seq):
-        time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": cond_seq, "_tp": "flt", "time": time_label}},
-            upsert = True)
-        return time_label
-
-    def dropFilter(self, filter_name):
-        self.mAgent.remove({"_id": "flt-" + filter_name})
-
-    def getDSNote(self):
-        it = self.mAgent.find_one({"_id": "note"})
-        if it is not None:
-            return (it["note"].strip(),
-                AnfisaConfig.normalizeTime(it.get("time")))
-        return ("", None)
-
-    def setDSNote(self, note):
-        time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "note"},
-            {"$set": {"note": note.strip(), "time": time_label}},
-            upsert = True)
-
+    #===== TreeCodeVersions
     def getTreeCodeVersions(self):
         ret = []
         for it in self.mAgent.find({"_tp": "tree"}):

@@ -1,23 +1,25 @@
 import os, json, gzip, logging, re, shutil
 from copy import deepcopy
 from io import TextIOWrapper
+from datetime import datetime
 
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.decision import DecisionTree
+from .html_report import reportDS
 
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, dataset, ws_name, base_version = None,
-            condition = None, std_name = None,
+            op_cond = None, std_name = None,
             markup_batch = None, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
         self.mBaseVersion = base_version
-        self.mCondition = condition
+        self.mOpCond = op_cond
         self.mStdName = std_name
         self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
@@ -38,19 +40,32 @@ class SecondaryWsCreation(ExecutionTask):
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if self.mBaseVersion is not None:
             tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
-                self.mDS.getMongoDS().getTreeCodeVersion(self.mBaseVersion)))
-            rec_no_seq = tree.collectRecSeq(self.mDS)
+                self.mDS.getMongoAgent().getTreeCodeVersion(
+                self.mBaseVersion)))
+            rec_no_seq, point_seq = tree.collectRecSeq(self.mDS)
+            receipt = {
+                "kind": "tree",
+                "version": self.mBaseVersion,
+                "points": point_seq}
         elif self.mStdName is not None:
             tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
                 self.mDS.getCondEnv().getStdTreeCode(self.mStdName)))
-            rec_no_seq = tree.collectRecSeq(self.mDS)
+            rec_no_seq, point_seq = tree.collectRecSeq(self.mDS)
+            receipt = {
+                "kind": "tree",
+                "std": self.mStdName,
+                "points": point_seq}
         else:
-            rec_count = self.mDS.evalTotalCount(self.mCondition)
+            condition = self.mOpCond.getResult()
+            rec_count = self.mDS.evalTotalCount(condition)
             if (rec_count < 1 or
                     rec_count >= AnfisaConfig.configOption("max.ws.size")):
                 self.setStatus("Size is incorrect: %d" % rec_count)
                 return None
-            rec_no_seq = self.mDS.evalRecSeq(self.mCondition, rec_count)
+            rec_no_seq = self.mDS.evalRecSeq(condition, rec_count)
+            receipt = {
+                "kind": "filter",
+                "seq": self.mOpCond.getPresentation()}
 
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)
@@ -116,6 +131,7 @@ class SecondaryWsCreation(ExecutionTask):
         self.setStatus("Finishing...")
         logging.info("Finishing up workspace %s" % self.mWSName)
 
+        date_loaded = datetime.now().isoformat()
         ds_info = {
             "name": self.mWSName,
             "kind": "ws",
@@ -126,11 +142,32 @@ class SecondaryWsCreation(ExecutionTask):
             "modes": ["secondary"],
             "family": (self.mDS.getFamilyInfo().dump()
                 if self.mDS.getFamilyInfo() is not None else None),
-            "meta": self.mDS.getDataInfo().get("meta")}
+            "meta": self.mDS.getDataInfo().get("meta"),
+            "date_loaded": date_loaded}
 
         with open(ws_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)
+
+        mongo_agent = self.mDS.getApp().getMongoConnector().getWSAgent(
+            self.mWSName)
+        mongo_agent.checkCreationDate(date_loaded)
+        date_created = mongo_agent.getCreationDate()
+        if date_created == date_loaded:
+            date_loaded = None
+
+        os.mkdir(ws_dir + "/doc")
+        with open(ws_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
+            reportDS(outp, {
+                "name": self.mWSName,
+                "kind": "WS",
+                "count": len(rec_no_seq),
+                "date-created": date_created,
+                "date-reloaded": date_loaded,
+                "base-ds": self.mDS.getName(),
+                "base-count": self.mDS.getTotal(),
+                "date-base": self.mDS.getDataInfo().get("date_loaded"),
+                "receipt": receipt})
 
         with open(ws_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)

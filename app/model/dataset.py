@@ -15,7 +15,8 @@ class DataSet:
         self.mName = dataset_info["name"]
         self.mDSKind = dataset_info["kind"]
         self.mTotal = dataset_info["total"]
-        self.mMongoName = dataset_info["mongo"]
+        self.mMongoAgent = (data_vault.getApp().getMongoConnector().
+            getDSAgent(dataset_info["mongo"], dataset_info["kind"]))
         self.mAspects = AspectSetH.load(dataset_info["view_schema"])
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
@@ -49,8 +50,8 @@ class DataSet:
     def getTotal(self):
         return self.mTotal
 
-    def getMongoName(self):
-        return self.mMongoName
+    def getMongoAgent(self):
+        return self.mMongoAgent
 
     def getFltSchema(self):
         return self.mFltSchema
@@ -85,7 +86,7 @@ class DataSet:
         rec_data = self.getRecordData(rec_no)
         return self.mAspects.getViewRepr(rec_data, research_mode)
 
-    def getVersionData(self):
+    def getSourceVersions(self):
         ret = [["version", self.mDataVault.getApp().getVersionCode()]]
         if "meta" in self.mDataInfo:
             if "versions" in self.mDataInfo["meta"]:
@@ -93,3 +94,10 @@ class DataSet:
                 for key in sorted(versions.keys()):
                     ret.append([key, versions[key]])
         return ret
+
+    def getDSInfo(self):
+        note, time_label = self.getMongoAgent().getNote()
+        return {
+            "name": self.mName,
+            "note": note,
+            "date-note": time_label}
