@@ -193,7 +193,6 @@ class ExcelExport:
         if data is None:
             return
         self.tags_info = data
-        logging.info("info: %s" % json.dumps(data))
         self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + len(self.tags_info['op-tags']) + 2)
 
     def reg_check_group(self, tags):

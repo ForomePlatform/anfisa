@@ -1,31 +1,23 @@
 var sDSName = null;
-var sTitlePrefix = null;
 var sCommonTitle = null;
 var sWsURL = null;
 var sAppModeRq = "";
 
 /*************************************/
-function initXL(ds_name, common_title, ws_url) {
-    sUnitsH.init();
-    sOpCondH.init();
-    sOpNumH.init();
-    sOpEnumH.init();
-    sTreeCtrlH.init();
-    sVersionsH.init();
-    sViewH.init();
-    sCreateWsH.init();
-    sCodeEditH.init();
-    sSubViewH.init();
-    if (sTitlePrefix == null) 
-        sTitlePrefix = window.document.title;
+function setupXLTree(ds_name, common_title, ws_url) {
     sCommonTitle = common_title;
     sWsURL = ws_url;
     sDSName = ds_name; 
-    window.onresize  = updateSizes;
+    window.onresize  = arrangeControls;
     window.onkeydown = onKey;
-    window.name = sCommonTitle + ":" + sDSName + ":L";
-    document.title = sTitlePrefix + "/" + sDSName;
+    window.name = sCommonTitle + ":" + sDSName + ":TREE";
     document.getElementById("xl-name").innerHTML = sDSName;
+    initXL();
+    sUnitsH.init();
+    sOpCondH.init();
+    sTreeCtrlH.init();
+    sVersionsH.init();
+    sCodeEditH.init();
     sDecisionTree.setup();
 }
     
@@ -106,7 +98,7 @@ var sDecisionTree = {
         this.selectPoint(point_no);
         
         sCodeEditH.setup(this.mTreeCode);
-        updateSizes();
+        arrangeControls();
         this.careControls();
         this.loadDelayed();
     },
@@ -177,7 +169,7 @@ var sDecisionTree = {
             eval(post_tree_action);
             return;
         }
-        args = this.getTreeRqArgs() +
+        var args = this.getTreeRqArgs() +
             "&points=" + encodeURIComponent(JSON.stringify(this.mPointDelay)) + 
             "&rq_id=" + encodeURIComponent(this.mRqId);
         if (!post_tree_action)
@@ -334,7 +326,7 @@ var sUnitsH = {
     },
     
     setup: function() {
-        args = sDecisionTree.getTreeRqArgs() + "&tm=0" +
+        var args = sDecisionTree.getTreeRqArgs() + "&tm=0" +
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         this.mRqId = false;
         if (this.mTimeH != null) {
@@ -370,7 +362,7 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 1);
+        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 1);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
@@ -586,7 +578,7 @@ var sOpCondH = {
         }
         document.getElementById("cur-cond-mod").className = mode;
         sViewH.modalOn(document.getElementById("cur-cond-back"), "flex");
-        updateSizes();
+        arrangeControls();
     },
     
     formCondition: function(condition_data, err_msg, cond_mode, add_always) {
@@ -765,7 +757,7 @@ var sVersionsH = {
         this.checkControls();
         
         if (this.mCurCmpVer != null) {
-            args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
+            var args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
             if (this.mBaseCmpVer == null) 
                 args += "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
             else
@@ -967,7 +959,7 @@ function startWsCreate() {
 }
 
 /**************************************/
-function updateSizes() {
+function arrangeControls() {
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
         cond_mod_height = el_cond_mod.offsetHeight;
@@ -988,26 +980,8 @@ function onModalOff() {
     sDecisionTree._highlightCondition(false);
 }
 
-function openControlMenu() {
-    sViewH.dropOn(document.getElementById("ds-control-menu"));
-}
-
-function goHome() {
-    sViewH.dropOff();
-    window.open('dir', sCommonTitle + ':dir');
-}
-
-function goToFilters() {
-    sViewH.dropOff();
-    window.open("xl_flt?ds=" + sDSName, sCommonTitle + ":" + sDSName + ":R");
-}
-
 function updateZygCondStat(unit_name) {
     sDecisionTree.markRenewEdit();
-}
-
-function modalOff() {
-    sViewH.modalOff();
 }
 
 function fixMark() {

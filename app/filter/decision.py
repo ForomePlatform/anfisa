@@ -268,7 +268,7 @@ class DecisionTree(CaseStory):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")
         ret = set()
         info_seq = []
-        html_lines = htmlCodePresentation(self.mCode).splitlines()
+        html_lines = htmlCodePresentation(self.mCode)
 
         for point in self.mPointList:
             info_seq.append([point.getCodeFrag(html_lines), None, None])

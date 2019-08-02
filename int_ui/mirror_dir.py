@@ -19,6 +19,10 @@ class MirrorUiDirectory:
         if config_data is None:
             return
         dir_src, dir_dest = config_data
+        if not os.path.isdir(dir_dest):
+            logging.warning("No destination directory for mirror-ui found.\n"
+                "Attempt to create: " + dir_dest)
+            os.mkdir(dir_dest)
         fnames_sheet = dict()
         for fpath in glob(dir_src + "/*.*"):
             fname = fpath.rpartition('/')[2]

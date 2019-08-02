@@ -5,10 +5,10 @@ var sCurTabEl = null;
 
 function init_r(init_aspect, ws_name, rec_id) {
     sBaseAspect = init_aspect;
-    if (window.parent.sViewH.mSubViewTab == null)
-        window.parent.sViewH.mSubViewTab = sBaseAspect;
+    if (window.parent.sSubViewCurAspect == null)
+        window.parent.sSubViewCurAspect = sBaseAspect;
     else
-        sBaseAspect = window.parent.sViewH.mSubViewTab;
+        sBaseAspect = window.parent.sSubViewCurAspect;
     sAloneRecID = rec_id;
     sStarted = true;
     window.onclick = onClick;
@@ -20,7 +20,7 @@ function onClick(event_ms) {
 }
 
 function pickAspect(aspect_id) {
-    window.parent.sViewH.mSubViewTab = aspect_id;
+    window.parent.sSubViewCurAspect = aspect_id;
     var cur_cnt_id = "a--" + aspect_id;
     tabcontent = document.getElementsByClassName("r-tabcnt");
     for (i = 0; i < tabcontent.length; i++) {

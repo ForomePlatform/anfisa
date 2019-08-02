@@ -5,7 +5,7 @@ from .gen_html import tagsBlock, startHtmlPage
 def reportWsRecord(output, workspace, research_mode, rec_no, port):
     startHtmlPage(output,
         css_files = ["base.css", "a_rec.css", "tags.css"],
-        js_files = ["a_rec.js", "tags.js"])
+        js_files = ["a_rec.js", "tags.js", "base.js"])
     if port == "2":
         print('<body onload="init_r(2, \'%s\');">' %
             workspace.getFirstAspectID(), file = output)

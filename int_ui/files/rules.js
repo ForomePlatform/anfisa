@@ -15,17 +15,10 @@ function setupRulesCtrl() {
 
 /*************************************/
 function loadRulesData() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupRulesData(info);
-        }
-    };
-    xhttp.open("POST", "rules_data", true);
-    xhttp.setRequestHeader("Content-type", 
-        "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes)); 
+    var args = "ws=" + sDSName + sAppModeRq;
+    //if (content)
+    //  args += "&note=" + encodeURIComponent(content);
+    ajaxCall("rules_data", args, setupRulesData);
 }
 
 function setupRulesData(info) {
@@ -86,21 +79,11 @@ function checkRuleContent() {
 function ruleItemModify() {
     if (!checkRuleContent())
         return;
-    new_content = document.getElementById("rule-item-content").value;
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupItemChange(info);
-        }
-    };
-    xhttp.open("POST", "rules_modify", true);
-    xhttp.setRequestHeader("Content-type", 
-        "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + 
-        "&m=" + encodeURIComponent(sAppModes) + 
+    var new_content = document.getElementById("rule-item-content").value;
+    var args = "ws=" + sDSName + sAppModeRq +   
         "&it=" + encodeURIComponent(sCurItem) + 
-        "&cnt=" + encodeURIComponent(new_content));
+        "&cnt=" + encodeURIComponent(new_content);
+    ajaxCall("rules_modify", args, setupItemChange);
 }
 
 function ruleItemReset() {
@@ -111,9 +94,9 @@ function ruleItemReset() {
 
 function setupItemChange(info) {
     if (info["status"] == "OK") {
-        rulesModOff();
+        relaxView();
         updateCurFilter(sCurFilterName, true);
-        loadStat();
+        sUnitsH.setup();
         loadRulesData();
     } else {
         document.getElementById("rule-item-errors").innerHTML =

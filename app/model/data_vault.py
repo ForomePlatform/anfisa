@@ -14,6 +14,7 @@ class DataVault:
         self.mDataSets = dict()
 
         workspaces = []
+        names = [[], []]
         for active_path in glob(self.mVaultDir + "/*/active"):
             ds_path = os.path.dirname(active_path)
             info_path =  ds_path + "/dsinfo.json"
@@ -25,6 +26,7 @@ class DataVault:
                 assert ds_info["name"] not in self.mDataSets
                 self.mDataSets[ds_info["name"]] = XLDataset(
                     self, ds_info, ds_path)
+                names[0].append(ds_info["name"])
             else:
                 assert ds_info["kind"] == "ws"
                 workspaces.append((ds_info, ds_path))
@@ -32,8 +34,13 @@ class DataVault:
             assert ds_info["name"] not in self.mDataSets
             self.mDataSets[ds_info["name"]] = Workspace(
                     self, ds_info, ds_path)
-        logging.info("Vault %s started with %d datasets" %
-            (self.mVaultDir, len(self.mDataSets)))
+            names[1].append(ds_info["name"])
+        logging.info("Vault %s started with %d/%d datasets" %
+            (self.mVaultDir, len(names[0]), len(names[1])))
+        if len(names[0]) > 0:
+            logging.info("XL-datasets: " + " ".join(names[0]))
+        if len(names[1]) > 0:
+            logging.info("WS-datasets: " + " ".join(names[1]))
 
     def __enter__(self):
         self.mLock.acquire()
@@ -41,6 +48,12 @@ class DataVault:
 
     def __exit__(self, type, value, traceback):
         self.mLock.release()
+
+    def descrContext(self, rq_args, rq_descr):
+        if "ds" in rq_args:
+            rq_descr.append("ds=" + rq_args["ds"])
+        if "ws" in rq_args:
+            rq_descr.append("ds=" + rq_args["ws"])
 
     def getApp(self):
         return self.mApp
@@ -55,6 +68,9 @@ class DataVault:
     def getXL(self, ds_name):
         ds = self.mDataSets.get(ds_name)
         return ds if ds and ds.getDSKind() == "xl" else None
+
+    def getDS(self, ds_name):
+        return self.mDataSets.get(ds_name)
 
     def checkNewDataSet(self, ds_name):
         with self:
@@ -91,6 +107,15 @@ class DataVault:
         assert kind == "ds" or ds.getKind().lower() == "ws"
         return ds
 
+    def getBaseDS(self, ws_h):
+        return self.mDataSets.get(ws_h.getBaseDSName())
+
+    def getSecondaryWS(self, ds_h):
+        ret = []
+        for ws_h in self.mDataSets.values():
+            if ws_h.getBaseDSName() == ds_h.getName():
+                ret.append(ws_h)
+        return sorted(ret, key = lambda ws_h: ws_h.getName())
 
     #===============================================
     @RestAPI.vault_request
@@ -103,9 +128,11 @@ class DataVault:
         for ds_name in sorted(self.mDataSets.keys()):
             ds_h = self.mDataSets[ds_name]
             if ds_h.getDSKind() == "ws":
-                rep["workspaces"].append(ds_h.getDSInfo())
+                rep["workspaces"].append(
+                    ds_h.dumpDSInfo(navigation_mode = True))
             else:
-                rep["xl-datasets"].append(ds_h.getDSInfo())
+                rep["xl-datasets"].append(
+                    ds_h.dumpDSInfo(navigation_mode = True))
         for reserved_path in glob(self.mVaultDir + "/*"):
             rep["reserved"].append(os.path.basename(reserved_path))
         return rep
@@ -132,7 +159,7 @@ class DataVault:
         if note is not None:
             with ds:
                 ds.getMongoAgent().setNote(note)
-        return ds.getDSInfo()
+        return ds.dumpDSInfo(navigation_mode = False)
 
     #===============================================
     @RestAPI.vault_request

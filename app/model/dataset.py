@@ -35,6 +35,10 @@ class DataSet:
     def __exit__(self, type, value, traceback):
         self.mLock.release()
 
+    def descrContext(self, rq_args, rq_descr):
+        rq_descr.append("kind=" + self.mDSKind)
+        rq_descr.append("dataset=" + self.mName)
+
     def getApp(self):
         return self.mDataVault.getApp()
 
@@ -87,17 +91,33 @@ class DataSet:
         return self.mAspects.getViewRepr(rec_data, research_mode)
 
     def getSourceVersions(self):
-        ret = [["version", self.mDataVault.getApp().getVersionCode()]]
         if "meta" in self.mDataInfo:
             if "versions" in self.mDataInfo["meta"]:
                 versions = self.mDataInfo["meta"]["versions"]
-                for key in sorted(versions.keys()):
-                    ret.append([key, versions[key]])
-        return ret
+                return [[key, versions[key]]
+                    for key in sorted(versions.keys())]
+        return []
 
-    def getDSInfo(self):
+    def getBaseDSName(self):
+        return self.mDataInfo.get("base")
+
+    def dumpDSInfo(self, navigation_mode = False):
         note, time_label = self.getMongoAgent().getNote()
-        return {
+        ret = {
             "name": self.mName,
+            "kind": self.mDSKind,
             "note": note,
             "date-note": time_label}
+        if navigation_mode:
+            base_h = self.mDataVault.getBaseDS(self)
+            if base_h is not None:
+                ret["base"] = base_h.getName()
+            secondary_seq = self.mDataVault.getSecondaryWS(self)
+            if secondary_seq:
+                ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
+            ret["doc-support"] = "doc" in self.mDataInfo
+        else:
+            ret["src-versions"] = self.getSourceVersions()
+        if "doc" in self.mDataInfo:
+            ret["doc"] = self.mDataInfo["doc"]
+        return ret

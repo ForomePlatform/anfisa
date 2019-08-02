@@ -76,6 +76,9 @@ class HServHandler:
         self.mApplication.setup(config, in_container)
 
     def checkFilePath(self, path):
+        alt_path = self.mApplication.checkFilePath(path)
+        if alt_path is not None:
+            return alt_path
         for path_from, path_to in self.mDirFiles:
             if path.startswith(path_from):
                 return path_to + path[len(path_from):]
@@ -111,8 +114,8 @@ class HServHandler:
                 if not content_type:
                     rq_body_size = int(environ.get('CONTENT_LENGTH', 0))
                     rq_body = environ['wsgi.input'].read(rq_body_size)
-                    for a, v in parse_qs(rq_body).items():
-                        query_args[a.decode('utf-8')] = v[0].decode("utf-8")
+                    for a, v in parse_qs(rq_body.decode("utf-8")).items():
+                        query_args[a] = v[0]
             except Exception:
                 rep = StringIO()
                 traceback.print_exc(file = rep)
@@ -150,6 +153,7 @@ class HServHandler:
     #===============================================
     def processRq(self, environ, start_response):
         resp_h = HServResponse(start_response)
+        rq_descr = []
         try:
             path, query_args = self.parseRequest(environ)
             file_path = self.checkFilePath(path)
@@ -158,13 +162,17 @@ class HServHandler:
                     file_path, query_args, True)
                 if ret is not False:
                     return ret
-            return self.mApplication.request(resp_h, path, query_args)
+            return self.mApplication.request(
+                resp_h, path, query_args, rq_descr)
         except Exception:
             rep = StringIO()
             traceback.print_exc(file = rep, limit = 20)
             log_record = rep.getvalue()
-            logging.error(
-                "Exception on request evaluation:\n " + log_record)
+            log_context = ""
+            if rq_descr:
+                log_context = "In context: " + " ".join(rq_descr) + "\n"
+            logging.error("Exception on request evaluation:\n " +
+                log_context + log_record)
             return resp_h.makeResponse(error = 500)
 
 #========================================

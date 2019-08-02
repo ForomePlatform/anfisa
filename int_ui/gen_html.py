@@ -27,16 +27,17 @@ def startHtmlPage(output, title = None, html_base = None,
     print('  </head>', file = output)
 
 #===============================================
-def formTopPage(output, title, html_base, workspace):
-    startHtmlPage(output, title, html_base,
+def formTopPage(output, common_title, html_base, workspace):
+    startHtmlPage(output,
+        common_title + "-WS " + workspace.getName(), html_base,
         css_files = ["base.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
         js_files = ["anf.js", "monitor.js",
-            "flt.js", "fctrl.js", "filters.js",
+            "fctrl.js", "base.js", "filters.js",
             "zones.js", "rules.js"])
 
-    print('  <body onload="initWin(\'%s\', \'\');">' %
-        workspace.getName(), file = output)
+    print('  <body onload="initWin(\'%s\', \'%s\', \'\');">' %
+        (workspace.getName(), common_title), file = output)
     _formMainDiv(output, workspace.getName())
     print('    <div id="filter-back">', file = output)
     formFilterPannel(output);
@@ -60,12 +61,14 @@ def _formMainDiv(output, workspace_name):
               <span id="ws-name"></span><br/>
             </div>
             <div id="list-info">
-              <span id="ws-control-wrap" title="Control Menu..." class="drop">
-                <span id="ws-control-open" class="drop"
+              <span id="control-wrap" title="Control Menu..." class="drop">
+                <span id="control-open" class="drop"
                     onclick="openControlMenu()";>&#8285;</span>
-                <div id="ws-control-menu" class="drop">
+                <div id="control-menu" class="drop">
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
+                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
+                        class="drop ctrl-menu">Documentation</div>
                     <div onclick="openNote();"
                         class="drop ctrl-menu">Workspace Note</div>
                     <div onclick="switchResMode();" class="drop ctrl-menu">
@@ -73,7 +76,7 @@ def _formMainDiv(output, workspace_name):
                     <div onclick="showExport();"
                         class="drop ctrl-menu" >Export...</div>
                 </div>
-                <div id="ws-export-result" class="drop"></div>
+                <div id="export-result" class="drop"></div>
               </span>&emsp;
               <span id="list-report"></span>
               <input id="list-rand-portion" type="number" min="1" max="5"
@@ -173,7 +176,7 @@ def _formZonesDiv(output, zones):
       <div id="zone-mod">
         <div id="zone-top">
             <p id="zone-title">Zone setup
-              <span id="close-zone" onclick="zoneModOff();">&times;</span>
+              <span id="close-zone" onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="work-zone-area">
@@ -190,7 +193,7 @@ def _formZonesDiv(output, zones):
             </div>
             <div id="work-zone-ctrl">
               <button class="op-button"
-                  onclick="zoneModOff();">
+                  onclick="relaxView();">
                 Done
               </button>
               <button id="work-zone-clear" class="op-button"
@@ -211,8 +214,8 @@ def _formNoteDiv(output):
       <div id="note-mod">
         <div id="note-top">
             <p id="note-title">Workspace
-                <span id="note-ws-name"></span> note
-              <span id="close-note" onclick="noteModOff();">&times;</span>
+                <span id="note-ds-name"></span> note
+              <span id="close-note" onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
@@ -224,7 +227,7 @@ def _formNoteDiv(output):
                 Save
               </button>
               <button class="op-button"
-                  onclick="noteModOff();">
+                  onclick="relaxView();">
                 Done
               </button>
               <span id="note-time"></span>
@@ -242,7 +245,7 @@ def _formRulesDiv(output):
       <div id="rules-mod">
         <div id="rules-top">
             <p id="rules-title">&#9874; Rules evaluation setup
-              <span id="close-rules" onclick="rulesModOff();">&times;</span>
+              <span id="close-rules" onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="rules-main">
@@ -366,28 +369,28 @@ def noRecords(output):
 </html>''', file = output)
 
 #===============================================
-def dirPage(output, title, html_base):
-    startHtmlPage(output, title, html_base,
-        css_files = ["dir.css"], js_files = ["dir.js"])
+def dirPage(output, common_title, html_base):
+    startHtmlPage(output, common_title + " home", html_base,
+        css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
     print('''
-  <body onload="setup();">
+  <body onload="setup(\'%s\');">
     <h2>%s home directory</h2>
     <p id="p-version">System version: <span id="span-version"></span></p>
     <div id="div-main">
     </div>
   </body>
-</html>''' % title, file = output)
+</html>''' % (common_title, common_title), file = output)
 
 #===============================================
-def notFound(output, title, html_base):
-    startHtmlPage(output, title + ": Page not found", html_base,
-        css_files = ["dir.css"])
+def notFound(output, common_title, html_base):
+    startHtmlPage(output, common_title + ": Page not found",
+        html_base, css_files = ["dir.css"])
     print('''
   <body>
     <h2>Page not found</h2>
     <p><a href="dir" target="%s">Anfisa home</a></p>
   </body>
-</html>''' % (title + "/dir"), file = output)
+</html>''' % (common_title + "/dir"), file = output)
 
 #===============================================
 def formFilterPannel(output):
@@ -423,7 +426,7 @@ def formFilterPannel(output):
               <div id="filters-import-op-list" class="dropdown-content">
               </div>
             </div>
-            <span id="close-filter" onclick="filterModOff();">&times;</span>
+            <span id="close-filter" onclick="relaxView();">&times;</span>
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>

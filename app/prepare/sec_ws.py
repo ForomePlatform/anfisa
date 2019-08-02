@@ -139,10 +139,12 @@ class SecondaryWsCreation(ExecutionTask):
             "flt_schema": flt_schema,
             "total": len(rec_no_seq),
             "mongo": self.mWSName,
+            "base": self.mDS.getName(),
             "modes": ["secondary"],
             "family": (self.mDS.getFamilyInfo().dump()
                 if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta"),
+            "doc": [],
             "date_loaded": date_loaded}
 
         with open(ws_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
@@ -162,6 +164,7 @@ class SecondaryWsCreation(ExecutionTask):
                 "name": self.mWSName,
                 "kind": "WS",
                 "count": len(rec_no_seq),
+                "src-versions": self.mDS.getSourceVersions(),
                 "date-created": date_created,
                 "date-reloaded": date_loaded,
                 "base-ds": self.mDS.getName(),

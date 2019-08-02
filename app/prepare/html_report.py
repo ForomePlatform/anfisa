@@ -20,7 +20,7 @@ def startHtmlReport(output, title = None, use_pygments = False):
     print('  </head>', file = output)
 
 #===============================================
-def reportDS(ds_data, output):
+def reportDS(output, ds_data):
     startHtmlReport(output, "Anfisa dataset %s report" % ds_data["name"],
         "receipt" in ds_data and ds_data["receipt"].get("kind") == "tree")
     print('  <body>', file = output);
@@ -42,18 +42,18 @@ def reportDS(ds_data, output):
             val = str(dt - timedelta(microseconds = dt.microsecond))
         else:
             val = str(val)
-        print('<tr><td class="rep-title">%s<td>' % escape(title),
+        print('<tr><td class="rep-title">%s</td>' % escape(title),
             file = output)
         print('<td class="rep-val">%s<td></tr>' % escape(val), file = output)
     print('    </table>', file = output)
 
     if "src-versions" in ds_data and len(ds_data["src-versions"]) >0:
         print('<h2>Annotation sources versions</h2>', file = output)
-        print('<table class="rep-filter">', file = output)
+        print('<table class="report-anno">', file = output)
         for name, value in ds_data["src-versions"]:
             print('<tr><td class="anno-src">%s</td>' % escape(name),
                 file = output)
-            print('<td class="anno-ver">%s</td></tr>' % escape(value),
+            print('<td class="anno-ver">%s</td></tr>' % escape(str(value)),
                 file = output)
         print('</table>', file = output)
 
@@ -61,7 +61,7 @@ def reportDS(ds_data, output):
         receipt = ds_data["receipt"]
         if receipt["kind"] == "filter":
             print('<h2>Applied filter</h2>', file = output)
-            print('<table class="rep-filter">', file = output)
+            print('<table class="report-filter">', file = output)
             for instr in receipt["seq"]:
                 print('<tr><td>%s</td></tr>' % escape(instr), file = output)
             print('</table>', file = output)
@@ -75,12 +75,12 @@ def reportDS(ds_data, output):
                     continue
                 print('<p class="tree-info">%s: %s</p>' %
                     (escape(title_t), escape(receipt[key])), file = output)
-            print('<table class="rep-tree">', file = output)
+            print('<table class="report-tree">', file = output)
             for instr, count, ret_mode in receipt["points"]:
-                print('<tr><td class="tree-point">%s</td>' % escape(instr),
-                    file = output)
+                print('<tr><td class="tree-point"><div class="highlight">' +
+                    instr + '</div></td>', file = output)
                 if count is None:
-                    print('<td></td>' % count, file = output)
+                    print('<td></td>', file = output)
                 elif ret_mode:
                     print('<td class="point-ok">+%d</td>' % count,
                         file = output)

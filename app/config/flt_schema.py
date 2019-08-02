@@ -13,7 +13,7 @@ def defineFilterSchema():
         filters.presenceUnit("Compound_heterozygous",
             [("True", "/_filters/nowhere")])
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
-            title = "Called by", research_only = False)
+            title = "Called by")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     with filters.viewGroup("Variant"):
@@ -76,20 +76,19 @@ def defineFilterSchema():
             "chr11", "chr12", "chr13", "chr14", "chr15",
             "chr16", "chr17", "chr18", "chr19", "chr20",
             "chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
-            research_only = False, default_value = "undefined")
+            default_value = "undefined")
 
         filters.intValueUnit("Start_Pos", "/data/start",
-            title = "Start Position", research_only = False,
+            title = "Start Position",
             render_mode = "neighborhood", default_value=sys.maxsize)
         filters.intValueUnit("End_Pos", "/data/end",
-            title = "End Position", research_only = False, default_value=0,
+            title = "End Position", default_value = 0,
             render_mode = "neighborhood")
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
             title = "Distance From Intron/Exon Boundary (Canonical)",
-            research_only = False, default_value = 0, render_mode = "log,<")
+            default_value = 0, render_mode = "log,<")
         filters.statusUnit("Region", "/data/region_canonical",
-            title = "Region (Canonical)",
-            research_only = False, default_value = "Other")
+            title = "Region (Canonical)", default_value = "Other")
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_AF",

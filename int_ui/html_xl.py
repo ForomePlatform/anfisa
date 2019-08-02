@@ -1,13 +1,13 @@
 from .gen_html import startHtmlPage, formFilterPannel
 
 #===============================================
-def formXLPage(output, title, common_title, html_base, xl_ds, ws_url):
-    startHtmlPage(output, title, html_base,
+def formXLPage(output, common_title, html_base, xl_ds, ws_url):
+    startHtmlPage(output, common_title + "-XL " + xl_ds.getName(), html_base,
         css_files = ["base.css", "xl.css"],
         js_files = ["xl.js", "filters.js",
-            "fctrl.js", "flt.js", "xl_ctrl.js"])
+            "fctrl.js", "xl_ctrl.js", "base.js"])
 
-    print('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+    print('  <body onload="setupXLFilters(\'%s\', \'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title, ws_url), file = output)
 
     _formXLPannel(output, xl_ds.getName())
@@ -23,13 +23,15 @@ def _formXLPannel(output, ds_name):
     print('''
       <div id="xl-ctrl">
         <div id="xl-info">
-            <span id="ds-control-wrap" title="Control Menu..." class="drop">
-                <span id="ds-control-open" class="drop"
-                    onclick="openControlMenu()";>&#8285;</span>
-                <div id="ds-control-menu" class="drop">
+            <span id="control-wrap" title="Control Menu..." class="drop">
+                <span id="control-open" class="drop"
+                    onclick="openControlMenu();">&#8285;</span>
+                <div id="control-menu" class="drop">
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
-                    <div onclick="goToTree();"
+                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
+                        class="drop ctrl-menu">Documentation</div>
+                    <div onclick="goToPage(\'TREE\');"
                         class="drop ctrl-menu">Decision tree panel</div>
                     <div onclick="openNote();"
                         class="drop ctrl-menu">Dataset Note...</div>
@@ -38,7 +40,7 @@ def _formXLPannel(output, ds_name):
                     <div onclick="wsCreate();"
                         class="drop ctrl-menu">Create workspace...</div>
                 </div>
-                <div id="ws-export-result" class="drop"></div>
+                <div id="export-result" class="drop"></div>
             </span>&emsp;
             XL dataset: <span id="xl-name"></span><br/>
             Records: <span id="list-report"></span>
@@ -89,7 +91,7 @@ def formCreateWsDiv(output):
         </div>
         <div id="create-ws-main">
             <div>Workspace name:
-                <input id="create-ws-name" type="text"/>
+                <input id="create-ws-name" type="text">
             </div>
             <div id="create-ws-problems"></div>
             <div id="create-ws-status"></div>

@@ -294,57 +294,8 @@ div#ws-dropdown {
     padding: 0px;
 }
 
-span#ws-control-open {
-    border: 1px solid white;
-    padding: 0px 5px;
-    font-size: 16px;
-    cursor: pointer;
-}
-
-span#ws-control-open.res-mode {
+span#control-open.res-mode {
     background-color: #8000A0;
-}
-
-div#ws-control-menu {
-    display: none;
-    padding: 10px;
-    position: absolute;
-    color: black;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-}
-
-div.ctrl-menu {
-    text-align: left;
-    padding: 5px;
-    height: 20px;
-    width: 160px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-div.ctrl-menu:hover {
-    color: #000080;
-}
-
-div#ws-export-result {
-    display: none;
-    position: absolute;
-    padding: 20px;
-    top: 70px;
-    left: 50px;
-    width: 350px;
-    color: black;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 5px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-}
-
-span#ws-export-result.problems {
-    color: red;
 }
 
 span#res-mode-check {

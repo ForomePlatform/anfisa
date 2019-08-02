@@ -16,17 +16,8 @@ function checkCurZoneStatus() {
 
 /*************************************/
 function loadZone(zone_name){
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupZone(info);
-        }
-    };
-    xhttp.open("POST", "zone_list", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + sWorkspaceName + "&zone=" + zone_name;
-    xhttp.send(args); 
+    var args = "ws=" + sDSName + "&zone=" + zone_name;
+    ajaxCall("zone_list", args, setupZone);
 }
 
 function setupZone(info) {

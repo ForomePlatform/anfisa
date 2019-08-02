@@ -1,0 +1,66 @@
+body {
+    font-family: "Lucida Sans Unicode", "Lucida Grande", Sans-Serif;
+    font-size: 12px;
+}
+
+table.report-anno td, table.report-main td {
+    padding: 10px 20px;
+}
+
+td.rep-title, td.anno-src {
+    font-size: 14px;
+    color: blue;
+    font-weight: bold;
+    background-color: #D8E6F3;
+    width: 150px;
+}
+
+table.report-tree,table.report-filter {
+    border: 1px solid black;
+}
+
+table.report-filter {
+    width: 700px;
+}
+
+table.report-filter td {
+    padding: 5px 10px;
+    background-color: #FDFFFD;
+}
+
+td.tree-point {
+    font-size: 14px;
+    padding: 5px 10px;
+    width: 700px;
+}
+
+td.point-ok, td.point-drop, td.point-ign {
+    width: 80px;
+    padding: 5px 20px;
+    background-color: #FAFAFF;
+}
+
+td.point-ok {
+    color: #006D00;
+    text-align: left;
+    font-weight: bold;
+}
+
+td.point-drop {
+    color: #6D0000;
+    text-align: right;
+}
+
+td.point-ign {
+    color: #6F6F6F;
+    text-align: center;
+    font-style: italic;
+}
+
+td.rep-val, td.anno-ver{
+    background-color: #FAFAFF;
+    width: 600px;
+    border: 1px solid gray;
+    
+}
+

@@ -3,12 +3,14 @@ from xml.sax.saxutils import escape
 from .gen_html import startHtmlPage
 from .html_xl import formNoteDiv, formCreateWsDiv, formSubViewDiv
 #===============================================
-def formXLTreePage(output, title, common_title, html_base, xl_ds, ws_url):
-    startHtmlPage(output, title, html_base,
+def formXLTreePage(output, common_title, html_base, xl_ds, ws_url):
+    startHtmlPage(output,
+        common_title + "-XL " + xl_ds.getName() + "(d-tree)", html_base,
         css_files = ["xltree.css", "py_pygments.css", "base.css"],
-        js_files = ["xltree.js", "fctrl.js", "flt.js", "xl_ctrl.js"])
+        js_files = ["xltree.js", "fctrl.js",
+            "xl_ctrl.js", "base.js"])
 
-    print('  <body onload="initXL(\'%s\', \'%s\', \'%s\');">' %
+    print('  <body onload="setupXLTree(\'%s\', \'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title, ws_url), file = output)
 
     _formXLPannel(output, xl_ds)
@@ -27,13 +29,15 @@ def _formXLPannel(output, ds):
     print('''
       <div id="xl-ctrl">
         <div id="xl-info">
-            <span id="ds-control-wrap" title="Control Menu..." class="drop">
-                <span id="ds-control-open" class="drop"
+            <span id="control-wrap" title="Control Menu..." class="drop">
+                <span id="control-open" class="drop"
                     onclick="openControlMenu();">&#8285;</span>
-                <div id="ds-control-menu" class="drop">
+                <div id="control-menu" class="drop">
                     <div onclick="goHome();"
                         class="drop ctrl-menu">Home Directory</div>
-                    <div onclick="goToFilters();"
+                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
+                        class="drop ctrl-menu">Documentation</div>
+                    <div onclick="goToPage(\'XL\');"
                         class="drop ctrl-menu">Filtering pannel</div>
                     <div onclick="openNote();"
                         class="drop ctrl-menu">Dataset Note...</div>

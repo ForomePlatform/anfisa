@@ -56,19 +56,10 @@ function tagNav(mode) {
 }
 
 function loadTagSelection(tag_name) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupTagSelection(info);
-        }
-    };
-    xhttp.open("POST", "tag_select", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + parent.window.sWorkspaceName;
+    var args = "ws=" + parent.window.sDSName;
     if (tag_name) 
         args += "&tag=" + tag_name;
-    xhttp.send(args); 
+    ajaxCall("tag_select", args, setupTagSelection);
 }
 
 function setupTagSelection(info) {
@@ -181,7 +172,7 @@ function updateTagNavigation() {
 
 function clearFilterOpMode() {
     sFiltersH.update();
-    wsDropShow(false);
+    sViewH.dropOff();
 }
 
 function onFilterListChange() {
@@ -265,31 +256,4 @@ function checkCurZone() {
     updateCurZone(sCheckZoneCur.checked);
 }
 
-//=====================================
-function doExport() {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupExport(info);
-        }
-    };
-    xhttp.open("POST", "export", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(sConditionsH.getCondRqArgs(sCurFilterName, sCurZoneData)); 
-}
 
-//=====================================
-var sViewH = {
-    mDropCtrls: [],
-    
-    addToDrop: function(ctrl) {
-        this.mDropCtrls.push(ctrl);
-    },
-
-    dropOff: function() {
-        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
-            this.mDropCtrls[idx].style.display = "none";
-        }
-    }
-};

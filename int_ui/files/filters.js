@@ -1,4 +1,8 @@
 /**************************************/
+/* Filtering common support
+ * Used in regimes: 
+ * WS/XL-Filter
+/**************************************/
 var sUnitsH = {
     mCallAllStat: null,
     mCallPartStat: null,
@@ -85,7 +89,7 @@ var sUnitsH = {
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
-        fillEnumStat(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
+        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         
@@ -288,9 +292,6 @@ var sOpFilterH = {
         updateCurFilter(this.mCurFilter, true);
     },
     
-    _onChangeFilter: function() {
-    },
-    
     getCurFilterName: function() {
         return this.mCurFilter;
     },
@@ -313,7 +314,6 @@ var sOpFilterH = {
             [this.mCurFilter, sConditionsH.getConditions()]);
         this.mRedoStack = [];
         sUnitsH.setup(new_seq, filter_name);
-        this._onChangeFilter();
     },
 
     addCondition: function(new_cond, idx) {
@@ -357,7 +357,6 @@ var sOpFilterH = {
                     [this.mCurFilter, sConditionsH.getConditions()]);
                 hinfo = this.mHistory.pop();
                 sUnitsH.setup(hinfo[1], hinfo[0]);
-                this._onChangeFilter();
             }
         }
         if (action == "redo") {
@@ -366,7 +365,6 @@ var sOpFilterH = {
                     [this.mCurFilter, sConditionsH.getConditions()]);
                 hinfo = this.mRedoStack.pop();
                 sUnitsH.setup(hinfo[1], hinfo[0]);
-                this._onChangeFilter();
             }
         }        
     }
@@ -721,7 +719,6 @@ var sFiltersH = {
             (cur_filter == "" || 
                 this.mOpList.indexOf(cur_filter) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
-        sViewH.dropOff();
     },
 
     checkName: function() {
@@ -747,7 +744,7 @@ var sFiltersH = {
             return; /*assert false! */
         }
         
-        q_ok = (q_all)? false: checkFilterAsIdent(filter_name);
+        q_ok = (q_all)? false: checkIdentifier(filter_name);
         
         this.mInpName.className = (q_ok)? "": "bad";
         this.mBtnOp.disabled = !q_ok;
@@ -769,7 +766,6 @@ var sFiltersH = {
     },
 
     startLoad: function() {
-        sViewH.dropOff();
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
@@ -784,7 +780,6 @@ var sFiltersH = {
     startCreate: function() {
         if (sConditionsH.isEmpty())
             return;
-        sViewH.dropOff();
         this.mCurOp = "create";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "visible";
@@ -801,7 +796,6 @@ var sFiltersH = {
         cur_filter = sOpFilterH.getCurFilterName();
         if (sConditionsH.isEmpty() || cur_filter != "")
             return;
-        sViewH.dropOff();
         this.fillSelNames(false, this.mOpList);
         this.mCurOp = "modify";
         this.mInpName.value = "";
@@ -817,10 +811,8 @@ var sFiltersH = {
         cur_filter = sOpFilterH.getCurFilterName();
         if (cur_filter == "" ||  this.mOpList.indexOf(cur_filter) < 0)
             return;
-        sViewH.dropOff();
         sUnitsH.setup(sConditionsH.getConditions(), "",
             ["instr", "DROP/" + this.mInpName.value]);
-        sOpFilterH._onChangeFilter();
     },
 
     action: function() {
@@ -832,17 +824,15 @@ var sFiltersH = {
         
         switch (this.mCurOp) {
             case "create":
-                if (!q_all && checkFilterAsIdent(filter_name)) {
+                if (!q_all && checkIdentifier(filter_name)) {
                     sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
                         ["instr", "UPDATE/" + filter_name]);
-                    sOpFilterH._onChangeFilter();
                 }
                 break;
             case "modify":
                 if (q_op && filter_name != cur_filter) {
                     sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
                         ["instr", "UPDATE/" + filter_name]);
-                    sOpFilterH._onChangeFilter();
                 }
                 break;
             case "load":

@@ -1,5 +1,5 @@
-var sWorkspaceName = null;
-var sTitlePrefix = null;
+var sDSName = null;
+var sCommonTitle = null;
 var sCurRecNo = null;
 var sCurRecID = null;
 var sTabPortData = [false, null, null];
@@ -8,63 +8,44 @@ var sRecList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModeRq = null;
-var sWsDropShown = null;
-
-var sNodeFilterBack  = null;
-var sNodeZoneBack  = null;
-var sNodeNoteBack = null;
-var sNodeRulesBack = null;
 
 var sSubViewH = null;
 
-function initWin(workspace_name, app_modes) {
+function initWin(workspace_name, common_title, app_modes) {
     sAppModeRq = (app_modes)? ("&m=" + app_modes) : "";
-    if (sTitlePrefix == null) 
-        sTitlePrefix = window.document.title;
-    sWorkspaceName = workspace_name; 
-    sUnitsH.init("stat", "statunits", "ws=" + sWorkspaceName, false);
-    window.name = sTitlePrefix + "/" + sWorkspaceName;
+    sDSName = workspace_name; 
+    sCommonTitle = common_title;
+    sUnitsH.init("stat", "statunits", "ws=" + sDSName, false);
+    window.name = sCommonTitle + ":" + sDSName;
+    document.getElementById("ws-name").innerHTML = sDSName;
     
-    sNodeFilterBack  = document.getElementById("filter-back");
-    sNodeZoneBack    = document.getElementById("zone-back");
-    sNodeNoteBack    = document.getElementById("note-back");
-    sNodeRulesBack = document.getElementById("rules-back");
     window.onkeydown = onKey;
     window.onclick   = onClick;
-    window.onresize  = updateSizes;
+    window.onresize  = arrangeControls;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
 
     if (sAppModeRq.toLowerCase().indexOf('r') >= 0) {
         document.getElementById("res-mode-check").style.visibility = "visible";
-        document.getElementById("ws-control-open").className = "drop res-mode";
+        document.getElementById("control-open").className = "drop res-mode";
     } else { 
         document.getElementById("res-mode-check").style.visibility = "hidden";
-        document.getElementById("ws-control-open").className = "drop";
+        document.getElementById("control-open").className = "drop";
     }
         
     initMonitor();
     checkWorkZone(null);
-    wsDropShow(false);
+    ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
+    relaxView();
 }
 
 function loadList(filter_name, zone_data) {
-    wsDropShow(false);
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupList(info);
-        }
-    };
-    xhttp.open("POST", "list", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    xhttp.send(sConditionsH.getCondRqArgs(filter_name, zone_data)); 
+    sViewH.dropOff();
+    ajaxCall("list", sConditionsH.getCondRqArgs(filter_name, zone_data), setupList);
 }
 
 function setupList(info) {
-    sWorkspaceName = info["workspace"]; 
-    document.getElementById("ws-name").innerHTML = sWorkspaceName;
-    document.title = sTitlePrefix + ": " + sWorkspaceName;
+    if (info["workspace"] != sDSName)
+        return;
     var el = document.getElementById("list-report");
     var el_p = document.getElementById("list-rand-portion");
     var rep = "Records: <b>" + info["filtered"] + "<b>";
@@ -81,10 +62,10 @@ function setupList(info) {
     el.innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();
-    updateSizes();
+    arrangeControls();
 }
 
-function updateSizes() {
+function arrangeControls() {
     document.getElementById("top").style.height = 60;
     document.getElementById("rec-list").style.height = window.innerHeight - 61;
     
@@ -159,9 +140,9 @@ function changeRec(rec_no) {
     sCurRecID = sViewRecNoSeq[sCurRecNo];
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    window.frames['rec-frame1'].location.replace("rec?ws=" + sWorkspaceName + 
+    window.frames['rec-frame1'].location.replace("rec?ws=" + sDSName + 
         sAppModeRq + "&rec=" + sCurRecID + "&port=1");
-    window.frames['rec-frame2'].location.replace("rec?ws=" + sWorkspaceName + 
+    window.frames['rec-frame2'].location.replace("rec?ws=" + sDSName + 
         sAppModeRq + "&rec=" + sCurRecID + "&port=2");
     updateTagNavigation();
 }
@@ -178,77 +159,21 @@ function onKey(event_key) {
 }
 
 function onClick(event_ms) {
-    if (event_ms.target == sNodeFilterBack)
-        filterModOff();
-    if (event_ms.target == sNodeZoneBack)
-        zoneModOff();
-    if (event_ms.target == sNodeRulesBack)
-        rulesModOff();
-    if (event_ms.target == sNodeNoteBack)
-        noteModOff();
-    if (sWsDropShown && !event_ms.target.matches('.drop')) {
-        wsDropShow(false);
-    }
-}
-
-/*
-function softScroll(nd) {
-    if (nd == null) 
-        return;
-    var rect = nd.getBoundingClientRect();
-    var rect_parent = nd.parentNode.getBoundingClientRect();
-    if (rect.top - 10 < rect_parent.top) {
-        nd.scrollIntoView(
-            {behavior: 'auto', block: 'start', inline: 'center'});
-    }
-    else if (rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
-        nd.scrollIntoView(
-            {behavior: 'auto', block: 'start', inline: 'center'});
-    }
-}
-*/
-
-function _showModal(cur_mode_node) {
-    sNodeFilterBack.style.display = 
-        (cur_mode_node == sNodeFilterBack)? "block":"none";
-    sNodeZoneBack.style.display    = 
-        (cur_mode_node == sNodeZoneBack)? "block":"none";
-    sNodeNoteBack.style.display = 
-        (cur_mode_node == sNodeNoteBack)? "block":"none";
-    sNodeRulesBack.style.display = 
-        (cur_mode_node == sNodeRulesBack)? "block":"none";
-    updateSizes();
+    sViewH.onclick(event_ms);
 }
 
 function filterModOn() {
     clearFilterOpMode();
-    _showModal(sNodeFilterBack);
-}
-
-function filterModOff() {
-    clearFilterOpMode();
-    _showModal(null);
+    sViewH.modalOn(document.getElementById("filter-back"));
 }
 
 function zoneModOn() {
-    _showModal(sNodeZoneBack);
-}
-
-function zoneModOff() {
-    _showModal(null);
-}
-
-function noteModOff() {
-    _showModal(null);
+    sViewH.modalOn(document.getElementById("zone-back"));
 }
 
 function rulesModOn() {
     setupRulesCtrl();
-    _showModal(sNodeRulesBack);
-}
-
-function rulesModOff() {
-    _showModal(null);
+    sViewH.modalOn(document.getElementById("rules-back"));
 }
 
 function listRandPortion() {
@@ -278,107 +203,54 @@ function updateTabCfg() {
 }
 
 //=====================================
-function initExportForm() {
-    wsDropShow(false);
+function showExport() {
+    relaxView();
     if (sRecList.length <= 300)
         res_content = 'Export ' + sRecList.length + ' records?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
-            '&emsp;<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
+            '&emsp;<button class="drop" onclick="relaxView();">Cancel</button>';
     else
         res_content = 'Too many records for export: ' + 
             sRecList.length + ' > 300.<br>' +
-            '<button class="drop" onclick="wsDropShow(false);">Cancel</button>';
-    document.getElementById("ws-export-result").innerHTML = res_content;
+            '<button class="drop" onclick="relaxView();">Cancel</button>';
+    res_el = document.getElementById("export-result");
+    res_el.innerHTML = res_content;
+    sViewH.dropOn(res_el);
 }
 
-
-function openControlMenu() {
-    wsDropShow();
-    if (sWsDropShown)
-        document.getElementById("ws-control-menu").style.display = 
-            (sWsDropShown)? "block":"none";
+function doExport() {
+    sViewH.dropOff();
+    var args = sConditionsH.getCondRqArgs(sCurFilterName, sCurZoneData);
+    ajaxCall("export", args, setupExport);
 }
 
-function showExport() {
-    wsDropShow(false);
-    initExportForm();
-    document.getElementById("ws-export-result").style.display = "block";
-    wsDropShow(true);
+function setupExport(info) {
+    res_el = document.getElementById("export-result");
+    if (info["fname"]) {
+        res_el.className = "drop";
+        res_el.innerHTML = 'Exported ' + sRecList.length + ' records<br>' +
+        '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
+        console.log("Export OK");
+    } else {
+        res_el.className = "drop problems";
+        res_el.innerHTML = 'Bad configuration';
+    }
+    sViewH.dropOn(res_el);
 }
 
-function goHome() {
-    wsDropShow(false);
-    window.open('dir', sTitlePrefix + ':dir');
-}
-
-function openNote() {
-    wsDropShow(false);
-    loadNote();
-    _showModal(sNodeNoteBack);
-}
-
-function saveNote() {
-    wsDropShow(false);
-    loadNote(document.getElementById("note-content").value);
-    noteModOff();
-}
-
+//=====================================
 function switchResMode() {
-    wsDropShow();
+    relaxView();
     var idx = sAppModeRq.toLowerCase().indexOf('r');
     if (idx >= 0) {
         app_mode = "";
     } else {
         app_mode = ((sAppModeRq)? sAppModeRq.substr(3):"") + "r";
     }
-    initWin(sWorkspaceName, app_mode);
-}
-
-function setupExport(info) {
-    res_el = document.getElementById("ws-export-result");
-    if (info["fname"]) {
-        res_el.className = "drop";
-        res_el.innerHTML = 'Exported ' + sRecList.length + ' records<br>' +
-        '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
-    } else {
-        res_el.className = "drop problems";
-        res_el.innerHTML = 'Bad configuration';
-    }
-    wsDropShow(true);
-}
-
-function loadNote(content) {
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupNote(info);
-        }
-    };
-    xhttp.open("POST", "dsinfo", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + sWorkspaceName;
-    if (content)
-        args += "&note=" + encodeURIComponent(content);
-    xhttp.send(args); 
-}
-
-function setupNote(info) {
-    document.getElementById("note-ws-name").innerHTML = info["name"];
-    document.getElementById("note-content").value = info["note"];
-    document.getElementById("note-time").innerHTML = 
-        (info["date-note"] == null)? "" : "Modified at " + timeRepr(info["date-note"]);
+    initWin(sDSName, sCommonTitle, app_mode);
 }
 
 //=====================================
-function wsDropShow(mode) {
-    if (mode == undefined)
-       sWsDropShown = !sWsDropShown;
-    else
-        sWsDropShown = mode;
-    if (!sWsDropShown) {
-        document.getElementById("ws-control-menu").style.display = "none";
-        document.getElementById("ws-export-result").style.display = "none";
-    }
+function onModalOff() {
 }
 

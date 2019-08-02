@@ -1,4 +1,20 @@
 /**************************************/
+/* XL base support: units, stats, etc.
+ * Used in regimes: 
+ * XL-Filter/XL-Tree
+/**************************************/
+sSubViewCurAspect = null;
+
+function initXL() {
+    window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
+    sViewH.addToDrop(document.getElementById("control-menu"));
+    sOpNumH.init();
+    sOpEnumH.init();
+    sCreateWsH.init()
+    sSubViewH.init();
+    ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
+}
+
 var sCreateWsH = {
     mStage: null,
     mDSNames: null,
@@ -142,7 +158,7 @@ var sCreateWsH = {
                 this.mDivModStatus.innerHTML = info[1];
             } else {
                 target_ref = (sWsURL != "ws")? '': (' target="' + 
-                    sTitlePrefix + '/' + info[0]["ws"] + '"'); 
+                    sCommonTitle + ':' + info[0]["ws"] + '"'); 
                 this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsURL + 
                     '?ws=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
@@ -282,100 +298,3 @@ var sSubViewH = {
     }
 };
 
-/*************************************/
-/* Notes                             */
-/*************************************/
-function openNote() {
-    sViewH.dropOff();
-    loadNote();
-    sViewH.modalOn(document.getElementById("note-back"));
-}
-
-function saveNote() {
-    sViewH.dropOff();
-    loadNote(document.getElementById("note-content").value);
-    sViewH.modalOff();
-}
-
-function loadNote(content) {
-    args = "ds=" + sDSName;
-    if (content) 
-        args += "&note=" + encodeURIComponent(content);        
-    ajaxCall("dsinfo", args, function(info) {
-        document.getElementById("note-ds-name").innerHTML = info["name"];
-        document.getElementById("note-content").value = info["note"];
-        document.getElementById("note-time").innerHTML = 
-            (info["date-note"] == null)? "" : "Modified at " + timeRepr(info["date-note"]);
-    });
-}
-
-/*************************************/
-/* Top control                       */
-/*************************************/
-var sViewH = {
-    mShowToDrop: null,
-    mDropCtrls: [],
-    mModalCtrls: [],
-    mBlock: false,
-    mSubViewTab: null,
-    
-    init: function() {
-        window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
-        this.addToDrop(document.getElementById("ds-control-menu"));
-    },
-
-    addToDrop: function(ctrl) {
-        this.mDropCtrls.push(ctrl);
-    },
-
-    dropOn: function(ctrl) {
-        if (this.mDropCtrls.indexOf(ctrl) < 0)
-            this.mDropCtrls.push(ctrl);
-        if (ctrl.style.display == "block") {
-            this.dropOff();
-        } else {
-            this.dropOff();
-            ctrl.style.display = "block";
-            this.mShowToDrop = true;
-        }
-    },
-    
-    dropOff: function() {
-        this.mShowToDrop = false;
-        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
-            this.mDropCtrls[idx].style.display = "none";
-        }
-    },
-    
-    modalOn: function(ctrl, disp_mode) {
-        this.mBlock = false;
-        if (this.mModalCtrls.indexOf(ctrl) < 0)
-            this.mModalCtrls.push(ctrl);
-        this.modalOff();
-        ctrl.style.display = (disp_mode)? disp_mode: "block";
-    },
-    
-    modalOff: function() {
-        if (this.mBlock)
-            return;
-        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
-            this.mModalCtrls[idx].style.display = "none";
-        }
-        onModalOff();
-    },
-    
-    blockModal: function(mode) {
-        this.mBlock = mode;
-        document.body.className = (mode)? "wait":"";
-    },
-    
-    onclick: function(event_ms) {
-        for (idx = 0; idx < this.mModalCtrls.length; idx++) {
-            if (event_ms.target == this.mModalCtrls[idx]) 
-                this.modalOff();
-        }
-        if (this.mShowToDrop && !event_ms.target.matches('.drop')) {
-            this.dropOff();
-        }
-    }
-};

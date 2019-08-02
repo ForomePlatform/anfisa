@@ -19,6 +19,11 @@ sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
 sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
 sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
 
+if sys.version_info < (3, 7):
+    from backports.datetime_fromisoformat import MonkeyPatch
+    MonkeyPatch.patch_fromisoformat()
+
+#========================================
 DRUID_ADM = None
 
 #===============================================
@@ -112,7 +117,7 @@ def createDataSet(app_config, name, kind, mongo,
         print("\nTotal lines: %d" % data_rec_no, file = sys.stderr)
 
     _, vreport_data = vdata_out.communicate()
-    for line in vreport_data.splitlines():
+    for line in str(vreport_data, encoding="utf-8").splitlines():
         print(line, file = sys.stderr)
     vdata_out.wait()
 
@@ -137,6 +142,7 @@ def createDataSet(app_config, name, kind, mongo,
             "modes": [],
             "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record,
+            "doc": [],
             "date_loaded": date_loaded}
         with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
@@ -156,10 +162,18 @@ def createDataSet(app_config, name, kind, mongo,
 
         os.mkdir(ds_dir + "/doc")
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
+            if metadata_record is not None and "versions" in metadata_record:
+                versions = metadata_record["versions"]
+                src_versions = [[key, versions[key]]
+                    for key in sorted(versions.keys())]
+            else:
+                src_versions = []
+
             reportDS(outp, {
                 "name": name,
                 "kind": kind.upper(),
                 "count": data_rec_no,
+                "src-versions": src_versions,
                 "date-created": date_created,
                 "date-reloaded": date_loaded})
 

@@ -146,3 +146,65 @@ span.note-time {
 div#wait {
     background-color: #E0E0E0;
 }
+
+/****************************************/
+span#control-open {
+    border: 1px solid white;
+    padding: 0px 5px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+div#control-menu {
+    display: none;
+    padding: 10px;
+    position: absolute;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+/****************************************/
+div.ctrl-menu, div.ctrl-menu-disabled {
+    text-align: left;
+    padding: 5px;
+    height: 20px;
+    width: 190px;
+    font-weight: bold;
+}
+
+div.ctrl-menu{
+    cursor: pointer;
+}
+
+div.ctrl-menu:hover {
+    color: #000080;
+}
+
+div.ctrl-menu-disabled {
+    color: #808080;
+}
+
+/****************************************/
+div#export-result {
+    display: none;
+    position: absolute;
+    padding: 20px;
+    top: 70px;
+    left: 50px;
+    width: 400px;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+span#export-result.problems {
+    color: red;
+}
+
+/****************************************/
+

@@ -44,6 +44,11 @@ class AnfisaApp:
         MirrorUiDirectory.setup(cls.sConfig.get("mirror-ui"))
         IntUI.setup(config, in_container)
 
+        cls.sDocReportCSS = MirrorUiDirectory.transform(
+            cls.sConfig["doc-report-css"])
+        cls.sDocPygmentsCSS = MirrorUiDirectory.transform(
+            cls.sConfig["doc-pygments-css"])
+
         cls.sRunOptions = cls.sConfig.get("run-options")
         if not cls.sRunOptions:
             cls.sRunOptions = []
@@ -91,7 +96,8 @@ class AnfisaApp:
                 break
         if fname is None:
             return None
-        source_versions = ds_h.getSourceVersions()
+        source_versions = [["version", ds_h.getDataVault().
+            getApp().getVersionCode()]] + ds_h.getSourceVersions()
         tags_info = tags_man.getTagListInfo() if tags_man is not None else None
 
         export_h = ExcelExport(export_setup["excel-template"],
@@ -128,10 +134,12 @@ class AnfisaApp:
         return name in cls.sRunOptions
 
     @classmethod
-    def request(cls, serv_h, rq_path, rq_args):
+    def request(cls, serv_h, rq_path, rq_args, rq_descr):
         func, agent = RestAPI.lookupRequest(
             rq_path, rq_args, cls.sDataVault)
         if func is not None:
+            if agent is not None:
+                agent.descrContext(rq_args, rq_descr)
             report = func(agent, rq_args)
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
@@ -166,6 +174,18 @@ class AnfisaApp:
     def askJobStatus(cls, task_id):
         return cls.sJobPool.askTaskStatus(int(task_id));
 
+    @classmethod
+    def checkFilePath(cls, path):
+        if not path.startswith("/doc/"):
+            return None
+        ds_name, _, fpath = path[5:].partition('/')
+        if fpath == "report.css":
+            return cls.sDocReportCSS
+        if fpath == "py_pygments.css":
+            return cls.sDocPygmentsCSS
+        real_path = cls.sDataVault.getDir() + '/' + ds_name + '/doc/' + fpath
+        return real_path
+
 #===============================================
 class _ExportReport:
     sActive = True
@@ -176,9 +196,11 @@ class _ExportReport:
             return
         self.mOutput = open(debug_file_path, "w", encoding = "utf-8")
         print("@VERSIONS",file = self.mOutput)
-        print(json.dumps(source_versions, ensure_ascii = False),file = self.mOutput)
+        print(json.dumps(source_versions, ensure_ascii = False),
+            file = self.mOutput)
         print("@TAGS_CFG",file = self.mOutput)
-        print(json.dumps(tags_info, ensure_ascii = False),file = self.mOutput)
+        print(json.dumps(tags_info, ensure_ascii = False),
+            file = self.mOutput)
 
     def close(self):
         if self.mOutput is not None:
@@ -189,7 +211,9 @@ class _ExportReport:
         if self.mOutput is None:
             return
         print("@RECORD",file = self.mOutput)
-        print(json.dumps(rec_data, ensure_ascii = False),file = self.mOutput)
+        print(json.dumps(rec_data, ensure_ascii = False),
+            file = self.mOutput)
         print("@TAGS",file = self.mOutput)
-        print(json.dumps(tags_data, ensure_ascii = False),file = self.mOutput)
+        print(json.dumps(tags_data, ensure_ascii = False),
+            file = self.mOutput)
 

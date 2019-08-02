@@ -38,28 +38,19 @@ function loadTags(tags_to_update){
     if (sViewPort > 0) {
         if (parent.window.sCurRecID == null)
             return;
-        ws_name = parent.window.sWorkspaceName;
+        ws_name = parent.window.sDSName;
         rec_id = parent.window.sCurRecID;
-        app_modes = parent.window.sAppModes;
+        app_mode_rq = parent.window.sAppModeRq;
     } else {
         ws_name = sAloneWS;
         rec_id = sAloneRecID;
-        app_modes = "";
+        app_mode_rq = "";
     }
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            setupTags(info);
-        }
-    };
-    xhttp.open("POST", "tags", true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + ws_name +  "&m=" + encodeURIComponent(app_modes) + 
-        "&rec=" + rec_id;
+    
+    var args = "ws=" + ws_name +  app_mode_rq + "&rec=" + rec_id;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
-    xhttp.send(args); 
+    ajaxCall("tags", args, setupTags);
 }
 
 function setupTags(info) {
