@@ -132,6 +132,10 @@ class SecondaryWsCreation(ExecutionTask):
         logging.info("Finishing up workspace %s" % self.mWSName)
 
         date_loaded = datetime.now().isoformat()
+        mongo_agent = self.mDS.getApp().getMongoConnector().getWSAgent(
+            self.mWSName)
+        mongo_agent.checkCreationDate(date_loaded)
+
         ds_info = {
             "name": self.mWSName,
             "kind": "ws",
@@ -145,32 +149,16 @@ class SecondaryWsCreation(ExecutionTask):
                 if self.mDS.getFamilyInfo() is not None else None),
             "meta": self.mDS.getDataInfo().get("meta"),
             "doc": [],
+            "receipt": receipt,
             "date_loaded": date_loaded}
 
         with open(ws_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)
 
-        mongo_agent = self.mDS.getApp().getMongoConnector().getWSAgent(
-            self.mWSName)
-        mongo_agent.checkCreationDate(date_loaded)
-        date_created = mongo_agent.getCreationDate()
-        if date_created == date_loaded:
-            date_loaded = None
-
         os.mkdir(ws_dir + "/doc")
         with open(ws_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
-            reportDS(outp, {
-                "name": self.mWSName,
-                "kind": "WS",
-                "count": len(rec_no_seq),
-                "src-versions": self.mDS.getSourceVersions(),
-                "date-created": date_created,
-                "date-reloaded": date_loaded,
-                "base-ds": self.mDS.getName(),
-                "base-count": self.mDS.getTotal(),
-                "date-base": self.mDS.getDataInfo().get("date_loaded"),
-                "receipt": receipt})
+            reportDS(outp, ds_info, mongo_agent)
 
         with open(ws_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)

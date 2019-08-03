@@ -27,14 +27,27 @@ td {
 
 td.name {
     background-color: #333455;
-    font-weight: bold;
     text-align: center;
     vertical-align: top;
     width: 40%;
+    color: #F0F0F0; 
 }
 
-td.name a {
-    color: #F0F0F0;    
+span.ref-support {
+    float: right;
+}
+
+span.ds-ref {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+span.ds-ref-sec {
+    cursor: pointer;
+}
+
+span.ds-ref:hover, span.ds-ref-sec:hover {
+    color: yellow;
 }
 
 td.note {
@@ -43,5 +56,5 @@ td.note {
     font-weight: bold;
     text-align: left;
     vertical-align: top;
-    width: 50%;
+    width: 30%;
 }

@@ -16,9 +16,11 @@
     white-space: nowrap;
     height: 100%;
     max-height: 100%;
-    width: 150px;
-    min-width: 150px;
+    width: 250px;
+    min-width: 250px;
     margin-right: 3px;
+    color: white;
+    white-space: normal;
 }
 
 #right {
@@ -33,14 +35,13 @@
     flex-direction: column;
 }
 
-#doc-title {
+#title {
     background-color:#333455;
     color: white;
     width: 100%;
     max-width: 100%;
     height: 40px;
     min-height: 40px;
-    font-weight: bold;
     padding: 5px;
     margin-bottom: 2px;
 }
@@ -57,12 +58,30 @@
 }
 
 div.doc-ref {
-    color: white;
     cursor: pointer;
     padding: 5px;
 }
 
+div.grp-ref {
+    padding-top: 10px;
+    padding-left: 10px;
+    cursor: default;
+}
+
+div.grp-ref span {
+    font-style: italic;
+}
+
 div.doc-ref.cur {
     color: yellow;
-    cursor: hand;
+    cursor: default;
+}
+
+span#ds-name {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+span#ds-name:hover {
+    color: yellow;
 }

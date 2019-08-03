@@ -156,26 +156,10 @@ def createDataSet(app_config, name, kind, mongo,
             app_config.get("mongo-host"), app_config.get("mongo-port"))
         mongo_agent = mongo_conn.getDSAgent(name, kind)
         mongo_agent.checkCreationDate(date_loaded)
-        date_created = mongo_agent.getCreationDate()
-        if date_created == date_loaded:
-            date_loaded = None
 
         os.mkdir(ds_dir + "/doc")
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
-            if metadata_record is not None and "versions" in metadata_record:
-                versions = metadata_record["versions"]
-                src_versions = [[key, versions[key]]
-                    for key in sorted(versions.keys())]
-            else:
-                src_versions = []
-
-            reportDS(outp, {
-                "name": name,
-                "kind": kind.upper(),
-                "count": data_rec_no,
-                "src-versions": src_versions,
-                "date-created": date_created,
-                "date-reloaded": date_loaded})
+            reportDS(outp, ds_info, mongo_agent)
 
         with open(ds_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
@@ -192,6 +176,7 @@ def createDataSet(app_config, name, kind, mongo,
 
 #===============================================
 def pushDruid(app_config, name):
+    global DRUID_ADM
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
         print("No vault directory:", vault_dir, file = sys.stderr)
@@ -201,7 +186,6 @@ def pushDruid(app_config, name):
     druid_datasets = DRUID_ADM.listDatasets()
     if name in druid_datasets:
         DRUID_ADM.dropDataset(name)
-
 
     ds_dir = vault_dir + "/" + name
     with open(ds_dir + "/dsinfo.json",
@@ -242,8 +226,6 @@ def dropDataSet(app_config, name, kind, calm_mode):
 
 #===============================================
 def checkDataSet(app_config, name, kind):
-    global DRUID_ADM
-    assert kind == "ws"
     vault_dir = app_config["data-vault"]
     ds_dir = vault_dir + "/" + name
 
@@ -251,12 +233,36 @@ def checkDataSet(app_config, name, kind):
         os.path.exists(ds_dir + "/active"))
 
 #===============================================
+def pushDoc(app_config, name):
+    vault_dir = app_config["data-vault"]
+    ds_dir = vault_dir + "/" + name
+
+    with open(ds_dir + "/dsinfo.json",
+            "r", encoding = "utf-8") as inp:
+        ds_info = json.loads(inp.read())
+    ds_info["doc"] = []
+
+    mongo_conn = MongoConnector(app_config["mongo-db"],
+        app_config.get("mongo-host"), app_config.get("mongo-port"))
+    mongo_agent = mongo_conn.getDSAgent(ds_info["name"], ds_info["kind"])
+    with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
+        print(json.dumps(ds_info, sort_keys = True, indent = 4),
+            file = outp)
+
+    if not os.path.exists(ds_dir + "/doc"):
+        os.mkdir(ds_dir + "/doc")
+    with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
+        reportDS(outp, ds_info, mongo_agent)
+
+    print("Re-doc complete:", ds_dir)
+
+#===============================================
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument("-c", "--config", default = "anfisa.json",
         help = "Configuration file,  default=anfisa.json")
     parser.add_argument("-m", "--mode",
-        help = "Mode: create/drop/druid-push")
+        help = "Mode: create/drop/druid-push/doc-push")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default=ws")
     parser.add_argument("-s", "--source", help="Annotated json")
@@ -280,6 +286,10 @@ if __name__ == '__main__':
 
     if run_args.mode == "druid-push":
         pushDruid(app_config, run_args.name[0])
+        sys.exit()
+
+    if run_args.mode == "doc-push":
+        pushDoc(app_config, run_args.name[0])
         sys.exit()
 
     if run_args.mode == "create":

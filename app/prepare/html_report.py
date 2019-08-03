@@ -20,45 +20,60 @@ def startHtmlReport(output, title = None, use_pygments = False):
     print('  </head>', file = output)
 
 #===============================================
-def reportDS(output, ds_data):
-    startHtmlReport(output, "Anfisa dataset %s report" % ds_data["name"],
-        "receipt" in ds_data and ds_data["receipt"].get("kind") == "tree")
+def reprDateVal(val):
+    if val is None:
+        return None
+    dt = datetime.fromisoformat(val)
+    return str(dt - timedelta(microseconds = dt.microsecond))
+
+#===============================================
+def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
+    date_loaded = ds_info["date_loaded"]
+    date_created = mongo_agent.getCreationDate()
+    if date_created == date_loaded:
+        date_loaded = None
+
+    startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
+        "receipt" in ds_info and ds_info["receipt"].get("kind") == "tree")
     print('  <body>', file = output);
-    print('    <table class="report-main">', file = output);
-    for key, title in [
-            ("name", "Name"),
-            ("kind", "Kind"),
-            ("count", "Variants"),
-            ("date-created", "Created at"),
-            ("date-reloaded", "Reloaded at"),
-            ("base-ds", "Base dataset"),
-            ("base-count", "Base variants"),
-            ("date-base", "Base loaded at")]:
-        if ds_data.get(key) is None:
+    print('    <table class="report-main">', file = output)
+
+    for key, title, val in [
+            ("name", "Name", None),
+            ("kind", "Kind", None),
+            ("total", "Variants", None),
+            (None, "Created at", reprDateVal(date_created)),
+            (None, "Reloaded at", reprDateVal(date_loaded)),
+            (None, "Base dataset", base_ds_info["name"]
+                if base_ds_info is not None else None),
+            (None, "Base variants", base_ds_info["total"]
+                if base_ds_info is not None else None),
+            (None, "Base loaded at", reprDateVal(base_ds_info["date_loaded"])
+                if base_ds_info is not None else None)]:
+        if key is not None:
+            val = ds_info.get(key)
+        if val is None:
             continue
-        val = ds_data[key]
-        if key.startswith("date-"):
-            dt = datetime.fromisoformat(val)
-            val = str(dt - timedelta(microseconds = dt.microsecond))
-        else:
-            val = str(val)
+        val = str(val)
         print('<tr><td class="rep-title">%s</td>' % escape(title),
             file = output)
         print('<td class="rep-val">%s<td></tr>' % escape(val), file = output)
     print('    </table>', file = output)
 
-    if "src-versions" in ds_data and len(ds_data["src-versions"]) >0:
+    if ("meta" in ds_info and "versions" in ds_info["meta"]
+            and len(ds_info["meta"]["versions"]) > 0):
+        versions = ds_info["meta"]["versions"]
         print('<h2>Annotation sources versions</h2>', file = output)
         print('<table class="report-anno">', file = output)
-        for name, value in ds_data["src-versions"]:
+        for name in sorted(versions.keys()):
             print('<tr><td class="anno-src">%s</td>' % escape(name),
                 file = output)
-            print('<td class="anno-ver">%s</td></tr>' % escape(str(value)),
-                file = output)
+            print('<td class="anno-ver">%s</td></tr>' %
+                escape(str(versions[name])), file = output)
         print('</table>', file = output)
 
-    if "receipt" in ds_data:
-        receipt = ds_data["receipt"]
+    if "receipt" in ds_info:
+        receipt = ds_info["receipt"]
         if receipt["kind"] == "filter":
             print('<h2>Applied filter</h2>', file = output)
             print('<table class="report-filter">', file = output)

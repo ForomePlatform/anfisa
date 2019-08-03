@@ -108,10 +108,10 @@ class DataSet:
             "kind": self.mDSKind,
             "note": note,
             "date-note": time_label}
+        base_h = self.mDataVault.getBaseDS(self)
+        if base_h is not None:
+            ret["base"] = base_h.getName()
         if navigation_mode:
-            base_h = self.mDataVault.getBaseDS(self)
-            if base_h is not None:
-                ret["base"] = base_h.getName()
             secondary_seq = self.mDataVault.getSecondaryWS(self)
             if secondary_seq:
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
@@ -120,4 +120,6 @@ class DataSet:
             ret["src-versions"] = self.getSourceVersions()
         if "doc" in self.mDataInfo:
             ret["doc"] = self.mDataInfo["doc"]
+            if base_h is not None and "doc" in base_h.getDataInfo():
+                ret["doc-base"] = base_h.getDataInfo()["doc"]
         return ret

@@ -95,7 +95,6 @@ function softScroll(nd, upper_level) {
 /*************************************/
 function setupDSInfo(info) {
     if (info["doc"] == undefined) {
-        console.log("setupDSInfo:" + JSON.stringify(info["doc"]));
         menu_el = document.getElementById("menu-doc");
         menu_el.className = "drop ctrl-menu-disabled";
         menu_el.onclick = "";

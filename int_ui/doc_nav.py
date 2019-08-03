@@ -17,7 +17,9 @@ def formDocNavigationPage(output, common_title, html_base, ds_h):
         </div>
       </div>
       <div id="right">
-        <div id="doc-title">
+        <div id="title">
+            <span id="ds-name" onclick="goDS();"></span>:
+            <span id="doc-title"></span>
         </div>
         <iframe id="doc-content" name="doc-content">
         </iframe>
