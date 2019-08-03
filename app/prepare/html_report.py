@@ -28,7 +28,9 @@ def reprDateVal(val):
 
 #===============================================
 def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
-    date_loaded = ds_info["date_loaded"]
+    date_loaded = ds_info.get("date_loaded")
+    if date_loaded is None:
+        date_loaded = datetime.now().isoformat()
     date_created = mongo_agent.getCreationDate()
     if date_created == date_loaded:
         date_loaded = None
