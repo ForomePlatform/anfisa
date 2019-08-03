@@ -25,7 +25,7 @@ function loadRulesData() {
     xhttp.open("POST", "rules_data", true);
     xhttp.setRequestHeader("Content-type", 
         "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + "&m=" + encodeURIComponent(sAppModes)); 
+    xhttp.send("ws=" + sWorkspaceName + sAppModeRq); 
 }
 
 function setupRulesData(info) {
@@ -97,8 +97,7 @@ function ruleItemModify() {
     xhttp.open("POST", "rules_modify", true);
     xhttp.setRequestHeader("Content-type", 
         "application/x-www-form-urlencoded");
-    xhttp.send("ws=" + sWorkspaceName + 
-        "&m=" + encodeURIComponent(sAppModes) + 
+    xhttp.send("ws=" + sWorkspaceName + sAppModeRq +
         "&it=" + encodeURIComponent(sCurItem) + 
         "&cnt=" + encodeURIComponent(new_content));
 }

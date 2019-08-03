@@ -91,6 +91,10 @@ function updateSizes() {
     zone_mod_height = document.getElementById("zone-mod").getBoundingClientRect().height;
     document.getElementById("work-zone-area").style.height = zone_mod_height - 60;
     document.getElementById("work-zone-wrap-list").style.height = zone_mod_height - 125;
+    
+    rules_mod_height = document.getElementById("rules-mod").getBoundingClientRect().height;
+    document.getElementById("rules-wrap-columns").style.height = rules_mod_height - 200;
+    
 }
 
 function refreshRecList() {

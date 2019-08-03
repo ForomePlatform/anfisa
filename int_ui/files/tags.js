@@ -40,11 +40,11 @@ function loadTags(tags_to_update){
             return;
         ws_name = parent.window.sWorkspaceName;
         rec_id = parent.window.sCurRecID;
-        app_modes = parent.window.sAppModes;
+        app_mode_rq = parent.window.sAppModeRq;
     } else {
         ws_name = sAloneWS;
         rec_id = sAloneRecID;
-        app_modes = "";
+        app_mode_rq = "&m=";
     }
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -55,7 +55,7 @@ function loadTags(tags_to_update){
     };
     xhttp.open("POST", "tags", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-    args = "ws=" + ws_name +  "&m=" + encodeURIComponent(app_modes) + 
+    args = "ws=" + ws_name +  app_mode_rq + 
         "&rec=" + rec_id;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
