@@ -68,3 +68,9 @@ function reprRefSec(ds_name, mode, label) {
         ds_name + '\')">' + ((label)? label: ds_name) + '</span>';
     return ret;
 }
+
+function onModalOff() {
+}
+
+function arrangeControls() {
+}

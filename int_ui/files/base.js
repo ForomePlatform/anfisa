@@ -112,19 +112,19 @@ function goToPage(page_mode, ds_name) {
     if (!ds_name)
         ds_name = sDSName;
     if (page_mode == "XL") {
-        window.open("xl_flt?ds=" + ds_name, sCommonTitle + ":" + sDSName);
+        window.open("xl_flt?ds=" + ds_name, sCommonTitle + ":" + ds_name);
         return;
     }
     if (page_mode == "WS") {
-        window.open("ws?ws=" + ds_name, sCommonTitle + ":" + sDSName);
+        window.open("ws?ws=" + ds_name, sCommonTitle + ":" + ds_name);
         return;
     }
     if (page_mode == "TREE") {
-        window.open("xl_tree?ds=" + ds_name, sCommonTitle + ":" + sDSName + ":TREE");
+        window.open("xl_tree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":TREE");
         return;
     }
     if (page_mode == "DOC") {
-        window.open("doc_nav?ds=" + ds_name, sCommonTitle + ":" + sDSName + ':DOC');        
+        window.open("doc_nav?ds=" + ds_name, sCommonTitle + ":" + ds_name + ':DOC');        
         return;
     }
     console.log("BAD PAGE MODE: " +  page_mode);
