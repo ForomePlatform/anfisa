@@ -110,6 +110,7 @@ class CompHetsUnit(Unit):
             "kind": "enum",
             "vgroup": self.sSetup["vgroup"],
             "research": False,
+            "render": "operative",
             "no": -1})
         self.mDS = ds
         self.mIndex = ds.getIndex()
