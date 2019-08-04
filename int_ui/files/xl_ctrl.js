@@ -172,6 +172,8 @@ var sSubViewH = {
     mDefaultMode: 0,
     mInfo: null,
     mCurRecIdx: null,
+    mDivStatus: null,
+    mDivMod: null,
     mInpCheckFull: null,
     mInpCheckSmp: null,
     mSpanCheckFull: null,
@@ -182,8 +184,12 @@ var sSubViewH = {
     mFrameRec: null,
     mDivBack: null,
     mButtonShow: null,
+    mTaskId: null,
+    mTimeH: null,
     
     init: function() {
+        this.mDivStatus = document.getElementById("sub-view-status");
+        this.mDivMod = document.getElementById("sub-view-mod");
         this.mInpCheckFull = document.getElementById("sub-view-check-full");
         this.mInpCheckSmp = document.getElementById("sub-view-check-samples");
         this.mSpanCheckFull = document.getElementById("sub-view-mod-full");
@@ -204,23 +210,56 @@ var sSubViewH = {
     
     show: function() {
         if (this.mInfo != null) {
-            sViewH.modalOn(this.mDivBack);
-            this.updateSize();
-        } else
+            this.mDivStatus.style.visibility = "hidden";
+            this.mDivMod.style.visibility = "visible";
+        } else {
+            this.mTaskId = null;
             ajaxCall("xl_list", sUnitsH.getRqArgs(), 
-                function(info){sSubViewH._load(info);})            
+                function(info){sSubViewH._setupTask(info);})
+        }
+        sViewH.modalOn(this.mDivBack);
+        this.arrangeControls();
     },
 
-    _load: function(info) {
-        this.mInfo = info;
+    _setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.mDivMod.style.visibility = "hidden";
+        this.mDivStatus.style.visibility = "visible";
+        this.checkTask();
+    },
+    
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sSubViewH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info == null || info[0] == null) {
+            this.mTaskId = null;
+            relaxView();
+            return;
+        } 
+        if (info[0] == false) {
+            this.mDivStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sSubViewH.checkTask()}, 3000);
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mInfo = info[0];
         var mode = this.mDefaultMode;
         if (!this.mInfo["samples"])
             mode = 0;
         if (!this.mInfo["records"])
             mode = 1;
         this.refillControls(mode);
-        sViewH.modalOn(this.mDivBack);
-        this.updateSize();
+        this.show();
     },
     
     setMode: function(mode) {
@@ -252,6 +291,7 @@ var sSubViewH = {
                 'rec-label ' + color + '" onclick="sSubViewH.selectRec(' + idx + ');">' + 
                 v_prefix  + (idx + 1) + '</div>');
         }
+        console.log("R-len:" + records.length);
         this.mDivRecList.innerHTML = list_rep.join('\n');
         this.mSpanTotal.innerHTML = "In scope: " + sUnitsH.getCurCount();
         this.mCurRecIdx = null;
@@ -266,6 +306,7 @@ var sSubViewH = {
             prev_el.className = prev_el.className.replace(" press", "");
         }
         this.mCurRecIdx = rec_idx;
+        console.log("rec=" + this.mCurRecIdx);
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
         new_rec_el.className = new_rec_el.className + " press";
         var info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
@@ -285,11 +326,10 @@ var sSubViewH = {
             this.selectRec(this.mCurRecIdx + 1);
     },
     
-    updateSize: function() {
-        if (this.mInfo == null)
+    arrangeControls: function() {
+        el_mod_height = this.mDivMod.offsetHeight;
+        if (el_mod_height == 0)
             return;
-        el_mod = document.getElementById("sub-view-mod");
-        el_mod_height = el_mod.offsetHeight;
         document.getElementById("sub-view-wrap-list").style.height=
             Math.max(10, el_mod_height - 110);
         document.getElementById("sub-view-rec-wrap").style.height=

@@ -478,6 +478,20 @@ div#create-ws-status {
 }
 
 /********************Modal SubView*****************************/
+div#sub-view-status {
+    margin-top: 20%;
+    margin-left: 30%;
+    width: 300px;
+    height: 60px;
+    padding: 10px 5px;
+    text-align: center;
+    color: grey;
+    font-weight: bold;
+    background-color: #fffefe;
+    border: 1px solid black;
+    position: absolute;
+}
+
 div#sub-view-mod {
     background-color: #333455; 
     margin: 2% 2% 1% 1%; 

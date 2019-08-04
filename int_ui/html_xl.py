@@ -112,6 +112,7 @@ def formCreateWsDiv(output):
 def formSubViewDiv(output):
     print('''
     <div id="sub-view-back" class="modal-back">
+      <div id="sub-view-status"></div>
       <div id="sub-view-mod">
         <div id="sub-view-left">
             <div id="sub-view-ctrl">

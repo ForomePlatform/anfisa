@@ -8,7 +8,6 @@ from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
 from app.prepare.v_check import ViewDataChecker
-from app.prepare.sec_ws import SecondaryWsCreation
 from app.filter.druid_agent import DruidAgent
 from app.view.attr import AttrH
 from app.view.asp_set import AspectSetH
@@ -162,11 +161,7 @@ class AnfisaApp:
         return aspects.getViewRepr(record, research_mode)
 
     @classmethod
-    def startCreateSecondaryWS(cls, dataset, wsname,
-            base_version = None, op_cond = None, std_name = None,
-            markup_batch = None, force_mode = False):
-        task = SecondaryWsCreation(dataset, wsname,
-            base_version, op_cond, std_name, markup_batch, force_mode)
+    def runTask(cls, task):
         cls.sJobPool.putTask(task)
         return str(task.getUID())
 

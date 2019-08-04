@@ -1,26 +1,23 @@
 import json
 from time import time
 from copy import deepcopy
-from io import TextIOWrapper
-from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
+from .xl_list import XlListTask
 from app.model.comp_hets import CompHetsUnit, CompHetsMarkupBatch
 from app.filter.cond_op import CondOpEnv
 from app.filter.decision import DecisionTree
 from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.code_works import cmpTrees
 from app.filter.sol_pack import codeHash
+from app.prepare.sec_ws import SecondaryWsCreation
 #===============================================
 class XLDataset(DataSet):
     sStatRqCount = 0
-    sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
-    sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
-    sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
     sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
 
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
@@ -224,7 +221,7 @@ class XLDataset(DataSet):
         assert len(ret[0]["result"]) == expect_count
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
-    def evalSampleList(self, condition):
+    def evalSampleList(self, condition, max_count):
         if condition is None:
             cond_repr = None
         else:
@@ -235,7 +232,7 @@ class XLDataset(DataSet):
             "queryType": "topN",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
             "dimension": "_ord",
-            "threshold": self.sViewCountFull + 5,
+            "threshold": max_count,
             "metric": "max_rand",
             "granularity": self.mDruidAgent.GRANULARITY,
             "aggregations": [{
@@ -297,20 +294,6 @@ class XLDataset(DataSet):
                 for idx1 in range(zero_idx, len(tree)):
                     counts[idx1] = 0
         return counts
-
-    def retrieveListKeys(self, rec_no_seq):
-        rec_no_dict = {rec_no: None for rec_no in rec_no_seq}
-        with self._openPData() as inp:
-            pdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            for rec_no, line in enumerate(pdata_inp):
-                if rec_no not in rec_no_dict:
-                    continue
-                pre_data = json.loads(line.strip())
-                rec_no_dict[rec_no] = [rec_no,
-                    escape(pre_data.get("_label")),
-                    AnfisaConfig.normalizeColorCode(pre_data.get("_color"))]
-        return rec_no_dict
 
     #===============================================
     def _prepareTimeEnd(self, rq_args):
@@ -404,24 +387,8 @@ class XLDataset(DataSet):
             _, condition = self._prepareConditions(rq_args)
         else:
             tree, point_no, condition = self._prepareTree(rq_args)
-        rec_no_seq = self.evalSampleList(condition)
-
-        if len(rec_no_seq) > self.sViewCountFull:
-            rec_no_seq = rec_no_seq[:self.sViewCountSamples]
-            q_samples, q_full = True, False
-        elif len(rec_no_seq) <= self.sViewMinSamples:
-            q_samples, q_full = False, True
-        else:
-            q_samples, q_full = True, True
-        rec_no_dict = self.retrieveListKeys(rec_no_seq)
-        ret = dict()
-        if q_samples:
-            ret["samples"] = [rec_no_dict[rec_no]
-                for rec_no in rec_no_seq[:self.sViewCountSamples]]
-        if q_full:
-            ret["records"] = [rec_no_dict[rec_no]
-                for rec_no in sorted(rec_no_seq)]
-        return ret
+        return {"task_id" : self.getApp().runTask(
+            XlListTask(self, condition))}
 
     #===============================================
     @RestAPI.xl_request
@@ -552,12 +519,10 @@ class XLDataset(DataSet):
             proband_rel = self.getFamilyInfo().getProbandRel()
             if proband_rel:
                 markup_batch = CompHetsMarkupBatch(proband_rel)
-        task_id = self.getApp().startCreateSecondaryWS(
-            self, rq_args["ws"],
-            base_version = base_version, op_cond = op_cond,
-            std_name = std_name, markup_batch = markup_batch,
-            force_mode = "force" in rq_args)
-        return {"task_id" : task_id}
+        task = SecondaryWsCreation(self, rq_args["ws"],
+            base_version, op_cond, std_name, markup_batch,
+            "force" in rq_args)
+        return {"task_id" : self.getApp().runTask(task)}
 
     #===============================================
     @RestAPI.xl_request

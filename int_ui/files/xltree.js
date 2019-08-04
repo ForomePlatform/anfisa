@@ -969,7 +969,7 @@ function arrangeControls() {
         document.getElementById("wrap-cond-enum").style.height = 
             Math.max(10, cond_mod_height - 110);
     }
-    sSubViewH.updateSize();
+    sSubViewH.arrangeControls();
 }
 
 function onKey(key_event) {

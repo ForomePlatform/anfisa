@@ -82,7 +82,7 @@ function setupExport(info) {
 /*************************************/
 /**************************************/
 function arrangeControls() {
-    sSubViewH.updateSize();
+    sSubViewH.arrangeControls();
 }
 
 function onKey(event_key) {
