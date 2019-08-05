@@ -28,7 +28,7 @@ td {
 td.name {
     background-color: #333455;
     font-weight: bold;
-    text-align: center;
+    text-align: left;
     vertical-align: top;
     width: 40%;
 }
