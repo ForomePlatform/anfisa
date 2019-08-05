@@ -45,3 +45,16 @@ td.note {
     vertical-align: top;
     width: 50%;
 }
+
+td.name a.ext-ref {
+    background-color: white;
+    color: #333455;
+    font-size: 20px;
+    padding: 3px;
+    border-radius: 7px;    
+    text-decoration: none;
+}
+
+td.name a.ext-ref:hover {
+    color:yellow;
+}

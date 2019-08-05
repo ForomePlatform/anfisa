@@ -37,7 +37,7 @@ class IntUI:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
             formTopPage(output, cls.sHtmlTitleWS, cls.sHtmlBase,
-                workspace)
+                workspace, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/rec":
@@ -60,7 +60,7 @@ class IntUI:
 
         if rq_path == "/dir":
             output = StringIO()
-            dirPage(output, cls.sHtmlTitleWS, cls.sHtmlBase)
+            dirPage(output, cls.sHtmlTitleWS, cls.sHtmlBase, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/norecords":

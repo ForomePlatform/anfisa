@@ -1,9 +1,11 @@
 var sTitlePrefix = null;
+var sWsExtUrl = null;
 
-function setup() {
+function setup(ws_ext_url) {
     if (sTitlePrefix == null) 
         sTitlePrefix = window.document.title;
     window.name = sTitlePrefix + ":dir";
+    sWsExtUrl = ws_ext_url;
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
@@ -21,7 +23,12 @@ function setupData(info) {
     var tab_cnt = ["<table>"];
     for (idx = 0; idx < info["workspaces"].length; idx++) {
         ws_info = info["workspaces"][idx];
-        tab_cnt.push('<tr><td class="name"><a href="ws?ws=' + ws_info["name"] + '" ' +
+        tab_cnt.push('<tr><td class="name">');
+        if (sWsExtUrl) 
+            tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
+                '?ws=' + ws_info["name"] + '" target="blank" ' + 
+                'title="To front end">&#x23f5;</a>')
+        tab_cnt.push('<a href="ws?ws=' + ws_info["name"] + '" ' +
             'target="' + sTitlePrefix + '/' + ws_info["name"] + '">' +
             ws_info["name"] + '</td>');
         tab_cnt.push('<td class="note">' + ws_info["note"].replace('\n', '<br>') + 

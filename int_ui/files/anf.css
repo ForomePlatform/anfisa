@@ -107,6 +107,13 @@ span#ws-name {
    text-align: left;
 }
 
+#top-ref {
+    width: 30px;
+    margin: 0px;
+    border: none;
+    text-align: center;
+}
+
 /********************Left area*****************************/
 div#wrap-rec-list {
     overflow: hidden;
@@ -351,6 +358,19 @@ span#res-mode-check {
     visibility: hidden;
 }
 
+a.ext-ref {
+    background-color: white;
+    color: #333455;
+    font-size: 20px;
+    padding: 3px;
+    border-radius: 7px;    
+    text-decoration: none;
+    float: right;
+}
+
+a.ext-ref:hover {
+    color:yellow;
+}
 /********************Modal Note*****************************/
 #note-back {
     display: none;

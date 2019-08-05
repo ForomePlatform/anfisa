@@ -26,7 +26,7 @@ def startHtmlPage(output, title = None, html_base = None,
     print >> output, '  </head>'
 
 #===============================================
-def formTopPage(output, title, html_base, workspace):
+def formTopPage(output, title, html_base, workspace, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["base.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
@@ -36,7 +36,7 @@ def formTopPage(output, title, html_base, workspace):
 
     print >> output, ('  <body onload="initWin(\'%s\', \'\');">' %
         (workspace.getName()))
-    _formMainDiv(output, workspace.getName())
+    _formMainDiv(output, workspace.getName(), ws_url)
     print >> output, '    <div id="filter-back">'
     formFilterPannel(output);
     print >> output, '    </div>'
@@ -48,7 +48,7 @@ def formTopPage(output, title, html_base, workspace):
     print >> output, '</html>'
 
 #===============================================
-def _formMainDiv(output, workspace_name):
+def _formMainDiv(output, workspace_name, ws_url):
     print >> output, '''
     <div id="all">
       <div id="top">
@@ -135,6 +135,10 @@ def _formMainDiv(output, workspace_name):
                 onclick="tagNav(4);">&#9654;|</span>
             </div>
          </div>
+         <div id="top-ref">
+            <a class="ext-ref" href="%(ws_url)s?ws=%(ws)s"
+                target="blank" title="To front end">&#x23f5;</a>
+        </div>
       </div>
       <div id="bottom">
         <div id="bottom-left">
@@ -150,7 +154,7 @@ def _formMainDiv(output, workspace_name):
             </iframe>
         </div>
       </div>
-    </div>''' % {"ws": workspace_name}
+    </div>''' % {"ws": workspace_name, "ws_url": ws_url}
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -365,17 +369,17 @@ def noRecords(output):
 </html>'''
 
 #===============================================
-def dirPage(output, title, html_base):
+def dirPage(output, title, html_base, ws_url):
     startHtmlPage(output, title, html_base,
         css_files = ["dir.css"], js_files = ["dir.js"])
     print >> output, '''
-  <body onload="setup();">
+  <body onload="setup(\'%s\');">
     <h2>%s home directory</h2>
     <p id="p-version">System version: <span id="span-version"></span></p>
     <div id="div-main">
     </div>
   </body>
-</html>''' % title
+</html>''' % (ws_url, title)
 
 #===============================================
 def notFound(output, title, html_base):
