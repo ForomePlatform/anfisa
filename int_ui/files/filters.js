@@ -812,7 +812,7 @@ var sFiltersH = {
         if (cur_filter == "" ||  this.mOpList.indexOf(cur_filter) < 0)
             return;
         sUnitsH.setup(sConditionsH.getConditions(), "",
-            ["instr", "DROP/" + this.mInpName.value]);
+            ["instr", "DELETE/" + this.mInpName.value]);
     },
 
     action: function() {

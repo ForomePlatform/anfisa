@@ -124,7 +124,7 @@ class XLDataset(DataSet):
                         flt_name, cond_seq)
                     self.cacheFilter(flt_name, cond_seq, time_label)
                     filter_name = flt_name
-                elif op == "DROP":
+                elif op == "DELETE":
                     self.getMongoAgent().dropFilter(flt_name)
                     self.dropFilter(flt_name)
                 else:

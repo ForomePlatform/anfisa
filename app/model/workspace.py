@@ -135,7 +135,7 @@ class Workspace(DataSet):
                 time_label = self.getMongoAgent().setFilter(flt_name, cond_seq)
                 self.mIndex.cacheFilter(flt_name, cond_seq, time_label)
                 filter_name = flt_name
-            elif op in {"DROP", "DELETE"}:
+            elif op == "DELETE":
                 self.getMongoAgent().dropFilter(flt_name)
                 self.mIndex.dropFilter(flt_name)
             else:
@@ -162,8 +162,6 @@ class Workspace(DataSet):
         modes = rq_args.get("m", "").upper()
         _, condition = self._prepareConditions(rq_args)
         filter_name = rq_args.get("filter")
-        if filter_name == "null":
-            filter_name = None
         rec_no_seq = self.mIndex.getRecNoSeq(filter_name, condition)
         zone_data = rq_args.get("zone")
         if zone_data is not None:
@@ -183,14 +181,6 @@ class Workspace(DataSet):
         repr_context = self._prepareContext(rq_args)
         return self.mIndex.makeStatReport(
             filter_name, 'R' in modes, op_env, repr_context)
-
-    #===============================================
-    @RestAPI.ws_request
-    def rq__statunit(self, rq_args):
-        _, condition = self._prepareConditions(rq_args)
-        repr_context = self._prepareContext(rq_args)
-        return self.mIndex.makeUnitStatReport(rq_args["unit"],
-            condition, repr_context)
 
     #===============================================
     @RestAPI.ws_request
@@ -251,8 +241,6 @@ class Workspace(DataSet):
     @RestAPI.ws_request
     def rq__export(self, rq_args):
         filter_name = rq_args.get("filter")
-        if filter_name == "null":
-            filter_name = None
         _, condition = self._prepareConditions(rq_args)
         rec_no_seq = self.getIndex().getRecNoSeq(filter_name, condition)
         zone_data = rq_args.get("zone")
