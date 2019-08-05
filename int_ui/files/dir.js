@@ -1,7 +1,9 @@
 var sCommonTitle = null;
+var sWsExtUrl = null;
 
-function setup(common_title) {
+function setup(common_title, ws_ext_url) {
     sCommonTitle = common_title;
+    sWsExtUrl = ws_ext_url;
     window.name = sCommonTitle + ":DIR";
     ajaxCall("dirinfo", "", setupDirData);
 }
@@ -24,7 +26,12 @@ function setupDirData(info) {
 
 
 function renderWS(ds_info, tab_cnt) {
-    tab_cnt.push('<tr><td class="name">' + reprRef(ds_info["name"], "WS"));
+    tab_cnt.push('<tr><td class="name">')
+    if (sWsExtUrl) 
+        tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
+            '?ws=' + ds_info["name"] + '" target="blank" ' + 
+            'title="To front end">&#x23f5;</a>')
+    tab_cnt.push(reprRef(ds_info["name"], "WS"));
     if (ds_info["doc"] != undefined)
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
      if (ds_info["base"]) {

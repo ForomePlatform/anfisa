@@ -58,3 +58,16 @@ td.note {
     vertical-align: top;
     width: 30%;
 }
+
+a.ext-ref {
+    background-color: white;
+    color: #333455;
+    font-size: 20px;
+    padding: 3px;
+    border-radius: 7px;    
+    text-decoration: none;
+}
+
+a.ext-ref:hover {
+    color:yellow;
+}

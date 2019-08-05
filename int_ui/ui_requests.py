@@ -1,7 +1,7 @@
 import logging, traceback
 from io import StringIO
 
-from .gen_html import formTopPage, noRecords, dirPage, notFound
+from .gen_html import formWsPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage
 from .html_xltree import formXLTreePage
 from .record import reportWsRecord, reportXlRecord
@@ -48,8 +48,8 @@ class IntUI:
             if workspace is None:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
-            formTopPage(output, cls.sHtmlTitle, cls.sHtmlBase,
-                workspace)
+            formWsPage(output, cls.sHtmlTitle, cls.sHtmlBase,
+                workspace, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/rec":
@@ -72,7 +72,7 @@ class IntUI:
 
         if rq_path == "/dir":
             output = StringIO()
-            dirPage(output, cls.sHtmlTitle, cls.sHtmlBase)
+            dirPage(output, cls.sHtmlTitle, cls.sHtmlBase, cls.sWsURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/norecords":

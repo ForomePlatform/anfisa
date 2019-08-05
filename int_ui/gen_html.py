@@ -27,7 +27,7 @@ def startHtmlPage(output, title = None, html_base = None,
     print('  </head>', file = output)
 
 #===============================================
-def formTopPage(output, common_title, html_base, workspace):
+def formWsPage(output, common_title, html_base, workspace, ws_url):
     startHtmlPage(output,
         common_title + "-WS " + workspace.getName(), html_base,
         css_files = ["base.css",
@@ -38,7 +38,7 @@ def formTopPage(output, common_title, html_base, workspace):
 
     print('  <body onload="initWin(\'%s\', \'%s\', \'\');">' %
         (workspace.getName(), common_title), file = output)
-    _formMainDiv(output, workspace.getName())
+    _formMainDiv(output, workspace.getName(), ws_url)
     print('    <div id="filter-back">', file = output)
     formFilterPannel(output);
     print('    </div>', file = output)
@@ -50,7 +50,7 @@ def formTopPage(output, common_title, html_base, workspace):
     print('</html>', file = output)
 
 #===============================================
-def _formMainDiv(output, workspace_name):
+def _formMainDiv(output, workspace_name, ws_url):
     print('''
     <div id="all">
       <div id="top">
@@ -139,6 +139,10 @@ def _formMainDiv(output, workspace_name):
                 onclick="tagNav(4);">&#9654;|</span>
             </div>
          </div>
+         <div id="top-ref">
+            <a class="ext-ref" href="%(ws_url)s?ws=%(ws)s"
+                target="blank" title="To front end">&#x23f5;</a>
+        </div>
       </div>
       <div id="bottom">
         <div id="bottom-left">
@@ -154,7 +158,7 @@ def _formMainDiv(output, workspace_name):
             </iframe>
         </div>
       </div>
-    </div>''' % {"ws": workspace_name}, file = output)
+    </div>''' % {"ws": workspace_name, "ws_url": ws_url}, file = output)
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -369,17 +373,17 @@ def noRecords(output):
 </html>''', file = output)
 
 #===============================================
-def dirPage(output, common_title, html_base):
+def dirPage(output, common_title, html_base, ws_url):
     startHtmlPage(output, common_title + " home", html_base,
         css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
     print('''
-  <body onload="setup(\'%s\');">
+  <body onload="setup(\'%s\', \'%s\');">
     <h2>%s home directory</h2>
     <p id="p-version">System version: <span id="span-version"></span></p>
     <div id="div-main">
     </div>
   </body>
-</html>''' % (common_title, common_title), file = output)
+</html>''' % (common_title, ws_url,common_title), file = output)
 
 #===============================================
 def notFound(output, common_title, html_base):
