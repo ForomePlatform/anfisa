@@ -5,7 +5,7 @@ from datetime import datetime
 from subprocess import Popen, PIPE
 
 from utils.read_json import JsonLineReader
-from utils.json_conf import loadJSonConfig
+from utils.json_conf import loadJSonConfig, loadDatasetInventory
 from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
@@ -49,8 +49,14 @@ def checkDSName(name, kind):
         assert False
 
 #===============================================
+def prepareDocDir(ds_doc_dir, ds_inventory):
+    if not os.path.exists(ds_doc_dir):
+        os.mkdir(ds_doc_dir)
+    return []
+
+#===============================================
 def createDataSet(app_config, name, kind, mongo,
-        source, report_lines, date_loaded):
+        source, ds_inventory, report_lines, date_loaded):
     global DRUID_ADM
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
@@ -132,6 +138,7 @@ def createDataSet(app_config, name, kind, mongo,
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
+        ds_doc_dir = ds_dir + "/doc"
         ds_info = {
             "name": name,
             "kind": kind,
@@ -142,7 +149,7 @@ def createDataSet(app_config, name, kind, mongo,
             "modes": [],
             "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record,
-            "doc": [],
+            "doc": prepareDocDir(ds_doc_dir, ds_inventory),
             "date_loaded": date_loaded}
         with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
@@ -157,7 +164,6 @@ def createDataSet(app_config, name, kind, mongo,
         mongo_agent = mongo_conn.getDSAgent(name, kind)
         mongo_agent.checkCreationDate(date_loaded)
 
-        os.mkdir(ds_dir + "/doc")
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
             reportDS(outp, ds_info, mongo_agent)
 
@@ -233,14 +239,15 @@ def checkDataSet(app_config, name, kind):
         os.path.exists(ds_dir + "/active"))
 
 #===============================================
-def pushDoc(app_config, name):
+def pushDoc(app_config, name, ds_inventory):
     vault_dir = app_config["data-vault"]
     ds_dir = vault_dir + "/" + name
 
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    ds_info["doc"] = []
+    ds_doc_dir = ds_dir + "/doc"
+    ds_info["doc"] = prepareDocDir(ds_doc_dir, ds_inventory)
 
     mongo_conn = MongoConnector(app_config["mongo-db"],
         app_config.get("mongo-host"), app_config.get("mongo-port"))
@@ -249,9 +256,7 @@ def pushDoc(app_config, name):
         print(json.dumps(ds_info, sort_keys = True, indent = 4),
             file = outp)
 
-    if not os.path.exists(ds_dir + "/doc"):
-        os.mkdir(ds_dir + "/doc")
-    with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
+    with open(ds_doc_dir + "/info.html", "w", encoding = "utf-8") as outp:
         reportDS(outp, ds_info, mongo_agent)
 
     print("Re-doc complete:", ds_dir)
@@ -259,13 +264,16 @@ def pushDoc(app_config, name):
 #===============================================
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument("-c", "--config", default = "anfisa.json",
-        help = "Configuration file,  default=anfisa.json")
+    parser.add_argument("-d", "--dir",
+        help = "Storage directory control file")
+    parser.add_argument("-c", "--config",
+        help = "Anfisa configuration file,  default = anfisa.json")
     parser.add_argument("-m", "--mode",
         help = "Mode: create/drop/druid-push/doc-push")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default=ws")
     parser.add_argument("-s", "--source", help="Annotated json")
+    parser.add_argument("-i", "--inv", help="Annotation inventory")
     parser.add_argument("-f", "--force", action = "store_true",
         help = "Force removal")
     parser.add_argument("-C", "--nocoord", action = "store_true",
@@ -277,37 +285,79 @@ if __name__ == '__main__':
     parser.add_argument("name", nargs = 1, help = "Dataset name")
     run_args = parser.parse_args()
 
-    app_config = loadJSonConfig(run_args.config)
+    ds_name =  run_args.name[0]
+    config_file = run_args.config
+    ds_source = run_args.source
+    ds_inv = run_args.inv
+    ds_kind = run_args.kind
+
+    if run_args.dir is not None:
+        if config_file or ds_source:
+            print("Incorrect usage: use --dir or (--config, --source)")
+            sys.exit()
+        with open(run_args.dir, "r", encoding="utf-8") as inp:
+            dir_config = json.loads(inp.read())
+        config_file = dir_config["anfisa.json"]
+        if ds_name not in dir_config["datasets"]:
+            print("Dataset %s not registered in directory file (%s)" %
+                ds_name, run_args.dir, file = sys.stderr)
+            sys.exit()
+        ds_entry = dir_config["datasets"][ds_name]
+        ds_kind = ds_entry["kind"]
+        if "inv" in ds_entry and "a-json" not in ds_entry:
+            ds_inv = ds_entry["inv"]
+        elif "a-json" in ds_entry:
+            ds_source = ds_entry["a-json"]
+        else:
+            print(("Dataset %s: no correct source or inv registered "
+                "in directory file (%s)") % (ds_name, run_args.dir),
+                file = sys.stderr)
+            sys.exit()
+
+    ds_inventory = None
+    if ds_inv:
+        if ds_source:
+            print("Incorrect usage: use a-json or inventory "
+                "(--source or --inv)")
+            sys.exit()
+        ds_inventory = loadDatasetInventory(ds_inv)
+        ds_source = ds_inventory["a-json"]
+
+    print("Anfisa config:", config_file, file = sys.stderr)
+    print("DS source:", ds_source, file = sys.stderr)
+
+    if not config_file:
+        config_file = "anfisa.json"
+    app_config = loadJSonConfig(config_file)
 
     assert os.path.isdir(app_config["data-vault"])
 
-    if run_args.kind == "xl" or run_args.mode == "druid-push":
+    if ds_kind == "xl" or run_args.mode == "druid-push":
         DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
 
     if run_args.mode == "druid-push":
-        pushDruid(app_config, run_args.name[0])
+        pushDruid(app_config, ds_name)
         sys.exit()
 
     if run_args.mode == "doc-push":
-        pushDoc(app_config, run_args.name[0])
+        pushDoc(app_config, ds_name, ds_inventory)
         sys.exit()
 
     if run_args.mode == "create":
         if run_args.force:
-            dropDataSet(app_config, run_args.name[0],
-                run_args.kind, True)
+            dropDataSet(app_config, ds_name, ds_kind, True)
         time_start = datetime.now()
         print("Started at", time_start, file = sys.stderr)
-        createDataSet(app_config, run_args.name[0], run_args.kind,
-            run_args.mongo, run_args.source, run_args.reportlines,
-            time_start.isoformat())
+        createDataSet(app_config, ds_name, ds_kind,
+            run_args.mongo, ds_source, ds_inventory,
+            run_args.reportlines, time_start.isoformat())
         time_done = datetime.now()
         print("Finished at", time_done, "for", (time_done - time_start),
             file = sys.stderr)
     elif run_args.mode == "drop":
-        dropDataSet(app_config, run_args.name[0], run_args.kind, False)
+        dropDataSet(app_config, ds_name, ds_kind, False)
     elif run_args.mode == "check":
-        checkDataSet(app_config, run_args.name[0], run_args.kind)
+        checkDataSet(app_config, ds_name, ds_kind)
     else:
         print("Bad mode:", run_args.mode)
 

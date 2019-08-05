@@ -27,8 +27,9 @@ def loadDatasetInventory(inv_file):
     dir_path = os.path.dirname(inv_file)
     dir_name = os.path.basename(os.path.dirname(inv_file))
     base_name, _, ext = os.path.basename(inv_file).partition('.')
-    if dir_name != base_name or ext != "inv":
-        print("Improper dataset inventory path:", inv_file, file = sys.stderr)
+    if dir_name != base_name or ext != "cfg":
+        print("Warning: Improper dataset inventory path:",
+            inv_file, file = sys.stderr)
 
     # Collect lines without comments
     lines = []
@@ -36,7 +37,7 @@ def loadDatasetInventory(inv_file):
         for line in inp:
             if not sCommentLinePatt.match(line):
                 lines.append(line)
-    content = lines.join()
+    content = "".join(lines)
 
     # Replace ${NAME}, ${DIR}
     content = content.replace('${NAME}', base_name)

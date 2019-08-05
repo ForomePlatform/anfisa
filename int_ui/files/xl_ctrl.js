@@ -291,7 +291,6 @@ var sSubViewH = {
                 'rec-label ' + color + '" onclick="sSubViewH.selectRec(' + idx + ');">' + 
                 v_prefix  + (idx + 1) + '</div>');
         }
-        console.log("R-len:" + records.length);
         this.mDivRecList.innerHTML = list_rep.join('\n');
         this.mSpanTotal.innerHTML = "In scope: " + sUnitsH.getCurCount();
         this.mCurRecIdx = null;
@@ -306,7 +305,6 @@ var sSubViewH = {
             prev_el.className = prev_el.className.replace(" press", "");
         }
         this.mCurRecIdx = rec_idx;
-        console.log("rec=" + this.mCurRecIdx);
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
         new_rec_el.className = new_rec_el.className + " press";
         var info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];

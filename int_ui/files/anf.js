@@ -230,7 +230,6 @@ function setupExport(info) {
         res_el.className = "drop";
         res_el.innerHTML = 'Exported ' + sRecList.length + ' records<br>' +
         '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
-        console.log("Export OK");
     } else {
         res_el.className = "drop problems";
         res_el.innerHTML = 'Bad configuration';
