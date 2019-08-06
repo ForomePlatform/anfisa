@@ -174,9 +174,10 @@ class AnfisaApp:
         if not path.startswith("/doc/"):
             return None
         ds_name, _, fpath = path[5:].partition('/')
-        if fpath == "report.css":
+        loc_path = fpath.rpartition('/')[-1]
+        if loc_path == "report.css":
             return cls.sDocReportCSS
-        if fpath == "py_pygments.css":
+        if loc_path == "py_pygments.css":
             return cls.sDocPygmentsCSS
         real_path = cls.sDataVault.getDir() + '/' + ds_name + '/doc/' + fpath
         return real_path

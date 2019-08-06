@@ -10,6 +10,7 @@ from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
+from app.prepare.doc_works import prepareDocDir
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
 from app.config.solutions import prepareSolutions
@@ -49,12 +50,6 @@ def checkDSName(name, kind):
         assert False
 
 #===============================================
-def prepareDocDir(ds_doc_dir, ds_inventory):
-    if not os.path.exists(ds_doc_dir):
-        os.mkdir(ds_doc_dir)
-    return []
-
-#===============================================
 def createDataSet(app_config, name, kind, mongo,
         source, ds_inventory, report_lines, date_loaded):
     global DRUID_ADM
@@ -63,7 +58,7 @@ def createDataSet(app_config, name, kind, mongo,
         print("No vault directory:", vault_dir, file = sys.stderr)
         assert False
     checkDSName(name, kind)
-    ds_dir = vault_dir + "/" + name
+    ds_dir = os.path.abspath(vault_dir + "/" + name)
     if not mongo:
         mongo = name
     if os.path.exists(ds_dir):
@@ -193,7 +188,7 @@ def pushDruid(app_config, name):
     if name in druid_datasets:
         DRUID_ADM.dropDataset(name)
 
-    ds_dir = vault_dir + "/" + name
+    ds_dir = os.path.abspath(vault_dir + "/" + name)
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
@@ -211,7 +206,7 @@ def dropDataSet(app_config, name, kind, calm_mode):
     assert kind in ("ws", "xl")
     assert (kind == "xl") == (DRUID_ADM is not None)
     vault_dir = app_config["data-vault"]
-    ds_dir = vault_dir + "/" + name
+    ds_dir = os.path.abspath(vault_dir + "/" + name)
 
     if kind == "xl":
         if calm_mode:
@@ -233,7 +228,7 @@ def dropDataSet(app_config, name, kind, calm_mode):
 #===============================================
 def checkDataSet(app_config, name, kind):
     vault_dir = app_config["data-vault"]
-    ds_dir = vault_dir + "/" + name
+    ds_dir = os.path.abspath(vault_dir + "/" + name)
 
     print("Check", ds_dir, ":", os.path.exists(ds_dir),
         os.path.exists(ds_dir + "/active"))
@@ -241,13 +236,13 @@ def checkDataSet(app_config, name, kind):
 #===============================================
 def pushDoc(app_config, name, ds_inventory):
     vault_dir = app_config["data-vault"]
-    ds_dir = vault_dir + "/" + name
+    ds_dir = os.path.abspath(vault_dir + "/" + name)
 
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
     ds_doc_dir = ds_dir + "/doc"
-    ds_info["doc"] = prepareDocDir(ds_doc_dir, ds_inventory)
+    ds_info["doc"] = prepareDocDir(ds_doc_dir, ds_inventory, reset = True)
 
     mongo_conn = MongoConnector(app_config["mongo-db"],
         app_config.get("mongo-host"), app_config.get("mongo-port"))

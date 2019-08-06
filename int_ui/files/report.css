@@ -64,3 +64,9 @@ td.rep-val, td.anno-ver{
     
 }
 
+pre {
+    background-color: #FAFAFF;
+    border: 2px solid blue;
+    font-family: monospace;
+    font-size: 13px;
+}

@@ -28,7 +28,7 @@ function setupDocList(info) {
     var list_doc_rep = [];
     list_doc_rep.push('<div id="doc__0" class="doc-ref" onclick="selectDoc(0)">Info</div>');
     sDocArray.push(doc_path + "info.html");
-    _fillExtraDoc(sDocInfo["doc"], doc_path, "", list_doc_rep);
+    _fillExtraDoc(sDocInfo["doc"], "", doc_path, list_doc_rep);
     if (sDocInfo["doc-base"] != undefined) {
         var doc_base_path = "doc/" + sDocInfo["base"] + "/";
         list_doc_rep.push('<div class="grp-ref"><span>XL-base ' + 
@@ -38,7 +38,7 @@ function setupDocList(info) {
             ')">XL-base info</div>');
         sDocArray.push(doc_base_path + "info.html");
         _fillExtraDoc(sDocInfo["doc-base"], doc_base_path, "XL-base ", list_doc_rep);
-        sDocArray.push('</div>');
+        list_doc_rep.push('</div>');
     }
     document.getElementById("doc-list").innerHTML = list_doc_rep.join('\n');
     selectDoc(0);
@@ -47,8 +47,15 @@ function setupDocList(info) {
 function _fillExtraDoc(doc_seq, prefix, doc_path, list_doc_rep) {
     for (var idx = 0; idx < doc_seq.length; idx++) {
         doc_entry = doc_seq[idx];
-        list_doc_rep.push('<div id="doc__"' + sDocArray.length + 
-            ' class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
+        if (Array.isArray(doc_entry[1])) {
+            list_doc_rep.push('<div class="grp-ref"><span>' + 
+                doc_entry[0] + '</span>');
+            _fillExtraDoc(doc_entry[1], prefix, doc_path, list_doc_rep);
+            list_doc_rep.push('</div>');
+            continue;
+        }
+        list_doc_rep.push('<div id="doc__' + sDocArray.length + 
+            '" class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
             ')">' + prefix + doc_entry[0] + '</div>');
         sDocArray.push(doc_path + doc_entry[1]);
     }
