@@ -33,7 +33,7 @@ class SecondaryWsCreation(ExecutionTask):
         if not self.correctWSName(self.mWSName):
             self.setStatus("Incorrect workspace name")
             return None
-        self.setStatus("Prepare creation")
+        self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if self.mBaseVersion is not None:
             tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
@@ -91,12 +91,12 @@ class SecondaryWsCreation(ExecutionTask):
                     self.mMarkupBatch.transformRecData(rec_no, rec_data)
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
-        self.setStatus("Prepare fdata")
+        self.setStatus("Building indices")
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_out:
             for fdata in fdata_seq:
                 print >> fdata_out, json.dumps(fdata, ensure_ascii = False)
 
-        self.setStatus("Prepare pdata")
+        self.setStatus("Extracting workspace data")
         with gzip.open(ws_dir + "/pdata.json.gz", 'wb') as fdata_out:
             with self.mDS._openPData() as inp:
                 for rec_no, line in enumerate(inp):
