@@ -47,7 +47,8 @@ class AnfisaConfig:
             "ws_compound_heterosygotes": "ws_compound_heterosygotes",
             "comp-hets-max-rec": 1000,
             "vgroup": "Inheritance",
-            "op-variables": ["Compound_Het", "Compound_Het2"]
+            "op-variables": ["Compound_Het", "Compound_Het2"],
+            "op-var-title": "Compound hetreozygous imported variable"
         },
 
         "job.pool.size":    3,

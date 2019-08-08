@@ -106,7 +106,7 @@ class CompHetsUnit(Unit):
     def __init__(self, ds, name):
         Unit.__init__(self, {
             "name": name,
-            "title": name,
+            "title": self.sSetup.get("op-var-title", name),
             "kind": "enum",
             "vgroup": self.sSetup["vgroup"],
             "research": False,
