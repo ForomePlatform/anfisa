@@ -47,14 +47,18 @@ class XL_Condition:
             return other.addOr(self)
         elif other.getCondKind() == "null":
             return self
+        elif other.getCondKind() == "all":
+            return other
         return XL_Or([self, other])
 
     def addAnd(self, other):
         assert other is not None and other.getCondKind() is not None
         if other.getCondKind() == "and":
             return other.addAnd(self)
-        elif other.getCondKind() == "null":
+        elif other.getCondKind() == "all":
             return self
+        elif other.getCondKind() == "null":
+            return other
         return XL_And([self, other])
 
     def negative(self):
@@ -164,6 +168,10 @@ class XL_And(_XL_Joiner):
         return "and"
 
     def addAnd(self, other):
+        if other.getCondKind() == "null":
+            return other
+        if other.getCondKind() == "all":
+            return self
         if other.getCondKind() == "and":
             add_items = other.getItems()
         else:
@@ -179,6 +187,10 @@ class XL_Or(_XL_Joiner):
         return "or"
 
     def addOr(self, other):
+        if other.getCondKind() == "null":
+            return self
+        if other.getCondKind() == "all":
+            return other
         if other.getCondKind() == "or":
             add_items = other.getItems()
         else:
