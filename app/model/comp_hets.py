@@ -204,8 +204,10 @@ class CompHetsUnit(Unit):
 
     def parseCondition(self, cond_data, comp_data):
         assert cond_data[1] == self.getName()
-        cond = self.mIndex.getCondEnv().parse(comp_data[1]
-            if "True" in cond_data[3] and len(comp_data) > 0 else [])
+        if "True" in cond_data[3] and len(comp_data) > 1:
+            cond = self.mIndex.getCondEnv().parse(comp_data[1])
+        else:
+            cond = self.mIndex.getCondEnv().getCondNone()
         if cond_data[2] == "not":
             return cond.negative()
         return cond
