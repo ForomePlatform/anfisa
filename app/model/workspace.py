@@ -87,7 +87,8 @@ class Workspace(DataSet):
         return {
             "name": self.mName,
             "note": note,
-            "time": time_label}
+            "time": time_label,
+            "src-versions": self.getSourceVersions()}
 
     def getMongoRecData(self, key):
         return self.mMongoWS.getRecData(key)

@@ -85,11 +85,14 @@ class DataSet:
         rec_data = self.getRecordData(rec_no)
         return self.mAspects.getViewRepr(rec_data, research_mode)
 
-    def getVersionData(self):
-        ret = [["version", self.mDataVault.getApp().getVersionCode()]]
+    def getSourceVersions(self):
         if "meta" in self.mDataInfo:
             if "versions" in self.mDataInfo["meta"]:
                 versions = self.mDataInfo["meta"]["versions"]
-                for key in sorted(versions.keys()):
-                    ret.append([key, versions[key]])
-        return ret
+                return [[key, versions[key]]
+                    for key in sorted(versions.keys())]
+        return []
+    
+    def getVersionData(self):
+        return ([["version", self.mDataVault.getApp().getVersionCode()]] + 
+            self.getSourceVersions())
