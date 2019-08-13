@@ -154,6 +154,7 @@ class DataVault:
     #===============================================
     @RestAPI.vault_request
     def rq__dsinfo(self, rq_args):
+        assert "ws" not in rq_args
         ds = self._prepareDS(rq_args)
         note = rq_args.get("note")
         if note is not None:

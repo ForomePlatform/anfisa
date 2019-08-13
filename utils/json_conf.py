@@ -1,9 +1,19 @@
 import sys, os, json, re
 
 #========================================
+sCommentLinePatt = re.compile("^\s*//.*$")
+
+def readCommentedJSon(fname):
+    lines = []
+    with open(fname, "r", encoding = "utf-8") as inp:
+        for line in inp:
+            if not sCommentLinePatt.match(line):
+                lines.append(line)
+    return "".join(lines)
+
+#========================================
 def loadJSonConfig(config_file):
-    with open(config_file, "r", encoding = "utf-8") as inp:
-        content = inp.read()
+    content = readCommentedJSon(config_file)
     dir_name = os.path.abspath(__file__)
     for idx in range(2):
         dir_name = os.path.dirname(dir_name)
@@ -31,15 +41,7 @@ def loadDatasetInventory(inv_file):
         print("Warning: Improper dataset inventory path:",
             inv_file, file = sys.stderr)
 
-    # Collect lines without comments
-    lines = []
-    with open(inv_file, "r", encoding = "utf-8") as inp:
-        for line in inp:
-            if not sCommentLinePatt.match(line):
-                lines.append(line)
-    content = "".join(lines)
-
-    # Replace ${NAME}, ${DIR}
+    content = readCommentedJSon(inv_file)
     content = content.replace('${NAME}', base_name)
     content = content.replace('${DIR}', dir_path)
     pre_config = json.loads(content)

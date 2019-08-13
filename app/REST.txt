@@ -77,7 +77,20 @@ Method "/xl_list" - partial XL-analog for "/stat"
                             ConditionList structure or empty/compiled info)
     -> code/no/compiled      (or: 
                             Code of decision tree/point no/compiled info)
-    <-
+    <- 
+    {
+        "task_id":   <id of the creation task>
+    }
+    
+    Note:
+   * Since process of creation can be evaluated for a long time, the method just starts asyncronous task and returns its identifier. When task
+    
+  Note:
+The purpose of this method is to arrange sub-view mode for XL regimes.
+It works with collection of records determined by either conditions (filtering pannel) 
+or code/no (decision tree). If collection is large (currently > 300), only samples 
+is available (currently 25 random records from the collection). If collection is small (currently < 50) only "records" is available. In between both lists are available.
+Format of result of this method (call /job_status to get it):
     { 
         "records": 
           [ * list of records
@@ -89,12 +102,7 @@ Method "/xl_list" - partial XL-analog for "/stat"
           ]
         "samples": [ the same as in "records"]
     }
-    
-  Note:
-The purpose of this method is to arrange sub-view mode for XL regimes.
-It works with collection of records determined by either conditions (filtering pannel) 
-or code/no (decision tree). If collection is large (currently > 300), only samples 
-is available (currently 25 random records from the collection). If collection is small (currently < 50) only "records" is available. In between both lists are available.
+
 
 ===
 Method "/dirinfo"
@@ -106,29 +114,33 @@ Method "/dirinfo"
                 {
                     "name": <ws name>,
                     "note": <ws notes, string>
+                    "date-note": <time of last note change, isoformat>
+                    "doc-support": <true if dataset provides documentation>
+                    
+                    "base": <undefinded or name of base XL-dataset>
                 }, ...
             ],
         "xl-datasets":
-            [ * list of xl-datasets, the same format as in workspaces above
+            [ * list of xl-datasets
+                "name", "note", "date-note": the same as above
+                "secondary": undefined or [
+                    list of names of secondary WS datasets
+                ]
             ]
     }
     
 ===
 Method "/recdata"
-    -> ws           (!required)
+    -> ds/ws        (!required, use ds in general context)
     <- rec          (= number of record,  required!)
     -> { * source of annotated JSon for record }
+    
+  Notes:
+    * option "ds" is prefered and common, option "ws" might be used if dataset is of WS kind
 
 ===
-Method "/xl_recdata" - XL-analog for /recdata
-    -> ds           (!required)
-    -> rec          (!required)
-    <- 
-    [ * source of annotated JSon for record, the same as in /recdata]
-    
-===
 Method "/reccnt"
-    -> ws           (!required)
+    -> ds/ws        (!required, use ds in general context)
     -> m            (= "")
     -> rec          (!required)
     <- 
@@ -169,20 +181,13 @@ Method "/reccnt"
         }
     ]
   Notes:
+    * option "ds" is prefered and common, option "ws" might be used if dataset is of WS kind
     * in case kind = "pre" field content might be absent, it means no VCF data
     * in case kind = "table" rows might be empty, it means row separator
     * cell kind: 
         if there is no real data inside: "none"
         otherwise kind of attribute in view config: 
             "norm" / "link" / "json" (may be updated/extended in future)
-    
-===
-Method "/xl_reccnt" - XL-analog for /reccnt
-    -> ds           (!required)
-    -> m            (= "")
-    -> rec          (!required)
-    <- 
-    [ * prepared view presentation of record, the same as in /reccnt]
     
 ===
 Method "/vsetup"
@@ -243,7 +248,7 @@ Method "/stat"
                     0: name of filter
                     1: bool if filter is common
                     2: bool if filter is available to load, see Notes
-                    3: time of latest update in isoformat, or null for common filters
+                    3: time of last update in isoformat, or null for common filters
                 ], ...
             ]
         "compiled"   compiled info if neccessary
@@ -400,7 +405,7 @@ Method "/tags"
             "rec-tags": TagList structure
             "can_undo": bool if undo is possible
             "can_redo": bool if redo is possible
-            "time": time of latest update, isoformat or null if tags are untouched
+            "time": time of last update, isoformat or null if tags are untouched
             "marker":  
                 [ * "marked" state of record, see Notes
                     0: int rec no
@@ -469,18 +474,29 @@ Method "/rules_modify"
         }
         
 ===
+Method "/dsinfo"
+    -> ds        (!required)
+    <-  {
+            "name": <ws name>,
+            "note": <ws note>
+            "date-note": <time of last note modification, isoformat>
+            "doc": <undefined or DocumentationStruct structure>
+            "src-versions": [ * versions of annotation sources in array
+                [<name>, <version>], ...
+            ] 
+        }
+  Notes:
+    * option "ds" is preferred and common, option "ws" might be used if dataset is of WS kind
+
+===
 Method "/wsnote"
+DEPRECATED!, use /dsinfo instead
     -> ws           (!required)
     <-  {
             "name": <ws name>,
             "note": <ws note>
-            "time": <time of latest modification, isoformat>
+            "time": <time of last note modification, isoformat>
         }
-
-===
-Method "/dsnote" - XL-analog of /wsnote
-    -> ds           (!required)
-    <-  { * the same as in /wsnote }
 
 ===
 Method "/single_cnt"
@@ -519,8 +535,9 @@ Method /job_status
           1: status of task, string
        ]
        
-    Note: 
-    In case of /xl2ws task, the proper result is dictionary {"ws": <name of workspace created>}
+    Notes: 
+    * In case of /xl2ws task, the proper result is dictionary {"ws": <name of workspace created>}
+    * In case of /xl_list, the proper result is dictionary, see /xl_list
     
 ===
 Method /xltree        
@@ -792,3 +809,23 @@ Structure DecisionTreePoint
     ]
 
     HTML presentation includes active elements: it asumes that JS on client provides function editMark(point_no, mark_idx).
+
+===
+Structure DocumentationStruct
+    DocumentationStruct is an array. Even empty array means that the correspondent 
+dataset has at least one document: "Info" with reference:
+  <base service url>/doc/<dataset>/info.html
+    All items in DocumentationStruct are either simple document pair:
+[
+    0: document title,
+    1: document reference
+]
+or a folder:
+[   0: folder title
+    1: [<list of subentry pairs>]
+]
+    Base for all references in the structure is the same as for Info one:
+  <base service url>/doc/<dataset>/
+    All references are HТML-documents. The might contain images and special CSS-files, 
+the server provides correct transer of contents of these files.
+    

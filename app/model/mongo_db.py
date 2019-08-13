@@ -1,3 +1,4 @@
+import os
 from pymongo import MongoClient
 from datetime import datetime
 
@@ -59,14 +60,18 @@ class MongoDSAgent:
             return AnfisaConfig.normalizeTime(it.get("time"))
         return None
 
-    def checkCreationDate(self, time_label = None):
+    def checkCreationDate(self, time_label = None, ajson_fname = None):
+        to_update = dict()
+        if ajson_fname is not None:
+            ajson_stat = os.stat(ajson_fname)
+            to_update["fstat"] = [ajson_fname,
+                int(ajson_stat.st_size), int(ajson_stat.st_mtime)]
         it = self.mAgent.find_one({"_id": "created"})
         if it is None:
-            if time_label is None:
-                time_label = datetime.now().isoformat()
-            self.mAgent.update({"_id": "created"},
-                {"$set": {"time": time_label}},
-                    upsert = True)
+            to_update["time"] = (time_label if time_label is not None
+                else datetime.now().isoformat())
+        if len(to_update) > 0:
+            self.mAgent.update({"_id": "created"}, {"$set": to_update})
 
     #===== Note
     def getNote(self):

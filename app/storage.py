@@ -4,8 +4,8 @@ from io import StringIO, TextIOWrapper
 from datetime import datetime
 from subprocess import Popen, PIPE
 
+import utils.json_conf as json_conf
 from utils.read_json import JsonLineReader
-from utils.json_conf import loadJSonConfig, loadDatasetInventory
 from app.model.pre_fields import PresentationData
 from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
@@ -157,7 +157,7 @@ def createDataSet(app_config, name, kind, mongo,
         mongo_conn = MongoConnector(app_config["mongo-db"],
             app_config.get("mongo-host"), app_config.get("mongo-port"))
         mongo_agent = mongo_conn.getDSAgent(name, kind)
-        mongo_agent.checkCreationDate(date_loaded)
+        mongo_agent.checkCreationDate(date_loaded, source)
 
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
             reportDS(outp, ds_info, mongo_agent)
@@ -290,8 +290,8 @@ if __name__ == '__main__':
         if config_file or ds_source:
             print("Incorrect usage: use --dir or (--config, --source)")
             sys.exit()
-        with open(run_args.dir, "r", encoding="utf-8") as inp:
-            dir_config = json.loads(inp.read())
+        dir_config = json.loads(
+            json_conf.readCommentedJSon(run_args.dir))
         config_file = dir_config["anfisa.json"]
         if ds_name not in dir_config["datasets"]:
             print("Dataset %s not registered in directory file (%s)" %
@@ -315,7 +315,7 @@ if __name__ == '__main__':
             print("Incorrect usage: use a-json or inventory "
                 "(--source or --inv)")
             sys.exit()
-        ds_inventory = loadDatasetInventory(ds_inv)
+        ds_inventory = json_conf.loadDatasetInventory(ds_inv)
         ds_source = ds_inventory["a-json"]
 
     print("Anfisa config:", config_file, file = sys.stderr)
@@ -323,7 +323,7 @@ if __name__ == '__main__':
 
     if not config_file:
         config_file = "anfisa.json"
-    app_config = loadJSonConfig(config_file)
+    app_config = json_conf.loadJSonConfig(config_file)
 
     assert os.path.isdir(app_config["data-vault"])
 
