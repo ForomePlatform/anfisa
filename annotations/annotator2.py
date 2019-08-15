@@ -67,12 +67,12 @@ if __name__ == '__main__':
         output = "${DIR}/${ID}_anfisa.json.gz"
 
     config = dict()
-    config["aliases"]       = {"ID":case_id}
+    config["aliases"]       = {"ID":case_id, "CASE":case}
     config["name"]          =  "${ID}"
     config["platform"]      =  platform
     config["config"]        =  "${DIR}/config.json"
-    config["fam"]           =  "${DIR}/${NAME}.fam"
-    config["patient-ids"]   =  "${DIR}/samples-${NAME}.csv"
+    config["fam"]           =  "${DIR}/${CASE}.fam"
+    config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
     config["vcf"]           =  input_file
     config["vep-json"]      =  "${DIR}/${ID}_vep.json"
     config["anno-log"]      =  "${DIR}/annotations.log"
