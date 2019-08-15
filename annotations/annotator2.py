@@ -64,7 +64,7 @@ if __name__ == '__main__':
     if (args.output):
         output = args.output
     else:
-        output = "${DIR}/${ID}_anfisa.json.gz"
+        output = "${ID}_anfisa.json.gz"
 
     config = dict()
     config["aliases"]       = {"ID":case_id, "CASE":case}
@@ -73,10 +73,10 @@ if __name__ == '__main__':
     config["config"]        =  "${DIR}/config.json"
     config["fam"]           =  "${DIR}/${CASE}.fam"
     config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
-    config["vcf"]           =  input_file
+    config["vcf"]           =  "${DIR}/" + input_file
     config["vep-json"]      =  "${DIR}/${ID}_vep.json"
     config["anno-log"]      =  "${DIR}/annotations.log"
-    config["a-json"]        =  output
+    config["a-json"]        =  "${DIR}/" + output
     config["docs"]          =  []
     
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
