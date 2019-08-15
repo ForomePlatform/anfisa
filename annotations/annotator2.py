@@ -33,15 +33,18 @@ if __name__ == '__main__':
         else:
             input_file = vcfs[0]
 
-    raw_platform = input_file.lower().split('_')
+    x = input_file.lower().split('_')
+    if ('wgs' in x):
+        raw_platform = 'wgs'
+    elif ('wes' in x):
+        raw_platform = 'wes'
+    else:
+        raw_platform = "unknown"
+
     if args.platform:
         platform = args.platform
-    elif ('wgs' in raw_platform):
-        platform = 'wgs'
-    elif ('wes' in raw_platform):
-        platform = 'wes'
     else:
-        platform = "panel"
+        platform = raw_platform
 
     if (platform):
         print "Platform: {}".format(platform)
