@@ -33,12 +33,12 @@ if __name__ == '__main__':
         else:
             input_file = vcfs[0]
 
-    x = input_file.lower().split('_')
+    raw_platform = input_file.lower().split('_')
     if args.platform:
         platform = args.platform
-    elif ('wgs' in x):
+    elif ('wgs' in raw_platform):
         platform = 'wgs'
-    elif ('wes'in x):
+    elif ('wes' in raw_platform):
         platform = 'wes'
     else:
         platform = "panel"
@@ -69,7 +69,7 @@ if __name__ == '__main__':
     config = dict()
     config["aliases"]       = {"ID":case_id, "CASE":case}
     config["name"]          =  "${ID}"
-    config["platform"]      =  platform
+    config["platform"]      =  platform if platform in ["wes", "wgs"] else raw_platform
     config["config"]        =  "${DIR}/config.json"
     config["fam"]           =  "${DIR}/${CASE}.fam"
     config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
