@@ -74,7 +74,7 @@ if __name__ == '__main__':
     config["fam"]           =  "${DIR}/${CASE}.fam"
     config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
     config["vcf"]           =  "${DIR}/" + input_file
-    config["vep-json"]      =  "${DIR}/${ID}_vep.json"
+    # config["vep-json"]      =  "${DIR}/${ID}_vep.json"
     config["anno-log"]      =  "${DIR}/annotations.log"
     config["a-json"]        =  "${DIR}/" + output
     config["docs"]          =  []
