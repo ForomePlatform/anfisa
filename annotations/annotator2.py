@@ -15,6 +15,7 @@ if __name__ == '__main__':
     parser.add_argument("-o", "--output", dest="output", help="Output file")
     parser.add_argument("-c", "--case", dest="case", help="Case name, default is determined from directory name")
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
+    parser.add_argument("-p", "--platform", dest="platform", help="Platform: wes/wgs/panel")
 
     args = parser.parse_args()
     print args
@@ -32,14 +33,16 @@ if __name__ == '__main__':
         else:
             input_file = vcfs[0]
 
-    platform = None
     x = input_file.lower().split('_')
-    if ('wgs' in x):
+    if args.platform:
+        platform = args.platform
+    elif ('wgs' in x):
         platform = 'wgs'
     elif ('wes'in x):
         platform = 'wes'
     else:
         platform = "panel"
+
     if (platform):
         print "Platform: {}".format(platform)
     else:
@@ -58,6 +61,11 @@ if __name__ == '__main__':
         os.system("gunzip {}".format(input_file))
         input_file = input_file[:-3]
 
+    if (args.output):
+        output = args.output
+    else:
+        output = "${DIR}/${ID}_anfisa.json.gz"
+
     config = dict()
     config["aliases"]       = {"ID":case_id}
     config["name"]          =  "${ID}"
@@ -68,7 +76,7 @@ if __name__ == '__main__':
     config["vcf"]           =  input_file
     config["vep-json"]      =  "${DIR}/${ID}_vep.json"
     config["anno-log"]      =  "${DIR}/annotations.log"
-    config["a-json"]        =  "${DIR}/${ID}_anfisa.json.gz"
+    config["a-json"]        =  output
     config["docs"]          =  []
     
     inventory = os.path.join(working_dir, "{}.cfg".format(case_id))
