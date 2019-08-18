@@ -31,7 +31,7 @@ if __name__ == '__main__':
         elif len(vcfs) > 1:
             raise Exception("Ambiguos VCF files are in {}: {}".format(working_dir, ", ".join(vcfs)))
         else:
-            input_file = vcfs[0]
+            input_file = os.path.basename(vcfs[0])
 
     x = input_file.lower().split('_')
     if ('wgs' in x):
