@@ -71,7 +71,7 @@ if __name__ == '__main__':
         output = "${ID}_anfisa.json.gz"
 
     if (args.reuse):
-        vep_json = input_file[0:-4] + "vep.json"
+        vep_json = input_file[0:-4] + ".vep.json"
     else:
         vep_json = None
 
@@ -94,6 +94,8 @@ if __name__ == '__main__':
 
     with open(inventory, "w") as cfg:
         json.dump(config, cfg, indent=4)
+
+    print "Inventory: " + inventory
 
     temp_dir = tempfile.mkdtemp(dir=working_dir, prefix="tmp_a_")
 
