@@ -75,7 +75,8 @@ if __name__ == '__main__':
     config["platform"]      =  platform if platform in ["wes", "wgs"] else raw_platform
     config["config"]        =  "${DIR}/config.json"
     config["fam"]           =  "${DIR}/${CASE}.fam"
-    config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
+    if patient_ids_file:
+        config["patient-ids"]   =  patient_ids_file
     config["vcf"]           =  "${DIR}/" + input_file
     # config["vep-json"]      =  "${DIR}/${ID}_vep.json"
     config["anno-log"]      =  "${DIR}/annotations-${ID}.log"
