@@ -16,6 +16,7 @@ if __name__ == '__main__':
     parser.add_argument("-c", "--case", dest="case", help="Case name, default is determined from directory name")
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
     parser.add_argument("-p", "--platform", dest="platform", help="Platform: wes/wgs/panel")
+    parser.add_argument("-r", "--reuse", action='store_true', help="resue intermediate files from previous run")
 
     args = parser.parse_args()
     print args
@@ -69,6 +70,11 @@ if __name__ == '__main__':
     else:
         output = "${ID}_anfisa.json.gz"
 
+    if (args.reuse):
+        vep_json = input_file[0:-4] + "vep.json"
+    else:
+        vep_json = None
+
     config = dict()
     config["aliases"]       = {"ID":case_id, "CASE":case}
     config["name"]          =  "${ID}"
@@ -78,7 +84,8 @@ if __name__ == '__main__':
     if patient_ids_file:
         config["patient-ids"]   =  patient_ids_file
     config["vcf"]           =  "${DIR}/" + input_file
-    # config["vep-json"]      =  "${DIR}/${ID}_vep.json"
+    if (vep_json):
+        config["vep-json"]      =  "${DIR}/" + vep_json
     config["anno-log"]      =  "${DIR}/annotations-${ID}.log"
     config["a-json"]        =  "${DIR}/" + output
     config["docs"]          =  []
