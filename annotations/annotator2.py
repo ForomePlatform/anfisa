@@ -60,6 +60,8 @@ if __name__ == '__main__':
     patient_ids_file = os.path.join(working_dir, "samples-{}.csv".format(case))
     if (not os.path.exists(patient_ids_file)):
         patient_ids_file = None
+    else:
+        patient_ids_file = "$"
 
     if (input_file.endswith(".gz")):
         os.system("gunzip {}".format(input_file))
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     if (args.output):
         output = args.output
     else:
-        output = "${ID}_anfisa.json.gz"
+        output = "${NAME}_anfisa.json.gz"
 
     if (args.reuse):
         vep_json = input_file[0:-4] + ".vep.json"
@@ -76,17 +78,23 @@ if __name__ == '__main__':
         vep_json = None
 
     config = dict()
-    config["aliases"]       = {"ID":case_id, "CASE":case}
-    config["name"]          =  "${ID}"
-    config["platform"]      =  platform if platform in ["wes", "wgs"] else raw_platform
+    config["aliases"]       = {"CASE":case}
+    if (platform in ["wes", "wgs"]):
+        config["aliases"]["PLATFORM"] = platform
+        config["platform"]  =  "${PLATFORM}"
+    else:
+        config["platform"]  =  raw_platform
+    config["name"]          =  "${NAME}"
     config["config"]        =  "${DIR}/config.json"
     config["fam"]           =  "${DIR}/${CASE}.fam"
-    if patient_ids_file:
-        config["patient-ids"]   =  patient_ids_file
-    config["vcf"]           =  "${DIR}/" + input_file
+    if patient_ids_file == "$":
+        config["patient-ids"]   =  "${DIR}/samples-${CASE}.csv"
+    elif patient_ids_file:
+        config["patient-ids"]   = patient_ids_file
+    config["vcf"]           =  "${DIR}/" + input_file.replace(case_id, "${NAME}").replace(case, "${CASE}")
     if (vep_json):
         config["vep-json"]      =  "${DIR}/" + vep_json
-    config["anno-log"]      =  "${DIR}/annotations-${ID}.log"
+    config["anno-log"]      =  "annotations.log"
     config["a-json"]        =  "${DIR}/" + output
     config["docs"]          =  []
     
