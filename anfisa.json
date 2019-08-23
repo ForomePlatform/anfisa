@@ -9,7 +9,7 @@
     "mongo-db": "Anfisa",
     "data-vault": "${WORK}/vault",
     "run-options": ["--no-custom"],
-    "link-base": ["anfisa.forome.org", "Local"],
+    "--http-bam-base": "http:<server>/anfisa/links",
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",
         "__url": "https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx",

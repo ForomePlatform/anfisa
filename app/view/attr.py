@@ -4,22 +4,8 @@ from StringIO import StringIO
 from .view_repr import jsonHtmlRepr, htmlEscape
 #===============================================
 class AttrH:
-    sBaseHostFrom = None
-    sBaseHostTo   = None
-
-    @classmethod
-    def setupLinkBase(cls, host_from, host_to):
-        cls.sBaseHostFrom = host_from
-        cls.sBaseHostTo   = host_to
-
-    @classmethod
-    def getJSonOptions(cls):
-        return {"link_host": [cls.sBaseHostFrom, cls.sBaseHostTo]}
-
     @classmethod
     def normLink(cls, value):
-        if cls.sBaseHostFrom and value:
-            return value.replace(cls.sBaseHostFrom, cls.sBaseHostTo)
         return value
 
     #===============================================
