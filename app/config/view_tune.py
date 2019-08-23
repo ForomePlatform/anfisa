@@ -49,7 +49,7 @@ class IGV_AttrH(AttrH):
     def __init__(self, view_gen, case, samples):
         AttrH.__init__(self, "IGV")
         self.setAspect(view_gen)
-        bam_base = AnfisaConfig.get("http-bam-base")
+        bam_base = AnfisaConfig.configOption("http-bam-base")
         if not bam_base:
             self.mPreUrl = None
             return
