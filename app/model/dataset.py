@@ -4,7 +4,6 @@ from threading import Lock
 from .family import FamilyInfo
 from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
-from app.view.attr import AttrH
 from app.config.view_tune import tuneAspects
 #===============================================
 class DataSet:
@@ -83,8 +82,7 @@ class DataSet:
         return self.mAspects.getFirstAspectID()
 
     def getViewSetupReport(self):
-        return {"aspects": self.mAspects.dump(),
-            "opts": AttrH.getJSonOptions()}
+        return {"aspects": self.mAspects.dump()}
 
     def getViewRepr(self, rec_no, research_mode):
         rec_data = self.getRecordData(rec_no)

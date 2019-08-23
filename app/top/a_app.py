@@ -9,7 +9,6 @@ from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
 from app.prepare.v_check import ViewDataChecker
 from app.filter.druid_agent import DruidAgent
-from app.view.attr import AttrH
 from app.view.asp_set import AspectSetH
 from export.excel import ExcelExport
 from int_ui.mirror_dir import MirrorUiDirectory
@@ -54,9 +53,6 @@ class AnfisaApp:
 
         cls.sMongoConn = MongoConnector(cls.sConfig["mongo-db"],
             cls.sConfig.get("mongo-host"), cls.sConfig.get("mongo-port"))
-
-        if cls.sConfig.get("link-base") is not None:
-            AttrH.setupLinkBase(*cls.sConfig["link-base"])
 
         cls.sDruidAgent = DruidAgent(cls.sConfig)
 
@@ -131,6 +127,10 @@ class AnfisaApp:
     @classmethod
     def hasRunOption(cls, name):
         return name in cls.sRunOptions
+
+    @classmethod
+    def getOption(cls, name):
+        return cls.sConfig.get(name)
 
     @classmethod
     def request(cls, serv_h, rq_path, rq_args, rq_descr):

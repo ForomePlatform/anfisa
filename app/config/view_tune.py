@@ -21,7 +21,8 @@ def tuneAspects(dataset, aspects):
         return
     case = dataset.getDataInfo()["meta"].get("case")
     samples = dataset.getDataInfo()["meta"].get("samples")
-    _resetupAttr(view_gen, IGV_AttrH(view_gen, case, samples))
+    _resetupAttr(view_gen,
+        IGV_AttrH(dataset.getApp(), view_gen, case, samples))
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -45,33 +46,34 @@ class UCSC_AttrH(AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, view_gen, case, samples):
-        AttrH.__init__(self, "IGV")
+    def __init__(self, app, view_gen, case, samples):
+        bam_base = app.getOption("http-bam-base")
+        AttrH.__init__(self, "IGV",
+            kind = "hidden" if bam_base is None else None)
         self.setAspect(view_gen)
-        host_name = AttrH.normLink("anfisa.forome.org")
+        if bam_base is None:
+            self.mPreUrl = None
+            return
         file_urls = ','.join([
-            "http://{host}/anfisa/links/{case}/{sample}.hg19.bam".format(
-                host = host_name,
+            "{bam_base}/{case}/{sample}.hg19.bam".format(
+                bam_base = bam_base,
                 case = case,
                 sample = sample)
             for sample in sorted(samples.keys())])
-        name = ",".join(sorted([info["name"] for info in samples.values()]))
+        name = ",".join(sorted([info["name"]
+            for info in samples.values()]))
         self.mPreUrl = ("http://localhost:60151/load?file={file}"
             "&genome=hg19&merge=false&name={name}").format(
                 file = file_urls, name = name)
 
     def htmlRepr(self, obj, top_rec_obj):
+        if self.mPreUrl is None:
+            return None
         start = int(top_rec_obj["data"]["start"])
         end = int(top_rec_obj["data"]["end"])
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             top_rec_obj["data"]["seq_region_name"],
             max(0, start - 250), end + 250)
-        # return ('<span title="Run IGV application...">' +
-        #     ('<a href="%s">link</a>' % link) +
-        #     '<span class="igv_comment">(for this link to work, make sure ' +
-        #     '<a href="https://software.broadinstitute.org/software/igv/' +
-        #     'download" target="_blank"> the IGV app</a> '+
-        #     'is running on your computer)</span></span>', "norm")
         return ('<table><tr><td><span title="For this link to work, ' +
             'make sure that IGV is running on your computer">' +
             ('<a href="%s">View Variant in IGV</a>' % link) +

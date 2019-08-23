@@ -28,6 +28,23 @@ def loadJSonConfig(config_file):
     return json.loads(content)
 
 #========================================
+def _processAlias(content, alias_name, alias_value, aliases_done):
+    assert alias_name not in aliases_done
+    aliases_done.add(alias_name)
+    return content.replace('${%s}' % alias_name, alias_value)
+
+#========================================
+sSplitInstrPatt = re.compile("^split\('([^']*)'\,\s*'([^\"]*)'\)$")
+
+def _processSpecInstr(instr):
+    global sSplitInstrPatt
+    q = sSplitInstrPatt.match(instr)
+    if q is not None:
+        text, separator = q.group(1), q.group(2)
+        return text.split(separator)
+    assert False
+
+#========================================
 sCommentLinePatt = re.compile("^\s*//.*$")
 
 def loadDatasetInventory(inv_file):
@@ -41,17 +58,26 @@ def loadDatasetInventory(inv_file):
         print("Warning: Improper dataset inventory path:",
             inv_file, file = sys.stderr)
 
+    aliases_done = set()
     content = readCommentedJSon(inv_file)
-    content = content.replace('${NAME}', base_name)
-    content = content.replace('${DIR}', dir_path)
+    content = _processAlias(content, "NAME", base_name, aliases_done)
+    content = _processAlias(content, "DIR", dir_path, aliases_done)
+
     pre_config = json.loads(content)
 
     # Replace predefined names
-    prenames = pre_config.get("prenames")
-    if prenames:
-        for key, value in prenames.items():
-            assert key != "NAME"
-            content = content.replace('${%s}' % key, value)
+    for key, value in pre_config.get("aliases", dict()).items():
+        if ',' in key:
+            names = key.split(',')
+            assert all(name.isalnum() for name in names)
+            values = _processSpecInstr(value)
+            while len(values) < len(names):
+                values.append("")
+            for name, value in zip(names, values):
+                content = _processAlias(content, name, value, aliases_done)
+        else:
+            assert key.isalnum()
+            content = _processAlias(key, value, aliases_done)
 
     # Ready to go
     return json.loads(content)

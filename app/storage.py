@@ -295,7 +295,7 @@ if __name__ == '__main__':
         config_file = dir_config["anfisa.json"]
         if ds_name not in dir_config["datasets"]:
             print("Dataset %s not registered in directory file (%s)" %
-                ds_name, run_args.dir, file = sys.stderr)
+                (ds_name, run_args.dir), file = sys.stderr)
             sys.exit()
         ds_entry = dir_config["datasets"][ds_name]
         ds_kind = ds_entry["kind"]
