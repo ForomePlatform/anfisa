@@ -29,7 +29,14 @@ def loadJSonConfig(config_file):
 
 #========================================
 def _processAlias(content, alias_name, alias_value, aliases_done):
-    assert alias_name not in aliases_done
+    if not alias_name.isalnum():
+        print("Config failure: bad macro name:", repr(alias_name),
+            file = sys.stderr)
+        assert False
+    if alias_name in aliases_done:
+        print("Config failure: double use of macro", alias_name,
+            file = sys.stderr)
+        assert False
     aliases_done.add(alias_name)
     return content.replace('${%s}' % alias_name, alias_value)
 
@@ -68,13 +75,17 @@ def loadDatasetInventory(inv_file):
     # Replace predefined names
     for key, value in pre_config.get("aliases", dict()).items():
         if ',' in key:
-            names = key.split(',')
-            assert all(name.isalnum() for name in names)
-            values = _processSpecInstr(value)
-            while len(values) < len(names):
-                values.append("")
-            for name, value in zip(names, values):
-                content = _processAlias(content, name, value, aliases_done)
+            try:
+                names = key.split(',')
+                values = _processSpecInstr(value)
+                while len(values) < len(names):
+                    values.append("")
+                for name, value in zip(names, values):
+                    content = _processAlias(content, name, value, aliases_done)
+            except Exception:
+                print("Config failure: bad special instruction",
+                    key, "=", value, file = sys.stderr)
+                assert False
         else:
             assert key.isalnum()
             content = _processAlias(key, value, aliases_done)
