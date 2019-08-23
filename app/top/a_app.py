@@ -124,6 +124,10 @@ class AnfisaApp:
         return name in cls.sRunOptions
 
     @classmethod
+    def getOption(cls, name):
+        return cls.sConfig.get(name)
+
+    @classmethod
     def request(cls, serv_h, rq_path, rq_args):
         func, agent = RestAPI.lookupRequest(
             rq_path, rq_args, cls.sDataVault)

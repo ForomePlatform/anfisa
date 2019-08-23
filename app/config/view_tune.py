@@ -1,5 +1,4 @@
 from app.view.attr import AttrH
-from .a_config import AnfisaConfig
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
@@ -22,7 +21,8 @@ def tuneAspects(dataset, aspects):
         return
     case = dataset.getDataInfo()["meta"].get("case")
     samples = dataset.getDataInfo()["meta"].get("samples")
-    _resetupAttr(view_gen, IGV_AttrH(view_gen, case, samples))
+    _resetupAttr(view_gen,
+        IGV_AttrH(dataset.getApp(), view_gen, case, samples))
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -46,11 +46,12 @@ class UCSC_AttrH(AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, view_gen, case, samples):
-        AttrH.__init__(self, "IGV")
+    def __init__(self, app, view_gen, case, samples):
+        bam_base = app.getOption("http-bam-base")
+        AttrH.__init__(self, "IGV",
+            kind = "hidden" if bam_base is None else None)
         self.setAspect(view_gen)
-        bam_base = AnfisaConfig.configOption("http-bam-base")
-        if not bam_base:
+        if bam_base is None:
             self.mPreUrl = None
             return
         file_urls = ','.join([
