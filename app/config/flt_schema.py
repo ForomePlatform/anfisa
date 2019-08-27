@@ -60,6 +60,9 @@ def defineFilterSchema():
                                      "feature_truncation",
                                      "intergenic_variant",
                                      "undefined"], default_value="undefined")
+        filters.statusUnit("Canonical_Annotation",
+                           "/view/general/canonical_annotation",
+                           default_value="undefined")
         #filters.intValueUnit("zyg_len", "/data/zygosity", conversion = "len",
         #    default_value = 0)
 
@@ -68,6 +71,12 @@ def defineFilterSchema():
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
             view_path = "/view/general/gene_panels")
+        filters.intValueUnit("Num_Genes", "/view/general/genes", conversion = "len",
+                             title="Number of overlapping genes",
+                             default_value = 0)
+        filters.intValueUnit("Num_Transcripts", "/data/transcript_consequences", conversion = "len",
+                             title="Number of transcripts at the position",
+                             default_value = 0)
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
