@@ -8,12 +8,37 @@ def convLen(values):
         return [0]
     return [len(values[0])]
 
-CONV_FUNC_DICT = {"len": convLen}
 
-def _getConvFunc(conversion):
+def convDict2list(values):
+    if isinstance(values, dict):
+        return list(values.keys())
+    return []
+
+
+def convExtract(values, key):
+    if isinstance(values, list):
+        ret = []
+        for element in values:
+            if isinstance(element, dict) and key in element:
+                ret.append(element[key])
+        return ret
+    return []
+
+
+CONV_FUNC_DICT = {
+    "len": convLen,
+    "dict2list": convDict2list,
+    "extract": convExtract,
+}
+
+def _getConvFunc(conversion, name = None):
     global CONV_FUNC_DICT
     if conversion is None:
         return None
+    if ('(' in conversion and ')' in conversion):
+        f = conversion.split('(')[0]
+        args = conversion.split('(')[1].split(')')[0]
+        return (CONV_FUNC_DICT[f], args)
     return CONV_FUNC_DICT[conversion]
 
 #===============================================
@@ -86,12 +111,12 @@ class FilterPrepareSetH:
             variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False,
-            render_mode = None, tooltip = None, research_only = False):
+            render_mode = None, tooltip = None, research_only = False, conversion = None):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, False, variants, default_value,
             separators = separators, compact_mode = compact_mode,
-            accept_other_values = accept_other_values))
+            accept_other_values = accept_other_values, conv_func=_getConvFunc(conversion, name=name)))
 
     def zygositySpecialUnit(self, name, path, title = None,
             default_value = None, config = None,

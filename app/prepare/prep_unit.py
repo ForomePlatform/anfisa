@@ -185,7 +185,7 @@ class EnumConvertor(PathValueConvertor):
             render_mode, tooltip, research_only,
             atomic_mode, variants = None, default_value = None,
             separators = None, compact_mode = False,
-            accept_other_values = False):
+            accept_other_values = False, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
             vgroup, render_mode, tooltip, research_only)
         self.mAtomicMode = atomic_mode
@@ -196,6 +196,7 @@ class EnumConvertor(PathValueConvertor):
         self.mSeparators = re.compile(separators) if separators else None
         self.mCompactMode = compact_mode
         self.mCntUndef = 0
+        self.mConversionFunction = conv_func
         if accept_other_values:
             assert self.mPreVariants is not None
         elif self.mPreVariants is not None:
@@ -217,6 +218,12 @@ class EnumConvertor(PathValueConvertor):
         return self.mAtomicMode
 
     def convert(self, values, rec_no):
+        if (self.mConversionFunction):
+            if (isinstance(self.mConversionFunction, tuple)):
+                f, args = self.mConversionFunction
+                values = f(values, args)
+            else:
+                values = self.mConversionFunction(values)
         ret = []
         try:
             mod_values = values

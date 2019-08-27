@@ -71,8 +71,8 @@ def defineFilterSchema():
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
             view_path = "/view/general/gene_panels")
-        filters.multiStatusUnit("Transcripts", "/data/transcript_consequences",
-            compact_mode = True)
+        filters.multiStatusUnit("Transcripts", "/data/transcript_consequences[]",
+            compact_mode = True, conversion="extract(transcript_id)")
         filters.intValueUnit("Num_Genes", "/view/general/genes", conversion = "len",
                              title="Number of overlapping genes",
                              default_value = 0)
