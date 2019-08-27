@@ -1,7 +1,7 @@
 def evalRec(env, rec):
     """ACMG59"""
 
-    return (len(set(rec.Genes) &
+    return (len(set(rec.Symbol) &
         {
             "TMEM43",
             "DSP",

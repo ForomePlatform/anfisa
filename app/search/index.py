@@ -77,7 +77,7 @@ class Index:
         return self.mCondEnv
 
     def getUnit(self, unit_name):
-        return self.mUnitDict[unit_name]
+        return self.mUnitDict.get(unit_name)
 
     def getRulesUnit(self):
         return self.mUnits[0]

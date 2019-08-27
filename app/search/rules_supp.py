@@ -67,6 +67,8 @@ class RulesEvalUnit(MultiSetUnit):
             elif isinstance(val, str):
                 val = self.normEnumValue(val)
             value_dict[name] = val
+        if "Symbol" not in value_dict and "Genes" in value_dict:
+            value_dict["Symbol"] = "Genes"
         pre_rec = PresentationObj(value_dict)
         for idx, col in self.enumColumns():
             func_h = RULES_SETUP.FUNCTIONS[idx]

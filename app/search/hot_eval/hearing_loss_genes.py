@@ -1,6 +1,6 @@
 def evalRec(env, rec):
     """hearing_loss_genes"""
-    return (len(set(rec.Genes) &
+    return (len(set(rec.Symbol) &
         {
             'ABCD1',
             'ABHD12',
