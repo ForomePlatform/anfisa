@@ -6,7 +6,7 @@ class AnfisaConfig:
     sConfigOptions = {
         "aspect.tags.name": "tags_data",
         "zones":[
-            ("Gene",       "Genes"),
+            ("Gene",       "Symbol"),
             ("Sample",       "Has_Variant"),
             ("Tag", "_tags")
         ],

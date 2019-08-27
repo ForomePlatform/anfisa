@@ -1,6 +1,6 @@
 def evalRec(env, rec):
     """hl_reportable"""
-    return (len(set(rec.Genes) &
+    return (len(set(rec.Symbol) &
         {
             'ABHD12',
             'ACTG1',
