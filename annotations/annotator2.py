@@ -19,7 +19,7 @@ if __name__ == '__main__':
     parser.add_argument("-r", "--reuse", action='store_true', help="resue intermediate files from previous run")
 
     args = parser.parse_args()
-    print args
+    print (args)
 
     working_dir =  args.dir
     case = args.case if args.case else os.path.basename(working_dir).split('_')[0]
@@ -48,10 +48,10 @@ if __name__ == '__main__':
         platform = raw_platform
 
     if (platform):
-        print "Platform: {}".format(platform)
+        print ("Platform: {}".format(platform))
     else:
         platform = "wgs"
-        print "Could not determine platform (WES or WGS), assuming: ".format(platform)
+        print ("Could not determine platform (WES or WGS), assuming: ".format(platform))
 
     working_dir = args.dir
     case_id = "{}_{}".format(case, platform)
@@ -103,7 +103,7 @@ if __name__ == '__main__':
     with open(inventory, "w") as cfg:
         json.dump(config, cfg, indent=4)
 
-    print "Inventory: " + inventory
+    print ("Inventory: " + inventory)
 
     temp_dir = tempfile.mkdtemp(dir=working_dir, prefix="tmp_a_")
 
@@ -116,7 +116,7 @@ if __name__ == '__main__':
 
     child_pid = os.fork()
     if (child_pid):
-        print "Starting child process: {} => {}".format(str(os.getpid()), str(child_pid))
+        print ("Starting child process: {} => {}".format(str(os.getpid()), str(child_pid)))
         sys.exit(0)
     else:
         os.chdir(temp_dir)
@@ -124,7 +124,7 @@ if __name__ == '__main__':
         sys.stdout = open("out-{}.log".format(str(pid)), "w")
         sys.stderr = open("err-{}.log".format(str(pid)), "w")
         # args = ["-version"]
-        print "Executing {} {}".format(executable, " ".join(args))
+        print ("Executing {} {}".format(executable, " ".join(args)))
         #os.execvp(executable, args)
         subprocess.call([executable] + args, stdout=sys.stdout, stderr=sys.stderr)
 
