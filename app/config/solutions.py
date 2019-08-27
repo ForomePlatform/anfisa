@@ -43,6 +43,9 @@ def prepareSolutions():
     #base_pack.regFilterXL(?, ?)
 
     # Production Decision Trees
+    base_pack.regTreeCode("BGM xBrowse Alt",
+        cfgPathSeq(["bgm_xbrowse.pyt"]),
+        requires = {"trio"})
     base_pack.regTreeCode("Trio Candidates",
         cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
         requires = {"trio"})
@@ -56,15 +59,15 @@ def prepareSolutions():
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
 
     # Test trees
-    base_pack.regTreeCode("Q Test",
-        cfgPathSeq(["quality.pyt", "return_true.pyt"]))
-    base_pack.regTreeCode("R Test",
-        cfgPathSeq(["rare.pyt", "return_true.pyt"]))
-    base_pack.regTreeCode("T Test",
-        [cfgPath("trio.pyt")],
-        requires = {"trio"})
-    base_pack.regTreeCode("H Test",
-        [cfgPath("hearing_loss.pyt")])
+    # base_pack.regTreeCode("Q Test",
+    #     cfgPathSeq(["quality.pyt", "return_true.pyt"]))
+    # base_pack.regTreeCode("R Test",
+    #     cfgPathSeq(["rare.pyt", "return_true.pyt"]))
+    # base_pack.regTreeCode("T Test",
+    #     [cfgPath("trio.pyt")],
+    #     requires = {"trio"})
+    # base_pack.regTreeCode("H Test",
+    #     [cfgPath("hearing_loss.pyt")])
 
     base_pack.regPanel("Genes", "ACMG59",
         cfgPath("acmg59.lst"))
