@@ -67,7 +67,7 @@ def defineFilterSchema():
         #    default_value = 0)
 
     with filters.viewGroup("Genes"):
-        genes_unit = filters.multiStatusUnit("Genes", "/view/general/genes[]",
+        genes_unit = filters.multiStatusUnit("Symbol", "/view/general/genes[]",
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
             view_path = "/view/general/gene_panels")
