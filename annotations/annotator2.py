@@ -27,6 +27,7 @@ if __name__ == '__main__':
         input_file = args.input
     else:
         vcfs = glob.glob(os.path.join(working_dir,"*{}*vcf*".format(case)))
+        vcfs = [vcf for vcf in vcfs if not vcf.endswith('idx')]
         if len(vcfs) == 0:
             raise Exception("No VCF files are found in {}".format(working_dir))
         elif len(vcfs) > 1:
