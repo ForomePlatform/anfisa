@@ -35,7 +35,7 @@ if __name__ == '__main__':
         else:
             input_file = os.path.basename(vcfs[0])
 
-    x = input_file.lower().split('_')
+    x = input_file.lower().split('.')[0].split('_')
     if ('wgs' in x):
         raw_platform = 'wgs'
     elif ('wes' in x):
