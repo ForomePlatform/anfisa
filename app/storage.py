@@ -11,6 +11,7 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
+from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
 from app.config.solutions import prepareSolutions
@@ -67,6 +68,7 @@ def createDataSet(app_config, name, kind, mongo,
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
 
+    anfisa_version = AnfisaConfig.getAnfisaVersion()
     prepareSolutions()
     post_proc = None
     view_aspects = defineViewSchema()
@@ -101,6 +103,8 @@ def createDataSet(app_config, name, kind, mongo,
             if record.get("record_type") == "metadata":
                 assert inp_rec_no == 0
                 metadata_record = record
+                if "versions" in metadata_record:
+                    metadata_record["versions"]["Anfisa load"] = anfisa_version
                 filter_set.setMeta(metadata_record)
                 continue
             flt_data = filter_set.process(data_rec_no, record)

@@ -47,7 +47,7 @@ class HServResponse:
             response_headers = [("Content-Type", self.sContentTypes[mode]),
                                 ("Content-Length", str(len(response_body)))]
         else:
-            response_body = response_status
+            response_body = response_status.encode("utf-8")
             response_headers = []
         if add_headers is not None:
             response_headers += add_headers

@@ -1,5 +1,5 @@
 #Exclude  variants not in hearing loss panel
-if Genes not in panel(ACMG59):
+if Symbol not in panel(ACMG59):
     return False
 
 #Include Present in HGMD as "DM"

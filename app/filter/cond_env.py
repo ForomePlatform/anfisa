@@ -111,7 +111,7 @@ class CondEnv:
             return self.makeNumericCond(unit_h, bounds, use_undef)
         if unit_kind == "panel":
             filter_mode, panel_name = cond_info[2:]
-            variants = self.getUnitPanel(unit_name, panel_name)
+            variants = self.getUnitPanel(unit_name, panel_name, False)
             return self.makeEnumCond(unit_h, filter_mode, variants)
         if cond_info[0] == "enum":
             filter_mode, variants = cond_info[2:]
@@ -149,12 +149,15 @@ class CondEnv:
                 ret.append(it.getData()[0])
         return ret
 
-    def getUnitPanel(self, unit_name, panel_name):
+    def getUnitPanel(self, unit_name, panel_name, assert_mode):
         for it in self.mSolPack.iterItems("panel", self.testRequirements):
             if it.getName() == unit_name:
                 if it.getData()[0] == panel_name:
                     return it.getData()[1]
-        assert False, "{} Panel {} not found".format(unit_name, panel_name)
+        if assert_mode:
+            assert False, "%s: Panel %s not found" % (unit_name, panel_name)
+        else:
+            logging.warning("%s: Panel %s not found" % (unit_name, panel_name))
 
     def getStdTreeCodeNames(self):
         return [it.getName() for it in

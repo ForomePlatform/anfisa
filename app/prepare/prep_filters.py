@@ -3,45 +3,6 @@ from app.model.family import FamilyInfo
 from app.filter.cond_env import CondEnv
 
 #===============================================
-def convLen(values):
-    if values is None:
-        return [0]
-    return [len(values[0])]
-
-
-def convDict2list(values):
-    if isinstance(values, dict):
-        return list(values.keys())
-    return []
-
-
-def convExtract(values, key):
-    if isinstance(values, list):
-        ret = []
-        for element in values:
-            if isinstance(element, dict) and key in element:
-                ret.append(element[key])
-        return ret
-    return []
-
-
-CONV_FUNC_DICT = {
-    "len": convLen,
-    "dict2list": convDict2list,
-    "extract": convExtract,
-}
-
-def _getConvFunc(conversion, name = None):
-    global CONV_FUNC_DICT
-    if conversion is None:
-        return None
-    if ('(' in conversion and ')' in conversion):
-        f = conversion.split('(')[0]
-        args = conversion.split('(')[1].split(')')[0]
-        return (CONV_FUNC_DICT[f], args)
-    return CONV_FUNC_DICT[conversion]
-
-#===============================================
 class FilterPrepareSetH:
     def __init__(self, modes = None):
         self.mUnits = []
@@ -83,14 +44,14 @@ class FilterPrepareSetH:
             render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.IntConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            research_only, default_value, diap, _getConvFunc(conversion)))
+            research_only, default_value, diap, conversion))
 
     def floatValueUnit(self, name, path, title = None,
             default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None, research_only = False):
         return self._addUnit(prep_unit.FloatConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            research_only, default_value, diap, _getConvFunc(conversion)))
+            research_only, default_value, diap, conversion))
 
     def statusUnit(self, name, path, title = None,
             variants = None, default_value = "False",
@@ -110,13 +71,14 @@ class FilterPrepareSetH:
     def multiStatusUnit(self, name, path, title = None,
             variants = None, default_value = None,
             separators = None, compact_mode = False,
-            accept_other_values = False,
-            render_mode = None, tooltip = None, research_only = False, conversion = None):
+            accept_other_values = False, render_mode = None, tooltip = None,
+            research_only = False, conversion = None):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             research_only, False, variants, default_value,
             separators = separators, compact_mode = compact_mode,
-            accept_other_values = accept_other_values, conv_func=_getConvFunc(conversion, name=name)))
+            accept_other_values = accept_other_values,
+            conv_func = conversion))
 
     def zygositySpecialUnit(self, name, path, title = None,
             default_value = None, config = None,
@@ -131,6 +93,12 @@ class FilterPrepareSetH:
         return self._addUnit(prep_unit.PanelConvertor(self.mCondEnv,
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, research_only, unit_base, view_path))
+
+    def transctiptStatusUnit(self, name, trans_path,
+            title = None, render_mode = None, tooltip = None,
+            research_only = False,
+            variants = None, default_value = "False", mapping = None):
+        return None
 
     def process(self, rec_no, rec_data):
         result = dict()

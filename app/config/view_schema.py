@@ -20,10 +20,10 @@ def defineViewSchema():
         AspectH("_main", "VEP Data", "data"),
         AspectH("transcripts", "VEP Transcripts", "data",
             col_groups = ColGroupsH([
-                ("intergenic_consequences", "Intergenic"),
-                ("motif_feature_consequences", "Motif"),
+                ("transcript_consequences", "Transcript"),
                 ("regulatory_feature_consequences", "Regulatory"),
-                ("transcript_consequences", "Transcript")])),
+                ("motif_feature_consequences", "Motif"),
+                ("intergenic_consequences", "Intergenic")])),
         AspectH("colocated_v", "Colocated Variants", "data",
             col_groups = ColGroupsH(attr = "colocated_variants")),
         AspectH("input", "VCF", "data", field = "input",

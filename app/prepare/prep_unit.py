@@ -104,8 +104,8 @@ class _NumericConvertor(PathValueConvertor):
 
     def convert(self, values, rec_no):
         try:
-            if self.mConvFunc is not None:
-                values = self.mConvFunc(values)
+            if self.mConvFunc is not None and len(values) == 1:
+                values = [self.mConvFunc(values[0])]
             if len(values) == 0:
                 if self.mDefaultValue is None:
                     self.mCntUndef += 1
@@ -196,7 +196,7 @@ class EnumConvertor(PathValueConvertor):
         self.mSeparators = re.compile(separators) if separators else None
         self.mCompactMode = compact_mode
         self.mCntUndef = 0
-        self.mConversionFunction = conv_func
+        self.mConvFunc = conv_func
         if accept_other_values:
             assert self.mPreVariants is not None
         elif self.mPreVariants is not None:
@@ -218,15 +218,11 @@ class EnumConvertor(PathValueConvertor):
         return self.mAtomicMode
 
     def convert(self, values, rec_no):
-        if (self.mConversionFunction):
-            if (isinstance(self.mConversionFunction, tuple)):
-                f, args = self.mConversionFunction
-                values = f(values, args)
-            else:
-                values = self.mConversionFunction(values)
         ret = []
         try:
             mod_values = values
+            if self.mConvFunc is not None:
+                mod_values = self.mConvFunc(values)
             if self.mSeparators:
                 mod_values = []
                 for val in values:

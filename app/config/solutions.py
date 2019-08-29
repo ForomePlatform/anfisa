@@ -69,10 +69,10 @@ def prepareSolutions():
     # base_pack.regTreeCode("H Test",
     #     [cfgPath("hearing_loss.pyt")])
 
-    base_pack.regPanel("Genes", "ACMG59",
+    base_pack.regPanel("Symbol", "ACMG59",
         cfgPath("acmg59.lst"))
-    base_pack.regPanel("Genes", "All_Hearing_Loss",
+    base_pack.regPanel("Symbol", "All_Hearing_Loss",
         cfgPath("all_hearing_loss.lst"))
-    base_pack.regPanel("Genes", "Reportable_Hearing_Loss",
+    base_pack.regPanel("Symbol", "Reportable_Hearing_Loss",
         cfgPath("rep_hearing_loss.lst"))
 

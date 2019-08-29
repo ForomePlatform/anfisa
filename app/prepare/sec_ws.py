@@ -136,6 +136,10 @@ class SecondaryWsCreation(ExecutionTask):
             self.mWSName)
         mongo_agent.checkCreationDate(date_loaded)
 
+        meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
+        if "versions" in meta_rec:
+            meta_rec["versions"]["Anfisa load"] = self.mDS.getApp().getVersionCode()
+
         ds_info = {
             "name": self.mWSName,
             "kind": "ws",
@@ -147,7 +151,7 @@ class SecondaryWsCreation(ExecutionTask):
             "modes": ["secondary"],
             "family": (self.mDS.getFamilyInfo().dump()
                 if self.mDS.getFamilyInfo() is not None else None),
-            "meta": self.mDS.getDataInfo().get("meta"),
+            "meta": meta_rec,
             "doc": [],
             "receipt": receipt,
             "date_loaded": date_loaded}

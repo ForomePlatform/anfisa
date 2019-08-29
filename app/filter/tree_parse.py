@@ -364,7 +364,8 @@ class ParsedDecisionTree:
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
             if panel_name is not None:
-                variants = self.mCondEnv.getUnitPanel(field_name, panel_name)
+                variants = self.mCondEnv.getUnitPanel(
+                    field_name, panel_name, False)
                 if variants is None:
                     self.errorIt(it_set, "Panel not found")
                 ret = ["panel", field_name, op_mode, panel_name]

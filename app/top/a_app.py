@@ -34,9 +34,7 @@ class AnfisaApp:
     def setup(cls, config, in_container):
         prepareSolutions()
 
-        with open(os.path.dirname(os.path.abspath(__file__)) +
-            "/../VERSION", "r", encoding = "utf-8") as inp:
-            cls.sVersionCode = inp.read().strip()
+        cls.sVersionCode = AnfisaConfig.getAnfisaVersion()
 
         cls.sConfig = config
         MirrorUiDirectory.setup(cls.sConfig.get("mirror-ui"))

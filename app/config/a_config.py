@@ -1,3 +1,5 @@
+import os
+
 #===============================================
 class AnfisaConfig:
     sTextMessages = {
@@ -42,7 +44,7 @@ class AnfisaConfig:
 
         "zygosity.setup": {
             "zygosity": "Inheritance_Mode",
-            "Genes": "Genes",
+            "Genes": "Symbol",
             "Compound_heterozygous": "Compound_heterozygous",
             "ws_compound_heterosygotes": "ws_compound_heterosygotes",
             "comp-hets-max-rec": 1000,
@@ -83,5 +85,12 @@ class AnfisaConfig:
         if time_label is None:
             return '2019-03-01T00:00:00'
         return time_label
+
+    @classmethod
+    def getAnfisaVersion(cls):
+        with open(os.path.dirname(os.path.abspath(__file__)) +
+            "/../VERSION", "r", encoding = "utf-8") as inp:
+            return inp.read().strip()
+
 
 #===============================================
