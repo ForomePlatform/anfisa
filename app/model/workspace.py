@@ -42,8 +42,10 @@ class Workspace(DataSet):
                 zone_h = self.mTagsMan
                 zone_h._setTitle(zone_title)
             else:
-                zone_h = FilterZoneH(self, zone_title,
-                    self.mIndex.getUnit(unit_name))
+                unit = self.mIndex.getUnit(unit_name)
+                if (not unit):
+                    continue
+                zone_h = FilterZoneH(self, zone_title, unit)
             self.mZoneHandlers.append(zone_h)
 
     def _loadPData(self):
