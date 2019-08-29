@@ -109,9 +109,9 @@ if __name__ == '__main__':
     temp_dir = tempfile.mkdtemp(dir=working_dir, prefix="tmp_a_")
 
     executable = "java"
-    jar = "/home/vulitin/deploy/annotationservice/exec/annotation_v.0.5.0.14.jar"
+    jar = "/data/projects/Annotations/lib/annotation.jar"
     main = "org.forome.annotation.annotator.main.AnnotatorMainFork"
-    annotator_cfg = "/home/vulitin/deploy/annotationservice/exec/config.json"
+    annotator_cfg = "/data/projects/Annotations/lib/bgm.json"
 
     args = ["-cp", jar, main, "-config", annotator_cfg, "-inventory", inventory]
 
