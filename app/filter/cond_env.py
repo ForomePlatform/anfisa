@@ -149,7 +149,7 @@ class CondEnv:
                 ret.append(it.getData()[0])
         return ret
 
-    def getUnitPanel(self, unit_name, panel_name, assert_mode):
+    def getUnitPanel(self, unit_name, panel_name, assert_mode = True):
         for it in self.mSolPack.iterItems("panel", self.testRequirements):
             if it.getName() == unit_name:
                 if it.getData()[0] == panel_name:
