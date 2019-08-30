@@ -66,7 +66,7 @@ def defineFilterSchema():
         #filters.intValueUnit("zyg_len", "/data/zygosity", conversion = "len",
         #    default_value = 0)
 
-    with filters.viewGroup("Genes"):
+    with filters.viewGroup("Genes_Group"):
         genes_unit = filters.multiStatusUnit("Genes", "/view/general/genes[]",
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
@@ -237,7 +237,7 @@ def defineFilterSchema():
             "/view/predictions/polyphen2_hdiv[]",
             separators = "[\s\,]", default_value = "undef")
 
-    filters.floatValueUnit("GERP_score", "/view/bioinformatics/gerp_rs", render_mode="linear,>",
+        filters.floatValueUnit("GERP_score", "/view/bioinformatics/gerp_rs", render_mode="linear,>",
                            default_value=0, title="GERP Score")
 
     with filters.viewGroup("Debug_Info"):
