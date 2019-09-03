@@ -18,8 +18,8 @@ class RulesEvalUnit(MultiSetUnit):
     def normEnumValue(cls, val):
         return cls.sEnumNormValues.get(val, val)
 
-    def __init__(self, index, dc_collection):
-        MultiSetUnit.__init__(self, index, dc_collection, {
+    def __init__(self, index):
+        MultiSetUnit.__init__(self, index, {
             "name": "Rules",
             "title": "Rules",
             "kind": "rules",
@@ -43,10 +43,10 @@ class RulesEvalUnit(MultiSetUnit):
         self.mUnitNames = None
         self.mMultiSetUnits = None
 
-    def fillRecord(self, inp_data, record):
+    def fillRecord(self, inp_data, rec_no):
         pass
 
-    def fillRulesPart(self, inp_data, data_record, rec_no):
+    def fillRulesPart(self, inp_data, rec_no):
         if self.mUnitNames is None:
             self.mUnitNames = []
             self.mMultiSetUnits = set()
@@ -70,17 +70,18 @@ class RulesEvalUnit(MultiSetUnit):
         if "Symbol" not in value_dict and "Genes" in value_dict:
             value_dict["Symbol"] = "Genes"
         pre_rec = PresentationObj(value_dict)
-        for idx, col in self.enumColumns():
+        MultiSetUnit.fillRecord(self, dict(), rec_no)
+        for idx in range(len(self.getVariantSet())):
             func_h = RULES_SETUP.FUNCTIONS[idx]
             val = func_h.getFunc()(self.mEnv, pre_rec)
-            col.setValue(data_record, val)
+            self._setRecBit(rec_no, idx, val)
             if val:
                 rules_set.add(func_h.getName())
 
     def getJSonData(self, research_mode):
         ret = dict()
         columns = []
-        for idx, col in self.enumColumns():
+        for idx in range(len(self.getVariantSet())):
             func_h = RULES_SETUP.FUNCTIONS[idx]
             if (not research_mode and func_h.isResearch()):
                 continue

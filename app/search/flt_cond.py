@@ -60,7 +60,7 @@ class WS_Condition:
     def getCondKind(self):
         assert False
 
-    def __call__(self, record):
+    def __call__(self, rec_no):
         assert False
 
     def getCondNone(self):
@@ -82,8 +82,8 @@ class WS_NumCondition(WS_Condition):
     def getCondKind(self):
         return "num"
 
-    def __call__(self, record):
-        return self.mEvalFunc(self.mRecNumFunc(record))
+    def __call__(self, rec_no):
+        return self.mEvalFunc(self.mRecNumFunc(rec_no))
 
     @staticmethod
     def numericFilterFunc(bound_min, bound_max, use_undef):
@@ -119,8 +119,8 @@ class WS_EnumCondition(WS_Condition):
     def getCondKind(self):
         return "enum"
 
-    def __call__(self, record):
-        return self.mEvalFunc(self.mRecEnumFunc(record))
+    def __call__(self, rec_no):
+        return self.mEvalFunc(self.mRecEnumFunc(rec_no))
 
     @staticmethod
     def enumFilterFunc(filter_mode, base_idx_set):
@@ -144,8 +144,8 @@ class WS_SpecCondition(WS_Condition):
     def getCondKind(self):
         return self.mKind
 
-    def __call__(self, record):
-        return self.mSpecFunc(record)
+    def __call__(self, rec_no):
+        return self.mSpecFunc(rec_no)
 
 #===============================================
 class WS_Negation(WS_Condition):
@@ -159,8 +159,8 @@ class WS_Negation(WS_Condition):
     def getCondKind(self):
         return "neg"
 
-    def __call__(self, record):
-        return not self.mBaseCond(record)
+    def __call__(self, rec_no):
+        return not self.mBaseCond(rec_no)
 
 #===============================================
 class _WS_Joiner(WS_Condition):
@@ -192,9 +192,9 @@ class WS_And(_WS_Joiner):
             add_items = [other]
         return WS_And(self.getItems() + add_items)
 
-    def __call__(self, record):
+    def __call__(self, rec_no):
         for it in self.getItems():
-            if not it(record):
+            if not it(rec_no):
                 return False
         return True
 
@@ -217,9 +217,9 @@ class WS_Or(_WS_Joiner):
             add_items = [other]
         return WS_Or(self.getItems() + add_items)
 
-    def __call__(self, record):
+    def __call__(self, rec_no):
         for it in self.getItems():
-            if it(record):
+            if it(rec_no):
                 return True
         return False
 
@@ -240,7 +240,7 @@ class WS_None(WS_Condition):
     def getCondKind(self):
         return "null"
 
-    def __call__(self, record):
+    def __call__(self, rec_no):
         return False
 
 #===============================================
@@ -260,7 +260,7 @@ class WS_All(WS_Condition):
     def getCondKind(self):
         return "all"
 
-    def __call__(self, record):
+    def __call__(self, rec_no):
         return True
 
 #===============================================

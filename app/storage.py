@@ -11,6 +11,7 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
+from app.prepare.trans_prep import TranscriptPreparator
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
@@ -75,6 +76,12 @@ def createDataSet(app_config, name, kind, mongo,
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema()
 
+    if kind == "ws":
+        trans_prep = TranscriptPreparator(
+            filter_set.getTranscriptDescrSeq(), True)
+    else:
+        trans_prep = None
+
     if report_lines:
         print("Processing...", file = sys.stderr)
 
@@ -113,6 +120,8 @@ def createDataSet(app_config, name, kind, mongo,
             pre_data = PresentationData.make(record)
             if DRUID_ADM is not None:
                 DRUID_ADM.addFieldsToRec(flt_data, pre_data, data_rec_no)
+            if trans_prep is not None:
+                trans_prep.doRec(record, flt_data)
             print(json.dumps(flt_data, ensure_ascii = False), file = fdata_out)
             print(json.dumps(pre_data, ensure_ascii = False), file = pdata_out)
             data_rec_no += 1
@@ -130,9 +139,14 @@ def createDataSet(app_config, name, kind, mongo,
     is_ok = view_checker.finishUp(rep_out)
     is_ok &= filter_set.reportProblems(rep_out)
 
-    flt_data = filter_set.dump()
+    if trans_prep is not None:
+        total_item_count = trans_prep.finishUp()
+    else:
+        total_item_count = None
+
+    flt_schema_data = filter_set.dump()
     if kind == "xl":
-        is_ok &= DRUID_ADM.uploadDataset(name, flt_data,
+        is_ok &= DRUID_ADM.uploadDataset(name, flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
@@ -142,7 +156,7 @@ def createDataSet(app_config, name, kind, mongo,
             "name": name,
             "kind": kind,
             "view_schema": view_aspects.dump(),
-            "flt_schema": flt_data,
+            "flt_schema": flt_schema_data,
             "total": data_rec_no,
             "mongo": mongo,
             "modes": [],
@@ -150,6 +164,10 @@ def createDataSet(app_config, name, kind, mongo,
             "meta": metadata_record,
             "doc": prepareDocDir(ds_doc_dir, ds_inventory),
             "date_loaded": date_loaded}
+
+        if total_item_count is not None:
+            ds_info["total_items"] = total_item_count
+
         with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),
                 file = outp)

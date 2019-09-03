@@ -301,7 +301,6 @@ class ParsedDecisionTree:
     def _processEnumInstr(self, it):
         assert len(it.comparators) == 1
         it_set = it.comparators[0]
-        panel_name = None
         if isinstance(it.ops[0], ast.NotIn):
             op_mode = "NOT"
         else:
@@ -318,39 +317,28 @@ class ParsedDecisionTree:
                     self.errorIt(it_set, "Complex call not supported")
                 op_mode = "AND"
                 it_set = it_set.args[0]
-            elif  it_set.func.id == "panel":
-                if self.mCondEnv is None:
-                    self.errorIt(it_set, "No panel support")
-                it_set = it_set.args[0]
-                if isinstance(it_set, ast.Str):
-                    panel_name = it_set.s
-                elif isinstance(it_set, ast.Name):
-                    panel_name = it_set.id
-                else:
-                    self.errorIt(it_set, "Panel id expected")
             else:
                 self.errorIt(it_set,
-                    "Only pseudo-functions all/panel supported")
+                    "Only pseudo-function all is supported")
 
-        if panel_name is None:
-            if not (isinstance(it_set, ast.List) or
-                    isinstance(it_set, ast.Set)):
-                self.errorIt(it_set, "Set (or list) expected")
-            variants = []
-            for el in it_set.elts:
-                if isinstance(el, ast.Str):
-                    val = el.s
-                elif isinstance(el, ast.Name):
-                    val = el.id
-                elif isinstance(el, ast.NameConstant):
-                    val = str(el.value)
-                else:
-                    self.errorIt(el, "Name or string is expected as variant")
-                if val in variants:
-                    self.errorIt(el, "Duplicated variant")
-                variants.append(val)
-            if len(variants) == 0:
-                self.errorIt(it_set, "Empty set")
+        if not (isinstance(it_set, ast.List) or
+                isinstance(it_set, ast.Set)):
+            self.errorIt(it_set, "Set (or list) expected")
+        variants = []
+        for el in it_set.elts:
+            if isinstance(el, ast.Str):
+                val = el.s
+            elif isinstance(el, ast.Name):
+                val = el.id
+            elif isinstance(el, ast.NameConstant):
+                val = str(el.value)
+            else:
+                self.errorIt(el, "Name or string is expected as variant")
+            if val in variants:
+                self.errorIt(el, "Duplicated variant")
+            variants.append(val)
+        if len(variants) == 0:
+            self.errorIt(it_set, "Empty set")
 
         if isinstance(it.left, ast.Name):
             field_name = it.left.id
@@ -363,19 +351,9 @@ class ParsedDecisionTree:
                     return ["operational", field_name, op_mode, variants]
                 if unit_kind != "enum":
                     self.errorIt(it.left, "Improper enum field name")
-            if panel_name is not None:
-                variants = self.mCondEnv.getUnitPanel(
-                    field_name, panel_name, False)
-                if variants is None:
-                    self.errorIt(it_set, "Panel not found")
-                ret = ["panel", field_name, op_mode, panel_name]
-            else:
-                ret = ["enum", field_name, op_mode, variants]
-                self.getCurFrag().addMarker(ret, it.left)
+            ret = ["enum", field_name, op_mode, variants]
+            self.getCurFrag().addMarker(ret, it.left)
             return ret
-
-        if panel_name is not None:
-            self.errorIt(it_set, "Panel supported only for enumerated fields")
 
         if isinstance(it.left, ast.Call):
             if (len(it.left.keywords) > 0 or

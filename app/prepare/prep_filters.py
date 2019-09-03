@@ -94,11 +94,14 @@ class FilterPrepareSetH:
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, research_only, unit_base, view_path))
 
-    def transctiptStatusUnit(self, name, trans_path,
+    def transctiptStatusUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             research_only = False,
             variants = None, default_value = "False", mapping = None):
-        return None
+        return self._addUnit(prep_unit.TransctiptStatusConvertor(
+            self.mCondEnv, name, title, len(self.mUnits), self.mCurVGroup,
+            render_mode, tooltip, research_only, trans_name, variants,
+            default_value, mapping))
 
     def process(self, rec_no, rec_data):
         result = dict()
@@ -115,6 +118,14 @@ class FilterPrepareSetH:
 
     def dump(self):
         return [unit.dump() for unit in self.mUnits]
+
+    def getTranscriptDescrSeq(self):
+        ret = []
+        for unit in self.mUnits:
+            descr = unit.getTranscriptDescr()
+            if descr is not None:
+                ret.append(descr)
+        return ret
 
 #===============================================
 class ViewGroupH:

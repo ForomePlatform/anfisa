@@ -62,9 +62,6 @@ class Workspace(DataSet):
                     tab.append(pre_data.get(key))
         assert len(self.mTabRecRand) == self.getTotal()
 
-    def getName(self):
-        return self.mName
-
     def getIndex(self):
         return self.mIndex
 

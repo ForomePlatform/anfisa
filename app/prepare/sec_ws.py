@@ -8,6 +8,7 @@ from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.decision import DecisionTree
+from .trans_prep import TranscriptPreparator
 from .html_report import reportDS
 
 #===============================================
@@ -89,6 +90,7 @@ class SecondaryWsCreation(ExecutionTask):
 
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
+        trans_prep = TranscriptPreparator(flt_schema, False)
         if self.mMarkupBatch is not None:
             self.setStatus("Markup evaluation")
             for rec_no, fdata in zip(rec_no_seq, fdata_seq):
@@ -106,7 +108,9 @@ class SecondaryWsCreation(ExecutionTask):
                         (out_rec_no, len(rec_no_seq)))
                 rec_data = self.mDS.getRecordData(rec_no)
                 if self.mMarkupBatch is not None:
+                    rec_data = deepcopy(rec_data)
                     self.mMarkupBatch.transformRecData(rec_no, rec_data)
+                trans_prep.doRec(rec_data, fdata_seq[out_rec_no])
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
         self.setStatus("Prepare fdata")
@@ -131,6 +135,8 @@ class SecondaryWsCreation(ExecutionTask):
         self.setStatus("Finishing...")
         logging.info("Finishing up workspace %s" % self.mWSName)
 
+        total_item_count = trans_prep.finishUp()
+
         date_loaded = datetime.now().isoformat()
         mongo_agent = self.mDS.getApp().getMongoConnector().getWSAgent(
             self.mWSName)
@@ -146,6 +152,7 @@ class SecondaryWsCreation(ExecutionTask):
             "view_schema": view_schema,
             "flt_schema": flt_schema,
             "total": len(rec_no_seq),
+            "total_items": total_item_count,
             "mongo": self.mWSName,
             "base": self.mDS.getName(),
             "modes": ["secondary"],

@@ -7,12 +7,12 @@ from app.filter.unit import Unit
 #=====================================
 class CompHetsMarkupBatch:
     def __init__(self, proband_rel):
-        setup = AnfisaConfig.configOption("zygosity.setup")
-        self.mF_zFamily = [setup["zygosity"] + '_' + str(member_idx)
+        setup_data = AnfisaConfig.configOption("zygosity.setup")
+        self.mF_zFamily = [setup_data["zygosity"] + '_' + str(member_idx)
             for member_idx in proband_rel]
-        self.mF_Genes = setup["Genes"]
-        self.mF_Result = setup["Compound_heterozygous"]
-        self.mView_Result = setup["ws_compound_heterosygotes"]
+        self.mF_Genes = setup_data["Genes"]
+        self.mF_Result = setup_data["Compound_heterozygous"]
+        self.mView_Result = setup_data["ws_compound_heterosygotes"]
 
         self.mGenesF = defaultdict(set)
         self.mGenesM = defaultdict(set)
@@ -89,11 +89,11 @@ class CompHetsMarkupBatch:
 
 #=====================================
 class CompHetsUnit(Unit):
-    sSetup = AnfisaConfig.configOption("zygosity.setup")
+    sSetupData = AnfisaConfig.configOption("zygosity.setup")
 
     @classmethod
     def setupCondEnv(cls, cond_env, ds):
-        var_names = cls.sSetup["op-variables"][:]
+        var_names = cls.sSetupData["op-variables"][:]
         if not ds.getFamilyInfo() or len(ds.getFamilyInfo()) != 3:
             for name in var_names:
                 cond_env.addReservedName(name)
@@ -106,9 +106,9 @@ class CompHetsUnit(Unit):
     def __init__(self, ds, name):
         Unit.__init__(self, {
             "name": name,
-            "title": self.sSetup.get("op-var-title", name),
+            "title": self.sSetupData.get("op-var-title", name),
             "kind": "enum",
-            "vgroup": self.sSetup["vgroup"],
+            "vgroup": self.sSetupData["vgroup"],
             "research": False,
             "render": "operative",
             "no": -1})
@@ -119,9 +119,9 @@ class CompHetsUnit(Unit):
         return self.mDS
 
     def _prepareZygConditions(self):
-        dim0 = "%s_0" % self.sSetup["zygosity"]
-        dim1 = "%s_1" % self.sSetup["zygosity"]
-        dim2 = "%s_2" % self.sSetup["zygosity"]
+        dim0 = "%s_0" % self.sSetupData["zygosity"]
+        dim1 = "%s_1" % self.sSetupData["zygosity"]
+        dim2 = "%s_2" % self.sSetupData["zygosity"]
         return (
             ConditionMaker.condNum(dim0, [1, 1]),
             ["and", ConditionMaker.condNum(dim1, [1, 1]),
@@ -136,7 +136,7 @@ class CompHetsUnit(Unit):
             instr_and.append(actual_cond_data)
         c_proband, c_parent1, c_parent2 = self._prepareZygConditions()
 
-        genes_unit = self.mIndex.getUnit(self.sSetup["Genes"])
+        genes_unit = self.mIndex.getUnit(self.sSetupData["Genes"])
         genes1 = set()
         for gene, count in genes_unit.evalStat(
                 self.mIndex.getCondEnv().parse(
@@ -171,7 +171,7 @@ class CompHetsUnit(Unit):
             return ConditionMaker.condNone()
 
         if False: # Druid seems does not provides correct support....
-            if res_count > self.sSetup["comp-hets-max-rec"]:
+            if res_count > self.sSetupData["comp-hets-max-rec"]:
                 logging.info("Comp hets: too many records, "
                     "return gene-based cond")
                 return ["genes", cond_genes_data]

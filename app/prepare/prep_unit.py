@@ -31,6 +31,9 @@ class ValueConvertor:
         if len(self.mErrors) < self.sMAX_BAD_COUNT:
             self.mErrors.append([rec_no, values])
 
+    def getTranscriptDescr(self):
+        return None
+
     def dump(self):
         result = {
             "name": self.mName,
@@ -400,3 +403,27 @@ class PanelConvertor(ValueConvertor):
             variants.append([var, self.mVarCount[var]])
         ret["variants"] = variants
         return ret
+
+#===============================================
+class TransctiptStatusConvertor(ValueConvertor):
+    def __init__(self, cond_env, name, title, unit_no, vgroup,
+            render_mode, tooltip, research_only,
+            trans_name, variants, default_value, mapping):
+        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
+            render_mode, tooltip, research_only)
+        self.mDescr = ValueConvertor.dump(self)
+        self.mDescr["kind"] = "transcript-status"
+        self.mDescr["tr_name"] = trans_name
+        self.mDescr["pre_variants"] = variants
+        self.mDescr["default"] = default_value
+        self.mDescr["mapping"] = mapping
+
+    def process(self, rec_no, rec_data, result):
+        pass
+
+    def dump(self):
+        return self.mDescr
+
+    def getTranscriptDescr(self):
+        return self.mDescr
+

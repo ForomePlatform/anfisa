@@ -33,6 +33,8 @@ class XLDataset(DataSet):
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
+            if unit_data["kind"].startswith("transcript-"):
+                continue
             if self.mCondEnv.nameIsReserved(unit_data["name"]):
                 continue
             xl_unit = XL_Unit.create(self, unit_data)

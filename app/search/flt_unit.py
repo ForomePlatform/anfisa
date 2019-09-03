@@ -1,5 +1,7 @@
 #import sys
 import abc
+from array import array
+from bitarray import bitarray
 
 from app.config.a_config import AnfisaConfig
 from utils.variants import VariantSet
@@ -7,6 +9,7 @@ from app.filter.condition import ConditionMaker
 from app.filter.unit import Unit
 from .val_stat import NumDiapStat, EnumStat
 from .flt_cond import WS_SpecCondition, WS_EnumCondition
+
 #===============================================
 class FilterUnit(Unit):
     def __init__(self, index, unit_data, unit_kind = None):
@@ -29,12 +32,19 @@ class FilterUnit(Unit):
             ret["render"] = self.mRenderMode
         return ret
 
+    def getRecFunc(self):
+        return self.getRecVal
+
     @abc.abstractmethod
-    def makeStat(self, data_records, repr_context = None):
+    def getRecVal(self, rec_no):
         return None
 
     @abc.abstractmethod
-    def fillRecord(self, obj, record):
+    def makeStat(self, rec_no_seq, repr_context = None):
+        return None
+
+    @abc.abstractmethod
+    def fillRecord(self, obj, rec_no):
         assert False
 
     def evalStat(self, condition):
@@ -42,27 +52,26 @@ class FilterUnit(Unit):
 
 #===============================================
 class NumericValueUnit(FilterUnit):
-    def __init__(self, index, dc_collection, unit_data):
+    def __init__(self, index, unit_data):
         FilterUnit.__init__(self, index, unit_data,
             "float" if unit_data["kind"] == "float" else "int")
         self._setScreened(self.getDescr()["min"] is None)
-        self.mColumn = dc_collection.makeColumn(self, self.getName(),
-            dc_collection.ATOM_TYPE_NUM(self.getUnitKind()))
+        self.mArray = array("d" if unit_data["kind"] == "float" else "q")
         self.getIndex().getCondEnv().addNumUnit(self)
 
-    def getRecFunc(self):
-        return self.mColumn.recordValue
+    def getRecVal(self, rec_no):
+        return self.mArray[rec_no]
 
-    def makeStat(self, data_records, repr_context = None):
+    def makeStat(self, rec_no_seq, repr_context = None):
         stat = NumDiapStat()
-        for data_rec in data_records:
-            stat.regValue(self.mColumn.recordValue(data_rec))
+        for rec_no in rec_no_seq:
+            stat.regValue(self.mArray[rec_no])
         ret = self.prepareStat() + stat.result()
         return ret
 
-    def fillRecord(self, inp_data, record):
-        value = inp_data.get(self.getName())
-        self.mColumn.setValue(record, value)
+    def fillRecord(self, inp_data, rec_no):
+        assert len(self.mArray) == rec_no
+        self.mArray.append(inp_data.get(self.getName()))
 
 #===============================================
 class _EnumUnit(FilterUnit):
@@ -82,74 +91,92 @@ class _EnumUnit(FilterUnit):
     def getVariantSet(self):
         return self.mVariantSet
 
-    def makeStat(self, data_records, repr_context = None):
+    def makeStat(self, rec_no_seq, repr_context = None):
         stat = EnumStat(self.mVariantSet)
         rec_func = self.getRecFunc()
-        for data_rec in data_records:
-            stat.regValues(rec_func((data_rec)))
+        for rec_no in rec_no_seq:
+            stat.regValues(rec_func((rec_no)))
         return self.prepareStat() + stat.result()
 
 #===============================================
 class StatusUnit(_EnumUnit):
-    def __init__(self, index, dc_collection, unit_data):
+    def __init__(self, index, unit_data):
         _EnumUnit.__init__(self, index, unit_data, "status")
-        self.mColumn = dc_collection.makeColumn(self,
-            self.getName(), dc_collection.ATOM_DATA_TYPE_INT)
+        self.mArray = array('L')
 
-    def _recFunc(self, record):
-        return {self.mColumn.recordValue(record)}
+    def getRecVal(self, rec_no):
+        return {self.mArray[rec_no]}
 
-    def getRecFunc(self):
-        return self._recFunc
-
-    def fillRecord(self, inp_data, record):
+    def fillRecord(self, inp_data, rec_no):
+        assert len(self.mArray) == rec_no
         value = inp_data[self.getName()]
-        self.mColumn.setValue(record, self.mVariantSet.indexOf(value))
+        self.mArray.append(self.mVariantSet.indexOf(value))
 
 #===============================================
 class MultiSetUnit(_EnumUnit):
-    def __init__(self, index, dc_collection, unit_data):
+    def __init__(self, index, unit_data):
         _EnumUnit.__init__(self, index, unit_data, "enum")
-        self.mColumns = dc_collection.makeColumnSet(self,
-            self.getName(), iter(self.mVariantSet))
+        self.mArraySeq = [bitarray()
+            for var in iter(self.mVariantSet)]
 
-    def getRecFunc(self):
-        return self.mColumns.recordValues
+    def getRecVal(self, rec_no):
+        ret = set()
+        for var_no in range(len(self.mArraySeq)):
+            if self.mArraySeq[var_no][rec_no]:
+                ret.add(var_no)
+        return ret
+
+    def _setRecBit(self, rec_no, idx, value):
+        self.mArraySeq[idx][rec_no] = value
 
     def isAtomic(self):
         return False
 
-    def enumColumns(self):
-        return enumerate(self.mColumns)
-
-    def fillRecord(self, inp_data, record):
+    def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getName())
-        if values :
-            self.mColumns.setValues(record,
-                self.mVariantSet.makeIdxSet(values))
+        if values:
+            idx_set = self.mVariantSet.makeIdxSet(values)
+        else:
+            idx_set = set()
+        for var_no in range(len(self.mArraySeq)):
+            self.mArraySeq[var_no].append(var_no in idx_set)
 
 #===============================================
 class MultiCompactUnit(_EnumUnit):
-    def __init__(self, index, dc_collection, unit_data):
+    def __init__(self, index, unit_data):
         _EnumUnit.__init__(self, index, unit_data, "enum")
-        self.mColumn = dc_collection.makeCompactEnumColumn(
-            self, self.getName())
+        self.mArray = array('L')
+        self.mPackSetDict = dict()
+        self.mPackSetSeq  = [set()]
 
-    def getRecFunc(self):
-        return self.mColumn.recordValues
+    def getRecVal(self, rec_no):
+        return self.mPackSetSeq[self.mArray[rec_no]]
 
     def isAtomic(self):
         return False
 
-    def fillRecord(self, inp_data, record):
+    @staticmethod
+    def makePackKey(idx_set):
+        return '#'.join(map(str, sorted(idx_set)))
+
+    def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getName())
         if values :
-            self.mColumn.setValues(record,
-                self.mVariantSet.makeIdxSet(values))
+            idx_set = self.mVariantSet.makeIdxSet(values)
+            key = self.makePackKey(idx_set)
+            idx = self.mPackSetDict.get(key)
+            if idx is None:
+                idx = len(self.mPackSetSeq)
+                self.mPackSetDict[key] = idx
+                self.mPackSetSeq.append(set(idx_set))
+        else:
+            idx = 0
+        assert len(self.mArray) == rec_no
+        self.mArray.append(idx)
 
 #===============================================
 class ZygosityComplexUnit(FilterUnit):
-    def __init__(self, index, dc_collection, unit_data):
+    def __init__(self, index, unit_data):
         FilterUnit.__init__(self, index, unit_data, "zygosity")
 
         self._setScreened(self.getIndex().getWS().getApp().
@@ -161,23 +188,35 @@ class ZygosityComplexUnit(FilterUnit):
             len(self.mFamilyInfo) > 1)
         if not self.mIsOK:
             return
-        self.mColumns = [dc_collection.makeColumn(self,
-            "%s_%d" % (self.getName(), idx), dc_collection.ATOM_DATA_TYPE_INT)
-            for idx, member_name in enumerate(self.mFamilyInfo.getMembers())]
+        self.mArrayFam = []
+        self.mNameFam = []
+        for idx, member_name in enumerate(self.mFamilyInfo.getMembers()):
+            self.mArrayFam.append(array('b'))
+            self.mNameFam.append("%s_%d" % (self.getName(), idx))
+            self.getIndex().getCondEnv().addReservedName(
+                self.mNameFam[-1], self.getFamRecFunc(idx))
         self.mConfig = unit_data.get("config", dict())
         self.mXCondition = None
         labels = AnfisaConfig.configOption("zygosity.cases")
         self.mVariantSet = VariantSet([labels[key]
             for key in ("homo_recess", "x_linked", "dominant", "compens")])
         self.getIndex().getCondEnv().addSpecialUnit(self)
-        for idx, col in enumerate(self.mColumns):
-            self.getIndex().getCondEnv().addReservedName(
-                col.getName(), col.recordValue)
+
+    def getFamRecFunc(self, idx):
+        return lambda rec_no: self.mArrayFam[idx][rec_no]
 
     def setup(self):
         self.mXCondition = self.getIndex().getCondEnv().parse(
             self.mConfig.get("x_cond",
             ConditionMaker.condEnum("Chromosome", ["chrX"])))
+
+    def getRecFunc(self):
+        assert False
+        return None
+
+    def getRecVal(self, idx):
+        assert False
+        return None
 
     def isAtomic(self):
         return False
@@ -185,16 +224,16 @@ class ZygosityComplexUnit(FilterUnit):
     def isOK(self):
         return self.mIsOK
 
-    def fillRecord(self, inp_data, record):
-        for col_h in self.mColumns:
-            col_h.setValue(record, inp_data.get(col_h.getName()))
+    def fillRecord(self, inp_data, rec_no):
+        for col_name, arr in zip(self.mNameFam, self.mArrayFam):
+            arr.append(inp_data.get(col_name))
 
     def _makeCrit(self, idx, min_v, max_v = None):
-        column = self.mColumns[idx]
+        arr = self.mArrayFam[idx]
         assert min_v is not None
         if max_v is None:
-            return lambda record: min_v <= column.recordValue(record)
-        return lambda record: min_v <= column.recordValue(record) <= max_v
+            return lambda rec_no: min_v <= arr[rec_no]
+        return lambda rec_no: min_v <= arr[rec_no] <= max_v
 
     @staticmethod
     def _joinAnd(seq):
@@ -242,7 +281,7 @@ class ZygosityComplexUnit(FilterUnit):
             self.condZDominant(p_group),
             self.conditionZCompens(p_group)]
 
-    def makeStat(self, data_records, repr_context = None):
+    def makeStat(self, rec_no_seq, repr_context = None):
         ret = self.prepareStat()
         ret[1]["family"] = self.mFamilyInfo.getTitles()
         ret[1]["affected"] = self.mFamilyInfo.getAffectedGroup()
@@ -260,10 +299,10 @@ class ZygosityComplexUnit(FilterUnit):
 
         stat = EnumStat(self.mVariantSet)
         crit_seq = self._buildCritSeq(p_group)
-        for data_rec in data_records:
+        for rec_no in rec_no_seq:
             idx_set = set()
             for idx, crit in enumerate(crit_seq):
-                if crit(data_rec):
+                if crit(rec_no):
                     idx_set.add(idx)
             stat.regValues(idx_set)
         return ret + stat.result()
@@ -298,16 +337,16 @@ class ZygosityComplexUnit(FilterUnit):
             filter_func(self._getIdxSet(crit_seq, record)))
 
 #===============================================
-def loadWSFilterUnit(index, dc_collection, unit_data):
+def loadWSFilterUnit(index, unit_data):
     kind = unit_data["kind"]
     if kind == "zygosity":
-        ret = ZygosityComplexUnit(index, dc_collection, unit_data)
+        ret = ZygosityComplexUnit(index, unit_data)
         return ret if ret.isOK() else None
     if kind in ("long", "float"):
-       return NumericValueUnit(index, dc_collection, unit_data)
+       return NumericValueUnit(index, unit_data)
     assert kind in ("enum", "presence")
     if kind == "enum" and unit_data["atomic"]:
-        return StatusUnit(index, dc_collection, unit_data)
+        return StatusUnit(index, unit_data)
     if kind == "enum" and unit_data["compact"]:
-        return MultiCompactUnit(index, dc_collection, unit_data)
-    return MultiSetUnit(index, dc_collection, unit_data)
+        return MultiCompactUnit(index, unit_data)
+    return MultiSetUnit(index, unit_data)

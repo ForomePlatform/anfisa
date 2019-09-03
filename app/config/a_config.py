@@ -53,6 +53,8 @@ class AnfisaConfig:
             "op-var-title": "Calculated Compound Hetreozygous"
         },
 
+        "transcript.path.base": "/data/transcript_consequences",
+
         "job.pool.size":    3,
         "job.pool.threads": 1}
 
