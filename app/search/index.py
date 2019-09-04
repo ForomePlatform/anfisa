@@ -26,12 +26,8 @@ class Index:
         self.mUnitDict = {unit_h.getName(): unit_h
             for unit_h in self.mUnits}
         assert len(self.mUnitDict) == len(self.mUnits)
-        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
-            for flt_name, cond_seq in self.mCondEnv.getWsFilters()}
-
-        self.mFilterCache = dict()
-        for filter_name, cond_seq in self.mStdFilters.items():
-            self.cacheFilter(filter_name, cond_seq, None)
+        self.mStdFilters = None
+        self.mFilterCache = None
 
     def setup(self):
         for unit_h in self.mUnits:
@@ -45,6 +41,12 @@ class Index:
                 for unit_h in self.mUnits:
                     unit_h.fillRecord(inp_data, rec_no)
                 self.mUnits[0].fillRulesPart(inp_data, rec_no)
+        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
+            for flt_name, cond_seq in self.mCondEnv.getWsFilters()}
+        print("StdF:", len(self.mStdFilters))
+        self.mFilterCache = dict()
+        for filter_name, cond_seq in self.mStdFilters.items():
+            self.cacheFilter(filter_name, cond_seq, None)
 
     def updateRulesEnv(self):
         with self.mWS._openFData() as inp:
