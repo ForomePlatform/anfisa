@@ -10,7 +10,7 @@ class XL_CondEnv(CondEnv):
     def getCondAll(self):
         return XL_All()
 
-    def makeNumericCond(self, unit_h, bounds, use_undef):
+    def makeNumericCond(self, unit_h, bounds, use_undef = None):
         return XL_NumCondition(unit_h.getName(), bounds, use_undef)
 
     def makeEnumCond(self, unit_h, filter_mode, variants):

@@ -42,7 +42,7 @@ class AnfisaConfig:
 
         "filter.std.mark": u"\u23da",
 
-        "zygosity.setup": {
+        "comp-hets.setup": {
             "zygosity": "Inheritance_Mode",
             "Genes": "Symbol",
             "Compound_heterozygous": "Compound_heterozygous",

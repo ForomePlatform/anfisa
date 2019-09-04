@@ -8,7 +8,7 @@ from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
 from .xl_list import XlListTask
-from app.model.comp_hets import CompHetsUnit, CompHetsMarkupBatch
+from app.model.comp_hets import CompHetsOperativeUnit, CompHetsMarkupBatch
 from app.filter.cond_op import CondOpEnv
 from app.filter.decision import DecisionTree
 from app.filter.tree_parse import ParsedDecisionTree
@@ -29,7 +29,7 @@ class XLDataset(DataSet):
         self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addReservedName("_ord")
-        CompHetsUnit.setupCondEnv(self.mCondEnv, self)
+        CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self)
 
         self.mUnits = []
         for unit_data in self.getFltSchema():

@@ -11,14 +11,16 @@ class WS_CondEnv(CondEnv):
     def getCondAll(self):
         return WS_All()
 
-    def makeNumericCond(self, unit_h, bounds, use_undef):
-        return WS_NumCondition(unit_h.getName(), bounds, use_undef,
+    def makeNumericCond(self, unit_h, bounds, use_undef = None):
+        return WS_NumCondition(unit_h, bounds, use_undef,
                 unit_h.getRecFunc())
 
     def makeEnumCond(self, unit_h, filter_mode, variants):
         return WS_EnumCondition(unit_h.getName(), filter_mode, variants,
             unit_h.getVariantSet(), unit_h.getRecFunc())
 
+    def makeRecSetCond(self, rec_no_seq):
+        return WS_RecSetCondition(rec_no_seq)
 
 #===============================================
 class WS_Condition:
@@ -135,17 +137,16 @@ class WS_EnumCondition(WS_Condition):
         return lambda idx_set: len(idx_set & base_idx_set) > 0
 
 #===============================================
-class WS_SpecCondition(WS_Condition):
-    def __init__(self, sub_kind, spec_func):
+class WS_RecSetCondition(WS_Condition):
+    def __init__(self, rec_no_seq):
         WS_Condition.__init__(self)
-        self.mKind = "spec/" + sub_kind
-        self.mSpecFunc = spec_func
+        self.mRecNoSet = set(rec_no_seq)
 
     def getCondKind(self):
-        return self.mKind
+        return "recset"
 
     def __call__(self, rec_no):
-        return self.mSpecFunc(rec_no)
+        return rec_no in self.mRecNoSet
 
 #===============================================
 class WS_Negation(WS_Condition):

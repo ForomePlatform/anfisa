@@ -37,6 +37,7 @@ class CondEnv:
         if unit_name not in self.mReservedNames:
             self.mReservedNames[unit_name] = _ReservedUnit(
                 unit_name, rec_func)
+        return self.mReservedNames[unit_name]
 
     def iterOpUnits(self):
         return iter(self.mOpUnitSeq)
@@ -47,8 +48,6 @@ class CondEnv:
     def detectUnit(self, unit_name,
             expect_kind = None, use_logging = True):
         unit_kind, unit_h = self._detectUnit(unit_name)
-        if expect_kind == "panel" and unit_kind == "enum":
-            return "panel", unit_h
         if (use_logging and expect_kind is not None and
                 expect_kind != unit_kind and
                 unit_kind not in {"special","reserved", "operational"}):
@@ -109,16 +108,11 @@ class CondEnv:
         if cond_info[0] == "numeric":
             bounds, use_undef = cond_info[2:]
             return self.makeNumericCond(unit_h, bounds, use_undef)
-        if unit_kind == "panel":
-            filter_mode, panel_name = cond_info[2:]
-            variants = self.getUnitPanel(unit_name, panel_name, False)
-            return self.makeEnumCond(unit_h, filter_mode, variants)
         if cond_info[0] == "enum":
             filter_mode, variants = cond_info[2:]
             return self.makeEnumCond(unit_h, filter_mode, variants)
         assert False
         return self.getCondNone()
-
 
     #===============================================
     def testRequirements(self, modes):
@@ -129,10 +123,7 @@ class CondEnv:
     def reportSolutions(self):
         return {
             "codes": [it.getName() for it in self.mSolPack.iterItems(
-                "tree_code", self.testRequirements)],
-            "panels": [it.getName() for it in self.mSolPack.iterItems(
-                "panel", self.testRequirements)]}
-        pass
+                "tree_code", self.testRequirements)]}
 
     def getWsFilters(self):
         return [(it.getName(), it.getData())

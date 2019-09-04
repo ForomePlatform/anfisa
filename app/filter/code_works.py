@@ -147,15 +147,6 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write(')')
         return
-    if cond_kind == "panel":
-        if group_mode:
-            output.write('(')
-        unit_name, op_mode, panel_name = cond_data[1:]
-        _reprEnumCase(unit_name, op_mode, None, output,
-            panel_name = panel_name)
-        if group_mode:
-            output.write(')')
-        return
     if cond_kind == "zygosity":
         if group_mode:
             output.write('(')

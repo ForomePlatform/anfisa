@@ -4,10 +4,11 @@ from collections import defaultdict
 from app.config.a_config import AnfisaConfig
 from app.filter.condition import ConditionMaker
 from app.filter.unit import Unit
+
 #=====================================
 class CompHetsMarkupBatch:
     def __init__(self, proband_rel):
-        setup_data = AnfisaConfig.configOption("zygosity.setup")
+        setup_data = AnfisaConfig.configOption("comp-hets.setup")
         self.mF_zFamily = [setup_data["zygosity"] + '_' + str(member_idx)
             for member_idx in proband_rel]
         self.mF_Genes = setup_data["Genes"]
@@ -88,8 +89,8 @@ class CompHetsMarkupBatch:
                 sorted(self.mResTab[rec_no]))
 
 #=====================================
-class CompHetsUnit(Unit):
-    sSetupData = AnfisaConfig.configOption("zygosity.setup")
+class CompHetsOperativeUnit(Unit):
+    sSetupData = AnfisaConfig.configOption("comp-hets.setup")
 
     @classmethod
     def setupCondEnv(cls, cond_env, ds):
@@ -211,3 +212,4 @@ class CompHetsUnit(Unit):
         if cond_data[2] == "not":
             return cond.negative()
         return cond
+

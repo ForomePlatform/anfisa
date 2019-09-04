@@ -3,13 +3,10 @@ import abc
 from array import array
 from bitarray import bitarray
 
-from app.config.a_config import AnfisaConfig
 from utils.variants import VariantSet
-from app.filter.condition import ConditionMaker
 from app.filter.unit import Unit
+from app.model.zygosity import ZygosityComplex
 from .val_stat import NumDiapStat, EnumStat
-from .flt_cond import WS_SpecCondition, WS_EnumCondition
-
 #===============================================
 class FilterUnit(Unit):
     def __init__(self, index, unit_data, unit_kind = None):
@@ -40,7 +37,7 @@ class FilterUnit(Unit):
         return None
 
     @abc.abstractmethod
-    def makeStat(self, rec_no_seq, repr_context = None):
+    def makeStat(self, condition, repr_context = None):
         return None
 
     @abc.abstractmethod
@@ -62,9 +59,9 @@ class NumericValueUnit(FilterUnit):
     def getRecVal(self, rec_no):
         return self.mArray[rec_no]
 
-    def makeStat(self, rec_no_seq, repr_context = None):
+    def makeStat(self, condition, repr_context = None):
         stat = NumDiapStat()
-        for rec_no in rec_no_seq:
+        for rec_no in self.getIndex().iterCondition(condition):
             stat.regValue(self.mArray[rec_no])
         ret = self.prepareStat() + stat.result()
         return ret
@@ -91,11 +88,10 @@ class _EnumUnit(FilterUnit):
     def getVariantSet(self):
         return self.mVariantSet
 
-    def makeStat(self, rec_no_seq, repr_context = None):
+    def makeStat(self, condition, repr_context = None):
         stat = EnumStat(self.mVariantSet)
-        rec_func = self.getRecFunc()
-        for rec_no in rec_no_seq:
-            stat.regValues(rec_func((rec_no)))
+        for rec_no in self.getIndex().iterCondition(condition):
+            stat.regValues(self.getRecVal((rec_no)))
         return self.prepareStat() + stat.result()
 
 #===============================================
@@ -175,40 +171,27 @@ class MultiCompactUnit(_EnumUnit):
         self.mArray.append(idx)
 
 #===============================================
-class ZygosityComplexUnit(FilterUnit):
+class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
     def __init__(self, index, unit_data):
         FilterUnit.__init__(self, index, unit_data, "zygosity")
-
+        ZygosityComplex.__init__(self, index.getWS().getFamilyInfo(),
+            index.getCondEnv(), unit_data)
         self._setScreened(self.getIndex().getWS().getApp().
             hasRunOption("no-custom"))
-        self.mFamilyInfo = self.getIndex().getWS().getFamilyInfo()
-        assert ("size" not in unit_data or
-            unit_data["size"] == len(self.mFamilyInfo))
-        self.mIsOK = (self.mFamilyInfo is not None and
-            len(self.mFamilyInfo) > 1)
-        if not self.mIsOK:
-            return
         self.mArrayFam = []
-        self.mNameFam = []
-        for idx, member_name in enumerate(self.mFamilyInfo.getMembers()):
-            self.mArrayFam.append(array('b'))
-            self.mNameFam.append("%s_%d" % (self.getName(), idx))
-            self.getIndex().getCondEnv().addReservedName(
-                self.mNameFam[-1], self.getFamRecFunc(idx))
-        self.mConfig = unit_data.get("config", dict())
-        self.mXCondition = None
-        labels = AnfisaConfig.configOption("zygosity.cases")
-        self.mVariantSet = VariantSet([labels[key]
-            for key in ("homo_recess", "x_linked", "dominant", "compens")])
+        fam_units = []
+        for idx, fam_name in enumerate(self.iterFamNames()):
+            self.mArrayFam.append(array('b') )
+            fam_units.append(self.getIndex().getCondEnv().addReservedName(
+                fam_name, self.getFamRecFunc(idx)))
+        self.setupSubUnits(fam_units)
         self.getIndex().getCondEnv().addSpecialUnit(self)
 
     def getFamRecFunc(self, idx):
         return lambda rec_no: self.mArrayFam[idx][rec_no]
 
     def setup(self):
-        self.mXCondition = self.getIndex().getCondEnv().parse(
-            self.mConfig.get("x_cond",
-            ConditionMaker.condEnum("Chromosome", ["chrX"])))
+        self.setupXCond()
 
     def getRecFunc(self):
         assert False
@@ -225,116 +208,12 @@ class ZygosityComplexUnit(FilterUnit):
         return self.mIsOK
 
     def fillRecord(self, inp_data, rec_no):
-        for col_name, arr in zip(self.mNameFam, self.mArrayFam):
-            arr.append(inp_data.get(col_name))
+        for idx, fam_name in enumerate(self.iterFamNames()):
+            self.mArrayFam[idx].append(inp_data.get(fam_name))
 
-    def _makeCrit(self, idx, min_v, max_v = None):
-        arr = self.mArrayFam[idx]
-        assert min_v is not None
-        if max_v is None:
-            return lambda rec_no: min_v <= arr[rec_no]
-        return lambda rec_no: min_v <= arr[rec_no] <= max_v
-
-    @staticmethod
-    def _joinAnd(seq):
-        return lambda record: all([f(record) for f in seq])
-
-    def condZHomoRecess(self, problem_group):
-        seq = []
-        for idx in range(len(self.mFamilyInfo)):
-            if idx in problem_group:
-                seq.append(self._makeCrit(idx, 2, None))
-            else:
-                seq.append(self._makeCrit(idx, 0, 1))
-        return WS_SpecCondition("ZHomoRecess", self._joinAnd(seq))
-
-    def _condZDominant(self, problem_group):
-        seq = []
-        for idx in range(len(self.mFamilyInfo)):
-            if idx in problem_group:
-                seq.append(self._makeCrit(idx, 1, None))
-            else:
-                seq.append(self._makeCrit(idx, 0, 0))
-        return WS_SpecCondition("ZDominant", self._joinAnd(seq))
-
-    def condZDominant(self, problem_group):
-        return self.mXCondition.negative().addAnd(
-            self._condZDominant(problem_group))
-
-    def condZXLinked(self, problem_group):
-        return self.mXCondition.addAnd(
-            self._condZDominant(problem_group))
-
-    def conditionZCompens(self, problem_group):
-        seq = []
-        for idx in range(len(self.mFamilyInfo)):
-            if idx in problem_group:
-                seq.append(self._makeCrit(idx, 0, 0))
-            else:
-                seq.append(self._makeCrit(idx, 1, None))
-        return WS_SpecCondition("ZCompens", self._joinAnd(seq))
-
-    def _buildCritSeq(self, p_group):
-        return [
-            self.condZHomoRecess(p_group),
-            self.condZXLinked(p_group),
-            self.condZDominant(p_group),
-            self.conditionZCompens(p_group)]
-
-    def makeStat(self, rec_no_seq, repr_context = None):
-        ret = self.prepareStat()
-        ret[1]["family"] = self.mFamilyInfo.getTitles()
-        ret[1]["affected"] = self.mFamilyInfo.getAffectedGroup()
-
-        if repr_context is None or "problem_group" not in repr_context:
-            p_group = self.mFamilyInfo.getAffectedGroup()
-        else:
-            p_group = {m_idx if 0 <= m_idx < len(self.mFamilyInfo)
-                else None for m_idx in repr_context["problem_group"]}
-            if None in p_group:
-                p_group.remove(None)
-        ret.append(list(p_group))
-        if len(p_group) == 0:
-            return ret + [None]
-
-        stat = EnumStat(self.mVariantSet)
-        crit_seq = self._buildCritSeq(p_group)
-        for rec_no in rec_no_seq:
-            idx_set = set()
-            for idx, crit in enumerate(crit_seq):
-                if crit(rec_no):
-                    idx_set.add(idx)
-            stat.regValues(idx_set)
-        return ret + stat.result()
-
-    @staticmethod
-    def _getIdxSet(crit_seq, record):
-        ret = set()
-        for idx, crit in enumerate(crit_seq):
-            if crit(record):
-                ret.add(idx)
-        return ret
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "zygosity"
-        unit_name, p_group, filter_mode, variants = cond_info[1:]
-
-        if p_group is None:
-            p_group = self.mFamilyInfo.getAffectedGroup()
-
-        if not self.mIsOK or not p_group:
-            if filter_mode == "NOT":
-                return self.getIndex().getCondEnv().getCondAll()
-            return self.getIndex().getCondEnv().getCondNone()
-        assert unit_name == self.getName()
-        assert len(variants) > 0
-
-        base_idx_set = self.mVariantSet.makeIdxSet(variants)
-        filter_func = WS_EnumCondition.enumFilterFunc(
-            filter_mode, base_idx_set)
-        crit_seq = self._buildCritSeq(p_group)
-        return WS_SpecCondition("zygosity", lambda record:
-            filter_func(self._getIdxSet(crit_seq, record)))
+    def makeStat(self, condition, repr_context = None):
+        return ZygosityComplex.makeStat(self, self.getIndex(),
+            condition, repr_context)
 
 #===============================================
 def loadWSFilterUnit(index, unit_data):

@@ -4,7 +4,7 @@ from io import TextIOWrapper
 
 from app.config.a_config import AnfisaConfig
 from app.filter.cond_op import CondOpEnv
-from app.model.comp_hets import CompHetsUnit
+from app.model.comp_hets import CompHetsOperativeUnit
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
 from .rules_supp import RulesEvalUnit
@@ -36,7 +36,7 @@ class Index:
     def setup(self):
         for unit_h in self.mUnits:
             unit_h.setup()
-        CompHetsUnit.setupCondEnv(self.mCondEnv, self.mWS)
+        CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self.mWS)
         with self.mWS._openFData() as inp:
             fdata_inp = TextIOWrapper(inp,
                 encoding = "utf-8", line_buffering = True)
@@ -140,8 +140,7 @@ class Index:
         return sorted(ret)
 
     def evalStat(self, unit_h, condition):
-        rec_no_seq = self.getRecNoSeq(None, condition)
-        return unit_h.makeStat(rec_no_seq)[2]
+        return unit_h.makeStat(condition)[2]
 
     def makeStatReport(self, filter_name, research_mode,
             op_env, repr_context):
@@ -149,6 +148,7 @@ class Index:
             op_env = self.mFilterCache[filter_name][0]
         condition = op_env.getResult()
         rec_no_seq = self.getRecNoSeq(filter_name, condition)
+        the_cond = self.mCondEnv.makeRecSetCond(rec_no_seq)
         active_stat_list = []
         for unit_h, unit_comp in op_env.getActiveOperativeUnits():
             active_stat_list.append(unit_h.makeCompStat(
@@ -157,7 +157,7 @@ class Index:
         for unit_h in self.mUnits:
             if (not unit_h.checkResearchBlock(research_mode) and
                     not unit_h.isScreened()):
-                stat_list.append(unit_h.makeStat(rec_no_seq, repr_context))
+                stat_list.append(unit_h.makeStat(the_cond, repr_context))
         for act_stat in active_stat_list:
             pos_ins = 0
             for idx, stat in enumerate(stat_list):
@@ -176,7 +176,7 @@ class Index:
 
     def makeUnitStatReport(self, unit_name, condition, repr_context):
         return self.mUnitDict[unit_name].makeStat(
-            self.getRecNoSeq(None, condition), repr_context)
+            condition, repr_context)
 
     def getRecNoSeq(self, filter_name = None, condition = None):
         if filter_name is None and condition is not None:
@@ -184,6 +184,9 @@ class Index:
         if filter_name in self.mFilterCache:
             return self.mFilterCache[filter_name][1]
         return range(self.mWS.getTotal())[:]
+
+    def iterCondition(self, condition):
+        return iter(self.getRecNoSeq(condition  = condition))
 
     def getRecFilters(self, rec_no, research_mode):
         ret0, ret1 = [], []
