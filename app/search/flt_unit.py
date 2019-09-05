@@ -20,6 +20,9 @@ class FilterUnit(Unit):
     def isAtomic(self):
         return True
 
+    def isDetailed(self):
+        return False
+
     def dumpNames(self):
         ret = {"name": self.mName,
             "vgroup": self.mVGroupTitle}
@@ -28,9 +31,6 @@ class FilterUnit(Unit):
         if self.mRenderMode:
             ret["render"] = self.mRenderMode
         return ret
-
-    def getRecFunc(self):
-        return self.getRecVal
 
     @abc.abstractmethod
     def getRecVal(self, rec_no):
@@ -61,7 +61,7 @@ class NumericValueUnit(FilterUnit):
 
     def makeStat(self, condition, repr_context = None):
         stat = NumDiapStat()
-        for rec_no in self.getIndex().iterCondition(condition):
+        for rec_no, _ in condition.iterSelection():
             stat.regValue(self.mArray[rec_no])
         ret = self.prepareStat() + stat.result()
         return ret
@@ -90,7 +90,7 @@ class _EnumUnit(FilterUnit):
 
     def makeStat(self, condition, repr_context = None):
         stat = EnumStat(self.mVariantSet)
-        for rec_no in self.getIndex().iterCondition(condition):
+        for rec_no, _ in condition.iterSelection():
             stat.regValues(self.getRecVal((rec_no)))
         return self.prepareStat() + stat.result()
 
@@ -192,10 +192,6 @@ class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
 
     def setup(self):
         self.setupXCond()
-
-    def getRecFunc(self):
-        assert False
-        return None
 
     def getRecVal(self, idx):
         assert False

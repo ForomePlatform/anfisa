@@ -4,33 +4,40 @@ class XL_CondEnv(CondEnv):
     def __init__(self, modes):
         CondEnv.__init__(self, modes)
 
+    def getKind(self):
+        return "xl"
+
     def getCondNone(self):
-        return XL_None()
+        return XL_None(self)
 
     def getCondAll(self):
-        return XL_All()
+        return XL_All(self)
 
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
-        return XL_NumCondition(unit_h.getName(), bounds, use_undef)
+        return XL_NumCondition(self, unit_h.getName(), bounds, use_undef)
 
     def makeEnumCond(self, unit_h, filter_mode, variants):
         if len(variants) == 0:
             return XL_All() if filter_mode == "NOT" else XL_None()
         if filter_mode == "AND":
-            return self.joinAnd([XL_EnumSingleCondition(
+            return self.joinAnd([XL_EnumSingleCondition(self,
                 unit_h.getName(), variant) for variant in variants])
         if len(variants) == 1:
-            cond = XL_EnumSingleCondition(unit_h.getName(), variants[0])
+            cond = XL_EnumSingleCondition(self, unit_h.getName(), variants[0])
         else:
-            cond = XL_EnumInCondition(unit_h.getName(), variants)
+            cond = XL_EnumInCondition(self, unit_h.getName(), variants)
         if filter_mode == "NOT":
             return XL_Negation(cond)
         return cond
 
 #===============================================
 class XL_Condition:
-    def __init__(self):
+    def __init__(self, cond_env):
+        self.mCondEnv = cond_env
         pass
+
+    def getCondEnv(self):
+        return self.mCondEnv
 
     def __not__(self):
         assert False
@@ -72,8 +79,8 @@ class XL_Condition:
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, unit_name, bounds, use_undef = False):
-        XL_Condition.__init__(self)
+    def __init__(self, cond_env, unit_name, bounds, use_undef = False):
+        XL_Condition.__init__(self, cond_env)
         self.mUnitName = unit_name
         self.mBounds = bounds
         self.mUseUndef = use_undef
@@ -97,8 +104,8 @@ class XL_NumCondition(XL_Condition):
 
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):
-    def __init__(self, unit_name, variant):
-        XL_Condition.__init__(self)
+    def __init__(self, cond_env, unit_name, variant):
+        XL_Condition.__init__(self, cond_env)
         self.mUnitName = unit_name
         self.mVariant = variant
 
@@ -113,8 +120,8 @@ class XL_EnumSingleCondition(XL_Condition):
 
 #===============================================
 class XL_EnumInCondition(XL_Condition):
-    def __init__(self, unit_name, variants):
-        XL_Condition.__init__(self)
+    def __init__(self, cond_env, unit_name, variants):
+        XL_Condition.__init__(self, cond_env)
         self.mUnitName = unit_name
         self.mVariants = sorted(variants)
 
@@ -130,7 +137,7 @@ class XL_EnumInCondition(XL_Condition):
 #===============================================
 class XL_Negation(XL_Condition):
     def __init__(self, base_cond):
-        XL_Condition.__init__(self)
+        XL_Condition.__init__(self, base_cond.getCondEnv())
         self.mBaseCond = base_cond
 
     def negative(self):
@@ -147,9 +154,8 @@ class XL_Negation(XL_Condition):
 #===============================================
 class _XL_Joiner(XL_Condition):
     def __init__(self, items):
-        XL_Condition.__init__(self)
+        XL_Condition.__init__(self, items[0].getCondEnv())
         self.mItems = items
-        assert len(self.mItems) > 0
 
     def getItems(self):
         return self.mItems
@@ -199,8 +205,8 @@ class XL_Or(_XL_Joiner):
 
 #===============================================
 class XL_None(XL_Condition):
-    def __init__(self):
-        XL_Condition.__init__(self)
+    def __init__(self, cond_env):
+        XL_Condition.__init__(self, cond_env)
 
     def addAnd(self, other):
         return self
@@ -219,8 +225,8 @@ class XL_None(XL_Condition):
 
 #===============================================
 class XL_All(XL_Condition):
-    def __init__(self):
-        XL_Condition.__init__(self)
+    def __init__(self, cond_env):
+        XL_Condition.__init__(self, cond_env)
 
     def addAnd(self, other):
         return other

@@ -1,31 +1,137 @@
-from app.filter.cond_env import CondEnv
+from bitarray import bitarray
 
+from app.filter.cond_env import CondEnv
 #===============================================
 class WS_CondEnv(CondEnv):
     def __init__(self, modes):
         CondEnv.__init__(self, modes)
+        self.mTotal = 0
+        self.mGroups = []
+        self.mCondAll, self.mCondNone = None, None
+
+    def getKind(self):
+        return "ws"
+
+    def addItemGroup(self, grp_size):
+        self.mGroups.append((self.mTotal, grp_size))
+        self.mTotal += max(1, grp_size)
+
+    def finishUp(self):
+        self.mCondAll = WS_All(self)
+        self.mCondNone = WS_None(self)
+
+    def getTotalCount(self):
+        return self.mTotal
+
+    def getGroupCount(self):
+        return len(self.mGroups)
+
+    def iterGroups(self):
+        return iter(self.mGroups)
+
+    def getGroupPos(self, rec_no):
+        return self.mGroups[rec_no]
 
     def getCondNone(self):
-        return WS_None()
+        return self.mCondNone
 
     def getCondAll(self):
-        return WS_All()
+        return self.mCondAll
 
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
-        return WS_NumCondition(unit_h, bounds, use_undef,
-                unit_h.getRecFunc())
+        eval_func = self.numericFilterFunc(bounds[0], bounds[1], use_undef)
+        if unit_h.isDetailed():
+            fill_items_f = lambda it_idx: eval_func(unit_h.getItemVal(it_idx))
+            fill_groups_f = None
+        else:
+            fill_groups_f = lambda rec_no: eval_func(unit_h.getRecVal(rec_no))
+            fill_items_f = None
+        return WS_Condition(self, "num", unit_h.getName(),
+            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
 
     def makeEnumCond(self, unit_h, filter_mode, variants):
-        return WS_EnumCondition(unit_h.getName(), filter_mode, variants,
-            unit_h.getVariantSet(), unit_h.getRecFunc())
+        eval_func = self.enumFilterFunc(filter_mode,
+            unit_h.getVariantSet().makeIdxSet(variants))
+        if unit_h.isDetailed():
+            fill_items_f = lambda it_idx: eval_func(unit_h.getItemVal(it_idx))
+            fill_groups_f = None
+        else:
+            fill_groups_f = lambda rec_no: eval_func(unit_h.getRecVal(rec_no))
+            fill_items_f = None
+        return WS_Condition(self, "enum", unit_h.getName(),
+            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
 
-    def makeRecSetCond(self, rec_no_seq):
-        return WS_RecSetCondition(rec_no_seq)
+    @staticmethod
+    def numericFilterFunc(bound_min, bound_max, use_undef):
+        if bound_min is None:
+            if bound_max is None:
+                if use_undef:
+                    return lambda val: val is None
+                assert False
+                return lambda val: True
+            if use_undef:
+                return lambda val: val is None or val <= bound_max
+            return lambda val: val is not None and val <= bound_max
+        if bound_max is None:
+            if use_undef:
+                return lambda val: val is None or bound_min <= val
+            return lambda val: val is not None and bound_min <= val
+        if use_undef:
+            return lambda val: val is None or (
+                bound_min <= val <= bound_max)
+        return lambda val: val is not None and (
+            bound_min <= val <= bound_max)
+
+    @staticmethod
+    def enumFilterFunc(filter_mode, base_idx_set):
+        if filter_mode == "NOT":
+            return lambda idx_set: len(idx_set & base_idx_set) == 0
+        if filter_mode == "ONLY":
+            return lambda idx_set: (len(idx_set) > 0 and
+                len(idx_set - base_idx_set) == 0)
+        if filter_mode == "AND":
+            all_len = len(base_idx_set)
+            return lambda idx_set: len(idx_set & base_idx_set) == all_len
+        return lambda idx_set: len(idx_set & base_idx_set) > 0
 
 #===============================================
 class WS_Condition:
-    def __init__(self):
-        pass
+    def __init__(self, cond_env, kind, name, bit_arr = None,
+            fill_groups_f = None, fill_items_f = None):
+        self.mCondEnv = cond_env
+        self.mKind = kind
+        self.mName = name
+        self.mBitArray = bit_arr
+        if self.mBitArray is not None:
+            assert fill_groups_f is None and fill_items_f is None
+        else:
+            self.mBitArray = bitarray()
+            if fill_items_f is not None:
+                assert fill_groups_f is None
+                for grp_offset, grp_size in self.getCondEnv().iterGroups():
+                    if grp_size == 0:
+                        self.mBitArray.append(False)
+                    else:
+                        self.mBitArray.extend([fill_items_f(grp_offset + j)
+                            for j in range(grp_size)])
+            else:
+                rec_no = 0
+                for grp_offset, grp_size in self.getCondEnv().iterGroups():
+                    val = fill_groups_f(rec_no)
+                    rec_no += 1
+                    self.mBitArray.extend([val] * (max(1, grp_size)))
+
+    def getCondEnv(self):
+        return self.mCondEnv
+
+    def getCondKind(self):
+        return self.mKind
+
+    def getCondName(self):
+        return self.mName
+
+    def getBitArray(self):
+        return self.mBitArray
 
     def __not__(self):
         assert False
@@ -59,99 +165,38 @@ class WS_Condition:
     def negative(self):
         return WS_Negation(self)
 
-    def getCondKind(self):
-        assert False
-
-    def __call__(self, rec_no):
-        assert False
-
     def getCondNone(self):
-        return WS_None()
+        return WS_None(self)
 
     def getCondAll(self):
-        return WS_All()
+        return WS_All(self)
 
-#===============================================
-class WS_NumCondition(WS_Condition):
-    def __init__(self, unit_name, bounds, use_undef, num_func):
-        WS_Condition.__init__(self)
-        self.mUnitName = unit_name
-        self.mEvalFunc = self.numericFilterFunc(
-            bounds[0], bounds[1], use_undef)
-        self.mBounds = bounds
-        self.mRecNumFunc = num_func
+    def iterSelection(self):
+        rec_no = -1
+        for grp_offset, grp_size in self.getCondEnv().iterGroups():
+            rec_no += 1
+            group_val = self.mBitArray[grp_offset:
+                grp_offset + max(1, grp_size)]
+            if group_val.any():
+                yield rec_no, group_val
 
-    def getCondKind(self):
-        return "num"
+    def countSelection(self):
+        ret = [0, 0]
+        for rec_no, rec_it_map in self.iterSelection():
+            ret[0] += 1
+            ret[1] += rec_it_map.count()
+        return tuple(ret)
 
-    def __call__(self, rec_no):
-        return self.mEvalFunc(self.mRecNumFunc(rec_no))
-
-    @staticmethod
-    def numericFilterFunc(bound_min, bound_max, use_undef):
-        if bound_min is None:
-            if bound_max is None:
-                if use_undef:
-                    return lambda val: val is None
-                assert False
-                return lambda val: True
-            if use_undef:
-                return lambda val: val is None or val <= bound_max
-            return lambda val: val is not None and val <= bound_max
-        if bound_max is None:
-            if use_undef:
-                return lambda val: val is None or bound_min <= val
-            return lambda val: val is not None and bound_min <= val
-        if use_undef:
-            return lambda val: val is None or (
-                bound_min <= val <= bound_max)
-        return lambda val: val is not None and (
-            bound_min <= val <= bound_max)
-
-#===============================================
-class WS_EnumCondition(WS_Condition):
-    def __init__(self, unit_name, filter_mode, variants,
-            variant_set, enum_func):
-        WS_Condition.__init__(self)
-        self.mUnitName = unit_name
-        self.mEvalFunc = self.enumFilterFunc(filter_mode,
-            variant_set.makeIdxSet(variants))
-        self.mRecEnumFunc = enum_func
-
-    def getCondKind(self):
-        return "enum"
-
-    def __call__(self, rec_no):
-        return self.mEvalFunc(self.mRecEnumFunc(rec_no))
-
-    @staticmethod
-    def enumFilterFunc(filter_mode, base_idx_set):
-        if filter_mode == "NOT":
-            return lambda idx_set: len(idx_set & base_idx_set) == 0
-        if filter_mode == "ONLY":
-            return lambda idx_set: (len(idx_set) > 0 and
-                len(idx_set - base_idx_set) == 0)
-        if filter_mode == "AND":
-            all_len = len(base_idx_set)
-            return lambda idx_set: len(idx_set & base_idx_set) == all_len
-        return lambda idx_set: len(idx_set & base_idx_set) > 0
-
-#===============================================
-class WS_RecSetCondition(WS_Condition):
-    def __init__(self, rec_no_seq):
-        WS_Condition.__init__(self)
-        self.mRecNoSet = set(rec_no_seq)
-
-    def getCondKind(self):
-        return "recset"
-
-    def __call__(self, rec_no):
-        return rec_no in self.mRecNoSet
+    def recInSelection(self, rec_no):
+        grp_offset, grp_size = self.getCondEnv().getGroupPos(rec_no)
+        return self.mBitArray[grp_offset:grp_offset + max(1, grp_size)].any()
 
 #===============================================
 class WS_Negation(WS_Condition):
     def __init__(self, base_cond):
-        WS_Condition.__init__(self)
+        WS_Condition.__init__(self, base_cond.getCondEnv(), "neg",
+            "neg/" + base_cond.getCondName(),
+            ~base_cond.getBitArray())
         self.mBaseCond = base_cond
 
     def negative(self):
@@ -160,27 +205,24 @@ class WS_Negation(WS_Condition):
     def getCondKind(self):
         return "neg"
 
-    def __call__(self, rec_no):
-        return not self.mBaseCond(rec_no)
-
 #===============================================
 class _WS_Joiner(WS_Condition):
-    def __init__(self, items):
-        WS_Condition.__init__(self)
+    def __init__(self, kind, items, bit_arr):
+        WS_Condition.__init__(self, items[0].getCondEnv(), kind, kind,
+            bit_arr = bit_arr)
         self.mItems = items
         assert len(self.mItems) > 0
 
     def getItems(self):
         return self.mItems
 
-
 #===============================================
 class WS_And(_WS_Joiner):
     def __init__(self, items):
-        _WS_Joiner.__init__(self, items)
-
-    def getCondKind(self):
-        return "and"
+        bit_arr = items[0].getBitArray().copy()
+        for it in items[1:]:
+            bit_arr &= it.getBitArray()
+        _WS_Joiner.__init__(self, "and", items,  bit_arr)
 
     def addAnd(self, other):
         if other.getCondKind() == "null":
@@ -193,19 +235,14 @@ class WS_And(_WS_Joiner):
             add_items = [other]
         return WS_And(self.getItems() + add_items)
 
-    def __call__(self, rec_no):
-        for it in self.getItems():
-            if not it(rec_no):
-                return False
-        return True
-
+#===============================================
 #===============================================
 class WS_Or(_WS_Joiner):
     def __init__(self, items):
-        _WS_Joiner.__init__(self, items)
-
-    def getCondKind(self):
-        return "or"
+        bit_arr = items[0].getBitArray().copy()
+        for it in items[1:]:
+            bit_arr |= it.getBitArray()
+        _WS_Joiner.__init__(self, "or", items,  bit_arr)
 
     def addOr(self, other):
         if other.getCondKind() == "null":
@@ -218,16 +255,12 @@ class WS_Or(_WS_Joiner):
             add_items = [other]
         return WS_Or(self.getItems() + add_items)
 
-    def __call__(self, rec_no):
-        for it in self.getItems():
-            if it(rec_no):
-                return True
-        return False
-
 #===============================================
 class WS_None(WS_Condition):
-    def __init__(self):
-        WS_Condition.__init__(self)
+    def __init__(self, cond_env):
+        bit_arr = bitarray(cond_env.getTotalCount())
+        bit_arr.setall(False)
+        WS_Condition.__init__(self, cond_env, "null", "null", bit_arr)
 
     def addAnd(self, other):
         return self
@@ -236,7 +269,7 @@ class WS_None(WS_Condition):
         return other
 
     def negative(self):
-        return WS_All()
+        return self.getCondEnv().getCondAll()
 
     def getCondKind(self):
         return "null"
@@ -246,8 +279,10 @@ class WS_None(WS_Condition):
 
 #===============================================
 class WS_All(WS_Condition):
-    def __init__(self):
-        WS_Condition.__init__(self)
+    def __init__(self, cond_env):
+        bit_arr = bitarray(cond_env.getTotalCount())
+        bit_arr.setall(True)
+        WS_Condition.__init__(self, cond_env, "all", "all", bit_arr)
 
     def addAnd(self, other):
         return other
@@ -256,7 +291,7 @@ class WS_All(WS_Condition):
         return self
 
     def negative(self):
-        return WS_None()
+        return self.getCondEnv().getCondNone()
 
     def getCondKind(self):
         return "all"

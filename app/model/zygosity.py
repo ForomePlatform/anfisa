@@ -34,6 +34,8 @@ class ZygosityComplex:
         self.mXCondition = self.mCondEnv.parse(
             self.mConfig.get("x_cond",
             ConditionMaker.condEnum("Chromosome", ["chrX"])))
+        if self.mXCondition.getCondEnv().getKind() == "ws":
+            print ("XCond:", len(self.mXCondition.getBitArray()))
 
     def isOK(self):
         return self.mIsOK

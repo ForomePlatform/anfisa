@@ -4,10 +4,12 @@ from .condition import ConditionMaker
 from .code_works import reprFilterCondition
 #===============================================
 class CondOpEnv:
-    def __init__(self, cond_env, comp_data = None, cond_seq = None):
+    def __init__(self, cond_env, comp_data = None,
+            cond_seq = None, name = None):
         self.mCondEnv = cond_env
         self.mCompData = (comp_data
             if comp_data is not None else dict())
+        self.mName = name
         self.mCompChanged = False
         self.mOperativeUnitSeq = []
         self.mSeq = []
@@ -15,6 +17,7 @@ class CondOpEnv:
         self.mCondSeq = cond_seq
         if cond_seq is not None:
             self.parseSeq(cond_seq)
+        self.mResult = self.mCondEnv.joinAnd(self.mSeq)
 
     def getCondEnv(self):
         return self.mCondEnv
@@ -23,7 +26,10 @@ class CondOpEnv:
         return self.mCondSeq
 
     def getResult(self):
-        return self.mCondEnv.joinAnd(self.mSeq)
+        return self.mResult
+
+    def getName(self):
+        return self.mName
 
     def report(self, ret_handle):
         if self.mCompData:

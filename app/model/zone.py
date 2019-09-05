@@ -1,5 +1,3 @@
-from app.filter.condition import ConditionMaker
-
 #===============================================
 class ZoneH:
     def __init__(self, workspace, title):
@@ -33,6 +31,8 @@ class FilterZoneH(ZoneH):
     def getVariants(self):
         return list(iter(self.mUnit.getVariantSet()))
 
-    def restrict(self, rec_no_seq, variants):
-        return self.getWS().getIndex()._applyCondition(rec_no_seq,
-            [ConditionMaker.condEnum(self.mUnit.getName(), variants, "OR")])
+    def getRestrictF(self, variants):
+        cond = self.getWS().getIndex().getCondEnv().makeEnumCond(
+            self.mUnit, "OR", variants)
+        return lambda rec_no: cond.recInSelection(rec_no)
+

@@ -98,7 +98,7 @@ function determineZoneData() {
                     sWorkZoneDescr = "*lost selection*";
                 }
             } else {
-                sWorkZoneDescr += " <i>+" + (variants.length - 1) + " more</i>";
+                sWorkZoneDescr = variants[0] + " <i>+" + (variants.length - 1) + " more</i>";
                 rep.push("<i>In:</i><br/>");
                 for (j=0; j<variants.length; j++) {
                     rep.push('<input type="checkbox" checked ' +

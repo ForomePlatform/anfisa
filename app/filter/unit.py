@@ -1,3 +1,4 @@
+#===============================================
 class Unit:
     def __init__(self, descr, unit_kind = None):
         self.mDescr = descr
@@ -58,3 +59,17 @@ class Unit:
     def checkResearchBlock(self, research_mode):
         return (not research_mode) and self.mResearchOnly
 
+#===============================================
+class DraftUnit:
+    def __init__(self, name, rec_func = None):
+        self.mName = name
+        self.mRecFunc = rec_func
+
+    def getName(self):
+        return self.mName
+
+    def getRecVal(self, rec_no):
+        return self.mRecFunc(rec_no)
+
+    def isDetailed(self):
+        return False

@@ -95,7 +95,7 @@ class Workspace(DataSet):
                 rec_no in marked_set])
         return ret
 
-    def reportList(self, rec_no_seq, random_mode):
+    def reportList(self, rec_no_seq, rec_it_map_seq, random_mode):
         rep = {
             "workspace": self.getName(),
             "total": self.getTotal()}
@@ -103,16 +103,17 @@ class Workspace(DataSet):
 
         if (random_mode and len(rec_no_seq) >
                 AnfisaConfig.configOption("rand.min.size")):
-            sheet = [(self.mTabRecRand[rec_no], rec_no)
-                for rec_no in rec_no_seq]
+            sheet = [(self.mTabRecRand[rec_no], idx)
+                for idx, rec_no in enumerate(rec_no_seq)]
             sheet.sort()
             del sheet[AnfisaConfig.configOption("rand.sample.size"):]
-            reduced_rec_no_seq = [rec_no for hash, rec_no in sheet]
-            rep["records"] = self._reportListKeys(reduced_rec_no_seq)
+            rec_no_seq = [rec_no_seq[idx] for _, idx in sheet]
+            rec_it_map_seq = [rec_it_map_seq[idx] for _, idx in sheet]
             rep["list-mode"] = "samples"
         else:
-            rep["records"] = self._reportListKeys(rec_no_seq)
             rep["list-mode"] = "complete"
+        rep["records"] = self._reportListKeys(rec_no_seq)
+        rep["it-map"] = [it_map.to01() for it_map in rec_it_map_seq]
         return rep
 
     def getRecKey(self, rec_no):
@@ -122,8 +123,6 @@ class Workspace(DataSet):
         return enumerate(self.mTabRecKey)
 
     def filterOperation(self, instr, filter_name, cond_seq):
-        if instr is None:
-            return filter_name
         op, q, flt_name = instr.partition('/')
         if self.mIndex.hasStdFilter(flt_name):
             return filter_name
@@ -137,6 +136,7 @@ class Workspace(DataSet):
             elif op == "DELETE":
                 self.getMongoAgent().dropFilter(flt_name)
                 self.mIndex.dropFilter(flt_name)
+                return None
             else:
                 assert False
         return filter_name
@@ -159,27 +159,43 @@ class Workspace(DataSet):
     @RestAPI.ws_request
     def rq__list(self, rq_args):
         modes = rq_args.get("m", "").upper()
-        _, condition = self._prepareConditions(rq_args)
-        filter_name = rq_args.get("filter")
-        rec_no_seq = self.mIndex.getRecNoSeq(filter_name, condition)
-        zone_data = rq_args.get("zone")
-        if zone_data is not None:
-            zone_name, variants = json.loads(zone_data)
-            rec_no_seq = self.getZone(zone_name).restrict(
-                rec_no_seq, variants)
-        return self.reportList(sorted(rec_no_seq), 'S' in modes)
+        if "filter" in rq_args:
+            condition = self.mIndex.getFilterOpEnv(
+                rq_args["filter"]).getResult()
+            assert "conditions" not in rq_args
+        else:
+            _, condition = self._prepareConditions(rq_args)
+        if "zone" in rq_args:
+            zone_name, variants = json.loads(rq_args["zone"])
+            zone_f = self.getZone(zone_name).getRestrictF(variants)
+        else:
+            zone_f = None
+        rec_no_seq, rec_it_map_seq = [], []
+        for rec_no, rec_it_map in condition.iterSelection():
+            if zone_f is not None and not zone_f(rec_no):
+                continue
+            rec_no_seq.append(rec_no)
+            rec_it_map_seq.append(rec_it_map)
+        return self.reportList(rec_no_seq, rec_it_map_seq, 'S' in modes)
 
     #===============================================
     @RestAPI.ws_request
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
-        filter_name = rq_args.get("filter")
-        op_env, _ = self._prepareConditions(rq_args, False)
-        filter_name = self.filterOperation(rq_args.get("instr"),
-            filter_name, op_env.getCondSeq())
+        if "filter" in rq_args:
+            if "instr" in rq_args:
+                op_env, _ = self._prepareConditions(rq_args, False)
+                filter_name = self.filterOperation(rq_args["instr"],
+                    rq_args["filter"], op_env.getCondSeq())
+            else:
+                assert "conditions" not in rq_args
+                filter_name = rq_args["filter"]
+            if filter_name is not None:
+                op_env = self.mIndex.getFilterOpEnv(filter_name)
+        else:
+            op_env, _ = self._prepareConditions(rq_args)
         repr_context = self._prepareContext(rq_args)
-        return self.mIndex.makeStatReport(
-            filter_name, 'R' in modes, op_env, repr_context)
+        return self.mIndex.makeStatReport(op_env, 'R' in modes, repr_context)
 
     #===============================================
     @RestAPI.ws_request
@@ -239,14 +255,22 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__export(self, rq_args):
-        filter_name = rq_args.get("filter")
-        _, condition = self._prepareConditions(rq_args)
-        rec_no_seq = self.getIndex().getRecNoSeq(filter_name, condition)
-        zone_data = rq_args.get("zone")
-        if zone_data is not None:
-            zone_name, variants = json.loads(zone_data)
-            rec_no_seq = self.getZone(zone_name).restrict(
-                rec_no_seq, variants)
+        if "filter" in rq_args:
+            condition = self.mIndex.getFilterOpEnv(
+                rq_args["filter"]).getResult()
+            assert "conditions" not in rq_args
+        else:
+            _, condition = self._prepareConditions(rq_args)
+        if "zone" in rq_args:
+            zone_name, variants = json.loads(rq_args["zone"])
+            zone_f = self.getZone(zone_name).getRestrictF(variants)
+        else:
+            zone_f = None
+        rec_no_seq = []
+        for rec_no, _ in condition.iterSelection():
+            if zone_f is not None and not zone_f(rec_no):
+                continue
+            rec_no_seq.append(rec_no)
         fname = self.getApp().makeExcelExport(
             self.getName(), self, rec_no_seq, self.mTagsMan)
         return {"kind": "excel", "fname": fname}

@@ -158,15 +158,15 @@ class TagsManager(ZoneH):
                 self.mMarkedSet.remove(rec_no)
         return
 
-    def restrict(self, rec_no_seq, variants):
-        rec_no_set = set(rec_no_seq)
-        work_set = set()
+    def getRestrictF(self, variants):
+        return lambda rec_no: self.checkVariants(rec_no, variants)
+
+    def checkVariants(self, rec_no, variants):
         for tag_name in variants:
             tag_set = self.mTagSets.get(tag_name)
-            if tag_set:
-                work_set |= (tag_set & rec_no_set)
-
-        return sorted(work_set)
+            if tag_set and rec_no in tag_set:
+                return True
+        return False
 
     def reportSelectTag(self, tag_name):
         tag_list = self.getTagList()

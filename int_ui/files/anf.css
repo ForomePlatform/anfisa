@@ -18,7 +18,7 @@ body {
 }
 
 #top {
-    min-height: 50px;
+    min-height: 60px;
     height: 60px;
     display: flex;
     align-items: stretch;

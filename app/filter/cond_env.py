@@ -1,6 +1,7 @@
 import logging
 
 from .sol_pack import SolutionPack
+from .unit import DraftUnit
 #===============================================
 class CondEnv:
     def __init__(self, modes):
@@ -35,7 +36,7 @@ class CondEnv:
 
     def addReservedName(self, unit_name, rec_func = None):
         if unit_name not in self.mReservedNames:
-            self.mReservedNames[unit_name] = _ReservedUnit(
+            self.mReservedNames[unit_name] = DraftUnit(
                 unit_name, rec_func)
         return self.mReservedNames[unit_name]
 
@@ -168,13 +169,3 @@ class CondEnv:
         return None
 
 #===============================================
-class _ReservedUnit:
-    def __init__(self, name, rec_func = None):
-        self.mName = name
-        self.mRecFunc = rec_func
-
-    def getName(self):
-        return self.mName
-
-    def getRecFunc(self):
-        return self.mRecFunc
