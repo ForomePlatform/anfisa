@@ -114,7 +114,8 @@ class Index:
 
     def checkResearchBlock(self, cond_seq):
         for cond_info in cond_seq:
-            if self.getUnit(cond_info[1]).checkResearchBlock(False):
+            unit_h = self.getUnit(cond_info[1])
+            if unit_h is not None and unit_h.checkResearchBlock(False):
                 return True
         return False
 
