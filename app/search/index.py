@@ -1,6 +1,6 @@
-import json
+import json, logging, traceback
 from copy import deepcopy
-from io import TextIOWrapper
+from io import TextIOWrapper, StringIO
 
 from app.config.a_config import AnfisaConfig
 from app.filter.cond_op import CondOpEnv
@@ -95,7 +95,8 @@ class Index:
 
     def checkResearchBlock(self, cond_seq):
         for cond_info in cond_seq:
-            if self.getUnit(cond_info[1]).checkResearchBlock(False):
+            unit_h = self.getUnit(cond_info[1])
+            if unit_h is not None and unit_h.checkResearchBlock(False):
                 return True
         return False
 
@@ -105,6 +106,10 @@ class Index:
             cond_entry = (op_env, self.checkResearchBlock(cond_seq),
                 time_label)
         except:
+            rep = StringIO()
+            print("Bad filter compilation:", filter_name, file = rep)
+            traceback.print_exc(file = rep)
+            logging.warning(rep.getvalue())
             return False
         self.mFilterCache[filter_name] = cond_entry
         return True

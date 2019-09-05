@@ -136,7 +136,7 @@ class Workspace(DataSet):
             elif op == "DELETE":
                 self.getMongoAgent().dropFilter(flt_name)
                 self.mIndex.dropFilter(flt_name)
-                return None
+                flt_name = None
             else:
                 assert False
         return filter_name
@@ -182,16 +182,15 @@ class Workspace(DataSet):
     @RestAPI.ws_request
     def rq__stat(self, rq_args):
         modes = rq_args.get("m", "").upper()
-        if "filter" in rq_args:
-            if "instr" in rq_args:
-                op_env, _ = self._prepareConditions(rq_args, False)
-                filter_name = self.filterOperation(rq_args["instr"],
-                    rq_args["filter"], op_env.getCondSeq())
-            else:
-                assert "conditions" not in rq_args
-                filter_name = rq_args["filter"]
+        if "instr" in rq_args:
+            op_env, _ = self._prepareConditions(rq_args, False)
+            filter_name = self.filterOperation(rq_args["instr"],
+                rq_args.get("filter"), op_env.getCondSeq())
             if filter_name is not None:
                 op_env = self.mIndex.getFilterOpEnv(filter_name)
+        elif "filter" in rq_args:
+            assert "conditions" not in rq_args
+            op_env = self.mIndex.getFilterOpEnv(rq_args["filter"])
         else:
             op_env, _ = self._prepareConditions(rq_args)
         repr_context = self._prepareContext(rq_args)
