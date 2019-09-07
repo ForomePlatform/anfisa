@@ -23,17 +23,22 @@ class AspectSetH:
         return cls([AspectH.load(it) for it in data])
 
     #===============================================
-    def getViewRepr(self, rec_data, research_mode):
+    def getViewRepr(self, rec_data, research_mode, details = None):
         ret = []
         for aspect in self.mAspects:
             if aspect.isIgnored():
                 continue
             if aspect.checkResearchBlock(research_mode):
                 continue
-            ret.append(aspect.getViewRepr(rec_data, research_mode))
+            ret.append(aspect.getViewRepr(rec_data, research_mode, details))
         return ret
 
     def getFirstAspectID(self):
         return self.mAspects[0].getName()
 
-
+    def setAspectHitGroup(self, aspect_name, group_attr):
+        for aspect in self.mAspects:
+            if aspect.getName() == aspect_name:
+                aspect.getColGroups().setHitGroup(group_attr)
+                return
+        assert False, "Failed to find aspect for hit group"

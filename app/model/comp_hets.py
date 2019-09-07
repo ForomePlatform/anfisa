@@ -96,8 +96,6 @@ class CompHetsOperativeUnit(Unit):
     def setupCondEnv(cls, cond_env, ds):
         var_names = cls.sSetupData["op-variables"][:]
         if not ds.getFamilyInfo() or len(ds.getFamilyInfo()) != 3:
-            for name in var_names:
-                cond_env.addReservedName(name)
             return False
         cond_env.addMode("trio")
         for nm in var_names:
@@ -170,22 +168,6 @@ class CompHetsOperativeUnit(Unit):
 
         if res_count == 0:
             return ConditionMaker.condNone()
-
-        if False: # Druid seems does not provides correct support....
-            if res_count > self.sSetupData["comp-hets-max-rec"]:
-                logging.info("Comp hets: too many records, "
-                    "return gene-based cond")
-                return ["genes", cond_genes_data]
-
-            rec_no_seq = self.mIndex.evalRecSeq(cond_genes, res_count)
-            logging.info("Comp hets: return record-based cond: %d" %
-                len(rec_no_seq))
-            cond_rec_data = ConditionMaker.condEnum("_ord", rec_no_seq)
-
-            res_count1 = self.mIndex.evalTotalCount(
-                self.mIndex.getCondEnv().parse(cond_rec_data))
-            logging.info("Comp hets check: %d" % res_count1)
-            return ["records", cond_rec_data]
 
         logging.info("Return gene-based cond")
         if not keep_actual and len(instr_and) > 1:

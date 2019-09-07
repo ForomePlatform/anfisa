@@ -97,11 +97,20 @@ class FilterPrepareSetH:
     def transctiptStatusUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             research_only = False,
-            variants = None, default_value = "False", mapping = None):
-        return self._addUnit(prep_unit.TransctiptStatusConvertor(
+            variants = None, default_value = "False", bool_check_value = None):
+        return self._addUnit(prep_unit.TransctiptConvertor(
             self.mCondEnv, name, title, len(self.mUnits), self.mCurVGroup,
-            render_mode, tooltip, research_only, trans_name, variants,
-            default_value, mapping))
+            render_mode, tooltip, research_only,
+            "transcript-status", trans_name, variants,
+            default_value, bool_check_value))
+
+    def transctiptMultisetUnit(self, name, trans_name,
+            title = None, render_mode = None, tooltip = None,
+            research_only = False, variants = None):
+        return self._addUnit(prep_unit.TransctiptConvertor(
+            self.mCondEnv, name, title, len(self.mUnits), self.mCurVGroup,
+            render_mode, tooltip, research_only,
+            "transcript-multiset", trans_name, variants))
 
     def process(self, rec_no, rec_data):
         result = dict()

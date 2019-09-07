@@ -1,4 +1,5 @@
 from app.filter.cond_env import CondEnv
+from app.filter.unit import MetaUnit
 #===============================================
 class XL_CondEnv(CondEnv):
     def __init__(self, modes):
@@ -12,6 +13,11 @@ class XL_CondEnv(CondEnv):
 
     def getCondAll(self):
         return XL_All(self)
+
+    def addMetaNumUnit(self, name):
+        unit_h = MetaUnit(name, "num")
+        self.addReservedUnit(unit_h)
+        return unit_h
 
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
         return XL_NumCondition(self, unit_h.getName(), bounds, use_undef)
@@ -27,7 +33,7 @@ class XL_CondEnv(CondEnv):
         else:
             cond = XL_EnumInCondition(self, unit_h.getName(), variants)
         if filter_mode == "NOT":
-            return XL_Negation(cond)
+            return cond.negative()
         return cond
 
 #===============================================

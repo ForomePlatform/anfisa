@@ -105,7 +105,7 @@ class AspectH:
     def checkResearchBlock(self, research_mode):
         return (not research_mode) and self.mResearchOnly
 
-    def getViewRepr(self, rec_data, research_mode):
+    def getViewRepr(self, rec_data, research_mode, details = None):
         ret = {
             "name": self.mName,
             "title": self.mTitle,
@@ -119,8 +119,10 @@ class AspectH:
         objects = [rec_data[self.mSource]]
         if self.mField:
             objects = [objects[0][self.mField]]
+        hit_columns = None
         if self.mColGroups:
-            objects, prefix_head = self.mColGroups.formColumns(objects)
+            objects, prefix_head, hit_columns = self.mColGroups.formColumns(
+                objects, details)
             if prefix_head:
                 ret["colhead"] = [[escape(title), count]
                     for title, count in prefix_head]
@@ -142,9 +144,14 @@ class AspectH:
                 continue
             if a_name in fld_data:
                 rows.append([a_name, escape(attr.getTitle()),
-                [[val, class_name]
-                    for val, class_name in fld_data[a_name]]])
+                    [[val, class_name]
+                        for val, class_name in fld_data[a_name]]])
                 if attr.getToolTip():
                     rows[-1].append(attr.getToolTip())
+        if hit_columns:
+            for row in rows:
+                for idx, td_info in enumerate(row[2]):
+                    if idx in hit_columns:
+                        td_info[1] += ' hit'
         ret["rows"] = rows
         return ret

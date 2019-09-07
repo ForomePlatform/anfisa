@@ -77,8 +77,9 @@ var sUnitsH = {
         this.mRqId  = info["rq_id"];
         this.mCompData = info["compiled"];
         this.mExportFormed = false;
-        document.getElementById("list-report").innerHTML = 
-            (this.mCount == this.mTotal)? 
+        var el_rep = document.getElementById("list-report");
+        if (el_rep)
+            el_rep.innerHTML = (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
         if (sSubViewH)
             sSubViewH.reset(this.mCount);

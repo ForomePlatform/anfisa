@@ -72,15 +72,24 @@ def _formMainDiv(output, workspace_name, ws_url):
                     <div onclick="openNote();"
                         class="drop ctrl-menu">Workspace Note</div>
                     <div onclick="switchResMode();" class="drop ctrl-menu">
-                        <span id="res-mode-check">&#10003;</span>Research mode</div>
+                        <span id="res-mode-check">&#10003;</span>Research mode
+                        </div>
                     <div onclick="showExport();"
                         class="drop ctrl-menu" >Export...</div>
                 </div>
                 <div id="export-result" class="drop"></div>
-              </span>&emsp;
-              <span id="list-report"></span>
-              <input id="list-rand-portion" type="number" min="1" max="5"
-                onchange="listRandPortion();"/>
+              </span>&nbsp;
+              Records:&nbsp;<span id="ws-list-report"></span>
+            </div>
+            <div>
+              <small>
+                Transcripts:&nbsp;<span id="ws-transcripts-report"></span>
+              </small>
+              <span id="ws-list-rand-info"><br/>
+                Samples:&nbsp;<input
+                    id="list-rand-portion" type="number" min="1" max="5"
+                    onchange="listRandPortion();"/>
+              </span>
             </div>
           </div>
         </div>

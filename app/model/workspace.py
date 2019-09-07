@@ -35,7 +35,7 @@ class Workspace(DataSet):
                         time_label)
                 except Exception as ex:
                     logging.error("Exception on load filter %s:\n %s" %
-                        filter_name, str(ex))
+                        (filter_name, str(ex)))
         self.mZoneHandlers  = []
         for zone_title, unit_name in AnfisaConfig.configOption("zones"):
             if (unit_name == "_tags"):
@@ -47,6 +47,9 @@ class Workspace(DataSet):
                     continue
                 zone_h = FilterZoneH(self, zone_title, unit)
             self.mZoneHandlers.append(zone_h)
+
+        self._setAspectHitGroup(
+            *AnfisaConfig.configOption("transcript.view.setup"))
 
     def _loadPData(self):
         with self._openPData() as inp:
@@ -95,12 +98,13 @@ class Workspace(DataSet):
                 rec_no in marked_set])
         return ret
 
-    def reportList(self, rec_no_seq, rec_it_map_seq, random_mode):
+    def reportList(self, rec_no_seq, rec_it_map_seq,
+            counts_transctipts, random_mode):
         rep = {
             "workspace": self.getName(),
-            "total": self.getTotal()}
-        rep["filtered"] = len(rec_no_seq)
-
+            "total": self.getTotal(),
+            "transcripts": counts_transctipts,
+            "filtered": len(rec_no_seq)}
         if (random_mode and len(rec_no_seq) >
                 AnfisaConfig.configOption("rand.min.size")):
             sheet = [(self.mTabRecRand[rec_no], idx)
@@ -113,7 +117,7 @@ class Workspace(DataSet):
         else:
             rep["list-mode"] = "complete"
         rep["records"] = self._reportListKeys(rec_no_seq)
-        rep["it-map"] = [it_map.to01() for it_map in rec_it_map_seq]
+        rep["details"] = [it_map.to01() for it_map in rec_it_map_seq]
         return rep
 
     def getRecKey(self, rec_no):
@@ -171,12 +175,16 @@ class Workspace(DataSet):
         else:
             zone_f = None
         rec_no_seq, rec_it_map_seq = [], []
+        count_transctipts = 0
         for rec_no, rec_it_map in condition.iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
             rec_no_seq.append(rec_no)
             rec_it_map_seq.append(rec_it_map)
-        return self.reportList(rec_no_seq, rec_it_map_seq, 'S' in modes)
+            count_transctipts += rec_it_map.count()
+        return self.reportList(rec_no_seq, rec_it_map_seq,
+            [count_transctipts, condition.getCondEnv().getTotalCount()],
+            'S' in modes)
 
     #===============================================
     @RestAPI.ws_request

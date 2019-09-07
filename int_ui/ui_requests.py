@@ -56,10 +56,10 @@ class IntUI:
             workspace = data_vault.getWS(rq_args.get("ws"))
             modes = rq_args.get("m", "").upper()
             rec_no = int(rq_args.get("rec"))
-            port = rq_args.get("port")
             if workspace:
                 output = StringIO()
-                reportWsRecord(output, workspace, 'R' in modes, rec_no, port)
+                reportWsRecord(output, workspace, 'R' in modes, rec_no,
+                    rq_args.get("details"), rq_args.get("port"))
                 return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/xl_rec":

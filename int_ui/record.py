@@ -2,7 +2,7 @@ from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
-def reportWsRecord(output, workspace, research_mode, rec_no, port):
+def reportWsRecord(output, workspace, research_mode, rec_no, details, port):
     startHtmlPage(output,
         css_files = ["base.css", "a_rec.css", "tags.css"],
         js_files = ["a_rec.js", "tags.js", "base.js"])
@@ -20,7 +20,7 @@ def reportWsRecord(output, workspace, research_mode, rec_no, port):
     print('<span id="img-wrap" onclick="tabCfgChange();">'
         '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
         file = output)
-    asp_data_seq = workspace.getViewRepr(rec_no, research_mode)
+    asp_data_seq = workspace.getViewRepr(rec_no, research_mode, details)
     for asp_data in asp_data_seq:
         print('<button class="r-tablnk %s" id="la--%s" '
             'onclick="pickAspect(\'%s\')">%s</button>' %

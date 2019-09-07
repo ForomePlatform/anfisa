@@ -405,18 +405,19 @@ class PanelConvertor(ValueConvertor):
         return ret
 
 #===============================================
-class TransctiptStatusConvertor(ValueConvertor):
+class TransctiptConvertor(ValueConvertor):
     def __init__(self, cond_env, name, title, unit_no, vgroup,
             render_mode, tooltip, research_only,
-            trans_name, variants, default_value, mapping):
+            tr_kind, trans_name, variants,
+            default_value = None, bool_check_value = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip, research_only)
         self.mDescr = ValueConvertor.dump(self)
-        self.mDescr["kind"] = "transcript-status"
+        self.mDescr["kind"] = tr_kind
         self.mDescr["tr_name"] = trans_name
         self.mDescr["pre_variants"] = variants
         self.mDescr["default"] = default_value
-        self.mDescr["mapping"] = mapping
+        self.mDescr["bool_check"] = bool_check_value
 
     def process(self, rec_no, rec_data, result):
         pass

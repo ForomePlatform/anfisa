@@ -51,7 +51,7 @@ class RulesEvalUnit(MultiSetUnit):
             self.mUnitNames = []
             self.mMultiSetUnits = set()
             for unit in self.getIndex().iterUnits():
-                if unit is not self:
+                if unit is not self and not unit.isDetailed():
                     self.mUnitNames.append(unit.getName())
                     if not unit.isAtomic():
                         self.mMultiSetUnits.add(unit.getName())

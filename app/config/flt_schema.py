@@ -64,13 +64,12 @@ def defineFilterSchema():
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     with filters.viewGroup("Transcripts"):
-        filters.transctiptStatusUnit("Transctipt_consequence",
-            "consequence_terms", variants = sConsequenceVariants,
-            default_value = "undefined")
+        filters.transctiptMultisetUnit("Transctipt_consequence",
+            "consequence_terms", variants = sConsequenceVariants)
         filters.transctiptStatusUnit("Transcript_canonical", "canonical",
-            mapping = {1: "True"}, default_value = "False")
+            bool_check_value = "1", default_value = "False")
         filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
-            mapping = {"${Most_Severe_Consequence}": "True"},
+            bool_check_value = "${Most_Severe_Consequence}",
             default_value = "False")
         filters.transctiptStatusUnit("Transcript_id", "transcript_id",
             default_value = "undefined")
@@ -79,7 +78,7 @@ def defineFilterSchema():
         filters.transctiptStatusUnit("Transcript_source", "source",
             default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_strand", "strand",
-            mapping = {1: "+1", -1: "-1"}, default_value = "undefined")
+            default_value = "undefined")
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",
@@ -105,10 +104,10 @@ def defineFilterSchema():
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
             view_path = "/view/general/gene_panels")
-        filters.multiStatusUnit("Transcripts",
-            "/data/transcript_consequences[]", compact_mode = True,
-            conversion = lambda arr:
-                [el["transcript_id"] for el in arr] if arr else [])
+        #filters.multiStatusUnit("Transcripts",
+        #    "/data/transcript_consequences[]", compact_mode = True,
+        #    conversion = lambda arr:
+        #        [el["transcript_id"] for el in arr] if arr else [])
         filters.intValueUnit("Num_Genes", "/view/general/genes",
             title = "Number of overlapping genes",
             conversion = _conv_len, default_value = 0)

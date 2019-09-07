@@ -291,38 +291,23 @@ var sOpEnumH = {
 
 /**************************************/
 /**************************************/
-function newZygStat(stat) {
-    var size = 0;
-    if (stat) {
-        for (var j = 0; j < stat.length; j++) {
-            if (stat[j][1] > 0)
-                size++;
-        }
-    }
-    return {mStat: stat, mSize: size};
-}
-
-function zygStatStatList(zyg_stat) {
-    return (zyg_stat.mStat == null)? []:zyg_stat.mStat;
-}
-
-function zygStatReportValues(zyg_stat, list_stat_rep) {
-    if (zyg_stat.mStat == null) {
+function zygCaseReportValues(zyg_case, list_stat_rep) {
+    if (zyg_case.mStat == null) {
         list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
         return;
     } 
-    if (zyg_stat.mSize == 0) {
+    if (zyg_case.mSize == 0) {
         list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
         return;
     }
     list_stat_rep.push('<ul>');
-    for (var j = 0; j < zyg_stat.mStat.length; j++) {
-        var_name = zyg_stat.mStat[j][0];
-        var_count = zyg_stat.mStat[j][1];
+    for (var j = 0; j < zyg_case.mStat.length; j++) {
+        var_name = zyg_case.mStat[j][0];
+        var_count = zyg_case.mStat[j][1];
         if (var_count == 0)
             continue;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            '<span class="stat-count">' + var_count + ' records</span></li>');
+            reportStatCount(var_count, zyg_case.mUnitStat) + '</li>');
     }
 }
         
@@ -335,12 +320,22 @@ function zygStatCheckError(zyg_stat, err_msg) {
 }
 
 /**************************************/
-function newZygCase(base, problem_idxs, stat_data, mode_op) {
+function newZygCase(base, unit_stat, mode_op) {
+    var size = 0;
+    if (unit_stat[3]) {
+        for (var j = 0; j < unit_stat[3].length; j++) {
+            if (unit_stat[3][j][1] > 0)
+                size++;
+        }
+    }    
     return {
         mBase: base,
         mModeOp: mode_op,
-        mProblemIdxs: (problem_idxs == null)? this.mBase.mDefaultIdxs:problem_idxs,
-        mStat: newZygStat(stat_data)};
+        mUnitStat: unit_stat,
+        mProblemIdxs: (unit_stat[2] == null)? this.mBase.mDefaultIdxs:unit_stat[2],
+        mStat: unit_stat[3],
+        mSize: size
+    };
 }
 
 function zygCaseSameCase(zyg_case, problem_idxs) {
@@ -421,7 +416,7 @@ var sZygosityH = {
         }
         var cond_problem_idxs = condition_data[2];
         if (JSON.stringify(cond_problem_idxs) == JSON.stringify(unit_stat[2])) {
-            this.mCases[1] = newZygCase(this, unit_stat[2], unit_stat[3], 1);
+            this.mCases[1] = newZygCase(this, unit_stat, 1);
             return true;
         }
         this.reload(1, (cond_problem_idxs == null)? this.mDefaultIdxs:cond_problem_idxs);
@@ -434,7 +429,7 @@ var sZygosityH = {
             this.mTimeH = null;
         }
         this._baseSetup(unit_stat);
-        this.mCases[0] = newZygCase(this, unit_stat[2], unit_stat[3], 0);
+        this.mCases[0] = newZygCase(this, unit_stat, 0);
         if (this.mSeparateOp && this.mOpBaseUnitStat) {
             if (JSON.stringify(unit_stat) != JSON.stringify(this.mOpBaseUnitStat)) {
                 this.mOpBaseUnitStat = null;
@@ -449,7 +444,7 @@ var sZygosityH = {
         zygCaseFilIt(this.mCases[0], list_stat_rep);
         list_stat_rep.push('</div>');
         list_stat_rep.push('<div id="zyg-stat">');
-        zygStatReportValues(this.mCases[0].mStat, list_stat_rep);
+        zygCaseReportValues(this.mCases[0], list_stat_rep);
         list_stat_rep.push('</div></div>');
         sUnitsH.setCtxPar("problem_group", zygCaseProblemIdxs(this.mCases[0]))
     },    
@@ -468,7 +463,9 @@ var sZygosityH = {
             if (this.mSeparateOp)
                 this.mOpSetUp = true;
         }
-        return zygStatStatList(this.mCases[mode_op].mStat);
+        if (this.mCases[mode_op].mStat == null)
+            return [];
+        return this.mCases[mode_op].mStat;
     },
     
     transCondition: function(condition_data) {
@@ -480,7 +477,7 @@ var sZygosityH = {
     },
     
     checkError: function(condition_data, err_msg) {
-        return zygStatCheckError(this.mCases[(this.mSeparateOp)? 1:0].mStat, err_msg);
+        return zygStatCheckError(this.mCases[(this.mSeparateOp)? 1:0], err_msg);
     },
     
     getUnitTitle: function(problem_idxs) {
@@ -580,10 +577,10 @@ var sZygosityH = {
     
     _reload: function(info, mode_op) {
         var unit_stat = info["units"][0];
-        this.mCases[mode_op] = newZygCase(this, unit_stat[2], unit_stat[3], mode_op);
+        this.mCases[mode_op] = newZygCase(this, unit_stat, mode_op);
         if (mode_op == 0) {
             rep_list = [];
-            zygStatReportValues(this.mCases[0].mStat, rep_list);
+            zygCaseReportValues(this.mCases[0], rep_list);
             zyg_div = document.getElementById("zyg-stat");
             zyg_div.innerHTML = rep_list.join('\n');
             zyg_div.className = "";
@@ -759,8 +756,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
             list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
                 ' =< ...<= ' + normFloatLongTail(val_max, true) + ' </span>');
         }
-        list_stat_rep.push(': <span class="stat-count">' + count + 
-            ' records</span>');
+        list_stat_rep.push(': ' + reportStatCount(count, unit_stat));
     }
 }
 
@@ -799,12 +795,17 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count -= 1;
         list_count--;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            '<span class="stat-count">' +
-            var_count + ' records</span></li>');
+            reportStatCount(var_count, unit_stat) + '</li>');
     }
     list_stat_rep.push('</ul>');
     if (list_count > 0) {
         list_stat_rep.push('<p class="stat-comment">...and ' + 
             list_count + ' variants more...</p>');
     }
+}
+
+function reportStatCount(count, unit_stat) {
+    return '<span class="stat-count">' + count + ' ' +
+        ((unit_stat[1]["detailed"]? 'transcript':'record')) + 
+        ((count>1)? 's':'') + '</span>';
 }

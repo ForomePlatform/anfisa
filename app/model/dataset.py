@@ -27,6 +27,9 @@ class DataSet:
         assert self.mFamilyInfo is None
         self.mFamilyInfo = FamilyInfo(members, members, [], None)
 
+    def _setAspectHitGroup(self, aspect_name, group_attr):
+        self.mAspects.setAspectHitGroup(aspect_name, group_attr)
+
     def __enter__(self):
         self.mLock.acquire()
         return self
@@ -84,9 +87,9 @@ class DataSet:
     def getViewSetupReport(self):
         return {"aspects": self.mAspects.dump()}
 
-    def getViewRepr(self, rec_no, research_mode):
+    def getViewRepr(self, rec_no, research_mode, details = None):
         rec_data = self.getRecordData(rec_no)
-        return self.mAspects.getViewRepr(rec_data, research_mode)
+        return self.mAspects.getViewRepr(rec_data, research_mode, details)
 
     def getSourceVersions(self):
         if "meta" in self.mDataInfo:

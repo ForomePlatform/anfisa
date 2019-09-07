@@ -54,6 +54,8 @@ class DruidAdmin(DruidAgent):
             {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
+            if unit_data["kind"].startswith("transcript-"):
+                continue
             if unit_data["kind"] in {"long", "float"}:
                 dim_container.append({
                     "name": unit_data["name"],

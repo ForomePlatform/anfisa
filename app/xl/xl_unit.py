@@ -133,7 +133,7 @@ class XL_ZygosityUnit(XL_Unit, ZygosityComplex):
         fam_units = []
         for fam_name in self.iterFamNames():
             fam_units.append(
-                self.getDS().getCondEnv().addReservedName(fam_name))
+                self.getDS().getCondEnv().addMetaNumUnit(fam_name))
         self.getDS().getCondEnv().addSpecialUnit(self)
         self.setupSubUnits(fam_units)
 

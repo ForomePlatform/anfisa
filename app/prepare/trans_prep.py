@@ -9,17 +9,17 @@ class TranscriptPreparator:
         self.mHardCheck = hard_check
         self.mConvertors = []
         self.mTotalItemCount = 0
+        self.mTransPathBaseF = AttrFuncPool.makeFunc(
+            AnfisaConfig.configOption("transcript.path.base"))
         for unit_descr in flt_schema:
             if not unit_descr["kind"].startswith("transcript-"):
                 continue
             if unit_descr["kind"] == "transcript-status":
                 self.mConvertors.append(TrStatusConvertor(unit_descr))
+            elif unit_descr["kind"] == "transcript-multiset":
+                self.mConvertors.append(TrMultisetConvertor(unit_descr))
             else:
-                assert False
-        self.mTransPathBaseF = None
-        if len(self.mConvertors) > 0:
-            self.mTransPathBaseF = AttrFuncPool.makeFunc(
-                AnfisaConfig.configOption("transcript.path.base"))
+                assert False, "Bad kind:" + unit_descr["kind"]
 
     def isEmpty(self):
         return len(self.mConvertors) == 0
@@ -44,7 +44,7 @@ class TranscriptPreparator:
         return self.mTotalItemCount
 
 #===============================================
-class TrStatusConvertor:
+class TrConvertor:
     sPattVar = re.compile('^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
@@ -53,57 +53,16 @@ class TrStatusConvertor:
         self.mTransName = unit_descr["tr_name"]
         self.mDefaultValue = unit_descr["default"]
         self.mPreVariants = unit_descr["pre_variants"]
-        self.mMapping =  unit_descr["mapping"]
-        self.mMapComp = None
         self.mVarCount = Counter()
         self.mBadCount = Counter()
         self.mPreVarSet = None
         if self.mPreVariants is not None:
             self.mPreVarSet = set(self.mPreVariants)
-        if (self.mMapping is not None and
-                any([isinstance(key, str) and '$' in key
-                for key in self.mMapping.keys()])):
-            self.mMapComp = []
-            for key, value in self.mMapping.items():
-                if isinstance(key, str):
-                    q = self.sPattVar.match(key)
-                    if q is not None:
-                        self.mMapComp.append((None, q.group(1), value))
-                        continue
-                    assert '$' not in key, "Bad transcript instruction " + key
-                self.mMapComp.append((key, None, value))
 
-    def doRec(self, tr_seq, f_data):
-        if len(tr_seq) == 0:
-            return
-
-        if self.mMapComp is not None:
-            mapping = dict()
-            for key, var, value in self.mMapComp:
-                if var is not None:
-                    mapping[f_data[var]] = value
-                else:
-                    mapping[key] = value
-        else:
-            mapping = self.mMapping
-        res = []
-        for tr_obj in tr_seq:
-            val = tr_obj.get(self.mTransName)
-            if isinstance(val, list):
-                #assert len(val) == 1, (self.mName +
-                #    ": expected single elem array: " + repr(val))
-                val = val[0]
-            if mapping is not None:
-                val = mapping.get(val, self.mDefaultValue)
-            elif val is None:
-                val = self.mDefaultValue
-            val = str(val)
-            if self.mPreVarSet is not None and val not in self.mPreVarSet:
-                self.mBadCount[val] += 1
-                val = self.mDefaultValue
-            self.mVarCount[val] += 1
-            res.append(val)
-        f_data[self.mName] = res
+    def _checkBooleanVariants(self):
+        if self.mPreVariants is None:
+            self.mPreVariants = ["True", "False"]
+            self.mPreVarSet = set(self.mPreVariants)
 
     def finishUp(self, hard_check):
         if len(self.mBadCount) > 0:
@@ -124,3 +83,82 @@ class TrStatusConvertor:
             variants.append([var, self.mVarCount[var]])
         self.mDescr["variants"] = variants
         return True
+
+#===============================================
+class TrStatusConvertor(TrConvertor):
+    sPattVar = re.compile('^\$\{(\w+)\}$')
+
+    def __init__(self, unit_descr):
+        TrConvertor.__init__(self, unit_descr)
+        self.mBoolCheckValue =  unit_descr["bool_check"]
+        self.mBoolVUnit = None
+        if self.mBoolCheckValue:
+            self._checkBooleanVariants()
+        if (self.mBoolCheckValue is not None and
+                '$' in self.mBoolCheckValue):
+            q = self.sPattVar.match(self.mBoolCheckValue)
+            assert q is not None, (
+                "Bad transcript instruction " + self.mBoolCheckValue)
+            self.mBoolVUnit = q.group(1)
+
+    def doRec(self, tr_seq, f_data):
+        if len(tr_seq) == 0:
+            return
+
+        if self.mBoolVUnit is None:
+            bool_check_value = self.mBoolCheckValue
+        else:
+            bool_check_value = f_data.get(self.mBoolVUnit)
+
+        res = []
+        for tr_obj in tr_seq:
+            val = tr_obj.get(self.mTransName)
+            if isinstance(val, list):
+                if bool_check_value is not None:
+                    val = "True" if bool_check_value in val else "False"
+                else:
+                    assert len(val) == 1, "Tr-Unit %s val=%r" % (
+                        self.mName, val)
+                    val = val[0]
+            else:
+                val = str(val)
+                if bool_check_value is not None:
+                    val = "True" if bool_check_value in val else "False"
+
+            if self.mPreVarSet is not None and val not in self.mPreVarSet:
+                self.mBadCount[val] += 1
+                val = self.mDefaultValue
+            self.mVarCount[val] += 1
+            res.append(val)
+        f_data[self.mName] = res
+
+#===============================================
+class TrMultisetConvertor(TrConvertor):
+    sPattVar = re.compile('^\$\{(\w+)\}$')
+
+    def __init__(self, unit_descr):
+        TrConvertor.__init__(self, unit_descr)
+
+    def doRec(self, tr_seq, f_data):
+        if len(tr_seq) == 0:
+            return
+        res = []
+        for tr_obj in tr_seq:
+            values = tr_obj.get(self.mTransName)
+            if not values:
+                values = []
+            if self.mPreVarSet is not None:
+                res_values = set()
+                for val in values:
+                    if val in self.mPreVarSet:
+                        res_values.add(val)
+                    else:
+                        self.mBadCount[val] += 1
+                        res_values.add(self.mDefaultValue)
+                res_values = sorted(res_values)
+            else:
+                res_values = sorted(set(values))
+            for val in res_values:
+                self.mVarCount[val] += 1
+            res.append(res_values)
+        f_data[self.mName] = res

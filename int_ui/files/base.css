@@ -207,4 +207,7 @@ span#export-result.problems {
 }
 
 /****************************************/
-
+.hit {
+    font-weight: bold;
+    color: #500000;
+}

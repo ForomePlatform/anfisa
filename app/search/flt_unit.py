@@ -181,8 +181,9 @@ class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
         self.mArrayFam = []
         fam_units = []
         for idx, fam_name in enumerate(self.iterFamNames()):
-            self.mArrayFam.append(array('b') )
-            fam_units.append(self.getIndex().getCondEnv().addReservedName(
+            self.mArrayFam.append(array('b'))
+            fam_units.append(
+                self.getIndex().getCondEnv().addMetaNumUnit(
                 fam_name, self.getFamRecFunc(idx)))
         self.setupSubUnits(fam_units)
         self.getIndex().getCondEnv().addSpecialUnit(self)
@@ -212,11 +213,108 @@ class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
             condition, repr_context)
 
 #===============================================
+class TranscriptStatusUnit(FilterUnit):
+    def __init__(self, index, unit_data):
+        FilterUnit.__init__(self, index, unit_data, "transcript-status")
+        variants_info = self.getDescr().get("variants")
+        self.mVariantSet = VariantSet(
+            [info[0] for info in variants_info])
+        self.mDefaultValue = self.mVariantSet.indexOf(
+            self.getDescr()["default"])
+        self._setScreened(
+            sum([info[1] for info in variants_info]) == 0)
+        self.mArray = array('L')
+        self.getIndex().getCondEnv().addEnumUnit(self)
+
+    def isDetailed(self):
+        return True
+
+    def getVariantSet(self):
+        return self.mVariantSet
+
+    def getItemVal(self, item_idx):
+        return {self.mArray[item_idx]}
+
+    def fillRecord(self, inp_data, rec_no):
+        values = inp_data.get(self.getName())
+        if not values:
+            self.mArray.append(self.mDefaultValue)
+        else:
+            self.mArray.extend([self.mVariantSet.indexOf(value)
+                for value in values])
+
+    def makeStat(self, condition, repr_context = None):
+        stat = EnumStat(self.mVariantSet)
+        for it_idx in condition.iterItemIdx():
+            stat.regValues([self.mArray[it_idx]])
+        ret = self.prepareStat()
+        ret[1]["detailed"] = True
+        return ret + stat.result()
+
+#===============================================
+class TranscriptMultisetUnit(FilterUnit):
+    def __init__(self, index, unit_data):
+        FilterUnit.__init__(self, index, unit_data, "transcript-multiset")
+        variants_info = self.getDescr().get("variants")
+        self.mVariantSet = VariantSet(
+            [info[0] for info in variants_info])
+        self.mDefaultValue = self.mVariantSet.indexOf(
+            self.getDescr()["default"])
+        self._setScreened(
+            sum([info[1] for info in variants_info]) == 0)
+        self.mArray = array('L')
+        self.getIndex().getCondEnv().addEnumUnit(self)
+        self.mPackSetDict = dict()
+        self.mPackSetSeq  = [set()]
+
+    def isDetailed(self):
+        return True
+
+    def getVariantSet(self):
+        return self.mVariantSet
+
+    def getItemVal(self, item_idx):
+        return self.mPackSetSeq[self.mArray[item_idx]]
+
+    def _fillOne(self, values):
+        if values :
+            idx_set = self.mVariantSet.makeIdxSet(values)
+            key = MultiCompactUnit.makePackKey(idx_set)
+            idx = self.mPackSetDict.get(key)
+            if idx is None:
+                idx = len(self.mPackSetSeq)
+                self.mPackSetDict[key] = idx
+                self.mPackSetSeq.append(set(idx_set))
+        else:
+            idx = 0
+        self.mArray.append(idx)
+
+    def fillRecord(self, inp_data, rec_no):
+        seq = inp_data.get(self.getName())
+        if not seq:
+            self.mArray.append(0)
+        else:
+            for values in seq:
+                self._fillOne(values)
+
+    def makeStat(self, condition, repr_context = None):
+        stat = EnumStat(self.mVariantSet)
+        for it_idx in condition.iterItemIdx():
+            stat.regValues(self.mPackSetSeq[self.mArray[it_idx]])
+        ret = self.prepareStat()
+        ret[1]["detailed"] = True
+        return ret + stat.result()
+
+#===============================================
 def loadWSFilterUnit(index, unit_data):
     kind = unit_data["kind"]
     if kind == "zygosity":
         ret = ZygosityComplexUnit(index, unit_data)
         return ret if ret.isOK() else None
+    if kind == "transcript-status":
+        return TranscriptStatusUnit(index, unit_data)
+    if kind == "transcript-multiset":
+        return TranscriptMultisetUnit(index, unit_data)
     if kind in ("long", "float"):
        return NumericValueUnit(index, unit_data)
     assert kind in ("enum", "presence")

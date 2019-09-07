@@ -5,6 +5,7 @@ var sCurRecID = null;
 var sTabPortData = [false, null, null];
 var sCurRandPortion = 1;
 var sRecList = null;
+var sDetailsList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModeRq = null;
@@ -46,28 +47,27 @@ function loadList(filter_name, zone_data) {
 function setupList(info) {
     if (info["workspace"] != sDSName)
         return;
-    var el = document.getElementById("list-report");
-    var el_p = document.getElementById("list-rand-portion");
-    var rep = "Records: <b>" + info["filtered"] + "<b>";
+    var rep = '<b>' + info["filtered"] + '</b>';
     if (info["total"] != info["filtered"]) 
-        rep += "/" + info["total"];
-    if (info["list-mode"] == "samples") {
-        rep += " Samples:";
-        el_p.style.visibility = "visible";
-        sRecSamples = true;
-    } else {
-        el_p.style.visibility = "hidden";
-        sRecSamples = false;
-    }
-    el.innerHTML = rep;
+        rep += "&nbsp;/&nbsp;" + info["total"];
+    document.getElementById("ws-list-report").innerHTML = rep;
+    rep = '<b>' + info["transcripts"][0] + '</b>';
+    if (info["transcripts"][0] != info["transcripts"][1])
+        rep += "&nbsp;/&nbsp;" + info["transcripts"][1];
+    document.getElementById("ws-transcripts-report").innerHTML = rep;
+    sRecSamples = info["list-mode"] == "samples";
+    document.getElementById("ws-list-rand-info").style.visibility = 
+        (sRecSamples)?"visible":"hidden";
     sRecList = info["records"];
+    sDetailsList = info["details"];
     refreshRecList();
     arrangeControls();
 }
 
 function arrangeControls() {
-    document.getElementById("top").style.height = 60;
-    document.getElementById("rec-list").style.height = window.innerHeight - 61;
+    document.getElementById("top").style.height = (sRecSamples)? 80:60;
+    document.getElementById("rec-list").style.height = window.innerHeight - 1 
+        - ((sRecSamples)? 80:60);
     
     zone_mod_height = document.getElementById("zone-mod").getBoundingClientRect().height;
     document.getElementById("work-zone-area").style.height = zone_mod_height - 60;
@@ -141,9 +141,9 @@ function changeRec(rec_no) {
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ws=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=1");
+        sAppModeRq + "&rec=" + sCurRecID + "&port=1" + "&details=" + sDetailsList[sCurRecNo]);
     window.frames['rec-frame2'].location.replace("rec?ws=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=2");
+        sAppModeRq + "&rec=" + sCurRecID + "&port=2" + "&details=" + sDetailsList[sCurRecNo]);
     updateTagNavigation();
 }
 

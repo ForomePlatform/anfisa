@@ -1,6 +1,7 @@
 from bitarray import bitarray
 
 from app.filter.cond_env import CondEnv
+from app.filter.unit import MetaUnit
 #===============================================
 class WS_CondEnv(CondEnv):
     def __init__(self, modes):
@@ -37,6 +38,11 @@ class WS_CondEnv(CondEnv):
 
     def getCondAll(self):
         return self.mCondAll
+
+    def addMetaNumUnit(self, name, rec_func):
+        unit_h = WS_MetaNumUnit(name, rec_func)
+        self.addReservedUnit(unit_h)
+        return unit_h
 
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
         eval_func = self.numericFilterFunc(bounds[0], bounds[1], use_undef)
@@ -181,15 +187,19 @@ class WS_Condition:
                 yield rec_no, group_val
 
     def countSelection(self):
-        ret = [0, 0]
+        count_grp, count_items = 0, 0
         for rec_no, rec_it_map in self.iterSelection():
-            ret[0] += 1
-            ret[1] += rec_it_map.count()
-        return tuple(ret)
+            count_grp += 1
+            count_items += rec_it_map.count()
+        return (count_grp, count_items, self.mCondEnv.getTotalCount())
 
     def recInSelection(self, rec_no):
         grp_offset, grp_size = self.getCondEnv().getGroupPos(rec_no)
         return self.mBitArray[grp_offset:grp_offset + max(1, grp_size)].any()
+
+    sPattTrue = bitarray('1')
+    def iterItemIdx(self):
+        return self.mBitArray.itersearch(self.sPattTrue)
 
 #===============================================
 class WS_Negation(WS_Condition):
@@ -300,3 +310,20 @@ class WS_All(WS_Condition):
         return True
 
 #===============================================
+class WS_MetaNumUnit(MetaUnit):
+    def __init__(self, name, rec_func = None):
+        MetaUnit.__init__(self, name, "num")
+        self.mRecFunc = rec_func
+
+    def getRecVal(self, rec_no):
+        return self.mRecFunc(rec_no)
+
+    def getUnitKind(self):
+        return self.mUnitKind
+
+    def getName(self):
+        return self.mName
+
+    def isDetailed(self):
+        return False
+

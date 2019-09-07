@@ -18,8 +18,6 @@ class Index:
         self.mCondEnv.addMode("WS")
         self.mUnits = [RulesEvalUnit(self)]
         for unit_data in self.mWS.getFltSchema():
-            if unit_data["kind"].startswith("transcript-"):
-                continue
             unit_h = loadWSFilterUnit(self, unit_data)
             if unit_h is not None:
                 self.mUnits.append(unit_h)
@@ -151,11 +149,11 @@ class Index:
                 if stat[1].get("vgroup") == act_stat[1].get("vgroup"):
                     pos_ins = idx + 1
             stat_list.insert(pos_ins, act_stat)
-        count, count_items = condition.countSelection()
+        count, count_items, total_items = condition.countSelection()
         ret = {
             "total": self.mWS.getTotal(),
             "count": count,
-            "items": count_items,
+            "transcripts": [count_items, total_items],
             "stat-list": stat_list,
             "filter-list": self.getFilterList(research_mode),
             "cur-filter": op_env.getName(),

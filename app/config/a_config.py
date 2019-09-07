@@ -54,6 +54,7 @@ class AnfisaConfig:
         },
 
         "transcript.path.base": "/data/transcript_consequences",
+        "transcript.view.setup": ("transcripts", "transcript_consequences"),
 
         "job.pool.size":    3,
         "job.pool.threads": 1}

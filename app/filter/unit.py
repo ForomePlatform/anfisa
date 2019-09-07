@@ -1,3 +1,5 @@
+import abc
+
 #===============================================
 class Unit:
     def __init__(self, descr, unit_kind = None):
@@ -60,16 +62,43 @@ class Unit:
         return (not research_mode) and self.mResearchOnly
 
 #===============================================
-class DraftUnit:
-    def __init__(self, name, rec_func = None):
+class MetaUnit:
+    def __init__(self, name, unit_kind):
         self.mName = name
-        self.mRecFunc = rec_func
+        self.mUnitKind = unit_kind
+
+    def getUnitKind(self):
+        return self.mUnitKind
 
     def getName(self):
         return self.mName
 
-    def getRecVal(self, rec_no):
-        return self.mRecFunc(rec_no)
+#===============================================
+class ComplexEnumSupport:
+    def __init__(self):
+        pass
 
-    def isDetailed(self):
-        return False
+    @abc.abstractmethod
+    def iterComplexCriteria(self, context = None, variants = None):
+        pass
+
+    def collectComplexStat(self, index, base_condition, context = None):
+        stat = []
+        for name, condition in self.iterComplexCriteria(context):
+            if base_condition is not None:
+                condition = condition.addAnd(base_condition)
+            stat.append([name, index.evalTotalCount(condition)])
+        return stat
+
+    def makeComplexCondition(self, variants, filter_mode, context = None):
+        single_cr_seq = []
+        for name, condition in self.iterComplexCriteria(context, variants):
+            single_cr_seq.append(condition)
+        if filter_mode == "NOT":
+            return self.mCondEnv.joinAnd(
+                [cond.negative() for cond in single_cr_seq])
+        if filter_mode == "AND":
+            return self.mCondEnv.joinAnd(single_cr_seq)
+        return self.mCondEnv.joinOr(single_cr_seq)
+
+
