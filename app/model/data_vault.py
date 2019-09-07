@@ -149,7 +149,8 @@ class DataVault:
         ds = self._prepareDS(rq_args)
         modes = rq_args.get("m", "").upper()
         return ds.getViewRepr(int(rq_args.get("rec")),
-            'R' in modes or ds.getKind().lower == "xl")
+            'R' in modes or ds.getKind().lower == "xl",
+            details = rq_args.get("details"))
 
     #===============================================
     @RestAPI.vault_request

@@ -89,13 +89,14 @@ class Workspace(DataSet):
     def setMongoRecData(self, key, data, prev_data = False):
         self.getMongoAgent().setRecData(key, data, prev_data)
 
-    def _reportListKeys(self, rec_no_seq):
+    def _reportListKeys(self, rec_no_seq, rec_it_map_seq):
         marked_set = self.mTagsMan.getMarkedSet()
         ret = []
-        for rec_no in rec_no_seq:
+        for idx, rec_no in enumerate(rec_no_seq):
             ret.append([rec_no, escape(self.mTabRecLabel[rec_no]),
                 AnfisaConfig.normalizeColorCode(self.mTabRecColor[rec_no]),
-                rec_no in marked_set])
+                rec_no in marked_set,
+                rec_it_map_seq[idx].to01()])
         return ret
 
     def reportList(self, rec_no_seq, rec_it_map_seq,
@@ -116,8 +117,7 @@ class Workspace(DataSet):
             rep["list-mode"] = "samples"
         else:
             rep["list-mode"] = "complete"
-        rep["records"] = self._reportListKeys(rec_no_seq)
-        rep["details"] = [it_map.to01() for it_map in rec_it_map_seq]
+        rep["records"] = self._reportListKeys(rec_no_seq, rec_it_map_seq)
         return rep
 
     def getRecKey(self, rec_no):
@@ -287,16 +287,3 @@ class Workspace(DataSet):
     def rq__vsetup(self, rq_args):
         return self.getViewSetupReport()
 
-    #===============================================
-    # Deprecated
-    @RestAPI.ws_request
-    def rq__wsnote(self, rq_args):
-        note = rq_args.get("note")
-        if note is not None:
-            with self:
-                self.getMongoAgent().setNote(note)
-        note, time_label = self.getMongoAgent().getNote()
-        return {
-            "name": self.mName,
-            "note": note,
-            "time": time_label}

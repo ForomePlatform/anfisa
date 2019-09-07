@@ -5,7 +5,6 @@ var sCurRecID = null;
 var sTabPortData = [false, null, null];
 var sCurRandPortion = 1;
 var sRecList = null;
-var sDetailsList = null;
 var sRecSamples = null;
 var sViewRecNoSeq = null;
 var sAppModeRq = null;
@@ -59,7 +58,6 @@ function setupList(info) {
     document.getElementById("ws-list-rand-info").style.visibility = 
         (sRecSamples)?"visible":"hidden";
     sRecList = info["records"];
-    sDetailsList = info["details"];
     refreshRecList();
     arrangeControls();
 }
@@ -141,9 +139,9 @@ function changeRec(rec_no) {
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ws=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=1" + "&details=" + sDetailsList[sCurRecNo]);
+        sAppModeRq + "&rec=" + sCurRecID + "&port=1" + "&details=" + sRecList[sCurRecNo][4]);
     window.frames['rec-frame2'].location.replace("rec?ws=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=2" + "&details=" + sDetailsList[sCurRecNo]);
+        sAppModeRq + "&rec=" + sCurRecID + "&port=2" + "&details=" + sRecList[sCurRecNo][4]);
     updateTagNavigation();
 }
 

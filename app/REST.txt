@@ -51,6 +51,11 @@ Method "/list"
         "workspace" : <ws name>,
         "total":  int count of whole list
         "filtered": int count of list
+        "transcripts":
+          [
+                0: count of selected transcripts
+                1: total count of trancripts
+          ]
         "list-mode": "complete"/"samples"
         "records": 
           [ * list of records
@@ -59,6 +64,8 @@ Method "/list"
                 1: label of record
                 2: color
                 3: bool if record has any tag set, "marked", see Notes
+                4: details of trancripts, to be send to /rec method 
+                    with rec_no to select proper transcript columns
             ]
           ], ...
     }
@@ -143,6 +150,8 @@ Method "/reccnt"
     -> ds/ws        (!required, use ds in general context)
     -> m            (= "")
     -> rec          (!required)
+    -> details      (optional, selection of proper transcript columns, 
+            string with '0'/'1' symbols, should be got from /list call)
     <- 
     [ * prepared view presentation of record
         { * aspect/tab presentation data
@@ -254,6 +263,11 @@ Method "/stat"
         "compiled"   compiled info if neccessary
         "bad-idxs":  undefined or list of indexes of bad conditions in "conitions"
         "avail-import":   undefined or list of operational units available to import/activate 
+        "transcripts":
+          [
+                0: count of selected transcripts
+                1: total count of trancripts
+          ]
     }
     
   Notes:
@@ -665,6 +679,7 @@ Structure UnitStat
             "vgroup": view group name or null
             "render": render options or undefined
             "tooltip": tooltip or undefined
+            "detailed": true or undefined, if true counts both transcripts and records
             ... and more options special for type "zygosity"
         }
     
@@ -672,13 +687,14 @@ Structure UnitStat
     2: int/float minimum value
     3: int/float maximum value
     4: int count of records with value
-    5: int count of records woth undefined value
+    5: int count of records with undefined value
 
     * in case of unit type = "enum"/"status"
     2: [ * statictics for all values in enum
             [ * statistics for enum value
             0: name (name of value)
-            1: int count 
+            1: int count (transcripts if detailed, records otherwise)
+            2: (presents if unit is detailed), count of records
             ], ...
         ]
     * in case of unit type = "zygocity"
