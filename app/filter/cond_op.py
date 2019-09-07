@@ -1,6 +1,5 @@
 import traceback, logging
 from io import StringIO
-from .condition import ConditionMaker
 from .code_works import reprFilterCondition
 #===============================================
 class CondOpEnv:
@@ -53,21 +52,19 @@ class CondOpEnv:
     def parse(self, cond_data):
         return self.mCondEnv.parse(cond_data, self.mCompData)
 
-    def importUnit(self, instr_no, unit_name,
-            actual_cond_data, keep_actual = True):
+    def importUnit(self, instr_no, unit_name, actual_condition):
         _, unit_h = self.mCondEnv.detectUnit(unit_name, "operational")
         assert unit_h is not None
         if unit_h.getName() in self.mCompData:
             unit_comp_data = self.mCompData[unit_h.getName()]
         else:
-            unit_comp_data = unit_h.compile(actual_cond_data, keep_actual)
-        self.mCompData[unit_h.getName()] = unit_comp_data
+            unit_comp_data = unit_h.prepareImport(actual_condition)
+            self.mCompData[unit_h.getName()] = unit_comp_data
         self.mCompChanged = True
         self.mOperativeUnitSeq.append([instr_no, unit_h, unit_comp_data])
         return True
 
     def parseSeq(self, cond_seq):
-        actual_cond_data = []
         imp_op_units = set()
         for cond_data in cond_seq:
             if cond_data[0] == "import":
@@ -82,13 +79,12 @@ class CondOpEnv:
                     self.mBadIdxs.append(idx)
                 else:
                     self.importUnit(idx, op_unit_name,
-                        ConditionMaker.joinAnd(actual_cond_data), False)
+                        self.mCondEnv.joinAnd(self.mSeq))
                     used_op_units.add(op_unit_name)
                 continue
             try:
                 cond = self.parse(cond_data)
                 self.mSeq.append(cond)
-                actual_cond_data.append(cond_data)
             except Exception:
                 rep = StringIO()
                 print("Bad instruction:", cond_data, file = rep)

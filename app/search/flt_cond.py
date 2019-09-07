@@ -193,6 +193,9 @@ class WS_Condition:
             count_items += rec_it_map.count()
         return (count_grp, count_items, self.mCondEnv.getTotalCount())
 
+    def getSelectItemCount(self):
+        return self.mBitArray.count()
+
     def recInSelection(self, rec_no):
         grp_offset, grp_size = self.getCondEnv().getGroupPos(rec_no)
         return self.mBitArray[grp_offset:grp_offset + max(1, grp_size)].any()

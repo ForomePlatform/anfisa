@@ -29,7 +29,6 @@ class XLDataset(DataSet):
         self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addMetaNumUnit("_ord")
-        CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self)
 
         self.mUnits = []
         for unit_data in self.getFltSchema():
@@ -44,6 +43,7 @@ class XLDataset(DataSet):
             for unit_h in self.mUnits}
         for unit_h in self.mUnits:
             unit_h.setup()
+        CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self)
 
         self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
             for flt_name, cond_seq in self.mCondEnv.getXlFilters()}
@@ -156,7 +156,7 @@ class XLDataset(DataSet):
                 True, flt_info[1]])
         return sorted(ret)
 
-    def evalTotalCount(self, condition = None):
+    def evalTotalCount(self, condition = None, detailed = False):
         if condition is None:
             return self.getTotal()
         cond_repr = condition.getDruidRepr()

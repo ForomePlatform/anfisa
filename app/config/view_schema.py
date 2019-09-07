@@ -213,7 +213,6 @@ def defineViewSchema():
         AttrH("allele_string"),
         AttrH("variant_class"),
         AttrH("most_severe_consequence"),
-        AttrH("ws_compound_heterosygotes"),
         AttrH("ClinVar"),
         AttrH("clinvar_variants", is_seq = True),
         AttrH("clinvar_phenotypes", is_seq = True),

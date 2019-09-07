@@ -86,7 +86,11 @@ class Index:
     def hasStdFilter(self, filter_name):
         return filter_name in self.mStdFilters
 
-    def evalTotalCount(self, condition):
+    def evalTotalCount(self, condition, detailed = False):
+        if detailed:
+            if condition is None:
+                return self.mCondEnv.getTotalCount()
+            return condition.getSelectItemCount()
         if condition is None:
             return self.mWS.getTotal()
         return condition.countSelection()[0]

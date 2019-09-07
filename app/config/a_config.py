@@ -43,14 +43,21 @@ class AnfisaConfig:
         "filter.std.mark": u"\u23da",
 
         "comp-hets.setup": {
-            "zygosity": "Inheritance_Mode",
-            "Genes": "Symbol",
-            "Compound_heterozygous": "Compound_heterozygous",
-            "ws_compound_heterosygotes": "ws_compound_heterosygotes",
-            "comp-hets-max-rec": 1000,
+            "zygosity.unit": "Inheritance_Mode",
             "vgroup": "Inheritance",
-            "op-variables": ["Compound_Het", "Compound_Het2"],
-            "op-var-title": "Calculated Compound Hetreozygous"
+            "Genes": "Symbol",
+            "op-variables.xl": [
+                ["Compound_Het", "Symbol",
+                    "Calculated Compound Hetreozygous"],
+                ["Compound_Het2", "Symbol",
+                    "Calculated Compound Hetreozygous"]],
+            "op-variables.ws": [
+                ["Compound_Het_transcript", "Transcript_id",
+                    "Calculated Compound Hetreozygous, transcript approx"],
+                ["Compound_Het_gene", "Transctript_gene_id",
+                    "Calculated Compound Hetreozygous, gene approx"],
+                ["Compound_Het_rough", "Symbol",
+                    "Calculated Compound Hetreozygous, rough approx"]],
         },
 
         "transcript.path.base": "/data/transcript_consequences",

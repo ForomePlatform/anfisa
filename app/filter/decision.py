@@ -1,7 +1,6 @@
 import logging
 from app.config.a_config import AnfisaConfig
 from .cond_op import CondOpEnv
-from .condition import ConditionMaker
 from .code_works import htmlCodeDecoration, htmlCodePresentation
 #===============================================
 class CaseStory:
@@ -94,24 +93,10 @@ class CheckPoint:
         return self.getPrevPoint()._accumulateConditions().addOr(
             self.mCondition)
 
-    def _accumulateCondData(self):
-        if self.getPrevPoint() is None:
-            return self.getCondData()
-        assert self.getPrevPoint().getLevel() == self.getLevel()
-        prev = self.getPrevPoint()._accumulateCondData()
-        if prev[0] == "or":
-            return prev + [self.getCondData()]
-        return ["or", prev, self.getCondData()]
-
     def actualCondition(self):
         if self.getPrevPoint() is None:
             return self.getStory().getCondOpEnv().getCondAll()
         return self.getPrevPoint()._accumulateConditions().negative()
-
-    def actualCondData(self):
-        if self.getPrevPoint() is None:
-            return ConditionMaker.condAll()
-        return ["not",self.getPrevPoint()._accumulateCondData()]
 
     def getInfo(self, code_lines):
         return [self.getPointKind(), self.getLevel(),
@@ -148,13 +133,6 @@ class TerminalPoint(CheckPoint):
             return self.getPrevPoint()._accumulateConditions().negative()
         return self.getPrevPoint().getAppliedCondition()
 
-    def actualCondData(self):
-        if self.getPrevPoint() is None:
-            return ConditionMaker.condAll()
-        if self.getPrevPoint().getLevel() == self.getLevel():
-            return ["not", self.getPrevPoint()._accumulateCondData()]
-        return self.getPrevPoint().getAppliedCondData()
-
 #===============================================
 class ConditionPoint(CheckPoint):
     def __init__(self, story, frag, prev_point, point_no):
@@ -174,11 +152,6 @@ class ConditionPoint(CheckPoint):
 
     def getAppliedCondition(self):
         return self.actualCondition().addAnd(self.mCondition)
-
-    def getAppliedCondData(self):
-        if self.getPrevPoint() is None:
-            return self.getCondData()
-        return ["and", self.actualCondData(), self.getCondData()]
 
 #===============================================
 class DecisionTree(CaseStory):
@@ -201,7 +174,7 @@ class DecisionTree(CaseStory):
                     frag, prev_point, instr_no))
                 for unit_name in frag.getImportEntries():
                     self.mCondOpEnv.importUnit(instr_no, unit_name,
-                        self.actualCondData(instr_no))
+                        self.actualCondition(instr_no))
                 continue
             if frag.getInstrType() == "If":
                 assert frag.getDecision() is None
@@ -240,9 +213,6 @@ class DecisionTree(CaseStory):
 
     def actualCondition(self, point_no):
         return self.mPointList[point_no].actualCondition()
-
-    def actualCondData(self, point_no):
-        return self.mPointList[point_no].actualCondData()
 
     def checkZeroAfter(self, point_no):
         return self.mPointList[point_no].getPointKind() == "If"

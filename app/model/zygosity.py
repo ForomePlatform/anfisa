@@ -41,6 +41,9 @@ class ZygosityComplex(ComplexEnumSupport):
     def isOK(self):
         return self.mIsOK
 
+    def getFamUnit(self, idx):
+        return self.mFamUnits[idx]
+
     def conditionZHomoRecess(self, problem_group):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
@@ -115,7 +118,7 @@ class ZygosityComplex(ComplexEnumSupport):
 
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
-        return self.makeComplexCondition(variants, filter_mode, p_group)
+        return self.makeComplexCondition(filter_mode, variants, p_group)
 
     def processInstr(self, parser, ast_args, op_mode, variants):
         if len(ast_args) > 1:

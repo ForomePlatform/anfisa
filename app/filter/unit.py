@@ -82,15 +82,16 @@ class ComplexEnumSupport:
     def iterComplexCriteria(self, context = None, variants = None):
         pass
 
-    def collectComplexStat(self, index, base_condition, context = None):
+    def collectComplexStat(self, index, base_condition,
+            context = None, detailed = False):
         stat = []
         for name, condition in self.iterComplexCriteria(context):
             if base_condition is not None:
                 condition = condition.addAnd(base_condition)
-            stat.append([name, index.evalTotalCount(condition)])
+            stat.append([name, index.evalTotalCount(condition, detailed)])
         return stat
 
-    def makeComplexCondition(self, variants, filter_mode, context = None):
+    def makeComplexCondition(self, filter_mode, variants, context = None):
         single_cr_seq = []
         for name, condition in self.iterComplexCriteria(context, variants):
             single_cr_seq.append(condition)

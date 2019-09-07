@@ -57,8 +57,6 @@ def defineFilterSchema():
             "/data/zygosity", config = {"x_cond":
             ConditionMaker.condEnum("Chromosome", ["chrX"])},
             title = "Inheritance Mode")
-        filters.presenceUnit("Compound_heterozygous",
-            [("True", "/_filters/nowhere")])
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
