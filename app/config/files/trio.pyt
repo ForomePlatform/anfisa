@@ -10,7 +10,7 @@ if Inheritance_Mode() in {"Homozygous Recessive"}:
 if Inheritance_Mode() in {"Autosomal Dominant"}:
     return True
 
-if Compound_Het in {True}:
+if Compound_Het in {Proband}:
     return True
 
 return False

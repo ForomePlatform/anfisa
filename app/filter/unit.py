@@ -88,7 +88,10 @@ class ComplexEnumSupport:
         for name, condition in self.iterComplexCriteria(context):
             if base_condition is not None:
                 condition = condition.addAnd(base_condition)
-            stat.append([name, index.evalTotalCount(condition, detailed)])
+            info = [name, index.evalTotalCount(condition)]
+            if detailed:
+                info.insert(1, index.evalDetailedTotalCount(condition))
+            stat.append(info)
         return stat
 
     def makeComplexCondition(self, filter_mode, variants, context = None):

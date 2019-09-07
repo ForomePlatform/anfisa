@@ -65,19 +65,19 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         c_proband, c_father, c_mother = self._prepareZygConditions(trio_info)
 
         genes1 = set()
-        for gene, count in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
+        for stat_info in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
                 [actual_condition, c_proband, c_father])):
-            if count > 0:
-                genes1.add(gene)
+            if stat_info[1] > 0:
+                genes1.add(stat_info[0])
         logging.info("Eval genes1 for %s comp-hets: %d" %
             (trio_info[0], len(genes1)))
         if len(genes1) == None:
             return
         genes2 = set()
-        for gene, count in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
+        for stat_info in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
                 [actual_condition, c_proband, c_mother])):
-            if count > 0:
-                genes2.add(gene)
+            if stat_info[1] > 0:
+                genes2.add(stat_info[0])
         logging.info("Eval genes2 for %s comp-hets: %d" %
             (trio_info[0], len(genes2)))
         actual_genes = genes1 & genes2

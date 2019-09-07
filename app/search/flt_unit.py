@@ -244,9 +244,9 @@ class TranscriptStatusUnit(FilterUnit):
                 for value in values])
 
     def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet)
-        for it_idx in condition.iterItemIdx():
-            stat.regValues([self.mArray[it_idx]])
+        stat = EnumStat(self.mVariantSet, detailed = True)
+        for group_no, it_idx in condition.iterItemIdx():
+            stat.regValues([self.mArray[it_idx]], group_no = group_no)
         ret = self.prepareStat()
         ret[1]["detailed"] = True
         return ret + stat.result()
@@ -298,9 +298,10 @@ class TranscriptMultisetUnit(FilterUnit):
                 self._fillOne(values)
 
     def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet)
-        for it_idx in condition.iterItemIdx():
-            stat.regValues(self.mPackSetSeq[self.mArray[it_idx]])
+        stat = EnumStat(self.mVariantSet, detailed = True)
+        for group_no, it_idx in condition.iterItemIdx():
+            stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],
+                group_no = group_no)
         ret = self.prepareStat()
         ret[1]["detailed"] = True
         return ret + stat.result()

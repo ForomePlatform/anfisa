@@ -156,7 +156,7 @@ class XLDataset(DataSet):
                 True, flt_info[1]])
         return sorted(ret)
 
-    def evalTotalCount(self, condition = None, detailed = False):
+    def evalTotalCount(self, condition = None):
         if condition is None:
             return self.getTotal()
         cond_repr = condition.getDruidRepr()

@@ -177,6 +177,8 @@ var sOpEnumH = {
         for (j = 0; j < this.mVariants.length; j++) {
             var_name = this.mVariants[j][0];
             var_count = this.mVariants[j][1];
+            if (unit_stat[1]["detailed"] && var_count > 0)
+                var_count = var_count + "/" + this.mVariants[j][2];
             has_zero |= (var_count == 0);
             list_val_rep.push('<div class="enum-val' + 
                 ((var_count==0)? " zero":"") +'">' +
@@ -307,7 +309,7 @@ function zygCaseReportValues(zyg_case, list_stat_rep) {
         if (var_count == 0)
             continue;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(var_count, zyg_case.mUnitStat) + '</li>');
+            reportStatCount(zyg_case.mStat[j], zyg_case.mUnitStat) + '</li>');
     }
 }
         
@@ -756,7 +758,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
             list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
                 ' =< ...<= ' + normFloatLongTail(val_max, true) + ' </span>');
         }
-        list_stat_rep.push(': ' + reportStatCount(count, unit_stat));
+        list_stat_rep.push(': ' + reportStatCount([null, count], unit_stat));
     }
 }
 
@@ -795,7 +797,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count -= 1;
         list_count--;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(var_count, unit_stat) + '</li>');
+            reportStatCount(var_list[j], unit_stat) + '</li>');
     }
     list_stat_rep.push('</ul>');
     if (list_count > 0) {
@@ -804,8 +806,14 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     }
 }
 
-function reportStatCount(count, unit_stat) {
-    return '<span class="stat-count">' + count + ' ' +
-        ((unit_stat[1]["detailed"]? 'transcript':'variant')) + 
-        ((count>1)? 's':'') + '</span>';
+function reportStatCount(count_info, unit_stat) {
+    if (unit_stat[1]["detailed"]) {
+        cnt_rep = count_info[1] + '(' + count_info[2] + ')';
+        nm = "transcript";
+    } else {
+        cnt_rep = count_info[1];
+        nm = "variant";
+    }
+    return '<span class="stat-count">' + cnt_rep + ' ' + nm +  
+        ((count_info[1]>1)? 's':'') + '</span>';
 }

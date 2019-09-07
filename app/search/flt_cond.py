@@ -202,7 +202,13 @@ class WS_Condition:
 
     sPattTrue = bitarray('1')
     def iterItemIdx(self):
-        return self.mBitArray.itersearch(self.sPattTrue)
+        grp_idx = 0
+        groups = self.mCondEnv.mGroups
+        idx_max = len(groups) - 1
+        for idx_pos in self.mBitArray.itersearch(self.sPattTrue):
+            while (grp_idx < idx_max and idx_pos >= groups[grp_idx + 1][0]):
+                grp_idx += 1
+            yield grp_idx, idx_pos
 
 #===============================================
 class WS_Negation(WS_Condition):

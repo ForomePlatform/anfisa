@@ -86,14 +86,15 @@ class Index:
     def hasStdFilter(self, filter_name):
         return filter_name in self.mStdFilters
 
-    def evalTotalCount(self, condition, detailed = False):
-        if detailed:
-            if condition is None:
-                return self.mCondEnv.getTotalCount()
-            return condition.getSelectItemCount()
+    def evalTotalCount(self, condition):
         if condition is None:
             return self.mWS.getTotal()
         return condition.countSelection()[0]
+
+    def evalDetailedTotalCount(self, condition):
+        if condition is None:
+            return self.mCondEnv.getTotalCount()
+        return condition.getSelectItemCount()
 
     def checkResearchBlock(self, cond_seq):
         for cond_info in cond_seq:
