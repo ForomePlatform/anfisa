@@ -79,7 +79,7 @@ def _formMainDiv(output, workspace_name, ws_url):
                 </div>
                 <div id="export-result" class="drop"></div>
               </span>&nbsp;
-              Records:&nbsp;<span id="ws-list-report"></span>
+              Variants:&nbsp;<span id="ws-list-report"></span>
             </div>
             <div>
               <small>
@@ -372,7 +372,7 @@ def noRecords(output):
     startHtmlPage(output, css_files = ["anf.css"])
     print('''
   <body>
-    <h3>No records available</h3>
+    <h3>No variants available</h3>
     <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
             >zone</button>
         or

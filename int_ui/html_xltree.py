@@ -76,7 +76,7 @@ def _formXLPannel(output, ds):
             </div>
         </div>
         <div id="xl-cur-info">
-            Records in scope: <span id="list-report"></span><br/>
+            Variants in scope: <span id="list-report"></span><br/>
             <button id="xl-sub-view"
                 onclick="sSubViewH.show()">View variants</button>
         </div>

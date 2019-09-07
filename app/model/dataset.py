@@ -20,12 +20,8 @@ class DataSet:
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
-        self.mFamilyInfo = FamilyInfo.load(dataset_info.get("family"))
+        self.mFamilyInfo = FamilyInfo(dataset_info["meta"]["samples"])
         tuneAspects(self, self.mAspects)
-
-    def _setFamilyInfo(self, members):
-        assert self.mFamilyInfo is None
-        self.mFamilyInfo = FamilyInfo(members, members, [], None)
 
     def _setAspectHitGroup(self, aspect_name, group_attr):
         self.mAspects.setAspectHitGroup(aspect_name, group_attr)
@@ -92,11 +88,10 @@ class DataSet:
         return self.mAspects.getViewRepr(rec_data, research_mode, details)
 
     def getSourceVersions(self):
-        if "meta" in self.mDataInfo:
-            if "versions" in self.mDataInfo["meta"]:
-                versions = self.mDataInfo["meta"]["versions"]
-                return [[key, versions[key]]
-                    for key in sorted(versions.keys())]
+        if "versions" in self.mDataInfo["meta"]:
+            versions = self.mDataInfo["meta"]["versions"]
+            return [[key, versions[key]]
+                for key in sorted(versions.keys())]
         return []
 
     def getBaseDSName(self):

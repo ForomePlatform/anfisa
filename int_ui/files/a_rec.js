@@ -90,8 +90,8 @@ function init_r(port, init_aspect, ws_name, rec_id) {
         sAloneWS = ws_name;
         sAloneRecID = rec_id;
         el = document.getElementById("img-wrap");
-        el.innerHTML = "<b>Workspace</b>: " + ws_name + 
-            "<br/><b>Record</b>: " + rec_id;
+        el.innerHTML = "<b>Dataset</b>: " + ws_name + 
+            "<br/><b>Variant</b>: " + rec_id;
         el.onclick = null;
         el.className = "info";
     }

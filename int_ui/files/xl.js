@@ -47,11 +47,11 @@ function showExport() {
         return;
     }
     if (sUnitsH.mCount <= 300)
-        res_content = 'Export ' + sUnitsH.mCount + ' records?<br>' +
+        res_content = 'Export ' + sUnitsH.mCount + ' variants?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
             '&emsp;<button class="drop" onclick="relaxView();">Cancel</button>';
     else
-        res_content = 'Too many records for export: ' + 
+        res_content = 'Too many variants for export: ' + 
             sUnitsH.mCount + ' > 300.<br>' +
             '<button class="drop" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("export-result");
@@ -69,7 +69,7 @@ function setupExport(info) {
     res_el = document.getElementById("export-result");
     if (info["fname"]) {
         res_el.className = "drop";
-        res_el.innerHTML = 'Exported ' + sUnitsH.mCount + ' records<br>' +
+        res_el.innerHTML = 'Exported ' + sUnitsH.mCount + ' variants<br>' +
         '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
     } else {
         res_el.className = "drop problems";

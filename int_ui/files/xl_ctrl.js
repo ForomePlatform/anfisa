@@ -52,7 +52,7 @@ var sCreateWsH = {
             info[0] + ' of ' + info[1];
         var err_msg = "";
         if (info[0] >= 5000)
-            err_msg = "Too many records, try to reduce";
+            err_msg = "Too many variants, try to reduce";
         if (info[0] < 1)
             err_msg = "Empty set";
         this.mDivModProblems.innerHTML = err_msg;

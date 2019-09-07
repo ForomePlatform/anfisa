@@ -45,10 +45,10 @@ def prepareSolutions():
     # Production Decision Trees
     base_pack.regTreeCode("BGM xBrowse Alt",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
-        requires = {"trio"})
+        requires = {"trio_base"})
     base_pack.regTreeCode("Trio Candidates",
         cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
-        requires = {"trio"})
+        requires = {"trio_base"})
     base_pack.regTreeCode("All Rare Variants",
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
     base_pack.regTreeCode("Hearing Loss, v.4",
@@ -65,7 +65,7 @@ def prepareSolutions():
     #     cfgPathSeq(["rare.pyt", "return_true.pyt"]))
     # base_pack.regTreeCode("T Test",
     #     [cfgPath("trio.pyt")],
-    #     requires = {"trio"})
+    #     requires = {"trio_base"})
     # base_pack.regTreeCode("H Test",
     #     [cfgPath("hearing_loss.pyt")])
 

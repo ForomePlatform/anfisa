@@ -156,8 +156,6 @@ class SecondaryWsCreation(ExecutionTask):
             "mongo": self.mWSName,
             "base": self.mDS.getName(),
             "modes": ["secondary"],
-            "family": (self.mDS.getFamilyInfo().dump()
-                if self.mDS.getFamilyInfo() is not None else None),
             "meta": meta_rec,
             "doc": [],
             "receipt": receipt,

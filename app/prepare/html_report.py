@@ -62,7 +62,7 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
         print('<td class="rep-val">%s<td></tr>' % escape(val), file = output)
     print('    </table>', file = output)
 
-    if ("meta" in ds_info and "versions" in ds_info["meta"]
+    if ("versions" in ds_info["meta"]
             and len(ds_info["meta"]["versions"]) > 0):
         versions = ds_info["meta"]["versions"]
         print('<h2>Annotation sources versions</h2>', file = output)

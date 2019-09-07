@@ -19,7 +19,7 @@ class ZygosityComplex(ComplexEnumSupport):
         if not self.mIsOK:
             return
         self.mFamNames = ["%s_%d" % (descr["name"], idx)
-            for idx in range(len(self.mFamilyInfo.getMembers()))]
+            for idx in range(len(self.mFamilyInfo))]
         self.mFamUnits = None
         assert ("size" not in descr or
             descr["size"] == len(self.mFamilyInfo))
@@ -89,7 +89,7 @@ class ZygosityComplex(ComplexEnumSupport):
     def makeStat(self, index, condition, repr_context = None):
         assert self.mIsOK
         ret = self.prepareStat()
-        ret[1]["family"] = self.mFamilyInfo.getTitles()
+        ret[1]["family"] = self.mFamilyInfo.getNames()
         ret[1]["affected"] = self.mFamilyInfo.getAffectedGroup()
         if repr_context is None or "problem_group" not in repr_context:
             p_group = self.mFamilyInfo.getAffectedGroup()

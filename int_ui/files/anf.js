@@ -206,11 +206,11 @@ function updateTabCfg() {
 function showExport() {
     relaxView();
     if (sRecList.length <= 300)
-        res_content = 'Export ' + sRecList.length + ' records?<br>' +
+        res_content = 'Export ' + sRecList.length + ' variants?<br>' +
             '<button class="drop" onclick="doExport();">Export</button>' + 
             '&emsp;<button class="drop" onclick="relaxView();">Cancel</button>';
     else
-        res_content = 'Too many records for export: ' + 
+        res_content = 'Too many variants for export: ' + 
             sRecList.length + ' > 300.<br>' +
             '<button class="drop" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("export-result");
@@ -228,7 +228,7 @@ function setupExport(info) {
     res_el = document.getElementById("export-result");
     if (info["fname"]) {
         res_el.className = "drop";
-        res_el.innerHTML = 'Exported ' + sRecList.length + ' records<br>' +
+        res_el.innerHTML = 'Exported ' + sRecList.length + ' variants<br>' +
         '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
     } else {
         res_el.className = "drop problems";

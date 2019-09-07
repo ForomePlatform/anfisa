@@ -806,6 +806,6 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 
 function reportStatCount(count, unit_stat) {
     return '<span class="stat-count">' + count + ' ' +
-        ((unit_stat[1]["detailed"]? 'transcript':'record')) + 
+        ((unit_stat[1]["detailed"]? 'transcript':'variant')) + 
         ((count>1)? 's':'') + '</span>';
 }

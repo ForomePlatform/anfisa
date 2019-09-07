@@ -43,7 +43,7 @@ def _formXLPannel(output, ds_name):
                 <div id="export-result" class="drop"></div>
             </span>&emsp;
             XL dataset: <span id="xl-name"></span><br/>
-            Records: <span id="list-report"></span>
+            Variants: <span id="list-report"></span>
         </div>
         <div id="xl-list">
             <button id="xl-sub-view"

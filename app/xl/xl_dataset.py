@@ -8,7 +8,7 @@ from app.model.dataset import DataSet
 from .xl_unit import XL_Unit
 from .xl_cond import XL_CondEnv
 from .xl_list import XlListTask
-from app.model.comp_hets import CompHetsOperativeUnit, CompHetsMarkupBatch
+from app.model.comp_hets import CompHetsOperativeUnit
 from app.filter.cond_op import CondOpEnv
 from app.filter.decision import DecisionTree
 from app.filter.tree_parse import ParsedDecisionTree
@@ -517,10 +517,6 @@ class XLDataset(DataSet):
         else:
             op_cond, _ = self._prepareConditions(rq_args)
         markup_batch = None
-        if self.getFamilyInfo() is not None:
-            proband_rel = self.getFamilyInfo().getProbandRel()
-            if proband_rel:
-                markup_batch = CompHetsMarkupBatch(proband_rel)
         task = SecondaryWsCreation(self, rq_args["ws"],
             base_version, op_cond, std_name, markup_batch,
             "force" in rq_args)
