@@ -14,6 +14,9 @@ class XL_Unit(Unit):
     def getDruidKind(self):
         return self.mDruidKind
 
+    def isDetailed(self):
+        return False
+
     @staticmethod
     def create(dataset_h, descr):
         if descr["kind"] == "zygosity":
