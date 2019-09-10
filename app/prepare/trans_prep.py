@@ -109,6 +109,7 @@ class TrStatusConvertor(TrConvertor):
 
     def doRec(self, tr_seq, f_data):
         if len(tr_seq) == 0:
+            self.mVarCount[self.mDefaultValue] += 1
             return
 
         if self.mBoolVUnit is None:
