@@ -402,8 +402,9 @@ class TransctiptConvertor(ValueConvertor):
         self.mDescr["kind"] = tr_kind
         self.mDescr["tr_name"] = trans_name
         self.mDescr["pre_variants"] = variants
-        self.mDescr["default"] = default_value
         self.mDescr["bool_check"] = bool_check_value
+        if default_value is not None:
+            self.mDescr["default"] = default_value
 
     def process(self, rec_no, rec_data, result):
         pass

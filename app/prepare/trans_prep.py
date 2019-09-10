@@ -51,7 +51,7 @@ class TrConvertor:
         self.mDescr = unit_descr
         self.mName = unit_descr["name"]
         self.mTransName = unit_descr["tr_name"]
-        self.mDefaultValue = unit_descr["default"]
+        self.mDefaultValue = unit_descr.get("default")
         self.mPreVariants = unit_descr["pre_variants"]
         self.mVarCount = Counter()
         self.mBadCount = Counter()
@@ -73,14 +73,20 @@ class TrConvertor:
                 return False
             logging.error(err_msg)
         variants = []
+        default_count = None
         used_variants = set()
         if self.mPreVariants is not None:
             for var in self.mPreVariants:
                 if var in self.mVarCount:
                     variants.append([var, self.mVarCount[var]])
             used_variants = set(self.mPreVariants)
+        elif self.mDefaultValue in self.mVarCount:
+            default_count = self.mVarCount[self.mDefaultValue]
+            del self.mVarCount[self.mDefaultValue]
         for var in sorted(set(self.mVarCount.keys()) - used_variants):
             variants.append([var, self.mVarCount[var]])
+        if default_count is not None:
+            variants.append([self.mDefaultValue, default_count])
         self.mDescr["variants"] = variants
         return True
 
@@ -130,6 +136,8 @@ class TrStatusConvertor(TrConvertor):
                 val = self.mDefaultValue
             self.mVarCount[val] += 1
             res.append(val)
+        if len(res) == 0:
+            self.mVarCount[self.mDefaultValue] += 1
         f_data[self.mName] = res
 
 #===============================================
