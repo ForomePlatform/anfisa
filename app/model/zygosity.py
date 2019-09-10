@@ -16,8 +16,6 @@ class ZygosityComplex(ComplexEnumSupport):
         self.mVariantSet = VariantSet(self.mCaseLabels)
         self.mConfig = descr.get("config", dict())
         self.mXCondition = None
-        if not self.mIsOK:
-            return
         self.mFamNames = ["%s_%d" % (descr["name"], idx)
             for idx in range(len(self.mFamilyInfo))]
         self.mFamUnits = None
