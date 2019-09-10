@@ -160,7 +160,6 @@ def createDataSet(app_config, name, kind, mongo,
             "total": data_rec_no,
             "mongo": mongo,
             "modes": [],
-            "family": filter_set.getFamilyInfo().dump(),
             "meta": metadata_record,
             "doc": prepareDocDir(ds_doc_dir, ds_inventory),
             "date_loaded": date_loaded}

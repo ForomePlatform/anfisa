@@ -1,6 +1,7 @@
-import os, json, logging
+import os, json, logging, traceback
 from glob import glob
 from threading import Lock
+from io import StringIO
 
 from .workspace import Workspace
 from .rest_api import RestAPI
@@ -24,16 +25,30 @@ class DataVault:
                 ds_info = json.loads(inp.read())
             if ds_info["kind"] == "xl":
                 assert ds_info["name"] not in self.mDataSets
-                self.mDataSets[ds_info["name"]] = XLDataset(
-                    self, ds_info, ds_path)
+                try:
+                    ds_h = XLDataset(self, ds_info, ds_path)
+                except:
+                    rep = StringIO()
+                    print("Bad XL-dataset load:", ds_info["name"], file = rep)
+                    traceback.print_exc(file = rep)
+                    logging.error(rep.getvalue())
+                    continue
+                self.mDataSets[ds_info["name"]] = ds_h
                 names[0].append(ds_info["name"])
             else:
                 assert ds_info["kind"] == "ws"
                 workspaces.append((ds_info, ds_path))
         for ds_info, ds_path in workspaces:
             assert ds_info["name"] not in self.mDataSets
-            self.mDataSets[ds_info["name"]] = Workspace(
-                    self, ds_info, ds_path)
+            try:
+                ws_h = Workspace(self, ds_info, ds_path)
+            except:
+                rep = StringIO()
+                print("Bad WS-dataset load:", ds_info["name"], file = rep)
+                traceback.print_exc(file = rep)
+                logging.error(rep.getvalue())
+                continue
+            self.mDataSets[ds_info["name"]] = ws_h
             names[1].append(ds_info["name"])
         logging.info("Vault %s started with %d/%d datasets" %
             (self.mVaultDir, len(names[0]), len(names[1])))

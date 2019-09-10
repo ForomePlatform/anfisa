@@ -1,15 +1,20 @@
 #===============================================
 class FamilyInfo:
-    def __init__(self, samples):
+    def __init__(self, samples, proband_id = None):
         self.mMembers = sorted(samples.values(),
             key = lambda it: it["id"])
+        if proband_id is None:
+            for it in self.mMembers:
+                if it["id"].endswith("a1"):
+                    proband_id = it["id"]
         for idx, it in enumerate(self.mMembers):
-            if it["id"].endswith("a1"):
+            if it["id"] == proband_id:
                 if idx > 0:
                     del self.mMembers[idx]
                     self.mMembers.insert(0, it)
                 break
-        assert self.mMembers[0]["id"].endswith("a1")
+        assert self.mMembers[0]["id"] == proband_id
+
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
         for idx, it in enumerate(self.mMembers):

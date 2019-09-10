@@ -80,10 +80,16 @@ class SecondaryWsCreation(ExecutionTask):
             return None
 
         fdata_seq = []
+        cnt_delta = self.mDS.getTotal() // 20
+        cnt_cur_work = 0
         with self.mDS._openFData() as inp:
             fdata_inp = TextIOWrapper(inp,
                 encoding = "utf-8", line_buffering = True)
             for rec_no, line in enumerate(fdata_inp):
+                if rec_no >= cnt_cur_work:
+                    self.setStatus("Filtering records %d%s" % (
+                        (rec_no  * 100) // self.mDS.getTotal(), '%'))
+                    cnt_cur_work += cnt_delta
                 if rec_no in rec_no_set:
                     fdata_seq.append(json.loads(line.rstrip()))
         assert len(fdata_seq) == len(rec_no_seq)

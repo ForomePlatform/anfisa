@@ -325,22 +325,38 @@ class ZygosityConvertor(ValueConvertor):
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         self.mConfig = config
         self.mMaster = master
+        self.mMemberIds, self.mMemberNames = None,None
 
-    def process(self, rec_no, rec_data, result):
+    def _setupFamily(self):
         if self.mMaster.getFamilyInfo() is None:
             print("No dataset metadata with samples info",
                 file = sys.stderr)
             assert False
+        self.mMemberIds = [id
+            for id in self.mMaster.getFamilyInfo().iterIds()]
+        self.mMemberNames = ["%s_%d" % (self.getName(), idx)
+            for idx in range(len(self.mMemberIds))]
+
+    def process(self, rec_no, rec_data, result):
+        if self.mMemberIds is None:
+            self._setupFamily()
         zyg_distr_seq = self.mPathF(rec_data)
         assert len(zyg_distr_seq) == 1
         zyg_distr = zyg_distr_seq[0]
-        assert len(zyg_distr.keys()) == len(self.mMaster.getFamilyInfo())
-        for idx, member_id in enumerate(
-                self.mMaster.getFamilyInfo().iterIds()):
+        assert len(zyg_distr.keys()) == len(self.mMemberNames)
+        for idx, member_id in enumerate(self.mMemberIds):
             zyg_val = zyg_distr[member_id]
             if zyg_val is None:
                 zyg_val = -1
-            result["%s_%d" % (self.getName(), idx)] = zyg_val
+            result[self.mMemberNames[idx]] = zyg_val
+
+    def dump(self):
+        ret = ValueConvertor.dump(self)
+        ret["kind"] = "zygosity"
+        if self.mConfig is not None:
+            ret["config"] = self.mConfig
+        ret["size"] = len(self.mMemberNames)
+        return ret
 
 #===============================================
 class PanelConvertor(ValueConvertor):

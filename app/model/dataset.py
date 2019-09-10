@@ -20,7 +20,8 @@ class DataSet:
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
-        self.mFamilyInfo = FamilyInfo(dataset_info["meta"]["samples"])
+        self.mFamilyInfo = FamilyInfo(dataset_info["meta"]["samples"],
+            dataset_info["meta"].get("proband"))
         tuneAspects(self, self.mAspects)
 
     def _setAspectHitGroup(self, aspect_name, group_attr):

@@ -258,8 +258,6 @@ class TranscriptMultisetUnit(FilterUnit):
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
-        self.mDefaultValue = self.mVariantSet.indexOf(
-            self.getDescr()["default"])
         self._setScreened(
             sum([info[1] for info in variants_info]) == 0)
         self.mArray = array('L')

@@ -14,7 +14,8 @@ class FilterPrepareSetH:
 
     def setMeta(self, meta):
         self.mMeta = meta
-        self.mFamilyInfo = FamilyInfo(self.mMeta["samples"])
+        self.mFamilyInfo = FamilyInfo(self.mMeta["samples"],
+            self.mMeta.get("proband"))
 
     def getFamilyInfo(self):
         return self.mFamilyInfo

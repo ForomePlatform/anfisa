@@ -54,6 +54,7 @@ class DruidAdmin(DruidAgent):
             {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
+            print("U:", unit_data["name"], unit_data.get("kind"))
             if unit_data["kind"].startswith("transcript-"):
                 continue
             if unit_data["kind"] in {"long", "float"}:
@@ -61,8 +62,6 @@ class DruidAdmin(DruidAgent):
                     "name": unit_data["name"],
                     "type": unit_data["kind"]})
             elif unit_data["kind"] == "zygosity":
-                if unit_data["size"] < 2:
-                    continue
                 for idx in range(unit_data["size"]):
                     dim_container.append({
                         "name": "%s_%d" % (unit_data["name"], idx),
