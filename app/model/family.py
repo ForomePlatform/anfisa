@@ -46,12 +46,17 @@ class FamilyInfo:
             for key in ("members", "titles", "affected", "proband_rel")])
 
     @staticmethod
-    def detect(samples):
+    def detect(samples, proband_id):
         if "id" in samples[sorted(samples.keys())[0]]:
             samples = {it["id"]: it
                 for it in samples.values()}
         members = sorted(samples.keys())
-        if not members[0].endswith("a1"):
+        if (proband_id):
+            proband_idx = members.index(proband_id)
+            if (proband_idx > 0):
+                del members[proband_idx]
+                members.insert(0, proband_id)
+        elif not members[0].endswith("a1"):
             proband_idx = None
             for idx, member_id in enumerate(members):
                 if member_id.endswith("a1"):
