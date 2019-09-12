@@ -66,6 +66,8 @@ def defineFilterSchema():
             "consequence_terms", variants = sConsequenceVariants)
         filters.transctiptStatusUnit("Transcript_canonical", "canonical",
             bool_check_value = "1", default_value = "False")
+        filters.transctiptStatusUnit("Transcript_biotype", "biotype",
+            default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
             bool_check_value = "${Most_Severe_Consequence}",
             default_value = "False")
