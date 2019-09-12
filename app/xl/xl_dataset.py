@@ -312,15 +312,17 @@ class XLDataset(DataSet):
         point_no = int(rq_args["no"])
         if with_point and point_no < 0:
             return None, point_no, self.mCondEnv.getCondNone()
-        comp_data = (json.loads(rq_args["compiled"])
-            if "compiled" in rq_args else None)
+        #comp_data = (json.loads(rq_args["compiled"])
+        #    if "compiled" in rq_args else None)
+        comp_data = None
         parsed = ParsedDecisionTree(self.mCondEnv, rq_args["code"])
         tree = DecisionTree(parsed, comp_data)
         return tree, point_no,tree.actualCondition(point_no)
 
     def _prepareConditions(self, rq_args):
-        comp_data = (json.loads(rq_args["compiled"])
-            if "compiled" in rq_args else None)
+        #comp_data = (json.loads(rq_args["compiled"])
+        #    if "compiled" in rq_args else None)
+        comp_data = None
         op_cond = CondOpEnv(self.mCondEnv, comp_data,
             json.loads(rq_args["conditions"]))
         return op_cond, op_cond.getResult()

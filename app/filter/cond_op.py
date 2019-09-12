@@ -31,8 +31,8 @@ class CondOpEnv:
         return self.mName
 
     def report(self, ret_handle):
-        if self.mCompData:
-            ret_handle["compiled"] = self.mCompData
+        #if self.mCompData:
+        #    ret_handle["compiled"] = self.mCompData
         if self.mBadIdxs:
             ret_handle["bad-idxs"] = self.mBadIdxs
         names = []
