@@ -1,6 +1,4 @@
-import logging, traceback
-from io import StringIO
-
+from utils.log_err import logException
 from .view_repr import jsonHtmlRepr, htmlEscape
 #===============================================
 class AttrH:
@@ -90,11 +88,8 @@ class AttrH:
                 return ("&emsp;", "none")
             return (repr_text, self.getMainKind())
         except Exception:
-            rep = StringIO()
-            traceback.print_exc(file = rep, limit = 10)
-            logging.error(
-                ("Problem with attribute %s: obj = %r Stack:\n" %
-                    (self.getFullName(), val_obj)) + rep.getvalue())
+            logException("Problem with attribute %s: obj = %r" %
+                (self.getFullName(), val_obj))
             return ("???", "none")
 
     def _htmlRepr(self, value):

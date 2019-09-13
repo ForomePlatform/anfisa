@@ -1,7 +1,8 @@
-import json, logging, traceback
+import json, logging
 from copy import deepcopy
-from io import TextIOWrapper, StringIO
+from io import TextIOWrapper
 
+from utils.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.filter.cond_op import CondOpEnv
 from app.model.comp_hets import CompHetsOperativeUnit
@@ -61,8 +62,10 @@ class Index:
                 to_update.append(filter_name)
         for filter_name in to_update:
             filter_info = self.mFilterCache[filter_name]
-            self.cacheFilter(filter_name,
-                filter_info[0].getCondSeq(), filter_info[2])
+            if not self.cacheFilter(filter_name,
+                    filter_info[0].getCondSeq(), filter_info[2]):
+                logging.error("Filter %s for ws=%s failed" %
+                    (filter_name, self.mWS.getName()))
 
     def getWS(self):
         return self.mWS
@@ -104,15 +107,14 @@ class Index:
         return False
 
     def cacheFilter(self, filter_name, cond_seq, time_label):
-        op_env = CondOpEnv(self.mCondEnv, None, cond_seq, name = filter_name)
         try:
+            op_env = CondOpEnv(self.mCondEnv,
+                None, cond_seq, name = filter_name)
             cond_entry = (op_env, self.checkResearchBlock(cond_seq),
                 time_label)
         except:
-            rep = StringIO()
-            print("Bad filter compilation:", filter_name, file = rep)
-            traceback.print_exc(file = rep)
-            logging.warning(rep.getvalue())
+            logException("Bad filter %s compilation for ws=%s" %
+                (filter_name, self.mWS.getName()), error_mode = False)
             return False
         self.mFilterCache[filter_name] = cond_entry
         return True

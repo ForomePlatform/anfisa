@@ -1,7 +1,7 @@
-import sys, ast, traceback, logging
-from io import StringIO
+import sys, ast
 from collections import defaultdict
 
+from utils.log_err import logException
 from .code_works import reprConditionCode, findComment
 #===============================================
 class TreeFragment:
@@ -111,10 +111,7 @@ class ParsedDecisionTree:
                 self.arrangeDiapasons()
         except Exception as err:
             if self.mError is None:
-                rep = StringIO()
-                traceback.print_exc(file = rep, limit = 10)
-                logging.error("Exception on parse code. Stack:\n" +
-                    rep.getvalue())
+                logException("Exception on parse tree code")
                 raise err
             self.mFragments = None
 

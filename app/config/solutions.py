@@ -40,8 +40,9 @@ def prepareSolutions():
         ]),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_CMPD_HET"]),
-        ConditionMaker.condEnum("Transcript_source", ["Ensembl"])
-
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.importVar("Compound_Het_transcript"),
+        ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])
     ])
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"

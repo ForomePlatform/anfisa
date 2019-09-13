@@ -1,10 +1,10 @@
-import sys, os, traceback, logging
-from io import StringIO
+import sys, os, logging
 from urllib.parse import parse_qs
 from cgi import parse_header, parse_multipart
 import logging.config
 
 from .json_conf import loadJSonConfig
+from .log_err import logException
 #========================================
 class HServResponse:
     #========================================
@@ -117,11 +117,7 @@ class HServHandler:
                     for a, v in parse_qs(rq_body.decode("utf-8")).items():
                         query_args[a] = v[0]
             except Exception:
-                rep = StringIO()
-                traceback.print_exc(file = rep)
-                log_record = rep.getvalue()
-                logging.error(
-                    "Exception on read request body:\n " + log_record)
+                logException("Exception on read request body")
 
         return path, query_args
 
@@ -165,14 +161,10 @@ class HServHandler:
             return self.mApplication.request(
                 resp_h, path, query_args, rq_descr)
         except Exception:
-            rep = StringIO()
-            traceback.print_exc(file = rep, limit = 20)
-            log_record = rep.getvalue()
-            log_context = ""
+            msg = "Exception on request evaluation"
             if rq_descr:
-                log_context = "In context: " + " ".join(rq_descr) + "\n"
-            logging.error("Exception on request evaluation:\n " +
-                log_context + log_record)
+                msg += "\n In context: " + " ".join(rq_descr)
+            logException(msg)
             return resp_h.makeResponse(error = 500)
 
 #========================================

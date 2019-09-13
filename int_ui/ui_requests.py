@@ -1,6 +1,7 @@
-import logging, traceback
+import logging
 from io import StringIO
 
+from utils.log_err import logException
 from .gen_html import formWsPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage
 from .html_xltree import formXLTreePage
@@ -34,11 +35,7 @@ class IntUI:
         try:
             return cls._finishRequest(serv_h, rq_path, rq_args, data_vault)
         except:
-            rep = StringIO()
-            traceback.print_exc(file = rep)
-            log_record = rep.getvalue()
-            logging.error(
-                "Exception on evaluation request:\n " + log_record)
+            logException("Exception on evaluation request")
         return cls.notFoundResponse(serv_h)
 
     @classmethod

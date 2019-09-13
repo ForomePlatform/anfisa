@@ -1,5 +1,4 @@
-import traceback, logging
-from io import StringIO
+from utils.log_err import logException
 from .code_works import reprFilterCondition
 #===============================================
 class CondOpEnv:
@@ -86,11 +85,9 @@ class CondOpEnv:
                 cond = self.parse(cond_data)
                 self.mSeq.append(cond)
             except Exception:
-                rep = StringIO()
-                print("Bad instruction:", cond_data, file = rep)
-                traceback.print_exc(file = rep)
+                logException("Bad instruction: %r" % cond_data,
+                    error_mode = False)
                 self.mBadIdxs.append(idx)
-                logging.warning(rep.getvalue())
 
     def getPresentation(self):
         return [reprFilterCondition(instr) for instr in self.mCondSeq]

@@ -10,6 +10,10 @@ class ConditionMaker:
         return ["enum", unit_name, join_mode, variants]
 
     @staticmethod
+    def importVar(unit_name):
+        return ["import", unit_name]
+
+    @staticmethod
     def isAll(cond_data):
         return not cond_data
 

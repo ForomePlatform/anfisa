@@ -1,7 +1,7 @@
-import threading, logging, abc, traceback, time
-from io import StringIO
+import threading, abc, time
 from uuid import uuid4
 
+from .log_err import logException
 #===============================================
 class ExecutionTask:
     def __init__(self, descr):
@@ -49,10 +49,7 @@ class TaskHandler:
             self.mTask._setLock(pool.getLock())
             result = self.mTask.execIt()
         except Exception:
-            rep = StringIO()
-            traceback.print_exc(file = rep)
-            logging.error("Task failed:" +
-                self.mTask.getDescr() + "\n" + rep.getvalue())
+            logException("Task failed:" + self.mTask.getDescr())
             self.mTask.setStatus("Failed, ask tech support")
         self.mTask._setLock(None)
         pool.setResult(self.mTask, result)

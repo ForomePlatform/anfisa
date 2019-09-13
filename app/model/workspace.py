@@ -29,13 +29,11 @@ class Workspace(DataSet):
         for filter_name, cond_seq, time_label in \
                 self.getMongoAgent().getFilters():
             if self.mIndex.goodOpFilterName(filter_name):
-                try:
-                    self.mIndex.cacheFilter(filter_name,
+                if not self.mIndex.cacheFilter(filter_name,
                         ConditionMaker.upgradeOldFormatSeq(cond_seq),
-                        time_label)
-                except Exception as ex:
-                    logging.error("Exception on load filter %s:\n %s" %
-                        (filter_name, str(ex)))
+                        time_label):
+                    logging.error("Filter %s for ws=%s failed" %
+                        (filter_name, self.getName()))
         self.mZoneHandlers  = []
         for zone_title, unit_name in AnfisaConfig.configOption("zones"):
             if (unit_name == "_tags"):

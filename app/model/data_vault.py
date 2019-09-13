@@ -1,11 +1,11 @@
-import os, json, logging, traceback
+import os, json, logging
 from glob import glob
 from threading import Lock
-from io import StringIO
 
 from .workspace import Workspace
 from .rest_api import RestAPI
 from app.xl.xl_dataset import XLDataset
+from utils.log_err import logException
 #===============================================
 class DataVault:
     def __init__(self, application, vault_dir):
@@ -28,10 +28,7 @@ class DataVault:
                 try:
                     ds_h = XLDataset(self, ds_info, ds_path)
                 except:
-                    rep = StringIO()
-                    print("Bad XL-dataset load:", ds_info["name"], file = rep)
-                    traceback.print_exc(file = rep)
-                    logging.error(rep.getvalue())
+                    logException("Bad XL-dataset load: " + ds_info["name"])
                     continue
                 self.mDataSets[ds_info["name"]] = ds_h
                 names[0].append(ds_info["name"])
@@ -43,10 +40,7 @@ class DataVault:
             try:
                 ws_h = Workspace(self, ds_info, ds_path)
             except:
-                rep = StringIO()
-                print("Bad WS-dataset load:", ds_info["name"], file = rep)
-                traceback.print_exc(file = rep)
-                logging.error(rep.getvalue())
+                logException("Bad WS-dataset load: " + ds_info["name"])
                 continue
             self.mDataSets[ds_info["name"]] = ws_h
             names[1].append(ds_info["name"])
