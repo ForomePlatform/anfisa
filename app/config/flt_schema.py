@@ -61,25 +61,6 @@ def defineFilterSchema():
             title = "Called by")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
-    with filters.viewGroup("Transcripts"):
-        filters.transctiptMultisetUnit("Transctipt_consequence",
-            "consequence_terms", variants = sConsequenceVariants)
-        filters.transctiptStatusUnit("Transcript_canonical", "canonical",
-            bool_check_value = "1", default_value = "False")
-        filters.transctiptStatusUnit("Transcript_biotype", "biotype",
-            default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
-            bool_check_value = "${Most_Severe_Consequence}",
-            default_value = "False")
-        filters.transctiptStatusUnit("Transcript_id", "transcript_id",
-            default_value = "undefined")
-        filters.transctiptStatusUnit("Transctript_gene_id", "gene_id",
-            default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_source", "source",
-            default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_strand", "strand",
-            default_value = "undefined")
-
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",
             tooltip = ("Variant class as returned by VEP. "
@@ -95,6 +76,11 @@ def defineFilterSchema():
         filters.statusUnit("Canonical_Annotation",
             "/view/general/canonical_annotation",
             default_value = "undefined")
+        filters.intValueUnit("Number_ALTs",
+            "/_filters/alts",
+            title = "Number of Alternative alleles",
+            conversion = _conv_len, default_value = 0)
+
         #filters.intValueUnit("zyg_len", "/data/zygosity",
         #   conversion = _conv_len, default_value = 0)
 
@@ -115,6 +101,25 @@ def defineFilterSchema():
             "/data/transcript_consequences",
             title = "Number of transcripts at the position",
             conversion = _conv_len, default_value = 0)
+
+    with filters.viewGroup("Transcripts"):
+        filters.transctiptMultisetUnit("Transctipt_consequence",
+            "consequence_terms", variants = sConsequenceVariants)
+        filters.transctiptStatusUnit("Transcript_canonical", "canonical",
+            bool_check_value = "1", default_value = "False")
+        filters.transctiptStatusUnit("Transcript_biotype", "biotype",
+            default_value = "undefined")
+        filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
+            bool_check_value = "${Most_Severe_Consequence}",
+            default_value = "False")
+        filters.transctiptStatusUnit("Transcript_id", "transcript_id",
+            default_value = "undefined")
+        filters.transctiptStatusUnit("Transctript_gene_id", "gene_id",
+            default_value = "undefined")
+        filters.transctiptStatusUnit("Transcript_source", "source",
+            default_value = "undefined")
+        filters.transctiptStatusUnit("Transcript_strand", "strand",
+            default_value = "undefined")
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",

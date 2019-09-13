@@ -1,5 +1,5 @@
 #Exclude  variants not in hearing loss panel
-if Panels in {All_Hearing_Loss}:
+if Panels not in {ACMG59}:
     return False
 
 #Include Present in HGMD as "DM"

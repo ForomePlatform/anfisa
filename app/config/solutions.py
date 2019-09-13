@@ -22,8 +22,29 @@ def prepareSolutions():
     SolutionPack.regDefaultPack(base_pack)
     SolutionPack.regPack(base_pack)
 
-    base_pack.regFilterWS("Candidates_BGM", [
-        ConditionMaker.condEnum("Rules", ["Candidates_BGM"])])
+    # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
+    base_pack.regFilterWS("Compound_Het_xBrowse", [
+        ConditionMaker.condEnum("Transctipt_consequence", [
+            "splice_acceptor_variant",
+            "splice_donor_variant",
+            "stop_gained",
+            "frameshift_variant",
+            "inframe_insertion",
+            "inframe_deletion",
+            "missense_variant",
+            "protein_altering_variant",
+            "incomplete_terminal_codon_variant",
+            "synonymous_variant",
+            "splice_region_variant",
+            "coding_sequence_variant"
+        ]),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Callers", ["BGM_CMPD_HET"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"])
+
+    ])
+
+    # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [
         ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_01"]),
         ConditionMaker.condEnum("Rules", ["ACMG59"], "NOT")])
@@ -36,6 +57,8 @@ def prepareSolutions():
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_03_5", [
         ConditionMaker.condEnum("Rules", ["SEQaBOO_Hearing_Loss_v_03"]),
         ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])])
+
+    # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilterWS("SEQaBOO_ACMG59", [
         ConditionMaker.condEnum("Rules", ["SEQaBOO_ACMG59"]),
         ConditionMaker.condEnum("Rules", ["ACMG59"], "AND")])
