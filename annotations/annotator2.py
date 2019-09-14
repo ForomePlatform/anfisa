@@ -17,6 +17,7 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dir", dest="dir", help="Work directory", default=os.getcwd())
     parser.add_argument("-p", "--platform", dest="platform", help="Platform: wes/wgs/panel")
     parser.add_argument("-r", "--reuse", action='store_true', help="resue intermediate files from previous run")
+    parser.add_argument("-n", "--donotrun", action='store_true', help="Generate Inventory and exit")
 
     args = parser.parse_args()
     print (args)
@@ -105,6 +106,8 @@ if __name__ == '__main__':
         json.dump(config, cfg, indent=4)
 
     print ("Inventory: " + inventory)
+    if args.donotrun:
+        sys.exit(0)
 
     temp_dir = tempfile.mkdtemp(dir=working_dir, prefix="tmp_a_")
 
