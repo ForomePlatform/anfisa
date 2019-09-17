@@ -170,6 +170,8 @@ def defineViewSchema():
             is_seq = True),
         AttrH("clinVar", title = "ClinVar",
             is_seq = True, kind = "link"),
+        # AttrH("gtex", title="View on GTEx", kind="place",
+        #     tooltip="View this gene on GTEx portal"),
         AttrH("gene_cards", title = "GeneCards",
             is_seq = True, kind = "link"),
         AttrH("pubmed_search", title="PubMed Search Results",

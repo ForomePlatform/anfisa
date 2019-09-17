@@ -14,8 +14,10 @@ def _resetupAttr(aspect_h, attr_h):
 #===============================================
 def tuneAspects(dataset, aspects):
     view_gen = aspects["view_gen"]
+    view_db = aspects["view_db"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
+    _resetupAttr(view_db, GTEx_AttrH(view_gen))
 
     if "meta" not in dataset.getDataInfo():
         return
@@ -43,6 +45,26 @@ class UCSC_AttrH(AttrH):
         return ('<span title="UCSC">' +
             ('<a href="%s" target="UCSC">View in UCSC</a>' % link) +
             '</span>', "norm")
+
+#===============================================
+class GTEx_AttrH(AttrH):
+    GTEx_URL = ("https://www.gtexportal.org/home/gene/{}")
+
+    def __init__(self, view):
+        AttrH.__init__(self, "GTEx")
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, top_rec_obj):
+        genes = top_rec_obj["view"]["general"]["genes"]
+        if (not genes):
+            return None
+        links = []
+        for gene in genes:
+            url = self.GTEx_URL.format(gene)
+            links.append('<span title="GTEx">' +
+            '<a href="{}" target="GTEx">{}</a>'.format(url, gene) +
+            '</span>')
+        return ('<br>'.join(links), "norm")
 
 #===============================================
 class IGV_AttrH(AttrH):
