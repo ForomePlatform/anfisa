@@ -35,10 +35,10 @@ def defineViewSchema():
         AttrH("hg19", tooltip = "Genetic coordinates in HG19 Assembly"),
         AttrH("hg38", tooltip = "Genetic coordinates in HG38 Assembly"),
         AttrH("worst_annotation", title = "Worst Annotation",
-              tooltip="Most Severe Consequences from the transcript"
+              tooltip = "Most Severe Consequences from the transcript"
                       + " with the worst annotation"),
         AttrH("canonical_annotation", title = "Canonical Annotation",
-              tooltip="Most Severe Consequences from canonical transcripts"),
+              tooltip = "Most Severe Consequences from canonical transcripts"),
         AttrH("refseq_transcript_canonical",
             title = "RefSeq Transcript (Canonical)", is_seq = True),
         AttrH("refseq_transcript_worst",
@@ -62,18 +62,18 @@ def defineViewSchema():
         AttrH("ppos_other", title = "pPos (Other)", is_seq = True),
         AttrH("variant_exon_canonical",
             title = "Variant Exon (Canonical)", is_seq = True,
-              tooltip="Exon # according to canonical transcript"),
+              tooltip = "Exon # according to canonical transcript"),
         AttrH("variant_exon_worst",
             title = "Variant Exon (Worst Annotation)", is_seq = True,
-            tooltip="Exon # according to the transcript with "
+            tooltip = "Exon # according to the transcript with "
                     + "the worst annotation"),
         AttrH("variant_intron_worst",
             title = "Variant Intron (Worst Annotation)", is_seq = True,
-            tooltip="Intron # according to the transcript with "
+            tooltip = "Intron # according to the transcript with "
                     + "the worst annotation"),
         AttrH("variant_intron_canonical",
             title = "Variant Intron (Canonical)", is_seq = True,
-            tooltip="Intron # according to canonical transcript"),
+            tooltip = "Intron # according to canonical transcript"),
         AttrH("gene_panels", title = "Gene panels", is_seq = True),
         AttrH(None),
         AttrH("proband_genotype", title = "Proband Genotype"),
@@ -82,8 +82,8 @@ def defineViewSchema():
         AttrH("igv", title = "IGV", kind = "place",
             tooltip = "Open this variant in local IGV "
             "(https://software.broadinstitute.org/software/igv/)"),
-        AttrH("ucsc", title="View in UCSC", kind="place",
-            tooltip="View this variant in UCSC Browser")
+        AttrH("ucsc", title = "View in UCSC", kind = "place",
+            tooltip = "View this variant in UCSC Browser")
     ])
 
     aspects["view_qsamples"].setAttributes([
@@ -133,11 +133,11 @@ def defineViewSchema():
         AttrH("allele", title = "Allele"),
         AttrH("proband", title = "Proband"),
         AttrH("pli", title = "pLI", is_seq = True),
-        AttrH("af", title="Overall AF"),
+        AttrH("af", title = "Overall AF"),
         AttrH("genome_af", title = "Genome AF"),
         AttrH("exome_af", title = "Exome AF"),
-        AttrH("genome_an", title="Genome AN"),
-        AttrH("exome_an", title="Exome AN"),
+        AttrH("genome_an", title = "Genome AN"),
+        AttrH("exome_an", title = "Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq=True),
         AttrH("pop_max", title = "PopMax",)])
 
@@ -170,14 +170,14 @@ def defineViewSchema():
             is_seq = True),
         AttrH("clinVar", title = "ClinVar",
             is_seq = True, kind = "link"),
-        # AttrH("gtex", title="View on GTEx", kind="place",
-        #     tooltip="View this gene on GTEx portal"),
+        AttrH("gtex", title = "View on GTEx", kind = "place",
+            tooltip = "View this gene on GTEx portal"),
         AttrH("gene_cards", title = "GeneCards",
             is_seq = True, kind = "link"),
-        AttrH("pubmed_search", title="PubMed Search Results",
+        AttrH("pubmed_search", title = "PubMed Search Results",
             is_seq = True, kind = "link"),
-        AttrH("beacons", title="Observed at", is_seq = True),
-        AttrH("beacon_url", title="Search Beacons",
+        AttrH("beacons", title = "Observed at", is_seq = True),
+        AttrH("beacon_url", title = "Search Beacons",
             is_seq = True, kind = "link")])
 
     aspects["view_pred"].setAttributes([
@@ -219,13 +219,13 @@ def defineViewSchema():
         AttrH("zygosity", title = "Zygosity"),
         AttrH("inherited_from", title = "Inherited from"),
         AttrH("dist_from_exon_worst",
-            title="Distance From Intron/Exon Boundary (Worst)",
+            title = "Distance From Intron/Exon Boundary (Worst)",
             is_seq = True),
         AttrH("dist_from_exon_canonical",
-            title="Distance From Intron/Exon Boundary (Canonical)",
+            title = "Distance From Intron/Exon Boundary (Canonical)",
             is_seq = True),
         AttrH("gerp_rs", title = "GERP Score", is_seq = False),
-        AttrH("conservation", title = "Conservation", kind="json"),
+        AttrH("conservation", title = "Conservation", kind = "json"),
         AttrH("species_with_variant",
             title = "Species with variant"),
         AttrH("species_with_others",
@@ -233,14 +233,16 @@ def defineViewSchema():
         AttrH("max_ent_scan", title = "MaxEntScan", is_seq = True),
         AttrH("nn_splice", title = "NNSplice"),
         AttrH("human_splicing_finder", title = "Human Splicing Finder"),
-        #AttrH("splice_ai", title="Splice AI Max Score"),
-        AttrH("splice_ai_ag", title="Splice AI acceptor gain", is_seq = True),
-        AttrH("splice_ai_al", title="Splice AI acceptor loss", is_seq = True),
-        AttrH("splice_ai_dg", title="Splice AI donor gain", is_seq = True),
-        AttrH("splice_ai_dl", title="Splice AI donor loss", is_seq = True),
-        AttrH("splice_ai", kind="hidden"),
+        #AttrH("splice_ai", title = "Splice AI Max Score"),
+        AttrH("splice_ai_ag", title = "Splice AI acceptor gain",
+            is_seq = True),
+        AttrH("splice_ai_al", title = "Splice AI acceptor loss",
+            is_seq = True),
+        AttrH("splice_ai_dg", title = "Splice AI donor gain", is_seq = True),
+        AttrH("splice_ai_dl", title = "Splice AI donor loss", is_seq = True),
+        AttrH("splice_ai", kind = "hidden"),
         AttrH("other_genes",
-            title="Gene symbols from other transcripts",
+            title = "Gene symbols from other transcripts",
             is_seq = True),
         AttrH("called_by", title = "Called by", is_seq = True),
         AttrH("caller_data", title = "CALLER DATA")])

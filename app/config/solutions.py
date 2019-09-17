@@ -42,8 +42,8 @@ def prepareSolutions():
         ConditionMaker.condEnum("Callers", ["BGM_CMPD_HET"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
         ConditionMaker.importVar("Compound_Het_transcript"),
-        ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])
-    ])
+        ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
+        requires = {"trio_base"})
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [
