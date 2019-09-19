@@ -1,4 +1,5 @@
 import sys, os, json, re
+from datetime import datetime
 
 #========================================
 sCommentLinePatt = re.compile("^\s*//.*$")
@@ -52,6 +53,12 @@ def _processSpecInstr(instr):
     assert False
 
 #========================================
+def genTS():
+    dt = datetime.now()
+    return ("%04d-%02d-%02d-%02d-%02d-%02d.%03d" % (dt.year, dt.month,
+        dt.day, dt.hour, dt.minute, dt.second, dt.microsecond//1000))
+
+#========================================
 sCommentLinePatt = re.compile("^\s*//.*$")
 
 def loadDatasetInventory(inv_file):
@@ -69,6 +76,7 @@ def loadDatasetInventory(inv_file):
     content = readCommentedJSon(inv_file)
     content = _processAlias(content, "NAME", base_name, aliases_done)
     content = _processAlias(content, "DIR", dir_path, aliases_done)
+    content = _processAlias(content, "TS", genTS(), aliases_done)
 
     pre_config = json.loads(content)
 
