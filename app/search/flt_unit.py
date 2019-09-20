@@ -155,12 +155,12 @@ class ZygosityComplexUnit(FilterUnit):
         self._setScreened(self.getIndex().getWS().getApp().
             hasRunOption("no-custom"))
         self.mFamilyInfo = self.getIndex().getWS().getFamilyInfo()
-        assert ("size" not in unit_data or
-            unit_data["size"] == len(self.mFamilyInfo))
         self.mIsOK = (self.mFamilyInfo is not None and
             len(self.mFamilyInfo) > 1)
         if not self.mIsOK:
             return
+        assert ("size" not in unit_data or
+            unit_data["size"] == len(self.mFamilyInfo))
         self.mColumns = [dc_collection.makeColumn(self,
             "%s_%d" % (self.getName(), idx), dc_collection.ATOM_DATA_TYPE_INT)
             for idx, member_name in enumerate(self.mFamilyInfo.getMembers())]
@@ -305,7 +305,8 @@ def loadWSFilterUnit(index, dc_collection, unit_data):
         return ret if ret.isOK() else None
     if kind in ("long", "float"):
        return NumericValueUnit(index, dc_collection, unit_data)
-    assert kind in ("enum", "presence")
+    if kind not in ("enum", "presence"):
+        assert False
     if kind == "enum" and unit_data["atomic"]:
         return StatusUnit(index, dc_collection, unit_data)
     if kind == "enum" and unit_data["compact"]:
