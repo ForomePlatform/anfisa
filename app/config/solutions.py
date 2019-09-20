@@ -13,18 +13,9 @@ def cfgPathSeq(fnames):
 
 #===============================================
 sSolutionsAreSet = False
-def prepareSolutions():
-    global sSolutionsAreSet
-    if sSolutionsAreSet:
-        return
-    sSolutionsAreSet = True
-    base_pack = SolutionPack("BASE")
-    SolutionPack.regDefaultPack(base_pack)
-    SolutionPack.regPack(base_pack)
 
-    # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
-    base_pack.regFilterWS("Compound_Het_xBrowse", [
-        ConditionMaker.condEnum("Transctipt_consequence", [
+def condition_consequence_xBrowse ():
+    return ConditionMaker.condEnum("Transctipt_consequence", [
             "splice_acceptor_variant",
             "splice_donor_variant",
             "stop_gained",
@@ -37,12 +28,45 @@ def prepareSolutions():
             "synonymous_variant",
             "splice_region_variant",
             "coding_sequence_variant"
-        ]),
+        ])
+
+def prepareSolutions():
+    global sSolutionsAreSet
+    if sSolutionsAreSet:
+        return
+    sSolutionsAreSet = True
+    base_pack = SolutionPack("BASE")
+    SolutionPack.regDefaultPack(base_pack)
+    SolutionPack.regPack(base_pack)
+
+    # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
+    base_pack.regFilterWS("BGM_De_Novo", [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Callers", ["BGM_BAYES_DE_NOVO", "RUFUS"])]
+        ,requires = {"trio_base"})
+
+    base_pack.regFilterWS("BGM_Homozygous_Rec", [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Callers", ["BGM_HOM_REC"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.condEnum("Inheritance_Mode", ["Homozygous Recessive"])])
+        #,requires = {"trio_base"})
+
+    base_pack.regFilterWS("BGM_Compound_Het", [
+        condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_CMPD_HET"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
         ConditionMaker.importVar("Compound_Het_transcript"),
         ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
+        requires = {"trio_base"})
+
+    base_pack.regFilterWS("BGM_Auto_Dom", [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Callers", ["BGM_DE_NOVO"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"])],
         requires = {"trio_base"})
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
