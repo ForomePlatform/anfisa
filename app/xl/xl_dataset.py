@@ -122,7 +122,7 @@ class XLDataset(DataSet):
         if self.goodOpFilterName(flt_name):
             with self:
                 if op == "UPDATE":
-                    time_label = self.getMongoAgent.setFilter(
+                    time_label = self.getMongoAgent().setFilter(
                         flt_name, cond_seq)
                     self.cacheFilter(flt_name, cond_seq, time_label)
                     filter_name = flt_name
