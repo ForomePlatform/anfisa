@@ -1,0 +1,30 @@
+version: "3.1"
+
+services:
+
+  mongo:
+    image: mongo:3.6.14-xenial
+    container_name: anfisa_mongo_db
+    volumes:
+      - "anfisa_mongo:/data/db"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: anfisa_standalone
+    volumes:
+      - "anfisa_data:/data/projects/anfisa-data"
+    container_name: anfisa_standalone
+    depends_on:
+      - mongo
+    stdin_open: true
+    tty: true
+    ports:
+      - "8190:8190"
+    command: >
+      bash -c "python app/run.py"
+
+volumes:
+  anfisa_data:
+  anfisa_mongo:
