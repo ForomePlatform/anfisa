@@ -53,6 +53,8 @@ def defineFilterSchema():
     filters = FilterPrepareSetH()
 
     with filters.viewGroup("Inheritance"):
+        filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
+                           title="Proband Zygosity")
         filters.zygositySpecialUnit("Inheritance_Mode",
             "/data/zygosity", config = {"x_cond":
             ConditionMaker.condEnum("Chromosome", ["chrX"])},

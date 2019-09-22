@@ -5,6 +5,8 @@ if Proband_GQ <= 19:
 #Always include De-Novo variants
 if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
+if (Callers in {"RUFUS"}):
+    return True
 
 #Exclude common variants
 if gnomAD_AF_Genomes >= 0.01:

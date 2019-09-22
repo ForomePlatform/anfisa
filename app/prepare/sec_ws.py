@@ -37,7 +37,7 @@ class SecondaryWsCreation(ExecutionTask):
         if not self.correctWSName(self.mWSName):
             self.setStatus("Incorrect workspace name")
             return None
-        self.setStatus("Prepare creation")
+        self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         if self.mBaseVersion is not None:
             tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
@@ -98,7 +98,7 @@ class SecondaryWsCreation(ExecutionTask):
         flt_schema  = deepcopy(self.mDS.getFltSchema())
         trans_prep = TranscriptPreparator(flt_schema, False)
         if self.mMarkupBatch is not None:
-            self.setStatus("Markup evaluation")
+            self.setStatus("Evaluating markup")
             for rec_no, fdata in zip(rec_no_seq, fdata_seq):
                 self.mMarkupBatch.feed(rec_no, fdata)
             self.mMarkupBatch.finishUp(view_schema, flt_schema)
@@ -110,7 +110,7 @@ class SecondaryWsCreation(ExecutionTask):
         with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
             for out_rec_no, rec_no in enumerate(rec_no_seq):
                 if out_rec_no > 0 and (out_rec_no % self.mReportLines) == 0:
-                    self.setStatus("Prepare records: %d/%d" %
+                    self.setStatus("Extracting records: %d/%d" %
                         (out_rec_no, len(rec_no_seq)))
                 rec_data = self.mDS.getRecordData(rec_no)
                 if self.mMarkupBatch is not None:
@@ -119,7 +119,7 @@ class SecondaryWsCreation(ExecutionTask):
                 trans_prep.doRec(rec_data, fdata_seq[out_rec_no])
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
-        self.setStatus("Prepare fdata")
+        self.setStatus("Building indices")
         with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_stream:
             fdata_out = TextIOWrapper(fdata_stream,
                 encoding = "utf-8", line_buffering = True)
@@ -127,7 +127,7 @@ class SecondaryWsCreation(ExecutionTask):
                 print(json.dumps(fdata, ensure_ascii = False),
                     file = fdata_out)
 
-        self.setStatus("Prepare pdata")
+        self.setStatus("Extracting workspace data")
         with self.mDS._openPData() as inp, \
                 gzip.open(ws_dir + "/pdata.json.gz", 'wb') as outp:
             pdata_inp = TextIOWrapper(inp,
@@ -139,7 +139,7 @@ class SecondaryWsCreation(ExecutionTask):
                     print(line.rstrip(), file = pdata_outp)
 
         self.setStatus("Finishing...")
-        logging.info("Finishing up workspace %s" % self.mWSName)
+        logging.info("Finalizing workspace %s" % self.mWSName)
 
         total_item_count = trans_prep.finishUp()
 
