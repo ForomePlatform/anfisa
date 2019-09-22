@@ -10,6 +10,14 @@ class ConditionMaker:
         return ["enum", unit_name, join_mode, variants]
 
     @staticmethod
+    def condInheritance(unit_name, variants,
+            join_mode = "OR", problem_group = None):
+        assert join_mode in {"AND", "OR", "ONLY", "NOT"}
+        if problem_group is not None:
+            problem_group = sorted(problem_group)
+        return ["zygosity", unit_name, problem_group, join_mode, variants]
+
+    @staticmethod
     def importVar(unit_name):
         return ["import", unit_name]
 

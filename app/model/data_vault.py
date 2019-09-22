@@ -113,7 +113,7 @@ class DataVault:
     def _prepareDS(self, rq_args):
         kind = "ws" if "ws" in rq_args else "ds"
         ds = self.mDataSets[rq_args[kind]]
-        assert kind == "ds" or ds.getKind().lower() == "ws"
+        assert kind == "ds" or ds.getDSKind().lower() == "ws"
         return ds
 
     def getBaseDS(self, ws_h):
@@ -158,7 +158,7 @@ class DataVault:
         ds = self._prepareDS(rq_args)
         modes = rq_args.get("m", "").upper()
         return ds.getViewRepr(int(rq_args.get("rec")),
-            'R' in modes or ds.getKind().lower == "xl",
+            'R' in modes or ds.getDSKind().lower == "xl",
             details = rq_args.get("details"))
 
     #===============================================
