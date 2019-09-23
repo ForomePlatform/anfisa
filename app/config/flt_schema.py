@@ -238,13 +238,14 @@ def defineFilterSchema():
     with filters.viewGroup("Predictions"):
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
             title = "Categorized Benign in HGMD",
-            default_value = "Not in HGMD")
+            default_value = "Not in HGMD", research_only=True)
         filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
             default_value = "None")
 
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar",
-            title = "Categorized Benign in ClinVar by all submitters")
+            title = "Categorized Benign in ClinVar by all submitters",
+                           research_only=True)
         filters.multiStatusUnit("ClinVar_Significance",
             "/data/clinvar_significance[]",
             title = "Clinical Significance in ClinVar")

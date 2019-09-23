@@ -41,7 +41,7 @@ class UCSC_AttrH(AttrH):
         end = int(top_rec_obj["data"]["end"])
         link = self.UCSC_URL.format(
             top_rec_obj["data"]["seq_region_name"],
-            max(0, start - 250), end + 250)
+            max(0, start - 50), end + 50)
         return ('<span title="UCSC">' +
             ('<a href="%s" target="UCSC">View in UCSC</a>' % link) +
             '</span>', "norm")
