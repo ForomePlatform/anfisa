@@ -32,6 +32,7 @@ class EnumStat:
         self.mVariantSet = variant_set
         self.mStat = Counter()
         self.mGroupStat = None
+        self.mNoZeros = len(self.mVariantSet) > 50
         if detailed:
             self.mGroupStat = Counter()
             self.mCurGroupNo = None
@@ -69,6 +70,8 @@ class EnumStat:
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
             info = [variant, self.mStat.get(idx, 0)]
+            if self.mNoZeros and info[1] == 0:
+                continue
             if self.mGroupStat is not None:
                 info.append(self.mGroupStat.get(idx, 0))
             rep_list.append(info)
