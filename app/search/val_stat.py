@@ -31,6 +31,7 @@ class EnumStat:
     def __init__(self, variant_set):
         self.mVariantSet = variant_set
         self.mStat = Counter()
+        self.mNoZeros = len(self.mVariantSet) > 50
 
     def isDefined(self):
         for cnt in self.mStat.values():
@@ -50,5 +51,8 @@ class EnumStat:
     def result(self):
         rep_list = []
         for idx, variant in enumerate(iter(self.mVariantSet)):
-            rep_list.append([variant, self.mStat.get(idx, 0)])
+            info = [variant, self.mStat.get(idx, 0)]
+            if self.mNoZeros and info[1] == 0:
+                continue
+            rep_list.append(info)
         return [rep_list]
