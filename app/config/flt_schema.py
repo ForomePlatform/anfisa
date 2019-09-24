@@ -9,6 +9,13 @@ def _conv_len(arr):
         return len(arr)
     return 0
 
+def _conv_bool(v, s1, s2):
+    if v in [True, "True"]:
+        return s1
+    elif v in [False, "False"]:
+        return s2
+    return v
+
 #===============================================
 sConsequenceVariants = [
     "transcript_ablation",
