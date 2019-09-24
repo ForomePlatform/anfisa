@@ -4,6 +4,16 @@ def evalRec(env, rec):
     if (rec.Severity > 2):
         return True
 
+    # 2.a.	Present in ClinVar Path, Likely Path, VUS (worst annotation).
+    clinvar_clinically_significant = (rec.Clinvar_Benign == False) \
+        and (rec.Clinvar_Trusted_Benign in {False, "No data"})
+    if (clinvar_clinically_significant):
+        return True
+
+    # Include Splice Altering variants
+    if (rec.splice_ai_dsmax > 0.2):
+        return True
+
     if len(rec.Polyphen &
             {"possibly_damaging", "probably_damaging"}) > 0:
         return True
