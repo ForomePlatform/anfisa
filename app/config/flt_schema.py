@@ -245,7 +245,7 @@ def defineFilterSchema():
     with filters.viewGroup("Predictions"):
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
             title = "Categorized Benign in HGMD",
-            default_value = "Not in HGMD", research_only=True)
+            default_value = "Not in HGMD", research_only=True, render_mode="replace(True/Benign, False/Not Benign)")
         filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
             default_value = "None")
 

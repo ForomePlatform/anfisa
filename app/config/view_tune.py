@@ -18,6 +18,9 @@ def tuneAspects(dataset, aspects):
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
     _resetupAttr(view_db, GTEx_AttrH(view_gen))
+    _resetupAttr(view_db, OMIM_AttrH(view_gen))
+    _resetupAttr(view_db, GREV_AttrH(view_gen))
+    _resetupAttr(view_db, MEDGEN_AttrH(view_gen))
 
     if "meta" not in dataset.getDataInfo():
         return
@@ -39,19 +42,28 @@ class UCSC_AttrH(AttrH):
     def htmlRepr(self, obj, top_rec_obj):
         start = int(top_rec_obj["data"]["start"])
         end = int(top_rec_obj["data"]["end"])
-        link = self.UCSC_URL.format(
+        link1 = self.UCSC_URL.format(
             top_rec_obj["data"]["seq_region_name"],
-            max(0, start - 50), end + 50)
-        return ('<span title="UCSC">' +
-            ('<a href="%s" target="UCSC">View in UCSC</a>' % link) +
-            '</span>', "norm")
+            max(0, start - 10), end + 10)
+        link2 = self.UCSC_URL.format(
+            top_rec_obj["data"]["seq_region_name"],
+            max(0, start - 250), end + 250)
+        return ('<table cellpadding="50"><tr><td>' +
+                '<span title="Max Zoom In, 20bp range">' +
+                ('<a href="%s" target="UCSC">Close Up</a>' % link1) +
+                '</span> </td><td>' +
+                '<span title="Zoom Out, 500bp range">' +
+                ('<a href="%s" target="UCSC">Zoom Out</a>' % link2) +
+                '</span> </td><td></table>',
+                "norm")
 
 #===============================================
 class GTEx_AttrH(AttrH):
     GTEx_URL = ("https://www.gtexportal.org/home/gene/{}")
 
     def __init__(self, view):
-        AttrH.__init__(self, "GTEx")
+        AttrH.__init__(self, "GTEx", title = "View on GTEx",
+            tooltip = "View this gene on GTEx portal")
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
@@ -63,6 +75,66 @@ class GTEx_AttrH(AttrH):
             url = self.GTEx_URL.format(gene)
             links.append('<span title="GTEx">' +
             '<a href="{}" target="GTEx">{}</a>'.format(url, gene) +
+            '</span>')
+        return ('<br>'.join(links), "norm")
+
+#===============================================
+class OMIM_AttrH(AttrH):
+    OMIM_URL = ("https://omim.org/search/?index=geneMap&feild=approved_gene_symbol&search={}")
+
+    def __init__(self, view):
+        AttrH.__init__(self, "OMIM")
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, top_rec_obj):
+        genes = top_rec_obj["view"]["general"]["genes"]
+        if (not genes):
+            return None
+        links = []
+        for gene in genes:
+            url = self.OMIM_URL.format(gene)
+            links.append('<span title="Search OMIM Gene Map for {}">'.format(gene) +
+            '<a href="{}" target="OMIM">{}</a>'.format(url, gene) +
+            '</span>')
+        return ('<br>'.join(links), "norm")
+
+#===============================================
+class GREV_AttrH(AttrH):
+    GeneRiveiws_URL = ("https://www.ncbi.nlm.nih.gov/books/NBK1116/?term={}")
+
+    def __init__(self, view):
+        AttrH.__init__(self, "GREV", title="GeneReviews®", tooltip="Search GeneReviews®")
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, top_rec_obj):
+        genes = top_rec_obj["view"]["general"]["genes"]
+        if (not genes):
+            return None
+        links = []
+        for gene in genes:
+            url = self.GeneRiveiws_URL.format(gene)
+            links.append('<span title="Search GeneReviews&reg; for {}">'.format(gene) +
+            '<a href="{}" target="GREV">{}</a>'.format(url, gene) +
+            '</span>')
+        return ('<br>'.join(links), "norm")
+
+#===============================================
+class MEDGEN_AttrH(AttrH):
+    MEDGEN_URL = ("https://www.ncbi.nlm.nih.gov/medgen/?term={}%5BGene%20Name%5D")
+
+    def __init__(self, view):
+        AttrH.__init__(self, "MEDGEN", title="MedGen", tooltip="Search MedGen")
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, top_rec_obj):
+        genes = top_rec_obj["view"]["general"]["genes"]
+        if (not genes):
+            return None
+        links = []
+        for gene in genes:
+            url = self.MEDGEN_URL.format(gene)
+            links.append('<span title="Search MedGen for {}">'.format(gene) +
+            '<a href="{}" target="MEDGEN">{}</a>'.format(url, gene) +
             '</span>')
         return ('<br>'.join(links), "norm")
 
