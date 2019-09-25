@@ -229,8 +229,8 @@ def defineFilterSchema():
         filters.floatValueUnit("splice_ai_dsmax", "/_filters/splice_ai_dsmax", render_mode="linear,>",
                            default_value=0, title="Splice AI splice altering score")
 
-        filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]")
-        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]")
+        filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]", default_value="N/A")
+        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]", default_value="N/A")
 
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/view/predictions/polyphen2_hvar[]",
