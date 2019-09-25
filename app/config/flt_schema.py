@@ -295,15 +295,15 @@ def defineFilterSchema():
             render_mode = "linear,>", default_value = 0,
             title = "Splice AI splice altering score")
 
-        filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]")
-        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]")
+        filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]", default_value="N/A")
+        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]", default_value="N/A")
 
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/view/predictions/polyphen2_hvar[]",
-            separators = "[\s\,]", default_value = "undef")
+            separators = "[\s\,]", default_value = "N/A")
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/view/predictions/polyphen2_hdiv[]",
-            separators = "[\s\,]", default_value = "undef")
+            separators = "[\s\,]", default_value = "N/A")
 
         filters.floatValueUnit("GERP_score",
             "/view/bioinformatics/gerp_rs", render_mode = "linear,>",
