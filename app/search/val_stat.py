@@ -28,11 +28,11 @@ class NumDiapStat:
 
 #===============================================
 class EnumStat:
-    def __init__(self, variant_set, detailed = False):
+    def __init__(self, variant_set, detailed = False, check_no_zeros = False):
         self.mVariantSet = variant_set
         self.mStat = Counter()
         self.mGroupStat = None
-        self.mNoZeros = len(self.mVariantSet) > 50
+        self.mNoZeros = check_no_zeros and len(self.mVariantSet) > 50
         if detailed:
             self.mGroupStat = Counter()
             self.mCurGroupNo = None

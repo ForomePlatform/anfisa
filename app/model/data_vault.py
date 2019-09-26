@@ -93,13 +93,13 @@ class DataVault:
         assert ds_info["name"] == ds_name
         assert not ds_kind or ds_info["kind"] == "ws"
         with self:
-            assert ds_info["name"] not in self.mDataSets
-            if ds_info["kind"] == "xl":
-                ds = XLDataset(self, ds_info, ds_path)
-            else:
-                assert ds_info["kind"] == "ws"
-                ds = Workspace(self, ds_info, ds_path)
-            self.mDataSets[ds_info["name"]] = ds
+            if ds_info["name"] not in self.mDataSets:
+                if ds_info["kind"] == "xl":
+                    ds = XLDataset(self, ds_info, ds_path)
+                else:
+                    assert ds_info["kind"] == "ws"
+                    ds = Workspace(self, ds_info, ds_path)
+                self.mDataSets[ds_info["name"]] = ds
         return ds_name
 
     def unloadDS(self, ds_name, ds_kind = None):

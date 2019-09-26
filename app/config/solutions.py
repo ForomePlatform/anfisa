@@ -50,8 +50,9 @@ def prepareSolutions():
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_HOM_REC"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.condEnum("Inheritance_Mode", ["Homozygous Recessive"])])
-        #,requires = {"trio_base"})
+        ConditionMaker.condInheritance("Inheritance_Mode",
+            ["Homozygous Recessive"])],
+        requires = {"trio_base"})
 
     base_pack.regFilterWS("BGM_Compound_Het", [
         condition_consequence_xBrowse(),
@@ -125,4 +126,6 @@ def prepareSolutions():
         cfgPath("rep_hearing_loss.lst"))
     base_pack.regPanel("Symbol", "PF",
         cfgPath("rep_purpura_fulminans.lst"))
+    base_pack.regPanel("Symbol", "PharmKB_VIP",
+        cfgPath("pharmgkb_vip.lst"))
 

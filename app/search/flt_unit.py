@@ -72,7 +72,7 @@ class NumericValueUnit(FilterUnit):
 
 #===============================================
 class _EnumUnit(FilterUnit):
-    def __init__(self, index, unit_data, unit_kind):
+    def __init__(self, index, unit_data, unit_kind, check_no_zeros):
         FilterUnit.__init__(self, index, unit_data, unit_kind)
         variants_info = self.getDescr().get("variants")
         if variants_info is None:
@@ -83,21 +83,22 @@ class _EnumUnit(FilterUnit):
                 [info[0] for info in variants_info])
             self._setScreened(
                 sum([info[1] for info in variants_info]) == 0)
+        self.mCheckNoZeros = check_no_zeros
         self.getIndex().getCondEnv().addEnumUnit(self)
 
     def getVariantSet(self):
         return self.mVariantSet
 
     def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet)
+        stat = EnumStat(self.mVariantSet, check_no_zeros = self.mCheckNoZeros)
         for rec_no, _ in condition.iterSelection():
             stat.regValues(self.getRecVal((rec_no)))
         return self.prepareStat() + stat.result()
 
 #===============================================
 class StatusUnit(_EnumUnit):
-    def __init__(self, index, unit_data):
-        _EnumUnit.__init__(self, index, unit_data, "status")
+    def __init__(self, index, unit_data, check_no_zeros):
+        _EnumUnit.__init__(self, index, unit_data, "status", check_no_zeros)
         self.mArray = array('L')
 
     def getRecVal(self, rec_no):
@@ -110,8 +111,8 @@ class StatusUnit(_EnumUnit):
 
 #===============================================
 class MultiSetUnit(_EnumUnit):
-    def __init__(self, index, unit_data):
-        _EnumUnit.__init__(self, index, unit_data, "enum")
+    def __init__(self, index, unit_data, check_no_zeros):
+        _EnumUnit.__init__(self, index, unit_data, "enum", check_no_zeros)
         self.mArraySeq = [bitarray()
             for var in iter(self.mVariantSet)]
 
@@ -139,8 +140,8 @@ class MultiSetUnit(_EnumUnit):
 
 #===============================================
 class MultiCompactUnit(_EnumUnit):
-    def __init__(self, index, unit_data):
-        _EnumUnit.__init__(self, index, unit_data, "enum")
+    def __init__(self, index, unit_data, check_no_zeros):
+        _EnumUnit.__init__(self, index, unit_data, "enum", check_no_zeros)
         self.mArray = array('L')
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
@@ -305,7 +306,7 @@ class TranscriptMultisetUnit(FilterUnit):
         return ret + stat.result()
 
 #===============================================
-def loadWSFilterUnit(index, unit_data):
+def loadWSFilterUnit(index, unit_data, depr_check_no_zeros):
     kind = unit_data["kind"]
     if kind == "zygosity":
         ret = ZygosityComplexUnit(index, unit_data)
@@ -318,7 +319,7 @@ def loadWSFilterUnit(index, unit_data):
        return NumericValueUnit(index, unit_data)
     assert kind in ("enum", "presence")
     if kind == "enum" and unit_data["atomic"]:
-        return StatusUnit(index, unit_data)
+        return StatusUnit(index, unit_data, depr_check_no_zeros)
     if kind == "enum" and unit_data["compact"]:
-        return MultiCompactUnit(index, unit_data)
-    return MultiSetUnit(index, unit_data)
+        return MultiCompactUnit(index, unit_data, depr_check_no_zeros)
+    return MultiSetUnit(index, unit_data, depr_check_no_zeros)

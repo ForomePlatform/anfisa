@@ -160,6 +160,9 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write(')')
         return
+    if cond_kind == "import":
+        output.write('import %s' % cond_data[1])
+        return
     assert False
 
 #===============================================

@@ -11,18 +11,24 @@ class TranscriptPreparator:
         self.mTotalItemCount = 0
         self.mTransPathBaseF = AttrFuncPool.makeFunc(
             AnfisaConfig.configOption("transcript.path.base"))
+        self.mUnitStatSeq = []
         for unit_descr in flt_schema:
-            if not unit_descr["kind"].startswith("transcript-"):
+            kind = unit_descr["kind"]
+            if not kind.startswith("transcript-"):
+                if kind in ("long", "float"):
+                    self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
+                elif kind == "enum":
+                    self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
                 continue
-            if unit_descr["kind"] == "transcript-status":
+            if kind == "transcript-status":
                 self.mConvertors.append(TrStatusConvertor(unit_descr))
-            elif unit_descr["kind"] == "transcript-multiset":
+            elif kind == "transcript-multiset":
                 self.mConvertors.append(TrMultisetConvertor(unit_descr))
             else:
                 assert False, "Bad kind:" + unit_descr["kind"]
 
     def isEmpty(self):
-        return len(self.mConvertors) == 0
+        return len(self.mConvertors) == 0 and len(self.mUnitStatSeq) == 0
 
     def doRec(self, rec_data, flt_data):
         tr_seq_seq = self.mTransPathBaseF(rec_data)
@@ -33,6 +39,8 @@ class TranscriptPreparator:
             tr_seq = []
         for conv_h in self.mConvertors:
             conv_h.doRec(tr_seq, flt_data)
+        for stat_h in self.mUnitStatSeq:
+            stat_h.doRec(flt_data)
         flt_data["$1"] = len(tr_seq)
         self.mTotalItemCount += len(tr_seq)
 
@@ -41,6 +49,8 @@ class TranscriptPreparator:
         for conv_h in self.mConvertors:
             is_ok &= conv_h.finishUp(self.mHardCheck)
         assert is_ok
+        for stat_h in self.mUnitStatSeq:
+            stat_h.finishUp()
         return self.mTotalItemCount
 
 #===============================================
@@ -171,3 +181,59 @@ class TrMultisetConvertor(TrConvertor):
                 self.mVarCount[val] += 1
             res.append(res_values)
         f_data[self.mName] = res
+
+#===============================================
+#===============================================
+class NumUnitStatH:
+    def __init__(self, unit_descr):
+        self.mDescr = unit_descr
+        self.mName = unit_descr["name"]
+        self.mMin, self.mMax = None, None
+        self.mCntDef = 0
+        self.mCntUndef = 0
+
+    def doRec(self, f_data):
+        val = f_data.get(self.mName)
+        if val is None:
+            self.mCntUndef += 1
+            return
+        self.mCntDef += 1
+        if self.mCntDef == 1:
+            self.mMin = self.mMax = val
+        else:
+            if val < self.mMin:
+                self.mMin = val
+            elif val > self.mMax:
+                self.mMax = val
+
+    def finishUp(self):
+        self.mDescr["min"] = self.mMin
+        self.mDescr["max"] = self.mMax
+        self.mDescr["def"] = self.mCntDef
+        self.mDescr["undef"] = self.mCntUndef
+
+#===============================================
+class EnumUnitStatH:
+    def __init__(self, unit_descr):
+        self.mDescr = unit_descr
+        self.mName = unit_descr["name"]
+        self.mAtomicMode = unit_descr["atomic"]
+        self.mCounts = Counter()
+
+    def doRec(self, f_data):
+        val = f_data.get(self.mName)
+        if self.mAtomicMode:
+            self.mCounts[val] += 1
+        elif val:
+            for name in val:
+                self.mCounts[name] += 1
+
+    def finishUp(self):
+        variants = []
+        for name, _ in self.mDescr["variants"]:
+            cnt = self.mCounts[name]
+            if cnt > 0:
+                variants.append([name, cnt])
+        self.mDescr["variants"] = variants
+
+

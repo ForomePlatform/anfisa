@@ -15,11 +15,13 @@ class Index:
 
     def __init__(self, ws_h):
         self.mWS = ws_h
-        self.mCondEnv = WS_CondEnv(self.mWS.getDataInfo().get("modes"))
+        ds_modes = self.mWS.getDataInfo().get("modes")
+        self.mCondEnv = WS_CondEnv(ds_modes)
         self.mCondEnv.addMode("WS")
         self.mUnits = [RulesEvalUnit(self)]
+        depr_check_no_zeros = ds_modes and "secondary" in ds_modes
         for unit_data in self.mWS.getFltSchema():
-            unit_h = loadWSFilterUnit(self, unit_data)
+            unit_h = loadWSFilterUnit(self, unit_data, depr_check_no_zeros)
             if unit_h is not None:
                 self.mUnits.append(unit_h)
         self.mUnitDict = {unit_h.getName(): unit_h

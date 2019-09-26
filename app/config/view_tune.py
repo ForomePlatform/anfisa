@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app.view.attr import AttrH
 
 #===============================================
@@ -103,7 +104,8 @@ class GREV_AttrH(AttrH):
     GeneRiveiws_URL = ("https://www.ncbi.nlm.nih.gov/books/NBK1116/?term={}")
 
     def __init__(self, view):
-        AttrH.__init__(self, "GREV", title="GeneReviews®", tooltip="Search GeneReviews®")
+        AttrH.__init__(self, "GREV", title = "GeneReviews®",
+            tooltip = "Search GeneReviews®")
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
@@ -113,9 +115,10 @@ class GREV_AttrH(AttrH):
         links = []
         for gene in genes:
             url = self.GeneRiveiws_URL.format(gene)
-            links.append('<span title="Search GeneReviews&reg; for {}">'.format(gene) +
-            '<a href="{}" target="GREV">{}</a>'.format(url, gene) +
-            '</span>')
+            links.append('<span title="Search GeneReviews&reg; for {}">'.
+                format(gene) +
+                '<a href="{}" target="GREV">{}</a>'.format(url, gene) +
+                '</span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
@@ -148,17 +151,17 @@ class IGV_AttrH(AttrH):
         if bam_base is None:
             self.mPreUrl = None
             return
+        samples_ids = [info["id"] for info in samples.values()]
+        samples_names = [info["name"] for info in samples.values()]
         file_urls = ','.join([
             "{bam_base}/{case}/{sample}.hg19.bam".format(
                 bam_base = bam_base,
                 case = case,
-                sample = sample)
-            for sample in sorted(samples.keys())])
-        name = ",".join(sorted([info["name"]
-            for info in samples.values()]))
+                sample = sample_id)
+            for sample_id in sorted(samples_ids)])
         self.mPreUrl = ("http://localhost:60151/load?file={file}"
             "&genome=hg19&merge=false&name={name}").format(
-                file = file_urls, name = name)
+                file = file_urls, name = ",".join(sorted(samples_names)))
 
     def htmlRepr(self, obj, top_rec_obj):
         if self.mPreUrl is None:

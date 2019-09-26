@@ -31,7 +31,7 @@ class RulesEvalUnit(MultiSetUnit):
             "research": False,
             "undef": 0,
             "variants": [[func_h.getName(), -1]
-                for func_h in RULES_SETUP.FUNCTIONS]})
+                for func_h in RULES_SETUP.FUNCTIONS]}, False)
         env_dict = {param_h.getName(): param_h.getValue()
             for param_h in RULES_SETUP.PARAMETERS}
         rules_data = (self.getIndex().getWS().getMongoAgent().
