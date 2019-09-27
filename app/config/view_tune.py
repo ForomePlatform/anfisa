@@ -151,12 +151,13 @@ class IGV_AttrH(AttrH):
         if bam_base is None:
             self.mPreUrl = None
             return
+        samples_ids = [info["id"] for info in samples.values()]
         file_urls = ','.join([
             "{bam_base}/{case}/{sample}.hg19.bam".format(
                 bam_base = bam_base,
                 case = case,
-                sample = sample)
-            for sample in sorted(samples.keys())])
+                sample = sample_id)
+            for sample_id in sorted(samples_ids)])
         name = ",".join(sorted([info["name"]
             for info in samples.values()]))
         self.mPreUrl = ("http://localhost:60151/load?file={file}"
