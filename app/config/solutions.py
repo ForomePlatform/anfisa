@@ -30,6 +30,17 @@ def condition_consequence_xBrowse ():
             "coding_sequence_variant"
         ])
 
+
+def condition_high_quality():
+    return [
+        ConditionMaker.condEnum("FT", ["PASS"]),
+        ConditionMaker.condNum("Proband_GQ", [60, None]),
+        ConditionMaker.condNum("Min_GQ", [40, None]),
+        ConditionMaker.condNum("QD", [4, None]),
+        ConditionMaker.condNum("FS", [None, 30]),
+    ]
+
+
 def prepareSolutions():
     global sSolutionsAreSet
     if sSolutionsAreSet:
@@ -63,12 +74,38 @@ def prepareSolutions():
         ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
         requires = {"trio_base"})
 
-    base_pack.regFilterWS("BGM_Auto_Dom", [
+    base_pack.regFilterWS("BGM_Autosomal_Dominant", [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_DE_NOVO"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"])],
         requires = {"trio_base"})
+
+    # Standard mendelian Filters, should belong to "Undiagnosed Patients Solution Pack"
+    base_pack.regFilterWS("Mendelian_Homozygous_Rec", condition_high_quality() + [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.condInheritance("Inheritance_Mode",
+            ["Homozygous Recessive"])],
+        requires = {"trio_base"})
+
+    base_pack.regFilterWS("Mendelian_Compound_Het", condition_high_quality() + [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.importVar("Compound_Het_transcript"),
+        ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
+        requires = {"trio_base"})
+
+    base_pack.regFilterWS("Mendelian_Auto_Dom", condition_high_quality() + [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.condInheritance("Inheritance_Mode",
+            ["Autosomal Dominant"])],
+        requires = {"trio_base"})
+
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [
