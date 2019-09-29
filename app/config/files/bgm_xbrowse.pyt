@@ -7,6 +7,8 @@ if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
 if (Callers in {"RUFUS"}):
     return True
+if (Variant_Class in {"CNV: deletion"}):
+    return True
 
 #Exclude common variants
 if gnomAD_AF_Genomes >= 0.01:
