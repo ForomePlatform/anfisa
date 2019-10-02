@@ -6,9 +6,6 @@ import subprocess
 import tempfile
 import sys
 
-
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Annotate VCF file with VEP and output results as JSON")
     parser.add_argument("-i", "--input", dest = "input", help="VCF")
