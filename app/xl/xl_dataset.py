@@ -156,7 +156,6 @@ class XLDataset(DataSet):
         for filter_name, flt_info in self.mFilterCache.items():
             if filter_name.startswith('_'):
                 continue
-            flt_op_env, flt_research, flt_time_label = flt_info
             info_dict[filter_name] = [filter_name,
                 self.hasStdFilter(filter_name), True, flt_info[1]]
         ret = []
