@@ -45,11 +45,15 @@ class XLDataset(DataSet):
             unit_h.setup()
         CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self)
 
-        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
-            for flt_name, cond_seq in self.mCondEnv.getXlFilters()}
+        self.mStdFilterDict = dict()
+        self.mStdFilterList = []
+        for flt_name, cond_seq in self.mCondEnv.getXlFilters():
+            flt_name = self.sStdFMark + flt_name
+            self.mStdFilterDict[flt_name] = deepcopy(cond_seq)
+            self.mStdFilterList.append(flt_name)
 
         self.mFilterCache = dict()
-        for filter_name, cond_seq in self.mStdFilters.items():
+        for filter_name, cond_seq in self.mStdFilterDict.items():
             self.cacheFilter(filter_name, cond_seq, None)
 
         for f_name, cond_seq, time_label in self.getMongoAgent().getFilters():
@@ -145,16 +149,23 @@ class XLDataset(DataSet):
             and flt_name[0].isalpha() and ' ' not in flt_name)
 
     def hasStdFilter(self, filter_name):
-        return filter_name in self.mStdFilters
+        return filter_name in self.mStdFilterDict
 
     def getFilterList(self, research_mode = True):
-        ret = []
+        info_dict = dict()
         for filter_name, flt_info in self.mFilterCache.items():
             if filter_name.startswith('_'):
                 continue
-            ret.append([filter_name, self.hasStdFilter(filter_name),
-                True, flt_info[1]])
-        return sorted(ret)
+            flt_op_env, flt_research, flt_time_label = flt_info
+            info_dict[filter_name] = [filter_name,
+                self.hasStdFilter(filter_name), True, flt_info[1]]
+        ret = []
+        for filter_name in self.mStdFilterList:
+            if filter_name in info_dict:
+                ret.append(info_dict[filter_name])
+                del info_dict[filter_name]
+        return ret + [info_dict[filter_name]
+            for filter_name in sorted(info_dict.keys())]
 
     def evalTotalCount(self, condition = None):
         if condition is None:
@@ -341,7 +352,7 @@ class XLDataset(DataSet):
         filter_name = self.filterOperation(
             filter_name, cond_seq, rq_args.get("instr"))
         if self.hasStdFilter(filter_name):
-            cond_seq = self.mStdFilters.get(filter_name)
+            cond_seq = self.mStdFilterDict.get(filter_name)
         else:
             if filter_name in self.mFilterCache:
                 cond_seq = self.mFilterCache[filter_name][0]

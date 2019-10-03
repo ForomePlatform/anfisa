@@ -27,7 +27,8 @@ class Index:
         self.mUnitDict = {unit_h.getName(): unit_h
             for unit_h in self.mUnits}
         assert len(self.mUnitDict) == len(self.mUnits)
-        self.mStdFilters = None
+        self.mStdFilterDict = None
+        self.mStdFilterList = None
         self.mFilterCache = None
 
     def setup(self):
@@ -44,10 +45,13 @@ class Index:
         for unit_h in self.mUnits:
             unit_h.setup()
         CompHetsOperativeUnit.setupCondEnv(self.mCondEnv, self.mWS)
-        self.mStdFilters = {self.sStdFMark + flt_name: deepcopy(cond_seq)
-            for flt_name, cond_seq in self.mCondEnv.getWsFilters()}
+        self.mStdFilterDict, self.mStdFilterList = dict(), []
+        for flt_name, cond_seq in self.mCondEnv.getWsFilters():
+            flt_name = self.sStdFMark + flt_name
+            self.mStdFilterDict[flt_name] = deepcopy(cond_seq)
+            self.mStdFilterList.append(flt_name)
         self.mFilterCache = dict()
-        for filter_name, cond_seq in self.mStdFilters.items():
+        for filter_name, cond_seq in self.mStdFilterDict.items():
             self.cacheFilter(filter_name, cond_seq, None)
 
     def updateRulesEnv(self):
@@ -89,7 +93,7 @@ class Index:
             and flt_name[0].isalpha() and ' ' not in flt_name)
 
     def hasStdFilter(self, filter_name):
-        return filter_name in self.mStdFilters
+        return filter_name in self.mStdFilterDict
 
     def evalTotalCount(self, condition):
         if condition is None:
@@ -126,14 +130,21 @@ class Index:
             del self.mFilterCache[filter_name]
 
     def getFilterList(self, research_mode):
-        ret = []
+        info_dict = dict()
         for filter_name, flt_info in self.mFilterCache.items():
             if filter_name.startswith('_'):
                 continue
             flt_op_env, flt_research, flt_time_label = flt_info
-            ret.append([filter_name, self.hasStdFilter(filter_name),
-                research_mode or not flt_research, flt_time_label])
-        return sorted(ret)
+            info_dict[filter_name] = [filter_name,
+                self.hasStdFilter(filter_name),
+                research_mode or not flt_research, flt_time_label]
+        ret = []
+        for filter_name in self.mStdFilterList:
+            if filter_name in info_dict:
+                ret.append(info_dict[filter_name])
+                del info_dict[filter_name]
+        return ret + [info_dict[filter_name]
+            for filter_name in sorted(info_dict.keys())]
 
     def evalStat(self, unit_h, condition):
         return unit_h.makeStat(condition)[2]

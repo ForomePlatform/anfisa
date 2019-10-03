@@ -63,6 +63,11 @@ function setupList(info) {
 }
 
 function arrangeControls() {
+    if (sSubViewH != undefined) {
+        sSubViewH.arrangeControls();
+        return;
+    }
+    
     document.getElementById("top").style.height = (sRecSamples)? 80:60;
     document.getElementById("rec-list").style.height = window.innerHeight - 1 
         - ((sRecSamples)? 80:60);

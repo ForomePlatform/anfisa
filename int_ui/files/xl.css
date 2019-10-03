@@ -15,6 +15,7 @@ div#xl-ctrl {
     background-color: #333455; 
     color: white;
     height: 50px;
+    min-height: 50px;
     display: flex;
     flex-direction: row;
     align-items: stretch;

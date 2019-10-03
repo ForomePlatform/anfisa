@@ -44,7 +44,7 @@ class TagsManager(ZoneH):
     @staticmethod
     def _goodPair(key_value):
         key, value = key_value
-        return (key and (key[0] != '_' or key == "_note")and
+        return (key and (key[0] != '_' or key == "_note") and
             value not in (None, False))
 
     @staticmethod

@@ -154,46 +154,46 @@ class ExcelExport:
         for column, key, value, style, _ in self.mapping:
             if not value:
                 continue
-            cell = ws.cell(row=1, column=column, value=key)
+            cell = ws.cell(row = 1, column = column, value = key)
             self.column_widths[cell.column] = len(key)
             _setStyle(cell, style)
 
-        cell = ws.cell(row=1, column=len(self.mapping) + 1, value="check tags")
-        self.column_widths[cell.column] = len(cell.value)
-
-        cell = ws.cell(row=1, column=len(self.mapping) + 2, value="tags")
-        self.column_widths[cell.column] = len(cell.value)
-
-        cell = ws.cell(row=1, column=len(self.mapping) + 3, value="tags with values")
-        self.column_widths[cell.column] = len(cell.value)
+        for idx, title in enumerate(
+                ["check tags", "tags", "tags with values", "notes"]):
+            cell = ws.cell(row = 1, column = len(self.mapping) + 1 + idx,
+                value = title)
+            self.column_widths[cell.column] = len(cell.value)
         ws.freeze_panes = 'D2'
 
     def _createVersionSheet(self, source_versions):
         ws = self.workbook.create_sheet("version")
         if source_versions:
             for idx, pair in enumerate(source_versions):
-                ws.cell(row=idx + 1, column=1, value = pair[0])
-                ws.cell(row=idx + 1, column=2, value = pair[1])
+                ws.cell(row=idx + 1, column = 1, value = pair[0])
+                ws.cell(row=idx + 1, column = 2, value = pair[1])
 
     def _createKeySheet(self):
         ws = self.workbook.create_sheet("key")
         for idx, title in enumerate(["Column", "Definition", "Mapping"]):
-            ws.cell(row=1, column=idx + 1, value=title)
-            ws.column_dimensions[openpyxl.utils.get_column_letter(idx + 1)].width = 50
+            ws.cell(row = 1, column = idx + 1, value = title)
+            ws.column_dimensions[
+                openpyxl.utils.get_column_letter(idx + 1)].width = 50
         ws.freeze_panes = 'A2'
         for row, key, value, style, def_value in self.mapping:
             if not value:
                 continue
-            cell = ws.cell(row=row + 1, column=1, value=value)
-            ws.cell(row=row + 1, column=2, value=def_value)
-            ws.cell(row=row + 1, column=3, value=key)
+            cell = ws.cell(row = row + 1, column = 1, value = value)
+            ws.cell(row = row + 1, column = 2, value = def_value)
+            ws.cell(row = row + 1, column = 3, value = key)
             _setStyle(cell, style)
 
     def add_tags_cfg(self, data):
         if data is None:
             return
         self.tags_info = data
-        self.check_group_tab = [0] * (len(self.tags_info['check-tags']) + len(self.tags_info['op-tags']) + 2)
+        self.check_group_tab = [0] * (
+            len(self.tags_info['check-tags']) +
+            len(self.tags_info['op-tags']) + 2)
 
     def reg_check_group(self, tags):
         if self.check_group_tab is None:
@@ -209,6 +209,8 @@ class ExcelExport:
                     group_name = "_mix"
                     break
         for op_idx, op_tag in enumerate(self.tags_info['op-tags']):
+            if op_tag == "_note":
+                continue
             if op_tag in tags:
                 if group_idx is None:
                     group_idx, group_name = len(self.tags_info['check-tags']) + op_idx, op_tag
@@ -231,7 +233,7 @@ class ExcelExport:
             if not key:
                 continue
             value = self.__to_excel(build_value(data, key))
-            cell = ws.cell(row=new_row, column=column, value=value)
+            cell = ws.cell(row = new_row, column = column, value = value)
             if isinstance(value, str):
                 self.column_widths[cell.column] = max(
                     self.column_widths[cell.column], len(value))
@@ -241,10 +243,32 @@ class ExcelExport:
 
     def __add_tags_to_excel(self, tags, row, tag_group_name):
         ws = self.workbook.active
-        tagList = filter(lambda k: k in self.tags_info['op-tags'], tags.keys())
-        op_tags = ', '.join(tagList)
-        check_tags = ', '.join(filter(lambda k: k in self.tags_info['check-tags'] and tags[k] == True, tags.keys()))
-        tags_with_value = ", ".join(map(lambda t: t + ": " + str(tags[t]).replace('\n', ' ').strip(), tagList))
+        check_tags, op_tags, tags_with_value = [], [], []
+        for tg in self.tags_info['check-tags']:
+            if tags.get(tg) is True:
+                check_tags.append(tg)
+        for tg in self.tags_info['op-tags']:
+            if tg == "_note":
+                continue
+            val = tags.get(tg)
+            if val is None:
+                continue
+            op_tags.append(tg)
+            val = str(val).replace('\n', ' ').strip()
+            if val:
+                tags_with_value.append(tg + ': ' + val)
+        note_value = tags.get("_note")
+        if not note_value:
+            note_value = ""
+        for idx, value in enumerate([
+                ', '.join(check_tags),
+                ', '.join(op_tags),
+                ', '.join(tags_with_value), note_value]):
+            cell = ws.cell(row = row, column = len(self.mapping) + 1 + idx,
+                value = value)
+            self.column_widths[cell.column] = max(
+                self.column_widths[cell.column], len(value))
+
         if tag_group_name:
             if tag_group_name in self.check_tags_mapping:
                 style = self.check_tags_mapping[tag_group_name]
@@ -254,23 +278,13 @@ class ExcelExport:
                 style = self.check_tags_mapping["Custom"]
         else:
             style = None
-
-        col_tags = len(self.mapping) + 1
-        cell = ws.cell(row=row, column = col_tags, value=check_tags)
-        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
-
-        cell = ws.cell(row=row, column = col_tags + 1, value=op_tags)
-        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
-
-        cell = ws.cell(row=row, column = col_tags + 2, value=tags_with_value)
-        self.column_widths[cell.column] = max(self.column_widths[cell.column], len(cell.value))
-        for idx in (1, col_tags):
-            _setStyle(ws.cell(row=cell.row, column=idx), style)
+        for idx in range(len(self.mapping) + 1):
+            _setStyle(ws.cell(row = row, column = idx + 1), style)
 
     def _decor_one_line(self, ws, new_row, style = None):
         ws.insert_rows(new_row)
-        for idx in range(1, len(self.mapping) + 2):
-            _setStyle(ws.cell(row=new_row, column=idx), style)
+        for idx in range(len(self.mapping) + 1):
+            _setStyle(ws.cell(row = new_row, column = idx + 1), style)
 
     def _decor_lines(self, ws):
         if self.check_group_tab is None:
@@ -294,7 +308,9 @@ class ExcelExport:
         ws = self.workbook.active
         self._decor_lines(ws)
         for column, width in self.column_widths.items():
-            ws.column_dimensions[openpyxl.utils.get_column_letter(column)].width = min(12, width + 2)
+            ws.column_dimensions[
+                openpyxl.utils.get_column_letter(column)].width = min(
+                    12, width + 2)
         max_column = openpyxl.utils.get_column_letter(ws.max_column)
         ws.auto_filter.ref = 'A1:' + max_column + str(len(ws['A']))
         self.workbook.save(filename=file)
