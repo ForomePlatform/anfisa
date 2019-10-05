@@ -26,7 +26,7 @@ function setupData(info) {
         tab_cnt.push('<tr><td class="name">');
         if (sWsExtUrl) 
             tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
-                '?ws=' + ws_info["name"] + '" target="blank" ' + 
+                '?ws=' + ws_info["name"] + '" target="_blank" ' +
                 'title="To front end">&#x23f5;</a>')
         tab_cnt.push('<a href="ws?ws=' + ws_info["name"] + '" ' +
             'target="' + sTitlePrefix + '/' + ws_info["name"] + '">' +
