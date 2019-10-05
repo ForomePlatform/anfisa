@@ -101,7 +101,7 @@ class AttrH:
             return None
         if "link" in self.mKinds:
             link = self.normLink(value)
-            return ('<span title="%s"><a href="%s" target="blank">'
-                'link</a></span>' % (link, link))
+            return ('<span title="%s"><a href="%s" target="%s">'
+                'link</a></span>' % (link, link, self.mName))
         return htmlEscape(value)
 

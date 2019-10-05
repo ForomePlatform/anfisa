@@ -29,7 +29,7 @@ function renderWS(ds_info, tab_cnt) {
     tab_cnt.push('<tr><td class="name">')
     if (sWsExtUrl) 
         tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
-            '?ws=' + ds_info["name"] + '" target="blank" ' + 
+            '?ws=' + ds_info["name"] + '" target="_blank" ' +
             'title="To front end">&#x23f5;</a>')
     tab_cnt.push(reprRef(ds_info["name"], "WS"));
     if (ds_info["doc"] != undefined)
