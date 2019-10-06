@@ -23,6 +23,10 @@ if (Clinvar_Benign in {"False"} and
 # 2.b.	Include All de novo variants
 if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
+if (Callers in {"RUFUS"}):
+    return True
+if (Callers in {"CNV"}):
+    return True
 
 # 2.c.	Include all potential LOF variants
 #       (stop-codon, frameshift, canonical splice site).

@@ -7,6 +7,8 @@ if (Callers in {"BGM_BAYES_DE_NOVO"}):
     return True
 if (Callers in {"RUFUS"}):
     return True
+if (Callers in {"CNV"}):
+    return True
 if (Variant_Class in {"CNV: deletion"}):
     return True
 
