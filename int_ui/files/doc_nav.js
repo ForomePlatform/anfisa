@@ -37,7 +37,7 @@ function setupDocList(info) {
             '" class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
             ')">XL-base info</div>');
         sDocArray.push(doc_base_path + "info.html");
-        _fillExtraDoc(sDocInfo["doc-base"], doc_base_path, "XL-base ", list_doc_rep);
+        _fillExtraDoc(sDocInfo["doc-base"], "XL-base ", doc_base_path, list_doc_rep);
         list_doc_rep.push('</div>');
     }
     document.getElementById("doc-list").innerHTML = list_doc_rep.join('\n');
