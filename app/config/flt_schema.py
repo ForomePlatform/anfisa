@@ -68,6 +68,10 @@ def defineFilterSchema():
             title = "Inheritance Mode")
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by")
+        filters.intValueUnit("Num_Samples", "/_filters/has_variant",
+                            title="Number of Samples", conversion=_conv_len,
+                            default_value = 0,
+            tooltip="Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     with filters.viewGroup("Variant"):

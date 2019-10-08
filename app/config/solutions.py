@@ -14,32 +14,54 @@ def cfgPathSeq(fnames):
 #===============================================
 sSolutionsAreSet = False
 
+LoF_CSQ = [
+    "transcript_ablation",
+    "splice_acceptor_variant",
+    "splice_donor_variant",
+    "stop_gained",
+    "frameshift_variant"
+]
+
+NON_SYNONYMOUS_CSQ = LoF_CSQ + [
+    "inframe_insertion",
+    "inframe_deletion",
+    "missense_variant",
+    "protein_altering_variant",
+    "incomplete_terminal_codon_variant"
+]
+
+MODERATE_IMPACT_CSQ = NON_SYNONYMOUS_CSQ + [
+    "synonymous_variant",
+    "splice_region_variant",
+    "coding_sequence_variant"
+]
+
+LOW_IMPACT_CSQ = [
+    "intron_variant",
+    "intergenic_variant",
+    "non_coding_transcript_exon_variant",
+    "upstream_gene_variant",
+    "downstream_gene_variant",
+    "TF_binding_site_variant",
+    "regulatory_region_variant"
+]
+
 def condition_consequence_xBrowse ():
-    return ConditionMaker.condEnum("Transctipt_consequence", [
-            "splice_acceptor_variant",
-            "splice_donor_variant",
-            "stop_gained",
-            "frameshift_variant",
-            "inframe_insertion",
-            "inframe_deletion",
-            "missense_variant",
-            "protein_altering_variant",
-            "incomplete_terminal_codon_variant",
-            "synonymous_variant",
-            "splice_region_variant",
-            "coding_sequence_variant"
-        ])
+    return ConditionMaker.condEnum("Transctipt_consequence", MODERATE_IMPACT_CSQ)
 
 
 def condition_high_quality():
     return [
         ConditionMaker.condEnum("FT", ["PASS"]),
-        ConditionMaker.condNum("Proband_GQ", [60, None]),
+        ConditionMaker.condNum("Proband_GQ", [50, None]),
         ConditionMaker.condNum("Min_GQ", [40, None]),
         ConditionMaker.condNum("QD", [4, None]),
         ConditionMaker.condNum("FS", [None, 30]),
     ]
 
+
+def impacting_splicing():
+    return [ConditionMaker.condNum("splice_ai_dsmax", [0.2, None])]
 
 def prepareSolutions():
     global sSolutionsAreSet
@@ -82,6 +104,14 @@ def prepareSolutions():
         requires = {"trio_base"})
 
     # Standard mendelian Filters, should belong to "Undiagnosed Patients Solution Pack"
+    base_pack.regFilterWS("X_Linked", condition_high_quality() + [
+        condition_consequence_xBrowse(),
+        ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
+        ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
+        ConditionMaker.condInheritance("Inheritance_Mode",
+            ["X-linked"])],
+        requires = {"trio_base"})
+
     base_pack.regFilterWS("Mendelian_Homozygous_Rec", condition_high_quality() + [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
@@ -106,6 +136,8 @@ def prepareSolutions():
             ["Autosomal Dominant"])],
         requires = {"trio_base"})
 
+    base_pack.regFilterWS("Impact_Splicing", condition_high_quality() +
+                          impacting_splicing())
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [
@@ -127,6 +159,21 @@ def prepareSolutions():
         ConditionMaker.condEnum("Rules", ["ACMG59"], "AND")])
 
     #base_pack.regFilterXL(?, ?)
+    base_pack.regFilterXL("Non_Synonymous", condition_high_quality() + [
+            ConditionMaker.condEnum("Most_Severe_Consequence",
+                                    NON_SYNONYMOUS_CSQ)
+        ]
+    )
+
+    base_pack.regFilterXL("UTR_and_Worse", condition_high_quality() + [
+            ConditionMaker.condEnum("Most_Severe_Consequence",
+                                    LOW_IMPACT_CSQ, join_mode="NOT")
+        ]
+    )
+
+    base_pack.regFilterXL("Impacting_Splicing", condition_high_quality() +
+                          impacting_splicing()
+    )
 
     # Production Decision Trees
     base_pack.regTreeCode("BGM xBrowse Alt",

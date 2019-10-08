@@ -43,6 +43,9 @@ import Compound_Het
 if Inheritance_Mode() in {"Homozygous Recessive"}:
     return True
 
+if Inheritance_Mode() in {"X-linked"}:
+    return True
+
 if Inheritance_Mode() in {"Autosomal Dominant"}:
     return True
 
