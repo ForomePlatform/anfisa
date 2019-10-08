@@ -54,7 +54,6 @@ class DruidAdmin(DruidAgent):
             {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
-            print("U:", unit_data["name"], unit_data.get("kind"))
             if unit_data["kind"].startswith("transcript-"):
                 continue
             if unit_data["kind"] in {"long", "float"}:

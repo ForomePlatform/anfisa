@@ -17,12 +17,15 @@ class FamilyInfo:
 
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
+        self.mMaleSet = set()
         for idx, it in enumerate(self.mMembers):
             self.mIds.append(it["id"])
             self.mNames.append(it["name"])
             self.mIdMap[it["id"]] = idx
             if it["affected"]:
                 self.mAffectedGroup.append(idx)
+            if it["sex"] == 1:
+                self.mMaleSet.add(idx)
         self.mTrioSeq = []
         for idx, it in enumerate(self.mMembers):
             idx_father = self.mIdMap.get(it.get("father"))
@@ -51,3 +54,6 @@ class FamilyInfo:
 
     def getTrioSeq(self):
         return self.mTrioSeq
+
+    def groupHasMales(self, problem_group):
+        return len(self.mMaleSet & set(problem_group)) > 0

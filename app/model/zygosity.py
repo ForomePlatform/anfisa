@@ -43,6 +43,12 @@ class ZygosityComplex(ComplexEnumSupport):
         return self.mFamUnits[idx]
 
     def conditionZHomoRecess(self, problem_group):
+        cond = self._conditionZHomoRecess(problem_group)
+        if self.mFamilyInfo.groupHasMales(problem_group):
+            return self.mXCondition.negative().addAnd(cond)
+        return cond
+
+    def _conditionZHomoRecess(self, problem_group):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
@@ -51,15 +57,13 @@ class ZygosityComplex(ComplexEnumSupport):
                 seq.append(self.mCondEnv.makeNumericCond(unit_h, [0, 1]))
         return self.mCondEnv.joinAnd(seq)
 
-    def conditionZDominant(self, problem_group):
-        return self.mXCondition.negative().addAnd(
-            self._conditionZDominant(problem_group))
-
     def conditionZXLinked(self, problem_group):
-        return self.mXCondition.addAnd(
-            self._conditionZDominant(problem_group))
+        if self.mFamilyInfo.groupHasMales(problem_group):
+            return self.mXCondition.addAnd(
+                self._conditionZHomoRecess(problem_group))
+        return self.mCondEnv.getCondNone()
 
-    def _conditionZDominant(self, problem_group):
+    def conditionZDominant(self, problem_group):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
