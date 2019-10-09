@@ -199,6 +199,11 @@ Method "/reccnt"
             "norm" / "link" / "json" (may be updated/extended in future)
     
 ===
+Method "/dsmeta"
+    -> ds           (!required)
+    -> { * metadata for dataset }
+    
+===
 Method "/vsetup"
     -> ws           (!required)
     <-

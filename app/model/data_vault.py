@@ -148,6 +148,12 @@ class DataVault:
 
     #===============================================
     @RestAPI.vault_request
+    def rq__dsmeta(self, rq_args):
+        ds = self._prepareDS(rq_args)
+        return ds.getDataInfo()["meta"]
+
+    #===============================================
+    @RestAPI.vault_request
     def rq__recdata(self, rq_args):
         ds = self._prepareDS(rq_args)
         return ds.getRecordData(int(rq_args.get("rec")))
