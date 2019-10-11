@@ -134,8 +134,12 @@ class AspectH:
                     attr.checkResearchBlock(research_mode) or
                     attr.hasKind("hidden")):
                 continue
-            values = [attr.htmlRepr(obj, rec_data) for obj in objects]
-            if any([vv != ('-', "none") for vv in values]):
+            values = []
+            for obj in objects:
+                obj_repr = attr.htmlRepr(obj, rec_data)
+                if obj_repr is None or obj_repr == ('-', "none"):
+                    continue
+            if len(values) > 0:
                 fld_data[attr.getName()] = values
         rows = []
         for attr in self.getAttrs():
@@ -144,14 +148,8 @@ class AspectH:
                 rows.append([])
                 continue
             a_values = fld_data.get(a_name)
-            if not a_values:
-                continue
-            try:
-                rows.append([a_name, escape(attr.getTitle()),
-                    [[val, class_name] for val, class_name in a_values]])
-            except Exception:
-                logging.error("Problems on get info for %s/%s: %r" %
-                    (self.mName, a_name, a_values))
+            rows.append([a_name, escape(attr.getTitle()),
+                [[val, class_name] for val, class_name in a_values]])
             if attr.getToolTip():
                 rows[-1].append(attr.getToolTip())
         if hit_columns:
