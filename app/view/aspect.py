@@ -142,12 +142,14 @@ class AspectH:
             if a_name is None:
                 rows.append([])
                 continue
-            if a_name in fld_data:
-                rows.append([a_name, escape(attr.getTitle()),
-                    [[val, class_name]
-                        for val, class_name in fld_data[a_name]]])
-                if attr.getToolTip():
-                    rows[-1].append(attr.getToolTip())
+            a_values = fld_data.get(a_name)
+            if not a_values:
+                continue
+            rows.append([a_name, escape(attr.getTitle()),
+                [[val, class_name]
+                    for val, class_name in a_values]])
+            if attr.getToolTip():
+                rows[-1].append(attr.getToolTip())
         if hit_columns:
             for row in rows:
                 for idx, td_info in enumerate(row[2]):

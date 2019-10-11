@@ -85,9 +85,21 @@ class _EnumUnit(FilterUnit):
                 sum([info[1] for info in variants_info]) == 0)
         self.mCheckNoZeros = check_no_zeros
         self.getIndex().getCondEnv().addEnumUnit(self)
+        if self.mCheckNoZeros:
+            self.mVariantList = None
 
     def getVariantSet(self):
         return self.mVariantSet
+
+    def getVariantList(self):
+        if self.mCheckNoZeros:
+            if self.mVariantList is None:
+                stat = EnumStat(self.mVariantSet, True)
+                for rec_no in range(self.getIndex().getWS().getTotal()):
+                    stat.regValues(self.getRecVal((rec_no)))
+                self.mVariantList = [info[0] for info in stat[0]]
+            return self.mVariantList
+        return list(iter(self.mVariantSet))
 
     def makeStat(self, condition, repr_context = None):
         stat = EnumStat(self.mVariantSet, check_no_zeros = self.mCheckNoZeros)

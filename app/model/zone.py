@@ -29,7 +29,7 @@ class FilterZoneH(ZoneH):
         return self.mUnit.getName()
 
     def getVariants(self):
-        return list(iter(self.mUnit.getVariantSet()))
+        return self.mUnit.getVariantList()
 
     def getRestrictF(self, variants):
         cond = self.getWS().getIndex().getCondEnv().makeEnumCond(
