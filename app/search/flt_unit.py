@@ -78,9 +78,22 @@ class _EnumUnit(FilterUnit):
             self._setScreened(
                 sum([info[1] for info in variants_info]) == 0)
         self.getIndex().getCondEnv().addEnumUnit(self)
+        self.mVariantList = None
+        if len(self.mVariantSet) < 50:
+            self.mVariantList = list(iter(self.mVariantSet))
 
     def getVariantSet(self):
         return self.mVariantSet
+    
+    def listVariants(self):
+        if self.mVariantList is None:
+            stat = EnumStat(self.mVariantSet)
+            rec_func = self.getRecFunc()
+            for data_rec in self.getIndex().mRecords:
+                stat.regValues(rec_func((data_rec)))
+            stat_rep = stat.result()
+            self.mVariantList = [info[0] for info in stat_rep[0]]
+        return self.mVariantList
 
     def makeStat(self, data_records, repr_context = None):
         stat = EnumStat(self.mVariantSet)
