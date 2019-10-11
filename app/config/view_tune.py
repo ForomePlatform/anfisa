@@ -151,18 +151,19 @@ class IGV_AttrH(AttrH):
         if bam_base is None:
             self.mPreUrl = None
             return
-        samples_ids = [info["id"] for info in samples.values()]
+        samples = {info["id"]:info["name"] for info in samples.values()}
+        samples_ids = sorted(samples)
+        samples_names = [samples[id] for id in samples_ids]
+
         file_urls = ','.join([
             "{bam_base}/{case}/{sample}.hg19.bam".format(
                 bam_base = bam_base,
                 case = case,
                 sample = sample_id)
-            for sample_id in sorted(samples_ids)])
-        name = ",".join(sorted([info["name"]
-            for info in samples.values()]))
+            for sample_id in samples_ids])
         self.mPreUrl = ("http://localhost:60151/load?file={file}"
             "&genome=hg19&merge=false&name={name}").format(
-                file = file_urls, name = name)
+                file = file_urls, name = ",".join(samples_names))
 
     def htmlRepr(self, obj, top_rec_obj):
         if self.mPreUrl is None:
