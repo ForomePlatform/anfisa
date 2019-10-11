@@ -36,7 +36,7 @@ fi
 rm vault/*
 cd data
 rm *
-curl -O -L https://www.dropbox.com/s/8u4kwp5m3px6tcz/PGP3140.json.gz
+curl -O -L https://www.dropbox.com/s/csmx5mxcy6mb875/PGP3140.json.gz?dl=0
 # cd ../tmp/export
 # [ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 

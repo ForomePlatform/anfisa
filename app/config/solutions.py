@@ -15,6 +15,7 @@ def cfgPathSeq(fnames):
 sSolutionsAreSet = False
 
 LoF_CSQ = [
+    "CNV: deletion",
     "transcript_ablation",
     "splice_acceptor_variant",
     "splice_donor_variant",
