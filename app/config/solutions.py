@@ -48,8 +48,8 @@ LOW_IMPACT_CSQ = [
 ]
 
 def condition_consequence_xBrowse ():
-    return ConditionMaker.condEnum("Transctipt_consequence", MODERATE_IMPACT_CSQ)
-
+    return ConditionMaker.condEnum("Transctipt_consequence",
+        MODERATE_IMPACT_CSQ)
 
 def condition_high_quality():
     return [
@@ -57,8 +57,7 @@ def condition_high_quality():
         ConditionMaker.condNum("Proband_GQ", [50, None]),
         ConditionMaker.condNum("Min_GQ", [40, None]),
         ConditionMaker.condNum("QD", [4, None]),
-        ConditionMaker.condNum("FS", [None, 30]),
-    ]
+        ConditionMaker.condNum("FS", [None, 30])]
 
 
 def impacting_splicing():
@@ -76,8 +75,8 @@ def prepareSolutions():
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
     base_pack.regFilterWS("BGM_De_Novo", [
         condition_consequence_xBrowse(),
-        ConditionMaker.condEnum("Callers", ["BGM_BAYES_DE_NOVO", "RUFUS"])]
-        ,requires = {"trio_base"})
+        ConditionMaker.condEnum("Callers", ["BGM_BAYES_DE_NOVO", "RUFUS"])],
+        requires = {"trio_base"})
 
     base_pack.regFilterWS("BGM_Homozygous_Rec", [
         condition_consequence_xBrowse(),
@@ -161,20 +160,15 @@ def prepareSolutions():
 
     #base_pack.regFilterXL(?, ?)
     base_pack.regFilterXL("Non_Synonymous", condition_high_quality() + [
-            ConditionMaker.condEnum("Most_Severe_Consequence",
-                                    NON_SYNONYMOUS_CSQ)
-        ]
-    )
+        ConditionMaker.condEnum("Most_Severe_Consequence",
+            NON_SYNONYMOUS_CSQ)])
 
     base_pack.regFilterXL("UTR_and_Worse", condition_high_quality() + [
-            ConditionMaker.condEnum("Most_Severe_Consequence",
-                                    LOW_IMPACT_CSQ, join_mode="NOT")
-        ]
-    )
+        ConditionMaker.condEnum("Most_Severe_Consequence",
+                LOW_IMPACT_CSQ, join_mode="NOT")])
 
-    base_pack.regFilterXL("Impacting_Splicing", condition_high_quality() +
-                          impacting_splicing()
-    )
+    base_pack.regFilterXL("Impacting_Splicing",
+        condition_high_quality() + impacting_splicing())
 
     # Production Decision Trees
     base_pack.regTreeCode("BGM xBrowse Alt",
@@ -213,4 +207,6 @@ def prepareSolutions():
         cfgPath("rep_purpura_fulminans.lst"))
     base_pack.regPanel("Symbol", "PharmKB_VIP",
         cfgPath("pharmgkb_vip.lst"))
+    base_pack.regPanel("Symbol", "Coagulation_System",
+        cfgPath("coagulation_system.lst"))
 
