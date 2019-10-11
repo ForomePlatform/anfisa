@@ -137,8 +137,8 @@ class AspectH:
             values = []
             for obj in objects:
                 obj_repr = attr.htmlRepr(obj, rec_data)
-                if obj_repr is None or obj_repr == ('-', "none"):
-                    continue
+                if obj_repr is not None and obj_repr != ('-', "none"):
+                    values.append(obj_repr)
             if len(values) > 0:
                 fld_data[attr.getName()] = values
         rows = []
