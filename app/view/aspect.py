@@ -135,11 +135,13 @@ class AspectH:
                     attr.hasKind("hidden")):
                 continue
             values = []
+            cnt_good = 0
             for obj in objects:
                 obj_repr = attr.htmlRepr(obj, rec_data)
-                if obj_repr is not None and obj_repr != ('-', "none"):
+                if obj_repr is not None:
+                    cnt_good += (obj_repr != ('-', "none"))
                     values.append(obj_repr)
-            if len(values) > 0:
+            if cnt_good > 0:
                 fld_data[attr.getName()] = values
         rows = []
         for attr in self.getAttrs():
