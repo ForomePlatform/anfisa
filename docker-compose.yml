@@ -23,7 +23,7 @@ services:
     ports:
       - "8190:8190"
     command: >
-      bash -c "python app/run.py"
+      bash -c "python app/run.py anfisa-docker.json"
 
 volumes:
   anfisa_data:

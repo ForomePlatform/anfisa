@@ -9,5 +9,3 @@ RUN mkdir -p $PROJECT_HOME
 COPY . $PROJECT_HOME
 WORKDIR $PROJECT_HOME
 RUN pip install -r ./requirements.txt
-RUN sed -i 's#${HOME}/../a-setup#/data/projects/anfisa-data/#' anfisa.json
-RUN sed -i '/"mongo-db": "Anfisa",/a\    "mongo-host": "mongo",' anfisa.json
