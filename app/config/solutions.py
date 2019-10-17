@@ -203,9 +203,9 @@ def prepareSolutions():
         cfgPath("all_hearing_loss.lst"))
     base_pack.regPanel("Symbol", "Reportable_Hearing_Loss",
         cfgPath("rep_hearing_loss.lst"))
-    base_pack.regPanel("Symbol", "PF",
+    base_pack.regPanel("Symbol", "Purpura_Fulminans",
         cfgPath("rep_purpura_fulminans.lst"))
-    base_pack.regPanel("Symbol", "PharmKB_VIP",
+    base_pack.regPanel("Symbol", "PharmGKB_VIP",
         cfgPath("pharmgkb_vip.lst"))
     base_pack.regPanel("Symbol", "Coagulation_System",
         cfgPath("coagulation_system.lst"))
