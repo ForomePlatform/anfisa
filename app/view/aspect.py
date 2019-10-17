@@ -1,4 +1,3 @@
-import logging
 from xml.sax.saxutils import escape
 
 from .attr import AttrH
