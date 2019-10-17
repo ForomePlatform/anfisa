@@ -9,7 +9,7 @@ class ZygosityComplex(ComplexEnumSupport):
         self.mFamilyInfo = family_info
         self.mCondEnv = cond_env
         self.mIsOK = (self.mFamilyInfo is not None and
-            1 < len(self.mFamilyInfo) < 10)
+            1 < len(self.mFamilyInfo) <= 10)
         labels = AnfisaConfig.configOption("zygosity.cases")
         self.mCaseLabels =[labels[key]
             for key in ("homo_recess", "x_linked", "dominant", "compens")]
