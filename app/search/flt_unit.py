@@ -97,7 +97,7 @@ class _EnumUnit(FilterUnit):
                 stat = EnumStat(self.mVariantSet, True)
                 for rec_no in range(self.getIndex().getWS().getTotal()):
                     stat.regValues(self.getRecVal((rec_no)))
-                self.mVariantList = [info[0] for info in stat[0]]
+                self.mVariantList = [info[0] for info in stat.result()[0]]
             return self.mVariantList
         return list(iter(self.mVariantSet))
 
