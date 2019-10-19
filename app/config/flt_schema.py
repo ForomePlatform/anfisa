@@ -234,17 +234,47 @@ def defineFilterSchema():
     with filters.viewGroup("Call_Quality"):
         filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq",
             title = "Genotype Quality (GQ) for Proband",
-            render_mode = "linear,>", default_value = 1000)
+            render_mode = "linear,>", default_value = 1000,
+            tooltip = "GQ tells you how confident we are that "
+            "the genotype we assigned to a particular sample is correct. "
+            "It is simply the second lowest PL, because it is the "
+            "difference between the second lowest PL and the lowest PL "
+            "(always 0).")
         filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
             title = "Minimum GQ for the family)", render_mode = "linear,>",
-            default_value = 1000)
+            default_value = 1000,
+            tooltip = "GQ tells you how confident we are that "
+            "the genotype we assigned to a particular sample is correct. "
+            "It is simply the second lowest PL, because it is the "
+            "difference between the second lowest PL and the lowest PL "
+            "(always 0).")
         filters.floatValueUnit("QD", "/_filters/qd",
             title = "Quality by Depth", render_mode = "linear,>",
-            default_value=100000.)
+            default_value=100000.,
+            tooltip = "The QUAL score normalized by allele depth (AD) "
+            "for a variant. This annotation puts the variant confidence "
+            "QUAL score into perspective by normalizing for the amount "
+            "of coverage available. Because each read contributes a little "
+            "to the QUAL score, variants in regions with deep coverage "
+            "can have artificially inflated QUAL scores, giving the "
+            "impression that the call is supported by more evidence "
+            "than it really is. To compensate for this, we normalize "
+            "the variant confidence by depth, which gives us a more "
+            "objective picture of how well supported the call is.")
         filters.floatValueUnit("FS", "/_filters/fs",
             "Fisher Strand Bias",
-            render_mode = "linear,<", default_value = 0.)
-        filters.multiStatusUnit("FT", "/_filters/filters[]", title = "FILTER")
+            render_mode = "linear,<", default_value = 0.,
+              tooltip = "Phred-scaled probability that there is strand bias at "
+                    "the site. Strand Bias tells us whether the alternate "
+                    "allele was seen more or less often on the forward or "
+                    "reverse strand than the reference allele. When there "
+                    "little to no strand bias at the site, the FS value "
+                    "will be close to 0.")
+        filters.multiStatusUnit("FT", "/_filters/filters[]", title = "FILTER",
+        tooltip = "This field contains the name(s) of any filter(s) "
+                  "that the variant fails to pass, or the value PASS if the "
+                  "variant passed all filters. If the FILTER value is ., "
+                  "then no filtering has been applied to the records.")
 
     with filters.viewGroup("Predictions"):
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
@@ -299,16 +329,29 @@ def defineFilterSchema():
             render_mode = "linear,>", default_value = 0,
             title = "Splice AI splice altering score")
 
-        filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]", default_value="N/A")
-        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]", default_value="N/A")
-
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/view/predictions/polyphen2_hvar[]",
-            separators = "[\s\,]", default_value = "N/A")
+            separators = "[\s\,]", default_value = "N/A",
+              tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
+                "trained on known human variation (disease mutations vs."
+                " common neutral variants)")
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/view/predictions/polyphen2_hdiv[]",
-            separators = "[\s\,]", default_value = "N/A")
+            separators = "[\s\,]", default_value = "N/A",
+            tooltip="HumDiv (HDIV) classifier is trained on a smaller number "
+                "of select extreme effect disease mutations vs. divergence "
+                "with close homologs (e.g. primates), which is supposed to "
+                "consist of mostly neutral mutations.")
 
+        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]",
+                                default_value="N/A",
+            tooltip="Sort intolerated from tolerated (An amino acid at a "
+                    "position is tolerated | The most frequentest amino acid "
+                    "being tolerated). D: Deleterious T: tolerated")
+        filters.multiStatusUnit("FATHMM", "/view/predictions/fathmm[]",
+                                default_value="N/A",
+                tooltip="Functional analysis through hidden markov model HMM."
+                      "D: Deleterious; T: Tolerated"),
         filters.floatValueUnit("GERP_score",
             "/view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")

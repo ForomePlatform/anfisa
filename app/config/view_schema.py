@@ -99,13 +99,33 @@ def defineViewSchema():
             "than it really is. To compensate for this, we normalize "
             "the variant confidence by depth, which gives us a more "
             "objective picture of how well supported the call is."),
-        AttrH("mq", title = "Mapping Quality"),
+        AttrH("mq", title = "Mapping Quality",
+          tooltip="This is the root mean square mapping quality over all "
+                  "the reads at the site. Instead of the average mapping "
+                  "quality of the site, this annotation gives the square root "
+                  "of the average of the squares of the mapping qualities at "
+                  "the site. When the mapping qualities are good at a site, "
+                  "the MQ will be around 60. Broad Institute recommendation is "
+                  "to fail any variant with an MQ value less than 40.0"),
         AttrH("variant_call_quality", title = "Variant Call Quality",
             tooltip = "QUAL tells you how confident we are that there is "
             "some kind of variation at a given site. The variation may be "
             "present in one or more samples."),
-        AttrH("strand_odds_ratio", title = "Strand Odds Ratio", tooltip = ""),
-        AttrH("fs", title = "Fisher Strand Bias", tooltip = ""),
+        AttrH("strand_odds_ratio", title = "Strand Odds Ratio",
+              tooltip = "Another way to estimate strand bias using a "
+            "test similar to the symmetric odds ratio test. "
+            "SOR was created because FS tends to penalize variants "
+            "that occur at the ends of exons. Reads at the ends of "
+            "exons tend to only be covered by reads in one direction "
+            "and FS gives those variants a bad score. SOR will take "
+            "into account the ratios of reads that cover both alleles."),
+        AttrH("fs", title = "Fisher Strand Bias",
+              tooltip = "Phred-scaled probability that there is strand bias at "
+                "the site. Strand Bias tells us whether the alternate "
+                "allele was seen more or less often on the forward or "
+                "reverse strand than the reference allele. When there "
+                "little to no strand bias at the site, the FS value "
+                "will be close to 0."),
         AttrH("allelic_depth", title = "Allelic Depth", is_seq = True,
             tooltip = "AD is the unfiltered allele depth, i.e. "
             "the number of reads that support each of the reported "
@@ -191,26 +211,47 @@ def defineViewSchema():
         AttrH("max_ent_scan", title = "MaxEntScan",
             is_seq = True),
         AttrH("polyphen", title = "Polyphen",
-            is_seq = True),
+            is_seq = True,
+              tooltip="https://brb.nci.nih.gov/seqtools/colexpanno.html#dbnsfp"),
         AttrH("polyphen2_hvar", title = "Polyphen 2 HVAR",
-            is_seq = True),
+            is_seq = True,
+              tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
+                "trained on known human variation (disease mutations vs."
+                " common neutral variants)"),
         AttrH("polyphen2_hdiv", title = "Polyphen 2 HDIV",
-            is_seq = True),
+            is_seq = True,
+            tooltip="HumDiv (HDIV) classifier is trained on a smaller number "
+                "of select extreme effect disease mutations vs. divergence "
+                "with close homologs (e.g. primates), which is supposed to "
+                "consist of mostly neutral mutations."),
         AttrH("sift", title = "SIFT from dbNSFP",
-            is_seq = True),
+            is_seq = True,
+            tooltip="Sort intolerated from tolerated (An amino acid at a "
+                    "position is tolerated | The most frequentest amino acid "
+                    "being tolerated). D: Deleterious T: tolerated"),
         AttrH("sift_vep", title = "SIFT from VEP",
             is_seq = True),
         AttrH("revel", title = "REVEL",
             is_seq = True),
         AttrH("mutation_taster", title = "Mutation Taster",
-            is_seq = True),
-        AttrH("fathmm", title = "FATHMM", is_seq = True),
+            is_seq = True,
+            tooltip="Bayes Classifier. A: (disease_causing_automatic); "
+              "D: (disease_causing); N: (polymorphism [probably harmless]); "
+              "P: (polymorphism_automatic[known to be harmless])"),
+        AttrH("fathmm", title = "FATHMM", is_seq = True,
+              tooltip="Functional analysis through hidden markov model HMM."
+                      "D: Deleterious; T: Tolerated"),
         AttrH("cadd_phred", title = "CADD (Phred)",
-            is_seq = True),
+            is_seq = True,
+              tooltip="CADD Combined annotation dependent depletion"),
         AttrH("cadd_raw", title = "CADD (Raw)",
-            is_seq = True),
+            is_seq = True,
+              tooltip="CADD Combined annotation dependent depletion"),
         AttrH("mutation_assessor", title = "Mutation Assessor",
-            is_seq = True),
+            is_seq = True,
+            tooltip="Entropy of multiple sequence alighnment.	"
+             "H: high; M: medium; L: low; N: neutral. H/M means functional "
+             "and L/N means non-functional higher values are more deleterious"),
         AttrH("sift_score", title = "SIFT score",
             is_seq = True),
         AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score",
