@@ -24,9 +24,6 @@ jsonpath_rw
 lxml
 MarkupSafe
 mock==2.0.0
-mysql
-mysql-connector
-#MySQL-python
 netifaces==0.10.7
 openpyxl==2.6.1
 packaging==17.1
