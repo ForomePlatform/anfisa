@@ -329,15 +329,20 @@ def defineFilterSchema():
             render_mode = "linear,>", default_value = 0,
             title = "Splice AI splice altering score")
 
+        # filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]",
+        # default_value="N/A")
+        # This is an obsolete filter replaced by Polyphen 2
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/view/predictions/polyphen2_hvar[]",
             separators = "[\s\,]", default_value = "N/A",
-              tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
+            title="Polyphen",
+            tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
                 "trained on known human variation (disease mutations vs."
                 " common neutral variants)")
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/view/predictions/polyphen2_hdiv[]",
             separators = "[\s\,]", default_value = "N/A",
+            title="Polyphen HDIV (High sensitivity)",
             tooltip="HumDiv (HDIV) classifier is trained on a smaller number "
                 "of select extreme effect disease mutations vs. divergence "
                 "with close homologs (e.g. primates), which is supposed to "
