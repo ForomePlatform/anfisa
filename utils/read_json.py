@@ -34,21 +34,12 @@ class Bz2FileReader:
     def close(self):
         self.mInput.close()
 
-
-def trvial_transformation(data):
-    return data
-
-
 #===============================================
 class JsonLineReader:
-    def __init__(self, source, parse_json = True, transformation = None):
+    def __init__(self, source, parse_json = True):
         self.mSources = sorted(glob(source)) if "*" in source else [source]
         self.mCurReader = None
         self.mParseMode = parse_json
-        if (not transformation):
-            self.mTransformer = lambda data: trvial_transformation(data)
-        else:
-            self.mTransformer = transformation
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
@@ -76,7 +67,7 @@ class JsonLineReader:
                     self.mCurReader = None
                     continue
                 if self.mParseMode:
-                    return self.mTransformer(json.loads(line))
+                    return json.loads(line)
                 return line.rstrip()
             if len(self.mSources) == 0:
                 return None

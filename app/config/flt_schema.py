@@ -1,5 +1,4 @@
 import sys
-from itertools import product
 
 from app.prepare.prep_filters import FilterPrepareSetH
 from app.filter.condition import ConditionMaker
@@ -74,11 +73,6 @@ def defineFilterSchema():
                             default_value = 0,
             tooltip="Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
-
-    with filters.viewGroup("Cohorts"):
-        for f in product(["ALL", "bgm", "srr", "m"], ["AF", "AF2"]):
-            key = "cohort/{}/{}".format(f[0], f[1])
-            filters.floatValueUnit(key.replace('/','_'), "/_filters/{}".format(key), default_value=0)
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",

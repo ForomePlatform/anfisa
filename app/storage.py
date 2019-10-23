@@ -51,25 +51,6 @@ def checkDSName(name, kind):
         print("Wrong dataset kind:", kind)
         assert False
 
-
-def cohort_t(data):
-    if (data.get("record_type") != "variant"):
-        return data
-    filters = data["_filters"]
-    view = data["view"]
-    cohorts = filters.get("cohort")
-    if (not cohorts):
-        return data
-
-    view["cohorts"] = dict()
-    for cohort in cohorts:
-        c_data = cohorts[cohort]
-        for field in c_data:
-            key = "cohort_{}_{}".format(cohort, field)
-            view["cohorts"][key] = c_data[field]
-
-    return data
-
 #===============================================
 def createDataSet(app_config, name, kind, mongo,
         source, ds_inventory, report_lines, date_loaded):
@@ -116,10 +97,9 @@ def createDataSet(app_config, name, kind, mongo,
     vdata_stdin = TextIOWrapper(vdata_out.stdin, encoding = "utf-8",
         line_buffering = True)
 
-    transformer = lambda data: cohort_t(data)
     with    gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_stream, \
             gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream, \
-            JsonLineReader(source, transformation=transformer) as input:
+            JsonLineReader(source) as input:
         fdata_out = TextIOWrapper(fdata_stream,
             encoding = "utf-8", line_buffering = True)
         pdata_out = TextIOWrapper(pdata_stream,
