@@ -15,7 +15,7 @@ from app.prepare.trans_prep import TranscriptPreparator
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
-from app.config.solutions import prepareSolutions
+from app.config.solutions import readySolutions
 from app.model.mongo_db import MongoConnector
 #=====================================
 sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
@@ -55,6 +55,8 @@ def checkDSName(name, kind):
 def createDataSet(app_config, name, kind, mongo,
         source, ds_inventory, report_lines, date_loaded):
     global DRUID_ADM
+    readySolutions()
+
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
         print("No vault directory:", vault_dir, file = sys.stderr)
@@ -69,12 +71,19 @@ def createDataSet(app_config, name, kind, mongo,
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
 
-    anfisa_version = AnfisaConfig.getAnfisaVersion()
-    prepareSolutions()
-    post_proc = None
-    view_aspects = defineViewSchema()
+    input_reader = JsonLineReader(source)
+    metadata_record = input_reader.readOne()
+    if metadata_record.get("record_type") != "metadata":
+        print("No metadata line in",  source,  file = sys.stderr)
+        assert False
+
+    if "versions" in metadata_record:
+        metadata_record["versions"][
+            "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
+
+    view_aspects = defineViewSchema(metadata_record)
     view_checker = ViewDataChecker(view_aspects)
-    filter_set = defineFilterSchema()
+    filter_set = defineFilterSchema(metadata_record)
 
     if kind == "ws":
         trans_prep = TranscriptPreparator(
@@ -86,34 +95,23 @@ def createDataSet(app_config, name, kind, mongo,
         print("Processing...", file = sys.stderr)
 
     data_rec_no = 0
-    metadata_record = None
 
-    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " +
-        ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
+    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " 
+        + ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
         stdin = PIPE, stderr = PIPE,
-        bufsize = 1, universal_newlines = False, # line buffer
+        bufsize = 1, universal_newlines = False,
         close_fds = True)
 
     vdata_stdin = TextIOWrapper(vdata_out.stdin, encoding = "utf-8",
         line_buffering = True)
 
-    with    gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_stream, \
-            gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream, \
-            JsonLineReader(source) as input:
+    with gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_stream, \
+        gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream:
         fdata_out = TextIOWrapper(fdata_stream,
             encoding = "utf-8", line_buffering = True)
         pdata_out = TextIOWrapper(pdata_stream,
             encoding = "utf-8", line_buffering = True)
-        for inp_rec_no, record in enumerate(input):
-            if post_proc is not None:
-                post_proc.transform(inp_rec_no, record)
-            if record.get("record_type") == "metadata":
-                assert inp_rec_no == 0
-                metadata_record = record
-                if "versions" in metadata_record:
-                    metadata_record["versions"]["Anfisa load"] = anfisa_version
-                filter_set.setMeta(metadata_record)
-                continue
+        for record in input_reader:
             flt_data = filter_set.process(data_rec_no, record)
             view_checker.regValue(data_rec_no, record)
             print(json.dumps(record, ensure_ascii = False), file = vdata_stdin)
@@ -128,7 +126,9 @@ def createDataSet(app_config, name, kind, mongo,
             if report_lines and data_rec_no % report_lines == 0:
                 sys.stderr.write("\r%d lines..." % data_rec_no)
     if report_lines:
-        print("\nTotal lines: %d" % data_rec_no, file = sys.stderr)
+        print("\nTotal lines: %d" % input_reader.getCurLineNo(), 
+            file = sys.stderr)
+    input_reader.close()
 
     _, vreport_data = vdata_out.communicate()
     for line in str(vreport_data, encoding="utf-8").splitlines():
@@ -153,16 +153,16 @@ def createDataSet(app_config, name, kind, mongo,
     if is_ok:
         ds_doc_dir = ds_dir + "/doc"
         ds_info = {
-            "name": name,
-            "kind": kind,
-            "view_schema": view_aspects.dump(),
-            "flt_schema": flt_schema_data,
-            "total": data_rec_no,
-            "mongo": mongo,
-            "modes": [],
-            "meta": metadata_record,
+            "date_loaded": date_loaded, 
             "doc": prepareDocDir(ds_doc_dir, ds_inventory),
-            "date_loaded": date_loaded}
+            "flt_schema": flt_schema_data,
+            "kind": kind,
+            "meta": metadata_record,
+            "modes": [],
+            "mongo": mongo,
+            "name": name,
+            "total": data_rec_no,
+            "view_schema": view_aspects.dump()}
 
         if total_item_count is not None:
             ds_info["total_items"] = total_item_count
@@ -195,7 +195,6 @@ def createDataSet(app_config, name, kind, mongo,
         print(rep_out.getvalue(), file = outp)
 
     print(rep_out.getvalue())
-
 #===============================================
 def pushDruid(app_config, name):
     global DRUID_ADM
@@ -277,6 +276,7 @@ def pushDoc(app_config, name, ds_inventory):
 
     print("Re-doc complete:", ds_dir)
 
+
 #===============================================
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -301,7 +301,7 @@ if __name__ == '__main__':
     parser.add_argument("name", nargs = 1, help = "Dataset name")
     run_args = parser.parse_args()
 
-    ds_name =  run_args.name[0]
+    ds_name = run_args.name[0]
     config_file = run_args.config
     ds_source = run_args.source
     ds_inv = run_args.inv
@@ -378,4 +378,3 @@ if __name__ == '__main__':
         print("Bad mode:", run_args.mode)
 
 #===============================================
-

@@ -11,6 +11,7 @@ def cfgPath(fname):
 def cfgPathSeq(fnames):
     return [cfgPath(fname) for fname in fnames]
 
+
 #===============================================
 sSolutionsAreSet = False
 
@@ -47,7 +48,7 @@ LOW_IMPACT_CSQ = [
     "regulatory_region_variant"
 ]
 
-def condition_consequence_xBrowse ():
+def condition_consequence_xBrowse():
     return ConditionMaker.condEnum("Transctipt_consequence",
         MODERATE_IMPACT_CSQ)
 
@@ -63,7 +64,7 @@ def condition_high_quality():
 def impacting_splicing():
     return [ConditionMaker.condNum("splice_ai_dsmax", [0.2, None])]
 
-def prepareSolutions():
+def readySolutions():
     global sSolutionsAreSet
     if sSolutionsAreSet:
         return
@@ -103,7 +104,8 @@ def prepareSolutions():
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"])],
         requires = {"trio_base"})
 
-    # Standard mendelian Filters, should belong to "Undiagnosed Patients Solution Pack"
+    # Standard mendelian Filters, should belong to
+    # "Undiagnosed Patients Solution Pack"
     base_pack.regFilterWS("X_Linked", condition_high_quality() + [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
@@ -112,7 +114,8 @@ def prepareSolutions():
             ["X-linked"])],
         requires = {"trio_base"})
 
-    base_pack.regFilterWS("Mendelian_Homozygous_Rec", condition_high_quality() + [
+    base_pack.regFilterWS("Mendelian_Homozygous_Rec", 
+        condition_high_quality() + [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
@@ -120,7 +123,8 @@ def prepareSolutions():
             ["Homozygous Recessive"])],
         requires = {"trio_base"})
 
-    base_pack.regFilterWS("Mendelian_Compound_Het", condition_high_quality() + [
+    base_pack.regFilterWS("Mendelian_Compound_Het", 
+        condition_high_quality() + [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
@@ -128,7 +132,8 @@ def prepareSolutions():
         ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
         requires = {"trio_base"})
 
-    base_pack.regFilterWS("Mendelian_Auto_Dom", condition_high_quality() + [
+    base_pack.regFilterWS("Mendelian_Auto_Dom", 
+        condition_high_quality() + [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
@@ -136,8 +141,8 @@ def prepareSolutions():
             ["Autosomal Dominant"])],
         requires = {"trio_base"})
 
-    base_pack.regFilterWS("Impact_Splicing", condition_high_quality() +
-                          impacting_splicing())
+    base_pack.regFilterWS("Impact_Splicing", 
+        condition_high_quality() + impacting_splicing())
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [

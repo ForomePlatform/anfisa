@@ -2,12 +2,14 @@ from bitarray import bitarray
 #===============================================
 class ColGroupsH:
     def __init__(self, attr_title_pairs = None,
-            attr = None, title = None):
+            attr = None, title = None,  single_columns = False):
         self.mATPairs = attr_title_pairs
         self.mHitGroup = None
+        self.mSingleColumns = single_columns
         if attr is not None:
             assert self.mATPairs is None
             self.mATPairs  = [(attr, title)]
+            assert not self.mSingleColumns
         else:
             assert self.mATPairs is not None
 
@@ -30,15 +32,26 @@ class ColGroupsH:
     def getAttrNames(self):
         return [attr for attr, title in self.mATPairs]
 
+    def getSingleColumns(self):
+        return self.mSingleColumns
+
     #=============================
     def dump(self):
-        return [[attr, title] for attr, title in self.mATPairs]
+        ret = [[attr, title] for attr, title in self.mATPairs]
+        if self.mSingleColumns:
+            ret.append("single_columns")
+        return ret
 
     @classmethod
     def load(cls, data):
         if data is None:
             return None
-        return cls(attr_title_pairs = data)
+        attr_title_pairs,  single_columns  = data,  False
+        if attr_title_pairs[-1] == "single_columns":
+            attr_title_pairs = attr_title_pairs[:-1]
+            single_columns = True
+        return cls(attr_title_pairs = attr_title_pairs,
+            single_columns = single_columns)
 
     #=============================
     def formColumns(self, in_objects, details = None):
@@ -55,7 +68,9 @@ class ColGroupsH:
             if attr not in rec_obj:
                 continue
             seq = rec_obj[attr]
-            if len(seq) == 0:
+            if self.mSingleColumns:
+                seq = [seq]
+            elif len(seq) == 0:
                 continue
             rep_count = "[%d]" % len(seq)
             if hit_columns is not None and self.mHitGroup == group_idx:
@@ -66,7 +81,7 @@ class ColGroupsH:
                 if len(hit_columns) != len(seq):
                     rep_count = "[%d/%d]" % (len(hit_columns), len(seq))
             objects += seq
-            if title:
+            if title and not self.mSingleColumns:
                 title += rep_count
             prefix_head.append((title, len(seq)))
         if len(prefix_head) == 1 and prefix_head[0][0] is None:

@@ -151,8 +151,10 @@ class DictTypeChecker:
                     master.problem("lost", a_check, self)
                     a_check.setStatus("lost")
             else:
+                if self.mBaseAsp is None:
+                    # lack of accuracy
+                    continue
                 attr_h = a_check.getBaseAttr()
-                assert self.mBaseAsp is not None
                 if a_type is None:
                     if not attr_h.hasKind("place"):
                         self.mBaseAsp.delAttr(attr_h)
@@ -182,16 +184,21 @@ class DictTypeChecker:
 
 #===============================================
 class ColGroupTypeChecker(DictTypeChecker):
-    def __init__(self, name, master_name, base_asp):
+    def __init__(self, name, single_columns, master_name, base_asp):
         DictTypeChecker.__init__(self, name, master_name, base_asp = base_asp)
+        self.mSingleColumns = single_columns
 
     def getKind(self):
         return "Columns"
 
     def regValue(self, rec_no, value):
-        for it in value:
-            for name, val in it.items():
+        if self.mSingleColumns:
+            for name, val in value.items():
                 self.regItemValue(rec_no, name, val)
+        else:
+            for it in value:
+                for name, val in it.items():
+                    self.regItemValue(rec_no, name, val)
 
 #===============================================
 class SourceTypeChecker(DictTypeChecker):
@@ -217,11 +224,23 @@ class SourceTypeChecker(DictTypeChecker):
                 self.mBaseAsp = asp_h
         else:
             attr_names = asp_h.getColGroups().getAttrNames()
-            asp_checker = ColGroupTypeChecker(
-                asp_h.getTitle(), self.getName(), asp_h)
-            for nm in attr_names:
-                self.regIt(asp_checker, nm)
-            self.mAspectCheckers.append(asp_checker)
+            if asp_h.getField() is not None:
+                mid_checker = DictTypeChecker(
+                    asp_h.getField(), self.getName(), base_asp = asp_h)
+                asp_checker = ColGroupTypeChecker(
+                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(),
+                    mid_checker.getName(), None)
+                for nm in attr_names:
+                    mid_checker.regIt(asp_checker, nm)
+                self.regIt(mid_checker)
+                self.mAspectCheckers.append(mid_checker)
+            else:
+                asp_checker = ColGroupTypeChecker(
+                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(), 
+                    self.getName(), asp_h)
+                for nm in attr_names:
+                    self.regIt(asp_checker, nm)
+                self.mAspectCheckers.append(asp_checker)
         for attr_h in asp_h.getAttrs():
             asp_checker.addAttr(attr_h)
 

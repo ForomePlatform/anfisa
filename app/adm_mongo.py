@@ -60,8 +60,8 @@ def _filterTagState(state, tag_name):
     return json.dumps(ret, sort_keys = True)
 
 def clearRecordOneTag(rec, tag_name, out_seq):
-    if tag_name not in rec and all([tag_name not in sub_tags
-            for sub_tags in rec['_h'][1]]):
+    if tag_name not in rec and all(tag_name not in sub_tags
+            for sub_tags in rec['_h'][1]):
         return
     rec_id = rec['_id']
     base_idx = rec['_h'][0]

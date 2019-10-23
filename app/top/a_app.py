@@ -3,7 +3,7 @@ from io import StringIO
 
 from app.config.view_schema import defineViewSchema
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import prepareSolutions
+from app.config.solutions import readySolutions
 from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
@@ -32,7 +32,7 @@ class AnfisaApp:
 
     @classmethod
     def setup(cls, config, in_container):
-        prepareSolutions()
+        readySolutions()
 
         cls.sVersionCode = AnfisaConfig.getAnfisaVersion()
 

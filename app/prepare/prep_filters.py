@@ -4,18 +4,14 @@ from app.filter.cond_env import CondEnv
 
 #===============================================
 class FilterPrepareSetH:
-    def __init__(self, modes = None):
+    def __init__(self, metadata_record,  modes = None):
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
-        self.mMeta = None
-        self.mFamilyInfo = None
-        self.mCondEnv = CondEnv(modes)
-
-    def setMeta(self, meta):
-        self.mMeta = meta
+        self.mMeta = metadata_record
         self.mFamilyInfo = FamilyInfo(self.mMeta["samples"],
             self.mMeta.get("proband"))
+        self.mCondEnv = CondEnv(modes)
 
     def getFamilyInfo(self):
         return self.mFamilyInfo

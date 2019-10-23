@@ -4,8 +4,8 @@ from app.view.attr import AttrH
 from app.view.colgrp import ColGroupsH
 
 #===============================================
-def defineViewSchema():
-    aspects = AspectSetH([
+def defineViewSchema(metadata_record = None):
+    aspect_list = [
         AspectH("view_gen", "General", "view", field = "general"),
         AspectH("view_qsamples", "Quality", "view",
             col_groups = ColGroupsH(attr = "quality_samples")),
@@ -14,7 +14,18 @@ def defineViewSchema():
         AspectH("view_db", "Databases", "view", field = "databases"),
         AspectH("view_pred", "Predictions", "view", field = "predictions"),
         AspectH("view_genetics", "Bioinformatics", "view",
-            field = "bioinformatics"),
+            field = "bioinformatics")]
+
+    cohorts = metadata_record.get("cohorts")
+    if cohorts:
+        cohort_columns = [["ALL",  "ALL"]] + [
+            [ch["name"],  ch.get("title",  ch["name"])] for ch in cohorts]
+        aspect_list.append(AspectH("view_cohorts", "Cohorts", "view",
+            field = "cohorts",
+            col_groups = ColGroupsH(attr_title_pairs = cohort_columns, 
+            single_columns = True)))
+
+    aspect_list += [
         AspectH("view_inheritance", "Inheritance", "view",
             field = "inheritance", ignored = True),
         AspectH("_main", "VEP Data", "data"),
@@ -27,7 +38,9 @@ def defineViewSchema():
         AspectH("colocated_v", "Colocated Variants", "data",
             col_groups = ColGroupsH(attr = "colocated_variants")),
         AspectH("input", "VCF", "data", field = "input",
-            mode = "string")])
+            mode = "string")]
+
+    aspects = AspectSetH(aspect_list)
 
     aspects["view_gen"].setAttributes([
         AttrH("genes", title = "Gene(s)", is_seq = True,
@@ -35,10 +48,10 @@ def defineViewSchema():
         AttrH("hg19", tooltip = "Genetic coordinates in HG19 Assembly"),
         AttrH("hg38", tooltip = "Genetic coordinates in HG38 Assembly"),
         AttrH("worst_annotation", title = "Worst Annotation",
-              tooltip = "Most Severe Consequences from the transcript"
-                      + " with the worst annotation"),
+            tooltip = "Most Severe Consequences from the transcript"
+            + " with the worst annotation"),
         AttrH("canonical_annotation", title = "Canonical Annotation",
-              tooltip = "Most Severe Consequences from canonical transcripts"),
+            tooltip = "Most Severe Consequences from canonical transcripts"),
         AttrH("refseq_transcript_canonical",
             title = "RefSeq Transcript (Canonical)", is_seq = True),
         AttrH("refseq_transcript_worst",
@@ -66,11 +79,11 @@ def defineViewSchema():
         AttrH("variant_exon_worst",
             title = "Variant Exon (Worst Annotation)", is_seq = True,
             tooltip = "Exon # according to the transcript with "
-                    + "the worst annotation"),
+            "the worst annotation"),
         AttrH("variant_intron_worst",
             title = "Variant Intron (Worst Annotation)", is_seq = True,
             tooltip = "Intron # according to the transcript with "
-                    + "the worst annotation"),
+            "the worst annotation"),
         AttrH("variant_intron_canonical",
             title = "Variant Intron (Canonical)", is_seq = True,
             tooltip = "Intron # according to canonical transcript"),
@@ -100,19 +113,19 @@ def defineViewSchema():
             "the variant confidence by depth, which gives us a more "
             "objective picture of how well supported the call is."),
         AttrH("mq", title = "Mapping Quality",
-          tooltip="This is the root mean square mapping quality over all "
-                  "the reads at the site. Instead of the average mapping "
-                  "quality of the site, this annotation gives the square root "
-                  "of the average of the squares of the mapping qualities at "
-                  "the site. When the mapping qualities are good at a site, "
-                  "the MQ will be around 60. Broad Institute recommendation is "
-                  "to fail any variant with an MQ value less than 40.0"),
+            tooltip = "This is the root mean square mapping quality over all "
+            "the reads at the site. Instead of the average mapping "
+            "quality of the site, this annotation gives the square root "
+            "of the average of the squares of the mapping qualities at "
+            "the site. When the mapping qualities are good at a site, "
+            "the MQ will be around 60. Broad Institute recommendation is "
+            "to fail any variant with an MQ value less than 40.0"),
         AttrH("variant_call_quality", title = "Variant Call Quality",
             tooltip = "QUAL tells you how confident we are that there is "
             "some kind of variation at a given site. The variation may be "
             "present in one or more samples."),
         AttrH("strand_odds_ratio", title = "Strand Odds Ratio",
-              tooltip = "Another way to estimate strand bias using a "
+            tooltip = "Another way to estimate strand bias using a "
             "test similar to the symmetric odds ratio test. "
             "SOR was created because FS tends to penalize variants "
             "that occur at the ends of exons. Reads at the ends of "
@@ -120,12 +133,12 @@ def defineViewSchema():
             "and FS gives those variants a bad score. SOR will take "
             "into account the ratios of reads that cover both alleles."),
         AttrH("fs", title = "Fisher Strand Bias",
-              tooltip = "Phred-scaled probability that there is strand bias at "
-                "the site. Strand Bias tells us whether the alternate "
-                "allele was seen more or less often on the forward or "
-                "reverse strand than the reference allele. When there "
-                "little to no strand bias at the site, the FS value "
-                "will be close to 0."),
+            tooltip = "Phred-scaled probability that there is strand bias at "
+            "the site. Strand Bias tells us whether the alternate "
+            "allele was seen more or less often on the forward or "
+            "reverse strand than the reference allele. When there "
+            "little to no strand bias at the site, the FS value "
+            "will be close to 0."),
         AttrH("allelic_depth", title = "Allelic Depth", is_seq = True,
             tooltip = "AD is the unfiltered allele depth, i.e. "
             "the number of reads that support each of the reported "
@@ -212,46 +225,47 @@ def defineViewSchema():
             is_seq = True),
         AttrH("polyphen", title = "Polyphen",
             is_seq = True,
-              tooltip="https://brb.nci.nih.gov/seqtools/colexpanno.html#dbnsfp"),
+            tooltip =
+            "https://brb.nci.nih.gov/seqtools/colexpanno.html#dbnsfp"),
         AttrH("polyphen2_hvar", title = "Polyphen 2 HVAR",
             is_seq = True,
-              tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
-                "trained on known human variation (disease mutations vs."
-                " common neutral variants)"),
+            tooltip = "HumVar (HVAR) is PolyPhen-2 classifier "
+            "trained on known human variation (disease mutations vs."
+            " common neutral variants)"),
         AttrH("polyphen2_hdiv", title = "Polyphen 2 HDIV",
             is_seq = True,
-            tooltip="HumDiv (HDIV) classifier is trained on a smaller number "
-                "of select extreme effect disease mutations vs. divergence "
-                "with close homologs (e.g. primates), which is supposed to "
-                "consist of mostly neutral mutations."),
+            tooltip = "HumDiv (HDIV) classifier is trained on a smaller "
+            "number of select extreme effect disease mutations vs. divergence "
+            "with close homologs (e.g. primates), which is supposed to "
+            "consist of mostly neutral mutations."),
         AttrH("sift", title = "SIFT from dbNSFP",
             is_seq = True,
-            tooltip="Sort intolerated from tolerated (An amino acid at a "
-                    "position is tolerated | The most frequentest amino acid "
-                    "being tolerated). D: Deleterious T: tolerated"),
+            tooltip = "Sort intolerated from tolerated (An amino acid at a "
+            "position is tolerated | The most frequentest amino acid "
+            "being tolerated). D: Deleterious T: tolerated"),
         AttrH("sift_vep", title = "SIFT from VEP",
             is_seq = True),
         AttrH("revel", title = "REVEL",
             is_seq = True),
         AttrH("mutation_taster", title = "Mutation Taster",
             is_seq = True,
-            tooltip="Bayes Classifier. A: (disease_causing_automatic); "
-              "D: (disease_causing); N: (polymorphism [probably harmless]); "
-              "P: (polymorphism_automatic[known to be harmless])"),
+            tooltip = "Bayes Classifier. A: (disease_causing_automatic); "
+            "D: (disease_causing); N: (polymorphism [probably harmless]); "
+            "P: (polymorphism_automatic[known to be harmless])"),
         AttrH("fathmm", title = "FATHMM", is_seq = True,
-              tooltip="Functional analysis through hidden markov model HMM."
-                      "D: Deleterious; T: Tolerated"),
+            tooltip = "Functional analysis through hidden markov model HMM."
+            "D: Deleterious; T: Tolerated"),
         AttrH("cadd_phred", title = "CADD (Phred)",
             is_seq = True,
-              tooltip="CADD Combined annotation dependent depletion"),
+            tooltip = "CADD Combined annotation dependent depletion"),
         AttrH("cadd_raw", title = "CADD (Raw)",
             is_seq = True,
-              tooltip="CADD Combined annotation dependent depletion"),
+            tooltip = "CADD Combined annotation dependent depletion"),
         AttrH("mutation_assessor", title = "Mutation Assessor",
             is_seq = True,
-            tooltip="Entropy of multiple sequence alighnment.	"
-             "H: high; M: medium; L: low; N: neutral. H/M means functional "
-             "and L/N means non-functional higher values are more deleterious"),
+            tooltip = "Entropy of multiple sequence alighnment.	"
+            "H: high; M: medium; L: low; N: neutral. H/M means functional "
+            "and L/N means non-functional higher values are more deleterious"),
         AttrH("sift_score", title = "SIFT score",
             is_seq = True),
         AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score",
@@ -290,6 +304,11 @@ def defineViewSchema():
             is_seq = True),
         AttrH("called_by", title = "Called by", is_seq = True),
         AttrH("caller_data", title = "CALLER DATA")])
+
+    if cohorts:
+        aspects["view_cohorts"].setAttributes([
+            AttrH("AF"),
+            AttrH("AF2")])
 
     aspects["_main"].setAttributes([
         AttrH("label"),

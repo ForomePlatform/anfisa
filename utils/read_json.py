@@ -36,10 +36,12 @@ class Bz2FileReader:
 
 #===============================================
 class JsonLineReader:
-    def __init__(self, source, parse_json = True):
+    def __init__(self, source, parse_json = True,  transform_f = None):
         self.mSources = sorted(glob(source)) if "*" in source else [source]
         self.mCurReader = None
         self.mParseMode = parse_json
+        self.mTransF = transform_f
+        self.mCurLineNo = -1
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
@@ -54,20 +56,31 @@ class JsonLineReader:
                 break
             yield line
 
+    def getCurLineNo(self):
+        return self.mCurLineNo
+
     def close(self):
+        self.mCurLineNo = -1
         if self.mCurReader is not None:
             self.mCurReader.close()
 
     def next(self):
+        return self.readOne()
+
+    def readOne(self):
         while True:
             if self.mCurReader is not None:
                 line = self.mCurReader.next()
+                self.mCurLineNo += 1
                 if not line:
                     self.mCurReader.close()
                     self.mCurReader = None
                     continue
                 if self.mParseMode:
-                    return json.loads(line)
+                    rec = json.loads(line)
+                    if self.mTransF:
+                        rec = self.mTransF(rec)
+                    return rec
                 return line.rstrip()
             if len(self.mSources) == 0:
                 return None
@@ -80,22 +93,25 @@ class JsonLineReader:
                 self.mCurReader = PlainFileReader(src)
 
 #===============================================
-def readJSonRecords(src):
+def readJSonRecords(src,  transform_f = None):
     if '*' in src:
         names = sorted(glob(src))
     else:
         names = [src]
+    if transform_f is None:
+        process_f = json.loads
+    else:
+        process_f = lambda line: transform_f(json.loads(line))
     for nm in names:
         if nm.endswith('.gz'):
             with gzip.open(nm, 'rb') as inp:
                 for line in inp:
-                    yield json.loads(line.decode('utf-8'))
+                    yield process_f(line.decode('utf-8'))
         elif nm.endswith('.bz2'):
             with bz2.BZ2File(nm, 'rb') as inp:
                 for line in inp:
-                    yield json.loads(line.decode('utf-8'))
+                    yield process_f(line.decode('utf-8'))
         else:
             with open(nm, 'r', encoding = 'utf-8') as inp:
                 for line in inp:
-                    yield json.loads(line)
-
+                    yield process_f(line)

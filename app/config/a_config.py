@@ -7,7 +7,7 @@ class AnfisaConfig:
 
     sConfigOptions = {
         "aspect.tags.name": "tags_data",
-        "zones":[
+        "zones" : [
             ("Gene",       "Symbol"),
             ("Sample",       "Has_Variant"),
             ("Tag", "_tags")
@@ -98,8 +98,8 @@ class AnfisaConfig:
 
     @classmethod
     def getAnfisaVersion(cls):
-        with open(os.path.dirname(os.path.abspath(__file__)) +
-            "/../VERSION", "r", encoding = "utf-8") as inp:
+        with open(os.path.dirname(os.path.abspath(__file__))
+                + "/../VERSION", "r", encoding = "utf-8") as inp:
             return inp.read().strip()
 
 

@@ -19,8 +19,6 @@ class AspectH:
         self.mColGroups = col_groups
         self.mMode      = mode
         assert self.mSource in ("view", "data")
-        if self.mColGroups is not None:
-            assert self.mField is None
 
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []

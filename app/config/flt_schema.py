@@ -16,6 +16,7 @@ def _conv_bool(v, s1, s2):
         return s2
     return v
 
+
 #===============================================
 sConsequenceVariants = [
     "transcript_ablation",
@@ -56,8 +57,8 @@ sConsequenceVariants = [
     "undefined"]
 
 #===============================================
-def defineFilterSchema():
-    filters = FilterPrepareSetH()
+def defineFilterSchema(metadata_record):
+    filters = FilterPrepareSetH(metadata_record)
 
     with filters.viewGroup("Inheritance"):
         filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
@@ -73,6 +74,16 @@ def defineFilterSchema():
                             default_value = 0,
             tooltip="Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
+
+    cohorts = metadata_record.get("cohorts")
+    if cohorts:
+        all_cohorts = ["ALL"] + [ch["name"] for ch in cohorts]
+        with filters.viewGroup("Cohorts"):
+            for ch_name in all_cohorts:
+                filters.floatValueUnit(ch_name + "_AF",
+                    "/view/cohorts/" + ch_name + "/AF",  default_value = 0)
+                filters.floatValueUnit(ch_name + "_AF2",
+                    "/view/cohorts/" + ch_name + "/AF2",  default_value = 0)
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",
@@ -262,31 +273,31 @@ def defineFilterSchema():
             "the variant confidence by depth, which gives us a more "
             "objective picture of how well supported the call is.")
         filters.floatValueUnit("FS", "/_filters/fs",
-            "Fisher Strand Bias",
-            render_mode = "linear,<", default_value = 0.,
-              tooltip = "Phred-scaled probability that there is strand bias at "
-                    "the site. Strand Bias tells us whether the alternate "
-                    "allele was seen more or less often on the forward or "
-                    "reverse strand than the reference allele. When there "
-                    "little to no strand bias at the site, the FS value "
-                    "will be close to 0.")
+            "Fisher Strand Bias", render_mode = "linear,<", default_value = 0.,
+            tooltip = "Phred-scaled probability that there is strand bias "
+            "at the site. Strand Bias tells us whether the alternate "
+            "allele was seen more or less often on the forward or "
+            "reverse strand than the reference allele. When there "
+            "little to no strand bias at the site, the FS value "
+            "will be close to 0.")
         filters.multiStatusUnit("FT", "/_filters/filters[]", title = "FILTER",
         tooltip = "This field contains the name(s) of any filter(s) "
-                  "that the variant fails to pass, or the value PASS if the "
-                  "variant passed all filters. If the FILTER value is ., "
-                  "then no filtering has been applied to the records.")
+            "that the variant fails to pass, or the value PASS if the "
+            "variant passed all filters. If the FILTER value is ., "
+            "then no filtering has been applied to the records.")
 
     with filters.viewGroup("Predictions"):
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
             title = "Categorized Benign in HGMD",
-            default_value = "Not in HGMD", research_only=True, render_mode="replace(True/Benign, False/Not Benign)")
+            default_value = "Not in HGMD", research_only = True,
+            render_mode = "replace(True/Benign, False/Not Benign)")
         filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
             default_value = "None")
 
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar",
             title = "Categorized Benign in ClinVar by all submitters",
-                           research_only=True)
+            research_only =True)
         filters.multiStatusUnit("ClinVar_Significance",
             "/data/clinvar_significance[]",
             title = "Clinical Significance in ClinVar")
@@ -334,29 +345,29 @@ def defineFilterSchema():
         # This is an obsolete filter replaced by Polyphen 2
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/view/predictions/polyphen2_hvar[]",
-            separators = "[\s\,]", default_value = "N/A",
-            title="Polyphen",
-            tooltip="HumVar (HVAR) is PolyPhen-2 classifier "
-                "trained on known human variation (disease mutations vs."
-                " common neutral variants)")
+            separators = r"[\s\,]", default_value = "N/A",
+            title = "Polyphen",
+            tooltip = "HumVar (HVAR) is PolyPhen-2 classifier "
+            "trained on known human variation (disease mutations vs."
+            " common neutral variants)")
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/view/predictions/polyphen2_hdiv[]",
-            separators = "[\s\,]", default_value = "N/A",
-            title="Polyphen HDIV (High sensitivity)",
-            tooltip="HumDiv (HDIV) classifier is trained on a smaller number "
-                "of select extreme effect disease mutations vs. divergence "
-                "with close homologs (e.g. primates), which is supposed to "
-                "consist of mostly neutral mutations.")
+            separators = r"[\s\,]", default_value = "N/A",
+            title = "Polyphen HDIV (High sensitivity)",
+            tooltip = "HumDiv (HDIV) classifier is trained on a smaller "
+            "number of select extreme effect disease mutations vs. "
+            "divergence with close homologs (e.g. primates), which is "
+            "supposed to consist of mostly neutral mutations.")
 
         filters.multiStatusUnit("SIFT", "/view/predictions/sift[]",
-                                default_value="N/A",
-            tooltip="Sort intolerated from tolerated (An amino acid at a "
-                    "position is tolerated | The most frequentest amino acid "
-                    "being tolerated). D: Deleterious T: tolerated")
+            default_value="N/A",
+            tooltip = "Sort intolerated from tolerated (An amino acid at a "
+            "position is tolerated | The most frequentest amino acid "
+            "being tolerated). D: Deleterious T: tolerated")
         filters.multiStatusUnit("FATHMM", "/view/predictions/fathmm[]",
-                                default_value="N/A",
-                tooltip="Functional analysis through hidden markov model HMM."
-                      "D: Deleterious; T: Tolerated"),
+            default_value = "N/A",
+            tooltip = "Functional analysis through hidden markov model HMM."
+            "D: Deleterious; T: Tolerated")
         filters.floatValueUnit("GERP_score",
             "/view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")
