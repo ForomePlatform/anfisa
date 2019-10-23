@@ -2,7 +2,7 @@
     "file-path-def": {"WORK": "/data/projects/anfisa-data/"},
     "host": "0.0.0.0",
     "port": 8190,
-    "html-base": "/anfisa/",
+    "html-base": "/",
     "html-title": "Anfisa",
     "html-ws-url": "ws",
     "mongo-db": "Anfisa",
