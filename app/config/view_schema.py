@@ -1,3 +1,5 @@
+from itertools import product
+
 from app.view.asp_set import AspectSetH
 from app.view.aspect import AspectH
 from app.view.attr import AttrH
@@ -15,6 +17,8 @@ def defineViewSchema():
         AspectH("view_pred", "Predictions", "view", field = "predictions"),
         AspectH("view_genetics", "Bioinformatics", "view",
             field = "bioinformatics"),
+        AspectH("view_cohorts", "Cohorts", "view",
+            field = "cohorts"),
         AspectH("view_inheritance", "Inheritance", "view",
             field = "inheritance", ignored = True),
         AspectH("_main", "VEP Data", "data"),
@@ -291,6 +295,10 @@ def defineViewSchema():
         AttrH("called_by", title = "Called by", is_seq = True),
         AttrH("caller_data", title = "CALLER DATA")])
 
+    aspects["view_cohorts"].setAttributes([
+        AttrH("cohort_{}_{}".format(f[0], f[1]))
+            for f in product(["ALL", "bgm", "srr", "m"], ["AF", "AF2"])
+    ])
     aspects["_main"].setAttributes([
         AttrH("label"),
         AttrH("color_code"),

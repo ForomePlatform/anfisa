@@ -204,17 +204,19 @@ def prepareSolutions():
     base_pack.regPanel("Symbol", "Reportable_Hearing_Loss",
         cfgPath("rep_hearing_loss.lst"))
     base_pack.regPanel("Symbol", "Purpura_Fulminans",
-        cfgPath("rep_purpura_fulminans.lst"))
+        cfgPath("purpura_fulminans.lst"))
     base_pack.regPanel("Symbol", "PharmGKB_VIP",
         cfgPath("pharmgkb_vip.lst"))
     base_pack.regPanel("Symbol", "Coagulation_System",
         cfgPath("coagulation_system.lst"))
-    base_pack.regPanel("Symbol", "TTP1",
-        cfgPath("ttp1.lst"))
-    base_pack.regPanel("Symbol", "TTP2",
-        cfgPath("ttp2.lst"))
-    base_pack.regPanel("Symbol", "TTP3",
-        cfgPath("ttp3.lst"))
-    base_pack.regPanel("Symbol", "TTP4",
-        cfgPath("ttp4.lst"))
+    base_pack.regPanel("Symbol", "Thrombotic_Thrombocytopenic_Purpura",
+        cfgPath("ttp.lst"))
+    # base_pack.regPanel("Symbol", "TTP1",
+    #     cfgPath("ttp1.lst"))
+    # base_pack.regPanel("Symbol", "TTP2",
+    #     cfgPath("ttp2.lst"))
+    # base_pack.regPanel("Symbol", "TTP3",
+    #     cfgPath("ttp3.lst"))
+    # base_pack.regPanel("Symbol", "TTP4",
+    #     cfgPath("ttp4.lst"))
 
