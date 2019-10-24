@@ -22,7 +22,7 @@ def defineViewSchema(metadata_record = None):
             [ch["name"],  ch.get("title",  ch["name"])] for ch in cohorts]
         aspect_list.append(AspectH("view_cohorts", "Cohorts", "view",
             field = "cohorts",
-            col_groups = ColGroupsH(attr_title_pairs = cohort_columns, 
+            col_groups = ColGroupsH(attr_title_pairs = cohort_columns,
             single_columns = True)))
 
     aspect_list += [
@@ -308,7 +308,7 @@ def defineViewSchema(metadata_record = None):
     if cohorts:
         aspects["view_cohorts"].setAttributes([
             AttrH("AF"),
-            AttrH("AF2")])
+            AttrH("AF2", title="AF_Hom")])
 
     aspects["_main"].setAttributes([
         AttrH("label"),

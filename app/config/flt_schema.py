@@ -83,7 +83,8 @@ def defineFilterSchema(metadata_record):
                 filters.floatValueUnit(ch_name + "_AF",
                     "/view/cohorts/" + ch_name + "/AF",  default_value = 0)
                 filters.floatValueUnit(ch_name + "_AF2",
-                    "/view/cohorts/" + ch_name + "/AF2",  default_value = 0)
+                    "/view/cohorts/" + ch_name + "/AF2",  default_value = 0,
+                                       title="AF_Hom")
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/data/variant_class",

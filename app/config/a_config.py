@@ -9,7 +9,8 @@ class AnfisaConfig:
         "aspect.tags.name": "tags_data",
         "zones" : [
             ("Gene",       "Symbol"),
-            ("Sample",       "Has_Variant"),
+            ("Gene List",  "Panels"),
+            ("Sample",     "Has_Variant"),
             ("Tag", "_tags")
         ],
         "check.tags":       [
