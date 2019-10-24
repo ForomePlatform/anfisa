@@ -30,7 +30,7 @@ class XLDataset(DataSet):
         self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addMetaNumUnit("_ord")
-        for mode in modesToEnv(self.getDataInfo()):
+        for mode in modesToEnv(self.getDataInfo()["meta"]):
             self.mCondEnv.addMode(mode)
 
         self.mUnits = []

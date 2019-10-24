@@ -19,7 +19,7 @@ class Index:
         ds_modes = self.mWS.getDataInfo().get("modes")
         self.mCondEnv = WS_CondEnv(ds_modes)
         self.mCondEnv.addMode("WS")
-        for mode in modesToEnv(self.mWS.getDataInfo()):
+        for mode in modesToEnv(self.mWS.getDataInfo()["meta"]):
             self.mCondEnv.addMode(mode)
         self.mUnits = [RulesEvalUnit(self)]
         depr_check_no_zeros = ds_modes and "secondary" in ds_modes
