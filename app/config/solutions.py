@@ -228,7 +228,7 @@ def readySolutions():
     base_pack.regZone("Gene", "Symbol")
     base_pack.regZone("Gene List", "Panels")
     base_pack.regZone("Sample", "Has_Variant")
-    #base_pack.regZone("Cohorts", "Cohort_Has_Variant", requires={"cohorts"})
+    base_pack.regZone("Cohort", "Variant_in")
     base_pack.regZone("Tag", "_tags")
 
 

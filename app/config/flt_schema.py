@@ -60,13 +60,17 @@ sConsequenceVariants = [
 def defineFilterSchema(metadata_record):
     filters = FilterPrepareSetH(metadata_record)
 
+    cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):
-        filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
-                           title="Proband Zygosity")
-        filters.zygositySpecialUnit("Inheritance_Mode",
-            "/data/zygosity", config = {"x_cond":
-            ConditionMaker.condEnum("Chromosome", ["chrX"])},
-            title = "Inheritance Mode")
+        if cohorts:
+            filters.multiStatusUnit("Variant_in", "/_filters/cohort_has_variant[]")
+        else:
+            filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
+                               title="Proband Zygosity")
+            filters.zygositySpecialUnit("Inheritance_Mode",
+                "/data/zygosity", config = {"x_cond":
+                ConditionMaker.condEnum("Chromosome", ["chrX"])},
+                title = "Inheritance Mode")
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
@@ -75,7 +79,6 @@ def defineFilterSchema(metadata_record):
             tooltip="Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
-    cohorts = metadata_record.get("cohorts")
     if cohorts:
         all_cohorts = ["ALL"] + [ch["name"] for ch in cohorts]
         with filters.viewGroup("Cohorts"):
