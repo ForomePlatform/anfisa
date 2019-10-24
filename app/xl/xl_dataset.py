@@ -15,6 +15,7 @@ from app.filter.tree_parse import ParsedDecisionTree
 from app.filter.code_works import cmpTrees
 from app.filter.sol_pack import codeHash
 from app.prepare.sec_ws import SecondaryWsCreation
+from app.config.solutions import modesToEnv
 #===============================================
 class XLDataset(DataSet):
     sStatRqCount = 0
@@ -29,6 +30,8 @@ class XLDataset(DataSet):
         self.mCondEnv = XL_CondEnv(self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addMetaNumUnit("_ord")
+        for mode in modesToEnv(self.getDataInfo()):
+            self.mCondEnv.addMode(mode)
 
         self.mUnits = []
         for unit_data in self.getFltSchema():

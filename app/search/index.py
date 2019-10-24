@@ -6,6 +6,7 @@ from utils.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.filter.cond_op import CondOpEnv
 from app.model.comp_hets import CompHetsOperativeUnit
+from app.config.solutions import modesToEnv
 from .flt_cond import WS_CondEnv
 from .flt_unit import loadWSFilterUnit
 from .rules_supp import RulesEvalUnit
@@ -18,6 +19,8 @@ class Index:
         ds_modes = self.mWS.getDataInfo().get("modes")
         self.mCondEnv = WS_CondEnv(ds_modes)
         self.mCondEnv.addMode("WS")
+        for mode in modesToEnv(self.mWS.getDataInfo()):
+            self.mCondEnv.addMode(mode)
         self.mUnits = [RulesEvalUnit(self)]
         depr_check_no_zeros = ds_modes and "secondary" in ds_modes
         for unit_data in self.mWS.getFltSchema():

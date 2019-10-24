@@ -35,7 +35,7 @@ class Workspace(DataSet):
                     logging.error("Filter %s for ws=%s failed" %
                         (filter_name, self.getName()))
         self.mZoneHandlers  = []
-        for zone_title, unit_name in AnfisaConfig.configOption("zones"):
+        for zone_title, unit_name in self.mIndex.getCondEnv().iterZones():
             if (unit_name == "_tags"):
                 zone_h = self.mTagsMan
                 zone_h._setTitle(zone_title)

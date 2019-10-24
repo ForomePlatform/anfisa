@@ -225,3 +225,13 @@ def readySolutions():
     # base_pack.regPanel("Symbol", "TTP4",
     #     cfgPath("ttp4.lst"))
 
+    base_pack.regZone("Gene", "Symbol")
+    base_pack.regZone("Gene List", "Panels")
+    base_pack.regZone("Sample", "Has_Variant")
+    #base_pack.regZone("Cohorts", "Cohort_Has_Variant", requires={"cohorts"})
+    base_pack.regZone("Tag", "_tags")
+
+
+def modesToEnv(metadata_record):
+    if metadata_record.get("cohorts"):
+        yield "cohorts"

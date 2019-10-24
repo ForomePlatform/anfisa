@@ -7,12 +7,6 @@ class AnfisaConfig:
 
     sConfigOptions = {
         "aspect.tags.name": "tags_data",
-        "zones" : [
-            ("Gene",       "Symbol"),
-            ("Gene List",  "Panels"),
-            ("Sample",     "Has_Variant"),
-            ("Tag", "_tags")
-        ],
         "check.tags":       [
             "Previously categorized",
             "Previously Triaged",

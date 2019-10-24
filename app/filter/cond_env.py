@@ -165,4 +165,8 @@ class CondEnv:
             return it.getName()
         return None
 
+    def iterZones(self):
+        for it in self.mSolPack.iterItems("zone", self.testRequirements):
+            yield it.getName(),  it.getData()
+
 #===============================================
