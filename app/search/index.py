@@ -17,7 +17,7 @@ class Index:
     def __init__(self, ws_h):
         self.mWS = ws_h
         ds_modes = self.mWS.getDataInfo().get("modes")
-        self.mCondEnv = WS_CondEnv(ds_modes)
+        self.mCondEnv = WS_CondEnv(self.mWS, ds_modes)
         self.mCondEnv.addMode("WS")
         for mode in modesToEnv(self.mWS.getDataInfo()["meta"]):
             self.mCondEnv.addMode(mode)

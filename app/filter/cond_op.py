@@ -85,8 +85,8 @@ class CondOpEnv:
                 cond = self.parse(cond_data)
                 self.mSeq.append(cond)
             except Exception:
-                logException("Bad instruction: %r" % cond_data,
-                    error_mode = False)
+                logException("Bad instruction: %r, ds=%s" % 
+                    (cond_data, self.mCondEnv.getDS().getName()))
                 self.mBadIdxs.append(idx)
 
     def getPresentation(self):
