@@ -45,7 +45,7 @@ echo "Updating configuration in anfisa.json"
 hostname=`hostname`
 sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
 echo "Loading Sample Dataset"
-echo "PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140"
+echo "PYTHONPATH=$repo python3 -m -u app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140"
 PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140
 
 cd $repo
