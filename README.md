@@ -26,7 +26,7 @@ continues development.
 
 2. Install all the requirements by running 
 
-`pip install -r requirements.txt`
+`pip3 install -r requirements.txt`
 
 3. Run deploy script:
 
@@ -42,18 +42,17 @@ When the script has finished, it will display
 the command to run the system. 
 
 Once the system is running you can access 
-the web interface by teh url: http://localhost:8090 
+the web interface by the url: http://localhost:8190 
 
 The port is configurable in your configuration file.
 
 ## Public Demo 
 
-Anfisa is also as a demo based on potential 
+Also avilable is an Anfisa demo based on potential 
 hearing loss panel of genes on a genome taken 
 from Personal Genome Project with the consent of
 the family.
 
-The demo is available at: http://anfisa.forome.org/anfisa
+The demo is available at: http://demo.forome.org/anfisa
 
-Please contact us on the https://forome.org/ to obtain a 
-username and password to access it.  
+ 
