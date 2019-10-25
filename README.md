@@ -24,11 +24,15 @@ To install Anfisa on a local Linux or MacOS system:
 the tagged (released) version as the master branch is undergoing 
 continues development.
 
-2. Install all the requirements by running 
+2. Change into anfisa directory, e.g.:
+
+`cd anfisa`
+
+3. Install all the requirements by running 
 
 `pip3 install -r requirements.txt`
 
-3. Run deploy script:
+4. Run deploy script:
 
 `. deploy.sh`
 
