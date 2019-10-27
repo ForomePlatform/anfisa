@@ -27,7 +27,8 @@ class XLDataset(DataSet):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mDruidAgent = self.getApp().getDruidAgent()
-        self.mCondEnv = XL_CondEnv(self, self.getDataInfo().get("modes"))
+        self.mCondEnv = XL_CondEnv(self.getName(), 
+            self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addMetaNumUnit("_ord")
         for mode in modesToEnv(self.getDataInfo()["meta"]):

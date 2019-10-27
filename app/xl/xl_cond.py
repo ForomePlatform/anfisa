@@ -2,8 +2,8 @@ from app.filter.cond_env import CondEnv
 from app.filter.unit import MetaUnit
 #===============================================
 class XL_CondEnv(CondEnv):
-    def __init__(self, ds,  modes):
-        CondEnv.__init__(self, ds,  modes)
+    def __init__(self, ds_name,  modes):
+        CondEnv.__init__(self, ds_name,  modes)
 
     def getKind(self):
         return "xl"

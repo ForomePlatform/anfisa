@@ -4,8 +4,8 @@ from app.filter.cond_env import CondEnv
 from app.filter.unit import MetaUnit
 #===============================================
 class WS_CondEnv(CondEnv):
-    def __init__(self, ds,  modes):
-        CondEnv.__init__(self, ds,  modes)
+    def __init__(self, ds_name,  modes):
+        CondEnv.__init__(self, ds_name,  modes)
         self.mTotal = 0
         self.mGroups = []
         self.mCondAll, self.mCondNone = None, None

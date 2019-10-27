@@ -11,7 +11,7 @@ class FilterPrepareSetH:
         self.mMeta = metadata_record
         self.mFamilyInfo = FamilyInfo(self.mMeta["samples"],
             self.mMeta.get("proband"))
-        self.mCondEnv = CondEnv(None, modes)
+        self.mCondEnv = CondEnv("?prepare?", modes)
 
     def getFamilyInfo(self):
         return self.mFamilyInfo

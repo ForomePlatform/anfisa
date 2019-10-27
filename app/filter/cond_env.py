@@ -3,8 +3,8 @@ import logging
 from .sol_pack import SolutionPack
 #===============================================
 class CondEnv:
-    def __init__(self, ds,  modes):
-        self.mDS = ds
+    def __init__(self, ds_name,  modes):
+        self.mDSName = ds_name
         self.mSolPack = SolutionPack.select(modes)
         self.mSpecialUnits = dict()
         self.mNumUnits = dict()
@@ -44,8 +44,8 @@ class CondEnv:
     def nameIsReserved(self, name):
         return name in self.mReservedNames
 
-    def getDS(self):
-        return self.mDS
+    def getDSName(self):
+        return self.mDSName
 
     def detectUnit(self, unit_name,
             expect_kind = None, use_logging = True):
