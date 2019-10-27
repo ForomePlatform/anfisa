@@ -34,7 +34,8 @@ class _FileRegistry:
 
     def regPlace(self, dir_place, doc_h):
         if dir_place in self.mFiles:
-            doc_h.fatalMessage("Destination file duplication: " + dir_place)
+            print("Fatal: Destination file duplication: " + dir_place,
+                file = sys.stderr)
             sys.exit()
         return self.mDestRoot + dir_place
 
