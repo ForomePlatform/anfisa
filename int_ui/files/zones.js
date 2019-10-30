@@ -102,7 +102,7 @@ function determineZoneData() {
                     inp_ctrl_id = "check-drop-" + j;
                     rep.push('<input type="checkbox" checked id="' + inp_ctrl_id + 
                         '" onclick="dropZoneVal(\'' + variants[j] + '\');"/>' +
-                        '<label for="' + inp_ctrl_id + '">"&emsp;' + variants[j] + 
+                        '<label for="' + inp_ctrl_id + '">&emsp;' + variants[j] + 
                         '</label><br/>');
                 }
             }
