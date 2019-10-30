@@ -11,10 +11,10 @@ See more about the goal of the project at https://forome.org/
 ## Local Installation
 
 #### Caution:
-If you would like to try Anfisa, we strongly 
-recommend installing it from one of the released tags or from branch v.0.4.x
+This is a master branch that from time to time can be unstable or untested.
+If you would like to try Anfisa, we strongly recommend installing it from one 
+of the released tags 
 
-Master is temporary unstable. 
 
 #### Installation instructions
 
