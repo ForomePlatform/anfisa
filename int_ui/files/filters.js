@@ -424,12 +424,12 @@ var sConditionsH = {
         }
     },
 
-    getCondRqArgs: function(filter_name, zone_data) {
+    getCondRqArgs: function(filter_name, zone_data, use_conditions) {
         if (filter_name == null || sFiltersH.filterExists(filter_name)) {
             conditions = null;
         } else {
             filter_name = null;
-            conditions = this.mList;
+            conditions = (use_conditions)? this.mList:null;
         }
         add_instr = (zone_data == null)? null: ["zone", JSON.stringify(zone_data)];
         return sUnitsH.formRqArgs(conditions, filter_name, false, add_instr);
@@ -600,7 +600,6 @@ var sOpCondH = {
                 this.mIdxToAdd = (this.mIdxToUpdate == null)?
                     sConditionsH.nextIdx(): this.mIdxToUpdate + 1;
             }
-            
         }
         document.getElementById("cond-text").innerHTML = 
             (this.mCondition)? getCondDescription(this.mCondition, true):"";
@@ -712,7 +711,7 @@ var sFiltersH = {
         }
         this.mInpName.style.visibility = "visible";
         document.getElementById("filters-op-create").className = 
-            (sConditionsH.isEmpty())? "disabled":"";
+            (sConditionsH.isEmpty() || cur_filter != "")? "disabled":"";
         document.getElementById("filters-op-modify").className = 
             (sConditionsH.isEmpty() || cur_filter != "" ||
                 (this.mOpList.length == 0))? "disabled":"";

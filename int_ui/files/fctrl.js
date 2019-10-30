@@ -32,12 +32,19 @@ var sOpNumH = {
             val_max:    unit_stat[3],
             count:      unit_stat[4]}
             
-        document.getElementById("cond-min").innerHTML = 
-            normFloatLongTail(this.mInfo.val_min);
-        document.getElementById("cond-max").innerHTML = 
-            normFloatLongTail(this.mInfo.val_max, true);
-        document.getElementById("cond-sign").innerHTML = 
-            (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
+        if (this.mInfo.val_min != null) {
+            document.getElementById("cond-min").innerHTML = 
+                normFloatLongTail(this.mInfo.val_min);
+            document.getElementById("cond-max").innerHTML = 
+                normFloatLongTail(this.mInfo.val_max, true);
+            document.getElementById("cond-sign").innerHTML = 
+                (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
+        } else {
+            document.getElementById("cond-min").innerHTML = "?";
+            document.getElementById("cond-max").innerHTML = "?";
+            document.getElementById("cond-sign").innerHTML = "?";
+        }
+            
         this.mInputMin.value = "";
         this.mInputMax.value = "";
     },
@@ -49,7 +56,8 @@ var sOpNumH = {
             this.mInfo.cur_bounds[0] : "";
         this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
             this.mInfo.cur_bounds[1] : "";
-        document.getElementById("cond-sign").innerHTML = "&le;";
+        if (this.mInfo.val_min != null)
+            document.getElementById("cond-sign").innerHTML = "&le;";
     },
 
     careControls: function() {
@@ -85,36 +93,41 @@ var sOpNumH = {
                 this.mInfo.cur_bounds[1] = val;
             }
         }
-        if (err_msg == null) {
-            if (this.mInfo.cur_bounds[0] == null && 
-                    this.mInfo.cur_bounds[1] == null)
-                err_msg = "";            
-            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[0] > this.mInfo.val_max)
-                err_msg = "Lower bound is above maximum value";
-            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[1] < this.mInfo.val_min)
-                err_msg = "Upper bound is below minimum value";
-            if (this.mInfo.cur_bounds[0] != null && 
-                    this.mInfo.cur_bounds[1] != null && 
-                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1])
-                err_msg = "Bounds are mixed up";
-        }
-
         condition_data = null;
         if (err_msg == null) {
             condition_data = [this.mInfo.cur_bounds, null]
-            if (this.mInfo.cur_bounds[0] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[0] < this.mInfo.val_min)
-                err_msg = "Lower bound is below minimal value";
-            if (this.mInfo.cur_bounds[1] != null && !this.mUpdateCondStr &&
-                    this.mInfo.cur_bounds[1] > this.mInfo.val_max)
-                err_msg = "Upper bound is above maximal value";
-            if (this.mUpdateCondStr && !err_msg &&    
-                    JSON.stringify(condition_data) == this.mUpdateCondStr) {
-                err_msg = " ";
+            if (this.mInfo.cur_bounds[0] == null && 
+                    this.mInfo.cur_bounds[1] == null)
+                err_msg = "";
+            if (this.mInfo.val_min != null) {
+                if (this.mInfo.cur_bounds[0] != null) {
+                    if (this.mInfo.cur_bounds[0] > this.mInfo.val_max)
+                        err_msg = "Lower bound is above maximum value";
+                    if (this.mInfo.cur_bounds[0] < this.mInfo.val_min) 
+                        err_msg = "Lower bound is below minimal value";
+                }
+                if (this.mInfo.cur_bounds[1] != null) {
+                    if (this.mInfo.cur_bounds[1] < this.mInfo.val_min) 
+                        err_msg = "Upper bound is below minimum value";
+                    if (this.mInfo.cur_bounds[1] > this.mInfo.val_max)
+                        err_msg = "Upper bound is above maximal value";
+                }
+            } else {
+                err_msg = "Out of choice"
+            }
+            if (err_msg && this.mUpdateCondStr == null)
+                condition_data = null;
+            if (this.mInfo.cur_bounds[0] != null && 
+                    this.mInfo.cur_bounds[1] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1]) {
+                err_msg = "Bounds are mixed up";
                 condition_data = null;
             }
+        }
+        if (this.mUpdateCondStr && !err_msg && condition_data &&
+                JSON.stringify(condition_data) == this.mUpdateCondStr) {
+            err_msg = " ";
+            condition_data = null;
         }
         sOpCondH.formCondition(condition_data, err_msg, this.mInfo.op, false);
         this.careControls();
@@ -154,6 +167,17 @@ var sOpEnumH = {
             return sZygosityH.readyForCondition(unit_stat, condition);
         return true;
     },
+
+    reprVariant: function(var_name, var_count, var_idx, is_checked) {
+        var check_id = 'elcheck--' + var_idx; 
+        return '<div class="enum-val' + 
+            ((var_count==0)? " zero":"") +'">' +
+            '<input id="' + check_id + '" type="checkbox" ' + 
+            ((is_checked)? 'checked ':'') + 
+            'onchange="sOpEnumH.checkControls();"/><label for="' +
+            check_id + '">&emsp;' + var_name + 
+            '<span class="enum-cnt">(' + var_count + ')</span></div>';
+    },
     
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
@@ -180,11 +204,7 @@ var sOpEnumH = {
             if (unit_stat[1]["detailed"] && var_count > 0)
                 var_count = var_count + "/" + this.mVariants[j][2];
             has_zero |= (var_count == 0);
-            list_val_rep.push('<div class="enum-val' + 
-                ((var_count==0)? " zero":"") +'">' +
-                '<input id="elcheck--' + j + '" type="checkbox" ' + 
-                'onchange="sOpEnumH.checkControls();"/>&emsp;' + var_name + 
-                '<span class="enum-cnt">(' + var_count + ')</span></div>');
+            list_val_rep.push(this.reprVariant(var_name, var_count, j));
         }
         this.mDivVarList.innerHTML = list_val_rep.join('\n');
         this.mDivVarList.className = "";
@@ -208,12 +228,31 @@ var sOpEnumH = {
             this.mOperationMode = ["OR", "AND", "NOT"].indexOf(op_mode);
         needs_zeros = false;
         if (var_list) {
+            present_vars = {};
             for (j = 0; j < this.mVariants.length; j++) {
                 var_name = this.mVariants[j][0];
                 if (var_list.indexOf(var_name) < 0)
-                    continue;
+                    continue
+                present_vars[var_name] = true;
                 needs_zeros |= (this.mVariants[j][1] == 0);
                 document.getElementById("elcheck--" + j).checked = true;
+            }
+            lost_vars = [];
+            for (j=0; j < var_list.length; j++)  {
+                var_name = var_list[j];
+                if (!present_vars[var_name])
+                    lost_vars.push(var_name);
+            }
+            if(lost_vars.length > 0) {
+                list_val_rep = [];
+                lost_vars.sort();
+                var start_j = var_list.length;
+                for (j=0; j < lost_vars.length; j++)  {
+                    var_name = lost_vars[j];
+                    this.mDivVarList.innerHTML += this.reprVariant(
+                        var_name, 0, start_j + j, true);
+                }
+                needs_zeros = true;
             }
         }
         this.careEnumZeros(needs_zeros);
@@ -271,7 +310,7 @@ var sOpEnumH = {
             condition_data = [op_mode, sel_names];
             err_msg = "";
         } else
-            err_msg = " Empty selection"
+            err_msg = " Out of choice"
         if (this.mSpecCtrl != null) {
             condition_data = this.mSpecCtrl.transCondition(condition_data);
             err_msg = this.mSpecCtrl.checkError(condition_data, err_msg);
@@ -366,10 +405,11 @@ function zygCaseFilIt(zyg_case, list_stat_rep) {
     list_stat_rep.push('<div class="zyg-family">');
     for (var idx = 0; idx < zyg_case.mBase.mFamily.length; idx++) {
         q_checked = (zyg_case.mProblemIdxs.indexOf(idx)>=0)? " checked":"";
+        check_id = id_prefix + idx;
         list_stat_rep.push('<div class="zyg-fam-member">' + 
-            '<input type="checkbox" id="' + id_prefix + idx + '" ' + q_checked + 
-            ' onchange="sZygosityH.loadCase(' + mode_op + ');" />' +
-            zyg_case.mBase.mFamily[idx] + '</div>');
+            '<input type="checkbox" id="' + check_id + '" ' + q_checked + 
+            ' onchange="sZygosityH.loadCase(' + mode_op + ');" /><label for="' +
+            check_id + '">&nbsp;' + zyg_case.mBase.mFamily[idx] + '</div>');
     }
     list_stat_rep.push('</div>');
     if (zyg_case.mBase.mDefaultIdxs.length > 0) {

@@ -214,7 +214,6 @@ function updateCurFilter(filter_name, force_it) {
         return;
     cur_flt_status = sConditionsH.report();
     sCurFilterName = filter_name;
-    loadList(sCurFilterName, sCurZoneData);
     sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
     if (cur_flt_status) {
         sElFltCurState.innerHTML = cur_flt_status;
@@ -229,6 +228,7 @@ function updateCurFilter(filter_name, force_it) {
         sCheckFltCurrent.checked = (sCurFilterName == "");
     } 
     sCheckFltNamed.checked = !!sCurFilterName;
+    loadList(sCurFilterName, sCurZoneData, sCheckFltCurrent.checked);
 }
 
 function updateCurZone(mode_on){
@@ -249,7 +249,7 @@ function updateCurZone(mode_on){
         sCurZoneData = (mode_on)? sWorkZoneData: null;
     }
     if (prev_zone_data != sCurZoneData)
-        loadList(sCurFilterName, sCurZoneData);
+        loadList(sCurFilterName, sCurZoneData, sCheckFltCurrent.checked);
 }
 
 function checkCurZone() {

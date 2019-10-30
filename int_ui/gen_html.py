@@ -173,11 +173,13 @@ def _formMainDiv(output, workspace_name, ws_url):
 def _formZonesDiv(output, zones):
     rep_check_zones, rep_div_zones = [], []
     for zone in zones:
+        zone_check_id = "zn-check--%s" % zone.getName()
         rep_check_zones.append(('<span id="zn--%s">'
-            '<input id="zn-check--%s" class="zone-checkbox" type="checkbox" '
-            'onchange="checkWorkZone(\'%s\');"/>%s</span>') %
-            (zone.getName(), zone.getName(), zone.getName(),
-            escape(zone.getTitle())))
+            '<input id="%s" class="zone-checkbox" type="checkbox" '
+            'onchange="checkWorkZone(\'%s\');"/>'
+            '<label for="%s">%s</label></span>') %
+            (zone.getName(), zone_check_id, zone.getName(),
+            zone_check_id, escape(zone.getTitle())))
         rep_div_zones.append('<div class="work-zone-list" '
             'id="zn-div--%s"></div>' % zone.getName())
     params = {
@@ -202,7 +204,9 @@ def _formZonesDiv(output, zones):
             </div>
           </div>
           <div id="zone-right">
-            <div id="work-zone-def">
+            <div id="work-zone-wrap-def">
+                <div id="work-zone-def">
+                </div>
             </div>
             <div id="work-zone-ctrl">
               <button class="op-button"
@@ -466,17 +470,20 @@ def formFilterPannel(output):
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
-                    Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
+                    <label for"cur-enum-zeros">Show zeros&nbsp;</label><input 
+                        id="cur-enum-zeros" type="checkbox"
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;all
+                        onchange="sOpEnumH.checkControls(1);"
+                        /><label for="cond-mode-and">&nbsp;all</label>
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;not
+                        onchange="sOpEnumH.checkControls(2);"
+                        /><label for="cond-mode-not">&nbsp;not</label>
                     </span><br/>
                   </div>
                 </div>

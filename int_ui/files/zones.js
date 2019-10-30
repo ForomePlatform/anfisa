@@ -40,11 +40,13 @@ function setupZone(info) {
             check_mark = "checked ";
         }
         sZoneDictCache[zone_name][val_name] = j;
+        zone_ctrl_id = 'zn--' + zone_name + '-check--' + j;
         list_val_rep.push('<div class="zone-enum-val">' +
-            '<input id="zn--' + zone_name + '-check--' + j + 
+            '<input id="' + zone_ctrl_id + 
             '" type="checkbox" class="zn-check-val" ' + check_mark +
             'onchange="checkZoneCheck(\'' + zone_name + '\',' + 
-            j + ');"/>&emsp;' + val_name + '</div>');
+            j + ');"/><label for="' + zone_ctrl_id + 
+            '">&emsp;' + val_name + '</label></div>');
     }
     sZoneSetCache[sWorkZoneCur] = new_sel;
     document.getElementById("zn-div--" + zone_name).innerHTML =
@@ -84,26 +86,24 @@ function determineZoneData() {
     } else {
         rep = ["<i>Zone:</i> " + sWorkZoneCur + "<br/>"];
         variants = sZoneSetCache[sWorkZoneCur];
-        if (!variants) {
+        if (variants == null || variants.length < 1) {
             rep.push("<i>Select a variant</i>");
             sWorkZoneDescr = null;            
         } else {
             sWorkZoneData = [sWorkZoneCur, variants];
-            if (variants.length < 2) {
-                if (variants.length == 1) {
-                    sWorkZoneDescr = variants[0];
-                    rep.push("= <b>" + variants[0] + "</b>");
-                } else {
-                    rep.push("<i>lost selection</i>");
-                    sWorkZoneDescr = "*lost selection*";
-                }
+            if (variants.length == 1) {
+                sWorkZoneDescr = variants[0];
+                rep.push("= <b>" + variants[0] + "</b>");
             } else {
-                sWorkZoneDescr = variants[0] + " <i>+" + (variants.length - 1) + " more</i>";
+                sWorkZoneDescr = variants[0] + 
+                    " <i>+" + (variants.length - 1) + " more</i>";
                 rep.push("<i>In:</i><br/>");
                 for (j=0; j<variants.length; j++) {
-                    rep.push('<input type="checkbox" checked ' +
-                        'onclick="dropZoneVal(\'' + variants[j] + '\');"/>' +
-                        '&emsp;' + variants[j] + '<br/>');
+                    inp_ctrl_id = "check-drop-" + j;
+                    rep.push('<input type="checkbox" checked id="' + inp_ctrl_id + 
+                        '" onclick="dropZoneVal(\'' + variants[j] + '\');"/>' +
+                        '<label for="' + inp_ctrl_id + '">"&emsp;' + variants[j] + 
+                        '</label><br/>');
                 }
             }
         }

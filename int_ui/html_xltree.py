@@ -122,17 +122,20 @@ def _formCurCondDiv(output):
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
-                    Show zeros&nbsp;<input id="cur-enum-zeros" type="checkbox"
+                    <label for="cur-enum-zeros">Show zeros&nbsp;</label><input 
+                        id="cur-enum-zeros" type="checkbox"
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
                   <div id="cur-cond-enum-mode">
                     <span id="cond-mode-and-span">
                       <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"/>&nbsp;all
+                        onchange="sOpEnumH.checkControls(1);"
+                        /><label for="cond-mode-and">&nbsp;all</label>
                     </span><br/>
                     <span id="cond-mode-not-span">
                       <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"/>&nbsp;not
+                        onchange="sOpEnumH.checkControls(2);"
+                        /><label for="cond-mode-not">&nbsp;not</label>
                     </span><br/>
                   </div>
                 </div>

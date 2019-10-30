@@ -38,9 +38,10 @@ function initWin(workspace_name, common_title, app_modes) {
     relaxView();
 }
 
-function loadList(filter_name, zone_data) {
+function loadList(filter_name, zone_data, use_conditions) {
     sViewH.dropOff();
-    ajaxCall("list", sConditionsH.getCondRqArgs(filter_name, zone_data), setupList);
+    ajaxCall("list", sConditionsH.getCondRqArgs(
+        filter_name, zone_data, use_conditions), setupList);
 }
 
 function setupList(info) {
@@ -223,7 +224,7 @@ function showExport() {
 
 function doExport() {
     sViewH.dropOff();
-    var args = sConditionsH.getCondRqArgs(sCurFilterName, sCurZoneData);
+    var args = sConditionsH.getCondRqArgs(sCurFilterName, sCurZoneData, true);
     ajaxCall("export", args, setupExport);
 }
 

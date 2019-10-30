@@ -86,21 +86,6 @@ div#work-zone-wrap-list {
     max-height: 100%;
 }
 
-div#zone-right {
-    width: 50%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;    
-    height: 100%;
-}
-
-div#work-zone-def {
-    width: 100%;
-    text-align: justify;
-    white-space: normal;
-    flex-grow: 1;
-}
-
 div.work-zone-list {
     margin: 0px;
     padding: 0px;
@@ -109,8 +94,33 @@ div.work-zone-list {
     max-height: 100%;
 }
 
+div#zone-right {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;    
+    height: 100%;
+}
+
+div#work-zone-wrap-def {
+    display: grid;
+    overflow: hidden;
+    white-space: nowrap;
+    max-height: 100%;
+    flex-grow: 1;
+}
+
+div#work-zone-def {
+    overflow: auto;
+    width: 100%;
+    text-align: justify;
+    white-space: normal;
+    display: block;
+}
+
 div#work-zone-ctrl {
     height: 40px;
     margin: 5px;
     padding: 5px;
+    margin-bottom: 15px;
 }
