@@ -76,7 +76,8 @@ class AnfisaApp:
         export_setup = cls.sConfig["export"]
         dir_name = export_setup["work-dir"]
         if not os.path.dirname(dir_name):
-            return None
+            logging.info("Creation of export work directory: " + dir_name)
+            os.mkdir(dir_name)
         if dir_name.endswith('/'):
             dir_name = dir_name[:-1]
         dir_name += '/'

@@ -132,7 +132,6 @@ class XL_ZygosityUnit(XL_Unit, ZygosityComplex):
         ZygosityComplex.__init__(self,
             dataset_h.getFamilyInfo(), dataset_h.getCondEnv(), descr)
 
-        self._setScreened(self.getDS().getApp().hasRunOption("no-custom"))
         fam_units = []
         for fam_name in self.iterFamNames():
             fam_units.append(

@@ -59,8 +59,9 @@ def createDataSet(app_config, name, kind, mongo,
 
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
-        print("No vault directory:", vault_dir, file = sys.stderr)
-        assert False
+        os.mkdir(vault_dir)
+        print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
+
     checkDSName(name, kind)
     ds_dir = os.path.abspath(vault_dir + "/" + name)
     if not mongo:
@@ -283,21 +284,24 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--dir",
         help = "Storage directory control file")
     parser.add_argument("-c", "--config",
-        help = "Anfisa configuration file,  default = anfisa.json")
+        help = "Anfisa configuration file, used only if --dir is unset, "
+        "default = anfisa.json")
     parser.add_argument("-m", "--mode",
         help = "Mode: create/drop/druid-push/doc-push")
     parser.add_argument("-k", "--kind",  default = "ws",
-        help = "Kind of dataset: ws/xl, default=ws")
-    parser.add_argument("-s", "--source", help="Annotated json")
+        help = "Kind of dataset: ws/xl, default = ws, "
+        "actual if --dir is unset")
+    parser.add_argument("-s", "--source", help="Annotated json, "
+        "actual if --dir is unset and mode = create")
     parser.add_argument("-i", "--inv", help="Annotation inventory")
     parser.add_argument("-f", "--force", action = "store_true",
-        help = "Force removal")
+        help = "Force removal, actual if mode = create")
     parser.add_argument("-C", "--nocoord", action = "store_true",
         help = "Druid: no use coordinator")
     parser.add_argument("--mongo", default = "",
         help = "Mongo name, default=name")
     parser.add_argument("--reportlines", type = int, default = 100,
-        help = "Portion for report lines, default=100")
+        help = "Portion for report lines, default = 100")
     parser.add_argument("name", nargs = 1, help = "Dataset name")
     run_args = parser.parse_args()
 
