@@ -53,11 +53,31 @@ def checkDSName(name, kind):
 
 #===============================================
 def createDataSet(app_config, name, kind, mongo,
-        source, ds_inventory, report_lines, date_loaded):
+        source, ds_inventory, report_lines, date_loaded,  force_drop):
     global DRUID_ADM
     readySolutions()
 
+    input_reader = JsonLineReader(source)
+    metadata_record = input_reader.readOne()
+    if metadata_record.get("record_type") != "metadata":
+        print("No metadata line in",  source,  file = sys.stderr)
+        assert False
+
+    if "versions" in metadata_record:
+        annotation_version = metadata_record["versions"].get("annotations")
+        if annotation_version:
+            ver = map(int, annotation_version.split('.'))
+            if list(ver) >= [0,  6]:
+                print("Annotation version not supported (0.5.* expected):", 
+                    annotation_version, file = sys.stderr)
+                assert False
+        metadata_record["versions"][
+            "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
+
     vault_dir = app_config["data-vault"]
+    if force_drop:
+        dropDataSet(app_config, name, kind, True)
+
     if not os.path.isdir(vault_dir):
         os.mkdir(vault_dir)
         print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
@@ -71,16 +91,6 @@ def createDataSet(app_config, name, kind, mongo,
         assert False
     assert (kind == "xl") == (DRUID_ADM is not None)
     os.mkdir(ds_dir)
-
-    input_reader = JsonLineReader(source)
-    metadata_record = input_reader.readOne()
-    if metadata_record.get("record_type") != "metadata":
-        print("No metadata line in",  source,  file = sys.stderr)
-        assert False
-
-    if "versions" in metadata_record:
-        metadata_record["versions"][
-            "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
 
     view_aspects = defineViewSchema(metadata_record)
     view_checker = ViewDataChecker(view_aspects)
@@ -364,13 +374,12 @@ if __name__ == '__main__':
         sys.exit()
 
     if run_args.mode == "create":
-        if run_args.force:
-            dropDataSet(app_config, ds_name, ds_kind, True)
         time_start = datetime.now()
         print("Started at", time_start, file = sys.stderr)
         createDataSet(app_config, ds_name, ds_kind,
             run_args.mongo, ds_source, ds_inventory,
-            run_args.reportlines, time_start.isoformat())
+            run_args.reportlines, time_start.isoformat(), 
+            run_args.force)
         time_done = datetime.now()
         print("Finished at", time_done, "for", (time_done - time_start),
             file = sys.stderr)

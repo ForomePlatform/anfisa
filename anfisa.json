@@ -7,9 +7,8 @@
     "html-ws-url": "ws",
     "mongo-db": "Anfisa",
     "data-vault": "${WORK}/vault",
-    "run-options": ["--no-custom"],
+    "run-options": [],
     "--http-bam-base": "http:<server>/anfisa/links",
-    "link-base": ["anfisa.forome.org", "Local"],
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",
         "__url": "https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx",
@@ -25,9 +24,9 @@
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
         "vault-prefix": "",
-        "index": "http://localhost:8090/druid/indexer/v1/task",
-        "query": "http://localhost:8082/druid/v2",
-        "sql":   "http://localhost:8082/druid/v2/sql",
+        "index": "http://localhost:8081/druid/indexer/v1/task",
+        "query": "http://localhost:8888/druid/v2",
+        "sql":   "http://localhost:8888/druid/v2/sql",
         "coord": "http://localhost:8081/druid/coordinator/v1",
         "-scp": {
             "dir": "/data/upload/",
