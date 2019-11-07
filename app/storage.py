@@ -1,4 +1,4 @@
-import sys, gzip, codecs, json, os, shutil, re
+import sys, gzip, codecs, json, os, shutil, re,  time
 from argparse import ArgumentParser
 from io import StringIO, TextIOWrapper
 from datetime import datetime
@@ -52,15 +52,23 @@ def checkDSName(name, kind):
         assert False
 
 #===============================================
-def createDataSet(app_config, name, kind, mongo,
-        source, ds_inventory, report_lines, date_loaded,  force_drop):
+def createDataSet(app_config, ds_entry, force_drop, report_lines):
     global DRUID_ADM
     readySolutions()
 
-    input_reader = JsonLineReader(source)
+    if not ds_entry.getSource():
+        print("Improper creation datset",  ds_entry.getName(),  ": no source")
+        sys.exit()
+
+    time_start = datetime.now()
+    print("Dataset", ds_entry.getName(), 
+        "creation started at", time_start, file = sys.stderr)
+    date_loaded = time_start.isoformat()
+
+    input_reader = JsonLineReader(ds_entry.getSource())
     metadata_record = input_reader.readOne()
     if metadata_record.get("record_type") != "metadata":
-        print("No metadata line in",  source,  file = sys.stderr)
+        print("No metadata line in", ds_entry.getSource(), file = sys.stderr)
         assert False
 
     if "versions" in metadata_record:
@@ -76,27 +84,26 @@ def createDataSet(app_config, name, kind, mongo,
 
     vault_dir = app_config["data-vault"]
     if force_drop:
-        dropDataSet(app_config, name, kind, True)
+        dropDataSet(app_config, ds_entry, True)
 
     if not os.path.isdir(vault_dir):
         os.mkdir(vault_dir)
         print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
 
-    checkDSName(name, kind)
-    ds_dir = os.path.abspath(vault_dir + "/" + name)
-    if not mongo:
-        mongo = name
+    checkDSName(ds_entry.getName(), ds_entry.getKind())
+    ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
     if os.path.exists(ds_dir):
         print("Dataset exists:", ds_dir, file = sys.stderr)
         assert False
-    assert (kind == "xl") == (DRUID_ADM is not None)
+    if ds_entry.getKind() == "xl":
+        assert DRUID_ADM is not None
     os.mkdir(ds_dir)
 
     view_aspects = defineViewSchema(metadata_record)
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema(metadata_record)
 
-    if kind == "ws":
+    if ds_entry.getKind() == "ws":
         trans_prep = TranscriptPreparator(
             filter_set.getTranscriptDescrSeq(), True)
     else:
@@ -156,8 +163,8 @@ def createDataSet(app_config, name, kind, mongo,
         total_item_count = None
 
     flt_schema_data = filter_set.dump()
-    if kind == "xl":
-        is_ok &= DRUID_ADM.uploadDataset(name, flt_schema_data,
+    if ds_entry.getKind() == "xl":
+        is_ok &= DRUID_ADM.uploadDataset(ds_entry.getName(), flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
@@ -165,13 +172,13 @@ def createDataSet(app_config, name, kind, mongo,
         ds_doc_dir = ds_dir + "/doc"
         ds_info = {
             "date_loaded": date_loaded, 
-            "doc": prepareDocDir(ds_doc_dir, ds_inventory),
+            "doc": prepareDocDir(ds_doc_dir, ds_entry.getInv()),
             "flt_schema": flt_schema_data,
-            "kind": kind,
+            "kind": ds_entry.getKind(),
             "meta": metadata_record,
             "modes": [],
-            "mongo": mongo,
-            "name": name,
+            "mongo": ds_entry.getName(),
+            "name": ds_entry.getName(),
             "total": data_rec_no,
             "view_schema": view_aspects.dump()}
 
@@ -188,8 +195,9 @@ def createDataSet(app_config, name, kind, mongo,
 
         mongo_conn = MongoConnector(app_config["mongo-db"],
             app_config.get("mongo-host"), app_config.get("mongo-port"))
-        mongo_agent = mongo_conn.getDSAgent(name, kind)
-        mongo_agent.checkCreationDate(date_loaded, source)
+        mongo_agent = mongo_conn.getDSAgent(
+            ds_entry.getName(), ds_entry.getKind())
+        mongo_agent.checkCreationDate(date_loaded, ds_entry.getSource())
 
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
             reportDS(outp, ds_info, mongo_agent)
@@ -197,7 +205,7 @@ def createDataSet(app_config, name, kind, mongo,
         with open(ds_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
         print("Dataset %s kind=%s succesively created" % (
-            name, kind), file = rep_out)
+            ds_entry.getName(), ds_entry.getKind()), file = rep_out)
     else:
         print("Process terminated", file = rep_out)
 
@@ -206,48 +214,60 @@ def createDataSet(app_config, name, kind, mongo,
         print(rep_out.getvalue(), file = outp)
 
     print(rep_out.getvalue())
+    time_done = datetime.now()
+    print("Dataset", ds_entry.getName(), 
+        "creation finished at", time_done, "for", 
+        (time_done - time_start), file = sys.stderr)
+
 #===============================================
-def pushDruid(app_config, name):
+def pushDruid(app_config, ds_entry):
     global DRUID_ADM
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
         print("No vault directory:", vault_dir, file = sys.stderr)
         assert False
-    checkDSName(name, "xl")
+    if ds_entry.getKind() != "xl":
+        print("Druid dataset %s has unexpected kind %s" % 
+            (ds_entry.getName(),  ds_entry.getKind()), 
+            file = sys.stderr)
+        sys.exit()
+    checkDSName(ds_entry.getName(), "xl")
 
     druid_datasets = DRUID_ADM.listDatasets()
-    if name in druid_datasets:
-        DRUID_ADM.dropDataset(name)
+    if ds_entry.getName() in druid_datasets:
+        DRUID_ADM.dropDataset(ds_entry.getName())
 
-    ds_dir = os.path.abspath(vault_dir + "/" + name)
+    ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    is_ok = DRUID_ADM.uploadDataset(name, ds_info["flt_schema"],
+    is_ok = DRUID_ADM.uploadDataset(ds_entry.getName(), 
+        ds_info["flt_schema"],
         os.path.abspath(ds_dir + "/fdata.json.gz"),
         os.path.abspath(ds_dir + "/druid_rq.json"))
     if is_ok:
-        print("Druid dataset %s pushed" % name)
+        print("Druid dataset %s pushed" % ds_entry.getName())
     else:
         print("Process failed")
 
 #===============================================
-def dropDataSet(app_config, name, kind, calm_mode):
+def dropDataSet(app_config, ds_entry, calm_mode):
     global DRUID_ADM
-    assert kind in ("ws", "xl")
-    assert (kind == "xl") == (DRUID_ADM is not None)
+    assert ds_entry.getKind() in ("ws", "xl")
+    if ds_entry.getKind() == "xl":
+        assert DRUID_ADM is not None
     vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/" + name)
+    ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
 
-    if kind == "xl":
+    if ds_entry.getKind() == "xl":
         if calm_mode:
             druid_datasets = DRUID_ADM.listDatasets()
         else:
-            druid_datasets = [name]
-        if name in druid_datasets:
-            DRUID_ADM.dropDataset(name)
+            druid_datasets = [ds_entry.getName()]
+        if ds_entry.getName() in druid_datasets:
+            DRUID_ADM.dropDataset(ds_entry.getName())
         elif not calm_mode:
-            print("No dataset in Druid to drop:", name)
+            print("No dataset in Druid to drop:", ds_entry.getName())
 
     if not os.path.exists(ds_dir):
         if not calm_mode:
@@ -257,23 +277,15 @@ def dropDataSet(app_config, name, kind, calm_mode):
     print("Dataset droped:", ds_dir)
 
 #===============================================
-def checkDataSet(app_config, name, kind):
+def pushDoc(app_config, ds_entry):
     vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/" + name)
-
-    print("Check", ds_dir, ":", os.path.exists(ds_dir),
-        os.path.exists(ds_dir + "/active"))
-
-#===============================================
-def pushDoc(app_config, name, ds_inventory):
-    vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/" + name)
+    ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
 
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
     ds_doc_dir = ds_dir + "/doc"
-    ds_info["doc"] = prepareDocDir(ds_doc_dir, ds_inventory, reset = True)
+    ds_info["doc"] = prepareDocDir(ds_doc_dir, ds_entry.getInv(), reset = True)
 
     mongo_conn = MongoConnector(app_config["mongo-db"],
         app_config.get("mongo-host"), app_config.get("mongo-port"))
@@ -287,6 +299,43 @@ def pushDoc(app_config, name, ds_inventory):
 
     print("Re-doc complete:", ds_dir)
 
+#===============================================
+class DSEntry: 
+    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None):
+        self.mName = ds_name
+        self.mKind = ds_kind
+        self.mSource = source
+        self.mInv  = ds_inventory
+
+    def getName(self):
+        return self.mName
+        
+    def getKind(self):
+        return self.mKind
+        
+    def getSource(self):
+        return self.mSource
+        
+    def getInv(self):
+        return self.mInv
+
+    @classmethod
+    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):        
+        if ds_name not in dir_config["datasets"]:
+            print("Dataset %s not registered in directory file (%s)" %
+                (ds_name, dir_fname), file = sys.stderr)
+            sys.exit()
+        ds_entry = dir_config["datasets"][ds_name]
+        if "inv" in ds_entry:
+            ds_inventory = json_conf.loadDatasetInventory(ds_entry["inv"])
+            return DSEntry(ds_name,  ds_entry["kind"], 
+                ds_inventory["a-json"], ds_inventory)
+        if "a-json" in ds_entry:
+            return DSEntry(ds_name,  ds_entry["kind"], ds_entry["a-json"])
+        print(("Dataset %s: no correct source or inv registered "
+            "in directory file (%s)") % (ds_name, dir_fname),
+            file = sys.stderr)
+        sys.exit()
 
 #===============================================
 if __name__ == '__main__':
@@ -308,86 +357,60 @@ if __name__ == '__main__':
         help = "Force removal, actual if mode = create")
     parser.add_argument("-C", "--nocoord", action = "store_true",
         help = "Druid: no use coordinator")
-    parser.add_argument("--mongo", default = "",
-        help = "Mongo name, default=name")
     parser.add_argument("--reportlines", type = int, default = 100,
         help = "Portion for report lines, default = 100")
-    parser.add_argument("name", nargs = 1, help = "Dataset name")
-    run_args = parser.parse_args()
+    parser.add_argument("--delay",  type = int,  default = 0, 
+        help = "Delay between work with multiple datasets, in seconds")
+    parser.add_argument("names", nargs = "+", help = "Dataset name(s)")
+    args = parser.parse_args()
 
-    ds_name = run_args.name[0]
-    config_file = run_args.config
-    ds_source = run_args.source
-    ds_inv = run_args.inv
-    ds_kind = run_args.kind
-
-    if run_args.dir is not None:
-        if config_file or ds_source:
-            print("Incorrect usage: use --dir or (--config, --source)")
+    if args.dir:
+        if args.config or args.source:
+            print("Incorrect usage: use --dir or (--config, [--source])")
             sys.exit()
         dir_config = json.loads(
-            json_conf.readCommentedJSon(run_args.dir))
-        config_file = dir_config["anfisa.json"]
-        if ds_name not in dir_config["datasets"]:
-            print("Dataset %s not registered in directory file (%s)" %
-                (ds_name, run_args.dir), file = sys.stderr)
+            json_conf.readCommentedJSon(args.dir))
+        service_config_file = dir_config["anfisa.json"]
+        if len(set(args.names)) != len(args.names):
+            dup_names = args.names[:]
+            for ds_name in set(args.names):
+                dup_names.remove(ds_name)
+            print("Incorrect usage: ds name duplication:", " ".join(dup_names))
             sys.exit()
-        ds_entry = dir_config["datasets"][ds_name]
-        ds_kind = ds_entry["kind"]
-        if "inv" in ds_entry and "a-json" not in ds_entry:
-            ds_inv = ds_entry["inv"]
-        elif "a-json" in ds_entry:
-            ds_source = ds_entry["a-json"]
-        else:
-            print(("Dataset %s: no correct source or inv registered "
-                "in directory file (%s)") % (ds_name, run_args.dir),
-                file = sys.stderr)
+        entries = [DSEntry.createByDirConfig(ds_name,  dir_config, args.dir)
+            for ds_name in args.names]
+    else:
+        service_config_file = args.config
+        if not service_config_file:
+            service_config_file = "./anfisa.json"
+        if not args.source:
+            print("Incorrect usage: use --dir or (--config, [--source])")
             sys.exit()
-
-    ds_inventory = None
-    if ds_inv:
-        if ds_source:
-            print("Incorrect usage: use a-json or inventory "
-                "(--source or --inv)")
+        if len(args.names) != 1 and args.source:
+            print("Incorrect usage: --source applies only to one ds")
             sys.exit()
-        ds_inventory = json_conf.loadDatasetInventory(ds_inv)
-        ds_source = ds_inventory["a-json"]
+        entries = [DSEntry(args.names[0],  args.kind,  args.source)]
 
-    print("Anfisa config:", config_file, file = sys.stderr)
-    print("DS source:", ds_source, file = sys.stderr)
-
-    if not config_file:
-        config_file = "anfisa.json"
-    app_config = json_conf.loadJSonConfig(config_file)
+    app_config = json_conf.loadJSonConfig(service_config_file)
 
     assert os.path.isdir(app_config["data-vault"])
+    
+    if any([ds_entry.getKind() == "xl" for ds_entry in entries]):
+        DRUID_ADM = DruidAdmin(app_config, args.nocoord)
 
-    if ds_kind == "xl" or run_args.mode == "druid-push":
-        DRUID_ADM = DruidAdmin(app_config, run_args.nocoord)
-
-    if run_args.mode == "druid-push":
-        pushDruid(app_config, ds_name)
-        sys.exit()
-
-    if run_args.mode == "doc-push":
-        pushDoc(app_config, ds_name, ds_inventory)
-        sys.exit()
-
-    if run_args.mode == "create":
-        time_start = datetime.now()
-        print("Started at", time_start, file = sys.stderr)
-        createDataSet(app_config, ds_name, ds_kind,
-            run_args.mongo, ds_source, ds_inventory,
-            run_args.reportlines, time_start.isoformat(), 
-            run_args.force)
-        time_done = datetime.now()
-        print("Finished at", time_done, "for", (time_done - time_start),
-            file = sys.stderr)
-    elif run_args.mode == "drop":
-        dropDataSet(app_config, ds_name, ds_kind, False)
-    elif run_args.mode == "check":
-        checkDataSet(app_config, ds_name, ds_kind)
-    else:
-        print("Bad mode:", run_args.mode)
+    for entry_no,  ds_entry in enumerate(entries):
+        if entry_no > 0 and args.delay > 0:
+            time.sleep(args.delay)
+        if args.mode == "create":
+            createDataSet(app_config, ds_entry, args.force, args.reportlines)
+        elif args.mode == "drop":
+            dropDataSet(app_config, ds_entry, False)
+        elif args.mode == "druid-push":
+            pushDruid(app_config, ds_entry)
+        elif args.mode == "doc-push":
+            pushDoc(app_config, ds_entry)
+        else:
+            print("Bad mode:", args.mode)
+            sys.exit()
 
 #===============================================
