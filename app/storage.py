@@ -383,13 +383,11 @@ if __name__ == '__main__':
         service_config_file = args.config
         if not service_config_file:
             service_config_file = "./anfisa.json"
-        if not args.source:
-            print("Incorrect usage: use --dir or (--config, [--source])")
-            sys.exit()
         if len(args.names) != 1 and args.source:
             print("Incorrect usage: --source applies only to one ds")
             sys.exit()
-        entries = [DSEntry(args.names[0],  args.kind,  args.source)]
+        entries = [DSEntry(ds_name,  args.kind,  args.source)
+            for ds_name in args.names]
 
     app_config = json_conf.loadJSonConfig(service_config_file)
 
