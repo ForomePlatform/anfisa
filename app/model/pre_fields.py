@@ -56,10 +56,10 @@ class PresentationFieldPathSeq:
 #===============================================
 class PresentationData:
     sFields = [
-        PresentationFieldPath("_color", "/data/color_code"),
-        PresentationFieldPath("_label", "/data/label"),
+        PresentationFieldPath("_color", "/__data/color_code"),
+        PresentationFieldPath("_label", "/__data/label"),
         PresentationFieldPathSeq("_key", '-',
-            ["/data/seq_region_name", "/data/start", "/data/end"]),
+            ["/__data/seq_region_name", "/__data/start", "/__data/end"]),
         PresentationFieldHash("_rand", "_key")]
 
     @classmethod

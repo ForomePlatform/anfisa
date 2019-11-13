@@ -38,7 +38,8 @@ class AspectH:
         self.mResearchOnly = research_only
         self.mColGroups = col_groups
         self.mMode      = mode
-        assert self.mSource in ("view", "data")
+        assert self.mSource in ("_view", "__data"), (
+            "name=" + name + " source=" + self.mSource)
 
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []
@@ -127,11 +128,11 @@ class AspectH:
         ret = {
             "name": self.mName,
             "title": self.mTitle,
-            "kind": {"view": "norm", "data": "tech"}[self.mSource]}
+            "kind": {"_view": "norm", "__data": "tech"}[self.mSource]}
         if self.mName == "input":
             ret["type"] = "pre"
-            if "input" in rec_data["data"]:
-                ret["content"] = vcfRepr(rec_data["data"]["input"])
+            if "input" in rec_data["__data"]:
+                ret["content"] = vcfRepr(rec_data["__data"]["input"])
             return ret
         ret["type"] = "table"
         objects = [rec_data[self.mSource]]

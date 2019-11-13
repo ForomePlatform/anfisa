@@ -81,7 +81,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         sys.exit()
 
     time_start = datetime.now()
-    print("Dataset", ds_entry.getName(), 
+    print("Dataset", ds_entry.getName(),
         "creation started at", time_start, file = sys.stderr)
     date_loaded = time_start.isoformat()
 
@@ -95,8 +95,8 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         annotation_version = metadata_record["versions"].get("annotations")
         if annotation_version:
             ver = map(int, annotation_version.split('.'))
-            if list(ver) >= [0,  6]:
-                print("Annotation version not supported (0.5.* expected):", 
+            if list(ver) < [0,  6]:
+                print("Annotation version not supported (0.6.* expected):",
                     annotation_version, file = sys.stderr)
                 assert False
         metadata_record["versions"][
@@ -134,7 +134,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
 
     data_rec_no = 0
 
-    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " 
+    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o "
         + ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
         stdin = PIPE, stderr = PIPE,
         bufsize = 1, universal_newlines = False,
@@ -164,7 +164,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
             if report_lines and data_rec_no % report_lines == 0:
                 sys.stderr.write("\r%d lines..." % data_rec_no)
     if report_lines:
-        print("\nTotal lines: %d" % input_reader.getCurLineNo(), 
+        print("\nTotal lines: %d" % input_reader.getCurLineNo(),
             file = sys.stderr)
     input_reader.close()
 
@@ -191,7 +191,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
     if is_ok:
         ds_doc_dir = ds_dir + "/doc"
         ds_info = {
-            "date_loaded": date_loaded, 
+            "date_loaded": date_loaded,
             "doc": prepareDocDir(ds_doc_dir, ds_entry.getInv()),
             "flt_schema": flt_schema_data,
             "kind": ds_entry.getKind(),
@@ -235,8 +235,8 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
 
     print(rep_out.getvalue())
     time_done = datetime.now()
-    print("Dataset", ds_entry.getName(), 
-        "creation finished at", time_done, "for", 
+    print("Dataset", ds_entry.getName(),
+        "creation finished at", time_done, "for",
         (time_done - time_start), file = sys.stderr)
 
 #===============================================
@@ -247,8 +247,8 @@ def pushDruid(app_config, ds_entry):
         print("No vault directory:", vault_dir, file = sys.stderr)
         assert False
     if ds_entry.getKind() != "xl":
-        print("Druid dataset %s has unexpected kind %s" % 
-            (ds_entry.getName(),  ds_entry.getKind()), 
+        print("Druid dataset %s has unexpected kind %s" %
+            (ds_entry.getName(),  ds_entry.getKind()),
             file = sys.stderr)
         sys.exit()
     checkDSName(ds_entry.getName(), "xl")
@@ -261,7 +261,7 @@ def pushDruid(app_config, ds_entry):
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    is_ok = DRUID_ADM.uploadDataset(ds_entry.getName(), 
+    is_ok = DRUID_ADM.uploadDataset(ds_entry.getName(),
         ds_info["flt_schema"],
         os.path.abspath(ds_dir + "/fdata.json.gz"),
         os.path.abspath(ds_dir + "/druid_rq.json"))
@@ -320,7 +320,7 @@ def pushDoc(app_config, ds_entry):
     print("Re-doc complete:", ds_dir)
 
 #===============================================
-class DSEntry: 
+class DSEntry:
     def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None):
         self.mName = ds_name
         self.mKind = ds_kind
@@ -329,18 +329,18 @@ class DSEntry:
 
     def getName(self):
         return self.mName
-        
+
     def getKind(self):
         return self.mKind
-        
+
     def getSource(self):
         return self.mSource
-        
+
     def getInv(self):
         return self.mInv
 
     @classmethod
-    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):        
+    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):
         if ds_name not in dir_config["datasets"]:
             print("Dataset %s not registered in directory file (%s)" %
                 (ds_name, dir_fname), file = sys.stderr)
@@ -348,7 +348,7 @@ class DSEntry:
         ds_entry = dir_config["datasets"][ds_name]
         if "inv" in ds_entry:
             ds_inventory = json_conf.loadDatasetInventory(ds_entry["inv"])
-            return DSEntry(ds_name,  ds_entry["kind"], 
+            return DSEntry(ds_name,  ds_entry["kind"],
                 ds_inventory["a-json"], ds_inventory)
         if "a-json" in ds_entry:
             return DSEntry(ds_name,  ds_entry["kind"], ds_entry["a-json"])
@@ -379,7 +379,7 @@ if __name__ == '__main__':
         help = "Druid: no use coordinator")
     parser.add_argument("--reportlines", type = int, default = 100,
         help = "Portion for report lines, default = 100")
-    parser.add_argument("--delay",  type = int,  default = 0, 
+    parser.add_argument("--delay",  type = int,  default = 0,
         help = "Delay between work with multiple datasets, in seconds")
     parser.add_argument("names", nargs = "+", help = "Dataset name(s)")
     args = parser.parse_args()
@@ -412,7 +412,7 @@ if __name__ == '__main__':
     app_config = json_conf.loadJSonConfig(service_config_file)
 
     assert os.path.isdir(app_config["data-vault"])
-    
+
     if any([ds_entry.getKind() == "xl" for ds_entry in entries]):
         DRUID_ADM = DruidAdmin(app_config, args.nocoord)
 

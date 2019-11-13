@@ -19,6 +19,7 @@
 #
 
 from collections import defaultdict
+import json
 
 from utils.types import Types, TypeCounter
 from app.view.attr import AttrH
@@ -112,6 +113,9 @@ class DictTypeChecker:
 
     def getKind(self):
         return "Dict"
+
+    def getMasterName(self):
+        return self.mMasterName
 
     def addAttr(self, attr_h):
         if attr_h.getName() is None:
@@ -213,12 +217,13 @@ class ColGroupTypeChecker(DictTypeChecker):
 
     def regValue(self, rec_no, value):
         if self.mSingleColumns:
-            for name, val in value.items():
-                self.regItemValue(rec_no, name, val)
+            DictTypeChecker.regValue(self, rec_no, value)
         else:
+            assert isinstance(value, list), (
+                "Not a list " + self.getMasterName() + "/" + self.getName() +
+                "\n" + json.dumps(value))
             for it in value:
-                for name, val in it.items():
-                    self.regItemValue(rec_no, name, val)
+                DictTypeChecker.regValue(self, rec_no, it)
 
 #===============================================
 class SourceTypeChecker(DictTypeChecker):
@@ -256,7 +261,7 @@ class SourceTypeChecker(DictTypeChecker):
                 self.mAspectCheckers.append(mid_checker)
             else:
                 asp_checker = ColGroupTypeChecker(
-                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(), 
+                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(),
                     self.getName(), asp_h)
                 for nm in attr_names:
                     self.regIt(asp_checker, nm)

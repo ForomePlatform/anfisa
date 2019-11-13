@@ -75,7 +75,7 @@ class AnfisaConfig:
                     "Calculated Compound Hetreozygous, rough approx"]],
         },
 
-        "transcript.path.base": "/data/transcript_consequences",
+        "transcript.path.base": "/__data/transcript_consequences",
         "transcript.view.setup": ("transcripts", "transcript_consequences"),
 
         "job.pool.size":    3,

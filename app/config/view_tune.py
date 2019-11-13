@@ -62,13 +62,13 @@ class UCSC_AttrH(AttrH):
         self.setAspect(view_gen)
 
     def htmlRepr(self, obj, top_rec_obj):
-        start = int(top_rec_obj["data"]["start"])
-        end = int(top_rec_obj["data"]["end"])
+        start = int(top_rec_obj["__data"]["start"])
+        end = int(top_rec_obj["__data"]["end"])
         link1 = self.UCSC_URL.format(
-            top_rec_obj["data"]["seq_region_name"],
+            top_rec_obj["__data"]["seq_region_name"],
             max(0, start - 10), end + 10)
         link2 = self.UCSC_URL.format(
-            top_rec_obj["data"]["seq_region_name"],
+            top_rec_obj["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
         return ('<table cellpadding="50"><tr><td>' +
                 '<span title="Max Zoom In, 20bp range">' +
@@ -89,7 +89,7 @@ class GTEx_AttrH(AttrH):
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["view"]["general"]["genes"]
+        genes = top_rec_obj["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -109,7 +109,7 @@ class OMIM_AttrH(AttrH):
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["view"]["general"]["genes"]
+        genes = top_rec_obj["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -130,7 +130,7 @@ class GREV_AttrH(AttrH):
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["view"]["general"]["genes"]
+        genes = top_rec_obj["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -151,7 +151,7 @@ class MEDGEN_AttrH(AttrH):
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["view"]["general"]["genes"]
+        genes = top_rec_obj["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -191,10 +191,10 @@ class IGV_AttrH(AttrH):
     def htmlRepr(self, obj, top_rec_obj):
         if self.mPreUrl is None:
             return None
-        start = int(top_rec_obj["data"]["start"])
-        end = int(top_rec_obj["data"]["end"])
+        start = int(top_rec_obj["__data"]["start"])
+        end = int(top_rec_obj["__data"]["end"])
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
-            top_rec_obj["data"]["seq_region_name"],
+            top_rec_obj["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
         return ('<table><tr><td><span title="For this link to work, ' +
             'make sure that IGV is running on your computer">' +

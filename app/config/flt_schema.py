@@ -85,13 +85,13 @@ def defineFilterSchema(metadata_record):
         if cohorts:
             filters.multiStatusUnit("Variant_in", "/_filters/cohort_has_variant[]")
         else:
-            filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
+            filters.statusUnit("Proband_Zygosity", "/_view/bioinformatics/zygosity",
                                title="Proband Zygosity")
             filters.zygositySpecialUnit("Inheritance_Mode",
-                "/data/zygosity", config = {"x_cond":
+                "/__data/zygosity", config = {"x_cond":
                 ConditionMaker.condEnum("Chromosome", ["chrX"])},
                 title = "Inheritance Mode")
-        filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
+        filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
                             title="Number of Samples", conversion=_conv_len,
@@ -104,13 +104,13 @@ def defineFilterSchema(metadata_record):
         with filters.viewGroup("Cohorts"):
             for ch_name in all_cohorts:
                 filters.floatValueUnit(ch_name + "_AF",
-                    "/view/cohorts/" + ch_name + "/AF",  default_value = 0)
+                    "/_view/cohorts/" + ch_name + "/AF",  default_value = 0)
                 filters.floatValueUnit(ch_name + "_AF2",
-                    "/view/cohorts/" + ch_name + "/AF2",  default_value = 0,
+                    "/_view/cohorts/" + ch_name + "/AF2",  default_value = 0,
                                        title="AF_Hom")
 
     with filters.viewGroup("Variant"):
-        filters.statusUnit("Variant_Class", "/data/variant_class",
+        filters.statusUnit("Variant_Class", "/__data/variant_class",
             tooltip = ("Variant class as returned by VEP. "
                 "The class of a variant is based on Sequence "
                 "Ontology and is called according to its component "
@@ -118,35 +118,35 @@ def defineFilterSchema(metadata_record):
                 "https://useast.ensembl.org/info/genome/variation/"
                 "prediction/classification.html#classes"))
         filters.statusUnit("Most_Severe_Consequence",
-               "/data/most_severe_consequence",
+               "/__data/most_severe_consequence",
                variants = sConsequenceVariants,
                default_value = "undefined")
         filters.statusUnit("Canonical_Annotation",
-            "/view/general/canonical_annotation",
+            "/_view/general/canonical_annotation",
             default_value = "undefined")
         filters.intValueUnit("Number_ALTs",
             "/_filters/alts",
             title = "Number of Alternative alleles",
             conversion = _conv_len, default_value = 0)
 
-        #filters.intValueUnit("zyg_len", "/data/zygosity",
+        #filters.intValueUnit("zyg_len", "/__data/zygosity",
         #   conversion = _conv_len, default_value = 0)
 
     with filters.viewGroup("Genes"):
         genes_unit = filters.multiStatusUnit("Symbol",
-            "/view/general/genes[]",
+            "/_view/general/genes[]",
             compact_mode = True)
         filters.panelStatusUnit("Panels", genes_unit,
-            view_path = "/view/general/gene_panels")
+            view_path = "/_view/general/gene_panels")
         #filters.multiStatusUnit("Transcripts",
-        #    "/data/transcript_consequences[]", compact_mode = True,
+        #    "/__data/transcript_consequences[]", compact_mode = True,
         #    conversion = lambda arr:
         #        [el["transcript_id"] for el in arr] if arr else [])
-        filters.intValueUnit("Num_Genes", "/view/general/genes",
+        filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",
             conversion = _conv_len, default_value = 0)
         filters.intValueUnit("Num_Transcripts",
-            "/data/transcript_consequences",
+            "/__data/transcript_consequences",
             title = "Number of transcripts at the position",
             conversion = _conv_len, default_value = 0)
 
@@ -178,16 +178,16 @@ def defineFilterSchema(metadata_record):
             "chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
             default_value = "undefined")
 
-        filters.intValueUnit("Start_Pos", "/data/start",
+        filters.intValueUnit("Start_Pos", "/__data/start",
             title = "Start Position",
             render_mode = "neighborhood", default_value=sys.maxsize)
-        filters.intValueUnit("End_Pos", "/data/end",
+        filters.intValueUnit("End_Pos", "/__data/end",
             title = "End Position", default_value = 0,
             render_mode = "neighborhood")
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
             title = "Distance From Intron/Exon Boundary (Canonical)",
             default_value = 0, render_mode = "log,<")
-        filters.statusUnit("Region", "/data/region_canonical",
+        filters.statusUnit("Region", "/__data/region_canonical",
             title = "Region (Canonical)", default_value = "Other")
 
     with filters.viewGroup("gnomAD"):
@@ -242,28 +242,28 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Databases"):
         filters.presenceUnit("Presence_in_Databases", [
-            ("ClinVar", "/view/databases/clinVar"),
-            ("LMM", "/view/databases/lmm_significance"),
-            ("GeneDx", "/view/databases/gene_dx_significance"),
+            ("ClinVar", "/_view/databases/clinVar"),
+            ("LMM", "/_view/databases/lmm_significance"),
+            ("GeneDx", "/_view/databases/gene_dx_significance"),
             ("GnomAD", "/_filters/gnomad_af_fam"),
-            ("HGMD", "/view/databases/hgmd_pmids[]"),
-            ("OMIM", "/view/databases/omim")],
+            ("HGMD", "/_view/databases/hgmd_pmids[]"),
+            ("OMIM", "/_view/databases/omim")],
             title = "Presence in Databases")
 
         filters.multiStatusUnit("ClinVar_Submitters",
-            "/view/databases/clinVar_submitters[]",
+            "/_view/databases/clinVar_submitters[]",
             title = "ClinVar Submitters", compact_mode = True)
         filters.intValueUnit("Number_submitters",
-            "/view/databases/clinVar_submitters",
+            "/_view/databases/clinVar_submitters",
             title = "Number of ClinVar Submitters",
             conversion = _conv_len, default_value = 0)
         filters.intValueUnit("Number_pmid",
-            "/view/databases/hgmd_pmids",
+            "/_view/databases/hgmd_pmids",
             title = "Number of PMIDs in HGMD",
             conversion = _conv_len, default_value = 0)
 
         # filters.multiStatusUnit("beacons",
-        #     "/data/beacon_names",
+        #     "/__data/beacon_names",
         #     title = "Observed at")
 
     with filters.viewGroup("Call_Quality"):
@@ -315,7 +315,7 @@ def defineFilterSchema(metadata_record):
             title = "Categorized Benign in HGMD",
             default_value = "Not in HGMD", research_only = True,
             render_mode = "replace(True/Benign, False/Not Benign)")
-        filters.multiStatusUnit("HGMD_Tags", "/view/databases/hgmd_tags[]",
+        filters.multiStatusUnit("HGMD_Tags", "/_view/databases/hgmd_tags[]",
             default_value = "None")
 
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
@@ -323,7 +323,7 @@ def defineFilterSchema(metadata_record):
             title = "Categorized Benign in ClinVar by all submitters",
             research_only =True)
         filters.multiStatusUnit("ClinVar_Significance",
-            "/data/clinvar_significance[]",
+            "/__data/clinvar_significance[]",
             title = "Clinical Significance in ClinVar")
         filters.statusUnit("Clinvar_stars",
             "/_filters/clinvar_stars",
@@ -353,9 +353,9 @@ def defineFilterSchema(metadata_record):
             default_value = "No data",
             title = "Categorized Benign by Clinvar Trusted Submitters")
         filters.multiStatusUnit("LMM_Significance",
-            "/data/lmm", title = "Clinical Significance by LMM")
+            "/__data/lmm", title = "Clinical Significance by LMM")
         filters.multiStatusUnit("GeneDx_Significance",
-            "/data/gene_dx", title = "Clinical Significance by GeneDx")
+            "/__data/gene_dx", title = "Clinical Significance by GeneDx")
 
         filters.statusUnit("splice_altering", "/_filters/splice_altering",
             default_value = "No altering",
@@ -364,18 +364,18 @@ def defineFilterSchema(metadata_record):
             render_mode = "linear,>", default_value = 0,
             title = "Splice AI splice altering score")
 
-        # filters.multiStatusUnit("Polyphen", "/view/predictions/polyphen[]",
+        # filters.multiStatusUnit("Polyphen", "/_view/predictions/polyphen[]",
         # default_value="N/A")
         # This is an obsolete filter replaced by Polyphen 2
         filters.multiStatusUnit("Polyphen_2_HVAR",
-            "/view/predictions/polyphen2_hvar[]",
+            "/_view/predictions/polyphen2_hvar[]",
             separators = r"[\s\,]", default_value = "N/A",
             title = "Polyphen",
             tooltip = "HumVar (HVAR) is PolyPhen-2 classifier "
             "trained on known human variation (disease mutations vs."
             " common neutral variants)")
         filters.multiStatusUnit("Polyphen_2_HDIV",
-            "/view/predictions/polyphen2_hdiv[]",
+            "/_view/predictions/polyphen2_hdiv[]",
             separators = r"[\s\,]", default_value = "N/A",
             title = "Polyphen HDIV (High sensitivity)",
             tooltip = "HumDiv (HDIV) classifier is trained on a smaller "
@@ -383,17 +383,17 @@ def defineFilterSchema(metadata_record):
             "divergence with close homologs (e.g. primates), which is "
             "supposed to consist of mostly neutral mutations.")
 
-        filters.multiStatusUnit("SIFT", "/view/predictions/sift[]",
+        filters.multiStatusUnit("SIFT", "/_view/predictions/sift[]",
             default_value="N/A",
             tooltip = "Sort intolerated from tolerated (An amino acid at a "
             "position is tolerated | The most frequentest amino acid "
             "being tolerated). D: Deleterious T: tolerated")
-        filters.multiStatusUnit("FATHMM", "/view/predictions/fathmm[]",
+        filters.multiStatusUnit("FATHMM", "/_view/predictions/fathmm[]",
             default_value = "N/A",
             tooltip = "Functional analysis through hidden markov model HMM."
             "D: Deleterious; T: Tolerated")
         filters.floatValueUnit("GERP_score",
-            "/view/bioinformatics/gerp_rs", render_mode = "linear,>",
+            "/_view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")
 
     with filters.viewGroup("Debug_Info"):

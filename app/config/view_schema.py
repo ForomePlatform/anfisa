@@ -26,38 +26,37 @@ from app.view.colgrp import ColGroupsH
 #===============================================
 def defineViewSchema(metadata_record = None):
     aspect_list = [
-        AspectH("view_gen", "General", "view", field = "general"),
-        AspectH("view_qsamples", "Quality", "view",
+        AspectH("view_gen", "General", "_view", field = "general"),
+        AspectH("view_qsamples", "Quality", "_view",
             col_groups = ColGroupsH(attr = "quality_samples")),
-        AspectH("view_gnomAD", "gnomAD", "view",
-                col_groups = ColGroupsH(attr = "gnomAD")),
-        AspectH("view_db", "Databases", "view", field = "databases"),
-        AspectH("view_pred", "Predictions", "view", field = "predictions"),
-        AspectH("view_genetics", "Bioinformatics", "view",
+        AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
+        AspectH("view_db", "Databases", "_view", field = "databases"),
+        AspectH("view_pred", "Predictions", "_view", field = "predictions"),
+        AspectH("view_genetics", "Bioinformatics", "_view",
             field = "bioinformatics")]
 
     cohorts = metadata_record.get("cohorts")
     if cohorts:
         cohort_columns = [["ALL",  "ALL"]] + [
             [ch["name"],  ch.get("title",  ch["name"])] for ch in cohorts]
-        aspect_list.append(AspectH("view_cohorts", "Cohorts", "view",
+        aspect_list.append(AspectH("view_cohorts", "Cohorts", "_view",
             field = "cohorts",
             col_groups = ColGroupsH(attr_title_pairs = cohort_columns,
             single_columns = True)))
 
     aspect_list += [
-        AspectH("view_inheritance", "Inheritance", "view",
+        AspectH("view_inheritance", "Inheritance", "_view",
             field = "inheritance", ignored = True),
-        AspectH("_main", "VEP Data", "data"),
-        AspectH("transcripts", "VEP Transcripts", "data",
+        AspectH("_main", "VEP Data", "__data"),
+        AspectH("transcripts", "VEP Transcripts", "__data",
             col_groups = ColGroupsH([
                 ("transcript_consequences", "Transcript"),
                 ("regulatory_feature_consequences", "Regulatory"),
                 ("motif_feature_consequences", "Motif"),
                 ("intergenic_consequences", "Intergenic")])),
-        AspectH("colocated_v", "Colocated Variants", "data",
+        AspectH("colocated_v", "Colocated Variants", "__data",
             col_groups = ColGroupsH(attr = "colocated_variants")),
-        AspectH("input", "VCF", "data", field = "input",
+        AspectH("input", "VCF", "__data", field = "input",
             mode = "string")]
 
     aspects = AspectSetH(aspect_list)
