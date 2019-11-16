@@ -116,7 +116,7 @@ class ComplexEnumSupport:
 
     def makeComplexCondition(self, filter_mode, variants, context = None):
         single_cr_seq = []
-        for name, condition in self.iterComplexCriteria(context, variants):
+        for _, condition in self.iterComplexCriteria(context, variants):
             single_cr_seq.append(condition)
         if filter_mode == "NOT":
             return self.mCondEnv.joinAnd(
@@ -124,5 +124,3 @@ class ComplexEnumSupport:
         if filter_mode == "AND":
             return self.mCondEnv.joinAnd(single_cr_seq)
         return self.mCondEnv.joinOr(single_cr_seq)
-
-

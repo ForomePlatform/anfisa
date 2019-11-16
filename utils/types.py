@@ -110,4 +110,3 @@ class TypeCounter:
 
     def getEmptyCount(self):
         return self.mCounts[1]
-

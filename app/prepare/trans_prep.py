@@ -75,7 +75,7 @@ class TranscriptPreparator:
 
 #===============================================
 class TrConvertor:
-    sPattVar = re.compile('^\$\{(\w+)\}$')
+    sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
         self.mDescr = unit_descr
@@ -96,7 +96,7 @@ class TrConvertor:
 
     def finishUp(self, hard_check):
         if len(self.mBadCount) > 0:
-            err_msg =("Form transcript field %s with wrong values %s" %
+            err_msg = ("Form transcript field %s with wrong values %s" %
                     (self.mName, repr(self.mBadCount)))
             if hard_check:
                 print(err_msg, file = sys.stderr)
@@ -122,16 +122,16 @@ class TrConvertor:
 
 #===============================================
 class TrStatusConvertor(TrConvertor):
-    sPattVar = re.compile('^\$\{(\w+)\}$')
+    sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
         TrConvertor.__init__(self, unit_descr)
-        self.mBoolCheckValue =  unit_descr["bool_check"]
+        self.mBoolCheckValue = unit_descr["bool_check"]
         self.mBoolVUnit = None
         if self.mBoolCheckValue:
             self._checkBooleanVariants()
-        if (self.mBoolCheckValue is not None and
-                '$' in self.mBoolCheckValue):
+        if (self.mBoolCheckValue is not None
+                and '$' in self.mBoolCheckValue):
             q = self.sPattVar.match(self.mBoolCheckValue)
             assert q is not None, (
                 "Bad transcript instruction " + self.mBoolCheckValue)
@@ -173,7 +173,7 @@ class TrStatusConvertor(TrConvertor):
 
 #===============================================
 class TrMultisetConvertor(TrConvertor):
-    sPattVar = re.compile('^\$\{(\w+)\}$')
+    sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
         TrConvertor.__init__(self, unit_descr)
@@ -255,5 +255,3 @@ class EnumUnitStatH:
             if cnt > 0:
                 variants.append([name, cnt])
         self.mDescr["variants"] = variants
-
-

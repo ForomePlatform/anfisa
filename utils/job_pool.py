@@ -111,9 +111,9 @@ class JobPool:
         with self.mThrCondition:
             self.mTerminating = True
             self.mThrCondition.notify()
-        for cnt in range(1000):
+        for _ in range(1000):
             with self.mThrCondition:
-                if all([not w.is_alive() for w in self.mWorkers]):
+                if all(not w.is_alive() for w in self.mWorkers):
                     return
             time.sleep(.001)
 
@@ -130,7 +130,6 @@ class JobPool:
                 self.mActiveTasks[task.getUID()] = task
             self.mThrCondition.notify()
         return None
-
 
     def setResult(self, task, result):
         with self.mLock:

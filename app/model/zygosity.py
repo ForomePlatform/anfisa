@@ -28,10 +28,10 @@ class ZygosityComplex(ComplexEnumSupport):
         ComplexEnumSupport.__init__(self)
         self.mFamilyInfo = family_info
         self.mCondEnv = cond_env
-        self.mIsOK = (self.mFamilyInfo is not None and
-            1 < len(self.mFamilyInfo) <= 10)
+        self.mIsOK = (self.mFamilyInfo is not None
+            and 1 < len(self.mFamilyInfo) <= 10)
         labels = AnfisaConfig.configOption("zygosity.cases")
-        self.mCaseLabels =[labels[key]
+        self.mCaseLabels = [labels[key]
             for key in ("homo_recess", "x_linked", "dominant", "compens")]
         self.mVariantSet = VariantSet(self.mCaseLabels)
         self.mConfig = descr.get("config", dict())
@@ -39,8 +39,8 @@ class ZygosityComplex(ComplexEnumSupport):
         self.mFamNames = ["%s_%d" % (descr["name"], idx)
             for idx in range(len(self.mFamilyInfo))]
         self.mFamUnits = None
-        assert ("size" not in descr or
-            descr["size"] == len(self.mFamilyInfo))
+        assert ("size" not in descr
+            or descr["size"] == len(self.mFamilyInfo))
 
     def iterFamNames(self):
         return iter(self.mFamNames)

@@ -105,7 +105,7 @@ class MongoDSAgent:
         time_label = datetime.now().isoformat()
         self.mAgent.update({"_id": "note"},
             {"$set": {"note": note.strip(), "time": time_label}},
-                upsert = True)
+            upsert = True)
 
     #===== Filters
     def getFilters(self):
@@ -188,19 +188,18 @@ class MongoXLAgent(MongoDSAgent):
 
     def getTreeCodeVersion(self, version):
         for it in self.mAgent.find(
-            {"_tp": "tree", "_id": "tree-ver-" + str(version)}):
-                return it["code"]
+                {"_tp": "tree", "_id": "tree-ver-" + str(version)}):
+            return it["code"]
         return None
 
-    def addTreeCodeVersion(self, version, code, hash, date = None):
+    def addTreeCodeVersion(self, version, code, hash_code, date = None):
         if date is None:
             date = datetime.now().isoformat()
         self.mAgent.update(
             {"_tp": "tree", "_id": "tree-ver-" + str(version)},
-            {"$set": {"hash": hash, "code": code,
-                "date": date, "_tp": "tree"}}, upsert = True)
+            {"$set": {"hash": hash_code, "code": code,
+            "date": date, "_tp": "tree"}}, upsert = True)
 
     def dropTreeCodeVersion(self, version):
         self.mAgent.remove(
             {"_tp": "tree", "_id": "tree-ver-" + str(version)})
-

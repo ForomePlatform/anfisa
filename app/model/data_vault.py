@@ -38,7 +38,7 @@ class DataVault:
         names = [[], []]
         for active_path in glob(self.mVaultDir + "/*/active"):
             ds_path = os.path.dirname(active_path)
-            info_path =  ds_path + "/dsinfo.json"
+            info_path = ds_path + "/dsinfo.json"
             if not os.path.exists(info_path):
                 continue
             with open(info_path, "r", encoding = "utf-8") as inp:
@@ -47,7 +47,7 @@ class DataVault:
                 assert ds_info["name"] not in self.mDataSets
                 try:
                     ds_h = XLDataset(self, ds_info, ds_path)
-                except:
+                except Exception:
                     logException("Bad XL-dataset load: " + ds_info["name"])
                     continue
                 self.mDataSets[ds_info["name"]] = ds_h
@@ -59,7 +59,7 @@ class DataVault:
             assert ds_info["name"] not in self.mDataSets
             try:
                 ws_h = Workspace(self, ds_info, ds_path)
-            except:
+            except Exception:
                 logException("Bad WS-dataset load: " + ds_info["name"])
                 continue
             self.mDataSets[ds_info["name"]] = ws_h
@@ -75,7 +75,7 @@ class DataVault:
         self.mLock.acquire()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, tp, value, traceback):
         self.mLock.release()
 
     def descrContext(self, rq_args, rq_descr):
@@ -107,7 +107,7 @@ class DataVault:
 
     def loadDS(self, ds_name, ds_kind = None):
         ds_path = self.mVaultDir + '/' + ds_name
-        info_path =  ds_path + "/dsinfo.json"
+        info_path = ds_path + "/dsinfo.json"
         with open(info_path, "r", encoding = "utf-8") as inp:
             ds_info = json.loads(inp.read())
         assert ds_info["name"] == ds_name

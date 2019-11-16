@@ -173,8 +173,8 @@ class AnfisaApp:
         rep_out = StringIO()
         is_ok = view_checker.finishUp(rep_out)
         if not is_ok:
-            logging.error("Single record annotation failed:\n" +
-                rep_out.getvalue())
+            logging.error("Single record annotation failed:\n"
+                + rep_out.getvalue())
         assert is_ok
         aspects = AspectSetH.load(view_aspects.dump())
         return aspects.getViewRepr(record, research_mode)
@@ -186,7 +186,7 @@ class AnfisaApp:
 
     @classmethod
     def askJobStatus(cls, task_id):
-        return cls.sJobPool.askTaskStatus(int(task_id));
+        return cls.sJobPool.askTaskStatus(int(task_id))
 
     @classmethod
     def checkFilePath(cls, path):
@@ -210,10 +210,10 @@ class _ExportReport:
             self.mOutput = None
             return
         self.mOutput = open(debug_file_path, "w", encoding = "utf-8")
-        print("@VERSIONS",file = self.mOutput)
+        print("@VERSIONS", file = self.mOutput)
         print(json.dumps(source_versions, ensure_ascii = False),
             file = self.mOutput)
-        print("@TAGS_CFG",file = self.mOutput)
+        print("@TAGS_CFG", file = self.mOutput)
         print(json.dumps(tags_info, ensure_ascii = False),
             file = self.mOutput)
 
@@ -225,10 +225,9 @@ class _ExportReport:
     def record(self, rec_data, tags_data):
         if self.mOutput is None:
             return
-        print("@RECORD",file = self.mOutput)
+        print("@RECORD", file = self.mOutput)
         print(json.dumps(rec_data, ensure_ascii = False),
             file = self.mOutput)
-        print("@TAGS",file = self.mOutput)
+        print("@TAGS", file = self.mOutput)
         print(json.dumps(tags_data, ensure_ascii = False),
             file = self.mOutput)
-

@@ -33,6 +33,7 @@ if sys.version_info < (3, 7):
 def application(environ, start_response):
     return HServHandler.request(environ, start_response)
 
+
 #========================================
 if __name__ == '__main__':
     logging.basicConfig(level = 0)
@@ -45,10 +46,10 @@ if __name__ == '__main__':
 
     #========================================
     class _LoggingWSGIRequestHandler(WSGIRequestHandler):
-        def log_message(self, format, *args):
+        def log_message(self, format_str, *args):
             logging.info(("%s - - [%s] %s\n" %
                 (self.client_address[0], self.log_date_time_string(),
-                format % args)).rstrip())
+                format_str % args)).rstrip())
 
     #========================================
     host, port = setupHServer(AnfisaApp, config_file, False)

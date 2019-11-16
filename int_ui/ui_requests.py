@@ -54,7 +54,7 @@ class IntUI:
     def finishRequest(cls, serv_h, rq_path, rq_args, data_vault):
         try:
             return cls._finishRequest(serv_h, rq_path, rq_args, data_vault)
-        except:
+        except Exception:
             logException("Exception on evaluation request")
         return cls.notFoundResponse(serv_h)
 
@@ -123,6 +123,5 @@ class IntUI:
                     cls.sHtmlTitle, cls.sHtmlBase, dataset)
                 return serv_h.makeResponse(content = output.getvalue())
 
-        logging.error("BAD server request: " + rq_path);
+        logging.error("BAD server request: " + rq_path)
         return cls.notFoundResponse(serv_h)
-

@@ -29,15 +29,15 @@ from .log_err import logException
 class HServResponse:
     #========================================
     sContentTypes = {
-        "html":   "text/html",
-        "xml":    "text/xml",
         "css":    "text/css",
+        "html":   "text/html",
         "js":     "application/javascript",
-        "png":    "image/png",
         "json":   "application/json",
+        "png":    "image/png",
         "xlsx":   (
             "application/application/"
-            "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            "vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+        "xml":    "text/xml"
     }
 
     sErrorCodes = {
@@ -124,8 +124,9 @@ class HServHandler:
                 if content_type:
                     ctype, pdict = parse_header(content_type)
                     if ctype == 'multipart/form-data':
-                        for a, v in parse_multipart(environ['wsgi.input'], pdict).items():
-                            print ("a=", a,"v=", v)
+                        for a, v in parse_multipart(
+                                environ['wsgi.input'], pdict).items():
+                            print("a=", a, "v=", v)
                             query_args[a] = v[0]
                     elif ctype != 'application/x-www-form-urlencoded':
                         logging.error("Bad content type for POST: " + ctype)
@@ -201,4 +202,3 @@ def setupHServer(application, config_file, in_container):
     if not in_container:
         return (config["host"], int(config["port"]))
     return None
-

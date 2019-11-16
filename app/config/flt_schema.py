@@ -83,10 +83,12 @@ def defineFilterSchema(metadata_record):
     cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):
         if cohorts:
-            filters.multiStatusUnit("Variant_in", "/_filters/cohort_has_variant[]")
+            filters.multiStatusUnit("Variant_in",
+                "/_filters/cohort_has_variant[]")
         else:
-            filters.statusUnit("Proband_Zygosity", "/_view/bioinformatics/zygosity",
-                               title="Proband Zygosity")
+            filters.statusUnit("Proband_Zygosity",
+                "/_view/bioinformatics/zygosity",
+                title = "Proband Zygosity")
             filters.zygositySpecialUnit("Inheritance_Mode",
                 "/__data/zygosity", config = {"x_cond":
                 ConditionMaker.condEnum("Chromosome", ["chrX"])},
@@ -94,9 +96,9 @@ def defineFilterSchema(metadata_record):
         filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
-                            title="Number of Samples", conversion=_conv_len,
-                            default_value = 0,
-            tooltip="Number of samples for which this variant has been called")
+            title = "Number of Samples", conversion=_conv_len,
+            default_value = 0,
+        tooltip = "Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     if cohorts:
@@ -107,7 +109,7 @@ def defineFilterSchema(metadata_record):
                     "/_view/cohorts/" + ch_name + "/AF",  default_value = 0)
                 filters.floatValueUnit(ch_name + "_AF2",
                     "/_view/cohorts/" + ch_name + "/AF2",  default_value = 0,
-                                       title="AF_Hom")
+                                       title = "AF_Hom")
 
     with filters.viewGroup("Variant"):
         filters.statusUnit("Variant_Class", "/__data/variant_class",
@@ -365,7 +367,7 @@ def defineFilterSchema(metadata_record):
             title = "Splice AI splice altering score")
 
         # filters.multiStatusUnit("Polyphen", "/_view/predictions/polyphen[]",
-        # default_value="N/A")
+        # default_value = "N/A")
         # This is an obsolete filter replaced by Polyphen 2
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/_view/predictions/polyphen2_hvar[]",
@@ -384,7 +386,7 @@ def defineFilterSchema(metadata_record):
             "supposed to consist of mostly neutral mutations.")
 
         filters.multiStatusUnit("SIFT", "/_view/predictions/sift[]",
-            default_value="N/A",
+            default_value = "N/A",
             tooltip = "Sort intolerated from tolerated (An amino acid at a "
             "position is tolerated | The most frequentest amino acid "
             "being tolerated). D: Deleterious T: tolerated")

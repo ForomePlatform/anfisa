@@ -70,9 +70,9 @@ class CondEnv:
     def detectUnit(self, unit_name,
             expect_kind = None, use_logging = True):
         unit_kind, unit_h = self._detectUnit(unit_name)
-        if (use_logging and expect_kind is not None and
-                expect_kind != unit_kind and
-                unit_kind not in {"special","reserved", "operational"}):
+        if (use_logging and expect_kind is not None
+                and expect_kind != unit_kind
+                and unit_kind not in {"special", "reserved", "operational"}):
             logging.warning("Mix-up in unit kinds for name=%s/%s asked %s" %
                 (unit_name, unit_kind, str(expect_kind)))
             return None, None

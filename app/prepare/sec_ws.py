@@ -47,6 +47,7 @@ class SecondaryWsCreation(ExecutionTask):
         self.mForceMode = force_mode
 
     sID_Pattern = re.compile('^\\S+$', re.U)
+
     @classmethod
     def correctWSName(cls, name):
         if not cls.sID_Pattern.match(name):
@@ -79,8 +80,8 @@ class SecondaryWsCreation(ExecutionTask):
         else:
             condition = self.mOpCond.getResult()
             rec_count = self.mDS.evalTotalCount(condition)
-            if (rec_count < 1 or
-                    rec_count >= AnfisaConfig.configOption("max.ws.size")):
+            if (rec_count < 1
+                    or rec_count >= AnfisaConfig.configOption("max.ws.size")):
                 self.setStatus("Size is incorrect: %d" % rec_count)
                 return None
             rec_no_seq = self.mDS.evalRecSeq(condition, rec_count)
@@ -170,7 +171,8 @@ class SecondaryWsCreation(ExecutionTask):
 
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
         if "versions" in meta_rec:
-            meta_rec["versions"]["Anfisa load"] = self.mDS.getApp().getVersionCode()
+            meta_rec["versions"][
+                "Anfisa load"] = self.mDS.getApp().getVersionCode()
 
         ds_info = {
             "name": self.mWSName,

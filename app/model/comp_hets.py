@@ -91,7 +91,7 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
                 genes1.add(stat_info[0])
         logging.info("Eval genes1 for %s comp-hets: %d" %
             (trio_info[0], len(genes1)))
-        if len(genes1) == None:
+        if len(genes1) is None:
             return
         genes2 = set()
         for stat_info in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
@@ -130,4 +130,3 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
     def parseCondition(self, cond_data, calc_data):
         return self.makeComplexCondition(
             cond_data[2], cond_data[3], calc_data)
-

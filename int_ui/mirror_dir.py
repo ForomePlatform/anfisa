@@ -31,8 +31,8 @@ class MirrorUiDirectory:
             return cls.sFileTab.get(name, name)
         return name
 
-    sRegExpSrcFName = re.compile("^[\w_]+\.\w+$")
-    sRegExpDestFName = re.compile("(^[\w_]+)\-(\d\d\d)(\.\w+)$")
+    sRegExpSrcFName = re.compile(r"^[\w_]+\.\w+$")
+    sRegExpDestFName = re.compile(r"(^[\w_]+)\-(\d\d\d)(\.\w+)$")
 
     @classmethod
     def setup(cls, config_data):

@@ -124,8 +124,8 @@ class Workspace(DataSet):
             "total": self.getTotal(),
             "transcripts": counts_transctipts,
             "filtered": len(rec_no_seq)}
-        if (random_mode and len(rec_no_seq) >
-                AnfisaConfig.configOption("rand.min.size")):
+        if (random_mode and len(rec_no_seq)
+                > AnfisaConfig.configOption("rand.min.size")):
             sheet = [(self.mTabRecRand[rec_no], idx)
                 for idx, rec_no in enumerate(rec_no_seq)]
             sheet.sort()
@@ -305,4 +305,3 @@ class Workspace(DataSet):
     @RestAPI.ws_request
     def rq__vsetup(self, rq_args):
         return self.getViewSetupReport()
-

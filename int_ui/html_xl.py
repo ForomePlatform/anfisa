@@ -79,8 +79,9 @@ def formNoteDiv(output):
       <div id="note-mod">
         <div id="note-top">
             <p id="note-title">Dataset
-                <span id="note-ds-name"></span> note
-              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+              <span id="note-ds-name"></span> note
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
@@ -107,7 +108,8 @@ def formCreateWsDiv(output):
       <div id="create-ws-mod">
         <div id="create-ws-top">
             <span id="create-ws-title"></span>
-              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
         </div>
         <div id="create-ws-main">
             <div>Workspace name:

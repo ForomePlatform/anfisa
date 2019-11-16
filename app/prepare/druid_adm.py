@@ -36,12 +36,12 @@ class DruidAdmin(DruidAgent):
 
     @staticmethod
     def str2dt(text):
-       year, month, day = map(int, text.split('-'))
-       return datetime(year = year, month = month, day = day)
+        year, month, day = map(int, text.split('-'))
+        return datetime(year = year, month = month, day = day)
 
     def addFieldsToRec(self, rec_data, pre_data, rec_no):
-        rec_data["time"] = (self.mStartTime +
-            timedelta(seconds = rec_no)).isoformat()
+        rec_data["time"] = (self.mStartTime
+            + timedelta(seconds = rec_no)).isoformat()
         rec_data["_ord"]  = rec_no
         rec_data["_rand"] = pre_data["_rand"]
 
@@ -51,8 +51,8 @@ class DruidAdmin(DruidAgent):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
-            filter_name = (druid_dataset_name + "__" +
-                os.path.basename(fdata_name))
+            filter_name = (druid_dataset_name + "__"
+                + os.path.basename(fdata_name))
             cmd = [self.mScpConfig["exe"]]
             if not cmd[0]:
                 print("Undefined parameter scp/exe", file = sys.stderr)
@@ -60,8 +60,8 @@ class DruidAdmin(DruidAgent):
             if self.mScpConfig.get("key"):
                 cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd.append(fdata_name)
-            cmd.append(self.mScpConfig["host"] + ':' + base_dir + "/" +
-                filter_name)
+            cmd.append(self.mScpConfig["host"] + ':' + base_dir + "/"
+                + filter_name)
             print("Remote copying:", ' '.join(cmd), file = sys.stderr)
             print("Scp started at", datetime.now(), file = sys.stderr)
             subprocess.call(' '.join(cmd), shell = True)
@@ -88,47 +88,47 @@ class DruidAdmin(DruidAgent):
             else:
                 if len(unit_data["variants"]) == 0:
                     continue
-                if sum([info[1] for info in unit_data["variants"]]) == 0:
+                if sum(info[1] for info in unit_data["variants"]) == 0:
                     continue
                 dim_container.append(unit_data["name"])
 
         schema_request = {
-            "type" : "index",
-            "spec" : {
-                "dataSchema" : {
-                    "dataSource" : druid_dataset_name,
-                    "parser" : {
-                        "type" : "string",
-                        "parseSpec" : {
-                            "format" : "json",
-                            "dimensionsSpec" : {
-                                "dimensions" : dim_container,
-                                "dimensionExclusions" : [],
-                                "spatialDimensions" : []},
+            "type": "index",
+            "spec": {
+                "dataSchema": {
+                    "dataSource": druid_dataset_name,
+                    "parser": {
+                        "type": "string",
+                        "parseSpec": {
+                            "format": "json",
+                            "dimensionsSpec": {
+                                "dimensions": dim_container,
+                                "dimensionExclusions": [],
+                                "spatialDimensions": []},
                             "timestampSpec": {
                                 "column": "time"}}},
-                    "metricsSpec" : [{
-                        "type" : "count",
-                        "name" : "count"
-                    },],
-                    "granularitySpec" : {
-                        "type" : "uniform",
-                        "segmentGranularity" : self.GRANULARITY,
-                        "queryGranularity" : "none",
-                        "intervals" : [self.INTERVAL],
-                        "rollup" : False}},
-                "ioConfig" : {
-                    "type" : "index",
-                    "firehose" : {
-                        "type" : "local",
-                        "baseDir" : base_dir,
-                        "filter" : filter_name},
-                    "appendToExisting" : False},
-                "tuningConfig" : {
-                    "type" : "index",
-                    "targetPartitionSize" : 5000000,
-                    "maxRowsInMemory" : 25000,
-                    "forceExtendableShardSpecs" : True}}}
+                    "metricsSpec": [{
+                        "type": "count",
+                        "name": "count"
+                    }],
+                    "granularitySpec": {
+                        "type": "uniform",
+                        "segmentGranularity": self.GRANULARITY,
+                        "queryGranularity": "none",
+                        "intervals": [self.INTERVAL],
+                        "rollup": False}},
+                "ioConfig": {
+                    "type": "index",
+                    "firehose": {
+                        "type": "local",
+                        "baseDir": base_dir,
+                        "filter": filter_name},
+                    "appendToExisting": False},
+                "tuningConfig": {
+                    "type": "index",
+                    "targetPartitionSize": 5000000,
+                    "maxRowsInMemory": 25000,
+                    "forceExtendableShardSpecs": True}}}
 
         if report_name is not None:
             with open(report_name, "w", encoding="utf-8") as outp:
@@ -143,12 +143,12 @@ class DruidAdmin(DruidAgent):
     def dropDataset(self, dataset_name):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if not self.mNoCoord:
-            self.call("coord", None, "DELETE", "/datasources/" +
-                druid_dataset_name)
+            self.call("coord", None, "DELETE", "/datasources/"
+                + druid_dataset_name)
         self.call("index", {
             "type": "kill",
             "dataSource": druid_dataset_name,
-            "interval" : self.INTERVAL})
+            "interval": self.INTERVAL})
 
     def listDatasets(self):
         return self.call("coord", None, "GET",

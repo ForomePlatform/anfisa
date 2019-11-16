@@ -142,7 +142,7 @@ def _formCurCondDiv(output):
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
-                    <label for="cur-enum-zeros">Show zeros&nbsp;</label><input 
+                    <label for="cur-enum-zeros">Show zeros&nbsp;</label><input
                         id="cur-enum-zeros" type="checkbox"
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
@@ -197,12 +197,12 @@ def _formVersionsDiv(output):
             <button class="action" onclick="modalOff();">
                 Done
             </button>
-            <button id="btn-version-select" class="action" title="Select version"
-                onclick='versionSelect();'> Select
+            <button id="btn-version-select" class="action"
+                title="Select version" onclick='versionSelect();'> Select
             </button>
             <span id="versions-ctrl-sep"></span>
-            <button id="btn-version-delete" class="action" title="Delete version"
-                onclick='versionDelete();'> Delete
+            <button id="btn-version-delete" class="action"
+                title="Delete version" onclick='versionDelete();'> Delete
             </button>
         </div>
       </div>
@@ -216,7 +216,8 @@ def _formEditCodeDiv(output):
       <div id="code-edit-mod">
         <div id="code-edit-top">
             <span id="code-edit-title">Edit decision tree code</span>
-              <span class="close-it" onclick="sViewH.modalOff();">&times;</span>
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
         </div>
         <div id="code-edit-ctrl">
             <button id="code-edit-drop" onclick="sCodeEditH.drop();">
@@ -238,4 +239,3 @@ def _formEditCodeDiv(output):
       </div>
     </div>
 ''', file = output)
-

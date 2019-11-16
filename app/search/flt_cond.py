@@ -67,10 +67,12 @@ class WS_CondEnv(CondEnv):
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
         eval_func = self.numericFilterFunc(bounds[0], bounds[1], use_undef)
         if unit_h.isDetailed():
-            fill_items_f = lambda it_idx: eval_func(unit_h.getItemVal(it_idx))
+            def fill_items_f(it_idx):
+                return eval_func(unit_h.getItemVal(it_idx))
             fill_groups_f = None
         else:
-            fill_groups_f = lambda rec_no: eval_func(unit_h.getRecVal(rec_no))
+            def fill_groups_f(rec_no):
+                return eval_func(unit_h.getRecVal(rec_no))
             fill_items_f = None
         return WS_Condition(self, "num", unit_h.getName(),
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
@@ -79,10 +81,12 @@ class WS_CondEnv(CondEnv):
         eval_func = self.enumFilterFunc(filter_mode,
             unit_h.getVariantSet().makeIdxSet(variants))
         if unit_h.isDetailed():
-            fill_items_f = lambda it_idx: eval_func(unit_h.getItemVal(it_idx))
+            def fill_items_f(it_idx):
+                return eval_func(unit_h.getItemVal(it_idx))
             fill_groups_f = None
         else:
-            fill_groups_f = lambda rec_no: eval_func(unit_h.getRecVal(rec_no))
+            def fill_groups_f(rec_no):
+                return eval_func(unit_h.getRecVal(rec_no))
             fill_items_f = None
         return WS_Condition(self, "enum", unit_h.getName(),
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
@@ -113,8 +117,8 @@ class WS_CondEnv(CondEnv):
         if filter_mode == "NOT":
             return lambda idx_set: len(idx_set & base_idx_set) == 0
         if filter_mode == "ONLY":
-            return lambda idx_set: (len(idx_set) > 0 and
-                len(idx_set - base_idx_set) == 0)
+            return lambda idx_set: (len(idx_set) > 0
+                and len(idx_set - base_idx_set) == 0)
         if filter_mode == "AND":
             all_len = len(base_idx_set)
             return lambda idx_set: len(idx_set & base_idx_set) == all_len
@@ -142,7 +146,7 @@ class WS_Condition:
                             for j in range(grp_size)])
             else:
                 rec_no = 0
-                for grp_offset, grp_size in self.getCondEnv().iterGroups():
+                for _, grp_size in self.getCondEnv().iterGroups():
                     val = fill_groups_f(rec_no)
                     rec_no += 1
                     self.mBitArray.extend([val] * (max(1, grp_size)))
@@ -208,7 +212,7 @@ class WS_Condition:
 
     def countSelection(self):
         count_grp, count_items = 0, 0
-        for rec_no, rec_it_map in self.iterSelection():
+        for _, rec_it_map in self.iterSelection():
             count_grp += 1
             count_items += rec_it_map.count()
         return (count_grp, count_items, self.mCondEnv.getTotalCount())
@@ -221,6 +225,7 @@ class WS_Condition:
         return self.mBitArray[grp_offset:grp_offset + max(1, grp_size)].any()
 
     sPattTrue = bitarray('1')
+
     def iterItemIdx(self):
         grp_idx = 0
         groups = self.mCondEnv.mGroups
@@ -355,4 +360,3 @@ class WS_MetaNumUnit(MetaUnit):
 
     def isDetailed(self):
         return False
-

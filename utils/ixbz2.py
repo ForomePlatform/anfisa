@@ -46,7 +46,7 @@ class IndexBZ2:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, tp, value, traceback):
         self.close()
 
     def close(self):
@@ -91,7 +91,7 @@ class FormatterIndexBZ2:
     def __enter__(self):
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, tp, value, traceback):
         self.close()
 
     def _makeChunk(self, q_final = False):
@@ -206,7 +206,7 @@ class InputReader(threading.Thread):
                 self.mThrCondEmpty.notify()
 
     def close(self):
-        for cnt in range(1000):
+        for _ in range(1000):
             with self.mLock:
                 if not self.is_alive():
                     break
@@ -214,6 +214,7 @@ class InputReader(threading.Thread):
         print("Delays: empty = %.01f/%d full = %.01f/%d" % (
             self.mDelayEmpty, self.mCntEmpty, self.mDelayOver, self.mCntOver),
             file = sys.stderr)
+
 
 #===============================================
 if __name__ == "__main__":

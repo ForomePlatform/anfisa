@@ -22,7 +22,7 @@ import sys, os, json, re
 from datetime import datetime
 
 #========================================
-sCommentLinePatt = re.compile("^\s*//.*$")
+sCommentLinePatt = re.compile(r"^\s*//.*$")
 
 def readCommentedJSon(fname):
     lines = []
@@ -36,7 +36,7 @@ def readCommentedJSon(fname):
 def loadJSonConfig(config_file):
     content = readCommentedJSon(config_file)
     dir_name = os.path.abspath(__file__)
-    for idx in range(2):
+    for _ in range(2):
         dir_name = os.path.dirname(dir_name)
     content = content.replace('${HOME}', dir_name)
     pre_config = json.loads(content)
@@ -61,8 +61,9 @@ def _processAlias(content, alias_name, alias_value, aliases_done):
     aliases_done.add(alias_name)
     return content.replace('${%s}' % alias_name, alias_value)
 
+
 #========================================
-sSplitInstrPatt = re.compile("^split\('([^']*)'\,\s*'([^\"]*)'\)$")
+sSplitInstrPatt = re.compile(r"^split\('([^']*)'\,\s*'([^\"]*)'\)$")
 
 def _processSpecInstr(instr):
     global sSplitInstrPatt
@@ -78,8 +79,9 @@ def genTS():
     return ("%04d-%02d-%02d-%02d-%02d-%02d.%03d" % (dt.year, dt.month,
         dt.day, dt.hour, dt.minute, dt.second, dt.microsecond//1000))
 
+
 #========================================
-sCommentLinePatt = re.compile("^\s*//.*$")
+sCommentLinePatt = re.compile(r"^\s*//.*$")
 
 def loadDatasetInventory(inv_file):
     global sCommentLinePatt
@@ -120,4 +122,3 @@ def loadDatasetInventory(inv_file):
 
     # Ready to go
     return json.loads(content)
-

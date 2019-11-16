@@ -50,7 +50,7 @@ class SolutionItem:
 #===============================================
 class SolutionPack:
     @classmethod
-    def readFile(cls,fname):
+    def readFile(cls, fname):
         with open(fname, "r", encoding = "utf-8") as inp:
             return inp.read()
         assert False
@@ -121,7 +121,7 @@ class SolutionPack:
             self.mUsedNames, unit_name + "/" + panel_name))
 
     def regZone(self, zone_title, unit_name, requires = None):
-        self.mItems.append(SolutionItem("zone", 
+        self.mItems.append(SolutionItem("zone",
             zone_title,  unit_name, requires, self.mUsedNames))
 
     def iterItems(self, kind, test_f):
@@ -131,4 +131,3 @@ class SolutionPack:
 
     def getTreeByHashCode(self, hash_code):
         return self.mTreeCodes.get(hash_code)
-

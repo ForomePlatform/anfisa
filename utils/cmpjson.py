@@ -92,17 +92,19 @@ class SamplesDirectCollector:
     def getRecord(self, pos):
         return self.mSamples[pos][1]
 
+
 #=====================================
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--seed", type = int, default = 179,
-        help="Seed for random selection")
+        help = "Seed for random selection")
     parser.add_argument("-n", "--number", type = int, default = 5,
-        help="Number of samples")
+        help = "Number of samples")
     parser.add_argument("-s", "--seq",
-        help="Direct list of records, comma separated")
+        help = "Direct list of records, comma separated")
     parser.add_argument("-o", "--output",
-        help="Output filename preffix, use it to generate separated json files")
+        help =
+        "Output filename preffix, use it to generate separated json files")
     parser.add_argument("source", nargs = 2, help = "Two js files to compare")
     run_args = parser.parse_args()
 

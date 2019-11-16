@@ -50,12 +50,12 @@ class RestAgent:
         res = conn.getresponse()
         try:
             content = res.read()
-            logging.info("REST " + method  + " call: " + self.mName +
-                add_path + " response: " + str(res.status) +
-                " reason: " + str(res.reason))
+            logging.info("REST " + method  + " call: " + self.mName
+                + add_path + " response: " + str(res.status)
+                + " reason: " + str(res.reason))
             if res.status != 200:
-                raise RuntimeError("Druid call failure:\n" +
-                    str(content, "utf-8"))
+                raise RuntimeError("Druid call failure:\n"
+                    + str(content, "utf-8"))
         finally:
             res.close()
         if method == "DELETE":

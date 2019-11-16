@@ -47,7 +47,7 @@ class XLDataset(DataSet):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.mDruidAgent = self.getApp().getDruidAgent()
         self.mDruidAgent = self.getApp().getDruidAgent()
-        self.mCondEnv = XL_CondEnv(self.getName(), 
+        self.mCondEnv = XL_CondEnv(self.getName(),
             self.getDataInfo().get("modes"))
         self.mCondEnv.addMode("XL")
         self.mCondEnv.addMetaNumUnit("_ord")
@@ -204,10 +204,10 @@ class XLDataset(DataSet):
             "granularity": self.mDruidAgent.GRANULARITY,
             "descending": "true",
             "aggregations": [
-                { "type": "count", "name": "count",
+                {"type": "count", "name": "count",
                     "fieldName": "_ord"}],
             "filter": condition.getDruidRepr(),
-            "intervals": [ self.mDruidAgent.INTERVAL ]}
+            "intervals": [self.mDruidAgent.INTERVAL]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return ret[0]["result"]["count"]
@@ -225,7 +225,7 @@ class XLDataset(DataSet):
             "granularity": self.mDruidAgent.GRANULARITY,
             "searchDimensions": ["_ord"],
             "limit": expect_count + 5,
-            "intervals": [ self.mDruidAgent.INTERVAL ]}
+            "intervals": [self.mDruidAgent.INTERVAL]}
         if cond_repr is not None:
             query["filter"] = cond_repr
         ret = self.mDruidAgent.call("query", query)
@@ -249,7 +249,7 @@ class XLDataset(DataSet):
             "aggregations": [{
                 "type": "count", "name": "count",
                 "fieldName": "_ord"}],
-            "intervals": [ self.mDruidAgent.INTERVAL ]}
+            "intervals": [self.mDruidAgent.INTERVAL]}
         if cond_repr is not None:
             query["filter"] = cond_repr
         ret = self.mDruidAgent.call("query", query)
@@ -274,7 +274,7 @@ class XLDataset(DataSet):
             "aggregations": [{
                 "type": "longMax", "name": "max_rand",
                 "fieldName": "_rand"}],
-            "intervals": [ self.mDruidAgent.INTERVAL ]}
+            "intervals": [self.mDruidAgent.INTERVAL]}
         if cond_repr is not None:
             query["filter"] = cond_repr
         ret = self.mDruidAgent.call("query", query)
@@ -290,8 +290,8 @@ class XLDataset(DataSet):
             new_ver_no = ver_no + 1
         self.getMongoAgent().addTreeCodeVersion(
             new_ver_no, tree_code, tree_hash)
-        while (len(version_info_seq) + 1 >
-                AnfisaConfig.configOption("max.tree.versions")):
+        while (len(version_info_seq) + 1
+                > AnfisaConfig.configOption("max.tree.versions")):
             self.getMongoAgent().dropTreeCodeVersion(version_info_seq[0][0])
             del version_info_seq[0]
         return self.getMongoAgent().getTreeCodeVersions()
@@ -351,7 +351,7 @@ class XLDataset(DataSet):
         comp_data = None
         parsed = ParsedDecisionTree(self.mCondEnv, rq_args["code"])
         tree = DecisionTree(parsed, comp_data)
-        return tree, point_no,tree.actualCondition(point_no)
+        return (tree, point_no, tree.actualCondition(point_no))
 
     def _prepareConditions(self, rq_args):
         #comp_data = (json.loads(rq_args["compiled"])
@@ -359,7 +359,7 @@ class XLDataset(DataSet):
         comp_data = None
         op_cond = CondOpEnv(self.mCondEnv, comp_data,
             json.loads(rq_args["conditions"]))
-        return op_cond, op_cond.getResult()
+        return (op_cond, op_cond.getResult())
 
     #===============================================
     @RestAPI.xl_request
@@ -425,7 +425,7 @@ class XLDataset(DataSet):
             _, condition = self._prepareConditions(rq_args)
         else:
             tree, point_no, condition = self._prepareTree(rq_args)
-        return {"task_id" : self.getApp().runTask(
+        return {"task_id": self.getApp().runTask(
             XlListTask(self, condition))}
 
     #===============================================
@@ -441,7 +441,7 @@ class XLDataset(DataSet):
         assert instr is None or tree_code
         if version is not None:
             assert tree_code is None and std_name is None
-            for ver_no, ver_date, ver_hash in version_info_seq:
+            for ver_no, _, _ in version_info_seq:
                 if ver_no == int(version):
                     tree_code = self.getMongoAgent().getTreeCodeVersion(ver_no)
                     break
@@ -474,7 +474,7 @@ class XLDataset(DataSet):
             ret["counts"] = self.evalPointCounts(tree, time_end)
 
         if version is not None:
-            for ver_no, ver_date, ver_hash in version_info_seq[-1::-1]:
+            for ver_no, _, ver_hash in version_info_seq[-1::-1]:
                 if ver_hash == tree_hash:
                     version = ver_no
                     break
@@ -516,7 +516,6 @@ class XLDataset(DataSet):
             "rq_id": str(self.sStatRqCount) + '/' + str(time())}
         return ret
 
-
     #===============================================
     @RestAPI.xl_request
     def rq__xltree_code(self, rq_args):
@@ -556,7 +555,7 @@ class XLDataset(DataSet):
         task = SecondaryWsCreation(self, rq_args["ws"],
             base_version, op_cond, std_name, markup_batch,
             "force" in rq_args)
-        return {"task_id" : self.getApp().runTask(task)}
+        return {"task_id": self.getApp().runTask(task)}
 
     #===============================================
     @RestAPI.xl_request

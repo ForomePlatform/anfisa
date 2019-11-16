@@ -25,9 +25,9 @@ from utils.log_err import logException
 from .code_works import reprConditionCode, findComment
 #===============================================
 class TreeFragment:
-    def __init__(self, level, type, base_instr):
+    def __init__(self, level, tp, base_instr):
         self.mLevel = level
-        self.mType = type
+        self.mType = tp
         self.mBaseInstr = base_instr
         self.mBaseLineDiap = None
         self.mFullLineDiap = None
@@ -200,8 +200,8 @@ class ParsedDecisionTree:
         for entry in instr.names:
             if entry.asname is not None:
                 self.errorIt(instr, "entry with path not supported")
-            if (entry.name in self.mImportFragments or
-                    entry.name in import_entries):
+            if (entry.name in self.mImportFragments
+                    or entry.name in import_entries):
                 self.errorIt(instr, "duplicate import: " + entry.name)
             unit_kind, _ = self.mCondEnv.detectUnit(entry.name)
             if unit_kind in (None, "reserved"):
@@ -239,8 +239,8 @@ class ParsedDecisionTree:
             if len(diap_seq) == 0:
                 cur_diap[0] = 1
             else:
-                while (cur_diap[0] - 1 > diap_seq[-1][1] and
-                        cur_diap[0] - 1 in comment_lines_no):
+                while (cur_diap[0] - 1 > diap_seq[-1][1]
+                        and cur_diap[0] - 1 in comment_lines_no):
                     cur_diap[0] -= 1
                 diap_seq[-1][1] = cur_diap[0] - 1
             diap_seq.append(cur_diap)
@@ -249,12 +249,12 @@ class ParsedDecisionTree:
         for idx, frag in enumerate(self.mFragments):
             full_diap = diap_seq[idx]
             base_diap = full_diap[:]
-            while (base_diap[0] in empty_lines_no or
-                    base_diap[0] in comment_lines_no):
+            while (base_diap[0] in empty_lines_no
+                    or base_diap[0] in comment_lines_no):
                 base_diap[0] += 1
                 assert base_diap[0] <= base_diap[1]
-            while (base_diap[1] in empty_lines_no or
-                    base_diap[1] in comment_lines_no):
+            while (base_diap[1] in empty_lines_no
+                    or base_diap[1] in comment_lines_no):
                 base_diap[1] -= 1
                 assert base_diap[0] <= base_diap[1]
             loc = findComment("\n".join(
@@ -309,8 +309,8 @@ class ParsedDecisionTree:
             return ["not", self._processCondition(it.operand)]
         if not isinstance(it, ast.Compare):
             self.errorIt(it, "Comparison or logic operation expected")
-        if len(it.ops) == 1 and (isinstance(it.ops[0], ast.In) or
-                isinstance(it.ops[0], ast.NotIn)):
+        if len(it.ops) == 1 and (isinstance(it.ops[0], ast.In)
+                or isinstance(it.ops[0], ast.NotIn)):
             return self._processEnumInstr(it)
         return self._processNumInstr(it)
 
@@ -325,9 +325,9 @@ class ParsedDecisionTree:
             op_mode = "OR"
 
         if isinstance(it_set, ast.Call):
-            if (len(it_set.args) != 1 or len(it_set.keywords) > 0 or
-                    not it_set.func or
-                    not isinstance(it_set.func, ast.Name)):
+            if (len(it_set.args) != 1 or len(it_set.keywords) > 0
+                    or not it_set.func
+                    or not isinstance(it_set.func, ast.Name)):
                 self.errorIt(it_set, "Complex call not supported")
             if it_set.func.id == "all":
                 if op_mode == "NOT":
@@ -338,8 +338,8 @@ class ParsedDecisionTree:
                 self.errorIt(it_set,
                     "Only pseudo-function all is supported")
 
-        if not (isinstance(it_set, ast.List) or
-                isinstance(it_set, ast.Set)):
+        if not (isinstance(it_set, ast.List)
+                or isinstance(it_set, ast.Set)):
             self.errorIt(it_set, "Set (or list) expected")
         variants = []
         for el in it_set.elts:
@@ -360,7 +360,8 @@ class ParsedDecisionTree:
         if isinstance(it.left, ast.Name):
             field_name = it.left.id
             if self.mCondEnv is not None:
-                unit_kind, unit_h = self.mCondEnv.detectUnit(field_name, "enum")
+                unit_kind, unit_h = self.mCondEnv.detectUnit(
+                    field_name, "enum")
                 if unit_kind == "operational":
                     if field_name not in self.mImportFragments:
                         self.errorIt(it.left,
@@ -373,8 +374,8 @@ class ParsedDecisionTree:
             return ret
 
         if isinstance(it.left, ast.Call):
-            if (len(it.left.keywords) > 0 or
-                    not isinstance(it.left.func, ast.Name)):
+            if (len(it.left.keywords) > 0
+                    or not isinstance(it.left.func, ast.Name)):
                 self.errorIt(it.left, "Complex call not supported")
             field_name = it.left.func.id
             assert self.mCondEnv is not None
@@ -382,7 +383,7 @@ class ParsedDecisionTree:
                 field_name, "special")
             if unit_kind != "special":
                 self.errorIt(it.left, "Improper special field name")
-            ret = unit_h.processInstr(self,it.left.args, op_mode, variants)
+            ret = unit_h.processInstr(self, it.left.args, op_mode, variants)
             if ret is None:
                 self.errorIt(it.left,
                     "Improper arguments for special field")
@@ -499,6 +500,7 @@ class ParsedDecisionTree:
         code_lines[line_from - 1: line_to] = reprConditionCode(
             frag.getCondData()).splitlines()
         return "\n".join(code_lines)
+
 
 if __name__ == '__main__':
     source = sys.stdin.read()

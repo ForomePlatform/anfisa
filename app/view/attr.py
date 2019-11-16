@@ -124,4 +124,3 @@ class AttrH:
             return ('<span title="%s"><a href="%s" target="%s">'
                 'link</a></span>' % (link, link, self.mName))
         return htmlEscape(value)
-

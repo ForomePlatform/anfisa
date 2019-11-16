@@ -26,7 +26,7 @@ class PlainFileReader:
     def __init__(self, fname):
         self.mInput = open(fname, 'r', encoding = 'utf-8')
 
-    def next(self):
+    def nextLine(self):
         return self.mInput.readline()
 
     def close(self):
@@ -37,7 +37,7 @@ class GzipFileReader:
     def __init__(self, fname):
         self.mInput = gzip.open(fname, 'rb')
 
-    def next(self):
+    def nextLine(self):
         return self.mInput.readline().decode('utf-8')
 
     def close(self):
@@ -48,7 +48,7 @@ class Bz2FileReader:
     def __init__(self, fname):
         self.mInput = bz2.BZ2File.open(fname, 'rb')
 
-    def next(self):
+    def nextLine(self):
         return self.mInput.readline().decode('utf-8')
 
     def close(self):
@@ -71,7 +71,7 @@ class JsonLineReader:
 
     def __iter__(self):
         while True:
-            line = self.next()
+            line = self.nextLine()
             if line is None:
                 break
             yield line
@@ -84,13 +84,13 @@ class JsonLineReader:
         if self.mCurReader is not None:
             self.mCurReader.close()
 
-    def next(self):
+    def nextLine(self):
         return self.readOne()
 
     def readOne(self):
         while True:
             if self.mCurReader is not None:
-                line = self.mCurReader.next()
+                line = self.mCurReader.nextLine()
                 self.mCurLineNo += 1
                 if not line:
                     self.mCurReader.close()
@@ -121,7 +121,8 @@ def readJSonRecords(src,  transform_f = None):
     if transform_f is None:
         process_f = json.loads
     else:
-        process_f = lambda line: transform_f(json.loads(line))
+        def process_f(line):
+            return transform_f(json.loads(line))
     for nm in names:
         if nm.endswith('.gz'):
             with gzip.open(nm, 'rb') as inp:

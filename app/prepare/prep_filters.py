@@ -165,7 +165,7 @@ class ViewGroupH:
         self.mFilterSet._startViewGroup(self)
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, tp, value, traceback):
         self.mFilterSet._endViewGroup(self)
 
     def addUnit(self, unit):

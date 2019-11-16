@@ -87,7 +87,7 @@ class Index:
         to_update = []
         for filter_name, filter_info in self.mFilterCache.items():
             cond_seq = filter_info[0].getCondSeq()
-            if any([cond_info[1] == "Rules" for cond_info in cond_seq]):
+            if any(cond_info[1] == "Rules" for cond_info in cond_seq):
                 to_update.append(filter_name)
         for filter_name in to_update:
             filter_info = self.mFilterCache[filter_name]
@@ -141,7 +141,7 @@ class Index:
                 None, cond_seq, name = filter_name)
             cond_entry = (op_env, self.checkResearchBlock(cond_seq),
                 time_label)
-        except:
+        except Exception:
             logException("Bad filter %s compilation for ws=%s" %
                 (filter_name, self.mWS.getName()), error_mode = False)
             return False
@@ -183,8 +183,8 @@ class Index:
                 condition, unit_comp, repr_context))
         stat_list = []
         for unit_h in self.mUnits:
-            if (not unit_h.checkResearchBlock(research_mode) and
-                    not unit_h.isScreened()):
+            if (not unit_h.checkResearchBlock(research_mode)
+                    and not unit_h.isScreened()):
                 stat_list.append(unit_h.makeStat(condition, repr_context))
         for act_stat in active_stat_list:
             pos_ins = 0

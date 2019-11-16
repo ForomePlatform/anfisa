@@ -31,7 +31,7 @@ def _resetupAttr(aspect_h, attr_h):
     if idx2 >= 0:
         aspect_h.delAttr(aspect_h[idx2])
     aspect_h.addAttr(attr_h, min(idx1, idx2)
-        if min(idx1, idx2) >=0 else max(idx1, idx2))
+        if min(idx1, idx2) >= 0 else max(idx1, idx2))
 
 #===============================================
 def tuneAspects(dataset, aspects):
@@ -53,9 +53,14 @@ def tuneAspects(dataset, aspects):
 
 #===============================================
 class UCSC_AttrH(AttrH):
-    UCSC_URL = ("https://genome.ucsc.edu/cgi-bin/hgTracks?" +
-               "db={assembly}&position={a}%3A{a}%2D{a}"
-                   .format(assembly="hg19", a="{}"))
+
+    @staticmethod
+    def makeLink(region_name, start, end, delta, assembly = "hg19"):
+        return ("https://genome.ucsc.edu/cgi-bin/hgTracks?"
+            + ("db=%s" % assembly)
+            + ("&position=%s" % region_name)
+            + "%3A" + str(max(0, start - delta))
+            + "%2D" + str(end + delta))
 
     def __init__(self, view_gen):
         AttrH.__init__(self, "UCSC")
@@ -64,24 +69,23 @@ class UCSC_AttrH(AttrH):
     def htmlRepr(self, obj, top_rec_obj):
         start = int(top_rec_obj["__data"]["start"])
         end = int(top_rec_obj["__data"]["end"])
-        link1 = self.UCSC_URL.format(
-            top_rec_obj["__data"]["seq_region_name"],
-            max(0, start - 10), end + 10)
-        link2 = self.UCSC_URL.format(
-            top_rec_obj["__data"]["seq_region_name"],
-            max(0, start - 250), end + 250)
-        return ('<table cellpadding="50"><tr><td>' +
-                '<span title="Max Zoom In, 20bp range">' +
-                ('<a href="%s" target="UCSC">Close Up</a>' % link1) +
-                '</span> </td><td>' +
-                '<span title="Zoom Out, 500bp range">' +
-                ('<a href="%s" target="UCSC">Zoom Out</a>' % link2) +
-                '</span> </td><td></table>',
-                "norm")
+        region_name = top_rec_obj["__data"]["seq_region_name"]
+        link1 = self.makeLink(region_name, start, end, 10)
+        link2 = self.makeLink(region_name, start, end, 250)
+        return ('<table cellpadding="50"><tr><td>'
+                + '<span title="Max Zoom In, 20bp range">'
+                + ('<a href="%s" target="UCSC">Close Up</a>' % link1)
+                + '</span> </td><td>'
+                + '<span title="Zoom Out, 500bp range">'
+                + ('<a href="%s" target="UCSC">Zoom Out</a>' % link2)
+                + '</span> </td><td></table>', "norm")
 
 #===============================================
 class GTEx_AttrH(AttrH):
-    GTEx_URL = ("https://www.gtexportal.org/home/gene/{}")
+
+    @staticmethod
+    def makeLink(gene):
+        return "https://www.gtexportal.org/home/gene/" + gene
 
     def __init__(self, view):
         AttrH.__init__(self, "GTEx", title = "View on GTEx",
@@ -94,15 +98,20 @@ class GTEx_AttrH(AttrH):
             return None
         links = []
         for gene in genes:
-            url = self.GTEx_URL.format(gene)
-            links.append('<span title="GTEx">' +
-            '<a href="{}" target="GTEx">{}</a>'.format(url, gene) +
-            '</span>')
+            url = self.makeLink(gene)
+            links.append('<span title="GTEx">'
+                + ('<a href="%s" target="GTEx">%s</a>' % (url, gene))
+                + '</span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
 class OMIM_AttrH(AttrH):
-    OMIM_URL = ("https://omim.org/search/?index=geneMap&feild=approved_gene_symbol&search={}")
+
+    @staticmethod
+    def makeLink(gene):
+        return ("https://omim.org/search/?"
+            + "index=geneMap&feild=approved_gene_symbol"
+            + "&search=" + str(gene))
 
     def __init__(self, view):
         AttrH.__init__(self, "OMIM")
@@ -114,15 +123,19 @@ class OMIM_AttrH(AttrH):
             return None
         links = []
         for gene in genes:
-            url = self.OMIM_URL.format(gene)
-            links.append('<span title="Search OMIM Gene Map for {}">'.format(gene) +
-            '<a href="{}" target="OMIM">{}</a>'.format(url, gene) +
-            '</span>')
+            url = self.makeLink(gene)
+            links.append(
+                ('<span title="Search OMIM Gene Map for %s">' % gene)
+                + ('<a href="%s" target="OMIM">%s</a>' % (url, gene))
+                + '</span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
 class GREV_AttrH(AttrH):
-    GeneRiveiws_URL = ("https://www.ncbi.nlm.nih.gov/books/NBK1116/?term={}")
+
+    @staticmethod
+    def makeLink(gene):
+        return "https://www.ncbi.nlm.nih.gov/books/NBK1116/?term=" + gene
 
     def __init__(self, view):
         AttrH.__init__(self, "GREV", title = "GeneReviews®",
@@ -135,19 +148,24 @@ class GREV_AttrH(AttrH):
             return None
         links = []
         for gene in genes:
-            url = self.GeneRiveiws_URL.format(gene)
-            links.append('<span title="Search GeneReviews&reg; for {}">'.
-                format(gene) +
-                '<a href="{}" target="GREV">{}</a>'.format(url, gene) +
-                '</span>')
+            url = self.makeLink(gene)
+            links.append(
+                ('<span title="Search GeneReviews&reg; for %s">' % gene)
+                + ('<a href="%s" target="GREV">%s</a>' % (url, gene))
+                + '</span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
 class MEDGEN_AttrH(AttrH):
-    MEDGEN_URL = ("https://www.ncbi.nlm.nih.gov/medgen/?term={}%5BGene%20Name%5D")
+
+    @staticmethod
+    def makeLink(gene):
+        return ("https://www.ncbi.nlm.nih.gov/medgen/?term="
+            + gene + "%5BGene%20Name%5D")
 
     def __init__(self, view):
-        AttrH.__init__(self, "MEDGEN", title="MedGen", tooltip="Search MedGen")
+        AttrH.__init__(self, "MEDGEN",
+            title = "MedGen", tooltip = "Search MedGen")
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
@@ -156,10 +174,10 @@ class MEDGEN_AttrH(AttrH):
             return None
         links = []
         for gene in genes:
-            url = self.MEDGEN_URL.format(gene)
-            links.append('<span title="Search MedGen for {}">'.format(gene) +
-            '<a href="{}" target="MEDGEN">{}</a>'.format(url, gene) +
-            '</span>')
+            url = self.makeLink(gene)
+            links.append(('<span title="Search MedGen for %s">' % gene)
+                + ('<a href="%s" target="MEDGEN">%s</a>' % (url, gene))
+                + '</span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
@@ -174,19 +192,16 @@ class IGV_AttrH(AttrH):
             return
 
         # we are not sure what is the key to samples, so have to repackage
-        samples = {info["id"]:info["name"] for info in samples.values()}
+        samples = {info["id"]: info["name"] for info in samples.values()}
         samples_ids = sorted(samples)
         samples_names = [samples[id] for id in samples_ids]
 
         file_urls = ','.join([
-            "{bam_base}/{case}/{sample}.hg19.bam".format(
-                bam_base = bam_base,
-                case = case,
-                sample = sample_id)
+            "%s/%s/%s.hg19.bam" % (bam_base, case, sample_id)
             for sample_id in samples_ids])
-        self.mPreUrl = ("http://localhost:60151/load?file={file}"
-            "&genome=hg19&merge=false&name={name}").format(
-                file = file_urls, name = ",".join(samples_names))
+        self.mPreUrl = ("http://localhost:60151/load?file=%s"
+            "&genome=hg19&merge=false&name=%s") % (
+                file_urls, ",".join(samples_names))
 
     def htmlRepr(self, obj, top_rec_obj):
         if self.mPreUrl is None:
@@ -196,9 +211,10 @@ class IGV_AttrH(AttrH):
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             top_rec_obj["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
-        return ('<table><tr><td><span title="For this link to work, ' +
-            'make sure that IGV is running on your computer">' +
-            ('<a href="%s">View Variant in IGV</a>' % link) +
-            ' </span></td><td><a href=' +
-            '"https://software.broadinstitute.org/software/igv/download" ' +
-            'target="_blank">' + 'Download IGV</a></td></tr></table>', "norm")
+        return ('<table><tr><td><span title="For this link to work, '
+            + 'make sure that IGV is running on your computer">'
+            + ('<a href="%s">View Variant in IGV</a>' % link)
+            + ' </span></td><td><a href='
+            + '"https://software.broadinstitute.org/software/igv/download"'
+            + ' target="_blank">'
+            + 'Download IGV</a></td></tr></table>', "norm")

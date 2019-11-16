@@ -137,8 +137,8 @@ class _NumericConvertor(PathValueConvertor):
                 return self.mDefaultValue
             if len(values) == 1:
                 val = self.convType(values[0])
-                if (self.mMinBound is None or
-                        self.mMinBound <= val <= self.mMaxBound):
+                if (self.mMinBound is None
+                        or self.mMinBound <= val <= self.mMaxBound):
                     self.mCntDef += 1
                     if self.mMinValue is None or val < self.mMinValue:
                         self.mMinValue = val
@@ -255,8 +255,8 @@ class EnumConvertor(PathValueConvertor):
             is_ok = True
             mod_values = map(str, mod_values)
             for val in set(mod_values):
-                if (self.mVariantSet is not None and
-                        val not in self.mVariantSet):
+                if (self.mVariantSet is not None
+                        and val not in self.mVariantSet):
                     is_ok = False
                     continue
                 self.mVarCount[val] += 1
@@ -294,7 +294,7 @@ class EnumConvertor(PathValueConvertor):
             used_variants = set(self.mPreVariants)
         for var in sorted(set(self.mVarCount.keys()) - used_variants):
             variants.append([var, self.mVarCount[var]])
-        assert all([info[1] > 0 for info in variants])
+        assert all(info[1] > 0 for info in variants)
         ret["variants"] = variants
         return ret
 
@@ -345,7 +345,7 @@ class ZygosityConvertor(ValueConvertor):
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         self.mConfig = config
         self.mMaster = master
-        self.mMemberIds, self.mMemberNames = None,None
+        self.mMemberIds, self.mMemberNames = None, None
 
     def _setupFamily(self):
         if self.mMaster.getFamilyInfo() is None:
@@ -450,4 +450,3 @@ class TransctiptConvertor(ValueConvertor):
 
     def getTranscriptDescr(self):
         return self.mDescr
-

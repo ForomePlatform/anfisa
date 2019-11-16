@@ -51,14 +51,14 @@ class CaseStory:
         return self.mStartPoint
 
     def _addPoint(self, point):
-        assert (len(self.mPoints) == 0 or
-            self.mPoints[-1].getPointKind() in {"If", "Import"})
+        assert (len(self.mPoints) == 0
+            or self.mPoints[-1].getPointKind() in {"If", "Import"})
         self.getMaster().regPoint(point)
         self.mPoints.append(point)
 
     def checkDetermined(self):
-        if (len(self.mPoints) == 0 or
-                self.mPoints[-1].getPointKind() != "Return"):
+        if (len(self.mPoints) == 0
+                or self.mPoints[-1].getPointKind() != "Return"):
             return self
         for cond_point in self.mPoints[:-1]:
             if not cond_point.isActive():
@@ -76,8 +76,8 @@ class CheckPoint:
         self.mPointNo = point_no
         self.mPrevPoint = prev_point
         assert self.mFrag.getLevel() == self.mStory.getLevel()
-        assert (self.mPrevPoint is None or
-            self.mPrevPoint.getPointKind() == "If")
+        assert (self.mPrevPoint is None
+            or self.mPrevPoint.getPointKind() == "If")
 
     def getStory(self):
         return self.mStory
@@ -180,8 +180,8 @@ class DecisionTree(CaseStory):
         if parsed.getError() is not None:
             msg_text, lineno, offset = parsed.getError()
             logging.error(("Error in tree code: (%d:%d) %s\n" %
-                (lineno, offset, msg_text)) + "Code:\n======\n" +
-                parsed.getTreeCode() + "\n======")
+                (lineno, offset, msg_text)) + "Code:\n======\n"
+                + parsed.getTreeCode() + "\n======")
             assert False
         self.mCondOpEnv = CondOpEnv(parsed.getCondEnv(), comp_data)
         self.mCode = parsed.getTreeCode()

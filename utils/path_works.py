@@ -108,7 +108,7 @@ class AttrFuncPool:
         cls.sPoolF[path_str] = ret_f
         return ret_f
 
-    sPatt = re.compile('[\[\/]')
+    sPatt = re.compile(r'[\[\/]')
 
     @classmethod
     def makeFunc(cls, path_str):

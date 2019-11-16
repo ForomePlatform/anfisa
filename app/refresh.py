@@ -25,7 +25,8 @@ import glob
 import os
 
 
-DEFAULT_PATH_PATTERN = "/net/bgm/cases/?_{platform}/analysis/downstream/?_anfisa.json"
+DEFAULT_PATH_PATTERN = (
+    "/net/bgm/cases/?_{platform}/analysis/downstream/?_anfisa.json")
 
 
 def read_vault(path_to_vault, pattern):
@@ -37,12 +38,12 @@ def read_vault(path_to_vault, pattern):
 
 
 def find_json(case_name, path_pattern):
-    f = path_pattern.format(name=case_name)
-    if (os.path.isfile(f)):
-        return f
-    f = "{}.gz".format(f)
-    if (os.path.isfile(f)):
-        return f
+    fname = path_pattern.format(name = case_name)
+    if (os.path.isfile(fname)):
+        return fname
+    fname = "%s.gz" % fname
+    if (os.path.isfile(fname)):
+        return fname
     #raise Exception("Annotated json not found: {}".format(f))
     return None
 
@@ -55,11 +56,16 @@ def refresh_case(app_config, case_name, path_to_json, mode):
 
 if __name__ == '__main__':
     parser = ArgumentParser("Refresh cases in Anfisa")
-    parser.add_argument("-c", "--config", default="anfisa.json", help="Configuration file,  default=anfisa.json")
-    parser.add_argument("-m", "-k", "--mode", "--kind", help="Mode: ws/xl", default="ws")
-    parser.add_argument("names", nargs=1, help="Dataset name pattern")
-    parser.add_argument("-w", "--platform", default="wes", help="Sequencing Platform: wes/wgs")
-    parser.add_argument("-p", "--path", default=DEFAULT_PATH_PATTERN, help="Pattern to look for annotated json by case name")
+    parser.add_argument("-c", "--config", default = "anfisa.json",
+        help = "Configuration file,  default=anfisa.json")
+    parser.add_argument("-m", "-k", "--mode", "--kind",
+        help = "Mode: ws/xl", default="ws")
+    parser.add_argument("names", nargs = 1,
+        help = "Dataset name pattern")
+    parser.add_argument("-w", "--platform", default = "wes",
+        help = "Sequencing Platform: wes/wgs")
+    parser.add_argument("-p", "--path", default = DEFAULT_PATH_PATTERN,
+        help = "Pattern to look for annotated json by case name")
     run_args = parser.parse_args()
 
     path_to_json = run_args.path
@@ -73,16 +79,15 @@ if __name__ == '__main__':
 
     vault = app_config["data-vault"]
     cases = read_vault(vault, run_args.names)
-    n = 0
-    for c in cases:
-        p = find_json(c, path_to_json)
-        if (not p):
-            print("Annotated json not found for: {}, skipping".format(c))
+    cnt = 0
+    for case in cases:
+        pf = find_json(case, path_to_json)
+        if (not pf):
+            print("Annotated json not found for:", case, "skipping")
             continue
-        refresh_case(app_config, c, p, mode)
+        refresh_case(app_config, case, pf, mode)
         #os.chmod(os.path.join(vault,c), 777)
-        n = n + 1
-        print("Refreshed: {}, {}/{}".format(c, n, len(cases)))
+        cnt += 1
+        print("Refreshed:", case, "%d/%d" % (cnt, len(cases)))
 
-    print("Refreshed {} cases".format(n))
-
+    print("Refreshed", cnt, "cases")

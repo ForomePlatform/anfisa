@@ -57,7 +57,7 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
 
     startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
         "receipt" in ds_info and ds_info["receipt"].get("kind") == "tree")
-    print('  <body>', file = output);
+    print('  <body>', file = output)
     print('    <table class="report-main">', file = output)
 
     for key, title, val in [
@@ -108,14 +108,14 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
             for key_t, title_t in [
                     ("std", "Based on"),
                     ("version", "Version")]:
-                if key not in receipt:
+                if key_t not in receipt:
                     continue
                 print('<p class="tree-info">%s: %s</p>' %
-                    (escape(title_t), escape(receipt[key])), file = output)
+                    (escape(title_t), escape(receipt[key_t])), file = output)
             print('<table class="report-tree">', file = output)
             for instr, count, ret_mode in receipt["points"]:
-                print('<tr><td class="tree-point"><div class="highlight">' +
-                    instr + '</div></td>', file = output)
+                print('<tr><td class="tree-point"><div class="highlight">'
+                    + instr + '</div></td>', file = output)
                 if count is None:
                     print('<td></td>', file = output)
                 elif ret_mode:
@@ -129,5 +129,5 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
                         file = output)
             print('</table>', file = output)
 
-    print('  </body>', file = output);
-    print('</html>', file = output);
+    print('  </body>', file = output)
+    print('</html>', file = output)

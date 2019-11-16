@@ -76,18 +76,18 @@ class AttrTypeChecker:
         return is_ok
 
     def fixType(self):
-        assert self.mDetType == False
-        type = self.mMainTpCnt.detect()
-        if type == "undef":
+        assert self.mDetType is False
+        tp = self.mMainTpCnt.detect()
+        if tp == "undef":
             self.mDetType = None
-        elif type == "list":
+        elif tp == "list":
             self.mDetType = [True, self.mSubTpCnt.detect()]
             if self.mDetType[1] == "dict":
                 self.mDetType[1] = "json"
         else:
-            if type == "dict":
-                type = "json"
-            self.mDetType = [False, type]
+            if tp == "dict":
+                tp = "json"
+            self.mDetType = [False, tp]
         return self.mDetType
 
     def dump(self):
@@ -186,8 +186,8 @@ class DictTypeChecker:
                     a_check.setStatus("empty")
                 else:
                     a_seq, a_kind = a_type
-                    if (a_check.getErrorCount() > 0 or
-                            a_seq != attr_h.isSeq()):
+                    if (a_check.getErrorCount() > 0
+                            or a_seq != attr_h.isSeq()):
                         print(("Update field %s:" % self.mName),
                             attr_h.getMainKind(), "is_seq=", attr_h.isSeq(),
                             "->", a_kind, "is_seq=", a_seq,
@@ -220,8 +220,8 @@ class ColGroupTypeChecker(DictTypeChecker):
             DictTypeChecker.regValue(self, rec_no, value)
         else:
             assert isinstance(value, list), (
-                "Not a list " + self.getMasterName() + "/" + self.getName() +
-                "\n" + json.dumps(value))
+                "Not a list " + self.getMasterName() + "/" + self.getName()
+                + "\n" + json.dumps(value))
             for it in value:
                 DictTypeChecker.regValue(self, rec_no, it)
 

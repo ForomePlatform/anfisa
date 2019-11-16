@@ -60,7 +60,7 @@ def formWsPage(output, common_title, html_base, workspace, ws_url):
         (workspace.getName(), common_title), file = output)
     _formMainDiv(output, workspace.getName(), ws_url)
     print('    <div id="filter-back">', file = output)
-    formFilterPannel(output);
+    formFilterPannel(output)
     print('    </div>', file = output)
     _formZonesDiv(output, workspace.iterZones())
     _formNoteDiv(output)
@@ -416,7 +416,7 @@ def dirPage(output, common_title, html_base, ws_url):
     <div id="div-main">
     </div>
   </body>
-</html>''' % (common_title, ws_url,common_title), file = output)
+</html>''' % (common_title, ws_url, common_title), file = output)
 
 #===============================================
 def notFound(output, common_title, html_base):
@@ -490,7 +490,7 @@ def formFilterPannel(output):
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
-                    <label for"cur-enum-zeros">Show zeros&nbsp;</label><input 
+                    <label for"cur-enum-zeros">Show zeros&nbsp;</label><input
                         id="cur-enum-zeros" type="checkbox"
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>

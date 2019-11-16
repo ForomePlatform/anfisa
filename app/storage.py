@@ -144,7 +144,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         line_buffering = True)
 
     with gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_stream, \
-        gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream:
+            gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream:
         fdata_out = TextIOWrapper(fdata_stream,
             encoding = "utf-8", line_buffering = True)
         pdata_out = TextIOWrapper(pdata_stream,
@@ -357,6 +357,7 @@ class DSEntry:
             file = sys.stderr)
         sys.exit()
 
+
 #===============================================
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -413,7 +414,7 @@ if __name__ == '__main__':
 
     assert os.path.isdir(app_config["data-vault"])
 
-    if any([ds_entry.getKind() == "xl" for ds_entry in entries]):
+    if any(ds_entry.getKind() == "xl" for ds_entry in entries):
         DRUID_ADM = DruidAdmin(app_config, args.nocoord)
 
     for entry_no,  ds_entry in enumerate(entries):

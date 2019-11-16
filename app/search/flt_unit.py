@@ -102,7 +102,7 @@ class _EnumUnit(FilterUnit):
             self.mVariantSet = VariantSet(
                 [info[0] for info in variants_info])
             self._setScreened(
-                sum([info[1] for info in variants_info]) == 0)
+                sum(info[1] for info in variants_info) == 0)
         self.mCheckNoZeros = check_no_zeros
         self.getIndex().getCondEnv().addEnumUnit(self)
         if self.mCheckNoZeros:
@@ -190,7 +190,7 @@ class MultiCompactUnit(_EnumUnit):
 
     def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getName())
-        if values :
+        if values:
             idx_set = self.mVariantSet.makeIdxSet(values)
             key = self.makePackKey(idx_set)
             idx = self.mPackSetDict.get(key)
@@ -217,7 +217,7 @@ class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
             self.mArrayFam.append(array('b'))
             fam_units.append(
                 self.getIndex().getCondEnv().addMetaNumUnit(
-                fam_name, self.getFamRecFunc(idx)))
+                    fam_name, self.getFamRecFunc(idx)))
         self.setupSubUnits(fam_units)
         self.getIndex().getCondEnv().addSpecialUnit(self)
 
@@ -255,7 +255,7 @@ class TranscriptStatusUnit(FilterUnit):
         self.mDefaultValue = self.mVariantSet.indexOf(
             self.getDescr()["default"])
         self._setScreened(
-            sum([info[1] for info in variants_info]) == 0)
+            sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
         self.getIndex().getCondEnv().addEnumUnit(self)
 
@@ -292,7 +292,7 @@ class TranscriptMultisetUnit(FilterUnit):
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self._setScreened(
-            sum([info[1] for info in variants_info]) == 0)
+            sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
         self.getIndex().getCondEnv().addEnumUnit(self)
         self.mPackSetDict = dict()
@@ -308,7 +308,7 @@ class TranscriptMultisetUnit(FilterUnit):
         return self.mPackSetSeq[self.mArray[item_idx]]
 
     def _fillOne(self, values):
-        if values :
+        if values:
             idx_set = self.mVariantSet.makeIdxSet(values)
             key = MultiCompactUnit.makePackKey(idx_set)
             idx = self.mPackSetDict.get(key)
@@ -348,7 +348,7 @@ def loadWSFilterUnit(index, unit_data, depr_check_no_zeros):
     if kind == "transcript-multiset":
         return TranscriptMultisetUnit(index, unit_data)
     if kind in ("long", "float"):
-       return NumericValueUnit(index, unit_data)
+        return NumericValueUnit(index, unit_data)
     assert kind in ("enum", "presence")
     if kind == "enum" and unit_data["atomic"]:
         return StatusUnit(index, unit_data, depr_check_no_zeros)

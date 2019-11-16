@@ -55,4 +55,3 @@ class FilterZoneH(ZoneH):
         cond = self.getWS().getIndex().getCondEnv().makeEnumCond(
             self.mUnit, "OR", variants)
         return lambda rec_no: cond.recInSelection(rec_no)
-

@@ -120,7 +120,7 @@ class _DocH:
     def makeIt(self, ret):
         try:
             self._makeIt(ret)
-        except:
+        except Exception:
             self.fatalMessage("too bad data")
             traceback.print_exc(file = sys.stderr)
             sys.exit()
@@ -238,7 +238,6 @@ class _DocImgH(_DocH):
             return
         img_dest_place = self.makeFileDestPlace(src_path_seq[0])
         shutil.copyfile(src_path_seq[0], self.regDestPlace(img_dest_place))
-
 
         dest_place = self.getDestPlace([])
         with open(self.regDestPlace(dest_place), "w",

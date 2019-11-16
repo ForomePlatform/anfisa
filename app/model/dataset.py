@@ -51,7 +51,7 @@ class DataSet:
         self.mLock.acquire()
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, tp, value, traceback):
         self.mLock.release()
 
     def descrContext(self, rq_args, rq_descr):

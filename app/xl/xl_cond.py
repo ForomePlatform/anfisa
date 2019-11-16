@@ -117,11 +117,11 @@ class XL_NumCondition(XL_Condition):
     def getDruidRepr(self):
         # use_undef ignored
         ret = {
-            "type": "bound",
             "dimension": self.mUnitName,
+            "type": "bound",
             "lowerStrict": False,
             "upperStrict": False,
-            "ordering": "numeric" }
+            "ordering": "numeric"}
         if self.mBounds[0] is not None:
             ret["lower"] = str(self.mBounds[0])
         if self.mBounds[1] is not None:
@@ -142,7 +142,7 @@ class XL_EnumSingleCondition(XL_Condition):
         return {
             "type": "selector",
             "dimension": self.mUnitName,
-            "value": self.mVariant }
+            "value": self.mVariant}
 
 #===============================================
 class XL_EnumInCondition(XL_Condition):
@@ -158,7 +158,7 @@ class XL_EnumInCondition(XL_Condition):
         return {
             "type": "in",
             "dimension": self.mUnitName,
-            "values": self.mVariants }
+            "values": self.mVariants}
 
 #===============================================
 class XL_Negation(XL_Condition):

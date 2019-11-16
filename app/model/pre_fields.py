@@ -29,7 +29,7 @@ class PresentationFieldHash:
 
     def process(self, rec_data, result):
         result[self.mName] = crc32(
-            bytes(result[self.mBaseName], 'utf-8')) % (1<<32)
+            bytes(result[self.mBaseName], 'utf-8')) % (1 << 32)
 
 #===============================================
 class PresentationFieldPath:
@@ -68,4 +68,3 @@ class PresentationData:
         for fld in cls.sFields:
             fld.process(rec_data, result)
         return result
-

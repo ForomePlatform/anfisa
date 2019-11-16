@@ -34,8 +34,8 @@ def htmlCodePresentation(code):
     global sLexer, sFormatter
     h_lines = highlight("#START\n" + code + "\n#END",
         sLexer, sFormatter).splitlines()
-    assert (h_lines[0].startswith('<div class="highlight"><pre>') and
-        h_lines[0].endswith('<span class="c1">#START</span>'))
+    assert (h_lines[0].startswith('<div class="highlight"><pre>')
+        and h_lines[0].endswith('<span class="c1">#START</span>'))
     assert h_lines[-2] == '<span class="c1">#END</span>'
     assert h_lines[-1] == '</pre></div>'
     return h_lines[1:-2]
@@ -50,8 +50,8 @@ def htmlCodeDecoration(code, marker_seq):
         name_id = (name_instr.func.id if isinstance(name_instr, ast.Call)
             else name_instr.id)
         col_offset = name_instr.col_offset + len(name_id)
-        code_sheet[name_instr.lineno - 1] = (line_text[:col_offset] +
-            ('__%d__%d__' % (check_no, instr_no)) + line_text[col_offset:])
+        code_sheet[name_instr.lineno - 1] = (line_text[:col_offset]
+            + ('__%d__%d__' % (check_no, instr_no)) + line_text[col_offset:])
     lines_base = htmlCodePresentation(code.rstrip())
     lines_upd  = htmlCodePresentation('\n'.join(code_sheet))
     assert len(lines_base) == len(lines_upd)
@@ -80,10 +80,10 @@ def htmlCodeDecoration(code, marker_seq):
             instr_no = int(l_upd[j_upd:jj_upd])
             j_upd = jj_upd + 2
             cnt_points += 1
-            insert_code = ('<span class="point-edit" ' +
-                ('id="__mark_%d_%d" ' % (check_no, instr_no)) +
-                ('onclick="editMark(%d,%d);"' % (check_no, instr_no)) +
-                '>&#9874;</span>')
+            insert_code = ('<span class="point-edit" '
+                + ('id="__mark_%d_%d" ' % (check_no, instr_no))
+                + ('onclick="editMark(%d,%d);"' % (check_no, instr_no))
+                + '>&#9874;</span>')
             l_upd = (l_upd[:j_upd_start] + insert_code + l_upd[j_upd:])
             j_upd += len(insert_code) - (j_upd - j_upd_start)
         lines_upd[idx] = l_upd
@@ -121,6 +121,7 @@ def reprFilterCondition(cond_data):
     rep = StringIO()
     _reprConditionCode(cond_data, rep, False)
     return rep.getvalue()
+
 
 #===============================================
 sIdPatt = re.compile("^[A-Z_][A-Z0-9_]*$", re.I)
@@ -174,8 +175,8 @@ def _reprConditionCode(cond_data, output, group_mode):
         if not p_group:
             unit_operand = unit_name + '()'
         else:
-            unit_operand = (unit_name + '({' +
-                ','.join(map(str, sorted(p_group))) + '})')
+            unit_operand = (unit_name + '({'
+                + ','.join(map(str, sorted(p_group))) + '})')
         _reprEnumCase(unit_operand, op_mode, values, output)
         if group_mode:
             output.write(')')
@@ -215,6 +216,7 @@ def _reprEnumCase(unit_operand, op_mode, values, output, panel_name = None):
                 output.write('"' + val.replace('"', '\\"') + '"')
     output.write(op_close)
 
+
 #===============================================
 TAB_LEN = 4
 STR_LEN = 70
@@ -251,14 +253,15 @@ def _formatRep(text, start_indent, next_indent):
 def findComment(code):
     if '#' not in code:
         return None
-    codeObj = StringIO(code)
+    code_obj = StringIO(code)
     try:
-        for info in tokenize.generate_tokens(codeObj.readline):
+        for info in tokenize.generate_tokens(code_obj.readline):
             if info[0] == tokenize.COMMENT:
                 return info[2]
     except tokenize.TokenError:
         pass
     return None
+
 
 #===============================================
 #===============================================
@@ -279,4 +282,3 @@ def cmpTrees(tree_code1, tree_code2):
             result.append([])
         result[-1].append(line)
     return result
-

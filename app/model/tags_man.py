@@ -46,7 +46,7 @@ class TagsManager(ZoneH):
         for rec_no, rec_key in self.getWS().iterRecKeys():
             data_obj = self.getWS().getMongoRecData(rec_key)
             if data_obj is not None:
-                for tag, value in data_obj.items():
+                for tag in data_obj.keys():
                     if self._goodKey(tag):
                         self.mTagSets[tag].add(rec_no)
                         self.mMarkedSet.add(rec_no)
@@ -64,8 +64,8 @@ class TagsManager(ZoneH):
     @staticmethod
     def _goodPair(key_value):
         key, value = key_value
-        return (key and (key[0] != '_' or key == "_note") and
-            value not in (None, False))
+        return (key and (key[0] != '_' or key == "_note")
+            and value not in (None, False))
 
     @staticmethod
     def _goodKey(key):

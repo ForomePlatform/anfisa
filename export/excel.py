@@ -38,12 +38,12 @@ def cell_value(ws, row, column):
 
 def read_mappings(path, verbose_mode):
     if (not os.path.isfile(path)):
-        raise Exception("No Mapping file: {}".format(path))
+        raise Exception("No Mapping file: %s" % path)
     if (not os.access(path, os.R_OK)):
-        raise Exception("No read access to: {}".format(path))
+        raise Exception("No read access to: %s" % path)
 
     if verbose_mode:
-        logging.info("Reading: {}".format(path))
+        logging.info("Reading: %s" % path)
     wb = openpyxl.load_workbook(path, read_only=False)
 
     mapping = _read_key_mapping(wb["key"], path)
@@ -55,12 +55,13 @@ def read_mappings(path, verbose_mode):
 def _read_key_mapping(ws, path):
     if cell_value(ws, 1, 1) != "Column":
         raise Exception('First column must be called "Column". '
-                        'Worksheet "key" of file {}'.format(path))
+                        'Worksheet "key" of file %s' % path)
     key_column = 1
     map_column = getColumnByName(ws, "Mapping")
     if not map_column:
-        raise Exception("Column '{}' is not found in Worksheet key "
-                        "of file {}".format("Mapping", path))
+        raise Exception(
+            "Column 'Mapping' is not found in Worksheet key of file %s"
+            % path)
     def_column = getColumnByName(ws, "Definition")
 
     mapping = []
@@ -90,7 +91,7 @@ def _read_check_tags_mapping(ws, verbose_mode):
         cell = ws.cell(r, key_column)
         key = cell.value
         if verbose_mode:
-            logging.info("tags: Reading key: {}".format(key))
+            logging.info("tags: Reading key: %s" % key)
         if not key:
             continue
 
@@ -112,12 +113,9 @@ def getColumnByName(ws, name):
             return c
 
 def build_value_jsonpath(array, key):
-    '''
-    It's working, but very slowly
-    :param array: - json
-    :param key: - attribute name
-    '''
-    jsonpath_expr = parse('$.."{}"'.format(key))
+    # It's working, but very slowly
+
+    jsonpath_expr = parse('$.."%s"' % key)
     match = jsonpath_expr.find(array)
     if match and match[0].value:
         if isinstance(match[0].value, list):
@@ -161,8 +159,8 @@ class ExcelExport:
         self.add_tags_cfg(tags_info)
         if verbose_mode:
             for column in range(len(self.mapping)):
-                logging.info("Column {}: {}".format(
-                    column, self.mapping[column]))
+                logging.info("Column %s: %s"
+                    % (column, self.mapping[column]))
         self.workbook = openpyxl.Workbook()
         self._createVariantSheet()
         self._createVersionSheet(source_versions)
@@ -211,9 +209,8 @@ class ExcelExport:
         if data is None:
             return
         self.tags_info = data
-        self.check_group_tab = [0] * (
-            len(self.tags_info['check-tags']) +
-            len(self.tags_info['op-tags']) + 2)
+        self.check_group_tab = [0] * (len(self.tags_info['check-tags'])
+            + len(self.tags_info['op-tags']) + 2)
 
     def reg_check_group(self, tags):
         if self.check_group_tab is None:
@@ -233,7 +230,8 @@ class ExcelExport:
                 continue
             if op_tag in tags:
                 if group_idx is None:
-                    group_idx, group_name = len(self.tags_info['check-tags']) + op_idx, op_tag
+                    group_idx = len(self.tags_info['check-tags']) + op_idx
+                    group_name = op_tag
                 else:
                     group_idx = len(self.check_group_tab) - 2
                     group_name = "_mix"
@@ -337,28 +335,29 @@ class ExcelExport:
 
     def __to_excel(self, value):
         if isinstance(value, str) and value.startswith("http"):
-            return '=HYPERLINK("{0}","{0}")'.format(value)
+            return '=HYPERLINK("%s","%s")' % (value, value)
         if isinstance(value, dict):
             if "link" in value:
-                return '=HYPERLINK("{}","{}")'.format(value["link"],
-                    value.get("title", ""))
-            return " ".join(sorted(["%s=%s" % (key, val)
-                for key, val in value.items()]))
+                return ('=HYPERLINK("%s","%s")'
+                    % (value["link"], value.get("title", "")))
+            return " ".join(sorted("%s=%s" % (key, val)
+                for key, val in value.items()))
         return value
+
 
 if __name__ == '__main__':
     import Enum
-    class LoadMode(Enum):
-        RECORD = "@RECORD",
-        TAGS_CFG = "@TAGS_CFG",
-        TAGS = "@TAGS",
 
+    class LoadMode(Enum):
+        RECORD = "@RECORD"
+        TAGS_CFG = "@TAGS_CFG"
+        TAGS = "@TAGS"
 
     def processing(args):
         start_time = time.time()
-        print("parsing template {} ...".format(args.template))
+        print("parsing template", args.template, "...")
         export = ExcelExport(args.template, verbose_mode = args.verbose)
-        print("export variants from {} ...".format(args.input))
+        print("export variants from", args.input, "...")
         with open(args.input) as json_file:
             mode = LoadMode.RECORD
             record = None
@@ -372,22 +371,21 @@ if __name__ == '__main__':
                     elif mode == LoadMode.TAGS_CFG:
                         export.add_tags_cfg(data)
                     elif mode == LoadMode.TAGS:
-                        if record != None:
+                        if record is not None:
                             export.add_variant(record, data)
                         record = None
 
                 if args.limit and idx >= args.limit:
                     break
                 if args.verbose and idx > 0 and idx % 100 == 0:
-                    print("export lines: {}".format(idx))
+                    print("export lines:", idx)
 
-            print("total export line: {}".format(idx))
+            print("total export line:", idx)
 
-        print("save {}".format(args.output))
+        print("save", args.output)
         export.save(args.output)
-        print("complete (execution time: {0:.3f} s)".format(
-            time.time() - start_time))
-
+        print("complete (execution time:",
+            " %.03f s)" % (time.time() - start_time))
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-t", "--template",

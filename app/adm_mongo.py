@@ -167,6 +167,7 @@ class CmdInfo:
         print("Command not supported", file = sys.stderr)
         return False, None, None
 
+
 #===============================================
 CmdInfo("ds-list", [], True)
 CmdInfo("filter-list", ["ds"], True)
@@ -233,7 +234,7 @@ if cmd_seq[0] == "ds-list":
 #===============================================
 if cmd_seq[0] == "filter-list":
     ret = []
-    for it in m_ds.find({'_tp' : "flt"}):
+    for it in m_ds.find({'_tp': "flt"}):
         it_name = it['_id']
         if it_name.startswith("flt-"):
             ret.append(it_name[4:])
@@ -255,7 +256,7 @@ if cmd_seq[0] == "tag-list":
 #===============================================
 if cmd_seq[0] == "dump-filters":
     ret = []
-    for it in m_ds.find({'_tp' : "flt"}):
+    for it in m_ds.find({'_tp': "flt"}):
         it_name = it['_id']
         if it_name.startswith("flt-"):
             ret.append(deepcopy(it))
@@ -307,7 +308,7 @@ if cmd_seq[0] == "load-tags":
 if cmd_seq[0] == "load-rules":
     cnt = 0
     for data in readContent(cmd_seq[2]):
-        assert all([len(pair) == 2 for pair in data])
+        assert all(len(pair) == 2 for pair in data)
         m_ds.update({'_id': "params"},
             {"$set": {'params': data}}, upsert = True)
         cnt += 1
@@ -363,4 +364,3 @@ if cmd_seq[0] == "drop-ds":
 
 #===============================================
 print("Oops: command not supported", file = sys.stderr)
-

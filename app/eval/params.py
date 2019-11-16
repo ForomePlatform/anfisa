@@ -42,10 +42,10 @@ def parseParams(text, param_list):
             error = "Extra parameter assignment"
             break
         instr = mod.body[0]
-        if (isinstance(instr, ast.Assign) and
-                len(instr.targets) == 1 and
-                isinstance(instr.targets[0], ast.Name) and
-                isinstance(instr.value, ast.Num)):
+        if (isinstance(instr, ast.Assign)
+                and len(instr.targets) == 1
+                and isinstance(instr.targets[0], ast.Name)
+                and isinstance(instr.value, ast.Num)):
             if instr.targets[0].id != param_list[len(ret)]:
                 error = "Parameter %s assignment expected" % param_list[idx]
                 break

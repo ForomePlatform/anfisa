@@ -66,15 +66,15 @@ class XL_NumUnit(XL_Unit):
             "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
-                { "type": "count", "name": name_cnt,
+                {"type": "count", "name": name_cnt,
                     "fieldName": self.getName()},
-                { "type": "%sMin" % self.getDruidKind(),
+                {"type": "%sMin" % self.getDruidKind(),
                     "name": name_min,
                     "fieldName": self.getName()},
-                { "type": "%sMax" % self.getDruidKind(),
+                {"type": "%sMax" % self.getDruidKind(),
                     "name": name_max,
                     "fieldName": self.getName()}],
-            "intervals": [ druid_agent.INTERVAL ]}
+            "intervals": [druid_agent.INTERVAL]}
         if condition is not None:
             cond_repr = condition.getDruidRepr()
             if cond_repr is False:
@@ -87,7 +87,7 @@ class XL_NumUnit(XL_Unit):
             (name_min, name_max, name_cnt)]
 
     def makeStat(self, condition, repr_context = None):
-        ret = self.prepareStat();
+        ret = self.prepareStat()
         vmin, vmax, count = self.evalStat(condition)
         if count == 0:
             vmin, vmax = None, None
@@ -100,8 +100,8 @@ class XL_EnumUnit(XL_Unit):
             "status" if descr.get("atomic") else "enum")
         self.mVariants = [info[0]
             for info in descr["variants"]]
-        self.mAccumCount = sum([info[1]
-            for info in descr["variants"]])
+        self.mAccumCount = sum(info[1]
+            for info in descr["variants"])
         self.getDS().getCondEnv().addEnumUnit(self)
 
     def isDummy(self):
@@ -119,7 +119,7 @@ class XL_EnumUnit(XL_Unit):
             "aggregations": [{
                 "type": "count", "name": "count",
                 "fieldName": self.getName()}],
-            "intervals": [ druid_agent.INTERVAL ]}
+            "intervals": [druid_agent.INTERVAL]}
         if condition is not None:
             cond_repr = condition.getDruidRepr()
             if cond_repr is False:
@@ -141,7 +141,7 @@ class XL_EnumUnit(XL_Unit):
             for var in self.mVariants]
 
     def makeStat(self, condition, repr_context = None):
-        ret = self.prepareStat();
+        ret = self.prepareStat()
         ret.append(self.evalStat(condition))
         return ret
 
@@ -168,4 +168,3 @@ class XL_ZygosityUnit(XL_Unit, ZygosityComplex):
     def makeStat(self, condition, repr_context = None):
         return ZygosityComplex.makeStat(self, self.getDS(),
             condition, repr_context)
-

@@ -53,4 +53,3 @@ class VariantSet:
 
     def getValue(self, idx_no):
         return self.mVariants[idx_no]
-

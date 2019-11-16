@@ -148,9 +148,9 @@ class AspectH:
         ret["columns"] = len(objects)
         fld_data = dict()
         for attr in self.mAttrs:
-            if (attr.getName() is None or
-                    attr.checkResearchBlock(research_mode) or
-                    attr.hasKind("hidden")):
+            if (attr.getName() is None
+                    or attr.checkResearchBlock(research_mode)
+                    or attr.hasKind("hidden")):
                 continue
             values = []
             cnt_good = 0
