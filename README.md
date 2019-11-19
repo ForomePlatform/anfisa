@@ -8,6 +8,8 @@ medical genticist with access to research Genome.
 
 See more about the goal of the project at https://forome.org/  
 
+A detailed [Setup and Administration Guide](https://github.com/ForomePlatform/anfisa/blob/master/Anfisa%20v.0.5%20Setup%20%26%20Administration%20Reference.pdf) is included with the distribution. 
+
 ## Local Installation
 
 #### Caution:
