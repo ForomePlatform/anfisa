@@ -35,7 +35,6 @@ class AttrH:
         self.mKinds = kind.split() if kind else ["norm"]
         self.mToolTip = tooltip
         self.mIsSeq = is_seq
-        self.mResearchOnly = "research" in self.mKinds
 
     def setAspect(self, asp):
         self.mAspect = asp
@@ -67,9 +66,6 @@ class AttrH:
 
     def getFullName(self):
         return self.mAspect.getName() + '.' + self.mName
-
-    def checkResearchBlock(self, research_mode):
-        return (not research_mode) and self.mResearchOnly
 
     #===============================================
     def dump(self):

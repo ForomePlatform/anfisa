@@ -27,12 +27,11 @@ class ValueConvertor:
     sMAX_BAD_COUNT = 3
 
     def __init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only):
+            render_mode, tooltip):
         self.mName   = name
         self.mTitle  = title if title is not None else name
         self.mVGroup = vgroup
         self.mUnitNo = unit_no
-        self.mRsrOnly  = research_only
         self.mErrorCount = 0
         self.mErrors = []
         self.mRenderMode = render_mode
@@ -58,8 +57,7 @@ class ValueConvertor:
         result = {
             "name": self.mName,
             "title": self.mTitle,
-            "no": self.mUnitNo,
-            "research": self.mRsrOnly}
+            "no": self.mUnitNo}
         if self.mVGroup is not None:
             result["vgroup"] = self.mVGroup.getTitle()
         if self.mRenderMode is not None:
@@ -75,9 +73,9 @@ class PathValueConvertor(ValueConvertor):
     sMAX_BAD_COUNT = 3
 
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only):
+            render_mode, tooltip):
         ValueConvertor.__init__(self, name, title, unit_no,
-            vgroup, render_mode, tooltip, research_only)
+            vgroup, render_mode, tooltip)
         self.mPath   = path
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
 
@@ -98,10 +96,10 @@ class PathValueConvertor(ValueConvertor):
 #===============================================
 class _NumericConvertor(PathValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only,
+            render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only)
+            vgroup, render_mode, tooltip)
         if diap is not None:
             self.mMinBound, self.mMaxBound = diap
         else:
@@ -168,10 +166,10 @@ class _NumericConvertor(PathValueConvertor):
 #===============================================
 class FloatConvertor(_NumericConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only,
+            render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
         _NumericConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only,
+            vgroup, render_mode, tooltip,
             default_value, diap, conv_func)
         self.checkSetup()
 
@@ -186,10 +184,10 @@ class FloatConvertor(_NumericConvertor):
 #===============================================
 class IntConvertor(_NumericConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only,
+            render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
         _NumericConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only,
+            vgroup, render_mode, tooltip,
             default_value, diap, conv_func)
         self.checkSetup()
 
@@ -205,12 +203,12 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 class EnumConvertor(PathValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only,
+            render_mode, tooltip,
             atomic_mode, variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
-            vgroup, render_mode, tooltip, research_only)
+            vgroup, render_mode, tooltip)
         self.mAtomicMode = atomic_mode
         self.mPreVariants = variants
         self.mVariantSet = None
@@ -301,9 +299,9 @@ class EnumConvertor(PathValueConvertor):
 #===============================================
 class PresenceConvertor(ValueConvertor):
     def __init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only, path_info_seq):
+            render_mode, tooltip, path_info_seq):
         ValueConvertor.__init__(self, name, title, unit_no,
-            vgroup, render_mode, tooltip, research_only)
+            vgroup, render_mode, tooltip)
         self.mPathInfoSeq = path_info_seq
         self.mPathFunctions = [(it_name, AttrFuncPool.makeFunc(it_path))
             for it_name, it_path in self.mPathInfoSeq]
@@ -338,9 +336,9 @@ class PresenceConvertor(ValueConvertor):
 #===============================================
 class ZygosityConvertor(ValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, research_only, config, master):
+            render_mode, tooltip, config, master):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only)
+            render_mode, tooltip)
         self.mPath   = path
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         self.mConfig = config
@@ -380,14 +378,14 @@ class ZygosityConvertor(ValueConvertor):
 
 #===============================================
 class PanelConvertor(ValueConvertor):
-    def __init__(self, cond_env, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only, unit_base, view_path = None):
+    def __init__(self, sol_h, name, title, unit_no, vgroup,
+            render_mode, tooltip, unit_base, view_path = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only)
+            render_mode, tooltip)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelSets = {
-            pname: set(cond_env.getUnitPanel(self.mBaseUnitName, pname))
-            for pname in cond_env.getUnitPanelNames(self.mBaseUnitName)}
+            pname: set(sol_h.getUnitPanel(self.mBaseUnitName, pname))
+            for pname in sol_h.getUnitPanelNames(self.mBaseUnitName)}
         self.mCntUndef = 0
         self.mVarCount = Counter()
         self.mViewPath = None
@@ -428,12 +426,12 @@ class PanelConvertor(ValueConvertor):
 
 #===============================================
 class TransctiptConvertor(ValueConvertor):
-    def __init__(self, cond_env, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only,
+    def __init__(self, name, title, unit_no, vgroup,
+            render_mode, tooltip,
             tr_kind, trans_name, variants,
             default_value = None, bool_check_value = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip, research_only)
+            render_mode, tooltip)
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = tr_kind
         self.mDescr["tr_name"] = trans_name

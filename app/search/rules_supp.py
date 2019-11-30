@@ -18,12 +18,16 @@
 #  limitations under the License.
 #
 
+import json, logging
 from io import StringIO
+from io import TextIOWrapper
 
-from .flt_unit import MultiSetUnit
+from .ws_unit import MultiSetUnit
 from app.eval.params import parseParams
 from app.search.hot_eval import RULES_SETUP
 
+#===============================================
+# Full refactoring
 #===============================================
 class RulesEvalUnit(MultiSetUnit):
     sEnumNormValues = {
@@ -48,13 +52,12 @@ class RulesEvalUnit(MultiSetUnit):
             "default": None,
             "path": None,
             "no": -1,
-            "research": False,
             "undef": 0,
             "variants": [[func_h.getName(), -1]
                 for func_h in RULES_SETUP.FUNCTIONS]}, False)
         env_dict = {param_h.getName(): param_h.getValue()
             for param_h in RULES_SETUP.PARAMETERS}
-        rules_data = (self.getIndex().getWS().getMongoAgent().
+        rules_data = (self.getDS().getMongoAgent().
             getRulesParamValues())
         if rules_data is not None:
             for key, val in rules_data:
@@ -70,7 +73,7 @@ class RulesEvalUnit(MultiSetUnit):
         if self.mUnitNames is None:
             self.mUnitNames = []
             self.mMultiSetUnits = set()
-            for unit in self.getIndex().iterUnits():
+            for unit in self.getDS().iterUnits():
                 if unit is not self and not unit.isDetailed():
                     self.mUnitNames.append(unit.getName())
                     if not unit.isAtomic():
@@ -98,31 +101,25 @@ class RulesEvalUnit(MultiSetUnit):
             if val:
                 rules_set.add(func_h.getName())
 
-    def getJSonData(self, research_mode):
+    def getJSonData(self):
         ret = dict()
         columns = []
         for idx in range(len(self.getVariantSet())):
             func_h = RULES_SETUP.FUNCTIONS[idx]
-            if (not research_mode and func_h.isResearch()):
-                continue
             columns.append([func_h.getName(),
                 RULES_SETUP.getSrcContent(func_h.getFileName())])
         ret["columns"] = columns
         param_rep = StringIO()
         for param_h in RULES_SETUP.PARAMETERS:
-            if not research_mode and param_h.isResearch():
-                continue
             print("%s=%s" % (param_h.getName(),
                 str(self.mEnv.get(param_h.getName()))), file = param_rep)
         ret["params"] = param_rep.getvalue()
         return ret
 
-    def modifyRulesData(self, research_mode, item, content):
+    def modifyRulesData(self, item, content):
         if item == "--param":
             param_list = []
             for param_h in RULES_SETUP.PARAMETERS:
-                if not research_mode and param_h.isResearch():
-                    continue
                 param_list.append(param_h.getName())
             rules_data, error = parseParams(content, param_list)
         else:
@@ -131,10 +128,32 @@ class RulesEvalUnit(MultiSetUnit):
             return {"status": "FAILED", "error": error}
         for key, value in rules_data:
             self.mEnv.set(key, value)
-        self.getIndex().getWS().getMongoAgent().setRulesParamValues(
+        self.getDS().getMongoAgent().setRulesParamValues(
             rules_data)
-        self.getIndex().updateRulesEnv()
+        self.updateRulesEnv()
         return {"status": "OK"}
+
+#===============================================
+class WS_RulesSupport:
+    def updateRulesEnv(self):
+        with self.mWS._openFData() as inp:
+            fdata_inp = TextIOWrapper(inp,
+                encoding = "utf-8", line_buffering = True)
+            for rec_no, line in enumerate(fdata_inp):
+                inp_data = json.loads(line.strip())
+                self.mUnits[0].fillRulesPart(inp_data, rec_no)
+        to_update = []
+        for filter_name, filter_info in self.mFilterCache.items():
+            cond_seq = filter_info[0].getCondSeq()
+            if any(cond_info[1] == "Rules" for cond_info in cond_seq):
+                to_update.append(filter_name)
+        for filter_name in to_update:
+            filter_info = self.mFilterCache[filter_name]
+            if not self.cacheFilter(filter_name,
+                    filter_info[0].getCondSeq(), filter_info[2]):
+                logging.error("Filter %s for ws=%s failed" %
+                    (filter_name, self.mWS.getName()))
+
 
 #===============================================
 class PresentationObj:

@@ -21,14 +21,14 @@
 #===============================================
 class ZoneH:
     def __init__(self, workspace, title):
-        self.mWS = workspace
+        self.mDS = workspace
         self.mTitle = title
 
     def _setTitle(self, title):
         self.mTitle = title
 
-    def getWS(self):
-        return self.mWS
+    def getDS(self):
+        return self.mDS
 
     def getTitle(self):
         return self.mTitle
@@ -52,6 +52,6 @@ class FilterZoneH(ZoneH):
         return self.mUnit.getVariantList()
 
     def getRestrictF(self, variants):
-        cond = self.getWS().getIndex().getCondEnv().makeEnumCond(
-            self.mUnit, "OR", variants)
+        cond = self.getDS().getCondEnv().makeEnumCond(
+            self.mUnit, variants)
         return lambda rec_no: cond.recInSelection(rec_no)

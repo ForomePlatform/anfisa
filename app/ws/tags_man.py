@@ -23,6 +23,7 @@ from datetime import datetime
 
 from app.config.a_config import AnfisaConfig
 from .zone import ZoneH
+
 #===============================================
 class TagsManager(ZoneH):
     def __init__(self, workspace, check_tag_list):
@@ -43,8 +44,9 @@ class TagsManager(ZoneH):
         return self.mMarkedSet
 
     def _loadDataSet(self):
-        for rec_no, rec_key in self.getWS().iterRecKeys():
-            data_obj = self.getWS().getMongoRecData(rec_key)
+        mongo_agent = self.getDS().getMongoAgent()
+        for rec_no, rec_key in self.getDS().iterRecKeys():
+            data_obj = mongo_agent.getTagsData(rec_key)
             if data_obj is not None:
                 for tag in data_obj.keys():
                     if self._goodKey(tag):
@@ -72,9 +74,9 @@ class TagsManager(ZoneH):
         return key and (key[0] != '_' or key == "_note")
 
     def updateRec(self, rec_no, tags_to_update):
-        rec_key = self.getWS().getRecKey(rec_no)
+        rec_key = self.getDS().getRecKey(rec_no)
         return self._changeRecord(rec_no, rec_key,
-            self.getWS().getMongoRecData(rec_key), tags_to_update)
+            self.getDS().getMongoAgent().getTagsData(rec_key), tags_to_update)
 
     def getTagListInfo(self):
         return {
@@ -85,8 +87,8 @@ class TagsManager(ZoneH):
         return self._getRecData(rec_no)[0]
 
     def _getRecData(self, rec_no):
-        rec_key = self.getWS().getRecKey(rec_no)
-        rec_data = self.getWS().getMongoRecData(rec_key)
+        rec_key = self.getDS().getRecKey(rec_no)
+        rec_data = self.getDS().getMongoAgent().getTagsData(rec_key)
         if rec_data is None:
             return (dict(), None, None)
         return (dict(filter(self._goodPair, rec_data.items())),
@@ -154,7 +156,8 @@ class TagsManager(ZoneH):
             new_rec_data['_h'] = [len(h_stack), h_stack]
         if new_rec_data is None:
             return
-        self.getWS().setMongoRecData(rec_key, new_rec_data, rec_data)
+        self.getDS().getMongoAgent().setTagsData(
+            rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())
         list_modified = False

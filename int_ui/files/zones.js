@@ -38,7 +38,7 @@ function checkCurZoneStatus() {
 
 /*************************************/
 function loadZone(zone_name){
-    var args = "ws=" + sDSName + "&zone=" + zone_name;
+    var args = "ds=" + sDSName + "&zone=" + zone_name;
     ajaxCall("zone_list", args, setupZone);
 }
 

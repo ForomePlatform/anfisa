@@ -28,14 +28,13 @@ from .colgrp import ColGroupsH
 class AspectH:
     def __init__(self, name, title, source, field = None,
             attrs = None, ignored = False, col_groups = None,
-            research_only = False, mode = "dict"):
+            mode = "dict"):
         self.mName     = name
         self.mTitle    = title
         self.mSource   = source
         self.mField    = field
         self.mAttrs    = None
         self.mIgnored  = ignored
-        self.mResearchOnly = research_only
         self.mColGroups = col_groups
         self.mMode      = mode
         assert self.mSource in ("_view", "__data"), (
@@ -101,7 +100,6 @@ class AspectH:
             "title": self.mTitle,
             "source": self.mSource,
             "ignored": self.mIgnored,
-            "research": self.mResearchOnly,
             "mode": self.mMode,
             "attrs": [attr_h.dump() for attr_h in self.mAttrs]}
         if self.mField is not None:
@@ -117,14 +115,10 @@ class AspectH:
             attrs = [AttrH.load(it) for it in data["attrs"]],
             ignored = data["ignored"],
             col_groups = ColGroupsH.load(data.get("col_groups")),
-            research_only = data["research"],
             mode = data["mode"])
 
     #===============================================
-    def checkResearchBlock(self, research_mode):
-        return (not research_mode) and self.mResearchOnly
-
-    def getViewRepr(self, rec_data, research_mode, details = None):
+    def getViewRepr(self, rec_data, details = None):
         ret = {
             "name": self.mName,
             "title": self.mTitle,
@@ -149,7 +143,6 @@ class AspectH:
         fld_data = dict()
         for attr in self.mAttrs:
             if (attr.getName() is None
-                    or attr.checkResearchBlock(research_mode)
                     or attr.hasKind("hidden")):
                 continue
             values = []

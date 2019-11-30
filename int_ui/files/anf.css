@@ -322,14 +322,6 @@ div#ws-dropdown {
     padding: 0px;
 }
 
-span#control-open.res-mode {
-    background-color: #8000A0;
-}
-
-span#res-mode-check {
-    visibility: hidden;
-}
-
 a.ext-ref {
     background-color: white;
     color: #333455;

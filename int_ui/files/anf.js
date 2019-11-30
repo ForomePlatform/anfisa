@@ -37,7 +37,7 @@ function initWin(workspace_name, common_title, app_modes) {
     sAppModeRq = (app_modes)? ("&m=" + app_modes) : "";
     sDSName = workspace_name; 
     sCommonTitle = common_title;
-    sUnitsH.init("stat", "statunits", "ws=" + sDSName, false);
+    sUnitsH.init("ds=" + sDSName, false);
     window.name = sCommonTitle + ":" + sDSName;
     document.getElementById("ws-name").innerHTML = sDSName;
     
@@ -46,14 +46,6 @@ function initWin(workspace_name, common_title, app_modes) {
     window.onresize  = arrangeControls;
     document.getElementById("list-rand-portion").value = sCurRandPortion;
 
-    if (sAppModeRq.toLowerCase().indexOf('r') >= 0) {
-        document.getElementById("res-mode-check").style.visibility = "visible";
-        document.getElementById("control-open").className = "drop res-mode";
-    } else { 
-        document.getElementById("res-mode-check").style.visibility = "hidden";
-        document.getElementById("control-open").className = "drop";
-    }
-        
     initMonitor();
     checkWorkZone(null);
     ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
@@ -166,9 +158,9 @@ function changeRec(rec_no) {
     sCurRecID = sViewRecNoSeq[sCurRecNo];
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    window.frames['rec-frame1'].location.replace("rec?ws=" + sDSName + 
+    window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName + 
         sAppModeRq + "&rec=" + sCurRecID + "&port=1" + "&details=" + sRecList[sCurRecNo][4]);
-    window.frames['rec-frame2'].location.replace("rec?ws=" + sDSName + 
+    window.frames['rec-frame2'].location.replace("rec?ds=" + sDSName + 
         sAppModeRq + "&rec=" + sCurRecID + "&port=2" + "&details=" + sRecList[sCurRecNo][4]);
     updateTagNavigation();
 }
@@ -261,18 +253,6 @@ function setupExport(info) {
         res_el.innerHTML = 'Bad configuration';
     }
     sViewH.dropOn(res_el);
-}
-
-//=====================================
-function switchResMode() {
-    relaxView();
-    var idx = sAppModeRq.toLowerCase().indexOf('r');
-    if (idx >= 0) {
-        app_mode = "";
-    } else {
-        app_mode = ((sAppModeRq)? sAppModeRq.substr(3):"") + "r";
-    }
-    initWin(sDSName, sCommonTitle, app_mode);
 }
 
 //=====================================

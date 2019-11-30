@@ -19,7 +19,6 @@
 #
 
 from app.config.a_config import AnfisaConfig
-from app.filter.condition import ConditionMaker
 from app.filter.unit import ComplexEnumSupport
 from utils.variants import VariantSet
 #===============================================
@@ -52,12 +51,19 @@ class ZygosityComplex(ComplexEnumSupport):
         self.mFamUnits = fam_units
 
     def setupXCond(self):
-        self.mXCondition = self.mCondEnv.parse(
-            self.mConfig.get("x_cond",
-            ConditionMaker.condEnum("Chromosome", ["chrX"])))
+        x_unit_name = self.mConfig.get("x_unit", "Chromosome")
+        self.mXCondition = self.mCondEnv.makeEnumCond(
+            self.getDS().getUnit(x_unit_name),
+            self.mConfig.get("x_values", ["chrX"]))
 
     def isOK(self):
         return self.mIsOK
+
+    def validateCondition(self, cond_info):
+        assert cond_info[0] == "zygosity"
+        unit_name, p_group, filter_mode, variants = cond_info[1:]
+        return (filter_mode in {"", "OR", "AND", "NOT"}
+            and len(variants) > 0 and (p_group is None or len(p_group) > 0))
 
     def getFamUnit(self, idx):
         return self.mFamUnits[idx]
@@ -102,16 +108,17 @@ class ZygosityComplex(ComplexEnumSupport):
         return self.mCondEnv.joinAnd(seq)
 
     def iterComplexCriteria(self, context, variants = None):
+        problem_group = context["p_group"]
         if variants is None or self.mCaseLabels[0] in variants:
-            yield self.mCaseLabels[0], self.conditionZHomoRecess(context)
+            yield self.mCaseLabels[0], self.conditionZHomoRecess(problem_group)
         if variants is None or self.mCaseLabels[1] in variants:
-            yield self.mCaseLabels[1], self.conditionZXLinked(context)
+            yield self.mCaseLabels[1], self.conditionZXLinked(problem_group)
         if variants is None or self.mCaseLabels[2] in variants:
-            yield self.mCaseLabels[2], self.conditionZDominant(context)
+            yield self.mCaseLabels[2], self.conditionZDominant(problem_group)
         if variants is None or self.mCaseLabels[3] in variants:
-            yield self.mCaseLabels[3], self.conditionZCompens(context)
+            yield self.mCaseLabels[3], self.conditionZCompens(problem_group)
 
-    def makeStat(self, index, condition, repr_context = None):
+    def makeStat(self, ds_h, condition, repr_context = None):
         assert self.mIsOK
         ret = self.prepareStat()
         ret[1]["family"] = self.mFamilyInfo.getNames()
@@ -126,7 +133,8 @@ class ZygosityComplex(ComplexEnumSupport):
         ret.append(sorted(p_group))
         if len(p_group) == 0:
             return ret + [None]
-        ret.append(self.collectComplexStat(index, condition, p_group))
+        ret.append(self.collectComplexStat(ds_h, condition,
+            {"p_group": p_group}))
         return ret
 
     def parseCondition(self, cond_info):
@@ -135,12 +143,12 @@ class ZygosityComplex(ComplexEnumSupport):
 
         assert cond_info[0] == "zygosity"
         unit_name, p_group, filter_mode, variants = cond_info[1:]
-        assert filter_mode != "ONLY"
         assert len(variants) > 0
 
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
-        return self.makeComplexCondition(filter_mode, variants, p_group)
+        return self.makeComplexCondition(filter_mode, variants,
+            {"p_group": p_group})
 
     def processInstr(self, parser, ast_args, op_mode, variants):
         if len(ast_args) > 1:

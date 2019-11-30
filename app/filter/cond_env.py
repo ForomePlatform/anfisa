@@ -19,23 +19,20 @@
 #
 
 import logging
+from cachetools import LRUCache
 
-from .sol_pack import SolutionPack
 #===============================================
 class CondEnv:
-    def __init__(self, ds_name,  modes):
+    def __init__(self, ds_name, locker_obj):
         self.mDSName = ds_name
-        self.mSolPack = SolutionPack.select(modes)
+        self.mLockerObj = locker_obj
         self.mSpecialUnits = dict()
         self.mNumUnits = dict()
         self.mEnumUnits = dict()
         self.mOperativeUnits = dict()
         self.mReservedNames = dict()
         self.mOpUnitSeq = []
-        self.mModes = set(modes) if modes else set()
-
-    def addMode(self, mode):
-        self.mModes.add(mode)
+        self.mCompCache = dict()
 
     def addNumUnit(self, unit_h):
         assert unit_h.getName() not in self.mNumUnits
@@ -66,6 +63,9 @@ class CondEnv:
 
     def getDSName(self):
         return self.mDSName
+
+    def getLocker(self):
+        return self.mLockerObj
 
     def detectUnit(self, unit_name,
             expect_kind = None, use_logging = True):
@@ -103,94 +103,15 @@ class CondEnv:
             ret = ret.addOr(cond)
         return ret
 
-    def parse(self, cond_info, op_data = None):
-        if len(cond_info) == 0:
-            return self.getCondAll()
-        if cond_info[0] is None:
-            assert len(cond_info) == 1
-            return self.getCondNone()
-        if cond_info[0] == "and":
-            return self.joinAnd(
-                [self.parse(cc, op_data) for cc in cond_info[1:]])
-        if cond_info[0] == "or":
-            return self.joinOr(
-                [self.parse(cc, op_data) for cc in cond_info[1:]])
-        if cond_info[0] == "not":
-            assert len(cond_info) == 2
-            return self.parse(cond_info[1], op_data).negative()
-
-        pre_unit_kind, unit_name = cond_info[:2]
-        unit_kind, unit_h = self.detectUnit(unit_name, pre_unit_kind)
-        if unit_kind == "operational":
-            return unit_h.parseCondition(cond_info, op_data[unit_name])
-        if unit_kind == "reserved":
-            unit_kind = cond_info[0]
-        if unit_kind == "special":
-            return unit_h.parseCondition(cond_info)
-        if cond_info[0] == "numeric":
-            bounds, use_undef = cond_info[2:]
-            return self.makeNumericCond(unit_h, bounds, use_undef)
-        if cond_info[0] == "enum":
-            filter_mode, variants = cond_info[2:]
-            return self.makeEnumCond(unit_h, filter_mode, variants)
-        assert False
-        return self.getCondNone()
-
-    #===============================================
-    def testRequirements(self, modes):
-        if not modes:
-            return True
-        return len(modes & self.mModes) == len(modes)
-
-    def reportSolutions(self):
-        return {
-            "codes": [it.getName() for it in self.mSolPack.iterItems(
-                "tree_code", self.testRequirements)]}
-
-    def getWsFilters(self):
-        return [(it.getName(), it.getData())
-            for it in self.mSolPack.iterItems("flt_ws", self.testRequirements)]
-
-    def getXlFilters(self):
-        return [(it.getName(), it.getData())
-            for it in self.mSolPack.iterItems("flt_xl", self.testRequirements)]
-
-    def getUnitPanelNames(self, unit_name):
-        ret = []
-        for it in self.mSolPack.iterItems("panel", self.testRequirements):
-            if it.getName() == unit_name:
-                ret.append(it.getData()[0])
-        return ret
-
-    def getUnitPanel(self, unit_name, panel_name, assert_mode = True):
-        for it in self.mSolPack.iterItems("panel", self.testRequirements):
-            if it.getName() == unit_name:
-                if it.getData()[0] == panel_name:
-                    return it.getData()[1]
-        if assert_mode:
-            assert False, "%s: Panel %s not found" % (unit_name, panel_name)
-        else:
-            logging.warning("%s: Panel %s not found" % (unit_name, panel_name))
-
-    def getStdTreeCodeNames(self):
-        return [it.getName() for it in
-            self.mSolPack.iterItems("tree_code", self.testRequirements)]
-
-    def getStdTreeCode(self, code_name):
-        for it in self.mSolPack.iterItems("tree_code", self.testRequirements):
-            if it.getName() == code_name or code_name is None:
-                return it.getData()
-        logging.error("Request for bad std tree: " + code_name)
-        assert False
-
-    def getStdTreeNameByHash(self, hash_code):
-        it = self.mSolPack.getTreeByHashCode(hash_code)
-        if it and it.testIt("tree_code", self.testRequirements):
-            return it.getName()
+    def getCompCache(self, unit_name, hash_code):
+        if unit_name in self.mCompCache:
+            return self.mCompCache[unit_name].get(hash_code)
         return None
 
-    def iterZones(self):
-        for it in self.mSolPack.iterItems("zone", self.testRequirements):
-            yield it.getName(),  it.getData()
+    sCacheSize = 3
 
-#===============================================
+    def setCompCache(self, unit_name, hash_code, comp_data):
+        with self.mLockerObj:
+            if unit_name not in self.mCompCache:
+                self.mCompCache[unit_name] = LRUCache(self.sCacheSize)
+            self.mCompCache[unit_name][hash_code] = comp_data

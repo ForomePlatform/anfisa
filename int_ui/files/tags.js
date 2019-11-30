@@ -69,7 +69,7 @@ function loadTags(tags_to_update){
         app_mode_rq = "";
     }
     
-    var args = "ws=" + ws_name +  app_mode_rq + "&rec=" + rec_id;
+    var args = "ds=" + ws_name +  app_mode_rq + "&rec=" + rec_id;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
     ajaxCall("tags", args, setupTags);

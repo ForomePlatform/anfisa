@@ -65,10 +65,6 @@ class AnfisaApp:
         cls.sDocPygmentsCSS = MirrorUiDirectory.transform(
             cls.sConfig["doc-pygments-css"])
 
-        cls.sRunOptions = cls.sConfig.get("run-options")
-        if not cls.sRunOptions:
-            cls.sRunOptions = []
-
         cls.sMongoConn = MongoConnector(cls.sConfig["mongo-db"],
             cls.sConfig.get("mongo-host"), cls.sConfig.get("mongo-port"))
 
@@ -145,7 +141,12 @@ class AnfisaApp:
 
     @classmethod
     def hasRunOption(cls, name):
-        return name in cls.sRunOptions
+        run_options = cls.sConfig.get("run-options")
+        return run_options and name in run_options
+
+    @classmethod
+    def getRunModes(cls):
+        return cls.sConfig.get("run-modes", [])
 
     @classmethod
     def getOption(cls, name):
@@ -166,7 +167,7 @@ class AnfisaApp:
             rq_path, rq_args, cls.sDataVault)
 
     @classmethod
-    def viewSingleRecord(cls, record, research_mode):
+    def viewSingleRecord(cls, record):
         view_aspects = defineViewSchema()
         view_checker = ViewDataChecker(view_aspects)
         view_checker.regValue(0, record)
@@ -177,7 +178,7 @@ class AnfisaApp:
                 + rep_out.getvalue())
         assert is_ok
         aspects = AspectSetH.load(view_aspects.dump())
-        return aspects.getViewRepr(record, research_mode)
+        return aspects.getViewRepr(record)
 
     @classmethod
     def runTask(cls, task):

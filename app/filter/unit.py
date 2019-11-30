@@ -31,13 +31,16 @@ class Unit:
         self.mTitle = descr["title"]
         self.mNo    = descr["no"]
         self.mVGroup = descr.get("vgroup")
-        self.mResearchOnly = descr["research"]
         self.mRenderMode = descr.get("render")
         self.mToolTip = descr.get("tooltip")
         self.mScreened = False
 
     def setup(self):
         pass
+
+    @abc.abstractmethod
+    def getCondEnv(self):
+        return None
 
     def getUnitKind(self):
         return self.mUnitKind
@@ -78,9 +81,6 @@ class Unit:
             ret[1]["tooltip"] = self.mToolTip
         return ret
 
-    def checkResearchBlock(self, research_mode):
-        return (not research_mode) and self.mResearchOnly
-
 #===============================================
 class MetaUnit:
     def __init__(self, name, unit_kind):
@@ -102,15 +102,15 @@ class ComplexEnumSupport:
     def iterComplexCriteria(self, context = None, variants = None):
         pass
 
-    def collectComplexStat(self, index, base_condition,
+    def collectComplexStat(self, ds_h, base_condition,
             context = None, detailed = False):
         stat = []
         for name, condition in self.iterComplexCriteria(context):
             if base_condition is not None:
                 condition = condition.addAnd(base_condition)
-            info = [name, index.evalTotalCount(condition)]
+            info = [name, ds_h.evalTotalCount(condition)]
             if detailed:
-                info.insert(1, index.evalDetailedTotalCount(condition))
+                info.insert(1, ds_h.evalDetailedTotalCount(condition))
             stat.append(info)
         return stat
 
@@ -119,8 +119,8 @@ class ComplexEnumSupport:
         for _, condition in self.iterComplexCriteria(context, variants):
             single_cr_seq.append(condition)
         if filter_mode == "NOT":
-            return self.mCondEnv.joinAnd(
+            return self.getCondEnv().joinAnd(
                 [cond.negative() for cond in single_cr_seq])
         if filter_mode == "AND":
-            return self.mCondEnv.joinAnd(single_cr_seq)
-        return self.mCondEnv.joinOr(single_cr_seq)
+            return self.getCondEnv().joinAnd(single_cr_seq)
+        return self.getCondEnv().joinOr(single_cr_seq)

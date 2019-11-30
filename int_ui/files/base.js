@@ -138,7 +138,7 @@ function goToPage(page_mode, ds_name) {
         return;
     }
     if (page_mode == "WS") {
-        window.open("ws?ws=" + ds_name, sCommonTitle + ":" + ds_name);
+        window.open("ws?ds=" + ds_name, sCommonTitle + ":" + ds_name);
         return;
     }
     if (page_mode == "TREE") {

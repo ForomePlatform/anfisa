@@ -26,8 +26,6 @@
  * WS/XL-Filter
 /**************************************/
 var sUnitsH = {
-    mCallAllStat: null,
-    mCallPartStat: null,
     mCallDS: null,
     mDivList: null,
     mItems: null,
@@ -46,9 +44,7 @@ var sUnitsH = {
     mCompData: null,
     mOffline: false,
     
-    init: function(call_all_stat, call_part_stat, call_ds, delay_mode) {
-        this.mCallAllStat = call_all_stat;
-        this.mCallPartStat = call_part_stat;
+    init: function(call_ds, delay_mode) {
         this.mCallDS = call_ds;
         this.mDivList = document.getElementById("stat-list");
         this.mDelayMode = delay_mode;
@@ -86,7 +82,7 @@ var sUnitsH = {
         }
         this.mDivList.className = "wait";
         this.mWaiting = true;
-        ajaxCall(this.mCallAllStat, 
+        ajaxCall("stat", 
             this.formRqArgs(conditions, filter_name, true, add_instr), 
             function(info){sUnitsH._setup(info);})
     },
@@ -164,7 +160,7 @@ var sUnitsH = {
             return;
         this.mWaiting = true;
         this.sortVisibleDelays();
-        ajaxCall(this.mCallPartStat, this.getRqArgs() +
+        ajaxCall("statunits", this.getRqArgs() +
             ((this.mDelayMode)? "&tm=1":"") + 
             "&rq_id=" + encodeURIComponent(this.mRqId) + 
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)), 
@@ -256,10 +252,6 @@ var sUnitsH = {
     
     setCtxPar: function(key, val) {
         this.mCtx[key] = val;
-    },
-    
-    getCallPartStat: function() {
-        return this.mCallPartStat;
     },
     
     prepareWsCreate: function() {

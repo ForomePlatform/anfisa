@@ -45,7 +45,7 @@ def formXLTreePage(output, common_title, html_base, xl_ds, ws_url):
     print('</html>', file = output)
 
 #===============================================
-def _formXLPannel(output, ds):
+def _formXLPannel(output, ds_h):
     print('''
       <div id="xl-ctrl">
         <div id="xl-info">
@@ -69,7 +69,7 @@ def _formXLPannel(output, ds):
             <select id="std-code-select" onchange="pickStdCode();"
                 title="Pick tree code from repository">
                 <option value="">in work</option>''', file = output)
-    for std_name in ds.getCondEnv().getStdTreeCodeNames():
+    for std_name in ds_h.getStdTreeCodeNames():
         print('                <option value="%s">%s</option>' % (
             escape(std_name), escape(std_name)), file = output)
     print('''

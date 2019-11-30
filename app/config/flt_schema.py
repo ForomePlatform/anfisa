@@ -21,7 +21,6 @@
 import sys
 
 from app.prepare.prep_filters import FilterPrepareSetH
-from app.filter.condition import ConditionMaker
 
 #===============================================
 def _conv_len(arr):
@@ -90,13 +89,15 @@ def defineFilterSchema(metadata_record):
                 "/_view/bioinformatics/zygosity",
                 title = "Proband Zygosity")
             filters.zygositySpecialUnit("Inheritance_Mode",
-                "/__data/zygosity", config = {"x_cond":
-                ConditionMaker.condEnum("Chromosome", ["chrX"])},
+                "/__data/zygosity",
+                config = {
+                    "x_unit": "Chromosome",
+                    "x_values": ["chrX"]},
                 title = "Inheritance Mode")
         filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
-            title = "Number of Samples", conversion=_conv_len,
+            title = "Number of Samples", conversion = _conv_len,
             default_value = 0,
         tooltip = "Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
@@ -313,17 +314,18 @@ def defineFilterSchema(metadata_record):
             "then no filtering has been applied to the records.")
 
     with filters.viewGroup("Predictions"):
+        # research_only = True
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
             title = "Categorized Benign in HGMD",
-            default_value = "Not in HGMD", research_only = True,
+            default_value = "Not in HGMD",
             render_mode = "replace(True/Benign, False/Not Benign)")
         filters.multiStatusUnit("HGMD_Tags", "/_view/databases/hgmd_tags[]",
             default_value = "None")
 
+        # research_only = True
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar",
-            title = "Categorized Benign in ClinVar by all submitters",
-            research_only =True)
+            title = "Categorized Benign in ClinVar by all submitters")
         filters.multiStatusUnit("ClinVar_Significance",
             "/__data/clinvar_significance[]",
             title = "Clinical Significance in ClinVar")
@@ -398,8 +400,9 @@ def defineFilterSchema(metadata_record):
             "/_view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")
 
+    # required = {"debug"}
     with filters.viewGroup("Debug_Info"):
         filters.intValueUnit("Severity", "/_filters/severity",
-            research_only = True, default_value = -1)
+            default_value = -1)
 
     return filters

@@ -24,22 +24,17 @@ from app.filter.cond_env import CondEnv
 from app.filter.unit import MetaUnit
 #===============================================
 class WS_CondEnv(CondEnv):
-    def __init__(self, ds_name,  modes):
-        CondEnv.__init__(self, ds_name,  modes)
+    def __init__(self, ds_h):
+        CondEnv.__init__(self, ds_h.getName(), ds_h)
         self.mTotal = 0
         self.mGroups = []
-        self.mCondAll, self.mCondNone = None, None
 
-    def getKind(self):
+    def getCondKind(self):
         return "ws"
 
     def addItemGroup(self, grp_size):
         self.mGroups.append((self.mTotal, grp_size))
         self.mTotal += max(1, grp_size)
-
-    def finishUp(self):
-        self.mCondAll = WS_All(self)
-        self.mCondNone = WS_None(self)
 
     def getTotalCount(self):
         return self.mTotal
@@ -50,14 +45,17 @@ class WS_CondEnv(CondEnv):
     def iterGroups(self):
         return iter(self.mGroups)
 
+    def getGroups(self):
+        return self.mGroups
+
     def getGroupPos(self, rec_no):
         return self.mGroups[rec_no]
 
     def getCondNone(self):
-        return self.mCondNone
+        return WS_None(self)
 
     def getCondAll(self):
-        return self.mCondAll
+        return WS_All(self)
 
     def addMetaNumUnit(self, name, rec_func):
         unit_h = WS_MetaNumUnit(name, rec_func)
@@ -77,7 +75,7 @@ class WS_CondEnv(CondEnv):
         return WS_Condition(self, "num", unit_h.getName(),
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
 
-    def makeEnumCond(self, unit_h, filter_mode, variants):
+    def makeEnumCond(self, unit_h, variants, filter_mode = ""):
         eval_func = self.enumFilterFunc(filter_mode,
             unit_h.getVariantSet().makeIdxSet(variants))
         if unit_h.isDetailed():
@@ -116,20 +114,20 @@ class WS_CondEnv(CondEnv):
     def enumFilterFunc(filter_mode, base_idx_set):
         if filter_mode == "NOT":
             return lambda idx_set: len(idx_set & base_idx_set) == 0
-        if filter_mode == "ONLY":
-            return lambda idx_set: (len(idx_set) > 0
-                and len(idx_set - base_idx_set) == 0)
         if filter_mode == "AND":
             all_len = len(base_idx_set)
             return lambda idx_set: len(idx_set & base_idx_set) == all_len
+        #if filter_mode == "ONLY":
+        #    return lambda idx_set: (len(idx_set) > 0
+        #        and len(idx_set - base_idx_set) == 0)
         return lambda idx_set: len(idx_set & base_idx_set) > 0
 
 #===============================================
 class WS_Condition:
-    def __init__(self, cond_env, kind, name, bit_arr = None,
+    def __init__(self, cond_env, cond_type, name, bit_arr = None,
             fill_groups_f = None, fill_items_f = None):
         self.mCondEnv = cond_env
-        self.mKind = kind
+        self.mCondType = cond_type
         self.mName = name
         self.mBitArray = bit_arr
         if self.mBitArray is not None:
@@ -154,8 +152,8 @@ class WS_Condition:
     def getCondEnv(self):
         return self.mCondEnv
 
-    def getCondKind(self):
-        return self.mKind
+    def getCondType(self):
+        return self.mCondType
 
     def getCondName(self):
         return self.mName
@@ -173,22 +171,22 @@ class WS_Condition:
         assert False
 
     def addOr(self, other):
-        assert other is not None and other.getCondKind() is not None
-        if other.getCondKind() == "or":
+        assert other is not None and other.getCondType() is not None
+        if other.getCondType() == "or":
             return other.addOr(self)
-        elif other.getCondKind() == "null":
+        elif other.getCondType() == "null":
             return self
-        elif other.getCondKind() == "all":
+        elif other.getCondType() == "all":
             return other
         return WS_Or([self, other])
 
     def addAnd(self, other):
-        assert other is not None and other.getCondKind() is not None
-        if other.getCondKind() == "and":
+        assert other is not None and other.getCondType() is not None
+        if other.getCondType() == "and":
             return other.addAnd(self)
-        elif other.getCondKind() == "all":
+        elif other.getCondType() == "all":
             return self
-        elif other.getCondKind() == "null":
+        elif other.getCondType() == "null":
             return other
         return WS_And([self, other])
 
@@ -210,14 +208,14 @@ class WS_Condition:
             if group_val.any():
                 yield rec_no, group_val
 
-    def countSelection(self):
+    def getAllCounts(self):
         count_grp, count_items = 0, 0
         for _, rec_it_map in self.iterSelection():
             count_grp += 1
             count_items += rec_it_map.count()
         return (count_grp, count_items, self.mCondEnv.getTotalCount())
 
-    def getSelectItemCount(self):
+    def getItemCount(self):
         return self.mBitArray.count()
 
     def recInSelection(self, rec_no):
@@ -228,7 +226,7 @@ class WS_Condition:
 
     def iterItemIdx(self):
         grp_idx = 0
-        groups = self.mCondEnv.mGroups
+        groups = self.mCondEnv.getGroups()
         idx_max = len(groups) - 1
         for idx_pos in self.mBitArray.itersearch(self.sPattTrue):
             while (grp_idx < idx_max and idx_pos >= groups[grp_idx + 1][0]):
@@ -245,9 +243,6 @@ class WS_Negation(WS_Condition):
 
     def negative(self):
         return self.mBaseCond
-
-    def getCondKind(self):
-        return "neg"
 
 #===============================================
 class _WS_Joiner(WS_Condition):
@@ -269,11 +264,11 @@ class WS_And(_WS_Joiner):
         _WS_Joiner.__init__(self, "and", items,  bit_arr)
 
     def addAnd(self, other):
-        if other.getCondKind() == "null":
+        if other.getCondType() == "null":
             return other
-        if other.getCondKind() == "all":
+        if other.getCondType() == "all":
             return self
-        if other.getCondKind() == "and":
+        if other.getCondType() == "and":
             add_items = other.getItems()
         else:
             add_items = [other]
@@ -289,11 +284,11 @@ class WS_Or(_WS_Joiner):
         _WS_Joiner.__init__(self, "or", items,  bit_arr)
 
     def addOr(self, other):
-        if other.getCondKind() == "null":
+        if other.getCondType() == "null":
             return self
-        if other.getCondKind() == "all":
+        if other.getCondType() == "all":
             return other
-        if other.getCondKind() == "or":
+        if other.getCondType() == "or":
             add_items = other.getItems()
         else:
             add_items = [other]
@@ -315,9 +310,6 @@ class WS_None(WS_Condition):
     def negative(self):
         return self.getCondEnv().getCondAll()
 
-    def getCondKind(self):
-        return "null"
-
     def __call__(self, rec_no):
         return False
 
@@ -336,9 +328,6 @@ class WS_All(WS_Condition):
 
     def negative(self):
         return self.getCondEnv().getCondNone()
-
-    def getCondKind(self):
-        return "all"
 
     def __call__(self, rec_no):
         return True

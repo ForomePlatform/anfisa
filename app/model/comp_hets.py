@@ -22,46 +22,43 @@ import logging
 
 from app.config.a_config import AnfisaConfig
 from app.filter.unit import Unit, ComplexEnumSupport
+from app.filter.condition import validateEnumCondition
 
 #=====================================
 class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
     sSetupData = AnfisaConfig.configOption("comp-hets.setup")
 
     @classmethod
-    def setupCondEnv(cls, cond_env, ds):
-        trio_seq = ds.getFamilyInfo().getTrioSeq()
-        if not trio_seq:
+    def setupCondEnv(cls, ds_h):
+        cond_env = ds_h.getCondEnv()
+        if not ds_h.testRequirements({"trio"}):
             return False
-        if trio_seq[0][0] == "Proband":
-            cond_env.addMode("trio_base")
-            if len(ds.getFamilyInfo()) == 3:
-                cond_env.addMode("trio_pure")
-        cond_env.addMode("trio")
-
-        for var_info in cls.sSetupData["op-variables." + cond_env.getKind()]:
+        for var_info in cls.sSetupData[
+                "op-variables." + cond_env.getCondKind()]:
             name, gene_unit = var_info[:2]
             title = var_info[2] if len(var_info) > 2 else name
             cond_env.addOperativeUnit(
-                CompHetsOperativeUnit(ds, name, gene_unit, title))
+                CompHetsOperativeUnit(ds_h, name, gene_unit, title))
         return True
 
-    def __init__(self, ds, name, gene_unit, title):
+    def __init__(self, ds_h, name, gene_unit, title):
         Unit.__init__(self, {
             "name": name,
             "title": title,
             "kind": "enum",
             "vgroup": self.sSetupData["vgroup"],
-            "research": False,
             "render": "operative",
             "no": -1})
-        self.mDS = ds
-        self.mIndex = ds.getIndex()
-        self.mCondEnv = self.mIndex.getCondEnv()
-        self.mZygUnit = self.mIndex.getUnit(self.sSetupData["zygosity.unit"])
-        self.mGeneUnit = self.mIndex.getUnit(gene_unit)
+        self.mDS = ds_h
+        self.mCondEnv = self.mDS.getCondEnv()
+        self.mZygUnit = self.mDS.getUnit(self.sSetupData["zygosity.unit"])
+        self.mGeneUnit = self.mDS.getUnit(gene_unit)
 
     def getDS(self):
         return self.mDS
+
+    def getCondEnv(self):
+        return self.mDS.getCondEnv()
 
     def _prepareZygConditions(self, trio_info):
         zyg_base, zyg_father, zyg_mother = [
@@ -85,19 +82,23 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         c_proband, c_father, c_mother = self._prepareZygConditions(trio_info)
 
         genes1 = set()
-        for stat_info in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
-                [actual_condition, c_proband, c_father])):
-            if stat_info[1] > 0:
-                genes1.add(stat_info[0])
+        stat_info = self.mGeneUnit.makeStat(self.mCondEnv.joinAnd(
+            [actual_condition, c_proband, c_father]))
+        for info in stat_info[2]:
+            gene, count = info[:2]
+            if count > 0:
+                genes1.add(gene)
         logging.info("Eval genes1 for %s comp-hets: %d" %
             (trio_info[0], len(genes1)))
         if len(genes1) is None:
             return
         genes2 = set()
-        for stat_info in self.mGeneUnit.evalStat(self.mCondEnv.joinAnd(
-                [actual_condition, c_proband, c_mother])):
-            if stat_info[1] > 0:
-                genes2.add(stat_info[0])
+        stat_info = self.mGeneUnit.makeStat(self.mCondEnv.joinAnd(
+            [actual_condition, c_proband, c_mother]))
+        for info in stat_info[2]:
+            gene, count = info[:2]
+            if count > 0:
+                genes2.add(gene)
         logging.info("Eval genes2 for %s comp-hets: %d" %
             (trio_info[0], len(genes2)))
         actual_genes = genes1 & genes2
@@ -110,23 +111,27 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         for trio_info in self.mDS.getFamilyInfo().getTrioSeq():
             if variants is not None and trio_info[0] not in variants:
                 continue
-            gene_seq = context.get(trio_info[0])
+            gene_seq = context["comp"].get(trio_info[0])
             if not gene_seq:
                 continue
             c_proband, c_father, c_mother = self._prepareZygConditions(
                 trio_info)
             yield trio_info[0], self.mCondEnv.joinAnd([
                 c_proband, c_father.addOr(c_mother),
-                self.mCondEnv.makeEnumCond(self.mGeneUnit, "", gene_seq)])
+                self.mCondEnv.makeEnumCond(self.mGeneUnit, gene_seq)])
 
-    def makeCompStat(self, condition, calc_data, repr_context):
+    def makeActiveStat(self, condition, flt_base_h, repr_context):
         ret = self.prepareStat()
         if self.mGeneUnit.isDetailed():
             ret[1]["detailed"] = True
-        ret.append(self.collectComplexStat(self.mIndex, condition,
-            calc_data, detailed = self.mGeneUnit.isDetailed()))
+        ret.append(self.collectComplexStat(self.mDS, condition,
+            {"comp": flt_base_h.getCompData(self.getName())},
+            detailed = self.mGeneUnit.isDetailed()))
         return ret
+
+    def validateCondition(self, cond_data):
+        return validateEnumCondition(cond_data)
 
     def parseCondition(self, cond_data, calc_data):
         return self.makeComplexCondition(
-            cond_data[2], cond_data[3], calc_data)
+            cond_data[2], cond_data[3], {"comp": calc_data})

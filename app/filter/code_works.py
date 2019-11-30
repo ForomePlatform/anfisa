@@ -194,12 +194,9 @@ def _reprEnumCase(unit_operand, op_mode, values, output, panel_name = None):
     elif op_mode == "NOT":
         output.write('%s not in {' % unit_operand)
         op_close = '}'
-    elif op_mode == "AND":
-        output.write('%s in all({' % unit_operand)
-        op_close = '})'
     else:
-        assert op_mode == "ONLY"
-        output.write('%s in only({' % unit_operand)
+        assert op_mode == "AND"
+        output.write('%s in all({' % unit_operand)
         op_close = '})'
     if panel_name is not None:
         output.write('panel(' + panel_name + ')')

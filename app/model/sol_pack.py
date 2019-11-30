@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 
+import logging
 from hashlib import md5
 
 #===============================================
@@ -83,37 +84,30 @@ class SolutionPack:
         cls.sPacks[None] = solution_pack
 
     @classmethod
-    def select(cls, modes = None):
-        if modes:
-            for mode in modes:
-                if mode in cls.sPacks:
-                    return cls.sPacks[mode]
-        return cls.sPacks[None]
+    def select(cls, pack_name = None):
+        if pack_name not in cls.sPacks:
+            logging.warning("Unregistered pack name: " + pack_name)
+            pack_name = None
+        return cls.sPacks[pack_name]
 
     #===============================================
     def __init__(self, name):
         self.mName = name
         self.mItems = []
         self.mUsedNames = set()
-        self.mTreeCodes = dict()
 
     def getName(self):
         return self.mName
 
-    def regFilterWS(self, flt_name, cond_seq, requires = None):
-        self.mItems.append(SolutionItem("flt_ws", flt_name,
+    def regFilter(self, flt_name, cond_seq, requires = None):
+        self.mItems.append(SolutionItem("filter", flt_name,
             cond_seq, requires, self.mUsedNames))
 
-    def regFilterXL(self, flt_name, cond_seq, requires = None):
-        self.mItems.append(SolutionItem("flt_xl", flt_name,
-            cond_seq, requires, self.mUsedNames))
-
-    def regTreeCode(self, code_name, fname_seq, requires = None):
+    def regDTree(self, tree_name, fname_seq, requires = None):
         tree_code = self.readFileSeq(fname_seq)
-        it = SolutionItem("tree_code", code_name,
+        it = SolutionItem("dtree", tree_name,
             tree_code, requires, self.mUsedNames)
         self.mItems.append(it)
-        self.mTreeCodes[codeHash(tree_code)] = it
 
     def regPanel(self, unit_name, panel_name, fname, requires = None):
         self.mItems.append(SolutionItem("panel", unit_name,
@@ -124,6 +118,7 @@ class SolutionPack:
         self.mItems.append(SolutionItem("zone",
             zone_title,  unit_name, requires, self.mUsedNames))
 
+    #===============================================
     def iterItems(self, kind, test_f):
         for it in self.mItems:
             if it.testIt(kind, test_f):

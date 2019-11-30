@@ -37,6 +37,10 @@ class RestAPI:
         return cls._regRequest(func, "vault")
 
     @classmethod
+    def ds_request(cls, func):
+        return cls._regRequest(func, "ds")
+
+    @classmethod
     def ws_request(cls, func):
         return cls._regRequest(func, "ws")
 
@@ -52,13 +56,11 @@ class RestAPI:
                 rq_func, rq_kind = rq_info
                 if rq_kind == "vault":
                     return (rq_func, data_vault)
-                elif rq_kind == "ws":
-                    ws_h = data_vault.getWS(rq_args.get("ws"))
-                    if ws_h is not None:
-                        return (rq_func, ws_h)
-                else:
-                    assert rq_kind == "xl"
-                    ds_h = data_vault.getXL(rq_args.get("ds"))
+                elif rq_kind in {"ds", "ws", "xl"}:
+                    ds_h = data_vault.getDS(rq_args.get("ds"),
+                        None if rq_kind == "ds" else rq_kind)
                     if ds_h is not None:
                         return (rq_func, ds_h)
+                else:
+                    assert False
         return None, None

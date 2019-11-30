@@ -37,7 +37,7 @@ function setupRulesCtrl() {
 
 /*************************************/
 function loadRulesData() {
-    var args = "ws=" + sDSName + sAppModeRq;
+    var args = "ds=" + sDSName + sAppModeRq;
     //if (content)
     //  args += "&note=" + encodeURIComponent(content);
     ajaxCall("rules_data", args, setupRulesData);
@@ -102,7 +102,7 @@ function ruleItemModify() {
     if (!checkRuleContent())
         return;
     var new_content = document.getElementById("rule-item-content").value;
-    var args = "ws=" + sDSName + sAppModeRq +   
+    var args = "ds=" + sDSName + sAppModeRq +   
         "&it=" + encodeURIComponent(sCurItem) + 
         "&cnt=" + encodeURIComponent(new_content);
     ajaxCall("rules_modify", args, setupItemChange);

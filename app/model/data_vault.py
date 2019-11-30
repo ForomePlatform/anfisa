@@ -22,17 +22,21 @@ import os, json, logging
 from glob import glob
 from threading import Lock
 
-from .workspace import Workspace
 from .rest_api import RestAPI
+from .mongo_db import MongoSolutionAgent
+from app.ws.workspace import Workspace
 from app.xl.xl_dataset import XLDataset
 from utils.log_err import logException
+from utils.lock_obj import ObjWithLock
 #===============================================
-class DataVault:
+class DataVault(ObjWithLock):
     def __init__(self, application, vault_dir):
+        ObjWithLock.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
         self.mLock  = Lock()
         self.mDataSets = dict()
+        self.mSolAgents = dict()
 
         workspaces = []
         names = [[], []]
@@ -71,13 +75,6 @@ class DataVault:
         if len(names[1]) > 0:
             logging.info("WS-datasets: " + " ".join(names[1]))
 
-    def __enter__(self):
-        self.mLock.acquire()
-        return self
-
-    def __exit__(self, tp, value, traceback):
-        self.mLock.release()
-
     def descrContext(self, rq_args, rq_descr):
         if "ds" in rq_args:
             rq_descr.append("ds=" + rq_args["ds"])
@@ -90,16 +87,12 @@ class DataVault:
     def getDir(self):
         return self.mVaultDir
 
-    def getWS(self, ws_name):
-        ds = self.mDataSets.get(ws_name)
-        return ds if ds and ds.getDSKind() == "ws" else None
-
-    def getXL(self, ds_name):
-        ds = self.mDataSets.get(ds_name)
-        return ds if ds and ds.getDSKind() == "xl" else None
-
-    def getDS(self, ds_name):
-        return self.mDataSets.get(ds_name)
+    def getDS(self, ds_name, ds_kind = None):
+        ds_h = self.mDataSets.get(ds_name)
+        if ds_h and ds_kind is not None and ds_h.getDSKind() != ds_kind:
+            assert False, "DS kinds conflictsL %s/%s" % (
+                ds_h.getDSKind(), ds_kind)
+        return ds_h
 
     def checkNewDataSet(self, ds_name):
         with self:
@@ -115,26 +108,20 @@ class DataVault:
         with self:
             if ds_info["name"] not in self.mDataSets:
                 if ds_info["kind"] == "xl":
-                    ds = XLDataset(self, ds_info, ds_path)
+                    ds_h = XLDataset(self, ds_info, ds_path)
                 else:
                     assert ds_info["kind"] == "ws"
-                    ds = Workspace(self, ds_info, ds_path)
-                self.mDataSets[ds_info["name"]] = ds
+                    ds_h = Workspace(self, ds_info, ds_path)
+                self.mDataSets[ds_info["name"]] = ds_h
         return ds_name
 
     def unloadDS(self, ds_name, ds_kind = None):
         with self:
-            ds = self.mDataSets[ds_name]
+            ds_h = self.mDataSets[ds_name]
             assert not ds_kind or (
-                ds_kind == "ws" and isinstance(ds, Workspace)) or (
-                ds_kind == "xl" and isinstance(ds, XLDataset))
+                ds_kind == "ws" and isinstance(ds_h, Workspace)) or (
+                ds_kind == "xl" and isinstance(ds_h, XLDataset))
             del self.mDataSets[ds_name]
-
-    def _prepareDS(self, rq_args):
-        kind = "ws" if "ws" in rq_args else "ds"
-        ds = self.mDataSets[rq_args[kind]]
-        assert kind == "ds" or ds.getDSKind().lower() == "ws"
-        return ds
 
     def getBaseDS(self, ws_h):
         return self.mDataSets.get(ws_h.getBaseDSName())
@@ -145,6 +132,18 @@ class DataVault:
             if ws_h.getBaseDSName() == ds_h.getName():
                 ret.append(ws_h)
         return sorted(ret, key = lambda ws_h: ws_h.getName())
+
+    def attachSolutionAgent(self, ds_h):
+        base_name = ds_h.getBaseDSName()
+        if not base_name:
+            base_name = ds_h.getName()
+        #with self:
+        if base_name not in self.mSolAgents:
+            self.mSolAgents[base_name] = MongoSolutionAgent(
+                self.mApp.getMongoConnector(), base_name)
+        sol_agent = self.mSolAgents[base_name]
+        sol_agent.attachDataset(ds_h)
+        return sol_agent
 
     #===============================================
     @RestAPI.vault_request
@@ -168,53 +167,14 @@ class DataVault:
 
     #===============================================
     @RestAPI.vault_request
-    def rq__dsmeta(self, rq_args):
-        ds = self._prepareDS(rq_args)
-        return ds.getDataInfo()["meta"]
-
-    #===============================================
-    @RestAPI.vault_request
-    def rq__recdata(self, rq_args):
-        ds = self._prepareDS(rq_args)
-        return ds.getRecordData(int(rq_args.get("rec")))
-
-    #===============================================
-    @RestAPI.vault_request
-    def rq__reccnt(self, rq_args):
-        ds = self._prepareDS(rq_args)
-        modes = rq_args.get("m", "").upper()
-        return ds.getViewRepr(int(rq_args.get("rec")),
-            'R' in modes or ds.getDSKind().lower == "xl",
-            details = rq_args.get("details"))
-
-    #===============================================
-    @RestAPI.vault_request
-    def rq__dsinfo(self, rq_args):
-        assert "ws" not in rq_args
-        ds = self._prepareDS(rq_args)
-        note = rq_args.get("note")
-        if note is not None:
-            with ds:
-                ds.getMongoAgent().setNote(note)
-        return ds.dumpDSInfo(navigation_mode = False)
-
-    #===============================================
-    @RestAPI.vault_request
     def rq__single_cnt(self, rq_args):
         record = json.loads(rq_args["record"])
-        modes = rq_args.get("m", "").upper()
-        return self.mApp.viewSingleRecord(record, 'R' in modes)
+        return self.mApp.viewSingleRecord(record)
 
     #===============================================
     @RestAPI.vault_request
     def rq__job_status(self, rq_args):
         return self.mApp.askJobStatus(rq_args["task"])
-
-    #===============================================
-    @RestAPI.vault_request
-    def rq__solutions(self, rq_args):
-        ds = self.mDataSets[rq_args["ds"]]
-        return ds.getIndex().getCondEnv().reportSolutions()
 
     #===============================================
     # Administrator authorization required

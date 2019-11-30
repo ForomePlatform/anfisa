@@ -57,6 +57,9 @@ class MongoConnector:
             return self.getXLAgent(name)
         assert False
 
+    def makeAgent(self, name):
+        return self.mMongo[self.mPath][name]
+
 #===============================================
 class MongoDSAgent:
     def __init__(self, connector, agent, name):
@@ -67,10 +70,7 @@ class MongoDSAgent:
     def getName(self):
         return self.mName
 
-    def getAgent(self):
-        return self.mAgent
-
-    def getKind(self):
+    def getAgentKind(self):
         assert False
 
     #===== CreationDate
@@ -107,39 +107,19 @@ class MongoDSAgent:
             {"$set": {"note": note.strip(), "time": time_label}},
             upsert = True)
 
-    #===== Filters
-    def getFilters(self):
-        ret = []
-        for it in self.mAgent.find({"_tp": "flt"}):
-            it_id = it["_id"]
-            if it_id.startswith("flt-"):
-                ret.append((it_id[4:], it["seq"],
-                    AnfisaConfig.normalizeTime(it.get("time"))))
-        return ret
-
-    def setFilter(self, filter_name, cond_seq):
-        time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "flt-" + filter_name},
-            {"$set": {"seq": cond_seq, "_tp": "flt", "time": time_label}},
-            upsert = True)
-        return time_label
-
-    def dropFilter(self, filter_name):
-        self.mAgent.remove({"_id": "flt-" + filter_name})
-
 #===============================================
 class MongoWSAgent(MongoDSAgent):
     def __init__(self, connector, agent, name):
         MongoDSAgent.__init__(self, connector, agent, name)
 
-    def getKind(self):
+    def getAgentKind(self):
         return "WS"
 
-    #===== RecData
-    def getRecData(self, rec_key):
+    #===== TagsData
+    def getTagsData(self, rec_key):
         return self.mAgent.find_one({"_id": "rec-" + rec_key})
 
-    def setRecData(self, rec_key, pairs, prev_data = False):
+    def setTagsData(self, rec_key, pairs, prev_data = False):
         data = pairs.copy()
         data["_id"] = "rec-" + rec_key
         update_instr = dict()
@@ -147,7 +127,7 @@ class MongoWSAgent(MongoDSAgent):
             update_instr["$set"] = {key: value
                 for key, value in pairs.items()}
         if prev_data is False:
-            prev_data = self.getRecData(rec_key)
+            prev_data = self.getTagsData(rec_key)
         unset_keys = set(prev_data.keys() if prev_data is not None else [])
         unset_keys -= set(pairs.keys())
         if "_id" in unset_keys:
@@ -158,48 +138,88 @@ class MongoWSAgent(MongoDSAgent):
             self.mAgent.update(
                 {"_id": "rec-" + rec_key}, update_instr, upsert = True)
 
-    #===== RulesParamValues
-    def getRulesParamValues(self):
-        it = self.mAgent.find_one({"_id": "params"})
-        if it is not None:
-            return it["params"]
-        return None
-
-    def setRulesParamValues(self, param_values):
-        self.mAgent.update({"_id": "params"},
-            {"$set": {"params": param_values}}, upsert = True)
-
 #===============================================
 class MongoXLAgent(MongoDSAgent):
     def __init__(self, connector, agent, name):
         MongoDSAgent.__init__(self, connector, agent, name)
 
-    def getKind(self):
+    def getAgentKind(self):
         return "XL"
 
-    #===== TreeCodeVersions
-    def getTreeCodeVersions(self):
-        ret = []
-        for it in self.mAgent.find({"_tp": "tree"}):
+#===============================================
+#===============================================
+class _MongoSolutionHandler:
+    def __init__(self, key, value_name, agent):
+        self.mKey = key
+        self.mPrefix = key + '-'
+        self.mPrefLen = len(self.mPrefix)
+        self.mValName = value_name
+        self.mAgent = agent
+        self.mData = dict()
+        for it in self.mAgent.find({"_tp": self.mKey}):
             it_id = it["_id"]
-            if it_id.startswith("tree-ver-"):
-                ret.append((int(it_id[9:]), it["date"], it["hash"]))
-        return sorted(ret)
+            if it_id.startswith(self.mPrefix):
+                name = it_id[self.mPrefLen:]
+                self.mData[name] = [it[self.mValName],
+                    AnfisaConfig.normalizeTime(it.get("time")),
+                    it["from"]]
 
-    def getTreeCodeVersion(self, version):
-        for it in self.mAgent.find(
-                {"_tp": "tree", "_id": "tree-ver-" + str(version)}):
-            return it["code"]
-        return None
+    def iterData(self):
+        ret = []
+        for name in sorted(self.mData.keys()):
+            value, upd_time, upd_from = self.mData[name]
+            ret.append((name, value, upd_time, upd_from))
+        return iter(ret)
 
-    def addTreeCodeVersion(self, version, code, hash_code, date = None):
-        if date is None:
-            date = datetime.now().isoformat()
-        self.mAgent.update(
-            {"_tp": "tree", "_id": "tree-ver-" + str(version)},
-            {"$set": {"hash": hash_code, "code": code,
-            "date": date, "_tp": "tree"}}, upsert = True)
+    def modifyData(self, option, name, value, upd_from):
+        if option == "UPDATE":
+            time_label = datetime.now().isoformat()
+            self.mAgent.update({"_id": self.mPrefix + name},
+                {"$set": {self.mValName: value, "_tp": self.mKey,
+                    "time": time_label, "from": upd_from}},
+                upsert = True)
+            self.mData[name] = [value,
+                AnfisaConfig.normalizeTime(time_label),
+                upd_from]
+            return True
+        if option == "DELETE" and name in self.mData:
+            self.mAgent.remove(
+                {"_tp": self.mKey, "_id": self.mPrefix + name})
+            del self.mData[name]
+            return True
+        return False
 
-    def dropTreeCodeVersion(self, version):
-        self.mAgent.remove(
-            {"_tp": "tree", "_id": "tree-ver-" + str(version)})
+#===============================================
+class MongoSolutionAgent:
+    def __init__(self, connector, name):
+        self.mConnector = connector
+        self.mAgent = self.mConnector.makeAgent(name)
+        self.mName = name
+        self.mDatasets = []
+        self.mHandlers = {
+            "filter": _MongoSolutionHandler("filter", "seq", self.mAgent),
+            "dtree": _MongoSolutionHandler("dtree", "code", self.mAgent)}
+
+    def getName(self):
+        return self.mName
+
+    def getAgentKind(self):
+        return "_solutions_"
+
+    def attachDataset(self, ds_h):
+        assert ds_h not in self.mDatasets
+        self.mDatasets.append(ds_h)
+
+    def detachDataset(self, ds_h):
+        assert ds_h in self.mDatasets
+        self.mDatasets.remove(ds_h)
+
+    def iterEntries(self, key):
+        return self.mHandlers[key].iterData()
+
+    def modifyEntry(self, ds_h, key, option, name, value):
+        if self.mHandlers[key].modifyData(option, name, value, ds_h.getName()):
+            for dataset_h in self.mDatasets:
+                dataset_h.refreshSolEntries(key)
+            return True
+        return False

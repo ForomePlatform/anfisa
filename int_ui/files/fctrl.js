@@ -635,7 +635,7 @@ var sZygosityH = {
             args += "&ctx=" + encodeURIComponent(
                 JSON.stringify({"problem_group": problem_idxs}));
         }
-        ajaxCall(sUnitsH.getCallPartStat(), args, 
+        ajaxCall("statunits", args, 
             function(info){sZygosityH._reload(info, mode_op);})
     },
     

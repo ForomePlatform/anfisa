@@ -110,12 +110,12 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         os.mkdir(vault_dir)
         print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
 
-    checkDSName(ds_entry.getName(), ds_entry.getKind())
+    checkDSName(ds_entry.getName(), ds_entry.getDSKind())
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
     if os.path.exists(ds_dir):
         print("Dataset exists:", ds_dir, file = sys.stderr)
         assert False
-    if ds_entry.getKind() == "xl":
+    if ds_entry.getDSKind() == "xl":
         assert DRUID_ADM is not None
     os.mkdir(ds_dir)
 
@@ -123,7 +123,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema(metadata_record)
 
-    if ds_entry.getKind() == "ws":
+    if ds_entry.getDSKind() == "ws":
         trans_prep = TranscriptPreparator(
             filter_set.getTranscriptDescrSeq(), True)
     else:
@@ -183,7 +183,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         total_item_count = None
 
     flt_schema_data = filter_set.dump()
-    if ds_entry.getKind() == "xl":
+    if ds_entry.getDSKind() == "xl":
         is_ok &= DRUID_ADM.uploadDataset(ds_entry.getName(), flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             os.path.abspath(ds_dir + "/druid_rq.json"))
@@ -194,7 +194,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
             "date_loaded": date_loaded,
             "doc": prepareDocDir(ds_doc_dir, ds_entry.getInv()),
             "flt_schema": flt_schema_data,
-            "kind": ds_entry.getKind(),
+            "kind": ds_entry.getDSKind(),
             "meta": metadata_record,
             "modes": [],
             "mongo": ds_entry.getName(),
@@ -216,7 +216,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         mongo_conn = MongoConnector(app_config["mongo-db"],
             app_config.get("mongo-host"), app_config.get("mongo-port"))
         mongo_agent = mongo_conn.getDSAgent(
-            ds_entry.getName(), ds_entry.getKind())
+            ds_entry.getName(), ds_entry.getDSKind())
         mongo_agent.checkCreationDate(date_loaded, ds_entry.getSource())
 
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
@@ -225,7 +225,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         with open(ds_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)
         print("Dataset %s kind=%s succesively created" % (
-            ds_entry.getName(), ds_entry.getKind()), file = rep_out)
+            ds_entry.getName(), ds_entry.getDSKind()), file = rep_out)
     else:
         print("Process terminated", file = rep_out)
 
@@ -246,9 +246,9 @@ def pushDruid(app_config, ds_entry):
     if not os.path.isdir(vault_dir):
         print("No vault directory:", vault_dir, file = sys.stderr)
         assert False
-    if ds_entry.getKind() != "xl":
+    if ds_entry.getDSKind() != "xl":
         print("Druid dataset %s has unexpected kind %s" %
-            (ds_entry.getName(),  ds_entry.getKind()),
+            (ds_entry.getName(),  ds_entry.getDSKind()),
             file = sys.stderr)
         sys.exit()
     checkDSName(ds_entry.getName(), "xl")
@@ -273,13 +273,13 @@ def pushDruid(app_config, ds_entry):
 #===============================================
 def dropDataSet(app_config, ds_entry, calm_mode):
     global DRUID_ADM
-    assert ds_entry.getKind() in ("ws", "xl")
-    if ds_entry.getKind() == "xl":
+    assert ds_entry.getDSKind() in ("ws", "xl")
+    if ds_entry.getDSKind() == "xl":
         assert DRUID_ADM is not None
     vault_dir = app_config["data-vault"]
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
 
-    if ds_entry.getKind() == "xl":
+    if ds_entry.getDSKind() == "xl":
         if calm_mode:
             druid_datasets = DRUID_ADM.listDatasets()
         else:
@@ -330,7 +330,7 @@ class DSEntry:
     def getName(self):
         return self.mName
 
-    def getKind(self):
+    def getDSKind(self):
         return self.mKind
 
     def getSource(self):
@@ -414,7 +414,7 @@ if __name__ == '__main__':
 
     assert os.path.isdir(app_config["data-vault"])
 
-    if any(ds_entry.getKind() == "xl" for ds_entry in entries):
+    if any(ds_entry.getDSKind() == "xl" for ds_entry in entries):
         DRUID_ADM = DruidAdmin(app_config, args.nocoord)
 
     for entry_no,  ds_entry in enumerate(entries):

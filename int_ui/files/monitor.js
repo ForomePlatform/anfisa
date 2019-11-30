@@ -78,7 +78,7 @@ function tagNav(mode) {
 }
 
 function loadTagSelection(tag_name) {
-    var args = "ws=" + parent.window.sDSName;
+    var args = "ds=" + parent.window.sDSName;
     if (tag_name) 
         args += "&tag=" + tag_name;
     ajaxCall("tag_select", args, setupTagSelection);

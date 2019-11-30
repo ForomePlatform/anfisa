@@ -91,9 +91,6 @@ def _formMainDiv(output, workspace_name, ws_url):
                         class="drop ctrl-menu">Documentation</div>
                     <div onclick="openNote();"
                         class="drop ctrl-menu">Workspace Note</div>
-                    <div onclick="switchResMode();" class="drop ctrl-menu">
-                        <span id="res-mode-check">&#10003;</span>Research mode
-                        </div>
                     <div onclick="showExport();"
                         class="drop ctrl-menu" >Export...</div>
                 </div>
@@ -169,7 +166,7 @@ def _formMainDiv(output, workspace_name, ws_url):
             </div>
          </div>
          <div id="top-ref">
-            <a class="ext-ref" href="%(ws_url)s?ws=%(ws)s"
+            <a class="ext-ref" href="%(ws_url)s?ds=%(ws)s"
                 target="blank" title="To front end">&#x23f5;</a>
         </div>
       </div>
@@ -192,16 +189,16 @@ def _formMainDiv(output, workspace_name, ws_url):
 #===============================================
 def _formZonesDiv(output, zones):
     rep_check_zones, rep_div_zones = [], []
-    for zone in zones:
-        zone_check_id = "zn-check--%s" % zone.getName()
+    for zone_h in zones:
+        zone_check_id = "zn-check--%s" % zone_h.getName()
         rep_check_zones.append(('<span id="zn--%s">'
             '<input id="%s" class="zone-checkbox" type="checkbox" '
             'onchange="checkWorkZone(\'%s\');"/>'
             '<label for="%s">%s</label></span>') %
-            (zone.getName(), zone_check_id, zone.getName(),
-            zone_check_id, escape(zone.getTitle())))
+            (zone_h.getName(), zone_check_id, zone_h.getName(),
+            zone_check_id, escape(zone_h.getTitle())))
         rep_div_zones.append('<div class="work-zone-list" '
-            'id="zn-div--%s"></div>' % zone.getName())
+            'id="zn-div--%s"></div>' % zone_h.getName())
     params = {
         "check_zones": "\n".join(rep_check_zones),
         "div_zones": "\n".join(rep_div_zones)}

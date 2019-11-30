@@ -37,7 +37,7 @@ td.rep-title, td.anno-src {
     width: 150px;
 }
 
-table.report-tree,table.report-filter {
+table.report-dtree,table.report-filter {
     border: 1px solid black;
 }
 
@@ -50,7 +50,7 @@ table.report-filter td {
     background-color: #FDFFFD;
 }
 
-td.tree-point {
+td.dtree-point {
     font-size: 14px;
     padding: 5px 10px;
     width: 700px;

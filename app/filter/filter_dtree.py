@@ -19,8 +19,11 @@
 #
 
 import logging
+from hashlib import md5
+
 from app.config.a_config import AnfisaConfig
-from .cond_op import CondOpEnv
+from .filter_base import FilterBase
+from .tree_parse import ParsedDTree
 from .code_works import htmlCodeDecoration, htmlCodePresentation
 #===============================================
 class CaseStory:
@@ -33,9 +36,6 @@ class CaseStory:
         if self.mParent is not None:
             return self.mParent.getMaster()
         assert False
-
-    def getCondOpEnv(self):
-        return self.getMaster().getCondOpEnv()
 
     def getLevel(self):
         if self.mParent is None:
@@ -115,7 +115,7 @@ class CheckPoint:
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getCondOpEnv().getCondAll()
+            return self.getStory().getMaster().getCondEnv().getCondAll()
         return self.getPrevPoint()._accumulateConditions().negative()
 
     def getInfo(self, code_lines):
@@ -148,7 +148,7 @@ class TerminalPoint(CheckPoint):
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getCondOpEnv().getCondAll()
+            return self.getStory().getMaster().getCondEnv().getCondAll()
         if self.getPrevPoint().getLevel() == self.getLevel():
             return self.getPrevPoint()._accumulateConditions().negative()
         return self.getPrevPoint().getAppliedCondition()
@@ -157,7 +157,7 @@ class TerminalPoint(CheckPoint):
 class ConditionPoint(CheckPoint):
     def __init__(self, story, frag, prev_point, point_no):
         CheckPoint.__init__(self, story, frag, prev_point, point_no)
-        self.mCondition = self.getStory().getMaster().getCondOpEnv().parse(
+        self.mCondition = self.getStory().getMaster().parseCondData(
             self.getCondData())
         self.mSubStory = CaseStory(self.getStory(), self)
 
@@ -174,27 +174,56 @@ class ConditionPoint(CheckPoint):
         return self.actualCondition().addAnd(self.mCondition)
 
 #===============================================
-class DecisionTree(CaseStory):
-    def __init__(self, parsed, comp_data = None):
+class FilterDTree(FilterBase, CaseStory):
+    def __init__(self, cond_env, code, dtree_name = None,
+            updated_time = None, updated_from = None):
+        FilterBase.__init__(self, cond_env,
+            updated_time, updated_from)
         CaseStory.__init__(self)
-        if parsed.getError() is not None:
-            msg_text, lineno, offset = parsed.getError()
-            logging.error(("Error in tree code: (%d:%d) %s\n" %
-                (lineno, offset, msg_text)) + "Code:\n======\n"
-                + parsed.getTreeCode() + "\n======")
-            assert False
-        self.mCondOpEnv = CondOpEnv(parsed.getCondEnv(), comp_data)
+        parsed = ParsedDTree(cond_env, code)
         self.mCode = parsed.getTreeCode()
+        self.mError = parsed.getError()
+        self.mDTreeName = dtree_name
+        self.mPointList = None
+        self.mFragments = parsed.getFragments()
+
+        if self.mError is not None:
+            msg_text, lineno, offset = parsed.getError()
+            logging.error(("Error in tree %s code: (%d:%d) %s\n" %
+                (dtree_name if dtree_name else "", lineno, offset, msg_text))
+                + "Code:\n======\n"
+                + parsed.getTreeCode() + "\n======")
+        code_lines = self.mCode.splitlines()
+        hash_h = md5()
+        for frag in self.mFragments:
+            line_from, line_to = frag.getBaseLineDiap()
+            frag_text = "\n".join(code_lines[line_from - 1: line_to]) + "\n\n"
+            hash_h.update(bytes(frag_text, 'utf-8'))
+        self.mHashCode = hash_h.hexdigest()
+
+    def isActive(self):
+        return self.mPointList is not None
+
+    def activate(self):
         self.mPointList = []
+        code_lines = self.mCode.splitlines()
         prev_point = None
-        for instr_no, frag in enumerate(parsed.getFragments()):
+        hash_h = md5()
+        for instr_no, frag in enumerate(self.mFragments):
+            if frag.getInstrType() == "ERROR":
+                continue
+            line_from, line_to = frag.getBaseLineDiap()
+            frag_text = "\n".join(code_lines[line_from - 1: line_to]) + "\n\n"
+            hash_h.update(bytes(frag_text, 'utf-8'))
+
             if frag.getInstrType() == "Import":
                 assert frag.getDecision() is None
                 self._addPoint(ImportPoint(self,
                     frag, prev_point, instr_no))
                 for unit_name in frag.getImportEntries():
-                    self.mCondOpEnv.importUnit(instr_no, unit_name,
-                        self.actualCondition(instr_no))
+                    is_ok = self.importUnit(instr_no, unit_name,
+                        self.actualCondition(instr_no), hash_h.hexdigest())
+                    assert is_ok
                 continue
             if frag.getInstrType() == "If":
                 assert frag.getDecision() is None
@@ -213,16 +242,30 @@ class DecisionTree(CaseStory):
                         frag, prev_point, instr_no))
                 continue
             assert False
-        assert self.checkDetermined() is None
 
     def __len__(self):
         return len(self.mPointList)
 
+    def getFltKind(self):
+        return "dtree"
+
+    def noErrors(self):
+        return self.mError is None
+
+    def getHashCode(self):
+        return self.mHashCode
+
     def getMaster(self):
         return self
 
-    def getCondOpEnv(self):
-        return self.mCondOpEnv
+    def getError(self):
+        return self.mError
+
+    def getCode(self):
+        return self.mCode
+
+    def getDTreeName(self):
+        return self.mDTreeName
 
     def regPoint(self, point):
         assert point.getPointNo() == len(self.mPointList)
@@ -237,7 +280,7 @@ class DecisionTree(CaseStory):
     def checkZeroAfter(self, point_no):
         return self.mPointList[point_no].getPointKind() == "If"
 
-    def dump(self):
+    def reportInfo(self):
         marker_seq = []
         marker_dict = {}
         for point in self.mPointList:
@@ -249,10 +292,14 @@ class DecisionTree(CaseStory):
             if len(cond_seq) > 0:
                 marker_dict[point.getPointNo()] = cond_seq
         html_lines = htmlCodeDecoration(self.mCode, marker_seq)
-        return {
+        ret_handle = {
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
-            "code": self.mCode}
+            "code": self.mCode,
+            "error": self.mError is not None}
+        if self.mTreeName:
+            ret_handle["dtree-name"] = self.mTreeName
+        return ret_handle
 
     def collectRecSeq(self, dataset):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")

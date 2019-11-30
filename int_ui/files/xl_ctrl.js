@@ -182,7 +182,7 @@ var sCreateWsH = {
                 target_ref = (sWsURL != "ws")? '': (' target="' + 
                     sCommonTitle + ':' + info[0]["ws"] + '"'); 
                 this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsURL + 
-                    '?ws=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
+                    '?ds=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
         }
     }

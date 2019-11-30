@@ -26,22 +26,17 @@ from datetime import datetime
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
-from app.filter.tree_parse import ParsedDecisionTree
-from app.filter.decision import DecisionTree
 from .trans_prep import TranscriptPreparator
 from .html_report import reportDS
 
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, dataset, ws_name, base_version = None,
-            op_cond = None, std_name = None,
+    def __init__(self, dataset, ws_name, flt_base_h,
             markup_batch = None, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
-        self.mBaseVersion = base_version
-        self.mOpCond = op_cond
-        self.mStdName = std_name
+        self.mFltBase = flt_base_h
         self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
         self.mForceMode = force_mode
@@ -60,40 +55,30 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
-        if self.mBaseVersion is not None:
-            tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
-                self.mDS.getMongoAgent().getTreeCodeVersion(
-                self.mBaseVersion)))
-            rec_no_seq, point_seq = tree.collectRecSeq(self.mDS)
-            receipt = {
-                "kind": "tree",
-                "version": self.mBaseVersion,
-                "points": point_seq}
-        elif self.mStdName is not None:
-            tree = DecisionTree(ParsedDecisionTree(self.mDS.getCondEnv(),
-                self.mDS.getCondEnv().getStdTreeCode(self.mStdName)))
-            rec_no_seq, point_seq = tree.collectRecSeq(self.mDS)
-            receipt = {
-                "kind": "tree",
-                "std": self.mStdName,
-                "points": point_seq}
-        else:
-            condition = self.mOpCond.getResult()
+        receipt = {"kind": self.mFltBase.getFltKind()}
+
+        if self.mFltBase.getFltKind() == "filter":
+            if self.mFltBase.getFilterName():
+                receipt["filter-name"] = self.mFltBase.getFilterName()
+            condition = self.mFltBase.getCondition()
             rec_count = self.mDS.evalTotalCount(condition)
             if (rec_count < 1
                     or rec_count >= AnfisaConfig.configOption("max.ws.size")):
                 self.setStatus("Size is incorrect: %d" % rec_count)
                 return None
             rec_no_seq = self.mDS.evalRecSeq(condition, rec_count)
-            receipt = {
-                "kind": "filter",
-                "seq": self.mOpCond.getPresentation()}
+            receipt["seq"] = self.mFltBase.getPresentation()
+        else:
+            if self.mFltBase.getDTreeName():
+                receipt["dtree-name"] = self.mFltBase.getDTreeName()
+            rec_no_seq, point_seq = self.mFltBase.collectRecSeq(self.mDS)
+            receipt["points"] = point_seq
 
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir) and self.mForceMode:
-            if self.mDS.getDataVault().getWS(self.mWSName):
+            if self.mDS.getDataVault().getDS(self.mWSName):
                 self.mDS.getDataVault().unloadDS(self.mWSName, "ws")
             shutil.rmtree(ws_dir)
         if os.path.exists(ws_dir):

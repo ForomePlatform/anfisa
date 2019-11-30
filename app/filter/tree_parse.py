@@ -95,17 +95,7 @@ class TreeFragment:
 
 
 #===============================================
-class ParsedDecisionTree:
-    @staticmethod
-    def parse(cond_env, code, instr):
-        parser = ParsedDecisionTree(cond_env, code)
-        if parser.getError() is not None:
-            return parser
-        if instr is not None:
-            code = parser.modifyCode(instr)
-            parser = ParsedDecisionTree(cond_env, code)
-        return parser
-
+class ParsedDTree:
     #===============================================
     def __init__(self, cond_env, code):
         self.mCondEnv = cond_env
@@ -202,6 +192,7 @@ class ParsedDecisionTree:
                 self.errorIt(instr, "entry with path not supported")
             if (entry.name in self.mImportFragments
                     or entry.name in import_entries):
+                self.errorIt(instr, "duplicate import: " + entry.name)
                 self.errorIt(instr, "duplicate import: " + entry.name)
             unit_kind, _ = self.mCondEnv.detectUnit(entry.name)
             if unit_kind in (None, "reserved"):
@@ -504,7 +495,7 @@ class ParsedDecisionTree:
 
 if __name__ == '__main__':
     source = sys.stdin.read()
-    parser = ParsedDecisionTree(None, source)
+    parser = ParsedDTree(None, source)
 
     if parser.getError() is not None:
         print("Error:", parser.getError())

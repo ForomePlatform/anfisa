@@ -28,14 +28,17 @@ from app.filter.unit import Unit
 from app.model.zygosity import ZygosityComplex
 from .val_stat import NumDiapStat, EnumStat
 #===============================================
-class FilterUnit(Unit):
-    def __init__(self, index, unit_data, unit_kind = None):
+class WS_Unit(Unit):
+    def __init__(self, ds_h, unit_data, unit_kind = None):
         Unit.__init__(self, unit_data, unit_kind)
-        self.mIndex = index
         self.mExtractor = None
+        self.mDS = ds_h
 
-    def getIndex(self):
-        return self.mIndex
+    def getDS(self):
+        return self.mDS
+
+    def getCondEnv(self):
+        return self.mDS.getCondEnv()
 
     def isAtomic(self):
         return True
@@ -64,17 +67,14 @@ class FilterUnit(Unit):
     def fillRecord(self, obj, rec_no):
         assert False
 
-    def evalStat(self, condition):
-        return self.mIndex.evalStat(self, condition)
-
 #===============================================
-class NumericValueUnit(FilterUnit):
-    def __init__(self, index, unit_data):
-        FilterUnit.__init__(self, index, unit_data,
+class NumericValueUnit(WS_Unit):
+    def __init__(self, ds_h, unit_data):
+        WS_Unit.__init__(self, ds_h, unit_data,
             "float" if unit_data["kind"] == "float" else "int")
         self._setScreened(self.getDescr()["min"] is None)
         self.mArray = array("d" if unit_data["kind"] == "float" else "q")
-        self.getIndex().getCondEnv().addNumUnit(self)
+        self.getCondEnv().addNumUnit(self)
 
     def getRecVal(self, rec_no):
         return self.mArray[rec_no]
@@ -91,9 +91,9 @@ class NumericValueUnit(FilterUnit):
         self.mArray.append(inp_data.get(self.getName()))
 
 #===============================================
-class _EnumUnit(FilterUnit):
-    def __init__(self, index, unit_data, unit_kind, check_no_zeros):
-        FilterUnit.__init__(self, index, unit_data, unit_kind)
+class _EnumUnit(WS_Unit):
+    def __init__(self, ds_h, unit_data, unit_kind):
+        WS_Unit.__init__(self, ds_h, unit_data, unit_kind)
         variants_info = self.getDescr().get("variants")
         if variants_info is None:
             self._setScreened()
@@ -103,34 +103,24 @@ class _EnumUnit(FilterUnit):
                 [info[0] for info in variants_info])
             self._setScreened(
                 sum(info[1] for info in variants_info) == 0)
-        self.mCheckNoZeros = check_no_zeros
-        self.getIndex().getCondEnv().addEnumUnit(self)
-        if self.mCheckNoZeros:
-            self.mVariantList = None
+        self.getCondEnv().addEnumUnit(self)
 
     def getVariantSet(self):
         return self.mVariantSet
 
     def getVariantList(self):
-        if self.mCheckNoZeros:
-            if self.mVariantList is None:
-                stat = EnumStat(self.mVariantSet, True)
-                for rec_no in range(self.getIndex().getWS().getTotal()):
-                    stat.regValues(self.getRecVal((rec_no)))
-                self.mVariantList = [info[0] for info in stat.result()[0]]
-            return self.mVariantList
         return list(iter(self.mVariantSet))
 
     def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet, check_no_zeros = self.mCheckNoZeros)
+        stat = EnumStat(self.mVariantSet)
         for rec_no, _ in condition.iterSelection():
             stat.regValues(self.getRecVal((rec_no)))
         return self.prepareStat() + stat.result()
 
 #===============================================
 class StatusUnit(_EnumUnit):
-    def __init__(self, index, unit_data, check_no_zeros):
-        _EnumUnit.__init__(self, index, unit_data, "status", check_no_zeros)
+    def __init__(self, ds_h, unit_data):
+        _EnumUnit.__init__(self, ds_h, unit_data, "status")
         self.mArray = array('L')
 
     def getRecVal(self, rec_no):
@@ -143,8 +133,8 @@ class StatusUnit(_EnumUnit):
 
 #===============================================
 class MultiSetUnit(_EnumUnit):
-    def __init__(self, index, unit_data, check_no_zeros):
-        _EnumUnit.__init__(self, index, unit_data, "enum", check_no_zeros)
+    def __init__(self, ds_h, unit_data):
+        _EnumUnit.__init__(self, ds_h, unit_data, "enum")
         self.mArraySeq = [bitarray()
             for var in iter(self.mVariantSet)]
 
@@ -172,8 +162,8 @@ class MultiSetUnit(_EnumUnit):
 
 #===============================================
 class MultiCompactUnit(_EnumUnit):
-    def __init__(self, index, unit_data, check_no_zeros):
-        _EnumUnit.__init__(self, index, unit_data, "enum", check_no_zeros)
+    def __init__(self, ds_h, unit_data):
+        _EnumUnit.__init__(self, ds_h, unit_data, "enum")
         self.mArray = array('L')
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
@@ -204,22 +194,20 @@ class MultiCompactUnit(_EnumUnit):
         self.mArray.append(idx)
 
 #===============================================
-class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
-    def __init__(self, index, unit_data):
-        FilterUnit.__init__(self, index, unit_data, "zygosity")
-        ZygosityComplex.__init__(self, index.getWS().getFamilyInfo(),
-            index.getCondEnv(), unit_data)
-        self._setScreened(self.getIndex().getWS().getApp().
-            hasRunOption("no-custom"))
+class ZygosityComplexUnit(WS_Unit, ZygosityComplex):
+    def __init__(self, ds_h, unit_data):
+        WS_Unit.__init__(self, ds_h, unit_data, "zygosity")
+        ZygosityComplex.__init__(self, ds_h.getFamilyInfo(),
+            ds_h.getCondEnv(), unit_data)
         self.mArrayFam = []
         fam_units = []
         for idx, fam_name in enumerate(self.iterFamNames()):
             self.mArrayFam.append(array('b'))
             fam_units.append(
-                self.getIndex().getCondEnv().addMetaNumUnit(
+                self.getCondEnv().addMetaNumUnit(
                     fam_name, self.getFamRecFunc(idx)))
         self.setupSubUnits(fam_units)
-        self.getIndex().getCondEnv().addSpecialUnit(self)
+        self.getCondEnv().addSpecialUnit(self)
 
     def getFamRecFunc(self, idx):
         return lambda rec_no: self.mArrayFam[idx][rec_no]
@@ -242,13 +230,13 @@ class ZygosityComplexUnit(FilterUnit, ZygosityComplex):
             self.mArrayFam[idx].append(inp_data.get(fam_name))
 
     def makeStat(self, condition, repr_context = None):
-        return ZygosityComplex.makeStat(self, self.getIndex(),
+        return ZygosityComplex.makeStat(self, self.getDS(),
             condition, repr_context)
 
 #===============================================
-class TranscriptStatusUnit(FilterUnit):
-    def __init__(self, index, unit_data):
-        FilterUnit.__init__(self, index, unit_data, "transcript-status")
+class TranscriptStatusUnit(WS_Unit):
+    def __init__(self, ds_h, unit_data):
+        WS_Unit.__init__(self, ds_h, unit_data, "transcript-status")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -257,7 +245,7 @@ class TranscriptStatusUnit(FilterUnit):
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
-        self.getIndex().getCondEnv().addEnumUnit(self)
+        self.getCondEnv().addEnumUnit(self)
 
     def isDetailed(self):
         return True
@@ -285,16 +273,16 @@ class TranscriptStatusUnit(FilterUnit):
         return ret + stat.result()
 
 #===============================================
-class TranscriptMultisetUnit(FilterUnit):
-    def __init__(self, index, unit_data):
-        FilterUnit.__init__(self, index, unit_data, "transcript-multiset")
+class TranscriptMultisetUnit(WS_Unit):
+    def __init__(self, ds_h, unit_data):
+        WS_Unit.__init__(self, ds_h, unit_data, "transcript-multiset")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
-        self.getIndex().getCondEnv().addEnumUnit(self)
+        self.getCondEnv().addEnumUnit(self)
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
 
@@ -338,20 +326,20 @@ class TranscriptMultisetUnit(FilterUnit):
         return ret + stat.result()
 
 #===============================================
-def loadWSFilterUnit(index, unit_data, depr_check_no_zeros):
+def loadWS_Unit(ds_h, unit_data):
     kind = unit_data["kind"]
     if kind == "zygosity":
-        ret = ZygosityComplexUnit(index, unit_data)
+        ret = ZygosityComplexUnit(ds_h, unit_data)
         return ret if ret.isOK() else None
     if kind == "transcript-status":
-        return TranscriptStatusUnit(index, unit_data)
+        return TranscriptStatusUnit(ds_h, unit_data)
     if kind == "transcript-multiset":
-        return TranscriptMultisetUnit(index, unit_data)
+        return TranscriptMultisetUnit(ds_h, unit_data)
     if kind in ("long", "float"):
-        return NumericValueUnit(index, unit_data)
+        return NumericValueUnit(ds_h, unit_data)
     assert kind in ("enum", "presence")
     if kind == "enum" and unit_data["atomic"]:
-        return StatusUnit(index, unit_data, depr_check_no_zeros)
+        return StatusUnit(ds_h, unit_data)
     if kind == "enum" and unit_data["compact"]:
-        return MultiCompactUnit(index, unit_data, depr_check_no_zeros)
-    return MultiSetUnit(index, unit_data, depr_check_no_zeros)
+        return MultiCompactUnit(ds_h, unit_data)
+    return MultiSetUnit(ds_h, unit_data)

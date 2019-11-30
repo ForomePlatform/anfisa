@@ -55,7 +55,7 @@ class XL_NumUnit(XL_Unit):
         XL_Unit.__init__(self, dataset_h, descr)
         self.getDS().getCondEnv().addNumUnit(self)
 
-    def evalStat(self, condition):
+    def _makeStat(self, condition):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
@@ -88,7 +88,7 @@ class XL_NumUnit(XL_Unit):
 
     def makeStat(self, condition, repr_context = None):
         ret = self.prepareStat()
-        vmin, vmax, count = self.evalStat(condition)
+        vmin, vmax, count = self._makeStat(condition)
         if count == 0:
             vmin, vmax = None, None
         return ret + [vmin, vmax, count, 0]
@@ -107,7 +107,7 @@ class XL_EnumUnit(XL_Unit):
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
 
-    def evalStat(self, condition):
+    def _makeStat(self, condition):
         druid_agent = self.getDS().getDruidAgent()
         query = {
             "queryType": "topN",
@@ -142,7 +142,7 @@ class XL_EnumUnit(XL_Unit):
 
     def makeStat(self, condition, repr_context = None):
         ret = self.prepareStat()
-        ret.append(self.evalStat(condition))
+        ret.append(self._makeStat(condition))
         return ret
 
 #===============================================

@@ -38,7 +38,7 @@ function setupXLFilters(ds_name, common_title, ws_url) {
     initXL();
     document.getElementById("close-filter").style.display = "none";
     sFiltersH.init();
-    sUnitsH.init("xl_stat", "xl_statunits", "ds=" + sDSName, true);
+    sUnitsH.init("ds=" + sDSName, true);
     sUnitsH.setup();
 }
     
@@ -84,7 +84,7 @@ function showExport() {
 function doExport() {
     args = "ds=" + sDSName + "&conditions=" + 
         encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
-    ajaxCall("xl_export", args, setupExport);
+    ajaxCall("export", args, setupExport);
 }
 
 function setupExport(info) {

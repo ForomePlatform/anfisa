@@ -22,10 +22,10 @@ from app.filter.cond_env import CondEnv
 from app.filter.unit import MetaUnit
 #===============================================
 class XL_CondEnv(CondEnv):
-    def __init__(self, ds_name,  modes):
-        CondEnv.__init__(self, ds_name,  modes)
+    def __init__(self, ds_h):
+        CondEnv.__init__(self, ds_h.getName(), ds_h)
 
-    def getKind(self):
+    def getCondKind(self):
         return "xl"
 
     def getCondNone(self):
@@ -42,7 +42,7 @@ class XL_CondEnv(CondEnv):
     def makeNumericCond(self, unit_h, bounds, use_undef = None):
         return XL_NumCondition(self, unit_h.getName(), bounds, use_undef)
 
-    def makeEnumCond(self, unit_h, filter_mode, variants):
+    def makeEnumCond(self, unit_h, variants, filter_mode = ""):
         if len(variants) == 0:
             return XL_All() if filter_mode == "NOT" else XL_None()
         if filter_mode == "AND":
@@ -58,12 +58,15 @@ class XL_CondEnv(CondEnv):
 
 #===============================================
 class XL_Condition:
-    def __init__(self, cond_env):
+    def __init__(self, cond_env, cond_type):
         self.mCondEnv = cond_env
-        pass
+        self.mCondType = cond_type
 
     def getCondEnv(self):
         return self.mCondEnv
+
+    def getCondType(self):
+        return self.mCondType
 
     def __not__(self):
         assert False
@@ -75,30 +78,27 @@ class XL_Condition:
         assert False
 
     def addOr(self, other):
-        assert other is not None and other.getCondKind() is not None
-        if other.getCondKind() == "or":
+        assert other is not None and other.getCondType() is not None
+        if other.getCondType() == "or":
             return other.addOr(self)
-        elif other.getCondKind() == "null":
+        elif other.getCondType() == "null":
             return self
-        elif other.getCondKind() == "all":
+        elif other.getCondType() == "all":
             return other
         return XL_Or([self, other])
 
     def addAnd(self, other):
-        assert other is not None and other.getCondKind() is not None
-        if other.getCondKind() == "and":
+        assert other is not None and other.getCondType() is not None
+        if other.getCondType() == "and":
             return other.addAnd(self)
-        elif other.getCondKind() == "all":
+        elif other.getCondType() == "all":
             return self
-        elif other.getCondKind() == "null":
+        elif other.getCondType() == "null":
             return other
         return XL_And([self, other])
 
     def negative(self):
         return XL_Negation(self)
-
-    def getCondKind(self):
-        assert False
 
     def getDruidRepr(self):
         assert False
@@ -106,13 +106,10 @@ class XL_Condition:
 #===============================================
 class XL_NumCondition(XL_Condition):
     def __init__(self, cond_env, unit_name, bounds, use_undef = False):
-        XL_Condition.__init__(self, cond_env)
+        XL_Condition.__init__(self, cond_env, "num")
         self.mUnitName = unit_name
         self.mBounds = bounds
         self.mUseUndef = use_undef
-
-    def getCondKind(self):
-        return "num"
 
     def getDruidRepr(self):
         # use_undef ignored
@@ -131,12 +128,9 @@ class XL_NumCondition(XL_Condition):
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):
     def __init__(self, cond_env, unit_name, variant):
-        XL_Condition.__init__(self, cond_env)
+        XL_Condition.__init__(self, cond_env, "enum-single")
         self.mUnitName = unit_name
         self.mVariant = variant
-
-    def getCondKind(self):
-        return "enum-single"
 
     def getDruidRepr(self):
         return {
@@ -147,12 +141,9 @@ class XL_EnumSingleCondition(XL_Condition):
 #===============================================
 class XL_EnumInCondition(XL_Condition):
     def __init__(self, cond_env, unit_name, variants):
-        XL_Condition.__init__(self, cond_env)
+        XL_Condition.__init__(self, cond_env, "enum-in")
         self.mUnitName = unit_name
         self.mVariants = sorted(variants)
-
-    def getCondKind(self):
-        return "enum-in"
 
     def getDruidRepr(self):
         return {
@@ -163,14 +154,11 @@ class XL_EnumInCondition(XL_Condition):
 #===============================================
 class XL_Negation(XL_Condition):
     def __init__(self, base_cond):
-        XL_Condition.__init__(self, base_cond.getCondEnv())
+        XL_Condition.__init__(self, base_cond.getCondEnv(), "neg")
         self.mBaseCond = base_cond
 
     def negative(self):
         return self.mBaseCond
-
-    def getCondKind(self):
-        return "neg"
 
     def getDruidRepr(self):
         return {
@@ -179,8 +167,8 @@ class XL_Negation(XL_Condition):
 
 #===============================================
 class _XL_Joiner(XL_Condition):
-    def __init__(self, items):
-        XL_Condition.__init__(self, items[0].getCondEnv())
+    def __init__(self, items, cond_type):
+        XL_Condition.__init__(self, items[0].getCondEnv(), cond_type)
         self.mItems = items
 
     def getItems(self):
@@ -188,23 +176,20 @@ class _XL_Joiner(XL_Condition):
 
     def getDruidRepr(self):
         return {
-            "type": self.getCondKind(),
+            "type": self.getCondType(),
             "fields": [cond.getDruidRepr() for cond in self.mItems]}
 
 #===============================================
 class XL_And(_XL_Joiner):
     def __init__(self, items):
-        _XL_Joiner.__init__(self, items)
-
-    def getCondKind(self):
-        return "and"
+        _XL_Joiner.__init__(self, items, "and")
 
     def addAnd(self, other):
-        if other.getCondKind() == "null":
+        if other.getCondType() == "null":
             return other
-        if other.getCondKind() == "all":
+        if other.getCondType() == "all":
             return self
-        if other.getCondKind() == "and":
+        if other.getCondType() == "and":
             add_items = other.getItems()
         else:
             add_items = [other]
@@ -213,17 +198,14 @@ class XL_And(_XL_Joiner):
 #===============================================
 class XL_Or(_XL_Joiner):
     def __init__(self, items):
-        _XL_Joiner.__init__(self, items)
-
-    def getCondKind(self):
-        return "or"
+        _XL_Joiner.__init__(self, items, "or")
 
     def addOr(self, other):
-        if other.getCondKind() == "null":
+        if other.getCondType() == "null":
             return self
-        if other.getCondKind() == "all":
+        if other.getCondType() == "all":
             return other
-        if other.getCondKind() == "or":
+        if other.getCondType() == "or":
             add_items = other.getItems()
         else:
             add_items = [other]
@@ -232,7 +214,7 @@ class XL_Or(_XL_Joiner):
 #===============================================
 class XL_None(XL_Condition):
     def __init__(self, cond_env):
-        XL_Condition.__init__(self, cond_env)
+        XL_Condition.__init__(self, cond_env, "null")
 
     def addAnd(self, other):
         return self
@@ -243,16 +225,13 @@ class XL_None(XL_Condition):
     def negative(self):
         return XL_All()
 
-    def getCondKind(self):
-        return "null"
-
     def getDruidRepr(self):
         return False
 
 #===============================================
 class XL_All(XL_Condition):
     def __init__(self, cond_env):
-        XL_Condition.__init__(self, cond_env)
+        XL_Condition.__init__(self, cond_env, "all")
 
     def addAnd(self, other):
         return other
@@ -262,9 +241,6 @@ class XL_All(XL_Condition):
 
     def negative(self):
         return XL_None()
-
-    def getCondKind(self):
-        return "all"
 
     def getDruidRepr(self):
         return None

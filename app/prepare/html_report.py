@@ -56,7 +56,7 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
         date_loaded = None
 
     startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
-        "receipt" in ds_info and ds_info["receipt"].get("kind") == "tree")
+        "receipt" in ds_info and ds_info["receipt"].get("kind") == "dtree")
     print('  <body>', file = output)
     print('    <table class="report-main">', file = output)
 
@@ -103,18 +103,18 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
                 print('<tr><td>%s</td></tr>' % escape(instr), file = output)
             print('</table>', file = output)
         else:
-            assert receipt["kind"] == "tree"
-            print('<h2>Applied tree code</h2>', file = output)
+            assert receipt["kind"] == "dtree"
+            print('<h2>Applied decision tree code</h2>', file = output)
             for key_t, title_t in [
                     ("std", "Based on"),
                     ("version", "Version")]:
                 if key_t not in receipt:
                     continue
-                print('<p class="tree-info">%s: %s</p>' %
+                print('<p class="dtree-info">%s: %s</p>' %
                     (escape(title_t), escape(receipt[key_t])), file = output)
-            print('<table class="report-tree">', file = output)
+            print('<table class="report-dtree">', file = output)
             for instr, count, ret_mode in receipt["points"]:
-                print('<tr><td class="tree-point"><div class="highlight">'
+                print('<tr><td class="dtree-point"><div class="highlight">'
                     + instr + '</div></td>', file = output)
                 if count is None:
                     print('<td></td>', file = output)

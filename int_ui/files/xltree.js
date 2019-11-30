@@ -420,7 +420,7 @@ var sUnitsH = {
         this.mWaiting = true;
         this.sortVisibleDelays();
         
-        ajaxCall("xl_statunits", this.getRqArgs() + 
+        ajaxCall("statunits", this.getRqArgs() + 
             "&tm=1" + "&rq_id=" + encodeURIComponent(this.mRqId) + 
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)),
             function(info){sUnitsH._loadUnits(info);})
@@ -524,10 +524,6 @@ var sUnitsH = {
         return "ds=" + sDSName + "&verbase=" + sTreeCtrlH.getCurVersion();
     },
 
-    getCallPartStat: function() {
-        return "xl_statunits";
-    },
-    
     getCurCount: function() {
         return this.mCount;
     },
