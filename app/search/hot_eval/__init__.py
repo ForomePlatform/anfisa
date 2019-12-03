@@ -30,7 +30,8 @@ from .seq_a_boo_hearing_loss_v1 import evalRec as seq_a_boo_hearing_loss_v1_eval
 from .seq_a_boo_hearing_loss_v2 import evalRec as seq_a_boo_hearing_loss_v2_evalRec
 from .seq_a_boo_hearing_loss_v3 import evalRec as seq_a_boo_hearing_loss_v3_evalRec
 from .seq_a_boo_acmg59 import evalRec as seq_a_boo_acmg59_evalRec
-from .polyphen_check import evalRec as polyphen_check_evalRec
+from .in_silico_suspicious import evalRec as in_silico_suspicious_evalRec
+from .in_silico_damaging import evalRec as in_silico_damaging_evalRec
 
 #===============================================
 class RuleFuncH:
@@ -96,8 +97,10 @@ class RULES_SETUP:
             "seq_a_boo_acmg59", seq_a_boo_acmg59_evalRec),
         RuleFuncH("gnomAD_Frequency_Threshold",
             "af_check", af_check_evalRec),
-        RuleFuncH("Has_Damaging_Predictions",
-            "polyphen_check", polyphen_check_evalRec)
+        RuleFuncH("Possibly_Damaging_Predictions",
+            "in_silico_suspicious", in_silico_suspicious_evalRec),
+        RuleFuncH("Damaging_Predictions",
+            "in_silico_damaging", in_silico_damaging_evalRec)
         # RuleFuncH("SEQaBOO_Hearing_Loss_2",
         #           "seq_a_boo_hearing_loss_2", seq_a_boo_hearing_loss_2_evalRec),
         # RuleFuncH("Candidates_Including_Common",

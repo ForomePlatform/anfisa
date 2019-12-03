@@ -85,12 +85,12 @@ def defineFilterSchema(metadata_record):
         if cohorts:
             filters.multiStatusUnit("Variant_in", "/_filters/cohort_has_variant[]")
         else:
-            filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
-                               title="Proband Zygosity")
             filters.zygositySpecialUnit("Inheritance_Mode",
                 "/data/zygosity", config = {"x_cond":
                 ConditionMaker.condEnum("Chromosome", ["chrX"])},
                 title = "Inheritance Mode")
+        filters.statusUnit("Proband_Zygosity", "/view/bioinformatics/zygosity",
+                           title="Proband Zygosity")
         filters.multiStatusUnit("Callers", "/view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
