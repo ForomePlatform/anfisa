@@ -81,7 +81,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         sys.exit()
 
     time_start = datetime.now()
-    print("Dataset", ds_entry.getName(), 
+    print("Dataset", ds_entry.getName(),
         "creation started at", time_start, file = sys.stderr)
     date_loaded = time_start.isoformat()
 
@@ -134,7 +134,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
 
     data_rec_no = 0
 
-    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o " 
+    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o "
         + ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
         stdin = PIPE, stderr = PIPE,
         bufsize = 1, universal_newlines = False,
@@ -164,7 +164,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
             if report_lines and data_rec_no % report_lines == 0:
                 sys.stderr.write("\r%d lines..." % data_rec_no)
     if report_lines:
-        print("\nTotal lines: %d" % input_reader.getCurLineNo(), 
+        print("\nTotal lines: %d" % input_reader.getCurLineNo(),
             file = sys.stderr)
     input_reader.close()
 
@@ -191,7 +191,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
     if is_ok:
         ds_doc_dir = ds_dir + "/doc"
         ds_info = {
-            "date_loaded": date_loaded, 
+            "date_loaded": date_loaded,
             "doc": prepareDocDir(ds_doc_dir, ds_entry.getInv()),
             "flt_schema": flt_schema_data,
             "kind": ds_entry.getKind(),
@@ -235,8 +235,8 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
 
     print(rep_out.getvalue())
     time_done = datetime.now()
-    print("Dataset", ds_entry.getName(), 
-        "creation finished at", time_done, "for", 
+    print("Dataset", ds_entry.getName(),
+        "creation finished at", time_done, "for",
         (time_done - time_start), file = sys.stderr)
 
 #===============================================
@@ -247,8 +247,8 @@ def pushDruid(app_config, ds_entry):
         print("No vault directory:", vault_dir, file = sys.stderr)
         assert False
     if ds_entry.getKind() != "xl":
-        print("Druid dataset %s has unexpected kind %s" % 
-            (ds_entry.getName(),  ds_entry.getKind()), 
+        print("Druid dataset %s has unexpected kind %s" %
+            (ds_entry.getName(),  ds_entry.getKind()),
             file = sys.stderr)
         sys.exit()
     checkDSName(ds_entry.getName(), "xl")
@@ -261,7 +261,7 @@ def pushDruid(app_config, ds_entry):
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    is_ok = DRUID_ADM.uploadDataset(ds_entry.getName(), 
+    is_ok = DRUID_ADM.uploadDataset(ds_entry.getName(),
         ds_info["flt_schema"],
         os.path.abspath(ds_dir + "/fdata.json.gz"),
         os.path.abspath(ds_dir + "/druid_rq.json"))
@@ -320,42 +320,56 @@ def pushDoc(app_config, ds_entry):
     print("Re-doc complete:", ds_dir)
 
 #===============================================
-class DSEntry: 
-    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None):
+class DSEntry:
+    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None,
+            entry_data = None):
         self.mName = ds_name
         self.mKind = ds_kind
         self.mSource = source
         self.mInv  = ds_inventory
+        self.mEntryData = entry_data
 
     def getName(self):
         return self.mName
-        
+
     def getKind(self):
         return self.mKind
-        
+
     def getSource(self):
         return self.mSource
-        
+
     def getInv(self):
         return self.mInv
 
+    def dump(self):
+        return {
+            "name": self.mName,
+            "kind": self.mKind,
+            "source": self.mSource,
+            "inv": self.mInv,
+            "data": self.mEntryData}
+
     @classmethod
-    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):        
+    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):
         if ds_name not in dir_config["datasets"]:
             print("Dataset %s not registered in directory file (%s)" %
                 (ds_name, dir_fname), file = sys.stderr)
             sys.exit()
-        ds_entry = dir_config["datasets"][ds_name]
-        if "inv" in ds_entry:
-            ds_inventory = json_conf.loadDatasetInventory(ds_entry["inv"])
-            return DSEntry(ds_name,  ds_entry["kind"], 
-                ds_inventory["a-json"], ds_inventory)
-        if "a-json" in ds_entry:
-            return DSEntry(ds_name,  ds_entry["kind"], ds_entry["a-json"])
+        ds_entry_data = dir_config["datasets"][ds_name]
+        if "inv" in ds_entry_data:
+            ds_inventory = json_conf.loadDatasetInventory(ds_entry_data["inv"])
+            return DSEntry(ds_name,  ds_entry_data["kind"], 
+                ds_inventory["a-json"], ds_inventory, 
+                entry_data = {"arg-dir": ds_entry_data, "arg-inv": ds_inventory})
+        if "a-json" in ds_entry_data:
+            return DSEntry(ds_name,  ds_entry_data["kind"], 
+                ds_entry_data["a-json"],
+                entry_data = {"arg-dir": ds_entry_data})
         print(("Dataset %s: no correct source or inv registered "
             "in directory file (%s)") % (ds_name, dir_fname),
             file = sys.stderr)
         sys.exit()
+
 
 #===============================================
 if __name__ == '__main__':
@@ -379,14 +393,15 @@ if __name__ == '__main__':
         help = "Druid: no use coordinator")
     parser.add_argument("--reportlines", type = int, default = 100,
         help = "Portion for report lines, default = 100")
-    parser.add_argument("--delay",  type = int,  default = 0, 
+    parser.add_argument("--delay",  type = int,  default = 0,
         help = "Delay between work with multiple datasets, in seconds")
     parser.add_argument("names", nargs = "+", help = "Dataset name(s)")
     args = parser.parse_args()
 
     if args.dir:
-        if args.config or args.source:
-            print("Incorrect usage: use --dir or (--config, [--source])")
+        if args.config or args.source or args.inv:
+            print("Incorrect usage: use --dir or "
+                "(--config, [--source, --inv])")
             sys.exit()
         dir_config = json.loads(
             json_conf.readCommentedJSon(args.dir))
@@ -400,14 +415,22 @@ if __name__ == '__main__':
         entries = [DSEntry.createByDirConfig(ds_name,  dir_config, args.dir)
             for ds_name in args.names]
     else:
+        if args.source and args.inv:
+            print("Incorrect usage: use either --source or --inv")
         service_config_file = args.config
         if not service_config_file:
             service_config_file = "./anfisa.json"
-        if len(args.names) != 1 and args.source:
+        if len(args.names) != 1 and (args.source or args.inv):
             print("Incorrect usage: --source applies only to one ds")
             sys.exit()
-        entries = [DSEntry(ds_name,  args.kind,  args.source)
-            for ds_name in args.names]
+        if args.inv:
+            ds_inventory = json_conf.loadDatasetInventory(args.inv)
+            ds_name = args.names[0]
+            entries = [DSEntry(ds_name, args.kind, ds_inventory["a-json"],
+                ds_inventory, entry_data = {"arg-inv": ds_inventory})]
+        else:
+            entries = [DSEntry(ds_name,  args.kind,  args.source)
+                for ds_name in args.names]
 
     app_config = json_conf.loadJSonConfig(service_config_file)
 
@@ -427,6 +450,9 @@ if __name__ == '__main__':
             pushDruid(app_config, ds_entry)
         elif args.mode == "doc-push":
             pushDoc(app_config, ds_entry)
+        elif args.mode == "debug-info":
+            print("Info:", json.dumps(
+                ds_entry.dump(), indent = 4, sort_keys = True))
         else:
             print("Bad mode:", args.mode)
             sys.exit()

@@ -20,9 +20,10 @@
 
 #===============================================
 class FamilyInfo:
-    def __init__(self, samples, proband_id = None):
-        self.mMembers = sorted(samples.values(),
+    def __init__(self, meta_record):
+        self.mMembers = sorted(meta_record["samples"].values(),
             key = lambda it: it["id"])
+        proband_id = meta_record.get("proband")
         if proband_id is None:
             for it in self.mMembers:
                 if it["id"].endswith("a1"):
@@ -56,6 +57,21 @@ class FamilyInfo:
                 trio_name = "Proband" if idx == 0 else it["id"]
                 self.mTrioSeq.append(
                     (trio_name, idx, idx_father, idx_mother))
+        
+        self.mCohortList = None
+        self.mCohortMap = None
+        if "cohorts" in meta_record:
+            self.mCohortList = []
+            self.mCohortMap = dict()
+            for item in meta_record["cohorts"]:
+                self.mCohortList.append(item["name"])
+                for it_id in item["members"]:
+                    assert it_id not in self.mCohortMap, (
+                        "Item in two cohorts: %s, %s" %
+                        (self.mCohortMap[it_id], item["name"]))
+                    assert it_id in self.mIdMap, (
+                        "Cohort item is not registered: %s" % it_id)
+                    self.mCohortMap[it_id] = item["name"]
 
     def __len__(self):
         return len(self.mMembers)
@@ -77,3 +93,14 @@ class FamilyInfo:
 
     def groupHasMales(self, problem_group):
         return len(self.mMaleSet & set(problem_group)) > 0
+
+    def getCohortList(self):
+        return self.mCohortList
+    
+    def getCohortMap(self):
+        return self.mCohortMap
+    
+    def id2cohort(self, it_id):
+        if self.mCohortMap is not None:
+            return self.mCohortMap.get(it_id)
+        return None

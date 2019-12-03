@@ -38,12 +38,16 @@ class AspectH:
         self.mResearchOnly = research_only
         self.mColGroups = col_groups
         self.mMode      = mode
+        self.mViewColMode   = None 
         assert self.mSource in ("view", "data")
 
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []
         if attrs is not None:
             self.setAttributes(attrs)
+
+    def _setViewColMode(self, column_mode):
+        self.mViewColMode = column_mode
 
     def __getitem__(self, idx):
         return self.mAttrs[idx]
@@ -123,7 +127,8 @@ class AspectH:
     def checkResearchBlock(self, research_mode):
         return (not research_mode) and self.mResearchOnly
 
-    def getViewRepr(self, rec_data, research_mode, details = None):
+    def getViewRepr(self, rec_data, research_mode, 
+            details = None, view_context = None):
         ret = {
             "name": self.mName,
             "title": self.mTitle,
@@ -178,5 +183,24 @@ class AspectH:
                 for idx, td_info in enumerate(row[2]):
                     if idx in hit_columns:
                         td_info[1] += ' hit'
+        if self.mViewColMode and view_context and rows:
+            assert self.mViewColMode == "cohorts"
+            c_map = view_context.get("cohorts")
+            if c_map:
+                col_class_seq = []
+                for cell_info in rows[0][2]:
+                    col_class = None
+                    names = cell_info[0].split()
+                    if len(names) > 0:
+                        col_class = c_map.get(names[-1])
+                    if col_class:
+                        col_class_seq.append("cohorts_" + col_class)
+                    else:
+                        col_class_seq.append(None)
+                for row in rows:
+                    for idx, cell_info in enumerate(row[2]):
+                        col_class = col_class_seq[idx]
+                        if col_class:
+                            cell_info[1] += " " + col_class
         ret["rows"] = rows
         return ret

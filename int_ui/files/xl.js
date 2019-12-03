@@ -24,6 +24,8 @@ var sDSName = null;
 var sCommonTitle = null;
 var sWsURL = null;
 var sAppModeRq = "";
+var sCohortList = null;
+var sCohortViewCheck = null;
 
 /*************************************/
 function setupXLFilters(ds_name, common_title, ws_url) {

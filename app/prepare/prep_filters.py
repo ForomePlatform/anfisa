@@ -29,8 +29,7 @@ class FilterPrepareSetH:
         self.mVGroups  = dict()
         self.mCurVGroup = None
         self.mMeta = metadata_record
-        self.mFamilyInfo = FamilyInfo(self.mMeta["samples"],
-            self.mMeta.get("proband"))
+        self.mFamilyInfo = FamilyInfo(self.mMeta)
         self.mCondEnv = CondEnv("?prepare?", modes)
 
     def getFamilyInfo(self):

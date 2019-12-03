@@ -108,7 +108,7 @@ def _reportAspect(output, rep_data):
             for title, count in rep_data["colhead"]:
                 print('<td class="title" colspan="%d">%s</td>' %
                 (count, title), file = output)
-        print('</tr>', file = output)
+            print('</tr>', file = output)
 
         for attr_data in rep_data["rows"]:
             if len(attr_data) == 0:

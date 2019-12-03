@@ -121,6 +121,13 @@ function setupDSInfo(info) {
         menu_el.className = "drop ctrl-menu-disabled";
         menu_el.onclick = "";
     }
+    if (info["cohorts"]) {
+        sCohortList = info["cohorts"];
+        sCohortViewCheck = [];
+        for (idx = 0; idx < sCohortList.length; idx++) {
+            sCohortViewCheck[sCohortList[idx]] = true;
+        }
+    }
 }
 
 /*************************************/

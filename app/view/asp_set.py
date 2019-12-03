@@ -43,14 +43,16 @@ class AspectSetH:
         return cls([AspectH.load(it) for it in data])
 
     #===============================================
-    def getViewRepr(self, rec_data, research_mode, details = None):
+    def getViewRepr(self, rec_data, research_mode, 
+            details = None, view_context = None):
         ret = []
         for aspect in self.mAspects:
             if aspect.isIgnored():
                 continue
             if aspect.checkResearchBlock(research_mode):
                 continue
-            ret.append(aspect.getViewRepr(rec_data, research_mode, details))
+            ret.append(aspect.getViewRepr(rec_data, 
+                research_mode, details, view_context))
         return ret
 
     def getFirstAspectID(self):

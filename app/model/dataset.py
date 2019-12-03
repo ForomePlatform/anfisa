@@ -40,8 +40,11 @@ class DataSet:
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
-        self.mFamilyInfo = FamilyInfo(dataset_info["meta"]["samples"],
-            dataset_info["meta"].get("proband"))
+        self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
+        self.mViewContext = None
+        if self.mFamilyInfo.getCohortList():
+            self.mViewContext = {"cohorts": self.mFamilyInfo.getCohortMap()}
+            self.mAspects["view_qsamples"]._setViewColMode("cohorts")
         tuneAspects(self, self.mAspects)
 
     def _setAspectHitGroup(self, aspect_name, group_attr):
@@ -106,7 +109,8 @@ class DataSet:
 
     def getViewRepr(self, rec_no, research_mode, details = None):
         rec_data = self.getRecordData(rec_no)
-        return self.mAspects.getViewRepr(rec_data, research_mode, details)
+        return self.mAspects.getViewRepr(rec_data, 
+            research_mode, details, self.mViewContext)
 
     def getSourceVersions(self):
         if "versions" in self.mDataInfo["meta"]:
@@ -139,4 +143,6 @@ class DataSet:
             ret["doc"] = self.mDataInfo["doc"]
             if base_h is not None and "doc" in base_h.getDataInfo():
                 ret["doc-base"] = base_h.getDataInfo()["doc"]
+        if self.mFamilyInfo.getCohortList() is not None:
+            ret["cohorts"] = self.mFamilyInfo.getCohortList()
         return ret
