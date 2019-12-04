@@ -121,8 +121,8 @@ def defineFilterSchema(metadata_record):
                "/data/most_severe_consequence",
                variants = sConsequenceVariants,
                default_value = "undefined")
-        filters.statusUnit("Canonical_Annotation",
-            "/view/general/canonical_annotation",
+        filters.multiStatusUnit("Canonical_Annotation",
+            "/view/general/canonical_annotation[]",
             default_value = "undefined")
         filters.intValueUnit("Number_ALTs",
             "/_filters/alts",
