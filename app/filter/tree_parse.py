@@ -19,22 +19,28 @@
 #
 
 import sys, ast
-from collections import defaultdict
+from hashlib import md5
 
 from utils.log_err import logException
-from .code_works import reprConditionCode, findComment
+from .code_repr import formatIfCode
+from .code_works import normalizeCode
+from .code_parse import parseCodeByPortions
 #===============================================
 class TreeFragment:
-    def __init__(self, level, tp, base_instr):
+    def __init__(self, level, tp, line_diap,
+            base_instr = None, err_info = None, decision = None,
+            import_entries = None, cond_data = None, markers = None,
+            hash_code = None):
         self.mLevel = level
         self.mType = tp
+        self.mLineDiap = line_diap
         self.mBaseInstr = base_instr
-        self.mBaseLineDiap = None
-        self.mFullLineDiap = None
-        self.mCondData = None
-        self.mDecision = None
-        self.mImportEntries = None
-        self.mMarkers = []
+        self.mErrInfo = err_info
+        self.mCondData = cond_data
+        self.mDecision = decision
+        self.mImportEntries = import_entries
+        self.mMarkers = markers if markers is not None else []
+        self.mHashCode = hash_code
 
     def setLineDiap(self, base_diap, full_diap):
         self.mBaseLineDiap = base_diap
@@ -49,11 +55,11 @@ class TreeFragment:
     def getBaseInstr(self):
         return self.mBaseInstr
 
-    def getBaseLineDiap(self):
-        return self.mBaseLineDiap
+    def getLineDiap(self):
+        return self.mLineDiap
 
-    def getFullLineDiap(self):
-        return self.mFullLineDiap
+    def getErrorInfo(self):
+        return self.mErrInfo
 
     def getCondData(self):
         return self.mCondData
@@ -64,8 +70,8 @@ class TreeFragment:
     def getImportEntries(self):
         return self.mImportEntries
 
-    def addMarker(self, point_cond, name_instr):
-        self.mMarkers.append([point_cond, name_instr])
+    def getHashCode(self):
+        return self.mHashCode
 
     def getMarkers(self):
         return self.mMarkers
@@ -73,57 +79,77 @@ class TreeFragment:
     def getMarkerInstr(self, idx):
         return self.mMarkers[idx][1]
 
-    def getMarkerIdx(self, point_cond):
-        for idx, point_info in enumerate(self.mMarkers):
-            if point_info[0] is point_cond:
-                return idx
-        assert False
-
-    def _removeMarker(self, idx):
-        del self.mMarkers[idx]
-
-    def setCondData(self, cond_data):
-        assert self.mCondData is None
-        self.mCondData = cond_data
-
-    def setDecision(self, decision):
-        assert self.mDecision is None
-        self.mDecision = decision
-
-    def setImportEntries(self, import_entries):
-        self.mImportEntries = import_entries
-
-
 #===============================================
 class ParsedDTree:
-    #===============================================
     def __init__(self, cond_env, code):
         self.mCondEnv = cond_env
         self.mFragments = []
-        self.mCode = code
+        self.mCode = normalizeCode(code)
+        self.mImportFragments = dict()
+        self.mDummyLinesReg = set()
+        hash_h = md5()
+        code_lines = self.mCode.splitlines()
+
+        for parsed_d, err_info, line_diap in parseCodeByPortions(
+                code_lines, self.mDummyLinesReg):
+            fragments = []
+            if err_info is None:
+                assert len(parsed_d.body) == 1
+                self.mError = None
+                self.mCurLineDiap = line_diap
+                try:
+                    instr_d = parsed_d.body[0]
+                    if isinstance(instr_d, ast.Return):
+                        fragments.append(TreeFragment(0, "Return", line_diap,
+                            decision = self.getReturnValue(instr_d)))
+                    elif isinstance(instr_d, ast.Import):
+                        fragments.append(self.processImport(instr_d,
+                            hash_h.hexdigest()))
+                    elif isinstance(instr_d, ast.If):
+                        fragments += self.processIf(instr_d)
+                    else:
+                        self.errorIt(instr_d,
+                            "Instructon must be of if-type")
+                    for frag_h in fragments:
+                        line_from, line_to = frag_h.getLineDiap()
+                        for line_no in range(line_from, line_to):
+                            if line_no not in self.mDummyLinesReg:
+                                hash_h.update(bytes(code_lines[line_no - 1],
+                                    "utf-8"))
+                                hash_h.update(b'\n')
+                except Exception as err:
+                    if self.mError is None:
+                        logException("Exception on parse tree code")
+                        raise err
+                    err_info = self.mError
+            if err_info is not None:
+                fragments = [TreeFragment(0, "Error", line_diap,
+                    err_info = err_info)]
+            self.mFragments += fragments
+        self.mHashCode = hash_h.hexdigest()
         self.mError = None
-        self.mImportFragments = {}
-
-        try:
-            top_d = ast.parse(self.mCode)
-        except SyntaxError as err:
-            txt_len = len(err.text.rstrip())
-            self.mError = ("Syntax error", max(0, err.lineno),
-                max(0, min(err.offset, txt_len - 1)))
-            self.mFragments = None
-            return
-
-        try:
-            last_instr = len(top_d.body) - 1
-            for idx, instr_d in enumerate(top_d.body):
-                self.processInstr(instr_d, idx == last_instr)
-            if self.mError is None:
-                self.arrangeDiapasons()
-        except Exception as err:
-            if self.mError is None:
-                logException("Exception on parse tree code")
-                raise err
-            self.mFragments = None
+        self.mCurLineDiap = None
+        for frag_h in self.mFragments:
+            self.mError = frag_h.getErrorInfo()
+            if self.mError is not None:
+                break
+        if self.mError is None:
+            for idx, frag_h in enumerate(self.mFragments[:-1]):
+                if frag_h.getLevel() == 0 and frag_h.getDecision() is not None:
+                    err_info = ("Final instruction not in final place",
+                        frag_h.getLineDiap()[0], 0)
+                    self.mFragments[idx] = TreeFragment(0, "Error",
+                        frag_h.getLineDiap(), err_info = err_info)
+                    self.mError = err_info
+                    break
+        if self.mError is None:
+            last_frag_h = self.mFragments[-1]
+            if last_frag_h.getLevel() > 0 or last_frag_h.getDecision() is None:
+                err_info = ("Final instruction must return True or False",
+                    last_frag_h.getLineDiap()[0], 0)
+                self.mFragments[-1] = TreeFragment(0, "Error",
+                    frag_h.getLineDiap(), err_info = err_info)
+                self.mError = err_info
 
     def getError(self):
         return self.mError
@@ -137,55 +163,37 @@ class ParsedDTree:
     def getFragments(self):
         return self.mFragments
 
-    def getCurFrag(self):
-        return self.mFragments[-1]
+    def getHashCode(self):
+        return self.mHashCode
 
     def errorIt(self, it, msg_text):
-        self.mError = (msg_text, it.lineno, it.col_offset)
+        self.mError = (msg_text,
+            it.lineno + self.mCurLineDiap[0] - 1, it.col_offset)
         raise RuntimeError()
 
     def errorMsg(self, line_no, col_offset, msg_text):
-        self.mError = (msg_text, line_no, col_offset)
+        self.mError = (msg_text,
+            line_no + self.mCurLineDiap[0] - 1, col_offset)
         raise RuntimeError()
 
     #===============================================
-    def processInstr(self, instr, q_last_instr):
-        if q_last_instr:
-            if isinstance(instr, ast.Return):
-                self.mFragments.append(
-                    TreeFragment(0, "Return", instr))
-                self.getCurFrag().setDecision(
-                    self.getReturnValue(instr))
-            else:
-                self.errorIt(instr,
-                    "Last instructon must return True/False")
-        else:
-            if isinstance(instr, ast.If):
-                self.mFragments.append(
-                    TreeFragment(0, "If", instr))
-                self._processIf(instr)
-            elif isinstance(instr, ast.Import):
-                self.mFragments.append(
-                    TreeFragment(0, "Import", instr))
-                self._processImport(instr)
-            else:
-                self.errorIt(instr,
-                    "Instructon must be of if-type")
-
-    #===============================================
-    def _processIf(self, instr):
-        self.getCurFrag().setCondData(
-            self._processCondition(instr.test))
-        self.mFragments.append(TreeFragment(1, "Return",
-            instr.body[0]))
-        self.getCurFrag().setDecision(
-            self.getSingleReturnValue(instr.body))
-        if len(instr.orelse) > 0:
-            self.errorIt(instr.orelse[0],
+    def processIf(self, instr_d):
+        markers = []
+        cond_data = self._processCondition(instr_d.test, markers)
+        if len(instr_d.orelse) > 0:
+            self.errorIt(instr_d.orelse[0],
                 "Else instruction is not supported")
+        line_from, line_to = self.mCurLineDiap
+        decision = self.getSingleReturnValue(instr_d.body)
+        line_decision = instr_d.body[0].lineno + line_from - 1
+        return [
+            TreeFragment(0, "If", (line_from, line_decision),
+                markers = markers, cond_data = cond_data),
+            TreeFragment(1, "Return",
+                (line_decision, line_to), decision = decision)]
 
     #===============================================
-    def _processImport(self, instr):
+    def processImport(self, instr, hash_code):
         import_entries = []
         for entry in instr.names:
             if entry.asname is not None:
@@ -193,70 +201,18 @@ class ParsedDTree:
             if (entry.name in self.mImportFragments
                     or entry.name in import_entries):
                 self.errorIt(instr, "duplicate import: " + entry.name)
-                self.errorIt(instr, "duplicate import: " + entry.name)
             unit_kind, _ = self.mCondEnv.detectUnit(entry.name)
             if unit_kind in (None, "reserved"):
                 self.errorIt(instr, "Case does not provide: " + entry.name)
             if unit_kind != "operational":
                 self.errorIt(instr, "improper name for import: " + entry.name)
             import_entries.append(entry.name)
-        self.mFragments[-1].setImportEntries(import_entries)
+        frag_h = TreeFragment(0, "Import", self.mCurLineDiap,
+            import_entries = import_entries, hash_code = hash_code)
         for nm in import_entries:
-            self.mImportFragments[nm] = self.mFragments[-1]
+            self.mImportFragments[nm] = frag_h
+        return frag_h
 
-    #===============================================
-    def arrangeDiapasons(self):
-        if len(self.mFragments) == 0:
-            return
-        lines = self.mCode.splitlines()
-        empty_lines_no = set()
-        comment_lines_no = set()
-        max_line_no = None
-        for line_idx, line in enumerate(lines):
-            stripped = line.strip()
-            if not stripped:
-                empty_lines_no.add(line_idx + 1)
-            else:
-                max_line_no = line_idx + 1
-                if stripped.startswith('#'):
-                    comment_lines_no.add(line_idx + 1)
-        diap_seq = []
-        for frag in self.mFragments:
-            base_instr = frag.getBaseInstr()
-            line_no, offset = base_instr.lineno, base_instr.col_offset
-            if offset > 0 and not lines[line_no - 1][:offset - 1].isspace():
-                self.errorIt(base_instr, "Split line before instruction")
-            cur_diap = [line_no, line_no]
-            if len(diap_seq) == 0:
-                cur_diap[0] = 1
-            else:
-                while (cur_diap[0] - 1 > diap_seq[-1][1]
-                        and cur_diap[0] - 1 in comment_lines_no):
-                    cur_diap[0] -= 1
-                diap_seq[-1][1] = cur_diap[0] - 1
-            diap_seq.append(cur_diap)
-        diap_seq[-1][1] = max_line_no
-
-        for idx, frag in enumerate(self.mFragments):
-            full_diap = diap_seq[idx]
-            base_diap = full_diap[:]
-            while (base_diap[0] in empty_lines_no
-                    or base_diap[0] in comment_lines_no):
-                base_diap[0] += 1
-                assert base_diap[0] <= base_diap[1]
-            while (base_diap[1] in empty_lines_no
-                    or base_diap[1] in comment_lines_no):
-                base_diap[1] -= 1
-                assert base_diap[0] <= base_diap[1]
-            loc = findComment("\n".join(
-                lines[base_diap[0] - 1: base_diap[1]]))
-            if loc is not None:
-                line_no, offset = loc
-                self.errorMsg(base_diap[0] + line_no - 1, offset,
-                    "Sorry, no comments inside instructions")
-            frag.setLineDiap(base_diap, full_diap)
-
-    #===============================================
     #===============================================
     def getReturnValue(self, instr):
         if isinstance(instr.value, ast.NameConstant):
@@ -277,7 +233,7 @@ class ParsedDTree:
         return self.getReturnValue(instr)
 
     #===============================================
-    def _processCondition(self, it):
+    def _processCondition(self, it, markers):
         if isinstance(it, ast.BoolOp):
             if isinstance(it.op, ast.And):
                 seq = ["and"]
@@ -286,27 +242,25 @@ class ParsedDTree:
             else:
                 self.errorIt(it, "Logic operation not supported")
             for val in it.values:
-                rep_el = self._processCondition(val)
+                rep_el = self._processCondition(val, markers)
                 if rep_el[0] == seq[0]:
                     seq += rep_el[1:]
                 else:
                     seq.append(rep_el)
-            if seq[0] == "and":
-                return self._clearConjunction(seq)
             return seq
         if isinstance(it, ast.UnaryOp):
             if not isinstance(it.op, ast.Not):
                 self.errorIt(it, "Unary operation not supported")
-            return ["not", self._processCondition(it.operand)]
+            return ["not", self._processCondition(it.operand, markers)]
         if not isinstance(it, ast.Compare):
             self.errorIt(it, "Comparison or logic operation expected")
         if len(it.ops) == 1 and (isinstance(it.ops[0], ast.In)
                 or isinstance(it.ops[0], ast.NotIn)):
-            return self._processEnumInstr(it)
-        return self._processNumInstr(it)
+            return self._processEnumInstr(it, markers)
+        return self._processNumInstr(it, markers)
 
     #===============================================
-    def _processEnumInstr(self, it):
+    def _processEnumInstr(self, it, markers):
         assert len(it.comparators) == 1
         it_set = it.comparators[0]
         if isinstance(it.ops[0], ast.NotIn):
@@ -358,10 +312,11 @@ class ParsedDTree:
                         self.errorIt(it.left,
                             "Field %s not imported" % field_name)
                     return ["operational", field_name, op_mode, variants]
-                if unit_kind != "enum":
-                    self.errorIt(it.left, "Improper enum field name")
+                if unit_kind != "enum" or unit_h is None:
+                    self.errorIt(it.left, "Improper enum field name: "
+                        + field_name)
             ret = ["enum", field_name, op_mode, variants]
-            self.getCurFrag().addMarker(ret, it.left)
+            markers.append([ret, it.left])
             return ret
 
         if isinstance(it.left, ast.Call):
@@ -378,12 +333,12 @@ class ParsedDTree:
             if ret is None:
                 self.errorIt(it.left,
                     "Improper arguments for special field")
-            self.getCurFrag().addMarker(ret, it.left)
+            markers.append([ret, it.left])
             return ret
         self.errorIt(it.left, "Name of field is expected")
 
     #===============================================
-    def _processNumInstr(self, it):
+    def _processNumInstr(self, it, markers):
         if len(it.ops) > 2 or (
                 len(it.ops) == 2 and it.ops[0] != it.ops[1]):
             self.errorIt(it, "Too complex comparison")
@@ -410,9 +365,9 @@ class ParsedDTree:
         if self.mCondEnv is not None:
             unit_kind, unit_h = self.mCondEnv.detectUnit(
                 field_name, "numeric")
-            if unit_kind != "numeric":
+            if unit_kind != "numeric" or unit_h is None:
                 self.errorIt(operands[idx_fld],
-                    "Improper numeric field name")
+                    "Improper numeric field name: " + field_name)
         if len(operands) == 3 and idx_fld != 1:
             self.errorIt(it, "Too complex comparison")
         ret = ["numeric", field_name, [None, None], None]
@@ -421,38 +376,7 @@ class ParsedDTree:
                 ret[2][0] = self.processFloat(op)
             elif idx > idx_fld:
                 ret[2][1] = self.processFloat(op)
-        self.getCurFrag().addMarker(ret, operands[idx_fld])
-        return ret
-
-    #===============================================
-    def _clearConjunction(self, ret_seq):
-        unit_groups = defaultdict(list)
-        for cond in ret_seq:
-            if cond[0] == "numeric":
-                unit_groups[cond[1]].append(cond)
-        idxs_to_remove = []
-        for cond_seq in unit_groups.values():
-            if len(cond_seq) < 2:
-                continue
-            sheet = []
-            for cond in cond_seq:
-                sheet.append((self.getCurFrag().getMarkerIdx(cond), cond))
-            sheet.sort()
-            bounds_base = sheet[0][1][2]
-            for cond_info in sheet[-1:0:-1]:
-                bounds = cond_info[1][2]
-                for j in (0, 1):
-                    if bounds[j] is not None:
-                        if bounds_base[j] is not None:
-                            self.errorIt(self.getCurFrag().
-                                getMarkerInstr(cond_info[0]),
-                                "Too heavy numeric condition")
-                        bounds_base[j] = bounds[j]
-                self.getCurFrag()._removeMarker(cond_info[0])
-                idxs_to_remove.append(ret_seq.index(cond_info[1]))
-        ret = ret_seq[:]
-        for idx in sorted(idxs_to_remove)[::-1]:
-            del ret[idx]
+        markers.append([ret, operands[idx_fld]])
         return ret
 
     #===============================================
@@ -484,12 +408,16 @@ class ParsedDTree:
     def modifyCode(self, instr):
         mode, loc, new_cond = instr
         assert mode == "mark"
-        frag = self.mFragments[loc[0]]
-        frag.getMarkers()[loc[1]][0][:] = new_cond
+        frag_h = self.mFragments[loc[0]]
+        frag_h.getMarkers()[loc[1]][0][:] = new_cond
         code_lines = self.mCode.splitlines()
-        line_from, line_to = frag.getBaseLineDiap()
-        code_lines[line_from - 1: line_to] = reprConditionCode(
-            frag.getCondData()).splitlines()
+        line_from, line_to = frag_h.getLineDiap()
+        dummy_lines = []
+        for line_no in range(*frag_h.getLineDiap()):
+            if line_no in self.mDummyLinesReg:
+                dummy_lines.append(code_lines[line_no - 1])
+        code_lines[line_from - 1: line_to] = (dummy_lines
+            + formatIfCode(frag_h.getCondData()).splitlines())
         return "\n".join(code_lines)
 
 

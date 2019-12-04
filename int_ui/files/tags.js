@@ -62,14 +62,12 @@ function loadTags(tags_to_update){
             return;
         ws_name = parent.window.sDSName;
         rec_id = parent.window.sCurRecID;
-        app_mode_rq = parent.window.sAppModeRq;
     } else {
         ws_name = sAloneWS;
         rec_id = sAloneRecID;
-        app_mode_rq = "";
     }
     
-    var args = "ds=" + ws_name +  app_mode_rq + "&rec=" + rec_id;
+    var args = "ds=" + ws_name +  "&rec=" + rec_id;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
     ajaxCall("tags", args, setupTags);

@@ -129,24 +129,12 @@ class Workspace(DataSet):
             "count": count,
             "transcripts": [count_items, total_items]}
 
-    def reportList(self, rec_no_seq, rec_it_map_seq,
-            counts_transctipts, random_mode = False):
+    def reportList(self, rec_no_seq, rec_it_map_seq, counts_transctipts):
         rep = {
             "workspace": self.getName(),
             "total": self.getTotal(),
             "transcripts": counts_transctipts,
             "filtered": len(rec_no_seq)}
-        if (random_mode and len(rec_no_seq)
-                > AnfisaConfig.configOption("rand.min.size")):
-            sheet = [(self.mTabRecRand[rec_no], idx)
-                for idx, rec_no in enumerate(rec_no_seq)]
-            sheet.sort()
-            del sheet[AnfisaConfig.configOption("rand.sample.size"):]
-            rec_no_seq = [rec_no_seq[idx] for _, idx in sheet]
-            rec_it_map_seq = [rec_it_map_seq[idx] for _, idx in sheet]
-            rep["list-mode"] = "samples"
-        else:
-            rep["list-mode"] = "complete"
         rep["records"] = self._reportListKeys(rec_no_seq, rec_it_map_seq)
         return rep
 

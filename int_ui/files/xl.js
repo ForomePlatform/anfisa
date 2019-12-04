@@ -20,16 +20,11 @@
  *
  */
 
-var sDSName = null;
-var sCommonTitle = null;
-var sWsURL = null;
-var sAppModeRq = "";
-
 /*************************************/
-function setupXLFilters(ds_name, common_title, ws_url) {
-    sWsURL = ws_url;
+function setupXLFilters(ds_name, common_title, ws_ref_url) {
     sDSName = ds_name;
     sCommonTitle = common_title;
+    sWsRefURL = ws_ref_url;
     window.name = sCommonTitle + ":" + sDSName;
     window.onresize  = arrangeControls;
     window.onkeydown  = onKey;

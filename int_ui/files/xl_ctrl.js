@@ -179,9 +179,9 @@ var sCreateWsH = {
             if (info[0] == null) {
                 this.mDivModStatus.innerHTML = info[1];
             } else {
-                target_ref = (sWsURL != "ws")? '': (' target="' + 
+                target_ref = (sWsRefURL != "ws")? '': (' target="' + 
                     sCommonTitle + ':' + info[0]["ws"] + '"'); 
-                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsURL + 
+                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsRefURL + 
                     '?ds=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
         }
@@ -210,6 +210,7 @@ var sSubViewH = {
     mTimeH: null,
     
     init: function() {
+        sSamplesCtrl = this;
         this.mDivStatus = document.getElementById("sub-view-status");
         this.mDivMod = document.getElementById("sub-view-mod");
         this.mInpCheckFull = document.getElementById("sub-view-check-full");

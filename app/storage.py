@@ -321,11 +321,13 @@ def pushDoc(app_config, ds_entry):
 
 #===============================================
 class DSEntry:
-    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None):
+    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None,
+            entry_data = None):
         self.mName = ds_name
         self.mKind = ds_kind
         self.mSource = source
         self.mInv  = ds_inventory
+        self.mEntryData = entry_data
 
     def getName(self):
         return self.mName
@@ -339,19 +341,31 @@ class DSEntry:
     def getInv(self):
         return self.mInv
 
+    def dump(self):
+        return {
+            "name": self.mName,
+            "kind": self.mKind,
+            "source": self.mSource,
+            "inv": self.mInv,
+            "data": self.mEntryData}
+
     @classmethod
     def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):
         if ds_name not in dir_config["datasets"]:
             print("Dataset %s not registered in directory file (%s)" %
                 (ds_name, dir_fname), file = sys.stderr)
             sys.exit()
-        ds_entry = dir_config["datasets"][ds_name]
-        if "inv" in ds_entry:
-            ds_inventory = json_conf.loadDatasetInventory(ds_entry["inv"])
-            return DSEntry(ds_name,  ds_entry["kind"],
-                ds_inventory["a-json"], ds_inventory)
-        if "a-json" in ds_entry:
-            return DSEntry(ds_name,  ds_entry["kind"], ds_entry["a-json"])
+        ds_entry_data = dir_config["datasets"][ds_name]
+        if "inv" in ds_entry_data:
+            ds_inventory = json_conf.loadDatasetInventory(ds_entry_data["inv"])
+            return DSEntry(ds_name,
+                ds_entry_data["kind"], ds_inventory["a-json"], ds_inventory,
+                entry_data = {
+                    "arg-dir": ds_entry_data, "arg-inv": ds_inventory})
+        if "a-json" in ds_entry_data:
+            return DSEntry(ds_name,  ds_entry_data["kind"],
+                ds_entry_data["a-json"],
+                entry_data = {"arg-dir": ds_entry_data})
         print(("Dataset %s: no correct source or inv registered "
             "in directory file (%s)") % (ds_name, dir_fname),
             file = sys.stderr)
@@ -386,8 +400,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.dir:
-        if args.config or args.source:
-            print("Incorrect usage: use --dir or (--config, [--source])")
+        if args.config or args.source or args.inv:
+            print("Incorrect usage: use --dir or "
+                "(--config, [--source, --inv])")
             sys.exit()
         dir_config = json.loads(
             json_conf.readCommentedJSon(args.dir))
@@ -401,14 +416,22 @@ if __name__ == '__main__':
         entries = [DSEntry.createByDirConfig(ds_name,  dir_config, args.dir)
             for ds_name in args.names]
     else:
+        if args.source and args.inv:
+            print("Incorrect usage: use either --source or --inv")
         service_config_file = args.config
         if not service_config_file:
             service_config_file = "./anfisa.json"
-        if len(args.names) != 1 and args.source:
+        if len(args.names) != 1 and (args.source or args.inv):
             print("Incorrect usage: --source applies only to one ds")
             sys.exit()
-        entries = [DSEntry(ds_name,  args.kind,  args.source)
-            for ds_name in args.names]
+        if args.inv:
+            ds_inventory = json_conf.loadDatasetInventory(args.inv)
+            ds_name = args.names[0]
+            entries = [DSEntry(ds_name, args.kind, ds_inventory["a-json"],
+                ds_inventory, entry_data = {"arg-inv": ds_inventory})]
+        else:
+            entries = [DSEntry(ds_name,  args.kind,  args.source)
+                for ds_name in args.names]
 
     app_config = json_conf.loadJSonConfig(service_config_file)
 
@@ -428,6 +451,9 @@ if __name__ == '__main__':
             pushDruid(app_config, ds_entry)
         elif args.mode == "doc-push":
             pushDoc(app_config, ds_entry)
+        elif args.mode == "debug-info":
+            print("Info:", json.dumps(
+                ds_entry.dump(), indent = 4, sort_keys = True))
         else:
             print("Bad mode:", args.mode)
             sys.exit()

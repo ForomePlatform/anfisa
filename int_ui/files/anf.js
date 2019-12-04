@@ -20,21 +20,13 @@
  *
  */
 
-var sDSName = null;
-var sCommonTitle = null;
 var sCurRecNo = null;
 var sCurRecID = null;
 var sTabPortData = [false, null, null];
-var sCurRandPortion = 1;
 var sRecList = null;
-var sRecSamples = null;
 var sViewRecNoSeq = null;
-var sAppModeRq = null;
 
-var sSubViewH = null;
-
-function initWin(workspace_name, common_title, app_modes) {
-    sAppModeRq = (app_modes)? ("&m=" + app_modes) : "";
+function initWin(workspace_name, common_title) {
     sDSName = workspace_name; 
     sCommonTitle = common_title;
     sUnitsH.init("ds=" + sDSName, false);
@@ -44,7 +36,6 @@ function initWin(workspace_name, common_title, app_modes) {
     window.onkeydown = onKey;
     window.onclick   = onClick;
     window.onresize  = arrangeControls;
-    document.getElementById("list-rand-portion").value = sCurRandPortion;
 
     initMonitor();
     checkWorkZone(null);
@@ -69,23 +60,19 @@ function setupList(info) {
     if (info["transcripts"][0] != info["transcripts"][1])
         rep += "&nbsp;/&nbsp;" + info["transcripts"][1];
     document.getElementById("ws-transcripts-report").innerHTML = rep;
-    sRecSamples = info["list-mode"] == "samples";
-    document.getElementById("ws-list-rand-info").style.visibility = 
-        (sRecSamples)?"visible":"hidden";
     sRecList = info["records"];
     refreshRecList();
     arrangeControls();
 }
 
 function arrangeControls() {
-    if (sSubViewH != undefined) {
-        sSubViewH.arrangeControls();
+    if (sSamplesCtrl != null) {
+        sSamplesCtrl.arrangeControls();
         return;
     }
     
-    document.getElementById("top").style.height = (sRecSamples)? 80:60;
-    document.getElementById("rec-list").style.height = window.innerHeight - 1 
-        - ((sRecSamples)? 80:60);
+    document.getElementById("top").style.height = 60;
+    document.getElementById("rec-list").style.height = window.innerHeight - 61;
     
     zone_mod_height = document.getElementById("zone-mod").getBoundingClientRect().height;
     document.getElementById("work-zone-area").style.height = zone_mod_height - 60;
@@ -93,21 +80,13 @@ function arrangeControls() {
 }
 
 function refreshRecList() {
-    if (sRecSamples) {
-        idx_from = (sCurRandPortion - 1) * 20;
-        idx_to = idx_from + 20;
-    } else {
-        idx_from = 0;
-        idx_to = sRecList.length;
-    }
     sViewRecNoSeq = [];
     var rep = [];
-    for (idx = idx_from; idx < idx_to; idx++) {
-        rec_id = sRecList[idx][0];
-        label  = sRecList[idx][1];
-        color  = sRecList[idx][2];
-        marked = sRecList[idx][3];
-        rec_no = idx - idx_from;
+    for (rec_no = 0; rec_no < sRecList.length; rec_no++) {
+        rec_id = sRecList[rec_no][0];
+        label  = sRecList[rec_no][1];
+        color  = sRecList[rec_no][2];
+        marked = sRecList[rec_no][3];
         class_name = 'rec-label ' + color;
         if (marked) 
             class_name += ' marked';
@@ -159,9 +138,9 @@ function changeRec(rec_no) {
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=1" + "&details=" + sRecList[sCurRecNo][4]);
+        "&rec=" + sCurRecID + "&port=1" + "&details=" + sRecList[sCurRecNo][4]);
     window.frames['rec-frame2'].location.replace("rec?ds=" + sDSName + 
-        sAppModeRq + "&rec=" + sCurRecID + "&port=2" + "&details=" + sRecList[sCurRecNo][4]);
+        "&rec=" + sCurRecID + "&port=2" + "&details=" + sRecList[sCurRecNo][4]);
     updateTagNavigation();
 }
 
@@ -194,14 +173,6 @@ function rulesModOn() {
     sViewH.modalOn(document.getElementById("rules-back"));
 }
 
-function listRandPortion() {
-    new_rand_p = (document.getElementById("list-rand-portion").value);
-    if (sCurRandPortion != new_rand_p) {
-        sCurRandPortion = new_rand_p;
-        refreshRecList();
-    }
-}
-
 //=====================================
 function updateTabCfg() {
     document.getElementById("rec-frame1").style.display =
@@ -217,6 +188,14 @@ function updateTabCfg() {
         frame = window.frames['rec-frame' + idx];
         if (frame.sStarted) 
             frame.updateCfg();
+    }
+}
+
+function refreshCohorts() {
+    for (idx = 1; idx < 3; idx++) {
+        frame = window.frames['rec-frame' + idx];
+        if (frame.sStarted) 
+            frame.refreshCohorts();
     }
 }
 

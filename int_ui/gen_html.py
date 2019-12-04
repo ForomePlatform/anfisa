@@ -56,7 +56,7 @@ def formWsPage(output, common_title, html_base, workspace, ws_url):
             "fctrl.js", "base.js", "filters.js",
             "zones.js", "rules.js"])
 
-    print('  <body onload="initWin(\'%s\', \'%s\', \'\');">' %
+    print('  <body onload="initWin(\'%s\', \'%s\');">' %
         (workspace.getName(), common_title), file = output)
     _formMainDiv(output, workspace.getName(), ws_url)
     print('    <div id="filter-back">', file = output)

@@ -116,11 +116,6 @@ function updateTagNavigation() {
         sElCurTagCount.innerHTML = "";
         return;
     }
-    if (sRecSamples && sCurTag) {
-        sElCurTagNav.style.visibility = "hidden";
-        sElCurTagCount.innerHTML = 'In total: <b>' + sTagRecList.length + '</b>';
-        return;
-    }
     if (!sCurTag) {
         sElCurTagNav.style.visibility = "hidden";
         sElCurTagCount.innerHTML = "";

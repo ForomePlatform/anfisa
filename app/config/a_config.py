@@ -40,8 +40,6 @@ class AnfisaConfig:
             "dominant": "Autosomal Dominant",
             "compens": "Compensational"
         },
-        "rand.min.size":    100,
-        "rand.sample.size": 100,
 
         "tm.coeff": .2,
 
@@ -56,6 +54,7 @@ class AnfisaConfig:
         "max.tree.versions": 30,
 
         "filter.std.mark": u"\u23da",
+        "code.error.mark": u"\u26a0",
 
         "comp-hets.setup": {
             "zygosity.unit": "Inheritance_Mode",
@@ -77,6 +76,8 @@ class AnfisaConfig:
 
         "transcript.path.base": "/__data/transcript_consequences",
         "transcript.view.setup": ("transcripts", "transcript_consequences"),
+
+        "view.cohorts.aspect": "view_qsamples",
 
         "job.pool.size":    3,
         "job.pool.threads": 1}

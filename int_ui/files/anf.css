@@ -158,12 +158,6 @@ div#rec-list  {
 }
 
 
-input#list-rand-portion {
-    width: 40px;
-    font-size: 10px;
-    display: none;
-}
-
 div.rec-label {
     cursor: pointer;
     color: #818195;

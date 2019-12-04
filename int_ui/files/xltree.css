@@ -591,12 +591,6 @@ iframe#sub-view-rec-frame {
     width: 100%;
 }
 
-input#list-rand-portion {
-    width: 40px;
-    font-size: 10px;
-    display: none;
-}
-
 span.blocked {
     color: #f0f0f0;
 }

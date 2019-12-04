@@ -18,15 +18,15 @@
 #  limitations under the License.
 #
 
-from threading import Lock
+from threading import RLock
 #===============================================
-class ObjWithLock:
+class SyncronizedObject:
     def __init__(self):
-        self.mLock  = Lock()
+        self.mRLock  = RLock()
 
     def __enter__(self):
-        self.mLock.acquire()
+        self.mRLock.acquire()
         return self
 
     def __exit__(self, tp, value, traceback):
-        self.mLock.release()
+        self.mRLock.release()

@@ -23,7 +23,7 @@ from hashlib import md5
 
 from utils.log_err import logException
 from .filter_base import FilterBase
-from .code_works import reprFilterCondition
+from .code_repr import formatConditionCode
 
 #===============================================
 class FilterConjunctional(FilterBase):
@@ -87,7 +87,7 @@ class FilterConjunctional(FilterBase):
         return self.mFilterName
 
     def getPresentation(self):
-        return [reprFilterCondition(instr) for instr in self.mCondData]
+        return [formatConditionCode(instr) for instr in self.mCondData]
 
     def getCondition(self):
         return self.mCondition

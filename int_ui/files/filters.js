@@ -41,7 +41,6 @@ var sUnitsH = {
     mWaiting: null,
     mTimeH: null,
     mDelayMode: null,
-    mCompData: null,
     mOffline: false,
     
     init: function(call_ds, delay_mode) {
@@ -56,7 +55,7 @@ var sUnitsH = {
     },
     
     formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
-        args =  this.mCallDS + sAppModeRq +
+        args =  this.mCallDS + 
             "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
@@ -65,8 +64,6 @@ var sUnitsH = {
                 args += "&conditions=" + 
                     encodeURIComponent(JSON.stringify(conditions)); 
         }
-        if (this.mCompData)
-            args += "&compiled=" + encodeURIComponent(JSON.stringify(this.mCompData));        
         if (add_instr)
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
         if (use_delay && this.mDelayMode)
@@ -93,14 +90,13 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mRqId  = info["rq_id"];
-        this.mCompData = info["compiled"];
         this.mExportFormed = false;
         var el_rep = document.getElementById("list-report");
         if (el_rep)
             el_rep.innerHTML = (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
-        if (sSubViewH)
-            sSubViewH.reset(this.mCount);
+        if (sSamplesCtrl)
+            sSamplesCtrl.reset(this.mCount);
         this.mItems = info["stat-list"];
         sConditionsH.setup(info["conditions"], info["bad-idxs"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
@@ -142,13 +138,10 @@ var sUnitsH = {
     },
     
     getRqArgs: function(no_ctx) {
-        ret = this.mCallDS + sAppModeRq + "&conditions=" + 
+        ret = this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
         if (!no_ctx) {
             ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
-            if (this.mCompData)
-                ret += "&compiled=" + 
-                    encodeURIComponent(JSON.stringify(this.mCompData));        
         }
         return ret;
     },
@@ -259,7 +252,7 @@ var sUnitsH = {
     },
     
     getWsCreateArgs: function() {
-        return this.mCallDS + sAppModeRq + "&conditions=" + 
+        return this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
     },
     

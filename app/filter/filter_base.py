@@ -107,7 +107,7 @@ class FilterBase:
         if unit_h is None:
             return False
         if unit_kind == "operational":
-            if not unit_name in op_units:
+            if unit_name not in op_units:
                 return False
             return unit_h.validateCondition(cond_info)
         if unit_kind == "reserved":

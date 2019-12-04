@@ -60,7 +60,7 @@ class IntUI:
 
     @classmethod
     def _finishRequest(cls, serv_h, rq_path, rq_args, data_vault):
-        if rq_path == "/" or rq_path == "/ws":
+        if rq_path == "/ws":
             workspace = data_vault.getDS(rq_args.get("ds"), "ws")
             if workspace is None:
                 return cls.notFoundResponse(serv_h)

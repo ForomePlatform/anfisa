@@ -19,12 +19,11 @@
 #
 
 import logging
-from hashlib import md5
 
 from app.config.a_config import AnfisaConfig
 from .filter_base import FilterBase
 from .tree_parse import ParsedDTree
-from .code_works import htmlCodeDecoration, htmlCodePresentation
+from .code_works import HtmlPresentation
 #===============================================
 class CaseStory:
     def __init__(self, parent = None, start = None):
@@ -124,7 +123,7 @@ class CheckPoint:
             self.getCodeFrag(code_lines)]
 
     def getCodeFrag(self, code_lines):
-        line_from, line_to = self.mFrag.getFullLineDiap()
+        line_from, line_to = self.mFrag.getLineDiap()
         return "\n".join(code_lines[line_from - 1: line_to])
 
 #===============================================
@@ -183,6 +182,7 @@ class FilterDTree(FilterBase, CaseStory):
         parsed = ParsedDTree(cond_env, code)
         self.mCode = parsed.getTreeCode()
         self.mError = parsed.getError()
+        self.mHashCode = parsed.getHashCode()
         self.mDTreeName = dtree_name
         self.mPointList = None
         self.mFragments = parsed.getFragments()
@@ -193,36 +193,24 @@ class FilterDTree(FilterBase, CaseStory):
                 (dtree_name if dtree_name else "", lineno, offset, msg_text))
                 + "Code:\n======\n"
                 + parsed.getTreeCode() + "\n======")
-        code_lines = self.mCode.splitlines()
-        hash_h = md5()
-        for frag in self.mFragments:
-            line_from, line_to = frag.getBaseLineDiap()
-            frag_text = "\n".join(code_lines[line_from - 1: line_to]) + "\n\n"
-            hash_h.update(bytes(frag_text, 'utf-8'))
-        self.mHashCode = hash_h.hexdigest()
 
     def isActive(self):
         return self.mPointList is not None
 
     def activate(self):
         self.mPointList = []
-        code_lines = self.mCode.splitlines()
         prev_point = None
-        hash_h = md5()
         for instr_no, frag in enumerate(self.mFragments):
             if frag.getInstrType() == "ERROR":
                 continue
-            line_from, line_to = frag.getBaseLineDiap()
-            frag_text = "\n".join(code_lines[line_from - 1: line_to]) + "\n\n"
-            hash_h.update(bytes(frag_text, 'utf-8'))
-
             if frag.getInstrType() == "Import":
                 assert frag.getDecision() is None
                 self._addPoint(ImportPoint(self,
                     frag, prev_point, instr_no))
                 for unit_name in frag.getImportEntries():
+                    assert frag.getHashCode() is not None
                     is_ok = self.importUnit(instr_no, unit_name,
-                        self.actualCondition(instr_no), hash_h.hexdigest())
+                        self.actualCondition(instr_no), frag.getHashCode())
                     assert is_ok
                 continue
             if frag.getInstrType() == "If":
@@ -274,7 +262,7 @@ class FilterDTree(FilterBase, CaseStory):
     def pointNotActive(self, point_no):
         return not self.mPointList[point_no].isActive()
 
-    def actualCondition(self, point_no):
+    def getActualCondition(self, point_no):
         return self.mPointList[point_no].actualCondition()
 
     def checkZeroAfter(self, point_no):
@@ -291,22 +279,44 @@ class FilterDTree(FilterBase, CaseStory):
                 cond_seq.append(point_cond)
             if len(cond_seq) > 0:
                 marker_dict[point.getPointNo()] = cond_seq
-        html_lines = htmlCodeDecoration(self.mCode, marker_seq)
+        html_lines = self._decorCode(marker_seq)
         ret_handle = {
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
             "code": self.mCode,
             "error": self.mError is not None}
-        if self.mTreeName:
-            ret_handle["dtree-name"] = self.mTreeName
+        if self.mDTreeName:
+            ret_handle["dtree-name"] = self.mDTreeName
         return ret_handle
+
+    def _decorCode(self, marker_seq = None):
+        code_lines = self.mCode.splitlines()
+        html_lines = []
+        cur_diap = None
+
+        for frag_h in self.mFragments:
+            if frag_h.getInstrType() == "Error":
+                if cur_diap is not None:
+                    html_lines += HtmlPresentation.decorProperCode(
+                        code_lines, cur_diap, marker_seq)
+                    cur_diap = None
+                html_lines += HtmlPresentation.presentErrorCode(
+                    code_lines, frag_h.getLineDiap(), frag_h.getErrorInfo())
+            else:
+                if cur_diap is None:
+                    cur_diap = frag_h.getLineDiap()
+                else:
+                    cur_diap = [cur_diap[0], frag_h.getLineDiap()[1]]
+        if cur_diap is not None:
+            html_lines += HtmlPresentation.presentProperCode(
+                code_lines, cur_diap)
+        return html_lines
 
     def collectRecSeq(self, dataset):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")
+        html_lines = self._decorCode()
         ret = set()
         info_seq = []
-        html_lines = htmlCodePresentation(self.mCode)
-
         for point in self.mPointList:
             info_seq.append([point.getCodeFrag(html_lines), None, None])
             if not point.isActive:

@@ -20,6 +20,15 @@
  *
  */
 
+var sDSName = null;
+var sCommonTitle = null;
+var sWsRefURL = null;
+
+var sCohortList = null;
+var sCohortViewCheck = null;
+
+var sSamplesCtrl = null;
+
 /*************************************/
 /* Utilities                         */
 /*************************************/
@@ -120,6 +129,13 @@ function setupDSInfo(info) {
         menu_el = document.getElementById("menu-doc");
         menu_el.className = "drop ctrl-menu-disabled";
         menu_el.onclick = "";
+    }
+    if (info["cohorts"]) {
+        sCohortList = info["cohorts"];
+        sCohortViewCheck = [];
+        for (idx = 0; idx < sCohortList.length; idx++) {
+            sCohortViewCheck[sCohortList[idx]] = true;
+        }
     }
 }
 

@@ -56,8 +56,12 @@ class DataSet(SolutionSpace):
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
-        self.mFamilyInfo = FamilyInfo(dataset_info["meta"]["samples"],
-            dataset_info["meta"].get("proband"))
+        self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
+        self.mViewContext = None
+        if self.mFamilyInfo.getCohortList():
+            self.mViewContext = {"cohorts": self.mFamilyInfo.getCohortMap()}
+            view_aspect = AnfisaConfig.configOption("view.cohorts.aspect")
+            self.mAspects[view_aspect]._setViewColMode("cohorts")
         completeDsModes(self)
 
         self.mUnits = []
@@ -151,12 +155,12 @@ class DataSet(SolutionSpace):
 
     def getViewRepr(self, rec_no, details = None):
         rec_data = self.getRecordData(rec_no)
-        return self.mAspects.getViewRepr(rec_data, details)
+        return self.mAspects.getViewRepr(rec_data, details, self.mViewContext)
 
     def getSourceVersions(self):
         if "versions" in self.mDataInfo["meta"]:
             versions = self.mDataInfo["meta"]["versions"]
-            return [[key, versions[key]]
+            return [[key, str(versions[key])]
                 for key in sorted(versions.keys())]
         return []
 
@@ -182,6 +186,7 @@ class DataSet(SolutionSpace):
             "name": self.mName,
             "kind": self.mDSKind,
             "note": note,
+            "total": self.getTotal(),
             "date-note": time_label}
         base_h = self.mDataVault.getBaseDS(self)
         if base_h is not None:
@@ -197,6 +202,30 @@ class DataSet(SolutionSpace):
             ret["doc"] = self.mDataInfo["doc"]
             if base_h is not None and "doc" in base_h.getDataInfo():
                 ret["doc-base"] = base_h.getDataInfo()["doc"]
+        if not navigation_mode:
+            cur_v_group = None
+            unit_groups = []
+            for unit_h in self.iterUnits():
+                if unit_h.isScreened():
+                    continue
+                if unit_h.getVGroup() != cur_v_group:
+                    cur_v_group = unit_h.getVGroup()
+                    if not cur_v_group:
+                        cur_v_group = ""
+                    if (len(unit_groups) == 0
+                            or unit_groups[-1][0] != cur_v_group):
+                        unit_groups.append([cur_v_group, []])
+                unit_groups[-1][1].append(unit_h.getName())
+            for unit_h in self.getCondEnv().iterOpUnits():
+                for group_info in unit_groups:
+                    if group_info[0] == unit_h.getVGroup():
+                        group_info[1].append(unit_h.getName())
+                        unit_h = None
+                        break
+                if unit_h is not None:
+                    unit_groups.append(
+                        [unit_h.getVGroup(), [unit_h.getName()]])
+            ret["unit-groups"] = unit_groups
         return ret
 
     #===============================================
@@ -222,10 +251,11 @@ class DataSet(SolutionSpace):
             if time_end is not None and time() > time_end:
                 time_end = False
         for act_stat in active_stat_list:
-            pos_ins = 0
+            pos_ins = len(ret)
             for idx, stat in enumerate(ret):
                 if stat[1].get("vgroup") == act_stat[1].get("vgroup"):
                     pos_ins = idx + 1
+                    break
             ret.insert(pos_ins, act_stat)
         return ret
 
@@ -263,7 +293,7 @@ class DataSet(SolutionSpace):
                 break
             if zero_idx is not None and idx >= zero_idx:
                 continue
-            counts[idx] = self.evalTotalCount(dtree_h.actualCondition(idx))
+            counts[idx] = self.evalTotalCount(dtree_h.getActualCondition(idx))
             needs_more = False
             if counts[idx] == 0 and dtree_h.checkZeroAfter(idx):
                 zero_idx = idx
@@ -277,9 +307,8 @@ class DataSet(SolutionSpace):
             return json.loads(rq_args["ctx"])
         return dict()
 
-    def _getArgCondFilter(self, rq_args,
-            use_filter = True, activate_it = True):
-        if use_filter and "filter" in rq_args:
+    def _getArgCondFilter(self, rq_args, activate_it = True):
+        if "filter" in rq_args:
             filter_h = self.mSolHandlers["filter"].pickByName(
                 rq_args["filter"])
         else:
@@ -293,12 +322,14 @@ class DataSet(SolutionSpace):
             filter_h.activate()
         return filter_h
 
-    def _getArgDTree(self, rq_args, use_dtree = True, activate_it = True):
-        if use_dtree and "dtree" in rq_args:
-            dtree_h = self.mSolHandlers["dtree"].pickByName(
-                rq_args["dtree"])
-        else:
-            dtree_h = FilterDTree(self.getCondEnv(), rq_args["code"])
+    def _getArgDTree(self, rq_args, activate_it = True,
+            use_dtree = True, dtree_h = None):
+        if dtree_h is None:
+            if use_dtree and "dtree" in rq_args:
+                dtree_h = self.mSolHandlers["dtree"].pickByName(
+                    rq_args["dtree"])
+            else:
+                dtree_h = FilterDTree(self.getCondEnv(), rq_args["code"])
         dtree_h = self.mSolHandlers["dtree"].updateFltObj(dtree_h)
         if activate_it:
             dtree_h.activate()
@@ -330,8 +361,8 @@ class DataSet(SolutionSpace):
         ret_handle = {
             "total": self.getTotal(),
             "kind": self.mDSKind,
-            "stat-list": self.prepareAllUnitStat(
-                condition, repr_context, filter_h, time_end),
+            "stat-list": self.prepareAllUnitStat(condition,
+                repr_context, filter_h, time_end),
             "filter-list": self.mSolHandlers["filter"].getList(),
             "cur-filter": filter_h.getFilterName(),
             "rq_id": self._makeRqId()}
@@ -341,7 +372,7 @@ class DataSet(SolutionSpace):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__tree_stat(self, rq_args):
+    def rq__dtree_stat(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
         repr_context = self._getArgContext(rq_args)
         dtree_h = self._getArgDTree(rq_args)
@@ -349,8 +380,8 @@ class DataSet(SolutionSpace):
         condition = dtree_h.getActualCondition(point_no)
         ret_handle = {
             "total": self.getTotal(),
-            "stat-list": self.makeAllStat(condition, repr_context,
-                dtree_h, time_end, point_no),
+            "stat-list": self.prepareAllUnitStat(condition,
+                repr_context, dtree_h, time_end, point_no),
             "rq_id": self._makeRqId()}
         ret_handle.update(self._reportCounts(condition))
         return ret_handle
@@ -362,7 +393,7 @@ class DataSet(SolutionSpace):
         repr_context = self._getArgContext(rq_args)
         if "dtree" in rq_args or "code" in rq_args:
             flt_base_h = self._getArgDTree(rq_args)
-            point_no = rq_args["no"]
+            point_no = int(rq_args["no"])
             condition = flt_base_h.getActualCondition(point_no)
         else:
             flt_base_h = self._getArgCondFilter(rq_args)
@@ -377,21 +408,18 @@ class DataSet(SolutionSpace):
     @RestAPI.ds_request
     def rq__dtree(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
+        dtree_h = None
+        if "modify" in rq_args:
+            parsed = ParsedDTree(self.getCondEnv(), rq_args["code"])
+            dtree_code = parsed.modifyCode(json.loads(rq_args["modify"]))
+            dtree_h = FilterDTree(self.getCondEnv(), dtree_code)
         if "instr" in rq_args:
-            #TRF: work here properly!
-            dtree_name = rq_args["dtree"]
-            instr = json.loads(rq_args["instr"])
-            dtree_code = rq_args["code"]
-            if len(instr) > 1:
-                parsed = ParsedDTree(self.getCondEnv(), dtree_code)
-                dtree_code = parsed.modifyCode(instr)
-                instr = ["UPDATE"]
-            if not self.mSolHandlers["dtree"].modify(dtree_name,
-                    dtree_code, instr[0]):
+            if dtree_h is None:
+                dtree_h = self._getArgDTree(rq_args, activate_it = False)
+            if not self.mSolHandlers["dtree_h"].modify(rq_args["instr"],
+                    dtree_h.getCode()):
                 assert False
-            use_dtree = (self.mSolHandlers["dtree"].pickByName(dtree_name)
-                is not None)
-        dtree_h = self._getArgDTree(rq_args, use_dtree = use_dtree)
+        dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {
             "total": self.getTotal(),
             "kind": self.mDSKind,
@@ -405,7 +433,7 @@ class DataSet(SolutionSpace):
     @RestAPI.ds_request
     def rq__dtree_counts(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
-        dtree_h = self._getArgDTree(activate_it = False)
+        dtree_h = self._getArgDTree(rq_args)
         return {
             "counts": self.prepareDTreePointCounts(dtree_h,
                 json.loads(rq_args["points"]), time_end),
@@ -414,7 +442,8 @@ class DataSet(SolutionSpace):
     #===============================================
     @RestAPI.ds_request
     def rq__dtree_check(self, rq_args):
-        dtree_h = self._getArgDTree(use_dtree = False, activate_it = False)
+        dtree_h = self._getArgDTree(rq_args,
+            use_dtree = False, activate_it = False)
         ret_handle = {"code": dtree_h.getCode()}
         if dtree_h.getError() is not None:
             msg_text, lineno, col_offset = dtree_h.getError()
@@ -450,7 +479,6 @@ class DataSet(SolutionSpace):
     #===============================================
     @RestAPI.ds_request
     def rq__dsinfo(self, rq_args):
-        assert "ws" not in rq_args
         note = rq_args.get("note")
         if note is not None:
             with self:

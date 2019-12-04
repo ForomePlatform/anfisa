@@ -124,9 +124,54 @@ function init_r(port, init_aspect, ws_name, rec_id) {
     } else {
         pickAspect(sBaseAspect);
     }
+    checkCohortCtrl();
     window.onclick = onClick;
 }
 
 function onClick(event_ms) {
     window.parent.onClick(event_ms);
+}
+
+function checkCohortCtrl() {
+    if (!window.parent.sCohortList)
+        return;
+    var cohort_list = window.parent.sCohortList;
+    add_rep = ['<br/><p>Cohort visibility:'];
+    for (idx = 0; idx < cohort_list.length; idx++) {
+        c_name = cohort_list[idx];
+        add_rep.push('<input id="__cohort__check_' + c_name + 
+            '" type="checkbox" onchange="_checkCohorts();"/><label ' +
+            'for="__cohort__check_' + c_name + '">&nbsp;' + c_name + '</label>');
+    }
+    add_rep.push('</p>');    
+    document.getElementById('a--view_cohorts').innerHTML += add_rep.join('\n');
+    refreshCohorts();
+}
+
+function refreshCohorts() {
+    var cohort_list = window.parent.sCohortList;
+    for (idx = 0; idx < cohort_list.length; idx++) {
+        check_it = window.parent.sCohortViewCheck[cohort_list[idx]];
+        document.getElementById(
+            '__cohort__check_' + cohort_list[idx]).checked = check_it;
+        seq_el = document.getElementsByClassName("cohorts_" + cohort_list[idx]);
+        for (j = 0; j < seq_el.length; j++)
+            seq_el[j].style.display = (check_it)? "": "none";
+    }
+}
+
+function _checkCohorts() {
+    var cnt = 0;
+    var cohort_list = window.parent.sCohortList;
+    for (idx = 0; idx < cohort_list.length; idx++) {
+        c_name = cohort_list[idx];
+        check_it = document.getElementById('__cohort__check_' + c_name).checked;
+        window.parent.sCohortViewCheck[c_name] = check_it;
+        if (check_it)
+            cnt += 1;
+    }
+    if (cnt == 0) {
+        window.parent.sCohortViewCheck[cohort_list[0]] = true;
+    }
+    window.parent.refreshCohorts();
 }

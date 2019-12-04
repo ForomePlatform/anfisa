@@ -21,12 +21,12 @@
 import logging
 from threading import Lock
 
-from utils.lock_obj import ObjWithLock
+from utils.sync_obj import SyncronizedObject
 from .sol_pack import SolutionPack
 #===============================================
-class SolutionSpace(ObjWithLock):
+class SolutionSpace(SyncronizedObject):
     def __init__(self, modes = None, pack_name = None):
-        ObjWithLock.__init__(self)
+        SyncronizedObject.__init__(self)
         self.mSolPack = SolutionPack.select(pack_name)
         self.mLock  = Lock()
         self.mModes = set()

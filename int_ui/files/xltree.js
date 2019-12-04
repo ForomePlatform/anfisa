@@ -20,16 +20,11 @@
  *
  */
 
-var sDSName = null;
-var sCommonTitle = null;
-var sWsURL = null;
-var sAppModeRq = "";
-
 /*************************************/
-function setupXLTree(ds_name, common_title, ws_url) {
-    sCommonTitle = common_title;
-    sWsURL = ws_url;
+function setupXLTree(ds_name, common_title, ws_ref_url) {
     sDSName = ds_name; 
+    sCommonTitle = common_title;
+    sWsRefURL = ws_ref_url;
     window.onresize  = arrangeControls;
     window.onkeydown = onKey;
     window.name = sCommonTitle + ":" + sDSName + ":TREE";
@@ -40,7 +35,7 @@ function setupXLTree(ds_name, common_title, ws_url) {
     sTreeCtrlH.init();
     sVersionsH.init();
     sCodeEditH.init();
-    sDecisionTree.setup();
+    sDecisionTree.setup("return False");
 }
     
 /**************************************/
@@ -57,15 +52,12 @@ var sDecisionTree = {
     mPointDelay: null,
     mRqId: null,
     mPostTreeAction: null,
-    mCompData: null,
     
     setup: function(tree_code, options) {
         args = "ds=" + sDSName + "&tm=0";
-        if (tree_code) {
-            if (tree_code == true)
-                tree_code = this.mTreeCode;
-            args += "&code=" + encodeURIComponent(tree_code);
-        }
+        if (tree_code == true)
+            tree_code = this.mTreeCode;
+        args += "&code=" + encodeURIComponent(tree_code);
         if (options) {
             if (options["version"])
                 args += "&version=" + encodeURIComponent(options["version"]);
@@ -74,14 +66,13 @@ var sDecisionTree = {
             if (options["std_name"])
                 args += "&std_name=" + encodeURIComponent(options["std_name"]);
         }
-        ajaxCall("xltree", args, function(info){sDecisionTree._setup(info);})
+        ajaxCall("dtree", args, function(info){sDecisionTree._setup(info);})
     },
     
     _setup: function(info) {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
         this.mRqId = info["rq_id"];
-        this.mCompData = info["compiled"];
         sTreeCtrlH.update(info["cur_version"], info["versions"]);
         var select_el = document.getElementById("std-code-select");
         if (info["std_code"]) {
@@ -181,8 +172,6 @@ var sDecisionTree = {
         args = "ds=" + sDSName + "&no=" + 
             ((this.mCurPointNo == null)? -1:this.mCurPointNo)  +
             "&code=" + encodeURIComponent(this.mTreeCode);
-        if (this.mCompData && !no_comp)
-            args += "&compiled=" + encodeURIComponent(JSON.stringify(this.mCompData));
         return args;
     },
     
@@ -198,7 +187,7 @@ var sDecisionTree = {
             args += "&tm=1";
         else
             this.mPostTreeAction = post_tree_action;
-        ajaxCall("xltree_counts", args, function(info){sDecisionTree._loadDelayed(info);})
+        ajaxCall("dtree_counts", args, function(info){sDecisionTree._loadDelayed(info);})
     },
     
     _loadDelayed: function(info) {
@@ -357,7 +346,7 @@ var sUnitsH = {
         }
         this.mDivList.className = "wait";
         this.mWaiting = true;
-        ajaxCall("xltree_stat", args, function(info){sUnitsH._setup(info);})
+        ajaxCall("dtree_stat", args, function(info){sUnitsH._setup(info);})
     },
 
     postAction: function(action, no_wait) {
@@ -780,7 +769,7 @@ var sVersionsH = {
                 args += "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
             else
                 args += "&verbase=" + this.mBaseCmpVer;
-            ajaxCall("cmptree", args, function(info){sVersionsH._setCmp(info);});
+            ajaxCall("dtree_cmp", args, function(info){sVersionsH._setCmp(info);});
         }
     },
     
@@ -892,7 +881,7 @@ var sCodeEditH = {
         this.mCurError = false;
         this.mErrorPos = null;
         this.mWaiting = true;
-        ajaxCall("xltree_code", "ds=" + sDSName + "&code=" +
+        ajaxCall("dtree_check", "ds=" + sDSName + "&code=" +
             encodeURIComponent(this.mCurContent), 
             function(info) {sCodeEditH._validation(info);});
     },

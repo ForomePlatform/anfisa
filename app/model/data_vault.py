@@ -27,11 +27,11 @@ from .mongo_db import MongoSolutionAgent
 from app.ws.workspace import Workspace
 from app.xl.xl_dataset import XLDataset
 from utils.log_err import logException
-from utils.lock_obj import ObjWithLock
+from utils.sync_obj import SyncronizedObject
 #===============================================
-class DataVault(ObjWithLock):
+class DataVault(SyncronizedObject):
     def __init__(self, application, vault_dir):
-        ObjWithLock.__init__(self)
+        SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
         self.mLock  = Lock()
@@ -137,13 +137,13 @@ class DataVault(ObjWithLock):
         base_name = ds_h.getBaseDSName()
         if not base_name:
             base_name = ds_h.getName()
-        #with self:
-        if base_name not in self.mSolAgents:
-            self.mSolAgents[base_name] = MongoSolutionAgent(
-                self.mApp.getMongoConnector(), base_name)
-        sol_agent = self.mSolAgents[base_name]
-        sol_agent.attachDataset(ds_h)
-        return sol_agent
+        with self:
+            if base_name not in self.mSolAgents:
+                self.mSolAgents[base_name] = MongoSolutionAgent(
+                    self.mApp.getMongoConnector(), base_name)
+            sol_agent = self.mSolAgents[base_name]
+            sol_agent.attachDataset(ds_h)
+            return sol_agent
 
     #===============================================
     @RestAPI.vault_request
