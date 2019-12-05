@@ -64,7 +64,8 @@ def _validatePortion(start_line_no, end_line_no,
             parsed_block = ast.parse(text_block)
         except SyntaxError as err:
             txt_len = len(err.text.rstrip())
-            error_info = ("Syntax error", start_line_no + max(0, err.lineno),
+            error_info = ("Syntax error",
+                start_line_no - 1 + max(1, err.lineno),
                 max(0, min(err.offset, txt_len - 1)))
             parsed_block = None
     if parsed_block is not None:
@@ -74,17 +75,28 @@ def _validatePortion(start_line_no, end_line_no,
                 line_no, offset = info[2]
                 if line_no + start_line_no - 1 not in dummy_lines_reg:
                     error_info = ("Sorry, no inline comments",
-                        start_line_no + line_no, offset)
+                        start_line_no + line_no - 1, offset)
                     parsed_block = None
                     break
-    if parsed_block is not None:
-        for instr_d in parsed_block.body:
-            line_no, offset = instr_d.lineno, instr_d.col_offset
-            if offset > 0:
-                prefix = lines[start_line_no + line_no - 1][:offset - 1]
-                if not prefix.isspace():
-                    error_info = ("Split line before instruction",
-                        start_line_no + line_no, offset)
-                    parsed_block = None
-                    break
+    if parsed_block is not None and error_info is None:
+        error_info = _validateInstrSplit(parsed_block,
+            lines, start_line_no, True)
+        if error_info is not None:
+            parsed_block = None
     return (parsed_block, error_info)
+
+#===============================================
+def _validateInstrSplit(instr_d, lines, start_line_no, on_top = False):
+    if not on_top:
+        line_no, offset = instr_d.lineno, instr_d.col_offset
+        if offset > 0:
+            prefix = lines[start_line_no + line_no - 2][:offset]
+            if not prefix.isspace():
+                return("Split line before instruction",
+                    start_line_no + line_no - 1, offset)
+    if "body" in instr_d._fields:
+        for sub_instr_d in instr_d.body:
+            err = _validateInstrSplit(sub_instr_d, lines, start_line_no)
+            if err:
+                return err
+    return None

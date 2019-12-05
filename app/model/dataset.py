@@ -30,7 +30,7 @@ from app.filter.condition import ConditionMaker
 from app.filter.filter_conj import FilterConjunctional
 from app.filter.filter_dtree import FilterDTree
 from app.filter.code_works import cmpTrees
-from app.filter.tree_parse import ParsedDTree
+from app.filter.dtree_parse import ParsedDTree
 from .sol_space import SolutionSpace
 from .sol_handler import SolutionTypeHandler
 from .family import FamilyInfo

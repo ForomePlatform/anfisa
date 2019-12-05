@@ -887,11 +887,11 @@ var sCodeEditH = {
     },
     
     _validation: function(info) {
-        if (info["code"] != this.mCurContent)
-            return;
+        this.mCurContent = info["code"];
         this.mWaiting = false;
         if (info["error"]) {
-            this.mCurError = "At line " + info["line"] + " pos " + info["pos"] + ": " +
+            this.mCurError = "At line " + info["line"] + 
+                " pos " + (info["pos"] + 1) + ": " +
                 info["error"];
             this.mErrorPos = [info["line"], info["pos"]];
         } else {

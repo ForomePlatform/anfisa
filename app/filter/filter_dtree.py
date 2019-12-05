@@ -22,7 +22,7 @@ import logging
 
 from app.config.a_config import AnfisaConfig
 from .filter_base import FilterBase
-from .tree_parse import ParsedDTree
+from .dtree_parse import ParsedDTree
 from .code_works import HtmlPresentation
 #===============================================
 class CaseStory:
@@ -51,7 +51,7 @@ class CaseStory:
 
     def _addPoint(self, point):
         assert (len(self.mPoints) == 0
-            or self.mPoints[-1].getPointKind() in {"If", "Import"})
+            or self.mPoints[-1].getPointKind() in {"If", "Import", "Error"})
         self.getMaster().regPoint(point)
         self.mPoints.append(point)
 
@@ -138,6 +138,17 @@ class ImportPoint(CheckPoint):
         return False
 
 #===============================================
+class ErrorPoint(CheckPoint):
+    def __init__(self, story, frag, point_no):
+        CheckPoint.__init__(self, story, frag, None, point_no)
+
+    def getPointKind(self):
+        return "Error"
+
+    def isActive(self):
+        return False
+
+#===============================================
 class TerminalPoint(CheckPoint):
     def __init__(self, story, frag, prev_point, point_no):
         CheckPoint.__init__(self, story, frag, prev_point, point_no)
@@ -201,7 +212,8 @@ class FilterDTree(FilterBase, CaseStory):
         self.mPointList = []
         prev_point = None
         for instr_no, frag in enumerate(self.mFragments):
-            if frag.getInstrType() == "ERROR":
+            if frag.getInstrType() == "Error":
+                self._addPoint(ErrorPoint(self, frag, instr_no))
                 continue
             if frag.getInstrType() == "Import":
                 assert frag.getDecision() is None
@@ -229,7 +241,7 @@ class FilterDTree(FilterBase, CaseStory):
                     self._addPoint(TerminalPoint(self,
                         frag, prev_point, instr_no))
                 continue
-            assert False
+            assert False, "Bad frag type: %s" % frag.getInstrType()
 
     def __len__(self):
         return len(self.mPointList)
