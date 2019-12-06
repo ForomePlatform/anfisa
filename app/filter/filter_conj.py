@@ -71,7 +71,7 @@ class FilterConjunctional(FilterBase):
         with self.getCondEnv().getLocker():
             self.mCondition = self.getCondEnv().joinAnd(cond_seq)
 
-    def getFltKind(self):
+    def getSolKind(self):
         return "filter"
 
     def noErrors(self):

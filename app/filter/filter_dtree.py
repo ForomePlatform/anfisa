@@ -246,7 +246,7 @@ class FilterDTree(FilterBase, CaseStory):
     def __len__(self):
         return len(self.mPointList)
 
-    def getFltKind(self):
+    def getSolKind(self):
         return "dtree"
 
     def noErrors(self):

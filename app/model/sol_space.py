@@ -18,80 +18,99 @@
 #  limitations under the License.
 #
 
-import logging
-from threading import Lock
+from datetime import datetime
 
-from utils.sync_obj import SyncronizedObject
-from .sol_pack import SolutionPack
+from app.config.a_config import AnfisaConfig
+
 #===============================================
-class SolutionSpace(SyncronizedObject):
-    def __init__(self, modes = None, pack_name = None):
-        SyncronizedObject.__init__(self)
-        self.mSolPack = SolutionPack.select(pack_name)
-        self.mLock  = Lock()
-        self.mModes = set()
-        self.addModes(modes)
-        self.mStdFilterDict = None
-        self.mStdFilterList = None
-        self.mFilterCache = None
+class SolutionSpace:
+    sMaxSize = AnfisaConfig.configOption("sol-log.size")
 
-    #===============================================
-    def addModes(self, modes):
-        if modes:
-            self.mModes |= set(modes)
+    def __init__(self, mongo_connector, name):
+        self.mName = name
+        self.mMongoAgent = mongo_connector.makeAgent(name)
+        self.mBrokers = []
+        self.mHandlers = {sol_kind: _SolKindMongoHandler(
+            sol_kind, data_name, self.mMongoAgent)
+            for sol_kind, data_name in
+            (("filter", "seq"), ("dtree", "code"))}
+        self.mLogInfo = []
+        it = self.mMongoAgent.find_one({"_id": "sol-log"})
+        if it is not None:
+            self.mLogInfo = it["records"]
 
-    def testRequirements(self, modes):
-        if not modes:
+    def getName(self):
+        return self.mName
+
+    def getAgentKind(self):
+        return "SolutionSpace"
+
+    def attachBroker(self, broker_h):
+        assert broker_h not in self.mBrokers
+        self.mBrokers.append(broker_h)
+        for sol_kind in self.mHandlers.keys():
+            broker_h.refreshSolEntries(sol_kind)
+
+    def detachBroker(self, broker_h):
+        assert broker_h in self.mBrokers
+        self.mBrokers.remove(broker_h)
+
+    def iterEntries(self, key):
+        return self.mHandlers[key].iterEntries()
+
+    def modifyEntry(self, ds_name, key, option, name, value):
+        if self.mHandlers[key].modifyData(option, name, value, ds_name):
+            for broker_h in self.mBrokers:
+                broker_h.refreshSolEntries(key)
             return True
-        return len(modes & self.mModes) == len(modes)
+        return False
 
-    def iterStdItems(self, item_kind):
-        return self.mSolPack.iterItems(item_kind, self.testRequirements)
+    def logChange(self, sol_kind, option, sol_name):
+        #TRF: write it!!!
+        pass
 
-    #===============================================
-    def getUnitPanelNames(self, unit_name):
+#===============================================
+#===============================================
+class _SolKindMongoHandler:
+    def __init__(self, key, value_name, mongo_agent):
+        self.mSolKind = key
+        self.mPrefix = key + '-'
+        self.mPrefLen = len(self.mPrefix)
+        self.mValName = value_name
+        self.mMongoAgent = mongo_agent
+        self.mData = dict()
+        for it in self.mMongoAgent.find({"_tp": self.mSolKind}):
+            it_id = it["_id"]
+            if it_id.startswith(self.mPrefix):
+                name = it_id[self.mPrefLen:]
+                self.mData[name] = [it[self.mValName],
+                    AnfisaConfig.normalizeTime(it.get("time")),
+                    it["from"]]
+
+    def getSolKind(self):
+        return self.mSolKind
+
+    def iterEntries(self):
         ret = []
-        for it in self.iterStdItems("panel"):
-            if it.getName() == unit_name:
-                ret.append(it.getData()[0])
-        return ret
+        for name in sorted(self.mData.keys()):
+            value, upd_time, upd_from = self.mData[name]
+            ret.append((name, value, upd_time, upd_from))
+        return iter(ret)
 
-    def getUnitPanel(self, unit_name, panel_name, assert_mode = True):
-        for it in self.iterStdItems("panel"):
-            if it.getName() == unit_name:
-                if it.getData()[0] == panel_name:
-                    return it.getData()[1]
-        if assert_mode:
-            assert False, "%s: Panel %s not found" % (unit_name, panel_name)
-        else:
-            logging.warning("%s: Panel %s not found" % (unit_name, panel_name))
-
-    #===============================================
-    def getFilters(self):
-        return [(it.getName(), it.getData())
-            for it in self.iterStdItems("filter")]
-
-    #===============================================
-    def getStdTreeCodeNames(self):
-        return [it.getName() for it in self.iterStdItems("tree_code")]
-
-    def getStdTreeCode(self, code_name):
-        for it in self.iterStdItems("dtree"):
-            if it.getName() == code_name or code_name is None:
-                return it.getData()
-        logging.error("Request for bad std tree: " + code_name)
-        assert False
-
-    #===============================================
-    def reportSolutions(self):
-        panel_info = dict()
-        for it in self.iterStdItems("panel"):
-            unit_name = it.getName()
-            if unit_name in panel_info:
-                panel_info[unit_name].append(it.getData()[0])
-            else:
-                panel_info[unit_name] = [it.getData()[0]]
-        return {
-            "codes": [it.getName()
-                for it in self.iterStdItems("tree_code")],
-            "panels": panel_info}
+    def modifyData(self, option, name, value, upd_from):
+        if option == "UPDATE":
+            time_label = datetime.now().isoformat()
+            self.mMongoAgent.update({"_id": self.mPrefix + name},
+                {"$set": {self.mValName: value, "_tp": self.mSolKind,
+                    "time": time_label, "from": upd_from}},
+                upsert = True)
+            self.mData[name] = [value,
+                AnfisaConfig.normalizeTime(time_label),
+                upd_from]
+            return True
+        if option == "DELETE" and name in self.mData:
+            self.mMongoAgent.remove(
+                {"_tp": self.mSolKind, "_id": self.mPrefix + name})
+            del self.mData[name]
+            return True
+        return False

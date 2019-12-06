@@ -55,9 +55,9 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
-        receipt = {"kind": self.mFltBase.getFltKind()}
+        receipt = {"kind": self.mFltBase.getSolKind()}
 
-        if self.mFltBase.getFltKind() == "filter":
+        if self.mFltBase.getSolKind() == "filter":
             if self.mFltBase.getFilterName():
                 receipt["filter-name"] = self.mFltBase.getFilterName()
             condition = self.mFltBase.getCondition()

@@ -23,7 +23,7 @@ from glob import glob
 from threading import Lock
 
 from .rest_api import RestAPI
-from .mongo_db import MongoSolutionAgent
+from .sol_space import SolutionSpace
 from app.ws.workspace import Workspace
 from app.xl.xl_dataset import XLDataset
 from utils.log_err import logException
@@ -36,7 +36,7 @@ class DataVault(SyncronizedObject):
         self.mVaultDir = os.path.abspath(vault_dir)
         self.mLock  = Lock()
         self.mDataSets = dict()
-        self.mSolAgents = dict()
+        self.mSolSpaces = dict()
 
         workspaces = []
         names = [[], []]
@@ -133,17 +133,15 @@ class DataVault(SyncronizedObject):
                 ret.append(ws_h)
         return sorted(ret, key = lambda ws_h: ws_h.getName())
 
-    def attachSolutionAgent(self, ds_h):
+    def makeSolutionSpace(self, ds_h):
         base_name = ds_h.getBaseDSName()
         if not base_name:
             base_name = ds_h.getName()
         with self:
-            if base_name not in self.mSolAgents:
-                self.mSolAgents[base_name] = MongoSolutionAgent(
+            if base_name not in self.mSolSpaces:
+                self.mSolSpaces[base_name] = SolutionSpace(
                     self.mApp.getMongoConnector(), base_name)
-            sol_agent = self.mSolAgents[base_name]
-            sol_agent.attachDataset(ds_h)
-            return sol_agent
+            return self.mSolSpaces[base_name]
 
     #===============================================
     @RestAPI.vault_request

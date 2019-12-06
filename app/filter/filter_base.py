@@ -30,7 +30,7 @@ class FilterBase:
         self.mUpdatedInfo = [updated_time, updated_from]
 
     @abc.abstractmethod
-    def getFltKind(self):
+    def getSolKind(self):
         return None
 
     @abc.abstractmethod

@@ -20,12 +20,12 @@
 
 import app.prepare.prep_unit as prep_unit
 from app.model.family import FamilyInfo
-from app.model.sol_space import SolutionSpace
+from app.model.sol_broker import SolutionBroker
 
 #===============================================
-class FilterPrepareSetH(SolutionSpace):
+class FilterPrepareSetH(SolutionBroker):
     def __init__(self, metadata_record,  modes = None):
-        SolutionSpace.__init__(self, modes)
+        SolutionBroker.__init__(self, modes)
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None

@@ -188,6 +188,14 @@ var sCreateWsH = {
     }
 };
 
+function wsCreate() {
+    sCreateWsH.show();
+}
+
+function startWsCreate() {
+    sCreateWsH.startIt();
+}
+
 /*************************************/
 var sSubViewH = {
     mMode: null,

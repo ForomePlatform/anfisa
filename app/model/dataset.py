@@ -31,18 +31,17 @@ from app.filter.filter_conj import FilterConjunctional
 from app.filter.filter_dtree import FilterDTree
 from app.filter.code_works import cmpTrees
 from app.filter.dtree_parse import ParsedDTree
-from .sol_space import SolutionSpace
-from .sol_handler import SolutionTypeHandler
+from .sol_broker import SolutionBroker
 from .family import FamilyInfo
 from .rest_api import RestAPI
 from .comp_hets import CompHetsOperativeUnit
 #===============================================
-class DataSet(SolutionSpace):
+class DataSet(SolutionBroker):
     sStatRqCount = 0
 
     def __init__(self, data_vault, dataset_info, dataset_path,
             sol_pack_name = None):
-        SolutionSpace.__init__(self,
+        SolutionBroker.__init__(self,
             dataset_info.get("modes"), sol_pack_name)
         self.addModes(data_vault.getApp().getRunModes())
         self.mDataVault = data_vault
@@ -68,9 +67,6 @@ class DataSet(SolutionSpace):
         self.mUnitDict = dict()
         tuneAspects(self, self.mAspects)
 
-        self.mSolAgent = None
-        self.mSolHandlers = None
-
     def _addUnit(self, unit_h):
         self.mUnits.append(unit_h)
         assert unit_h.getName() not in self.mUnitDict, (
@@ -81,15 +77,7 @@ class DataSet(SolutionSpace):
         for unit_h in self.mUnits:
             unit_h.setup()
         CompHetsOperativeUnit.setupCondEnv(self)
-        self.mSolAgent = self.mDataVault.attachSolutionAgent(self)
-        self.mSolHandlers = {
-            "filter": SolutionTypeHandler(self, self.mSolAgent,
-                "filter", FilterConjunctional),
-            "dtree": SolutionTypeHandler(self, self.mSolAgent,
-                "dtree", FilterDTree)}
-
-    def deactivate(self):
-        self.mSolAgent.detachDataset(self)
+        self.setSolSpace(self.mDataVault.makeSolutionSpace(self))
 
     def _setAspectHitGroup(self, aspect_name, group_attr):
         self.mAspects.setAspectHitGroup(aspect_name, group_attr)
@@ -143,9 +131,6 @@ class DataSet(SolutionSpace):
     def _openPData(self):
         return gzip.open(self.mPath + "/pdata.json.gz", "rb")
 
-    def _getSolAgent(self):
-        return self.mSolAgent
-
     def getRecordData(self, rec_no):
         assert 0 <= rec_no < self.mTotal
         return json.loads(self.mVData[rec_no])
@@ -170,14 +155,15 @@ class DataSet(SolutionSpace):
     def getTagsMan(self):
         return None
 
-    def refreshSolEntries(self, key):
-        if self.mSolHandlers is not None:
-            with self:
-                self.mSolHandlers[key].refreshSolEntries()
-
-    def iterSolEntries(self, key):
-        for info in self.mSolHandlers[key].getList():
-            yield self.mSolHandlers[key].pickByName(info[0])
+    def makeSolEntry(self, key, entry_data, name,
+            updated_time = None, updated_from = None):
+        if key == "filter":
+            return FilterConjunctional(self.getCondEnv(), entry_data,
+                name, updated_time, updated_from)
+        if key == "dtree":
+            return FilterDTree(self.getCondEnv(), entry_data,
+                name, updated_time, updated_from)
+        assert False
 
     #===============================================
     def dumpDSInfo(self, navigation_mode = False):
@@ -309,15 +295,14 @@ class DataSet(SolutionSpace):
 
     def _getArgCondFilter(self, rq_args, activate_it = True):
         if "filter" in rq_args:
-            filter_h = self.mSolHandlers["filter"].pickByName(
-                rq_args["filter"])
+            filter_h = self.pickSolEntry("filter", rq_args["filter"])
         else:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
             else:
                 cond_data = ConditionMaker.condAll()
             filter_h = FilterConjunctional(self.getCondEnv(), cond_data)
-        filter_h = self.mSolHandlers["filter"].updateFltObj(filter_h)
+        filter_h = self.updateSolEntry("filter", filter_h)
         if activate_it:
             filter_h.activate()
         return filter_h
@@ -326,11 +311,10 @@ class DataSet(SolutionSpace):
             use_dtree = True, dtree_h = None):
         if dtree_h is None:
             if use_dtree and "dtree" in rq_args:
-                dtree_h = self.mSolHandlers["dtree"].pickByName(
-                    rq_args["dtree"])
+                dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
             else:
                 dtree_h = FilterDTree(self.getCondEnv(), rq_args["code"])
-        dtree_h = self.mSolHandlers["dtree"].updateFltObj(dtree_h)
+        dtree_h = self.updateSolEntry(dtree_h)
         if activate_it:
             dtree_h.activate()
         return dtree_h
@@ -353,7 +337,7 @@ class DataSet(SolutionSpace):
         repr_context = self._getArgContext(rq_args)
         if "instr" in rq_args:
             filter_h = self._getArgCondFilter(rq_args, activate_it = False)
-            if not self.mSolHandlers["filter"].modify(rq_args["instr"],
+            if not self.modifySolEntry("filter", rq_args["instr"],
                     filter_h.getCondData()):
                 assert False
         filter_h = self._getArgCondFilter(rq_args)
@@ -363,7 +347,7 @@ class DataSet(SolutionSpace):
             "kind": self.mDSKind,
             "stat-list": self.prepareAllUnitStat(condition,
                 repr_context, filter_h, time_end),
-            "filter-list": self.mSolHandlers["filter"].getList(),
+            "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "rq_id": self._makeRqId()}
         ret_handle.update(self._reportCounts(filter_h.getCondition()))
@@ -416,7 +400,7 @@ class DataSet(SolutionSpace):
         if "instr" in rq_args:
             if dtree_h is None:
                 dtree_h = self._getArgDTree(rq_args, activate_it = False)
-            if not self.mSolHandlers["dtree_h"].modify(rq_args["instr"],
+            if not self.modifySolEntry("dtree_h", rq_args["instr"],
                     dtree_h.getCode()):
                 assert False
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
@@ -455,8 +439,7 @@ class DataSet(SolutionSpace):
     @RestAPI.ds_request
     def rq__dtree_cmp(self, rq_args):
         dtree_h = self._getArgDTree(activate_it = False)
-        other_dtree_h = self.mSolHandlers["dtree"].pickByName(
-            rq_args["other"])
+        other_dtree_h = self.pickSolEntry("dtree", rq_args["other"])
         return {"cmp": cmpTrees(
             dtree_h.getCode(), other_dtree_h.getCode())}
 

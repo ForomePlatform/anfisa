@@ -38,15 +38,6 @@ function setupXLFilters(ds_name, common_title, ws_ref_url) {
 }
     
 /**************************************/
-function wsCreate() {
-    sCreateWsH.show();
-}
-
-function startWsCreate() {
-    sCreateWsH.startIt();
-}
-
-/**************************************/
 function onModalOff() {
 }
 

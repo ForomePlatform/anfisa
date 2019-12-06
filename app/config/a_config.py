@@ -80,7 +80,9 @@ class AnfisaConfig:
         "view.cohorts.aspect": "view_qsamples",
 
         "job.pool.size":    3,
-        "job.pool.threads": 1}
+        "job.pool.threads": 1,
+
+        "sol-log.size": 30}
 
     sTextDecor = {
         "VEP Data": "VEP<br/>Data",

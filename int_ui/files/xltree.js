@@ -957,15 +957,6 @@ var sCodeEditH = {
 };
 
 /**************************************/
-function wsCreate() {
-    sCreateWsH.show();
-}
-
-function startWsCreate() {
-    sCreateWsH.startIt();
-}
-
-/**************************************/
 function arrangeControls() {
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
