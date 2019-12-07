@@ -197,8 +197,8 @@ class MultiCompactUnit(_EnumUnit):
 class ZygosityComplexUnit(WS_Unit, ZygosityComplex):
     def __init__(self, ds_h, unit_data):
         WS_Unit.__init__(self, ds_h, unit_data, "zygosity")
-        ZygosityComplex.__init__(self, ds_h.getFamilyInfo(),
-            ds_h.getCondEnv(), unit_data)
+        ZygosityComplex.__init__(self,
+            ds_h.getFamilyInfo(), unit_data)
         self.mArrayFam = []
         fam_units = []
         for idx, fam_name in enumerate(self.iterFamNames()):

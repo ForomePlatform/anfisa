@@ -31,6 +31,9 @@ class XL_Unit(Unit):
     def getDS(self):
         return self.mDataSet
 
+    def getCondEnv(self):
+        return self.mDataSet.getCondEnv()
+
     def getDruidKind(self):
         return self.mDruidKind
 
@@ -150,7 +153,7 @@ class XL_ZygosityUnit(XL_Unit, ZygosityComplex):
     def __init__(self, dataset_h, descr):
         XL_Unit.__init__(self, dataset_h, descr)
         ZygosityComplex.__init__(self,
-            dataset_h.getFamilyInfo(), dataset_h.getCondEnv(), descr)
+            dataset_h.getFamilyInfo(), descr)
 
         fam_units = []
         for fam_name in self.iterFamNames():

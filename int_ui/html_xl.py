@@ -18,17 +18,17 @@
 #  limitations under the License.
 #
 
-from .gen_html import startHtmlPage, formFilterPannel
+from .gen_html import startHtmlPage, formFilterPannel, formNoteDiv
 
 #===============================================
-def formXLPage(output, common_title, html_base, xl_ds, ws_url):
+def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
     startHtmlPage(output, common_title + "-XL " + xl_ds.getName(), html_base,
-        css_files = ["base.css", "xl.css"],
-        js_files = ["xl.js", "filters.js",
+        css_files = ["base.css", "vrec.css", "filters.css", "xl.css"],
+        js_files = ["xl.js", "filters.js", "sub_vrec.js",
             "fctrl.js", "xl_ctrl.js", "base.js"])
 
     print('  <body onload="setupXLFilters(\'%s\', \'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title, ws_url), file = output)
+        (xl_ds.getName(), common_title, ws_pub_url), file = output)
 
     _formXLPannel(output, xl_ds.getName())
     formNoteDiv(output)
@@ -42,7 +42,7 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_url):
 def _formXLPannel(output, ds_name):
     print('''
       <div id="xl-ctrl">
-        <div id="xl-info">
+        <div id="xl-top-ctrl">
             <span id="control-wrap" title="Control Menu..." class="drop">
                 <span id="control-open" class="drop"
                     onclick="openControlMenu();">&#8285;</span>
@@ -62,45 +62,16 @@ def _formXLPannel(output, ds_name):
                 </div>
                 <div id="export-result" class="drop"></div>
             </span>&emsp;
-            XL dataset: <span id="xl-name"></span><br/>
-            Variants: <span id="list-report"></span>
+            XL dataset: <span id="ds-name" class="bold"></span><br/>
+            Variants: <span id="list-report" class="bold"></span>
         </div>
         <div id="xl-list">
-            <button id="xl-sub-view"
-                onclick="sSubViewH.show()">View variants</button>
+            <button id="open-sub-view-rec"
+                onclick="sSubVRecH.show()">View variants</button>
         </div>
       </div>''', file = output)
     formFilterPannel(output)
 
-#===============================================
-def formNoteDiv(output):
-    print('''
-    <div id="note-back" class="modal-back">
-      <div id="note-mod">
-        <div id="note-top">
-            <p id="note-title">Dataset
-              <span id="note-ds-name"></span> note
-              <span class="close-it"
-                onclick="sViewH.modalOff();">&times;</span>
-            </p>
-        </div>
-        <div id="work-note-area">
-            <textarea id="note-content"></textarea>
-        </div>
-        <div id="work-note-ctrl">
-              <button onclick="saveNote();">
-                Save
-              </button>
-              <button onclick="sViewH.modalOff();">
-                Done
-              </button>
-              <span id="note-time"></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-''', file = output)
 #===============================================
 def formCreateWsDiv(output):
     print('''
@@ -140,11 +111,11 @@ def formSubViewDiv(output):
             <div id="sub-view-ctrl">
                 <span id="sub-view-list-report"></span><br/>
                 <input id="sub-view-check-full" type="checkbox"
-                    onchange="sSubViewH.setMode(0);"/>
+                    onchange="sSubVRecH.setMode(0);"/>
                 <label for="sub-view-check-full">
                 <span id="sub-view-mod-full">Full list</span></label><br/>
                 <input id="sub-view-check-samples" type="checkbox"
-                    onchange="sSubViewH.setMode(1);"/>
+                    onchange="sSubVRecH.setMode(1);"/>
                 <label for="sub-view-check-samples">
                 <span id="sub-view-mod-samples">Samples-25</span></label><br/>
             </div>

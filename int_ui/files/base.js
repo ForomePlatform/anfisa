@@ -21,13 +21,15 @@
  */
 
 var sDSName = null;
+var sDSKind = null;
 var sCommonTitle = null;
-var sWsRefURL = null;
+var sWsPubURL = null;
 
 var sCohortList = null;
 var sCohortViewCheck = null;
 
 var sSamplesCtrl = null;
+var sSubViewCurAspect = null;
 
 /*************************************/
 /* Utilities                         */
@@ -149,6 +151,8 @@ function goToPage(page_mode, ds_name) {
     relaxView();
     if (!ds_name)
         ds_name = sDSName;
+    if (!page_mode)
+        page_mode = sDSKind.toUpperCase();
     if (page_mode == "XL") {
         window.open("xl_flt?ds=" + ds_name, sCommonTitle + ":" + ds_name);
         return;
@@ -158,7 +162,7 @@ function goToPage(page_mode, ds_name) {
         return;
     }
     if (page_mode == "TREE") {
-        window.open("xl_tree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":TREE");
+        window.open("dtree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":TREE");
         return;
     }
     if (page_mode == "DOC") {
@@ -262,7 +266,7 @@ var sViewH = {
     }
 };
 
-function relaxView(keep_modal) {
+function relaxView() {
     sViewH.modalOff();
     sViewH.dropOff();
 }
@@ -271,3 +275,16 @@ function relaxView(keep_modal) {
 function openControlMenu() {
     sViewH.dropOn(document.getElementById("control-menu"));
 }
+
+/*************************************/
+function setupDSControls() {
+    window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
+    sViewH.addToDrop(document.getElementById("control-menu"));
+    sOpNumH.init();
+    sOpEnumH.init();
+    if (sDSKind == "xl")
+        sCreateWsH.init();
+    sSubVRecH.init();
+    ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
+}
+

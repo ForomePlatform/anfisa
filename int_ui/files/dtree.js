@@ -21,21 +21,24 @@
  */
 
 /*************************************/
-function setupXLTree(ds_name, common_title, ws_ref_url) {
+function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sDSName = ds_name; 
+    sDSKind = ds_kind;
     sCommonTitle = common_title;
-    sWsRefURL = ws_ref_url;
+    sWsPubURL = ws_pub_url;
     window.onresize  = arrangeControls;
     window.onkeydown = onKey;
     window.name = sCommonTitle + ":" + sDSName + ":TREE";
-    document.getElementById("xl-name").innerHTML = sDSName;
-    initXL();
+    document.getElementById("ds-name").innerHTML = sDSName;
+    
+    setupDSControls();
     sUnitsH.init();
     sOpCondH.init();
-    sTreeCtrlH.init();
+    sHistoryH.init();
     sVersionsH.init();
     sCodeEditH.init();
-    sDecisionTree.setup("return False");
+    sDTreesH.init();
+    sDecisionTree.clear();
 }
     
 /**************************************/
@@ -57,31 +60,24 @@ var sDecisionTree = {
         args = "ds=" + sDSName + "&tm=0";
         if (tree_code == true)
             tree_code = this.mTreeCode;
-        args += "&code=" + encodeURIComponent(tree_code);
+        if (tree_code != false)
+            args += "&code=" + encodeURIComponent(tree_code);
         if (options) {
-            if (options["version"])
-                args += "&version=" + encodeURIComponent(options["version"]);
-            if (options["instr"])
-                args += "&instr=" + encodeURIComponent(JSON.stringify(options["instr"]));
-            if (options["std_name"])
-                args += "&std_name=" + encodeURIComponent(options["std_name"]);
+            for (j=0; j < 3; j++) {
+                var opt_key = ["dtree", "instr", "modify"][j];
+                if (options[opt_key])
+                    args += "&" + opt_key + "=" + encodeURIComponent(options[opt_key]);
+            }
         }
-        ajaxCall("dtree", args, function(info){sDecisionTree._setup(info);})
+        ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     
     _setup: function(info) {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
         this.mRqId = info["rq_id"];
-        sTreeCtrlH.update(info["cur_version"], info["versions"]);
-        var select_el = document.getElementById("std-code-select");
-        if (info["std_code"]) {
-            select_el.value = info["std_code"];
-            select_el.options[0].disabled = true;
-        } else {
-            select_el.value = "";
-            select_el.options[0].disabled = false;
-        }
+        sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
+        sHistoryH.update(info["hash"]);
         this.mMarkLoc = null;
         this.mPostTreeAction = null;
         this.mPointDelay = [];
@@ -287,10 +283,9 @@ var sDecisionTree = {
     },
     
     editMarkCond: function(new_cond) {
-        if (this.mMarkLoc == null)
-            return;
-        sTreeCtrlH.fixCurrent();
-        this.setup(true, {"instr": ["mark", this.mMarkLoc, new_cond]});
+        if (this.mMarkLoc != null)
+            this.setup(true, {"modify": 
+                JSON.stringify(["mark", this.mMarkLoc, new_cond])});
     },
     
     getAcceptedCount: function() {
@@ -313,6 +308,14 @@ var sDecisionTree = {
     
     getCurPointNo: function() {
         return this.mCurPointNo;
+    },
+    
+    clear: function() {
+        this.setup("return False");
+    },
+    
+    isEmpty: function() {
+        return (this.mPoints.length < 2);
     }
 }
 
@@ -367,7 +370,7 @@ var sUnitsH = {
         this.mTotal = info["total"];
         document.getElementById("list-report").innerHTML = (this.mCount == this.mTotal)?
             this.mTotal : this.mCount + "/" + this.mTotal;
-        sSubViewH.reset(this.mCount);
+        sSubVRecH.reset(this.mCount);
             
         this.mItems = info["stat-list"].slice();
         this.mUnitMap = {};
@@ -501,16 +504,11 @@ var sUnitsH = {
             sDecisionTree.loadDelayed("sCreateWsH.show();");
             return null;
         }
-        if (!sTreeCtrlH.curVersionSaved()) {
-            this.postAction("sCreateWsH.show();");
-            treeVersionSave();
-            return null;
-        }
         return [sDecisionTree.getAcceptedCount(), sDecisionTree.getTotalCount()];
     },
     
     getWsCreateArgs: function() {
-        return "ds=" + sDSName + "&verbase=" + sTreeCtrlH.getCurVersion();
+        return "ds=" + sDSName + "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
     },
 
     getCurCount: function() {
@@ -611,76 +609,274 @@ var sOpCondH = {
     }
 };
 
+/*************************************/
+var sDTreesH = {
+    mTimeH: null,
+    mCurOp: null,
+    mSelName: null,
+    mComboName: null,
+    mCurDTreeName: null,
+    mBtnOp: null,
+    
+    mAllList: [],
+    mOpList: [],
+    mLoadList: [],
+    mDTreeTimeDict: null,
+
+    init: function() {
+        this.mInpName   = document.getElementById("dtree-name-input");
+        this.mSelName   = document.getElementById("dtree-name-combo-list");
+        this.mComboName = document.getElementById("dtree-name-combo");
+        this.mBtnOp     = document.getElementById("dtree-act-op");
+    },
+
+    setup: function(dtree_name, dtree_list) {
+        this.mCurDTreeName = dtree_name;
+        var prev_all_list = JSON.stringify(this.mAllList);
+        this.mOpList = [];
+        this.mLoadList = [];
+        this.mAllList = [];
+        this.mDTreeTimeDict = {};
+        for (idx = 0; idx < dtree_list.length; idx++) {
+            dtree_name = dtree_list[idx][0];
+            this.mAllList.push(dtree_name);
+            if (!dtree_list[idx][1])
+                this.mOpList.push(dtree_name);
+            if (dtree_list[idx][2])
+                this.mLoadList.push(dtree_name);
+            this.mDTreeTimeDict[dtree_name] = dtree_list[idx][3];
+        }
+        //if (prev_all_list != JSON.stringify(this.mAllList))
+        //    onDTreeListChange();
+        this.update();
+        return this.mAllList;
+    },
+    
+    update: function() {
+        this.mCurOp = null;
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        if (!this.mCurDTreeName) {
+            this.mComboName.style.display = "none";
+            this.mInpName.value = "";
+        } else {
+            this.mInpName.value = this.mCurDTreeName;
+            this.mInpName.disabled = true;
+            this.mSelName.disabled = true;
+            this.mComboName.style.display = "block";
+        }
+        this.mInpName.style.visibility = "visible";
+        document.getElementById("dtree-op-create").className = 
+            (!!this.mCurDTreeName)? "disabled":"";
+        document.getElementById("dtree-op-modify").className = 
+            (!!this.mCurDTreeName ||
+                (this.mOpList.length == 0))? "disabled":"";
+        document.getElementById("dtree-op-delete").className = 
+            (!this.mCurDTreeName || 
+                this.mOpList.indexOf(this.mCurDTreeName) < 0)? "disabled":"";
+        this.mBtnOp.style.display = "none";
+    },
+
+    checkName: function() {
+        if (this.mCurOp == null)
+            return;
+
+        dtree_name = this.mInpName.value;
+        q_all = this.mAllList.indexOf(dtree_name) >= 0;
+        q_op  = this.mOpList.indexOf(dtree_name) >= 0;
+        q_load = this.mLoadList.indexOf(dtree_name) >= 0;
+        
+        if (this.mCurOp == "modify") {
+            this.mBtnOp.disabled = (!q_op) || dtree_name == this.mCurDTreeName;
+            return;
+        }
+        if (this.mCurOp == "load") {
+            this.mBtnOp.disabled = (!q_load) || dtree_name == this.mCurDTreeName;
+            return;
+        }
+        
+        if (this.mCurOp != "create") {
+            return; /*assert false! */
+        }
+        
+        q_ok = (q_all)? false: checkIdentifier(dtree_name);
+        
+        this.mInpName.className = (q_ok)? "": "bad";
+        this.mBtnOp.disabled = !q_ok;
+        
+        if (this.mTimeH == null) 
+            this.mTimeH = setInterval(function(){sDTreesH.checkName();}, 100);
+    },
+    
+    dtreeExists: function(dtree_name) {
+        return this.mAllList.indexOf(dtree_name) >= 0;
+    },
+    
+    select: function() {
+        this.mInpName.value = this.mSelName.value;
+        this.checkName();
+        //if (this.mCurOp == "load" || this.mCurOp == "modify")
+        //    this.action();
+    },
+
+    startLoad: function() {
+        this.mCurOp = "load";
+        this.mInpName.value = "";
+        this.mInpName.style.visibility = "hidden";
+        this.fillSelNames(false, this.mLoadList);
+        this.mSelName.disabled = false;
+        this.mBtnOp.innerHTML = "Load";
+        this.mBtnOp.style.display = "block";
+        this.select();
+        this.mComboName.style.display = "block";
+    },
+
+    startCreate: function() {
+        if (sDecisionTree.isEmpty())
+            return;
+        this.mCurOp = "create";
+        this.mInpName.value = "";
+        this.mInpName.style.visibility = "visible";
+        this.mSelName.disabled = false;
+        this.mInpName.disabled = false;
+        this.fillSelNames(true, this.mAllList);
+        this.mBtnOp.innerHTML = "Create";
+        this.mBtnOp.style.display = "block";
+        this.checkName();
+        this.mComboName.style.display = "block";
+    },
+
+    startModify: function() {
+        if (sDecisionTree.isEmpty() || !this.mCurDTreeName)
+            return;
+        this.fillSelNames(false, this.mOpList);
+        this.mCurOp = "modify";
+        this.mInpName.value = "";
+        this.mInpName.style.visibility = "hidden";
+        this.mSelName.disabled = false;
+        this.mBtnOp.innerHTML = "Modify";
+        this.mBtnOp.style.display = "block";
+        this.select();
+        this.mComboName.style.display = "block";
+    },
+
+    deleteIt: function() {
+        if (!this.mCurDTreeName || 
+                this.mOpList.indexOf(this.mCurDTreeName) < 0)
+            return;
+        sDecisionTree.setup(true, 
+            {"instr": "DELETE/" + this.mCurDTreeName});
+    },
+
+    action: function() {
+        dtree_name = this.mInpName.value;
+        q_all = this.mAllList.indexOf(dtree_name) >= 0;
+        q_op = this.mOpList.indexOf(dtree_name) >= 0;
+        q_load = this.mLoadList.indexOf(dtree_name) >= 0;
+        
+        switch (this.mCurOp) {
+            case "create":
+                if (!q_all && checkIdentifier(dtree_name)) {
+                    sDecisionTree.setup(true,
+                        {"instr": "UPDATE/" + dtree_name});
+                }
+                break;
+            case "modify":
+                if (q_op && dtree_name != this.mCurDTreeName) {
+                    sDecisionTree.setup(true,
+                        {"instr": "UPDATE/" + dtree_name});
+                }
+                break;
+            case "load":
+                if (q_load && dtree_name != this.mCurDTreeName) {
+                    sDecisionTree.setup(false,
+                        {"dtree": dtree_name});
+                }
+                break;
+        }
+    },
+
+    fillSelNames: function(with_empty, dtree_list) {
+        if (this.mSelName == null || this.mAllList == null)
+            return;
+        for (idx = this.mSelName.length -1; idx >= 0; idx--) {
+            this.mSelName.remove(idx);
+        }
+        if (with_empty) {
+            var option = document.createElement('option');
+            option.innerHTML = "";
+            option.value = "";
+            this.mSelName.append(option)
+        }
+        for (idx = 0; idx < dtree_list.length; idx++) {
+            dtree_name = dtree_list[idx];
+            var option = document.createElement('option');
+            option.innerHTML = dtree_name;
+            option.value = dtree_name;
+            this.mSelName.append(option)
+        }
+        this.mSelName.selectedIndex = 0;
+    },
+    
+    getAllList: function() {
+        return this.mAllList;
+    }
+};
+
 /**************************************/
-var sTreeCtrlH = {
+var sHistoryH = {
     mHistory: [],
     mRedoStack: [],
-    mCurVersion: "",
+    mCurVersion: null,
     
     mButtonUndo: null,
     mButtonRedo: null,
-    mButtonSaveVersion: null,
-    mSpanCurVersion: null,
 
     init: function() {
-        this.mButtonUndo = document.getElementById("tree-undo");
-        this.mButtonRedo = document.getElementById("tree-redo");
-        this.mButtonSaveVersion = document.getElementById("tree-version");
-        this.mSpanCurVersion = document.getElementById("tree-current-version");
+        this.mButtonUndo = document.getElementById("dtree-undo");
+        this.mButtonRedo = document.getElementById("dtree-redo");
         
     },
     
-    update: function(cur_version, versions) {
-        sVersionsH.setup(cur_version, versions);
-        this.mCurVersion = (cur_version != null)? cur_version + "": "";
-        this.mSpanCurVersion.innerHTML = this.mCurVersion;
+    _curState: function() {
+        return [sDecisionTree.mCurPointNo, 
+            this.mCurVersion[0], this.mCurVersion[1]];
+    },
+    
+    update: function(hash_code) {
+        if (this.mCurVersion == null || hash_code != this.mCurVersion[1]) {
+            if (this.mCurVersion != null) {
+                this.mHistory.push(this._curState());
+                while (this.mHistory.length > 50)
+                    this.mHistory.shift();
+                this.mRedoStack = [];
+            }
+            this.mCurVersion = [sDecisionTree.mTreeCode, hash_code];
+        }
         this.mButtonUndo.disabled = (this.mHistory.length == 0);
         this.mButtonRedo.disabled = (this.mRedoStack.length == 0);
-        this.mButtonSaveVersion.disabled = (cur_version != null);
     },
     
-    getCurVersion: function() {
-        return this.mCurVersion;
-    },
-    
-    _evalCurState: function() {
-        return [sDecisionTree.mCurPointNo, sDecisionTree.mTreeCode];
-    },
-    
-    fixCurrent: function() {
-        if (this.mCurPointNo < 0)
-            return;
-        this.mHistory.push(this._evalCurState());
-        while (this.mHistory.length > 50)
-            this.mHistory.shift();
-        this.mRedoStack = [];
-    },
-
     doUndo: function() {
         if (this.mHistory.length > 0) {
-            this.mRedoStack.push(this._evalCurState());
+            this.mRedoStack.push(this._curState());
             state = this.mHistory.pop()
             sDecisionTree.mCurPointNo = state[0];
+            this.mCurVersion = [state[1], state[2]];
             sDecisionTree.setup(state[1]);
         }
     },
 
     doRedo: function() {
         if (this.mRedoStack.length > 0) {
-            this.mHistory.push(this._evalCurState());
+            this.mHistory.push(this._curState());
             state = this.mRedoStack.pop()
             sDecisionTree.mCurPointNo = state[0];
+            this.mCurVersion = [state[1], state[2]];
             sDecisionTree.setup(state[1]);
         }
-    },
-    
-    curVersionSaved: function() {
-        return !!this.mCurVersion;
-    },
-    
-    doSaveVersion: function() {
-        if (!this.mCurVersion)
-            sDecisionTree.setup(true, {"instr": ["add_version"]});
     },
     
     availableActions: function() {
@@ -690,123 +886,6 @@ var sTreeCtrlH = {
         if (this.mRedoStack.length > 0)
             ret.push("redo");
         return ret;
-    }
-};
-
-/**************************************/
-var sVersionsH = {
-    mVersions: null,
-    mBaseCmpVer: null,
-    mCurCmpVer: null,
-    
-    mDivVersionTab: null,
-    mDivVersionCmp: null,
-    mButtonVersionSelect: null,
-    mButtonVersionDelete: null,
-    
-    init: function() {
-        this.mDivVersionTab = document.getElementById("versions-tab");
-        this.mDivVersionCmp = document.getElementById("versions-cmp");
-        this.mButtonVersionSelect = document.getElementById("btn-version-select");
-        this.mButtonVersionDelete = document.getElementById("btn-version-delete");
-    },
-    
-    setup: function(cur_version, versions) {
-        if (versions == null)
-            versions = [];
-        this.mBaseCmpVer = cur_version;
-        this.mVersions= versions;
-        this.mCurCmpVer = null;
-        rep = ['<table id="ver-tab">'];
-        if (this.mBaseCmpVer == null)
-            rep.push('<tr class="v-base"><td class="v-no">&lt;&gt;</td>' +
-                '<td class="v-date"></td></tr>');
-        for (var idx = versions.length - 1; idx >= 0; idx--) {
-            if (versions[idx][0] == this.mBaseCmpVer) 
-                rep.push('<tr class="v-base">');
-            else {
-                rep.push('<tr class="v-norm" id="ver__' + versions[idx][0] + '" ' + 
-                    'onclick="sVersionsH.selIt(' + versions[idx][0] + ')">');
-            }
-            rep.push('<td class="v-no">' + versions[idx][0] + '</td>' +
-                '<td class="v-date">' + timeRepr(versions[idx][1]) + '</td></tr>');
-        }
-        rep.push('</table>');
-        this.mDivVersionTab.innerHTML = rep.join('\n');
-        this.mDivVersionCmp.innerHTML = "";
-        this.mDivVersionCmp.className = "empty";
-        this.checkControls();
-    },
-            
-    show: function() {
-        if (this.mVersions.length > 1 || 
-                (this.mVersions.length == 1 && this.mBaseCmpVer == null))
-            sViewH.modalOn(document.getElementById("versions-back"));
-    },
-    
-    checkControls: function(){
-        this.mButtonVersionSelect.disabled = (this.mCurCmpVer == null);
-        this.mButtonVersionDelete.disabled = true;
-    },
-    
-    selIt: function(ver_no) {
-        if (ver_no == this.mCurCmpVer)
-            return;
-        if (this.mCurCmpVer != null) {
-            prev_el = document.getElementById("ver__" + this.mCurCmpVer);
-            prev_el.className = prev_el.className.replace(" cur", "");
-        }
-        this.mCurCmpVer = ver_no;
-        if (this.mCurCmpVer != null) {
-            new_el = document.getElementById("ver__" + this.mCurCmpVer);
-            new_el.className += " cur";
-        }
-        this.checkControls();
-        
-        if (this.mCurCmpVer != null) {
-            var args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
-            if (this.mBaseCmpVer == null) 
-                args += "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
-            else
-                args += "&verbase=" + this.mBaseCmpVer;
-            ajaxCall("dtree_cmp", args, function(info){sVersionsH._setCmp(info);});
-        }
-    },
-    
-    _setCmp: function(info) {
-        if (!info["cmp"]) {
-            this.mDivVersionCmp.innerHTML = "";
-            this.mDivVersionCmp.className = "empty";
-        } else {
-            rep = [];
-                        
-            for (var j = 0; j < info["cmp"].length; j++) {
-                block = info["cmp"][j];
-                cls_name = "cmp";
-                sign = block[0][0];
-                if (sign == "+") 
-                    cls_name += " plus";
-                if (sign == "-")
-                    cls_name += " minus";
-                if (sign == '?')
-                    cls_name += " note";
-                rep.push('<div class="' + cls_name + '">' + 
-                    escapeText(block.join('\n')) + '</div>');
-            }
-            this.mDivVersionCmp.innerHTML = rep.join('\n');
-            this.mDivVersionCmp.className = "";
-        }
-    },
-    
-    selectVersion: function() {
-        if (this.mCurCmpVer != null) {
-            sViewH.modalOff();
-            sDecisionTree.setup(null, {"version": this.mCurCmpVer});
-        }
-    },
-    
-    deleteVersion: function() {
-        //TRF: write it later!!!
     }
 };
 
@@ -946,14 +1025,115 @@ var sCodeEditH = {
     
     setupContent: function() {
         var ret = this.mCurError == null && this.mBaseContent != this.mCurContent;
-        if (ret) {
-            sTreeCtrlH.fixCurrent();
-            sDecisionTree.setup(this.mCurContent, {"instr": ["add_version"]});
-        }
+        if (ret)
+            sDecisionTree.setup(this.mCurContent);
         this.checkControls();
         return ret;
     }
     
+};
+
+/**************************************/
+var sVersionsH = {
+    mVersions: null,
+    mBaseCmpVer: null,
+    mCurCmpVer: null,
+    
+    mDivVersionTab: null,
+    mDivVersionCmp: null,
+    mButtonVersionSelect: null,
+    
+    init: function() {
+        this.mDivVersionTab = document.getElementById("cmp-code-tab");
+        this.mDivVersionCmp = document.getElementById("cmp-code-cmp");
+        this.mButtonVersionSelect = document.getElementById("btn-version-select");
+    },
+    
+    setup: function(cur_version, versions) {
+        if (versions == null)
+            versions = [];
+        this.mBaseCmpVer = cur_version;
+        this.mVersions= versions;
+        this.mCurCmpVer = null;
+        rep = ['<table id="ver-tab">'];
+        if (this.mBaseCmpVer == null)
+            rep.push('<tr class="v-base"><td class="v-no">&lt;&gt;</td>' +
+                '<td class="v-date"></td></tr>');
+        for (var idx = versions.length - 1; idx >= 0; idx--) {
+            if (versions[idx][0] == this.mBaseCmpVer) 
+                rep.push('<tr class="v-base">');
+            else {
+                rep.push('<tr class="v-norm" id="ver__' + versions[idx][0] + '" ' + 
+                    'onclick="sVersionsH.selIt(' + versions[idx][0] + ')">');
+            }
+            rep.push('<td class="v-no">' + versions[idx][0] + '</td>' +
+                '<td class="v-date">' + timeRepr(versions[idx][1]) + '</td></tr>');
+        }
+        rep.push('</table>');
+        this.mDivVersionTab.innerHTML = rep.join('\n');
+        this.mDivVersionCmp.innerHTML = "";
+        this.mDivVersionCmp.className = "empty";
+        this.checkControls();
+    },
+            
+    show: function() {
+        if (this.mVersions.length > 1 || 
+                (this.mVersions.length == 1 && this.mBaseCmpVer == null))
+            sViewH.modalOn(document.getElementById("cmp-code-back"));
+    },
+    
+    checkControls: function(){
+        this.mButtonVersionSelect.disabled = (this.mCurCmpVer == null);
+    },
+    
+    selIt: function(ver_no) {
+        if (ver_no == this.mCurCmpVer)
+            return;
+        if (this.mCurCmpVer != null) {
+            prev_el = document.getElementById("ver__" + this.mCurCmpVer);
+            prev_el.className = prev_el.className.replace(" cur", "");
+        }
+        this.mCurCmpVer = ver_no;
+        if (this.mCurCmpVer != null) {
+            new_el = document.getElementById("ver__" + this.mCurCmpVer);
+            new_el.className += " cur";
+        }
+        this.checkControls();
+        
+        if (this.mCurCmpVer != null) {
+            var args = "ds=" + sDSName + "&ver=" + this.mCurCmpVer;
+            if (this.mBaseCmpVer == null) 
+                args += "&code=" + encodeURIComponent(sDecisionTree.mTreeCode);
+            else
+                args += "&verbase=" + this.mBaseCmpVer;
+            ajaxCall("dtree_cmp", args, function(info){sVersionsH._setCmp(info);});
+        }
+    },
+    
+    _setCmp: function(info) {
+        if (!info["cmp"]) {
+            this.mDivVersionCmp.innerHTML = "";
+            this.mDivVersionCmp.className = "empty";
+        } else {
+            rep = [];
+                        
+            for (var j = 0; j < info["cmp"].length; j++) {
+                block = info["cmp"][j];
+                cls_name = "cmp";
+                sign = block[0][0];
+                if (sign == "+") 
+                    cls_name += " plus";
+                if (sign == "-")
+                    cls_name += " minus";
+                if (sign == '?')
+                    cls_name += " note";
+                rep.push('<div class="' + cls_name + '">' + 
+                    escapeText(block.join('\n')) + '</div>');
+            }
+            this.mDivVersionCmp.innerHTML = rep.join('\n');
+            this.mDivVersionCmp.className = "";
+        }
+    }
 };
 
 /**************************************/
@@ -967,11 +1147,11 @@ function arrangeControls() {
         document.getElementById("wrap-cond-enum").style.height = 
             Math.max(10, cond_mod_height - 110);
     }
-    sSubViewH.arrangeControls();
+    sSubVRecH.arrangeControls();
 }
 
 function onKey(key_event) {
-    sSubViewH.onKey(key_event);
+    sSubVRecH.onKey(key_event);
 }
 
 function onModalOff() {
@@ -987,40 +1167,12 @@ function fixMark() {
     sViewH.modalOff();
 }
 
-function treeUndo() {
-    sTreeCtrlH.doUndo();
-}
-
-function treeRedo() {
-    sTreeCtrlH.doRedo();
-}
-
-function treeVersionSave() {
-    sTreeCtrlH.doSaveVersion();
-}
-
-function modVersions() {
-    sVersionsH.show();
-}
-
 function versionSelect() {
     sVersionsH.selectVersion();
 }
 
-function versionDelete() {
-    sVersionsH.deleteVersion();
-}
-
 function editMark(point_no, instr_idx) {
     sDecisionTree.markEdit(point_no, instr_idx);
-}
-
-function pickStdCode() {
-    std_name = document.getElementById("std-code-select").value;
-    if (std_name) {
-        sTreeCtrlH.fixCurrent();
-        sDecisionTree.setup(null, {"std_name" : std_name});
-    }
 }
 
 function exposeEnum(unit_name, expand_mode) {

@@ -21,16 +21,17 @@
  */
 
 /*************************************/
-function setupXLFilters(ds_name, common_title, ws_ref_url) {
+function setupXLFilters(ds_name, common_title, ws_pub_url) {
     sDSName = ds_name;
+    sDSKind = "xl";
     sCommonTitle = common_title;
-    sWsRefURL = ws_ref_url;
+    sWsPubURL = ws_pub_url;
     window.name = sCommonTitle + ":" + sDSName;
     window.onresize  = arrangeControls;
     window.onkeydown  = onKey;
-    document.getElementById("xl-name").innerHTML = sDSName;
+    document.getElementById("ds-name").innerHTML = sDSName;
     
-    initXL();
+    setupDSControls();
     document.getElementById("close-filter").style.display = "none";
     sFiltersH.init();
     sUnitsH.init("ds=" + sDSName, true);
@@ -90,9 +91,9 @@ function setupExport(info) {
 /*************************************/
 /**************************************/
 function arrangeControls() {
-    sSubViewH.arrangeControls();
+    sSubVRecH.arrangeControls();
 }
 
 function onKey(event_key) {
-    sSubViewH.onKey(event_key);
+    sSubVRecH.onKey(event_key);
 }

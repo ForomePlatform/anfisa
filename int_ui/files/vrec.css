@@ -1,0 +1,184 @@
+/*
+ * Copyright (c) 2019. Partners HealthCare and other members of
+ * Forome Association
+ *
+ * Developed by Sergey Trifonov based on contributions by Joel Krier,
+ * Michael Bouzinier, Shamil Sunyaev and other members of Division of
+ * Genetics, Brigham and Women's Hospital
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+/********************Record labels*****************************/
+div.rec-label {
+    cursor: pointer;
+    color: #818195;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px 0px 10px 20px;
+    line-height: 18px;
+    border: none; 
+    font-weight: bold;
+}
+
+div.rec-label.marked {
+    font-weight: normal;
+}
+
+div.rec-label:hover {
+    color: #f6f6f7;
+}
+
+div.rec-label.red { 
+    background: url(images/red.png) no-repeat 5px 12px; 
+}
+div.rec-label.red:hover { 
+    background: url(images/red-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.red-cross { 
+    background: url(images/red-cross.png) no-repeat 5px 12px; 
+}
+div.rec-label.red-cross:hover { 
+    background: url(images/red-cross-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.green { 
+    background: url(images/green.png) no-repeat 5px 12px; 
+}
+div.rec-label.green:hover { 
+    background: url(images/green-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow { 
+    background: url(images/yellow.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow:hover { 
+    background: url(images/yellow-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow-cross { 
+    background: url(images/yellow-cross.png) no-repeat 5px 12px; 
+}
+div.rec-label.yellow-cross:hover { 
+    background: url(images/yellow-cross-hover.png) no-repeat 5px 12px; 
+}
+div.rec-label.grey { 
+    background: url(images/grey.png) no-repeat 5px 12px;     
+}
+div.rec-label.grey:hover { 
+    background: url(images/grey-hover.png) no-repeat 5px 12px; 
+}
+
+div.rec-label.press, div.rec-label.press:hover {
+    color: #f6f6f7;
+    background-color: #505070; 
+}
+
+/********************Modal SubVRec*****************************/
+div#sub-view-status {
+    margin-top: 20%;
+    margin-left: 30%;
+    width: 300px;
+    height: 60px;
+    padding: 10px 5px;
+    text-align: center;
+    color: grey;
+    font-weight: bold;
+    background-color: #fffefe;
+    border: 1px solid black;
+    position: absolute;
+}
+
+div#sub-view-mod {
+    background-color: #333455; 
+    margin: 2% 2% 1% 1%; 
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 7px;
+    height: 91%; 
+    min-height: 91%;
+    width: 95%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    flex-direction: row;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+div#sub-view-ctrl {
+    margin: 5px;
+}
+
+div#sub-view-left {
+    height: 100%;
+    min-height: 100%;
+    padding: 0px;
+    margin: 0px;
+    flex: 0 0 120px;
+    color: yellow;
+}
+
+div#sub-view-right {
+    height: 100%;
+    min-height: 100%;
+    padding: 0px;
+    margin: 0px 10px;;
+    flex: 1 0 500px;
+    flex-direction: column;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+div#sub-view-wrap-list {
+    overflow: hidden;
+    border: 1px solid black;
+    white-space: nowrap;
+    display: block;
+    margin: 0px;
+    padding: 0px;
+    overflow: hidden;
+}
+
+div#sub-view-rec-info {
+    color: white;
+    font-weight: bold;
+    width: 100%;
+    flex: 0 1 25px;
+    padding: 3px 10px;
+}
+
+div#sub-view-rec-wrap {
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+}
+
+div#sub-view-list  {
+    background-color:#333455; 
+    margin-top: 2px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    white-space: nowrap;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+}
+
+iframe#sub-view-rec-frame {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+

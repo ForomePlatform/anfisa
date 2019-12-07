@@ -675,10 +675,10 @@ var sFiltersH = {
     mFltTimeDict: null,
 
     init: function() {
-        this.mInpName   = document.getElementById("filter-name-filter");
-        this.mSelName   = document.getElementById("filter-name-filter-list");
+        this.mInpName   = document.getElementById("filter-name-input");
+        this.mSelName   = document.getElementById("filter-name-combo-list");
         this.mComboName = document.getElementById("filter-name-combo");
-        this.mBtnOp     = document.getElementById("filter-flt-op");
+        this.mBtnOp     = document.getElementById("filter-act-op");
     },
 
     setup: function(filter_list) { // reduced monitor.js//setupNamedFilters()
@@ -764,9 +764,6 @@ var sFiltersH = {
         return this.mAllList.indexOf(filter_name) >= 0;
     },
     
-    clearOpMode: function() {
-    },
-
     select: function() {
         this.mInpName.value = this.mSelName.value;
         this.checkName();

@@ -50,8 +50,6 @@ class CaseStory:
         return self.mStartPoint
 
     def _addPoint(self, point):
-        assert (len(self.mPoints) == 0
-            or self.mPoints[-1].getPointKind() in {"If", "Import", "Error"})
         self.getMaster().regPoint(point)
         self.mPoints.append(point)
 
@@ -124,7 +122,7 @@ class CheckPoint:
 
     def getCodeFrag(self, code_lines):
         line_from, line_to = self.mFrag.getLineDiap()
-        return "\n".join(code_lines[line_from - 1: line_to])
+        return "\n".join(code_lines[line_from - 1: line_to - 1])
 
 #===============================================
 class ImportPoint(CheckPoint):
@@ -211,37 +209,40 @@ class FilterDTree(FilterBase, CaseStory):
     def activate(self):
         self.mPointList = []
         prev_point = None
-        for instr_no, frag in enumerate(self.mFragments):
-            if frag.getInstrType() == "Error":
-                self._addPoint(ErrorPoint(self, frag, instr_no))
+        for instr_no, frag_h in enumerate(self.mFragments):
+            if frag_h.getInstrType() == "Error":
+                self._addPoint(ErrorPoint(self, frag_h, instr_no))
                 continue
-            if frag.getInstrType() == "Import":
-                assert frag.getDecision() is None
+            if frag_h.getInstrType() == "Import":
+                assert frag_h.getDecision() is None
                 self._addPoint(ImportPoint(self,
-                    frag, prev_point, instr_no))
-                for unit_name in frag.getImportEntries():
-                    assert frag.getHashCode() is not None
+                    frag_h, prev_point, instr_no))
+                for unit_name in frag_h.getImportEntries():
+                    assert frag_h.getHashCode() is not None
                     is_ok = self.importUnit(instr_no, unit_name,
-                        self.actualCondition(instr_no), frag.getHashCode())
+                        self.getActualCondition(instr_no),
+                        frag_h.getHashCode())
                     assert is_ok
                 continue
-            if frag.getInstrType() == "If":
-                assert frag.getDecision() is None
-                cond_point = ConditionPoint(self, frag, prev_point, instr_no)
+            if frag_h.getInstrType() == "If":
+                assert frag_h.getDecision() is None
+                cond_point = ConditionPoint(self,
+                    frag_h, prev_point, instr_no)
                 self._addPoint(cond_point)
                 prev_point = cond_point
                 continue
-            if frag.getInstrType() == "Return":
-                assert frag.getCondData() is None
-                if frag.getLevel() != 0:
-                    assert frag.getLevel() == 1
-                    prev_point.getSubStory()._addPoint(TerminalPoint(
-                        prev_point.getSubStory(), frag, prev_point, instr_no))
+            if frag_h.getInstrType() == "Return":
+                assert frag_h.getCondData() is None
+                if frag_h.getLevel() != 0:
+                    assert frag_h.getLevel() == 1
+                    prev_point.getSubStory()._addPoint(
+                        TerminalPoint(prev_point.getSubStory(),
+                            frag_h, prev_point, instr_no))
                 else:
                     self._addPoint(TerminalPoint(self,
-                        frag, prev_point, instr_no))
+                        frag_h, prev_point, instr_no))
                 continue
-            assert False, "Bad frag type: %s" % frag.getInstrType()
+            assert False, "Bad frag type: %s" % frag_h.getInstrType()
 
     def __len__(self):
         return len(self.mPointList)
@@ -296,6 +297,7 @@ class FilterDTree(FilterBase, CaseStory):
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
             "code": self.mCode,
+            "hash": self.mHashCode,
             "error": self.mError is not None}
         if self.mDTreeName:
             ret_handle["dtree-name"] = self.mDTreeName

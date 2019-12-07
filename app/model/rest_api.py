@@ -57,7 +57,7 @@ class RestAPI:
                 if rq_kind == "vault":
                     return (rq_func, data_vault)
                 elif rq_kind in {"ds", "ws", "xl"}:
-                    ds_h = data_vault.getDS(rq_args.get("ds"),
+                    ds_h = data_vault.getDS(rq_args["ds"],
                         None if rq_kind == "ds" else rq_kind)
                     if ds_h is not None:
                         return (rq_func, ds_h)

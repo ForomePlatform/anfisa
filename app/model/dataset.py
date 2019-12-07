@@ -314,7 +314,7 @@ class DataSet(SolutionBroker):
                 dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
             else:
                 dtree_h = FilterDTree(self.getCondEnv(), rq_args["code"])
-        dtree_h = self.updateSolEntry(dtree_h)
+        dtree_h = self.updateSolEntry("dtree", dtree_h)
         if activate_it:
             dtree_h.activate()
         return dtree_h
@@ -390,7 +390,7 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__dtree(self, rq_args):
+    def rq__dtree_set(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
         dtree_h = None
         if "modify" in rq_args:
@@ -400,7 +400,7 @@ class DataSet(SolutionBroker):
         if "instr" in rq_args:
             if dtree_h is None:
                 dtree_h = self._getArgDTree(rq_args, activate_it = False)
-            if not self.modifySolEntry("dtree_h", rq_args["instr"],
+            if not self.modifySolEntry("dtree", rq_args["instr"],
                     dtree_h.getCode()):
                 assert False
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
@@ -409,6 +409,7 @@ class DataSet(SolutionBroker):
             "kind": self.mDSKind,
             "counts": self.prepareDTreePointCounts(
                 dtree_h, time_end = time_end),
+            "dtree-list": self.getSolEntryList("dtree"),
             "rq_id": self._makeRqId()}
         ret_handle.update(dtree_h.reportInfo())
         return ret_handle

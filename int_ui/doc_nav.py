@@ -28,8 +28,8 @@ def formDocNavigationPage(output, common_title, html_base, ds_h):
         css_files = ["doc_nav.css", "base.css"],
         js_files = ["doc_nav.js", "base.js"])
 
-    print('  <body onload="initReportPage(\'%s\', \'%s\');">' %
-        (ds_h.getName(), common_title), file = output)
+    print('  <body onload="initReportPage(\'%s\', \'%s\', \'%s\');">' %
+        (ds_h.getName(), ds_h.getDSKind(), common_title), file = output)
     print('''
     <div id="all">
       <div id="left">
@@ -38,7 +38,7 @@ def formDocNavigationPage(output, common_title, html_base, ds_h):
       </div>
       <div id="right">
         <div id="title">
-            <span id="ds-name" onclick="goDS();"></span>:
+            <span id="ds-name" onclick="goToPage(\'\');"></span>:
             <span id="doc-title"></span>
         </div>
         <iframe id="doc-content" name="doc-content">

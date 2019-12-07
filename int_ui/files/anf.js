@@ -28,10 +28,11 @@ var sViewRecNoSeq = null;
 
 function initWin(workspace_name, common_title) {
     sDSName = workspace_name; 
+    sDSKind = "ws";
     sCommonTitle = common_title;
     sUnitsH.init("ds=" + sDSName, false);
     window.name = sCommonTitle + ":" + sDSName;
-    document.getElementById("ws-name").innerHTML = sDSName;
+    document.getElementById("ds-name").innerHTML = sDSName;
     
     window.onkeydown = onKey;
     window.onclick   = onClick;

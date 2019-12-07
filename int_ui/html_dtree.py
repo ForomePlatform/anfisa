@@ -18,37 +18,40 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
-
-from .gen_html import startHtmlPage
-from .html_xl import formNoteDiv, formCreateWsDiv, formSubViewDiv
+from .gen_html import startHtmlPage, formNoteDiv
+from .html_xl import formCreateWsDiv, formSubViewDiv
 #===============================================
-def formXLTreePage(output, common_title, html_base, xl_ds, ws_url):
+def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
+    js_files = ["dtree.js", "fctrl.js", "sub_vrec.js", "base.js"]
+    if ds_h.getDSKind() == "xl":
+        js_files.append("xl_ctrl.js")
     startHtmlPage(output,
-        common_title + "-XL " + xl_ds.getName() + "(d-tree)", html_base,
-        css_files = ["xltree.css", "py_pygments.css", "base.css"],
-        js_files = ["xltree.js", "fctrl.js",
-            "xl_ctrl.js", "base.js"])
+        common_title + "-DTree " + ds_h.getName(), html_base,
+        css_files = ["dtree.css", "py_pygments.css", "vrec.css", "base.css"],
+        js_files = js_files)
 
-    print('  <body onload="setupXLTree(\'%s\', \'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title, ws_url), file = output)
+    print('  <body onload="setupDTree(\'%s\', \'%s\',  \'%s\', \'%s\');">' %
+        (ds_h.getName(), ds_h.getDSKind(), common_title, ws_pub_url),
+        file = output)
 
-    _formXLPannel(output, xl_ds)
+    _formDTreePannel(output, ds_h)
     _formCurCondDiv(output)
-    _formVersionsDiv(output)
+    _formCmpCodeDiv(output)
     _formEditCodeDiv(output)
     formNoteDiv(output)
-    formCreateWsDiv(output)
+
+    if ds_h.getDSKind() == "xl":
+        formCreateWsDiv(output)
     formSubViewDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
 
 #===============================================
-def _formXLPannel(output, ds_h):
+def _formDTreePannel(output, ds_h):
     print('''
-      <div id="xl-ctrl">
-        <div id="xl-info">
+      <div id="dtree-ctrl">
+        <div id="dtree-top-ctrl">
             <span id="control-wrap" title="Control Menu..." class="drop">
                 <span id="control-open" class="drop"
                     onclick="openControlMenu();">&#8285;</span>
@@ -57,51 +60,71 @@ def _formXLPannel(output, ds_h):
                         class="drop ctrl-menu">Home Directory</div>
                     <div onclick="goToPage(\'DOC\');" id="menu-doc"
                         class="drop ctrl-menu">Documentation</div>
-                    <div onclick="goToPage(\'XL\');"
+                    <div onclick="goToPage(\'\');"
                         class="drop ctrl-menu">Filtering pannel</div>
                     <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note...</div>
+                        class="drop ctrl-menu">Dataset Note...</div>''',
+        file = output)
+    if ds_h.getDSKind() == "xl":
+        print ('''
                     <div onclick="wsCreate();"
-                        class="drop ctrl-menu">Create workspace...</div>
+                        class="drop ctrl-menu">Create workspace...</div>''',
+            file = output)
+    print('''
                 </div>
             </span>&emsp;
-            XL dataset: <span id="xl-name"></span><br/>
-            <select id="std-code-select" onchange="pickStdCode();"
-                title="Pick tree code from repository">
-                <option value="">in work</option>''', file = output)
-    for std_name in ds_h.getStdTreeCodeNames():
-        print('                <option value="%s">%s</option>' % (
-            escape(std_name), escape(std_name)), file = output)
-    print('''
-            </select>
-            <button id="code-edit-show" onclick='sCodeEditH.show();'>
-                Edit code
-            </button>
+            Dataset: <span id="ds-name" class="bold"></span><br/>
+            <div id="dtree-edit-ctrl">
+              <div class="dropdown">
+                <button class="op-button drop">Decision Trees...</button>
+                <div id="dtree-op-list" class="dropdown-content">
+                  <a class="drop" id="dtree-op-load"
+                    onclick="sDTreesH.startLoad();">Load</a>
+                  <a class="drop" id="dtree-op-create"
+                    onclick="sDTreesH.startCreate();">Create</a>
+                  <a class="drop"  id="dtree-op-modify"
+                    onclick="sDTreesH.startModify();">Modify</a>
+                  <a class="drop"  id="dtree-op-delete"
+                    onclick="sDTreesH.deleteIt();">Delete</a>
+                </div>
+              </div>
+              <div id="dtree-name-combo" class="combobox">
+                <select id="dtree-name-combo-list"
+                        onchange="sDTreesH.select();">
+                    <option value=""></option>
+                    <input id="dtree-name-input" type="text" />
+                </select>
+              </div>
+              <button id="dtree-act-op" class="op-button"
+                onclick="sDTreesH.action();">...</button>
+            </div>
         </div>
-        <div id="xl-tree-info">
+        <div id="dtree-top-info">
             Accepted: <span id="report-accepted"></span>&emsp;
             Rejected: <span id="report-rejected"></span><br/>
             <div id="tree-ctrl">
-              <button id="tree-undo" title="Undo" class="action"
-                onclick='treeUndo();'> &#8630;
+              <button id="code-edit-show" onclick='sCodeEditH.show();'>
+                Edit code
               </button>
-              <button id="tree-redo" title="Redo" class="action"
-                onclick='treeRedo();'> &#8631;
+              <button id="dtree-undo" title="Undo" class="action"
+                onclick='sHistoryH.doUndo();'> &#8630;
               </button>
-              <span id="tree-current-version" title="tree version"
-                 onclick="modVersions();"></span>
-              <button id="tree-version" class="action" title="Save version"
-                onclick='treeVersionSave();'> Save
+              <button id="dtree-redo" title="Redo" class="action"
+                onclick='sHistoryH.doRedo();'> &#8631;
+              </button>
+              <button onclick='sDecisionTree.clear();'>
+                Clear
               </button>
             </div>
         </div>
-        <div id="xl-cur-info">
-            Variants in scope: <span id="list-report"></span><br/>
-            <button id="xl-sub-view"
-                onclick="sSubViewH.show()">View variants</button>
+        <div id="dtree-top-cur">
+            Variants in scope:
+                <span id="list-report" class="bold"></span><br/>
+            <button id="open-sub-view-rec"
+                onclick="sSubVRecH.show()">View variants</button>
         </div>
       </div>
-      <div id="xl-main">
+      <div id="dtree-main">
         <div id="panel-tree">
           <div id="decision-tree">
           </div>
@@ -177,30 +200,30 @@ def _formCurCondDiv(output):
     </div>''', file = output)
 
 #===============================================
-def _formVersionsDiv(output):
+def _formCmpCodeDiv(output):
     print('''
-    <div id="versions-back" class="modal-back">
-      <div id="versions-mod">
-        <div id="versions-title">
-            Versions
+    <div id="cmp-code-back" class="modal-back">
+      <div id="cmp-code-mod">
+        <div id="cmp-code-title">
+            Compare decision trees
               <span class="close-it" onclick="modalOff();">&times;</span>
         </div>
-        <div id="versions-main">
-            <div id="versions-list-wrap">
-                <div id="versions-tab"></div>
+        <div id="cmp-code-main">
+            <div id="cmp-code-list-wrap">
+                <div id="cmp-code-tab"></div>
             </div>
-            <div id="versions-cmp-wrap">
-                <div id="versions-cmp"></div>
+            <div id="cmp-code-cmp-wrap">
+                <div id="cmp-code-cmp"></div>
             </div>
         </div>
-        <div id="versions-ctrl">
+        <div id="cmp-code-ctrl">
             <button class="action" onclick="modalOff();">
                 Done
             </button>
             <button id="btn-version-select" class="action"
                 title="Select version" onclick='versionSelect();'> Select
             </button>
-            <span id="versions-ctrl-sep"></span>
+            <span id="cmp-code-ctrl-sep"></span>
             <button id="btn-version-delete" class="action"
                 title="Delete version" onclick='versionDelete();'> Delete
             </button>
@@ -215,7 +238,7 @@ def _formEditCodeDiv(output):
     <div id="code-edit-back" class="modal-back">
       <div id="code-edit-mod">
         <div id="code-edit-top">
-            <span id="code-edit-title">Edit decision tree code</span>
+            <span id="code-edit-title">Edit current decision tree code</span>
               <span class="close-it"
                 onclick="sViewH.modalOff();">&times;</span>
         </div>

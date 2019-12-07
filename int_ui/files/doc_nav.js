@@ -26,8 +26,9 @@ sDocInfo = null;
 sDocArray = null;
 sCurDoc = null;
 
-function initReportPage(ds_name, common_title){
+function initReportPage(ds_name, ds_kind, common_title){
     sDSName = ds_name;
+    sDSKind = ds_kind;
     sCommonTitle = common_title;
     window.name = sCommonTitle + ":" + sDSName + ":DOC";
     ajaxCall("dsinfo", "ds=" + sDSName, setupDocList);
@@ -93,10 +94,6 @@ function selectDoc(doc_no){
     cur_el.className = "doc-ref cur";
     document.getElementById("doc-title").innerHTML = cur_el.innerHTML;
     window.frames["doc-content"].location.replace(sDocArray[sCurDoc]);
-}
-
-function goDS() {
-    goToPage((sDocInfo["kind"] == "ws")? "WS":"XL");
 }
 
 function onModalOff() {

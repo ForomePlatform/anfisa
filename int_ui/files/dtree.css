@@ -30,10 +30,9 @@ body {
     height: 100%;
     margin: 0px; 
     padding: 0px;
-    font-family: sans-serif;
 }
 
-#xl-ctrl {
+#dtree-ctrl {
     width: 100%;
     background-color: #333455; 
     color: white;
@@ -44,7 +43,7 @@ body {
     align-items: stretch;
 }
     
-#xl-main {
+#dtree-main {
     background-color: white;
     margin: 0px; 
     padding: 0px;
@@ -56,30 +55,14 @@ body {
 }
 
 /********************Top controls*****************************/
-div#xl-info, div#xl-tree-info, div#xl-cur-info {
+div#dtree-top-ctrl, div#dtree-top-info, div#dtree-top-cur {
     padding: 3px 10px;
     flex: 1 0 30%;
-}
-
-span#xl-name, span#list-report {
-    font-weight: bold;
 }
 
 span#list-report {
     width: 150px;
     max-width: 150px;
-}
-
-#tree-current-version {
-    cursor: pointer;
-    background-color: #f0f0f0;
-    color: #333455; 
-    border-radius: 7px;
-    border: 2px solid black;
-    width: 50px;
-    min-width: 50px;
-    text-align: right;
-    padding: 2px 15px 2px 15px;
 }
 
 div.error {
@@ -92,6 +75,22 @@ div.error a {
     text-decoration: underline;
     cursor: pointer;
 }
+/********************DTree edit controls*****************************/
+div#dtree-edit-ctrl {
+    height: 30px;
+    vertical-align: bottom;
+    margin: 5px 10px 10px 5px;
+    display: flex;
+}
+
+select#dtree-name-input {
+    font-size: 14px;
+}
+
+#dtree-name-combo {
+    margin: 0px 5px 0px 10px;
+}
+
 /********************Filter controls*****************************/
 
 div#panel-tree, div#panel-stat  {
@@ -447,12 +446,6 @@ div#zyg-stat ul {
     padding-left: 20px;
 }
 
-/********************Control controls*****************************/
-div#ds-dropdown {
-    margin: 0px;
-    padding: 0px;
-}
-
 /********************Modal Cur-Cond*****************************/
 #cur-cond-back {
     display: none;
@@ -493,172 +486,8 @@ div#ds-dropdown {
 }
 
 
-/********************Modal SubView*****************************/
-div#sub-view-status {
-    margin-top: 20%;
-    margin-left: 30%;
-    width: 300px;
-    height: 60px;
-    padding: 10px 5px;
-    text-align: center;
-    color: grey;
-    font-weight: bold;
-    background-color: #fffefe;
-    border: 1px solid black;
-    position: absolute;
-}
-
-div#sub-view-mod {
-    background-color: #333455; 
-    margin: 2% 2% 1% 1%; 
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 7px;
-    height: 91%; 
-    min-height: 91%;
-    width: 95%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    flex-direction: row;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-}
-
-div#sub-view-ctrl {
-    margin: 5px;
-}
-
-div#sub-view-left {
-    height: 100%;
-    min-height: 100%;
-    padding: 0px;
-    margin: 0px;
-    flex: 0 0 120px;
-    color: yellow;
-}
-
-div#sub-view-right {
-    height: 100%;
-    min-height: 100%;
-    padding: 0px;
-    margin: 0px 10px;;
-    flex: 1 0 500px;
-    flex-direction: column;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-}
-
-div#sub-view-wrap-list {
-    overflow: hidden;
-    border: 1px solid black;
-    white-space: nowrap;
-    display: block;
-    margin: 0px;
-    padding: 0px;
-    overflow: hidden;
-}
-
-div#sub-view-rec-info {
-    color: white;
-    font-weight: bold;
-    width: 100%;
-    flex: 0 1 25px;
-    padding: 3px 10px;
-}
-
-div#sub-view-rec-wrap {
-    width: 100%;
-    margin: 0px;
-    padding: 0px;
-}
-
-div#sub-view-list  {
-    background-color:#333455; 
-    margin-top: 2px;
-    overflow-y: scroll;
-    overflow-x: hidden;
-    white-space: nowrap;
-    height: 100%;
-    max-height: 100%;
-    width: 100%;
-}
-
-iframe#sub-view-rec-frame {
-    margin: 0px;
-    padding: 0px;
-    height: 100%;
-    width: 100%;
-}
-
-span.blocked {
-    color: #f0f0f0;
-}
-
-div.rec-label {
-    cursor: pointer;
-    color: #818195;
-    font-size: 13px;
-    text-align: left;
-    vertical-align: middle;
-    padding: 10px 0px 10px 20px;
-    line-height: 18px;
-    border: none; 
-    font-weight: bold;
-}
-
-div.rec-label.marked {
-    font-weight: normal;
-}
-
-div.rec-label:hover {
-    color: #f6f6f7;
-}
-
-div.rec-label.red { 
-    background: url(images/red.png) no-repeat 5px 12px; 
-}
-div.rec-label.red:hover { 
-    background: url(images/red-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.red-cross { 
-    background: url(images/red-cross.png) no-repeat 5px 12px; 
-}
-div.rec-label.red-cross:hover { 
-    background: url(images/red-cross-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.green { 
-    background: url(images/green.png) no-repeat 5px 12px; 
-}
-div.rec-label.green:hover { 
-    background: url(images/green-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow { 
-    background: url(images/yellow.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow:hover { 
-    background: url(images/yellow-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow-cross { 
-    background: url(images/yellow-cross.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow-cross:hover { 
-    background: url(images/yellow-cross-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.grey { 
-    background: url(images/grey.png) no-repeat 5px 12px;     
-}
-div.rec-label.grey:hover { 
-    background: url(images/grey-hover.png) no-repeat 5px 12px; 
-}
-
-div.rec-label.press, div.rec-label.press:hover {
-    color: #f6f6f7;
-    background-color: #505070; 
-}
-
 /********************Modal Note*****************************/
-#versions-mod {
+#cmp-code-mod {
     background-color: #fffefe;
     margin: 3% 3% 2% 2%; 
     padding: 00px;
@@ -674,7 +503,7 @@ div.rec-label.press, div.rec-label.press:hover {
     align-items: stretch;
 }
 
-div#versions-title {
+div#cmp-code-title {
     font-weight: bold;
     margin-left: 30px;
     margin-right: 30px;
@@ -682,7 +511,7 @@ div#versions-title {
     height: 20px;
 }
 
-div#versions-main {
+div#cmp-code-main {
     flex: 1 0 80%;
     display: flex;
     flex-direction: row;
@@ -693,7 +522,7 @@ div#versions-main {
     overflow: hidden;
 }
 
-div#versions-ctrl {
+div#cmp-code-ctrl {
     margin-left: 30px;
     margin-right: 30px;
     padding: 5px;
@@ -701,7 +530,7 @@ div#versions-ctrl {
     margin-bottom: 10px;
 }
 
-div#versions-list-wrap {
+div#cmp-code-list-wrap {
     flex: 1 0 30%;
     margin: 0px;
     padding: 0px;
@@ -710,7 +539,7 @@ div#versions-list-wrap {
     overflow: hidden;
 }
 
-div#versions-list {
+div#cmp-code-list {
     height: 100%;
     width: 100%;
     min-height: 100%;
@@ -719,7 +548,7 @@ div#versions-list {
     margin: 5px;
 }
 
-div#versions-cmp-wrap {
+div#cmp-code-cmp-wrap {
     flex: 1 0 70%;
     padding: 0px;
     margin: 0px;
@@ -729,13 +558,13 @@ div#versions-cmp-wrap {
     overflow: hidden;
 }
 
-div#versions-cmp {
+div#cmp-code-cmp {
     padding: 5px;
     margin: 5px;
     overflow: auto;
 }
 
-span#versions-ctrl-sep{
+span#cmp-code-ctrl-sep{
     display: inline-block;
     width: 150px;
     min-width: 150px;
@@ -790,127 +619,26 @@ div.note {
     background-color: #F0F0F0;
 }
 
-
-/********************Modal Note*****************************/
-#note-mod {
-    background-color: #fffefe;
-    margin: 3% 3% 2% 2%; 
-    padding: 00px;
-    border: 1px solid black;
-    border-radius: 7px;
-    height: 50%; 
-    min-height: 50%;
-    width: 55%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-
-/********************note top controls*****************************/
-#note-top {
-    width: 100%;
-    height: 55px;
-    min-height: 20px;
-    margin: 0px;;
-    padding: 0px;
-}
-
-#note-title {
-    margin-left: 30px;
-    margin-right: 30px;
-    padding: 5px;
-    font-weight: bold;
-    font-size: 18px;
-    height: 25px;
-}
-
-div#work-note-area {
-    flex-grow: 1;
-    width: 100%;
-    padding-left: 10px;
-}
-
-textarea#note-content {
-    padding: 10px;
-    width: 95%;
-    height: 100%;
-}
-
-div#work-note-ctrl {
-    height: 40px;
-    margin: 5px;
-    padding: 5px;
-    text-align: center;
-}
-
-span#note-time {
-    margin-left: 100px;
-    font-size: 80%;
-    font-style: italic;
-}
-
-
-/********************ws creation*****************************/
-#create-ws-mod {
-    background-color: #fffefe;
-    margin: 3% 3% 2% 2%; 
-    padding: 10px;
-    border: 1px solid black;
-    border-radius: 7px;
-    height: 150px; 
-    min-height: 150px;
-    width: 500px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    flex-direction: column;
-    display: flex;
-    align-items: stretch;
-    overflow: hidden;
-}
-
-div#create-ws-top {
-    width: 100%;
-    height: 25px;
-    min-height: 20px;
-    margin: 0px;
-    padding: 0px;
-}
-
-span#create-ws-title {
-    margin-left: 30px;
-    margin-right: 30px;
-    padding: 5px;
-    font-weight: bold;
-    font-size: 18px;
-    height: 25px;
-}
-
-div#create-ws-main {
-    flex-grow: 1;
-    width: 100%;
-    padding-left: 10px;
-    margin-top: 10px;
-}
-
-div#create-ws-ctrl {
+div#filters-edit-ctrl {
     height: 30px;
-    margin: 5px;
-    padding: 5px;
-    text-align: center;
+    vertical-align: bottom;
+    margin: 5px 10px 10px 5px;
+    display: flex;
 }
 
-div#create-ws-problems {
-    margin-top: 10px;
-    color: red;
-    font-style: italic;
+div#filter-wrap-list-conditions {
+    flex-grow: 1;
+    width: 100%;
+    display: grid;
+    overflow: hidden;
 }
 
-div#create-ws-status {
-    margin-top: 10px;
-    color: grey;
-    font-weight: bold;
+select#filter-name-input {
+    font-size: 14px;
+}
+
+#filter-name-combo {
+    margin: 0px 5px 0px 10px;
 }
 
 /********************edit code*****************************/
@@ -974,46 +702,3 @@ textarea#code-edit-content {
     overflow: auto;
     font-size: 16px;
 }
-
-/********************common controls*****************************/
-div.modal-back {
-    display: none;
-    position: fixed;
-    z-index: 70;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
-}
-
-span.close-it {
-    color: #aaa;
-    font-size: 20px;
-    font-weight: bold;
-    margin: 0px 10px 0px 10px;
-    float: right;
-}
-
-span.close-it:hover, span.close-it:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
-
-button.action {
-    padding: 3px !important;
-    margin: 1px !important;
-}
-
-
-.bad {
-    color: red;
-}
-
-.message {
-    color: #338833;
-}
-

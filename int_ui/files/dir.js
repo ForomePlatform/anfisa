@@ -54,8 +54,11 @@ function renderWS(ds_info, tab_cnt) {
             '?ds=' + ds_info["name"] + '" target="_blank" ' +
             'title="To front end">&#x23f5;</a>')
     tab_cnt.push(reprRef(ds_info["name"], "WS"));
-    if (ds_info["doc"] != undefined)
+    tab_cnt.push('<span class="ref-support">');
+    if (ds_info["doc"] != undefined) 
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
+    tab_cnt.push(reprRef(ds_info["name"], "TREE", "[tree]"));
+    tab_cnt.push('</span>');
      if (ds_info["base"]) {
         tab_cnt.push('<span class="ref-support">');
         tab_cnt.push('<br>&emsp;&lt;-&nbsp;' + reprRefSec(ds_info["base"], "XL"));

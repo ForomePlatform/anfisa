@@ -31,11 +31,6 @@ div#tg-all {
     height: 100%
 }
 
-button.op-button {
-    padding: 0px !important;
-    margin-left: 5px;
-}
-
 /********************Tags area*****************************/
 div#tg-wrap-filters {
     margin: 0px;

@@ -23,10 +23,9 @@ from app.filter.unit import ComplexEnumSupport
 from utils.variants import VariantSet
 #===============================================
 class ZygosityComplex(ComplexEnumSupport):
-    def __init__(self, family_info, cond_env, descr):
+    def __init__(self, family_info, descr):
         ComplexEnumSupport.__init__(self)
         self.mFamilyInfo = family_info
-        self.mCondEnv = cond_env
         self.mIsOK = (self.mFamilyInfo is not None
             and 1 < len(self.mFamilyInfo) <= 10)
         labels = AnfisaConfig.configOption("zygosity.cases")
@@ -52,7 +51,7 @@ class ZygosityComplex(ComplexEnumSupport):
 
     def setupXCond(self):
         x_unit_name = self.mConfig.get("x_unit", "Chromosome")
-        self.mXCondition = self.mCondEnv.makeEnumCond(
+        self.mXCondition = self.getCondEnv().makeEnumCond(
             self.getDS().getUnit(x_unit_name),
             self.mConfig.get("x_values", ["chrX"]))
 
@@ -78,34 +77,34 @@ class ZygosityComplex(ComplexEnumSupport):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [2, None]))
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [2, None]))
             else:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [0, 1]))
-        return self.mCondEnv.joinAnd(seq)
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 1]))
+        return self.getCondEnv().joinAnd(seq)
 
     def conditionZXLinked(self, problem_group):
         if self.mFamilyInfo.groupHasMales(problem_group):
             return self.mXCondition.addAnd(
                 self._conditionZHomoRecess(problem_group))
-        return self.mCondEnv.getCondNone()
+        return self.getCondEnv().getCondNone()
 
     def conditionZDominant(self, problem_group):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [1, None]))
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [1, None]))
             else:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [0, 0]))
-        return self.mCondEnv.joinAnd(seq)
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
+        return self.getCondEnv().joinAnd(seq)
 
     def conditionZCompens(self, problem_group):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [0, 0]))
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
             else:
-                seq.append(self.mCondEnv.makeNumericCond(unit_h, [1, None]))
-        return self.mCondEnv.joinAnd(seq)
+                seq.append(self.getCondEnv().makeNumericCond(unit_h, [1, None]))
+        return self.getCondEnv().joinAnd(seq)
 
     def iterComplexCriteria(self, context, variants = None):
         problem_group = context["p_group"]
@@ -139,7 +138,7 @@ class ZygosityComplex(ComplexEnumSupport):
 
     def parseCondition(self, cond_info):
         if not self.mIsOK:
-            return self.mCondEnv.getCondNone()
+            return self.getCondEnv().getCondNone()
 
         assert cond_info[0] == "zygosity"
         unit_name, p_group, filter_mode, variants = cond_info[1:]

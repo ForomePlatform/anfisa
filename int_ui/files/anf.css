@@ -96,7 +96,7 @@ body {
    display: flex;
 }
 
-span#ws-name {
+span#ds-name {
     padding: 3px 5px 0px 5px;
     font-size: 12px;
     font-weight: bold;
@@ -157,68 +157,6 @@ div#rec-list  {
     max-height: 100%;
 }
 
-
-div.rec-label {
-    cursor: pointer;
-    color: #818195;
-    font-size: 13px;
-    text-align: left;
-    vertical-align: middle;
-    padding: 10px 0px 10px 20px;
-    line-height: 18px;
-    border: none; 
-    font-weight: bold;
-}
-
-div.rec-label.marked {
-    font-weight: normal;
-}
-
-div.rec-label:hover {
-    color: #f6f6f7;
-}
-
-div.rec-label.red { 
-    background: url(images/red.png) no-repeat 5px 12px; 
-}
-div.rec-label.red:hover { 
-    background: url(images/red-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.red-cross { 
-    background: url(images/red-cross.png) no-repeat 5px 12px; 
-}
-div.rec-label.red-cross:hover { 
-    background: url(images/red-cross-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.green { 
-    background: url(images/green.png) no-repeat 5px 12px; 
-}
-div.rec-label.green:hover { 
-    background: url(images/green-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow { 
-    background: url(images/yellow.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow:hover { 
-    background: url(images/yellow-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow-cross { 
-    background: url(images/yellow-cross.png) no-repeat 5px 12px; 
-}
-div.rec-label.yellow-cross:hover { 
-    background: url(images/yellow-cross-hover.png) no-repeat 5px 12px; 
-}
-div.rec-label.grey { 
-    background: url(images/grey.png) no-repeat 5px 12px;     
-}
-div.rec-label.grey:hover { 
-    background: url(images/grey-hover.png) no-repeat 5px 12px; 
-}
-
-div.rec-label.press, div.rec-label.press:hover {
-    color: #f6f6f7;
-    background-color: #505070; 
-}
 
 /********************Right area*****************************/
 #rec-frame1 {
@@ -329,85 +267,4 @@ a.ext-ref {
 a.ext-ref:hover {
     color:yellow;
 }
-/********************Modal Note*****************************/
-#note-back {
-    display: none;
-    position: fixed;
-    z-index: 70;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgb(0,0,0);
-    background-color: rgba(0,0,0,0.4);
-}
-
-#note-mod {
-    background-color: #fffefe;
-    margin: 3% 3% 2% 2%; 
-    padding: 00px;
-    border: 1px solid black;
-    border-radius: 7px;
-    height: 380px; 
-    min-height: 380px;
-    width: 75%;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-/********************note top controls*****************************/
-#note-top {
-    width: 100%;
-    height: 30px;
-    min-height: 30px;
-    margin: 0px;;
-    padding: 0px;
-}
-
-#note-title {
-    margin: 3px 0px 3px 30px;
-    padding: 0px;
-    font-weight: bold;
-    font-size: 18px;
-    height: 20px;
-}
-
-#close-note {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0px 10px 0px 10px;
-    float: right;
-}
-
-#close-note:hover, #close-note:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
-
-div#work-note-area {
-    flex-grow: 1;
-    width: 100%;
-    padding-left: 10px;
-}
-
-textarea#note-content {
-    padding: 10px;
-    width: 95%;
-    height: 300px;
-}
-
-div#work-note-ctrl {
-    height: 40px;
-    margin: 5px;
-    padding: 5px;
-    text-align: center;
-}
-
-
 /*************************************************/

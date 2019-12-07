@@ -49,19 +49,6 @@
     align-items: stretch;
 }
 
-#close-filter {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0px 10px 0px 10px;
-}
-
-#close-filter:hover, #close-filter:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
-
 div#filters-import-op-list {
     left: -120px;
     text-align: left;
@@ -133,6 +120,10 @@ div#stat-list {
     font-size: 12px;
 }
 
+div.wait {
+    background-color: #E0E0E0;
+}
+
 div.stat-group {
     border: 1px solid #333455;
     margin: 0px;
@@ -185,43 +176,6 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
-div#zyg-wrap {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    white-space: nowrap;
-    margin-bottom: 5px;
-}
-
-div#zyg-problem {
-    white-space: nowrap;
-    text-align: left;
-}
-
-div.zyg-family {
-    flex: 0 0 100px;
-    border-right: 1px solid black;
-    margin-right: 5px;
-    padding-right: 5px;
-}
-
-div.zyg-fam-member {
-    display: block;
-}
-
-div#zyg-stat {
-    flex: 1 0 200px;
-    margin-top: 20px;
-}
-
-div#zyg-stat ul {
-    padding-left: 20px;
-}
-
-button#zyg-fam-reset {
-    padding: 0px !important;
-}
-
 span#cond-text {
     color: #8F00E0;
     font-weight: bold;
@@ -231,6 +185,7 @@ span#cond-text {
 span#cond-message {
     font-style: italic;
     font-size: 13px;
+    background-color: #f0f0ff;
 }
 
 span#cond-title {
@@ -290,7 +245,8 @@ div#op-enum-list {
 }
 
 div#cur-cond-enum-ctrl {
-    width: 100px;
+    width: 80px;
+    min-width: 80px;
     vertical-align: top;
     overflow: hidden;
     margin: 10px 5px;
@@ -373,7 +329,7 @@ span#flt-run-rules{
     margin-right: 10px;
 }
 
-div#filters-ctrl {
+div#filters-edit-ctrl {
     height: 30px;
     vertical-align: bottom;
     margin: 5px 10px 10px 5px;
@@ -387,12 +343,49 @@ div#filter-wrap-list-conditions {
     overflow: hidden;
 }
 
-select#filter-name-filter {
+select#filter-name-input {
     font-size: 14px;
 }
 
 #filter-name-combo {
     margin: 0px 5px 0px 10px;
+}
+
+div#zyg-wrap {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    white-space: nowrap;
+    margin-bottom: 5px;
+}
+
+div#zyg-problem {
+    white-space: nowrap;
+    text-align: left;
+}
+
+div.zyg-family {
+    flex: 0 0 100px;
+    border-right: 1px solid black;
+    margin-right: 5px;
+    padding-right: 5px;
+}
+
+div.zyg-fam-member {
+    display: block;
+}
+
+div#zyg-stat {
+    flex: 1 0 200px;
+    margin-top: 20px;
+}
+
+div#zyg-stat ul {
+    padding-left: 20px;
+}
+
+button#zyg-fam-reset {
+    padding: 0px !important;
 }
 
 span.flt-time {

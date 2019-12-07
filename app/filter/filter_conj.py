@@ -98,7 +98,8 @@ class FilterConjunctional(FilterBase):
     def reportInfo(self):
         ret_handle = {
             "conditions": self.mCondData,
-            "bad-idxs": self.mBadIdxs}
+            "bad-idxs": self.mBadIdxs,
+            "hash": self.mHashCode}
         names = []
         for op_unit in self.getCondEnv().iterOpUnits():
             if op_unit.getName() not in self.mUsedOpUnits:

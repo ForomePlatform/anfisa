@@ -65,20 +65,6 @@
     font-size: 18px;
 }
 
-#close-rules {
-    color: #aaa;
-    font-size: 28px;
-    font-weight: bold;
-    margin: 0px 10px 0px 10px;
-    float: right;
-}
-
-#close-rules:hover, #close-rules:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-} 
-
 /********************Main area*****************************/
 #rules-main {
     width: 100%;

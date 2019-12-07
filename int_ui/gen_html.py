@@ -47,10 +47,10 @@ def startHtmlPage(output, title = None, html_base = None,
     print('  </head>', file = output)
 
 #===============================================
-def formWsPage(output, common_title, html_base, workspace, ws_url):
+def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
     startHtmlPage(output,
         common_title + "-WS " + workspace.getName(), html_base,
-        css_files = ["base.css",
+        css_files = ["base.css", "vrec.css",
             "anf.css", "filters.css", "zones.css", "rules.css"],
         js_files = ["anf.js", "monitor.js",
             "fctrl.js", "base.js", "filters.js",
@@ -58,27 +58,26 @@ def formWsPage(output, common_title, html_base, workspace, ws_url):
 
     print('  <body onload="initWin(\'%s\', \'%s\');">' %
         (workspace.getName(), common_title), file = output)
-    _formMainDiv(output, workspace.getName(), ws_url)
+    _formMainDiv(output, workspace.getName(), ws_pub_url)
     print('    <div id="filter-back">', file = output)
     formFilterPannel(output)
     print('    </div>', file = output)
     _formZonesDiv(output, workspace.iterZones())
-    _formNoteDiv(output)
+    formNoteDiv(output)
     _formRulesDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
 
 #===============================================
-def _formMainDiv(output, workspace_name, ws_url):
+def _formMainDiv(output, workspace_name, ws_pub_url):
     print('''
     <div id="all">
       <div id="top">
         <div id="top-ws">
           <div id="ws-ctrl">
             <div id="ws-info">
-              Ws:
-              <span id="ws-name"></span><br/>
+              Ws: <span id="ds-name" class="bold"></span><br/>
             </div>
             <div id="list-info">
               <span id="control-wrap" title="Control Menu..." class="drop">
@@ -96,7 +95,7 @@ def _formMainDiv(output, workspace_name, ws_url):
                 </div>
                 <div id="export-result" class="drop"></div>
               </span>&nbsp;
-              Variants:&nbsp;<span id="ws-list-report"></span>
+              Variants:&nbsp;<span id="ws-list-report" class="bold"></span>
             </div>
             <div>
               <small>
@@ -166,7 +165,7 @@ def _formMainDiv(output, workspace_name, ws_url):
             </div>
          </div>
          <div id="top-ref">
-            <a class="ext-ref" href="%(ws_url)s?ds=%(ws)s"
+            <a class="ext-ref" href="%(ws_pub_url)s?ds=%(ws)s"
                 target="blank" title="To front end">&#x23f5;</a>
         </div>
       </div>
@@ -184,7 +183,7 @@ def _formMainDiv(output, workspace_name, ws_url):
             </iframe>
         </div>
       </div>
-    </div>''' % {"ws": workspace_name, "ws_url": ws_url}, file = output)
+    </div>''' % {"ws": workspace_name, "ws_pub_url": ws_pub_url}, file = output)
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -208,7 +207,7 @@ def _formZonesDiv(output, zones):
       <div id="zone-mod">
         <div id="zone-top">
             <p id="zone-title">Zone setup
-              <span id="close-zone" onclick="relaxView();">&times;</span>
+              <span class="close-it" onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="work-zone-area">
@@ -242,26 +241,26 @@ def _formZonesDiv(output, zones):
 ''' % params, file = output)
 
 #===============================================
-def _formNoteDiv(output):
+#===============================================
+def formNoteDiv(output):
     print('''
-    <div id="note-back">
+    <div id="note-back" class="modal-back">
       <div id="note-mod">
         <div id="note-top">
-            <p id="note-title">Workspace
-                <span id="note-ds-name"></span> note
-              <span id="close-note" onclick="relaxView();">&times;</span>
+            <p id="note-title">Dataset
+              <span id="note-ds-name"></span> note
+              <span class="close-it"
+                onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="work-note-area">
             <textarea id="note-content"></textarea>
         </div>
         <div id="work-note-ctrl">
-              <button class="op-button"
-                  onclick="saveNote();">
+              <button onclick="saveNote();">
                 Save
               </button>
-              <button class="op-button"
-                  onclick="relaxView();">
+              <button onclick="relaxView();">
                 Done
               </button>
               <span id="note-time"></span>
@@ -279,7 +278,7 @@ def _formRulesDiv(output):
       <div id="rules-mod">
         <div id="rules-top">
             <p id="rules-title">&#9874; Rules evaluation setup
-              <span id="close-rules" onclick="relaxView();">&times;</span>
+              <span clsss="close-it" onclick="relaxView();">&times;</span>
             </p>
         </div>
         <div id="rules-main">
@@ -403,7 +402,7 @@ def noRecords(output):
 </html>''', file = output)
 
 #===============================================
-def dirPage(output, common_title, html_base, ws_url):
+def dirPage(output, common_title, html_base, ws_pub_url):
     startHtmlPage(output, common_title + " home", html_base,
         css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
     print('''
@@ -413,7 +412,7 @@ def dirPage(output, common_title, html_base, ws_url):
     <div id="div-main">
     </div>
   </body>
-</html>''' % (common_title, ws_url, common_title), file = output)
+</html>''' % (common_title, ws_pub_url, common_title), file = output)
 
 #===============================================
 def notFound(output, common_title, html_base):
@@ -460,7 +459,7 @@ def formFilterPannel(output):
               <div id="filters-import-op-list" class="dropdown-content">
               </div>
             </div>
-            <span id="close-filter" onclick="relaxView();">&times;</span>
+            <span id="close-filter" class="close-it" onclick="relaxView();">&times;</span>
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>
@@ -511,12 +510,12 @@ def formFilterPannel(output):
             </div>
           </div>
           <div id="filters-ctrl">
-            <button id="filter-clear-all-cond" class="op-button drop"
+            <button class="op-button drop" id="filter-clear-all-cond"
                 onclick='sOpFilterH.modify(\"clear-all\");'>
                 Clear
             </button>
             <div class="dropdown">
-              <button id="filter-filters-operations" class="op-button drop">
+              <button class="op-button drop">
                 Filters...
               </button>
               <div id="filters-op-list" class="dropdown-content">
@@ -534,10 +533,10 @@ def formFilterPannel(output):
               <select id="filter-name-filter-list"
                   onchange="sFiltersH.select();">
                 <option value=""></option>
-              <input id="filter-name-filter" type="text" />
+              <input id="filter-name-input" type="text" />
               </select>
             </div>
-            <button id="filter-flt-op" class="op-button"
+            <button id="filter-act-op" class="op-button"
                 onclick="sFiltersH.action();">
               ...
             </button>
