@@ -129,6 +129,7 @@ class ParsedDTree:
         self.mHashCode = hash_h.hexdigest()
         self.mError = None
         self.mCurLineDiap = None
+        self.mMarkers = None
         for frag_h in self.mFragments:
             self.mError = frag_h.getErrorInfo()
             if self.mError is not None:
@@ -176,21 +177,28 @@ class ParsedDTree:
             line_no + self.mCurLineDiap[0] - 1, col_offset)
         raise RuntimeError()
 
+    def _addMarker(self, cond_data, it, it_name):
+        self.mMarkers.append([cond_data,
+            (it.lineno + self.mCurLineDiap[0] - 1,
+            it.col_offset, it.col_offset + len(it_name))])
+
     #===============================================
     def processIf(self, instr_d):
-        markers = []
-        cond_data = self._processCondition(instr_d.test, markers)
+        self.mMarkers = []
+        cond_data = self._processCondition(instr_d.test)
         if len(instr_d.orelse) > 0:
             self.errorIt(instr_d.orelse[0],
                 "Else instruction is not supported")
         line_from, line_to = self.mCurLineDiap
         decision = self.getSingleReturnValue(instr_d.body)
         line_decision = instr_d.body[0].lineno + line_from - 1
-        return [
+        ret = [
             TreeFragment(0, "If", (line_from, line_decision),
-                markers = markers, cond_data = cond_data),
+                markers = self.mMarkers, cond_data = cond_data),
             TreeFragment(1, "Return",
                 (line_decision, line_to), decision = decision)]
+        self.mMarkers = None
+        return ret
 
     #===============================================
     def processImport(self, instr, hash_code):
@@ -233,7 +241,7 @@ class ParsedDTree:
         return self.getReturnValue(instr)
 
     #===============================================
-    def _processCondition(self, it, markers):
+    def _processCondition(self, it):
         if isinstance(it, ast.BoolOp):
             if isinstance(it.op, ast.And):
                 seq = ["and"]
@@ -242,7 +250,7 @@ class ParsedDTree:
             else:
                 self.errorIt(it, "Logic operation not supported")
             for val in it.values:
-                rep_el = self._processCondition(val, markers)
+                rep_el = self._processCondition(val)
                 if rep_el[0] == seq[0]:
                     seq += rep_el[1:]
                 else:
@@ -251,16 +259,16 @@ class ParsedDTree:
         if isinstance(it, ast.UnaryOp):
             if not isinstance(it.op, ast.Not):
                 self.errorIt(it, "Unary operation not supported")
-            return ["not", self._processCondition(it.operand, markers)]
+            return ["not", self._processCondition(it.operand)]
         if not isinstance(it, ast.Compare):
             self.errorIt(it, "Comparison or logic operation expected")
         if len(it.ops) == 1 and (isinstance(it.ops[0], ast.In)
                 or isinstance(it.ops[0], ast.NotIn)):
-            return self._processEnumInstr(it, markers)
-        return self._processNumInstr(it, markers)
+            return self._processEnumInstr(it)
+        return self._processNumInstr(it)
 
     #===============================================
-    def _processEnumInstr(self, it, markers):
+    def _processEnumInstr(self, it):
         assert len(it.comparators) == 1
         it_set = it.comparators[0]
         if isinstance(it.ops[0], ast.NotIn):
@@ -316,7 +324,7 @@ class ParsedDTree:
                     self.errorIt(it.left, "Improper enum field name: "
                         + field_name)
             ret = ["enum", field_name, op_mode, variants]
-            markers.append([ret, it.left])
+            self._addMarker(ret, it.left, it.left.id)
             return ret
 
         if isinstance(it.left, ast.Call):
@@ -333,12 +341,12 @@ class ParsedDTree:
             if ret is None:
                 self.errorIt(it.left,
                     "Improper arguments for special field")
-            markers.append([ret, it.left])
+            self._addMarker(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")
 
     #===============================================
-    def _processNumInstr(self, it, markers):
+    def _processNumInstr(self, it):
         if len(it.ops) > 2 or (
                 len(it.ops) == 2 and it.ops[0] != it.ops[1]):
             self.errorIt(it, "Too complex comparison")
@@ -376,7 +384,7 @@ class ParsedDTree:
                 ret[2][0] = self.processFloat(op)
             elif idx > idx_fld:
                 ret[2][1] = self.processFloat(op)
-        markers.append([ret, operands[idx_fld]])
+        self._addMarker(ret, operands[idx_fld], operands[idx_fld].id)
         return ret
 
     #===============================================
@@ -416,7 +424,7 @@ class ParsedDTree:
         for line_no in range(*frag_h.getLineDiap()):
             if line_no in self.mDummyLinesReg:
                 dummy_lines.append(code_lines[line_no - 1])
-        code_lines[line_from - 1: line_to] = (dummy_lines
+        code_lines[line_from - 1: line_to - 1] = (dummy_lines
             + formatIfCode(frag_h.getCondData()).splitlines())
         return "\n".join(code_lines)
 

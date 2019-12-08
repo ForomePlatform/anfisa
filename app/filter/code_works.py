@@ -18,7 +18,6 @@
 #  limitations under the License.
 #
 
-import ast
 from xml.sax.saxutils import escape
 from pygments import highlight
 from pygments.lexers import PythonLexer
@@ -102,19 +101,16 @@ class HtmlPresentation:
         code_sheet = code_lines[:]
         line_from, line_to = line_diap
         m_cnt1, m_cnt2 = 0, 0
-        for check_no, instr_no, name_instr in sorted(marker_seq,
-                reverse = True, key = lambda info:
-                (info[2].lineno, info[2].col_offset)):
-            if not (line_from <= name_instr.lineno < line_to):
+        for check_no, instr_no, cond_loc in sorted(marker_seq,
+                reverse = True, key = lambda info: info[2]):
+            line_no, offset_from, offset_to = cond_loc
+            if not (line_from <= line_no < line_to):
                 continue
             m_cnt1 += 1
-            line_text = code_sheet[name_instr.lineno - 1]
-            name_id = (name_instr.func.id if isinstance(name_instr, ast.Call)
-                else name_instr.id)
-            col_offset = name_instr.col_offset + len(name_id)
-            code_sheet[name_instr.lineno - 1] = (line_text[:col_offset]
+            line_text = code_sheet[line_no - 1]
+            code_sheet[line_no - 1] = (line_text[:offset_to]
                 + ('__%d__%d__' % (check_no, instr_no))
-                + line_text[col_offset:])
+                + line_text[offset_to:])
         lines_upd = cls.presentProperCode(code_sheet, line_diap)
         for idx, l_base in enumerate(lines_base):
             l_upd = lines_upd[idx]

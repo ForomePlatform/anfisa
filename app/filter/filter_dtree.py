@@ -207,6 +207,8 @@ class FilterDTree(FilterBase, CaseStory):
         return self.mPointList is not None
 
     def activate(self):
+        if self.mPointList is not None:
+            return
         self.mPointList = []
         prev_point = None
         for instr_no, frag_h in enumerate(self.mFragments):
@@ -287,9 +289,9 @@ class FilterDTree(FilterBase, CaseStory):
         for point in self.mPointList:
             cond_seq = []
             for mark_idx, mark_info in enumerate(point.getMarkers()):
-                point_cond, name_instr = mark_info
-                marker_seq.append((point.getPointNo(), mark_idx, name_instr))
-                cond_seq.append(point_cond)
+                cond_data, cond_loc = mark_info
+                marker_seq.append((point.getPointNo(), mark_idx, cond_loc))
+                cond_seq.append(cond_data)
             if len(cond_seq) > 0:
                 marker_dict[point.getPointNo()] = cond_seq
         html_lines = self._decorCode(marker_seq)
@@ -322,8 +324,8 @@ class FilterDTree(FilterBase, CaseStory):
                 else:
                     cur_diap = [cur_diap[0], frag_h.getLineDiap()[1]]
         if cur_diap is not None:
-            html_lines += HtmlPresentation.presentProperCode(
-                code_lines, cur_diap)
+            html_lines += HtmlPresentation.decorProperCode(
+                        code_lines, cur_diap, marker_seq)
         return html_lines
 
     def collectRecSeq(self, dataset):
