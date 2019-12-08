@@ -82,7 +82,9 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
 
     time_start = datetime.now()
     print("Dataset", ds_entry.getName(),
-        "creation started at", time_start, file = sys.stderr)
+        "creation started at", time_start,
+          "; Version: ", AnfisaConfig.getAnfisaVersion(),
+          file = sys.stderr)
     date_loaded = time_start.isoformat()
 
     input_reader = JsonLineReader(ds_entry.getSource())
