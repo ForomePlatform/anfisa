@@ -77,7 +77,8 @@ class ZygosityComplex(ComplexEnumSupport):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [2, None]))
+                seq.append(
+                    self.getCondEnv().makeNumericCond(unit_h, [2, None]))
             else:
                 seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 1]))
         return self.getCondEnv().joinAnd(seq)
@@ -92,7 +93,8 @@ class ZygosityComplex(ComplexEnumSupport):
         seq = []
         for idx, unit_h in enumerate(self.mFamUnits):
             if idx in problem_group:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [1, None]))
+                seq.append(
+                    self.getCondEnv().makeNumericCond(unit_h, [1, None]))
             else:
                 seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
         return self.getCondEnv().joinAnd(seq)
@@ -103,7 +105,8 @@ class ZygosityComplex(ComplexEnumSupport):
             if idx in problem_group:
                 seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
             else:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [1, None]))
+                seq.append(
+                    self.getCondEnv().makeNumericCond(unit_h, [1, None]))
         return self.getCondEnv().joinAnd(seq)
 
     def iterComplexCriteria(self, context, variants = None):

@@ -72,6 +72,7 @@ def _processSpecInstr(instr):
         text, separator = q.group(1), q.group(2)
         return text.split(separator)
     assert False
+    return None
 
 #========================================
 def genTS():

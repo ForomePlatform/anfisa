@@ -20,7 +20,6 @@
 
 from datetime import datetime, timedelta
 from xml.sax.saxutils import escape
-
 #===============================================
 def startHtmlReport(output, title = None, use_pygments = False):
     print('''
@@ -98,6 +97,14 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
         receipt = ds_info["receipt"]
         if receipt["kind"] == "filter":
             print('<h2>Applied filter</h2>', file = output)
+            if "filter-name" in receipt:
+                print("<p>Filter name:",
+                    '<b>' + escape(receipt["filter-name"]) + '</b>', file = output)
+                if "flt-update-info" in receipt:
+                    updated_time, updated_from = receipt["flt-update-info"]
+                    print("updated at", reprDateVal(updated_time),
+                        "from", updated_from, file = output)
+                print("</p>", file = output)
             print('<table class="report-filter">', file = output)
             for instr in receipt["seq"]:
                 print('<tr><td>%s</td></tr>' % escape(instr), file = output)
@@ -105,13 +112,14 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
         else:
             assert receipt["kind"] == "dtree"
             print('<h2>Applied decision tree code</h2>', file = output)
-            for key_t, title_t in [
-                    ("std", "Based on"),
-                    ("version", "Version")]:
-                if key_t not in receipt:
-                    continue
-                print('<p class="dtree-info">%s: %s</p>' %
-                    (escape(title_t), escape(receipt[key_t])), file = output)
+            if "dtree-name" in receipt:
+                print("<p>Tree name:",
+                    '<b>' + escape(receipt["dtree-name"]) + '</b>', file = output)
+                if "flt-update-info" in receipt:
+                    updated_time, updated_from = receipt["flt-update-info"]
+                    print("updated at", reprDateVal(updated_time),
+                        "from", updated_from, file = output)
+                print("</p>", file = output)
             print('<table class="report-dtree">', file = output)
             for instr, count, ret_mode in receipt["points"]:
                 print('<tr><td class="dtree-point"><div class="highlight">'

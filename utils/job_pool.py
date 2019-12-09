@@ -129,7 +129,6 @@ class JobPool:
                 self.mTaskPool.sort(key = TaskHandler.getOrd)
                 self.mActiveTasks[task.getUID()] = task
             self.mThrCondition.notify()
-        return None
 
     def setResult(self, task, result):
         with self.mLock:

@@ -164,6 +164,7 @@ class DataSet(SolutionBroker):
             return FilterDTree(self.getCondEnv(), entry_data,
                 name, updated_time, updated_from)
         assert False
+        return None
 
     #===============================================
     def dumpDSInfo(self, navigation_mode = False):

@@ -183,7 +183,8 @@ def _formMainDiv(output, workspace_name, ws_pub_url):
             </iframe>
         </div>
       </div>
-    </div>''' % {"ws": workspace_name, "ws_pub_url": ws_pub_url}, file = output)
+    </div>''' % {"ws": workspace_name, "ws_pub_url": ws_pub_url},
+    file = output)
 
 #===============================================
 def _formZonesDiv(output, zones):
@@ -459,7 +460,8 @@ def formFilterPannel(output):
               <div id="filters-import-op-list" class="dropdown-content">
               </div>
             </div>
-            <span id="close-filter" class="close-it" onclick="relaxView();">&times;</span>
+            <span id="close-filter" class="close-it"
+                onclick="relaxView();">&times;</span>
           </div>
           <div id="filter-cur-cond-text">
             <span id="cond-text"></span>
@@ -509,7 +511,7 @@ def formFilterPannel(output):
                <div class="loading">Loading data...</div>
             </div>
           </div>
-          <div id="filters-ctrl">
+          <div id="filters-edit-ctrl">
             <button class="op-button drop" id="filter-clear-all-cond"
                 onclick='sOpFilterH.modify(\"clear-all\");'>
                 Clear
@@ -530,7 +532,7 @@ def formFilterPannel(output):
               </div>
             </div>
             <div id="filter-name-combo" class="combobox">
-              <select id="filter-name-filter-list"
+              <select id="filter-name-combo-list"
                   onchange="sFiltersH.select();">
                 <option value=""></option>
               <input id="filter-name-input" type="text" />

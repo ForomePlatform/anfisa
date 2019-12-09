@@ -88,6 +88,7 @@ class TypeCounter:
             cnt += self.mCounts[1]
         if cnt == self.mCounts[0]:
             return Types.sTypes[idx]
+        return None
 
     def detect(self, with_optional = True):
         if self.mCounts[0] == 0:

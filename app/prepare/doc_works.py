@@ -102,6 +102,7 @@ class _DocH:
             return _DocSeqTxtH(doc_info, doc_env)
         if doc_kind == "*.png":
             return _DocSeqImgH(doc_info, doc_env)
+        return None
 
     def __init__(self, doc_info, doc_env):
         self.mInfo = doc_info

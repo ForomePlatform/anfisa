@@ -66,7 +66,7 @@ def _formDTreePannel(output, ds_h):
                         class="drop ctrl-menu">Dataset Note...</div>''',
         file = output)
     if ds_h.getDSKind() == "xl":
-        print ('''
+        print('''
                     <div onclick="wsCreate();"
                         class="drop ctrl-menu">Create workspace...</div>''',
             file = output)

@@ -111,6 +111,7 @@ def getColumnByName(ws, name):
     for c in range(1, ws.max_column):
         if cell_value(ws, 1, c) == name:
             return c
+    return None
 
 def build_value_jsonpath(array, key):
     # It's working, but very slowly
@@ -122,6 +123,7 @@ def build_value_jsonpath(array, key):
             return ','.join([str(item) for item in match[0].value])
         else:
             return match[0].value
+    return None
 
 def build_value(array, key):
     if array.get(key):
@@ -306,7 +308,7 @@ class ExcelExport:
 
     def _decor_lines(self, ws):
         if self.check_group_tab is None:
-            return None
+            return
         if (self.check_group_tab[-1] > 0):
             cnt_before = sum(self.check_group_tab[:-1])
             if cnt_before > 0:

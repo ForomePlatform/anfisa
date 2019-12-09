@@ -82,7 +82,7 @@ class HtmlPresentation:
             if line_no == line_err:
                 ret.append(''.join(['<span class="line-err">',
                     escape(line[:pos]),
-                    '<span class="note-err" title="%s">&x26a0;</span>' %
+                    '<span class="note-err" title="%s">&#x26a0;</span>' %
                     escape(err_msg),
                     escape(line[pos:]), '</span>']))
             elif line.strip().startswith('#'):

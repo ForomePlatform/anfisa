@@ -35,6 +35,7 @@ class CaseStory:
         if self.mParent is not None:
             return self.mParent.getMaster()
         assert False
+        return None
 
     def getLevel(self):
         if self.mParent is None:
@@ -325,7 +326,7 @@ class FilterDTree(FilterBase, CaseStory):
                     cur_diap = [cur_diap[0], frag_h.getLineDiap()[1]]
         if cur_diap is not None:
             html_lines += HtmlPresentation.decorProperCode(
-                        code_lines, cur_diap, marker_seq)
+                code_lines, cur_diap, marker_seq)
         return html_lines
 
     def collectRecSeq(self, dataset):

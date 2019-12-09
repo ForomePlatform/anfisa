@@ -84,6 +84,7 @@ class SolutionBroker(SyncronizedObject):
             assert False, "%s: Panel %s not found" % (unit_name, panel_name)
         else:
             logging.warning("%s: Panel %s not found" % (unit_name, panel_name))
+        return None
 
     #===============================================
     def getFilters(self):
@@ -100,6 +101,7 @@ class SolutionBroker(SyncronizedObject):
                 return it.getData()
         logging.error("Request for bad std tree: " + code_name)
         assert False
+        return None
 
     #===============================================
     def refreshSolEntries(self, kind):

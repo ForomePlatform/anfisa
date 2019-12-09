@@ -73,6 +73,7 @@ class SecondaryWsCreation(ExecutionTask):
                 receipt["dtree-name"] = self.mFltBase.getDTreeName()
             rec_no_seq, point_seq = self.mFltBase.collectRecSeq(self.mDS)
             receipt["points"] = point_seq
+        receipt["flt-update-info"] = self.mFltBase.getUpdateInfo()
 
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)

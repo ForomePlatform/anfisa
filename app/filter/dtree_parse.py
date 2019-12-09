@@ -228,6 +228,7 @@ class ParsedDTree:
                 return instr.value.value
         self.errorIt(instr,
             "Only boolean return (True/False) is expected here")
+        return None
 
     #===============================================
     def getSingleReturnValue(self, body):
@@ -344,6 +345,7 @@ class ParsedDTree:
             self._addMarker(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")
+        return None
 
     #===============================================
     def _processNumInstr(self, it):

@@ -370,6 +370,7 @@ class DSEntry:
             "in directory file (%s)") % (ds_name, dir_fname),
             file = sys.stderr)
         sys.exit()
+        return None
 
 
 #===============================================

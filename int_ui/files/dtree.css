@@ -81,10 +81,11 @@ div#dtree-edit-ctrl {
     vertical-align: bottom;
     margin: 5px 10px 10px 5px;
     display: flex;
+    font-size: 16px;
 }
 
 select#dtree-name-input {
-    font-size: 14px;
+    font-size: 16px;
 }
 
 #dtree-name-combo {
@@ -136,10 +137,6 @@ div#stat-list, div#decision-tree {
     white-space: nowrap;
     overflow: auto;
     font-size: 12px;
-}
-
-div#wait {
-    background-color: #E0E0E0;
 }
 
 div.stat-group {
@@ -305,6 +302,19 @@ span.stat-bad {
     font-style: italic;
     margin: 1px 5px 1px 5px;
 }
+
+span.line-err {
+    border-left: 10px solid red;
+    background-color: #FFD0C0;
+    width: 100%;
+}
+
+span.note-err{
+    background-color: yellow;
+    color: red;
+    font-weight: bold;
+}
+
 
 span.point-edit {
     color: black;

@@ -55,6 +55,7 @@ class SolutionPack:
         with open(fname, "r", encoding = "utf-8") as inp:
             return inp.read()
         assert False
+        return None
 
     @classmethod
     def readFileSeq(cls, fnames):

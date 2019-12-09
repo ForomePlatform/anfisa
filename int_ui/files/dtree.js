@@ -81,7 +81,12 @@ var sDecisionTree = {
         this.mMarkLoc = null;
         this.mPostTreeAction = null;
         this.mPointDelay = [];
-        if (info["error"]) {
+        this.mErrorMode = false;
+        this.mCounts = info["counts"];
+        this.mPoints = info["points"];
+        this.mMarkers = info["markers"];
+        this._fillTreeTable();
+        /*if (info["error"]) {
             this.mErrorMode = true;
             this.mCounts = [];
             this.mPoints = [];
@@ -89,12 +94,7 @@ var sDecisionTree = {
             this._fillNoTree();
         }
         else {
-            this.mErrorMode = false;
-            this.mCounts = info["counts"];
-            this.mPoints = info["points"];
-            this.mMarkers = info["markers"];
-            this._fillTreeTable();
-        }
+        }*/
         
         point_no = 0;
         if (this.mCurPointNo && this.mCurPointNo >= 0) {
@@ -123,7 +123,7 @@ var sDecisionTree = {
             p_cond = point[3];
             p_html = point[4];
             p_count = this.mCounts[p_no];
-            if (p_kind == "Import") {
+            if (p_kind == "Import" || p_kind == "Error") {
                 list_rep.push('<tr><td class="point-no">' + (p_no + 1) + '</td>' +
                     '<td class="point-code"><div class="highlight">' + p_html + '</div></td>' +
                     '<td class="point-count-undef">---</td></tr>');
@@ -141,7 +141,8 @@ var sDecisionTree = {
                 count_repr = p_count;
             if (p_decision) {
                 this.mAcceptedCount += p_count;
-                list_rep.push('<td class="point-count-accept">+' + count_repr + '</td>');
+                list_rep.push('<td class="point-count-accept">+' + 
+                    count_repr + '</td>');
             } else {
                 if (p_decision == false) 
                     list_rep.push(
@@ -289,7 +290,7 @@ var sDecisionTree = {
     },
     
     getAcceptedCount: function() {
-        if (this.mErrorMode || this.mPointDelay.length > 0)
+        if (this.mPointDelay.length > 0)
             return null;
         return this.mAcceptedCount;
     },
@@ -497,8 +498,6 @@ var sUnitsH = {
     },
     
     prepareWsCreate: function() {
-        if (sDecisionTree.hasError())
-            return null;
         accepted = sDecisionTree.getAcceptedCount();
         if (accepted == null) {
             sDecisionTree.loadDelayed("sCreateWsH.show();");

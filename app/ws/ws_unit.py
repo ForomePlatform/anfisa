@@ -217,7 +217,6 @@ class ZygosityComplexUnit(WS_Unit, ZygosityComplex):
 
     def getRecVal(self, idx):
         assert False
-        return None
 
     def isAtomic(self):
         return False

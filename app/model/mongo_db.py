@@ -56,6 +56,7 @@ class MongoConnector:
         if kind.lower() == "xl":
             return self.getXLAgent(name)
         assert False
+        return None
 
     def makeAgent(self, name):
         return self.mMongo[self.mPath][name]
