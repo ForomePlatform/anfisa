@@ -163,6 +163,14 @@ def readySolutions():
 
     base_pack.regFilterWS("Impact_Splicing", 
         condition_high_quality() + impacting_splicing())
+    base_pack.regFilterWS("InSilico_Possibly_Damaging",
+        condition_high_quality() + [
+            ConditionMaker.condEnum("Rules",["Possibly_Damaging_Predictions"])
+        ])
+    base_pack.regFilterWS("InSilico_Damaging",
+        condition_high_quality() + [
+            ConditionMaker.condEnum("Rules",["Damaging_Predictions"])
+        ])
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     base_pack.regFilterWS("SEQaBOO_Hearing_Loss_v_01", [

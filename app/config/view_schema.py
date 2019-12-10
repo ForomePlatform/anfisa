@@ -70,7 +70,8 @@ def defineViewSchema(metadata_record = None):
         AttrH("worst_annotation", title = "Worst Annotation",
             tooltip = "Most Severe Consequences from the transcript"
             + " with the worst annotation"),
-        AttrH("canonical_annotation", title = "Canonical Annotation",
+        AttrH("canonical_annotation", title = "Canonical Annotations",
+              is_seq=True,
             tooltip = "Most Severe Consequences from canonical transcripts"),
         AttrH("refseq_transcript_canonical",
             title = "RefSeq Transcript (Canonical)", is_seq = True),

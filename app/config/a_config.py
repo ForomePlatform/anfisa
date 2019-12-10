@@ -68,11 +68,11 @@ class AnfisaConfig:
                     "Calculated Compound Hetreozygous"]],
             "op-variables.ws": [
                 ["Compound_Het_transcript", "Transcript_id",
-                    "Calculated Compound Hetreozygous, transcript approx"],
+                    "Compound Heterozygous, shared transcript"],
                 ["Compound_Het_gene", "Transctript_gene_id",
-                    "Calculated Compound Hetreozygous, gene approx"],
+                    "Compound Heterozygous, shared gene"],
                 ["Compound_Het_rough", "Symbol",
-                    "Calculated Compound Hetreozygous, rough approx"]],
+                    "Compound Heterozygous, non-intersecting transcripts"]],
         },
 
         "transcript.path.base": "/data/transcript_consequences",
