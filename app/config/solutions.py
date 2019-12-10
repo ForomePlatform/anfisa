@@ -236,6 +236,10 @@ def readySolutions():
         cfgPath("coagulation_system.lst"))
     base_pack.regPanel("Symbol", "Thrombotic_Thrombocytopenic_Purpura",
         cfgPath("ttp.lst"))
+    base_pack.regPanel("Symbol", "Immune_Dysregulation",
+        cfgPath("immune_dysregulation.lst"))
+    base_pack.regPanel("Symbol", "Autism Syndrom",
+        cfgPath("autism.lst"))
     # base_pack.regPanel("Symbol", "TTP1",
     #     cfgPath("ttp1.lst"))
     # base_pack.regPanel("Symbol", "TTP2",
