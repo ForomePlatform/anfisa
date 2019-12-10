@@ -246,7 +246,7 @@ def readySolutions():
         cfgPath("ttp.lst"))
     base_pack.regPanel("Symbol", "Immune_Dysregulation",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Symbol", "Autism Syndrom",
+    base_pack.regPanel("Symbol", "Autism Spectrum",
         cfgPath("autism.lst"))
     # base_pack.regPanel("Symbol", "TTP1",
     #     cfgPath("ttp1.lst"))
