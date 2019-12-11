@@ -235,9 +235,6 @@ class EnumConvertor(PathValueConvertor):
             for var in self.mPreVariants:
                 assert isinstance(var, str)
 
-    def isAtomic(self):
-        return self.mAtomicMode
-
     def convert(self, values, rec_no):
         ret = []
         try:

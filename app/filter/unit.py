@@ -29,7 +29,7 @@ class Unit:
             self.mUnitKind = "int"
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
-        self.mNo    = descr["no"]
+        self.mNo    = descr.get("no", -1)
         self.mVGroup = descr.get("vgroup")
         self.mRenderMode = descr.get("render")
         self.mToolTip = descr.get("tooltip")

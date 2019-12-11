@@ -56,6 +56,13 @@ class AnfisaConfig:
         "filter.std.mark": u"\u23da",
         "code.error.mark": u"\u26a0",
 
+        "rules.setup": {
+            "name": "Rules",
+            "title": None,
+            "vgroup": "Decision trees application",
+            "render": None
+        },
+
         "comp-hets.setup": {
             "zygosity.unit": "Inheritance_Mode",
             "vgroup": "Inheritance",

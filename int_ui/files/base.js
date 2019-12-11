@@ -128,9 +128,7 @@ function softScroll(nd, upper_level) {
 /*************************************/
 function setupDSInfo(info) {
     if (info["doc"] == undefined) {
-        menu_el = document.getElementById("menu-doc");
-        menu_el.className = "drop ctrl-menu-disabled";
-        menu_el.onclick = "";
+        document.getElementById("menu-doc").disabled = true;
     }
     if (info["cohorts"]) {
         sCohortList = info["cohorts"];
@@ -209,7 +207,8 @@ var sViewH = {
     mBlock: false,
     
     addToDrop: function(ctrl) {
-        this.mDropCtrls.push(ctrl);
+        if (ctrl != null)
+            this.mDropCtrls.push(ctrl);
     },
 
     dropOn: function(ctrl) {
@@ -272,14 +271,8 @@ function relaxView() {
 }
 
 /*************************************/
-function openControlMenu() {
-    sViewH.dropOn(document.getElementById("control-menu"));
-}
-
-/*************************************/
 function setupDSControls() {
     window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
-    sViewH.addToDrop(document.getElementById("control-menu"));
     sOpNumH.init();
     sOpEnumH.init();
     if (sDSKind == "xl")

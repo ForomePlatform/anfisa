@@ -648,7 +648,6 @@ var sDTreesH = {
         //if (prev_all_list != JSON.stringify(this.mAllList))
         //    onDTreeListChange();
         this.update();
-        return this.mAllList;
     },
     
     update: function() {

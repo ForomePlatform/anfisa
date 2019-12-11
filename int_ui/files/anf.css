@@ -22,23 +22,19 @@
 
 /********************Globals*****************************/
 body {
-    padding: 0px;
-    margin: 0px;  
-    background-color: white;
+    display: flex;
     font-family: sans-serif;
-    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    white-space: nowrap;
+    height: 100%;
+    width: 100%;
+    margin: 0px; 
+    padding: 0px;
+    background-color: white;
 }
 
 /********************Top area split*****************************/
-#all {
-    width: 100%;
-    height: 100%;
-    align-items: stretch;    
-    margin: 0px;
-    padding: 0px;
-    white-space: nowrap;
-}
-
 #top {
     min-height: 60px;
     height: 60px;
@@ -53,7 +49,6 @@ body {
     flex-grow: 0;
     border: 1px solid black;
     vertical-align: top; 
-    overflow: hidden;
 }
 
 #bottom {
@@ -93,14 +88,13 @@ body {
    margin: 5px;
    border: none;
    text-align: left;
-   display: flex;
+   display: block;
 }
 
 span#ds-name {
     padding: 3px 5px 0px 5px;
     font-size: 12px;
     font-weight: bold;
-    flex-grow: 1;
     min-width: 50%;
 }
 
@@ -184,20 +178,9 @@ div#flt-ctrl, div#ws.ctrl {
   flex-grow: 1;
 }
 
-div#ws-info {
-  display: flex;
-  vertical-align: bottom;
-}
-
-div#list-info {
-  display: flex;
-  vertical-align: bottom;
-}
-
 div#flt-cur {
     display: flex;
 }
-
 
 div#zone-cur {
     display: flex;

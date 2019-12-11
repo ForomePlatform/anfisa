@@ -60,7 +60,7 @@ def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
         (workspace.getName(), common_title), file = output)
     _formMainDiv(output, workspace.getName(), ws_pub_url)
     print('    <div id="filter-back">', file = output)
-    formFilterPannel(output)
+    formFilterPanel(output)
     print('    </div>', file = output)
     _formZonesDiv(output, workspace.iterZones())
     formNoteDiv(output)
@@ -72,42 +72,33 @@ def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
 #===============================================
 def _formMainDiv(output, workspace_name, ws_pub_url):
     print('''
-    <div id="all">
-      <div id="top">
+    <div id="top">
         <div id="top-ws">
-          <div id="ws-ctrl">
-            <div id="ws-info">
-              Ws: <span id="ds-name" class="bold"></span><br/>
-            </div>
-            <div id="list-info">
-              <span id="control-wrap" title="Control Menu..." class="drop">
-                <span id="control-open" class="drop"
-                    onclick="openControlMenu()";>&#8285;</span>
-                <div id="control-menu" class="drop">
-                    <div onclick="goHome();"
-                        class="drop ctrl-menu">Home Directory</div>
-                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
-                        class="drop ctrl-menu">Documentation</div>
-                    <div onclick="openNote();"
-                        class="drop ctrl-menu">Workspace Note</div>
-                    <div onclick="showExport();"
-                        class="drop ctrl-menu" >Export...</div>
+            <div class="dropdown">
+                <span id="control-open">&#8285;</span>
+                <div id="control-menu" class="dropdown-content">
+                    <a class="drop" onclick="goHome();"
+                        >Home Directory</a>
+                    <a class="drop" onclick="goToPage(\'DOC\');"
+                      id="menu-doc">Documentation</a>
+                    <a class="drop" onclick="goToPage(\'DTREE\');"
+                        >Decision tree panel</a>
+                    <a class="drop" onclick="openNote();"
+                        >Dataset Note...</a>
+                    <a class=:drop" onclick="showExport();"
+                        >Export...</a>
                 </div>
                 <div id="export-result" class="drop"></div>
-              </span>&nbsp;
-              Variants:&nbsp;<span id="ws-list-report" class="bold"></span>
+            </div> <span id="ds-name" class="bold"></span>
+            <div class="nomargins">
+                Variants:&nbsp;<span id="ws-list-report" class="bold"
+                ></span>
             </div>
-            <div>
-              <small>
-                Transcripts:&nbsp;<span id="ws-transcripts-report"></span>
-              </small>
-              <span id="ws-list-rand-info"><br/>
-                Samples:&nbsp;<input
-                    id="list-rand-portion" type="number" min="1" max="5"
-                    onchange="listRandPortion();"/>
-              </span>
-            </div>
-          </div>
+            <div class="nomargins">
+                <small>
+                  Transcripts:&nbsp;<span id="ws-transcripts-report"></span>
+                </small>
+              </div>
         </div>
         <div  id="top-filters">
           Filters:
@@ -182,7 +173,6 @@ def _formMainDiv(output, workspace_name, ws_pub_url):
             <iframe id="rec-frame1" name="rec-frame1" src="norecords">
             </iframe>
         </div>
-      </div>
     </div>''' % {"ws": workspace_name, "ws_pub_url": ws_pub_url},
     file = output)
 
@@ -427,7 +417,7 @@ def notFound(output, common_title, html_base):
 </html>''' % (common_title + "/dir"), file = output)
 
 #===============================================
-def formFilterPannel(output):
+def formFilterPanel(output):
     print('''
     <div id="filter-mod">
         <div id="filter-stat">

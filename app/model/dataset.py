@@ -337,9 +337,10 @@ class DataSet(SolutionBroker):
         time_end = self._getArgTimeEnd(rq_args)
         repr_context = self._getArgContext(rq_args)
         if "instr" in rq_args:
-            filter_h = self._getArgCondFilter(rq_args, activate_it = False)
+            filter_proc_h = self._getArgCondFilter(
+                rq_args, activate_it = False)
             if not self.modifySolEntry("filter", rq_args["instr"],
-                    filter_h.getCondData()):
+                    filter_proc_h.getCondData()):
                 assert False
         filter_h = self._getArgCondFilter(rq_args)
         condition = filter_h.getCondition()
@@ -393,17 +394,18 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__dtree_set(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
+
+        if "instr" in rq_args:
+            dtree_proc_h = self._getArgDTree(
+                rq_args, activate_it = False)
+            if not self.modifySolEntry("dtree", rq_args["instr"],
+                    dtree_proc_h.getCode()):
+                assert False
         dtree_h = None
         if "modify" in rq_args:
             parsed = ParsedDTree(self.getCondEnv(), rq_args["code"])
             dtree_code = parsed.modifyCode(json.loads(rq_args["modify"]))
             dtree_h = FilterDTree(self.getCondEnv(), dtree_code)
-        if "instr" in rq_args:
-            if dtree_h is None:
-                dtree_h = self._getArgDTree(rq_args, activate_it = False)
-            if not self.modifySolEntry("dtree", rq_args["instr"],
-                    dtree_h.getCode()):
-                assert False
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {
             "total": self.getTotal(),

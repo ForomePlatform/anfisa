@@ -102,6 +102,9 @@ class FilterBase:
             op_units.add(unit_name)
             return True
 
+        if len(cond_info) < 2:
+            print("Attn!!!")
+
         pre_unit_kind, unit_name = cond_info[:2]
         unit_kind, unit_h = self.mCondEnv.detectUnit(unit_name, pre_unit_kind)
         if unit_h is None:
@@ -143,14 +146,8 @@ class FilterBase:
                 self.mCompData[unit_name])
         if unit_kind == "reserved":
             unit_kind = cond_info[0]
-        if unit_kind == "special":
+        if unit_kind in {"special", "numeric", "enum"}:
             return unit_h.parseCondition(cond_info)
-        if cond_info[0] == "numeric":
-            bounds, use_undef = cond_info[2:]
-            return self.mCondEnv.makeNumericCond(unit_h, bounds, use_undef)
-        if cond_info[0] == "enum":
-            filter_mode, variants = cond_info[2:]
-            return self.mCondEnv.makeEnumCond(unit_h, variants, filter_mode)
         assert False
         return self.mCondEnv.getCondNone()
 

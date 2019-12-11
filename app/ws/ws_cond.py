@@ -125,29 +125,34 @@ class WS_CondEnv(CondEnv):
 #===============================================
 class WS_Condition:
     def __init__(self, cond_env, cond_type, name, bit_arr = None,
-            fill_groups_f = None, fill_items_f = None):
+            fill_groups_f = None, fill_items_f = None, detailed = None):
         self.mCondEnv = cond_env
         self.mCondType = cond_type
         self.mName = name
         self.mBitArray = bit_arr
+        self.mDetailed = detailed
         if self.mBitArray is not None:
             assert fill_groups_f is None and fill_items_f is None
+            assert detailed is not None
         else:
             self.mBitArray = bitarray()
             if fill_items_f is not None:
-                assert fill_groups_f is None
+                assert fill_groups_f is None and detailed is not False
                 for grp_offset, grp_size in self.getCondEnv().iterGroups():
                     if grp_size == 0:
                         self.mBitArray.append(False)
                     else:
                         self.mBitArray.extend([fill_items_f(grp_offset + j)
                             for j in range(grp_size)])
+                self.mDetailed = True
             else:
                 rec_no = 0
                 for _, grp_size in self.getCondEnv().iterGroups():
                     val = fill_groups_f(rec_no)
                     rec_no += 1
                     self.mBitArray.extend([val] * (max(1, grp_size)))
+                if not self.mDetailed:
+                    self.mDetailed = False
 
     def getCondEnv(self):
         return self.mCondEnv
@@ -160,6 +165,9 @@ class WS_Condition:
 
     def getBitArray(self):
         return self.mBitArray
+
+    def isDetailed(self):
+        return self.mDetailed
 
     def __not__(self):
         assert False
@@ -238,7 +246,7 @@ class WS_Negation(WS_Condition):
     def __init__(self, base_cond):
         WS_Condition.__init__(self, base_cond.getCondEnv(), "neg",
             "neg/" + base_cond.getCondName(),
-            ~base_cond.getBitArray())
+            ~base_cond.getBitArray(), detailed = base_cond.isDetailed())
         self.mBaseCond = base_cond
 
     def negative(self):
@@ -246,9 +254,9 @@ class WS_Negation(WS_Condition):
 
 #===============================================
 class _WS_Joiner(WS_Condition):
-    def __init__(self, kind, items, bit_arr):
+    def __init__(self, kind, items, bit_arr, detailed):
         WS_Condition.__init__(self, items[0].getCondEnv(), kind, kind,
-            bit_arr = bit_arr)
+            bit_arr = bit_arr, detailed = detailed)
         self.mItems = items
         assert len(self.mItems) > 0
 
@@ -259,9 +267,11 @@ class _WS_Joiner(WS_Condition):
 class WS_And(_WS_Joiner):
     def __init__(self, items):
         bit_arr = items[0].getBitArray().copy()
+        detailed = items[0].isDetailed()
         for it in items[1:]:
             bit_arr &= it.getBitArray()
-        _WS_Joiner.__init__(self, "and", items,  bit_arr)
+            detailed |= it.isDetailed()
+        _WS_Joiner.__init__(self, "and", items,  bit_arr, detailed)
 
     def addAnd(self, other):
         if other.getCondType() == "null":
@@ -279,9 +289,11 @@ class WS_And(_WS_Joiner):
 class WS_Or(_WS_Joiner):
     def __init__(self, items):
         bit_arr = items[0].getBitArray().copy()
+        detailed = items[0].isDetailed()
         for it in items[1:]:
             bit_arr |= it.getBitArray()
-        _WS_Joiner.__init__(self, "or", items,  bit_arr)
+            detailed |= it.isDetailed()
+        _WS_Joiner.__init__(self, "or", items,  bit_arr, detailed)
 
     def addOr(self, other):
         if other.getCondType() == "null":
@@ -299,7 +311,8 @@ class WS_None(WS_Condition):
     def __init__(self, cond_env):
         bit_arr = bitarray(cond_env.getTotalCount())
         bit_arr.setall(False)
-        WS_Condition.__init__(self, cond_env, "null", "null", bit_arr)
+        WS_Condition.__init__(self, cond_env, "null", "null",
+            bit_arr, detailed = False)
 
     def addAnd(self, other):
         return self
@@ -318,7 +331,8 @@ class WS_All(WS_Condition):
     def __init__(self, cond_env):
         bit_arr = bitarray(cond_env.getTotalCount())
         bit_arr.setall(True)
-        WS_Condition.__init__(self, cond_env, "all", "all", bit_arr)
+        WS_Condition.__init__(self, cond_env, "all", "all",
+            bit_arr, detailed = False)
 
     def addAnd(self, other):
         return other

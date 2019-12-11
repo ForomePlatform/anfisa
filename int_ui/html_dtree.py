@@ -34,7 +34,7 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
         (ds_h.getName(), ds_h.getDSKind(), common_title, ws_pub_url),
         file = output)
 
-    _formDTreePannel(output, ds_h)
+    _formDTreePanel(output, ds_h)
     _formCurCondDiv(output)
     _formCmpCodeDiv(output)
     _formEditCodeDiv(output)
@@ -48,32 +48,30 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
     print('</html>', file = output)
 
 #===============================================
-def _formDTreePannel(output, ds_h):
+def _formDTreePanel(output, ds_h):
     print('''
       <div id="dtree-ctrl">
         <div id="dtree-top-ctrl">
-            <span id="control-wrap" title="Control Menu..." class="drop">
-                <span id="control-open" class="drop"
-                    onclick="openControlMenu();">&#8285;</span>
-                <div id="control-menu" class="drop">
-                    <div onclick="goHome();"
-                        class="drop ctrl-menu">Home Directory</div>
-                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
-                        class="drop ctrl-menu">Documentation</div>
-                    <div onclick="goToPage(\'\');"
-                        class="drop ctrl-menu">Filtering pannel</div>
-                    <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note...</div>''',
+          <div class="dropdown">
+            <span id="control-open">&#8285;</span>
+            <div id="control-menu" class="dropdown-content">
+                <a class="drop" onclick="goHome();">Home Directory</a>
+                <a class="drop" onclick="goToPage(\'DOC\');"
+                    id="menu-doc">Documentation</a>
+                <a class="drop" onclick="goToPage(\'\');"
+                    >Dataset main page</a>
+                <a class="drop" onclick="openNote();"
+                    >Dataset Note...</a>''',
         file = output)
     if ds_h.getDSKind() == "xl":
         print('''
-                    <div onclick="wsCreate();"
-                        class="drop ctrl-menu">Create workspace...</div>''',
+                <a class=:drop" onclick="wsCreate();"
+                    >Create workspace...</a>''',
             file = output)
     print('''
-                </div>
-            </span>&emsp;
-            Dataset: <span id="ds-name" class="bold"></span><br/>
+            </div>
+          </div>&emsp;
+          Dataset: <span id="ds-name" class="bold"></span><br/>
             <div id="dtree-edit-ctrl">
               <div class="dropdown">
                 <button class="op-button drop">Decision Trees...</button>

@@ -34,6 +34,9 @@ class XL_CondEnv(CondEnv):
     def getCondAll(self):
         return XL_All(self)
 
+    def isDetailed(self):
+        return False
+
     def addMetaNumUnit(self, name):
         unit_h = MetaUnit(name, "num")
         self.addReservedUnit(unit_h)

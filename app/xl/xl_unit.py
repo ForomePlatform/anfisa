@@ -96,6 +96,12 @@ class XL_NumUnit(XL_Unit):
             vmin, vmax = None, None
         return ret + [vmin, vmax, count, 0]
 
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "numeric"
+        assert cond_info[1] == self.getName()
+        bounds, use_undef = cond_info[2:]
+        return self.getCondEnv().makeNumericCond(self, bounds, use_undef)
+
 #===============================================
 class XL_EnumUnit(XL_Unit):
     def __init__(self, dataset_h, descr):
@@ -147,6 +153,13 @@ class XL_EnumUnit(XL_Unit):
         ret = self.prepareStat()
         ret.append(self._makeStat(condition))
         return ret
+
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "enum"
+        assert cond_info[1] == self.getName()
+        filter_mode, variants = cond_info[2:]
+        return self.getCondEnv().makeEnumCond(
+            self, variants, filter_mode)
 
 #===============================================
 class XL_ZygosityUnit(XL_Unit, ZygosityComplex):

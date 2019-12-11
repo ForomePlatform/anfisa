@@ -196,6 +196,7 @@ class FilterDTree(FilterBase, CaseStory):
         self.mDTreeName = dtree_name
         self.mPointList = None
         self.mFragments = parsed.getFragments()
+        self.mFinalCondition = None
 
         if self.mError is not None:
             msg_text, lineno, offset = parsed.getError()
@@ -336,7 +337,7 @@ class FilterDTree(FilterBase, CaseStory):
         info_seq = []
         for point in self.mPointList:
             info_seq.append([point.getCodeFrag(html_lines), None, None])
-            if not point.isActive:
+            if not point.isActive():
                 continue
             condition = point.actualCondition()
             point_count = dataset.evalTotalCount(condition)
@@ -351,3 +352,13 @@ class FilterDTree(FilterBase, CaseStory):
                     ret |= set(seq)
             assert len(ret) < max_ws_size
         return sorted(ret), info_seq
+
+    def getFinalCondition(self):
+        assert self.getCondEnv().getCondKind() == "ws"
+        if self.mFinalCondition is None:
+            cond_seq = []
+            for point in self.mPointList:
+                if point.isActive() and point.getDecision() is True:
+                    cond_seq.append(point.actualCondition())
+            self.mFinalCondition = self.getCondEnv().joinOr(cond_seq)
+        return self.mFinalCondition

@@ -47,8 +47,7 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
             "title": title,
             "kind": "enum",
             "vgroup": self.sSetupData["vgroup"],
-            "render": "operative",
-            "no": -1})
+            "render": "operative"})
         self.mDS = ds_h
         self.mCondEnv = self.mDS.getCondEnv()
         self.mZygUnit = self.mDS.getUnit(self.sSetupData["zygosity.unit"])

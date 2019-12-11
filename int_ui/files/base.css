@@ -61,7 +61,7 @@ div.wide {
      position: absolute;
      top: 3px;
      left: 0px;
-     font-size: 12px;
+     font-size: 14px;
      border: none;
      width: 200px;
      margin: 0;
@@ -82,18 +82,11 @@ div.wide {
  }
  
 /****************************************/
- /* Dropdown Button */
-.dropbtn {
-    color: white;
-    padding: 0px 2px 0px 4px;
-    border: 1px black solid;
-    font-size: 16px;
-}
-
 /* The container <div> - needed to position the dropdown content */
 .dropdown {
     position: relative;
     display: inline-block;
+    overflow: visible !important;
 }
 
 /* Dropdown Content (Hidden by Default) */
@@ -102,7 +95,8 @@ div.wide {
     position: absolute;
     background-color: #f1f1f1;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
+    z-index: 500;
+    overflow: visible !important;
 }
 
 /* Links inside the dropdown */
@@ -113,7 +107,7 @@ div.wide {
     display: block;
     border: 1px solid #e0e0e0;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .dropdown-content a.disabled {
@@ -130,11 +124,6 @@ div.wide {
 .dropdown:hover .dropdown-content {
     display: block;
 }
-
-/* Change the background color of the dropdown button when the dropdown content is shown */
-.dropdown:hover .dropbtn {
-    border: 1px white solid;
-} 
 
 /********************common controls*****************************/
 button.op-button {
@@ -177,6 +166,11 @@ input.bad {
     color: #500000;
 }
 
+.nomargins {
+    margin: 0px;
+    padding: 0px;
+}
+
 span.note-time {
     margin-left: 10px;
     font-size: 80%;
@@ -196,9 +190,7 @@ span#control-open {
 }
 
 div#control-menu {
-    display: none;
     padding: 10px;
-    position: absolute;
     color: black;
     background-color: white;
     border: 1px solid black;
@@ -206,25 +198,11 @@ div#control-menu {
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
-/****************************************/
-div.ctrl-menu, div.ctrl-menu-disabled {
-    text-align: left;
-    padding: 5px;
-    height: 20px;
-    width: 190px;
-    font-weight: bold;
-}
-
-div.ctrl-menu{
-    cursor: pointer;
-}
-
-div.ctrl-menu:hover {
-    color: #000080;
-}
-
-div.ctrl-menu-disabled {
-    color: #808080;
+div#control-menu a {
+    color: black;
+    padding: 3px 20px;
+    font-size: 16px;
+    font-weight: bold
 }
 
 /****************************************/

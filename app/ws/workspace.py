@@ -25,6 +25,7 @@ from io import TextIOWrapper
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
+from .rules import RulesUnit
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .ws_unit import loadWS_Unit
@@ -41,8 +42,8 @@ class Workspace(DataSet):
         self.mTabRecColor  = []
         self.mTabRecLabel = []
 
-        # self.mRulesUnit = RulesEvalUnit(self)
-        # self._addUnit(self.mRulesUnit)
+        self.mRulesUnit = RulesUnit(self)
+        self._addUnit(self.mRulesUnit)
         for unit_data in self.getFltSchema():
             unit_h = loadWS_Unit(self, unit_data)
             if unit_h is not None:

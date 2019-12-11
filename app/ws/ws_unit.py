@@ -40,20 +40,8 @@ class WS_Unit(Unit):
     def getCondEnv(self):
         return self.mDS.getCondEnv()
 
-    def isAtomic(self):
-        return True
-
     def isDetailed(self):
         return False
-
-    def dumpNames(self):
-        ret = {"name": self.mName,
-            "vgroup": self.mVGroupTitle}
-        if self.mTitle and self.mTitle != self.mName:
-            ret["title"] = self.mTitle
-        if self.mRenderMode:
-            ret["render"] = self.mRenderMode
-        return ret
 
     @abc.abstractmethod
     def getRecVal(self, rec_no):
@@ -90,6 +78,12 @@ class NumericValueUnit(WS_Unit):
         assert len(self.mArray) == rec_no
         self.mArray.append(inp_data.get(self.getName()))
 
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "numeric"
+        assert cond_info[1] == self.getName()
+        bounds, use_undef = cond_info[2:]
+        return self.getCondEnv().makeNumericCond(self, bounds, use_undef)
+
 #===============================================
 class _EnumUnit(WS_Unit):
     def __init__(self, ds_h, unit_data, unit_kind):
@@ -116,6 +110,13 @@ class _EnumUnit(WS_Unit):
         for rec_no, _ in condition.iterSelection():
             stat.regValues(self.getRecVal((rec_no)))
         return self.prepareStat() + stat.result()
+
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "enum"
+        assert cond_info[1] == self.getName()
+        filter_mode, variants = cond_info[2:]
+        return self.getCondEnv().makeEnumCond(
+            self, variants, filter_mode)
 
 #===============================================
 class StatusUnit(_EnumUnit):
@@ -148,9 +149,6 @@ class MultiSetUnit(_EnumUnit):
     def _setRecBit(self, rec_no, idx, value):
         self.mArraySeq[idx][rec_no] = value
 
-    def isAtomic(self):
-        return False
-
     def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getName())
         if values:
@@ -170,9 +168,6 @@ class MultiCompactUnit(_EnumUnit):
 
     def getRecVal(self, rec_no):
         return self.mPackSetSeq[self.mArray[rec_no]]
-
-    def isAtomic(self):
-        return False
 
     @staticmethod
     def makePackKey(idx_set):
@@ -217,9 +212,6 @@ class ZygosityComplexUnit(WS_Unit, ZygosityComplex):
 
     def getRecVal(self, idx):
         assert False
-
-    def isAtomic(self):
-        return False
 
     def isOK(self):
         return self.mIsOK
@@ -270,6 +262,13 @@ class TranscriptStatusUnit(WS_Unit):
         ret = self.prepareStat()
         ret[1]["detailed"] = True
         return ret + stat.result()
+
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "enum"
+        assert cond_info[1] == self.getName()
+        filter_mode, variants = cond_info[2:]
+        return self.getCondEnv().makeEnumCond(
+            self, variants, filter_mode)
 
 #===============================================
 class TranscriptMultisetUnit(WS_Unit):
@@ -323,6 +322,13 @@ class TranscriptMultisetUnit(WS_Unit):
         ret = self.prepareStat()
         ret[1]["detailed"] = True
         return ret + stat.result()
+
+    def parseCondition(self, cond_info):
+        assert cond_info[0] == "enum"
+        assert cond_info[1] == self.getName()
+        filter_mode, variants = cond_info[2:]
+        return self.getCondEnv().makeEnumCond(
+            self, variants, filter_mode)
 
 #===============================================
 def loadWS_Unit(ds_h, unit_data):

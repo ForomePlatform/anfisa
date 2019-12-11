@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from .gen_html import startHtmlPage, formFilterPannel, formNoteDiv
+from .gen_html import startHtmlPage, formFilterPanel, formNoteDiv
 
 #===============================================
 def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
@@ -30,7 +30,7 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
     print('  <body onload="setupXLFilters(\'%s\', \'%s\', \'%s\');">' %
         (xl_ds.getName(), common_title, ws_pub_url), file = output)
 
-    _formXLPannel(output, xl_ds.getName())
+    _formXLPanel(output, xl_ds.getName())
     formNoteDiv(output)
     formCreateWsDiv(output)
     formSubViewDiv(output)
@@ -39,38 +39,37 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
     print('</html>', file = output)
 
 #===============================================
-def _formXLPannel(output, ds_name):
+def _formXLPanel(output, ds_name):
     print('''
       <div id="xl-ctrl">
         <div id="xl-top-ctrl">
-            <span id="control-wrap" title="Control Menu..." class="drop">
-                <span id="control-open" class="drop"
-                    onclick="openControlMenu();">&#8285;</span>
-                <div id="control-menu" class="drop">
-                    <div onclick="goHome();"
-                        class="drop ctrl-menu">Home Directory</div>
-                    <div onclick="goToPage(\'DOC\');" id="menu-doc"
-                        class="drop ctrl-menu">Documentation</div>
-                    <div onclick="goToPage(\'TREE\');"
-                        class="drop ctrl-menu">Decision tree panel</div>
-                    <div onclick="openNote();"
-                        class="drop ctrl-menu">Dataset Note...</div>
-                    <div onclick="showExport();"
-                        class="drop ctrl-menu" >Export...</div>
-                    <div onclick="wsCreate();"
-                        class="drop ctrl-menu">Create workspace...</div>
-                </div>
-                <div id="export-result" class="drop"></div>
-            </span>&emsp;
-            XL dataset: <span id="ds-name" class="bold"></span><br/>
-            Variants: <span id="list-report" class="bold"></span>
+          <div class="dropdown">
+            <span id="control-open">&#8285;</span>
+            <div id="control-menu" class="dropdown-content">
+              <a class="drop" onclick="goHome();">Home Directory</a>
+              <a class="drop" onclick="goToPage(\'DOC\');"
+                id="menu-doc">Documentation</a>
+              <a class="drop" onclick="goToPage(\'DTREE\');"
+                >Decision tree panel</a>
+              <a class="drop" onclick="openNote();"
+                >Dataset Note...</a>
+              <a class=:drop" onclick="showExport();"
+                >Export...</a>
+              <a class=:drop" onclick="wsCreate();"
+                >Create workspace...</a>
+            </div>
+          </div>
+          <div id="export-result" class="drop"></div>
+          &emsp;
+          XL dataset: <span id="ds-name" class="bold"></span><br/>
+          Variants: <span id="list-report" class="bold"></span>
         </div>
         <div id="xl-list">
             <button id="open-sub-view-rec"
                 onclick="sSubVRecH.show()">View variants</button>
         </div>
       </div>''', file = output)
-    formFilterPannel(output)
+    formFilterPanel(output)
 
 #===============================================
 def formCreateWsDiv(output):
