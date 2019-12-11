@@ -169,11 +169,6 @@ function zoneModOn() {
     sViewH.modalOn(document.getElementById("zone-back"));
 }
 
-function rulesModOn() {
-    setupRulesCtrl();
-    sViewH.modalOn(document.getElementById("rules-back"));
-}
-
 //=====================================
 function updateTabCfg() {
     document.getElementById("rec-frame1").style.display =

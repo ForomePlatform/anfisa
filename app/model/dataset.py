@@ -31,6 +31,7 @@ from app.filter.filter_conj import FilterConjunctional
 from app.filter.filter_dtree import FilterDTree
 from app.filter.code_works import cmpTrees
 from app.filter.dtree_parse import ParsedDTree
+from app.prepare.sec_ws import SecondaryWsCreation
 from .sol_broker import SolutionBroker
 from .family import FamilyInfo
 from .rest_api import RestAPI
@@ -481,6 +482,17 @@ class DataSet(SolutionBroker):
         fname = self.getApp().makeExcelExport(
             self.getName(), self, rec_no_seq, self.getTagsMan())
         return {"kind": "excel", "fname": fname}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__ds2ws(self, rq_args):
+        if "dtree" in rq_args or "code" in rq_args:
+            flt_base_h = self._getArgDTree(rq_args)
+        else:
+            flt_base_h = self._getArgCondFilter(rq_args)
+        task = SecondaryWsCreation(self, rq_args["ws"], flt_base_h,
+            force_mode = "force" in rq_args)
+        return {"task_id": self.getApp().runTask(task)}
 
     #===============================================
     @RestAPI.ds_request

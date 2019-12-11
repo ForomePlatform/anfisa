@@ -50,11 +50,10 @@ def startHtmlPage(output, title = None, html_base = None,
 def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
     startHtmlPage(output,
         common_title + "-WS " + workspace.getName(), html_base,
-        css_files = ["base.css", "vrec.css",
-            "anf.css", "filters.css", "zones.css", "rules.css"],
-        js_files = ["anf.js", "monitor.js",
-            "fctrl.js", "base.js", "filters.js",
-            "zones.js", "rules.js"])
+        css_files = ["base.css", "vrec.css", "anf.css",
+            "filters.css", "zones.css"],
+        js_files = ["anf.js", "monitor.js", "fctrl.js", "base.js",
+            "filters.js", "zones.js"])
 
     print('  <body onload="initWin(\'%s\', \'%s\');">' %
         (workspace.getName(), common_title), file = output)
@@ -64,7 +63,6 @@ def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
     print('    </div>', file = output)
     _formZonesDiv(output, workspace.iterZones())
     formNoteDiv(output)
-    _formRulesDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
@@ -263,57 +261,12 @@ def formNoteDiv(output):
 ''', file = output)
 
 #===============================================
-def _formRulesDiv(output):
-    print('''
-    <div id="rules-back">
-      <div id="rules-mod">
-        <div id="rules-top">
-            <p id="rules-title">&#9874; Rules evaluation setup
-              <span clsss="close-it" onclick="relaxView();">&times;</span>
-            </p>
-        </div>
-        <div id="rules-main">
-          <div id="rules-left">
-            <div id="rules-wrap-columns">
-              <div id="rules-columns">
-              </div>
-            </div>
-            <div id="rules-wrap-param">
-              <div id="hi----param"
-                class="rule-item" onclick="ruleItemSel(\'--param\');">
-                  Parameters
-              </div>
-            </div>
-          </div>
-          <div id="rules-right">
-            <div id="rules-wrap-content">
-                <textarea id="rule-item-content"
-                    oninput="checkRuleContent();"></textarea>
-            </div>
-            <div id="rule-item-ctrl">
-                <button id="rule-item-modify" onclick="ruleItemModify();">
-                  Apply changes
-                </button>
-                <button id="rule-item-reset" onclick="ruleItemReset();">
-                  Reset changes
-                </button>
-            </div>
-            <div id="rule-item-errors">
-            </div"
-          </div>
-        </div>
-      </div>
-    </div>''', file = output)
-
-#===============================================
 def tagsBlock(output):
     print('''
 <div id="tg-all">
   <div id="tg-wrap-filters">
     <div id="tg-filters">
         <i>Filters:</i> <span id="tg-filters-list"></span>
-        <span id="tg-run-rules" title="Rules evaluation setup"
-            onclick="window.parent.rulesModOn();">&#9874;</span>
     </div>
   </div>
   <div id="tg-tags">

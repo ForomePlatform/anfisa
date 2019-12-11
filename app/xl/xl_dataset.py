@@ -26,7 +26,6 @@ from app.model.dataset import DataSet
 from .xl_cond import XL_CondEnv
 from .xl_unit import XL_Unit
 from .xl_list import XlListTask
-from app.prepare.sec_ws import SecondaryWsCreation
 #===============================================
 class XLDataset(DataSet):
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
@@ -187,14 +186,3 @@ class XLDataset(DataSet):
             condition = flt_base_h.getCondition()
         return {"task_id": self.getApp().runTask(
             XlListTask(self, condition))}
-
-    #===============================================
-    @RestAPI.xl_request
-    def rq__xl2ws(self, rq_args):
-        if "dtree" in rq_args or "code" in rq_args:
-            flt_base_h = self._getArgDTree(rq_args)
-        else:
-            flt_base_h = self._getArgCondFilter(rq_args)
-        task = SecondaryWsCreation(self, rq_args["ws"], flt_base_h,
-            force_mode = "force" in rq_args)
-        return {"task_id": self.getApp().runTask(task)}

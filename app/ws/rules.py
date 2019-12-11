@@ -74,4 +74,3 @@ class RulesUnit(Unit, ComplexEnumSupport):
         ret.append(self.collectComplexStat(self.mDS, condition,
             detailed = detailed))
         return ret
-

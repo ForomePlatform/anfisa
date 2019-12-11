@@ -177,6 +177,10 @@ class Workspace(DataSet):
                 ret_handle.append(filter_h.getFilterName())
         return ret_handle
 
+    def evalRecSeq(self, condition, expect_count = None):
+        return [rec_no
+            for rec_no, rec_it_map in condition.iterSelection()]
+
     #===============================================
     @RestAPI.ws_request
     def rq__list(self, rq_args):
@@ -224,17 +228,3 @@ class Workspace(DataSet):
     def rq__tag_select(self, rq_args):
         return self.mTagsMan.reportSelectTag(
             rq_args.get("tag"))
-
-    #===============================================
-    #@RestAPI.ws_request
-    #def rq__rules_data(self, rq_args):
-    #    return self.mRulesUnit.getJSonData()
-
-    #===============================================
-    #@RestAPI.ws_request
-    #def rq__rules_modify(self, rq_args):
-    #    item = rq_args.get("it")
-    #    content = rq_args.get("cnt")
-    #    with self:
-    #        return self.mRulesUnit.modifyRulesData(
-    #            item, content)

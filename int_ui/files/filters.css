@@ -322,7 +322,7 @@ span.stat-bad {
     margin: 1px 5px 1px 5px;
 }
 
-span#flt-run-rules{
+span#flt-go-dtree{
     cursor: pointer;
     border: 1px solid black;
     float: right;

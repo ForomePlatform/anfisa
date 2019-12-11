@@ -130,7 +130,7 @@ var sCreateWsH = {
             return;
         sViewH.blockModal(true);
         this.mStage = "WAIT";
-        ajaxCall("xl2ws", sUnitsH.getWsCreateArgs() +
+        ajaxCall("ds2ws", sUnitsH.getWsCreateArgs() +
             "&ws=" + encodeURIComponent(this.mInputModName.value),
             function(info) {sCreateWsH._setupTask(info);})
     },

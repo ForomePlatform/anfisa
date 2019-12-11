@@ -98,8 +98,8 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
         if receipt["kind"] == "filter":
             print('<h2>Applied filter</h2>', file = output)
             if "filter-name" in receipt:
-                print("<p>Filter name:",
-                    '<b>' + escape(receipt["filter-name"]) + '</b>', file = output)
+                print("<p>Filter name:", '<b>' + escape(receipt["filter-name"])
+                    + '</b>', file = output)
                 if "flt-update-info" in receipt:
                     updated_time, updated_from = receipt["flt-update-info"]
                     print("updated at", reprDateVal(updated_time),
@@ -113,8 +113,8 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
             assert receipt["kind"] == "dtree"
             print('<h2>Applied decision tree code</h2>', file = output)
             if "dtree-name" in receipt:
-                print("<p>Tree name:",
-                    '<b>' + escape(receipt["dtree-name"]) + '</b>', file = output)
+                print("<p>Tree name:", '<b>' + escape(receipt["dtree-name"])
+                    + '</b>', file = output)
                 if "flt-update-info" in receipt:
                     updated_time, updated_from = receipt["flt-update-info"]
                     print("updated at", reprDateVal(updated_time),

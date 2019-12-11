@@ -275,8 +275,7 @@ function setupDSControls() {
     window.onclick = function(event_ms) {sViewH.onclick(event_ms);}
     sOpNumH.init();
     sOpEnumH.init();
-    if (sDSKind == "xl")
-        sCreateWsH.init();
+    sCreateWsH.init();
     sSubVRecH.init();
     ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
 }

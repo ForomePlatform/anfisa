@@ -697,8 +697,9 @@ function fillStatList(items, unit_map, list_stat_rep,
         list_stat_rep.push('</div>')
         if (unit_name == "Rules") {
             list_stat_rep.push(
-                '<span id="flt-run-rules" title="Rules evaluation setup" ' +
-                ' onclick="rulesModOn();">&#9874;</span>')
+                '<span id="flt-go-dtree" ' +
+                'title="Configure rules via Decision Tree panel" ' +
+                'onclick="goToPage(\'DTREE\');"">&#9874;</span>')
         }
         list_stat_rep.push('<div id="stat-data--' + unit_name + '" class="stat-unit-data">');
         if (unit_stat.length == 2) {

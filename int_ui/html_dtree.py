@@ -22,9 +22,7 @@ from .gen_html import startHtmlPage, formNoteDiv
 from .html_xl import formCreateWsDiv, formSubViewDiv
 #===============================================
 def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
-    js_files = ["dtree.js", "fctrl.js", "sub_vrec.js", "base.js"]
-    if ds_h.getDSKind() == "xl":
-        js_files.append("xl_ctrl.js")
+    js_files = ["dtree.js", "fctrl.js", "sub_vrec.js", "xl_ctrl.js", "base.js"]
     startHtmlPage(output,
         common_title + "-DTree " + ds_h.getName(), html_base,
         css_files = ["dtree.css", "py_pygments.css", "vrec.css", "base.css"],
@@ -40,8 +38,7 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
     _formEditCodeDiv(output)
     formNoteDiv(output)
 
-    if ds_h.getDSKind() == "xl":
-        formCreateWsDiv(output)
+    formCreateWsDiv(output)
     formSubViewDiv(output)
 
     print(' </body>', file = output)
@@ -61,10 +58,7 @@ def _formDTreePanel(output, ds_h):
                 <a class="drop" onclick="goToPage(\'\');"
                     >Dataset main page</a>
                 <a class="drop" onclick="openNote();"
-                    >Dataset Note...</a>''',
-        file = output)
-    if ds_h.getDSKind() == "xl":
-        print('''
+                    >Dataset Note...</a>
                 <a class=:drop" onclick="wsCreate();"
                     >Create workspace...</a>''',
             file = output)
