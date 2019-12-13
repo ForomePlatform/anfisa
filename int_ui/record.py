@@ -68,7 +68,7 @@ def reportWsRecord(output, workspace, rec_no, details, port):
     print('</html>', file = output)
 
 #===============================================
-def reportXlRecord(output, dataset, rec_no):
+def reportDsRecord(output, dataset, rec_no):
     startHtmlPage(output,
         css_files = ["base.css", "a_rec.css"],
         js_files = ["xl_rec.js"])
@@ -78,7 +78,7 @@ def reportXlRecord(output, dataset, rec_no):
     print('<span id="img-wrap" onclick="tabCfgChange();">'
         '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
         file = output)
-    asp_data_seq = dataset.getViewRepr(rec_no, True)
+    asp_data_seq = dataset.getViewRepr(rec_no, None)
     for asp_data in asp_data_seq:
         print('<button class="r-tablnk %s" id="la--%s" '
             'onclick="pickAspect(\'%s\')">%s</button>' %

@@ -25,27 +25,32 @@ from xml.sax.saxutils import escape
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 #===============================================
-class XlListTask(ExecutionTask):
+class RecListTask(ExecutionTask):
 
     sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
     sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
     sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
 
-    def __init__(self, dataset, condition):
+    def __init__(self, dataset, condition, rest_backup_records = False):
         ExecutionTask.__init__(self, "Prepare variants...")
         self.mDS = dataset
         self.mCondition = condition
+        self.mRestBackRec = rest_backup_records
 
     def execIt(self):
-        rec_no_seq = self.mDS.evalSampleList(
-            self.mCondition, self.sViewCountFull + 5)
-        if len(rec_no_seq) > self.sViewCountFull:
-            rec_no_seq = rec_no_seq[:self.sViewCountSamples]
-            q_samples, q_full = True, False
-        elif len(rec_no_seq) <= self.sViewMinSamples:
+        if self.mDS.getDSKind() == "ws":
             q_samples, q_full = False, True
+            rec_no_seq = self.mDS.evalRecSeq(self.mCondition)
         else:
-            q_samples, q_full = True, True
+            rec_no_seq = self.mDS.evalSampleList(
+                self.mCondition, self.sViewCountFull + 5)
+            if len(rec_no_seq) > self.sViewCountFull:
+                rec_no_seq = rec_no_seq[:self.sViewCountSamples]
+                q_samples, q_full = True, False
+            elif len(rec_no_seq) <= self.sViewMinSamples:
+                q_samples, q_full = False, True
+            else:
+                q_samples, q_full = True, True
 
         total = self.mDS.getTotal()
         step_cnt = total // 100
@@ -65,16 +70,21 @@ class XlListTask(ExecutionTask):
                 if rec_no not in rec_no_dict:
                     continue
                 pre_data = json.loads(line.strip())
-                rec_no_dict[rec_no] = [rec_no,
-                    escape(pre_data.get("_label")),
-                    AnfisaConfig.normalizeColorCode(pre_data.get("_color"))]
+                rec_no_dict[rec_no] = {
+                    "no": rec_no,
+                    "lb": escape(pre_data.get("_label")),
+                    "cl": AnfisaConfig.normalizeColorCode(pre_data.get("_color"))}
         self.setStatus("Finishing")
         ret = dict()
         if q_samples:
             ret["samples"] = [rec_no_dict[rec_no]
                 for rec_no in rec_no_seq[:self.sViewCountSamples]]
+            if self.mRestBackRec:
+                ret["samples"] = self.mDS._REST_BackupRecords(ret["samples"])
         if q_full:
             ret["records"] = [rec_no_dict[rec_no]
                 for rec_no in sorted(rec_no_seq)]
+            if self.mRestBackRec:
+                ret["records"] = self.mDS._REST_BackupRecords(ret["records"])
         self.setStatus("Done")
         return ret

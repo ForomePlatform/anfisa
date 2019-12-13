@@ -25,7 +25,7 @@ from utils.log_err import logException
 from .gen_html import formWsPage, noRecords, dirPage, notFound
 from .html_xl import formXLPage
 from .html_dtree import formDTreePage
-from .record import reportWsRecord, reportXlRecord
+from .record import reportWsRecord, reportDsRecord
 from .doc_nav import formDocNavigationPage
 #===============================================
 class IntUI:
@@ -78,12 +78,12 @@ class IntUI:
                     rq_args.get("details"), rq_args.get("port"))
                 return serv_h.makeResponse(content = output.getvalue())
 
-        if rq_path == "/xl_rec":
-            dataset = data_vault.getDS(rq_args["ds"], "xl")
+        if rq_path == "/ds_rec":
+            dataset = data_vault.getDS(rq_args["ds"])
             rec_no = int(rq_args.get("rec"))
             if dataset:
                 output = StringIO()
-                reportXlRecord(output, dataset, rec_no)
+                reportDsRecord(output, dataset, rec_no)
                 return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/dir":

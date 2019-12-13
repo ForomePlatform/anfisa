@@ -69,7 +69,7 @@ var sSubVRecH = {
             this.mDivMod.style.visibility = "visible";
         } else {
             this.mTaskId = null;
-            ajaxCall("xl_list", sUnitsH.getRqArgs(), 
+            ajaxCall("ds_list", sUnitsH.getRqArgs(), 
                 function(info){sSubVRecH._setupTask(info);})
         }
         sViewH.modalOn(this.mDivBack);
@@ -141,7 +141,7 @@ var sSubVRecH = {
         var records = this.mInfo[["records", "samples"][mode]];
         var v_prefix = ["N-", "S-"][mode];
         for (var idx = 0; idx < records.length; idx++) {
-            color  = records[idx][2];
+            color  = records[idx]["cl"];
             list_rep.push('<div id="sub-li--' + idx + '" class="' + 
                 'rec-label ' + color + '" onclick="sSubVRecH.selectRec(' + idx + ');">' + 
                 v_prefix  + (idx + 1) + '</div>');
@@ -162,11 +162,11 @@ var sSubVRecH = {
         this.mCurRecIdx = rec_idx;
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
         new_rec_el.className = new_rec_el.className + " press";
-        var info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
-        this.mSpanRecTitle.innerHTML = info[1];
+        var rec_info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
+        this.mSpanRecTitle.innerHTML = rec_info["lb"];
         softScroll(new_rec_el);
         window.frames['rec-frame1'].location.replace(
-            "xl_rec?ds=" + sDSName + "&rec=" + info[0]);
+            "ds_rec?ds=" + sDSName + "&rec=" + rec_info["no"]);
     },
     
     onKey: function(event_key) {

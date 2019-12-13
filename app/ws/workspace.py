@@ -114,15 +114,17 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
-    def _reportListKeys(self, rec_no_seq, rec_it_map_seq):
+    def reportRecords(self, rec_no_seq, rec_it_map_seq):
         marked_set = self.mTagsMan.getMarkedSet()
-        ret = []
+        ret_handle = []
         for idx, rec_no in enumerate(rec_no_seq):
-            ret.append([rec_no, escape(self.mTabRecLabel[rec_no]),
-                AnfisaConfig.normalizeColorCode(self.mTabRecColor[rec_no]),
-                rec_no in marked_set,
-                rec_it_map_seq[idx].to01()])
-        return ret
+            ret_handle.append({
+                "no": rec_no,
+                "lb": escape(self.mTabRecLabel[rec_no]),
+                "cl": AnfisaConfig.normalizeColorCode(self.mTabRecColor[rec_no]),
+                "mr": rec_no in marked_set,
+                "dt": rec_it_map_seq[idx].to01()})
+        return ret_handle
 
     def _reportCounts(self, condition):
         count, count_items, total_items = condition.getAllCounts()
@@ -136,7 +138,7 @@ class Workspace(DataSet):
             "total": self.getTotal(),
             "transcripts": counts_transctipts,
             "filtered": len(rec_no_seq)}
-        rep["records"] = self._reportListKeys(rec_no_seq, rec_it_map_seq)
+        rep["records"] = self.reportRecords(rec_no_seq, rec_it_map_seq)
         return rep
 
     def getRecKey(self, rec_no):
@@ -198,8 +200,11 @@ class Workspace(DataSet):
             rec_no_seq.append(rec_no)
             rec_it_map_seq.append(rec_it_map)
             count_transctipts += rec_it_map.count()
-        return self.reportList(rec_no_seq, rec_it_map_seq,
+        ret_handle = self.reportList(rec_no_seq, rec_it_map_seq,
             [count_transctipts, self.mCondEnv.getTotalCount()])
+        if self._REST_NeedsBackup(rq_args, 'R'):
+            ret_handle["records"] = self._REST_BackupRecords(ret_handle["records"])
+        return ret_handle
 
     #===============================================
     @RestAPI.ws_request

@@ -84,16 +84,13 @@ function refreshRecList() {
     sViewRecNoSeq = [];
     var rep = [];
     for (rec_no = 0; rec_no < sRecList.length; rec_no++) {
-        rec_id = sRecList[rec_no][0];
-        label  = sRecList[rec_no][1];
-        color  = sRecList[rec_no][2];
-        marked = sRecList[rec_no][3];
-        class_name = 'rec-label ' + color;
-        if (marked) 
+        rinfo = sRecList[rec_no];
+        class_name = 'rec-label ' + rinfo["cl"];
+        if (rinfo["mr"]) 
             class_name += ' marked';
-        sViewRecNoSeq.push(rec_id);
-        rep.push('<div id="li--' + rec_id + '" class="' + class_name + 
-            '" onclick="changeRec(' + rec_no + ');">' + label + '</div>');
+        sViewRecNoSeq.push(rinfo["no"]);
+        rep.push('<div id="li--' + rinfo["no"] + '" class="' + class_name + 
+            '" onclick="changeRec(' + rec_no + ');">' + rinfo["lb"] + '</div>');
     }
     document.getElementById("rec-list").innerHTML = rep.join('\n');
     if (sViewRecNoSeq.length == 0) {
@@ -138,10 +135,12 @@ function changeRec(rec_no) {
     sCurRecID = sViewRecNoSeq[sCurRecNo];
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
-    window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName + 
-        "&rec=" + sCurRecID + "&port=1" + "&details=" + sRecList[sCurRecNo][4]);
+    window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName +
+        "&rec=" + sCurRecID + "&port=1" + 
+        "&details=" + sRecList[sCurRecNo]["dt"]);
     window.frames['rec-frame2'].location.replace("rec?ds=" + sDSName + 
-        "&rec=" + sCurRecID + "&port=2" + "&details=" + sRecList[sCurRecNo][4]);
+        "&rec=" + sCurRecID + "&port=2" + 
+        "&details=" + sRecList[sCurRecNo]["dt"]);
     updateTagNavigation();
 }
 

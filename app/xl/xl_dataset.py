@@ -21,11 +21,9 @@
 from time import time
 
 from app.config.a_config import AnfisaConfig
-from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 from .xl_cond import XL_CondEnv
 from .xl_unit import XL_Unit
-from .xl_list import XlListTask
 #===============================================
 class XLDataset(DataSet):
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
@@ -175,14 +173,3 @@ class XLDataset(DataSet):
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         return self.evalRecSeq(condition, rec_count)
 
-    #===============================================
-    @RestAPI.xl_request
-    def rq__xl_list(self, rq_args):
-        if "dtree" in rq_args or "code" in rq_args:
-            flt_base_h = self._getArgDTree(rq_args)
-            condition = flt_base_h.getActualCondition(int(rq_args["no"]))
-        else:
-            flt_base_h = self._getArgCondFilter(rq_args)
-            condition = flt_base_h.getCondition()
-        return {"task_id": self.getApp().runTask(
-            XlListTask(self, condition))}

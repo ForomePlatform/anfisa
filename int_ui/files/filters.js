@@ -816,7 +816,7 @@ var sFiltersH = {
         if (cur_filter == "" ||  this.mOpList.indexOf(cur_filter) < 0)
             return;
         sUnitsH.setup(sConditionsH.getConditions(), "",
-            ["instr", "DELETE/" + this.mInpName.value]);
+            ["instr", JSON.stringify(["DELETE", this.mInpName.value])]);
     },
 
     action: function() {
@@ -830,13 +830,13 @@ var sFiltersH = {
             case "create":
                 if (!q_all && checkIdentifier(filter_name)) {
                     sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
-                        ["instr", "UPDATE/" + filter_name]);
+                        ["instr", JSON.stringify(["UPDATE", filter_name])]);
                 }
                 break;
             case "modify":
                 if (q_op && filter_name != cur_filter) {
                     sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
-                        ["instr", "UPDATE/" + filter_name]);
+                        ["instr", JSON.stringify(["UPDATE", filter_name])]);
                 }
                 break;
             case "load":

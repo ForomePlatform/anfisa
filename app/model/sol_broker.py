@@ -197,7 +197,7 @@ class _SolutionKindHandler:
         return ret_handle
 
     def modifySolEntry(self, instr, entry_data):
-        option, _, name = instr.partition('/')
+        option, name = instr
         assert (name and not name.startswith(self.sStdFMark)
             and name[0].isalpha() and ' ' not in name)
         return self.mBroker.getSolSpace().modifyEntry(

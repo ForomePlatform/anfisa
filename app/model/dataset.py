@@ -36,6 +36,7 @@ from .sol_broker import SolutionBroker
 from .family import FamilyInfo
 from .rest_api import RestAPI
 from .comp_hets import CompHetsOperativeUnit
+from .rec_list import RecListTask
 #===============================================
 class DataSet(SolutionBroker):
     sStatRqCount = 0
@@ -333,6 +334,20 @@ class DataSet(SolutionBroker):
         return str(self.sStatRqCount) + '/' + str(time())
 
     #===============================================
+    @classmethod
+    def _REST_NeedsBackup(cls, rq_args, key):
+        backup_mode = rq_args.get("back", "").upper()
+        return key in backup_mode
+
+    @classmethod
+    def _REST_BackupRecords(cls, record_info_seq):
+        ret_handle = []
+        for idx, rinfo in enumerate(record_info_seq):
+            ret_handle.append([rinfo.get(key) for key in ("no", "lb", "cl", "mr", "dt")])
+        return ret_handle
+
+
+    #===============================================
     @RestAPI.ds_request
     def rq__stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
@@ -340,7 +355,7 @@ class DataSet(SolutionBroker):
         if "instr" in rq_args:
             filter_proc_h = self._getArgCondFilter(
                 rq_args, activate_it = False)
-            if not self.modifySolEntry("filter", rq_args["instr"],
+            if not self.modifySolEntry("filter", json.loads(rq_args["instr"]),
                     filter_proc_h.getCondData()):
                 assert False
         filter_h = self._getArgCondFilter(rq_args)
@@ -396,16 +411,19 @@ class DataSet(SolutionBroker):
     def rq__dtree_set(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
 
-        if "instr" in rq_args:
+        instr = rq_args.get("instr")
+        if instr is not None:
+            instr = json.loads(instr)
+        if instr and instr[0] != "EDIT":
             dtree_proc_h = self._getArgDTree(
                 rq_args, activate_it = False)
-            if not self.modifySolEntry("dtree", rq_args["instr"],
+            if not self.modifySolEntry("dtree", instr,
                     dtree_proc_h.getCode()):
                 assert False
         dtree_h = None
-        if "modify" in rq_args:
+        if instr and instr[0] == "EDIT":
             parsed = ParsedDTree(self.getCondEnv(), rq_args["code"])
-            dtree_code = parsed.modifyCode(json.loads(rq_args["modify"]))
+            dtree_code = parsed.modifyCode(instr[1:])
             dtree_h = FilterDTree(self.getCondEnv(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {
@@ -493,6 +511,19 @@ class DataSet(SolutionBroker):
         task = SecondaryWsCreation(self, rq_args["ws"], flt_base_h,
             force_mode = "force" in rq_args)
         return {"task_id": self.getApp().runTask(task)}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__ds_list(self, rq_args):
+        if "dtree" in rq_args or "code" in rq_args:
+            flt_base_h = self._getArgDTree(rq_args)
+            condition = flt_base_h.getActualCondition(int(rq_args["no"]))
+        else:
+            flt_base_h = self._getArgCondFilter(rq_args)
+            condition = flt_base_h.getCondition()
+        return {"task_id": self.getApp().runTask(
+            RecListTask(self, condition,
+                self._REST_NeedsBackup(rq_args, 'R')))}
 
     #===============================================
     @RestAPI.ds_request

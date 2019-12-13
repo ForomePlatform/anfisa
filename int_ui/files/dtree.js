@@ -63,8 +63,8 @@ var sDecisionTree = {
         if (tree_code != false)
             args += "&code=" + encodeURIComponent(tree_code);
         if (options) {
-            for (j=0; j < 3; j++) {
-                var opt_key = ["dtree", "instr", "modify"][j];
+            for (j=0; j < 2; j++) {
+                var opt_key = ["dtree", "instr"][j];
                 if (options[opt_key])
                     args += "&" + opt_key + "=" + encodeURIComponent(options[opt_key]);
             }
@@ -285,8 +285,8 @@ var sDecisionTree = {
     
     editMarkCond: function(new_cond) {
         if (this.mMarkLoc != null)
-            this.setup(true, {"modify": 
-                JSON.stringify(["mark", this.mMarkLoc, new_cond])});
+            this.setup(true, {"instr": 
+                JSON.stringify(["EDIT", "mark", this.mMarkLoc, new_cond])});
     },
     
     getAcceptedCount: function() {
@@ -765,7 +765,7 @@ var sDTreesH = {
                 this.mOpList.indexOf(this.mCurDTreeName) < 0)
             return;
         sDecisionTree.setup(true, 
-            {"instr": "DELETE/" + this.mCurDTreeName});
+            {"instr": JSON.stringify(["DELETE", this.mCurDTreeName])});
     },
 
     action: function() {
@@ -778,13 +778,13 @@ var sDTreesH = {
             case "create":
                 if (!q_all && checkIdentifier(dtree_name)) {
                     sDecisionTree.setup(true,
-                        {"instr": "UPDATE/" + dtree_name});
+                        {"instr": JSON.stringify(["UPDATE", dtree_name])});
                 }
                 break;
             case "modify":
                 if (q_op && dtree_name != this.mCurDTreeName) {
                     sDecisionTree.setup(true,
-                        {"instr": "UPDATE/" + dtree_name});
+                        {"instr": JSON.stringify(["UPDATE", dtree_name])});
                 }
                 break;
             case "load":
