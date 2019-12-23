@@ -60,8 +60,7 @@ def _formDTreePanel(output, ds_h):
                 <a class="drop" onclick="openNote();"
                     >Dataset Note...</a>
                 <a class=:drop" onclick="wsCreate();"
-                    >Create workspace...</a>''',
-            file = output)
+                    >Create workspace...</a>''', file = output)
     print('''
             </div>
           </div>&emsp;
@@ -135,14 +134,19 @@ def _formCurCondDiv(output):
         <div id="condition-change">
             <div id="cond-title-wrap">
                 <span id="cond-title"></span>
-                <span class="close-it" onclick="modalOff();">&times;</span>
+                <span class="close-it"
+                    onclick="sViewH.modalOff();">&times;</span>
             </div>
             <div id="cond-message"></div>
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-sign"></span>
+              <span id="cond-min-sign" class="num-sign"
+                    onclick="sOpNumH.switchSign(0);"></span>
+              <span id="cond-num-value">...</span>
+              <span id="cond-max-sign" class="num-sign"
+                    onclick="sOpNumH.switchSign(1);"></span>
               <input id="cond-max-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
               <span id="cond-max" class="num-set"></span>
@@ -183,7 +187,7 @@ def _formCurCondDiv(output):
                 <button id="cond-button-set" onclick="fixMark();">
                     Set
                 </button>
-                <button onclick="modalOff();">
+                <button onclick="sViewH.modalOff();">
                     Cancel
                 </button>
             </div>
@@ -198,7 +202,8 @@ def _formCmpCodeDiv(output):
       <div id="cmp-code-mod">
         <div id="cmp-code-title">
             Compare decision trees
-              <span class="close-it" onclick="modalOff();">&times;</span>
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
         </div>
         <div id="cmp-code-main">
             <div id="cmp-code-list-wrap">
@@ -209,7 +214,7 @@ def _formCmpCodeDiv(output):
             </div>
         </div>
         <div id="cmp-code-ctrl">
-            <button class="action" onclick="modalOff();">
+            <button class="action" onclick="sViewH.modalOff();">
                 Done
             </button>
             <button id="btn-version-select" class="action"

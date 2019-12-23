@@ -24,31 +24,21 @@ from array import array
 from bitarray import bitarray
 
 from utils.variants import VariantSet
-from app.filter.unit import Unit
-from app.model.zygosity import ZygosityComplex
+from app.eval.var_unit import (VarUnit, NumUnitSupport, EnumUnitSupport,
+    ReservedNumUnit)
 from .val_stat import NumDiapStat, EnumStat
 #===============================================
-class WS_Unit(Unit):
-    def __init__(self, ds_h, unit_data, unit_kind = None):
-        Unit.__init__(self, unit_data, unit_kind)
+class WS_Unit(VarUnit):
+    def __init__(self, eval_space, unit_data, unit_kind = None):
+        VarUnit.__init__(self, eval_space, unit_data, unit_kind)
         self.mExtractor = None
-        self.mDS = ds_h
-
-    def getDS(self):
-        return self.mDS
-
-    def getCondEnv(self):
-        return self.mDS.getCondEnv()
-
-    def isDetailed(self):
-        return False
 
     @abc.abstractmethod
     def getRecVal(self, rec_no):
         return None
 
     @abc.abstractmethod
-    def makeStat(self, condition, repr_context = None):
+    def makeStat(self, condition, repr_context):
         return None
 
     @abc.abstractmethod
@@ -56,38 +46,31 @@ class WS_Unit(Unit):
         assert False
 
 #===============================================
-class NumericValueUnit(WS_Unit):
-    def __init__(self, ds_h, unit_data):
-        WS_Unit.__init__(self, ds_h, unit_data,
-            "float" if unit_data["kind"] == "float" else "int")
+class NumericValueUnit(WS_Unit, NumUnitSupport):
+    def __init__(self, eval_space, unit_data):
+        WS_Unit.__init__(self, eval_space, unit_data, "numeric")
         self._setScreened(self.getDescr()["min"] is None)
-        self.mArray = array("d" if unit_data["kind"] == "float" else "q")
-        self.getCondEnv().addNumUnit(self)
+        self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
     def getRecVal(self, rec_no):
         return self.mArray[rec_no]
 
-    def makeStat(self, condition, repr_context = None):
-        stat = NumDiapStat()
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
-            stat.regValue(self.mArray[rec_no])
-        ret = self.prepareStat() + stat.result()
-        return ret
+            num_stat.regValue(self.mArray[rec_no])
+        num_stat.reportResult(ret_handle)
+        return ret_handle
 
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no
         self.mArray.append(inp_data.get(self.getName()))
 
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "numeric"
-        assert cond_info[1] == self.getName()
-        bounds, use_undef = cond_info[2:]
-        return self.getCondEnv().makeNumericCond(self, bounds, use_undef)
-
 #===============================================
-class _EnumUnit(WS_Unit):
-    def __init__(self, ds_h, unit_data, unit_kind):
-        WS_Unit.__init__(self, ds_h, unit_data, unit_kind)
+class _EnumUnit(WS_Unit, EnumUnitSupport):
+    def __init__(self, eval_space, unit_data):
+        WS_Unit.__init__(self, eval_space, unit_data)
         variants_info = self.getDescr().get("variants")
         if variants_info is None:
             self._setScreened()
@@ -97,7 +80,6 @@ class _EnumUnit(WS_Unit):
                 [info[0] for info in variants_info])
             self._setScreened(
                 sum(info[1] for info in variants_info) == 0)
-        self.getCondEnv().addEnumUnit(self)
 
     def getVariantSet(self):
         return self.mVariantSet
@@ -105,23 +87,18 @@ class _EnumUnit(WS_Unit):
     def getVariantList(self):
         return list(iter(self.mVariantSet))
 
-    def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet)
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        enum_stat = EnumStat(self.mVariantSet)
         for rec_no, _ in condition.iterSelection():
-            stat.regValues(self.getRecVal((rec_no)))
-        return self.prepareStat() + stat.result()
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "enum"
-        assert cond_info[1] == self.getName()
-        filter_mode, variants = cond_info[2:]
-        return self.getCondEnv().makeEnumCond(
-            self, variants, filter_mode)
+            enum_stat.regValues(self.getRecVal((rec_no)))
+        enum_stat.reportResult(ret_handle)
+        return ret_handle
 
 #===============================================
 class StatusUnit(_EnumUnit):
-    def __init__(self, ds_h, unit_data):
-        _EnumUnit.__init__(self, ds_h, unit_data, "status")
+    def __init__(self, eval_space, unit_data):
+        _EnumUnit.__init__(self, eval_space, unit_data)
         self.mArray = array('L')
 
     def getRecVal(self, rec_no):
@@ -134,8 +111,8 @@ class StatusUnit(_EnumUnit):
 
 #===============================================
 class MultiSetUnit(_EnumUnit):
-    def __init__(self, ds_h, unit_data):
-        _EnumUnit.__init__(self, ds_h, unit_data, "enum")
+    def __init__(self, eval_space, unit_data):
+        _EnumUnit.__init__(self, eval_space, unit_data)
         self.mArraySeq = [bitarray()
             for var in iter(self.mVariantSet)]
 
@@ -160,8 +137,8 @@ class MultiSetUnit(_EnumUnit):
 
 #===============================================
 class MultiCompactUnit(_EnumUnit):
-    def __init__(self, ds_h, unit_data):
-        _EnumUnit.__init__(self, ds_h, unit_data, "enum")
+    def __init__(self, eval_space, unit_data):
+        _EnumUnit.__init__(self, eval_space, unit_data)
         self.mArray = array('L')
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
@@ -189,45 +166,9 @@ class MultiCompactUnit(_EnumUnit):
         self.mArray.append(idx)
 
 #===============================================
-class ZygosityComplexUnit(WS_Unit, ZygosityComplex):
-    def __init__(self, ds_h, unit_data):
-        WS_Unit.__init__(self, ds_h, unit_data, "zygosity")
-        ZygosityComplex.__init__(self,
-            ds_h.getFamilyInfo(), unit_data)
-        self.mArrayFam = []
-        fam_units = []
-        for idx, fam_name in enumerate(self.iterFamNames()):
-            self.mArrayFam.append(array('b'))
-            fam_units.append(
-                self.getCondEnv().addMetaNumUnit(
-                    fam_name, self.getFamRecFunc(idx)))
-        self.setupSubUnits(fam_units)
-        self.getCondEnv().addSpecialUnit(self)
-
-    def getFamRecFunc(self, idx):
-        return lambda rec_no: self.mArrayFam[idx][rec_no]
-
-    def setup(self):
-        self.setupXCond()
-
-    def getRecVal(self, idx):
-        assert False
-
-    def isOK(self):
-        return self.mIsOK
-
-    def fillRecord(self, inp_data, rec_no):
-        for idx, fam_name in enumerate(self.iterFamNames()):
-            self.mArrayFam[idx].append(inp_data.get(fam_name))
-
-    def makeStat(self, condition, repr_context = None):
-        return ZygosityComplex.makeStat(self, self.getDS(),
-            condition, repr_context)
-
-#===============================================
-class TranscriptStatusUnit(WS_Unit):
-    def __init__(self, ds_h, unit_data):
-        WS_Unit.__init__(self, ds_h, unit_data, "transcript-status")
+class TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
+    def __init__(self, eval_space, unit_data):
+        WS_Unit.__init__(self, eval_space, unit_data, "transcript")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -236,7 +177,6 @@ class TranscriptStatusUnit(WS_Unit):
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
-        self.getCondEnv().addEnumUnit(self)
 
     def isDetailed(self):
         return True
@@ -255,32 +195,25 @@ class TranscriptStatusUnit(WS_Unit):
             self.mArray.extend([self.mVariantSet.indexOf(value)
                 for value in values])
 
-    def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet, detailed = True)
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
-            stat.regValues([self.mArray[it_idx]], group_no = group_no)
-        ret = self.prepareStat()
-        ret[1]["detailed"] = True
-        return ret + stat.result()
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "enum"
-        assert cond_info[1] == self.getName()
-        filter_mode, variants = cond_info[2:]
-        return self.getCondEnv().makeEnumCond(
-            self, variants, filter_mode)
+            enum_stat.regValues([self.mArray[it_idx]], group_no = group_no)
+        enum_stat.reportResult(ret_handle)
+        ret_handle["detailed"] = True
+        return ret_handle
 
 #===============================================
-class TranscriptMultisetUnit(WS_Unit):
-    def __init__(self, ds_h, unit_data):
-        WS_Unit.__init__(self, ds_h, unit_data, "transcript-multiset")
+class TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
+    def __init__(self, eval_space, unit_data):
+        WS_Unit.__init__(self, eval_space, unit_data, "transcript")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
-        self.getCondEnv().addEnumUnit(self)
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
 
@@ -314,37 +247,41 @@ class TranscriptMultisetUnit(WS_Unit):
             for values in seq:
                 self._fillOne(values)
 
-    def makeStat(self, condition, repr_context = None):
-        stat = EnumStat(self.mVariantSet, detailed = True)
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
-            stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],
+            enum_stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],
                 group_no = group_no)
-        ret = self.prepareStat()
-        ret[1]["detailed"] = True
-        return ret + stat.result()
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "enum"
-        assert cond_info[1] == self.getName()
-        filter_mode, variants = cond_info[2:]
-        return self.getCondEnv().makeEnumCond(
-            self, variants, filter_mode)
+        enum_stat.reportResult(ret_handle)
+        ret_handle["detailed"] = True
+        return ret_handle
 
 #===============================================
-def loadWS_Unit(ds_h, unit_data):
+def loadWS_Unit(eval_space, unit_data):
     kind = unit_data["kind"]
-    if kind == "zygosity":
-        ret = ZygosityComplexUnit(ds_h, unit_data)
-        return ret if ret.isOK() else None
-    if kind == "transcript-status":
-        return TranscriptStatusUnit(ds_h, unit_data)
-    if kind == "transcript-multiset":
-        return TranscriptMultisetUnit(ds_h, unit_data)
-    if kind in ("long", "float"):
-        return NumericValueUnit(ds_h, unit_data)
-    assert kind in ("enum", "presence")
-    if kind == "enum" and unit_data["atomic"]:
-        return StatusUnit(ds_h, unit_data)
-    if kind == "enum" and unit_data["compact"]:
-        return MultiCompactUnit(ds_h, unit_data)
-    return MultiSetUnit(ds_h, unit_data)
+    if kind == "transcript":
+        if unit_data["sub-kind"] == "status":
+            return TranscriptStatusUnit(eval_space, unit_data)
+        else:
+            return TranscriptMultisetUnit(eval_space, unit_data)
+    if kind == "numeric":
+        return NumericValueUnit(eval_space, unit_data)
+    assert kind == "enum", "Bad kind: " + kind
+    if unit_data["sub-kind"] == "status":
+        return StatusUnit(eval_space, unit_data)
+    if kind == "enum" and unit_data.get("compact"):
+        return MultiCompactUnit(eval_space, unit_data)
+    return MultiSetUnit(eval_space, unit_data)
+
+#===============================================
+class WS_ReservedNumUnit(ReservedNumUnit):
+    def __init__(self, eval_space, name, rec_func, sub_kind = "int"):
+        ReservedNumUnit.__init__(self, eval_space, name, sub_kind)
+        self.mRecFunc = rec_func
+
+    def getRecVal(self, rec_no):
+        return self.mRecFunc(rec_no)
+
+    def isDetailed(self):
+        return False

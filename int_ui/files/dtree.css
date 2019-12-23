@@ -254,6 +254,28 @@ input.num-inp {
     width: 100px;
 }
 
+span.num-sign {
+    width: 25px;
+    height: 18px;
+    border: 1px dotted grey;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+span.num-sign-disabled {
+    width: 25px;
+    height: 18px;
+    border: 1px dotted grey;
+    color: grey;
+    font-weight: normal;
+}
+
+span#cond-num-value {
+    color: grey;
+    font-weight: bold;
+    width: 30px;
+}
+
 div#cond-list {
     margin: 0px;
     padding: 0px;

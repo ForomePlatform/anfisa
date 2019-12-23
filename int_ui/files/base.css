@@ -181,6 +181,10 @@ div#wait {
     background-color: #E0E0E0;
 }
 
+div.comment {
+    font-style: italic;
+}
+
 /****************************************/
 span#control-open {
     border: 1px solid white;

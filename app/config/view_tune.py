@@ -23,17 +23,6 @@
 from app.view.attr import AttrH
 
 #===============================================
-def _resetupAttr(aspect_h, attr_h):
-    idx1 = aspect_h.find(attr_h.getName().lower())
-    idx2 = aspect_h.find(attr_h.getName())
-    if idx1 >= 0:
-        aspect_h.delAttr(aspect_h[idx1])
-    if idx2 >= 0:
-        aspect_h.delAttr(aspect_h[idx2])
-    aspect_h.addAttr(attr_h, min(idx1, idx2)
-        if min(idx1, idx2) >= 0 else max(idx1, idx2))
-
-#===============================================
 def tuneAspects(dataset, aspects):
     view_gen = aspects["view_gen"]
     view_db = aspects["view_db"]
@@ -50,6 +39,17 @@ def tuneAspects(dataset, aspects):
     samples = dataset.getDataInfo()["meta"].get("samples")
     _resetupAttr(view_gen,
         IGV_AttrH(dataset.getApp(), view_gen, case, samples))
+
+#===============================================
+def _resetupAttr(aspect_h, attr_h):
+    idx1 = aspect_h.find(attr_h.getName().lower())
+    idx2 = aspect_h.find(attr_h.getName())
+    if idx1 >= 0:
+        aspect_h.delAttr(aspect_h[idx1])
+    if idx2 >= 0:
+        aspect_h.delAttr(aspect_h[idx2])
+    aspect_h.addAttr(attr_h, min(idx1, idx2)
+        if min(idx1, idx2) >= 0 else max(idx1, idx2))
 
 #===============================================
 class UCSC_AttrH(AttrH):

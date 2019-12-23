@@ -44,7 +44,7 @@ class FamilyInfo:
             self.mNames.append(it["name"])
             self.mIdMap[it["id"]] = idx
             if it["affected"]:
-                self.mAffectedGroup.append(idx)
+                self.mAffectedGroup.append(it["id"])
             if it["sex"] == 1:
                 self.mMaleSet.add(idx)
         self.mTrioSeq = []
@@ -82,6 +82,9 @@ class FamilyInfo:
     def iterIds(self):
         return iter(self.mIds)
 
+    def getIdSet(self):
+        return set(self.mIds)
+
     def getNames(self):
         return self.mNames
 
@@ -104,3 +107,13 @@ class FamilyInfo:
         if self.mCohortMap is not None:
             return self.mCohortMap.get(it_id)
         return None
+
+    def ids2idxset(self, ids):
+        if not ids:
+            return ids
+        return sorted({self.mIdMap[id] for id in ids})
+
+    def idxset2ids(self, idx_set):
+        if not idx_set:
+            return idx_set
+        return sorted({self.mIds[idx] for idx in idx_set})

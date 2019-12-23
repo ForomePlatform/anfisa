@@ -52,6 +52,6 @@ class FilterZoneH(ZoneH):
         return self.mUnit.getVariantList()
 
     def getRestrictF(self, variants):
-        cond = self.getDS().getCondEnv().makeEnumCond(
+        cond = self.getDS().getEvalSpace().makeEnumCond(
             self.mUnit, variants)
         return lambda rec_no: cond.recInSelection(rec_no)

@@ -25,15 +25,8 @@ class NumDiapStat:
     def __init__(self):
         self.mMin, self.mMax = None, None
         self.mCntDef = 0
-        self.mCntUndef = 0
-
-    def isDefined(self):
-        return self.mCntDef > 0
 
     def regValue(self, val):
-        if val is None:
-            self.mCntUndef += 1
-            return
         self.mCntDef += 1
         if self.mCntDef == 1:
             self.mMin = self.mMax = val
@@ -43,8 +36,10 @@ class NumDiapStat:
             elif val > self.mMax:
                 self.mMax = val
 
-    def result(self):
-        return [self.mMin, self.mMax, self.mCntDef, self.mCntUndef]
+    def reportResult(self, ret_handle):
+        ret_handle["min"] = self.mMin
+        ret_handle["max"] = self.mMax
+        ret_handle["count"] = self.mCntDef
 
 #===============================================
 class EnumStat:
@@ -83,7 +78,7 @@ class EnumStat:
             if self.mGroupStat is not None:
                 self.mGroupSet.add(val)
 
-    def result(self):
+    def reportResult(self, ret_handle):
         if self.mGroupStat is not None:
             self.flushGroup()
         rep_list = []
@@ -92,4 +87,4 @@ class EnumStat:
             if self.mGroupStat is not None:
                 info.append(self.mGroupStat.get(idx, 0))
             rep_list.append(info)
-        return [rep_list]
+        ret_handle["variants"] = rep_list

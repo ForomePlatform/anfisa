@@ -19,14 +19,12 @@
 #
 import abc
 from utils.log_err import logException
-from .condition import validateNumCondition, validateEnumCondition
 #===============================================
-class FilterBase:
-    def __init__(self, cond_env,
+class Evaluation:
+    def __init__(self, eval_space,
             updated_time = None, updated_from = None):
-        self.mCondEnv = cond_env
-        self.mCompData = dict()
-        self.mOperativeUnitSeq = []
+        self.mEvalSpace = eval_space
+        self.mImportSupport = dict()
         self.mUpdatedInfo = [updated_time, updated_from]
 
     @abc.abstractmethod
@@ -55,19 +53,14 @@ class FilterBase:
     def reportInfo(self):
         assert False
 
-    def getCondEnv(self):
-        return self.mCondEnv
+    def getEvalSpace(self):
+        return self.mEvalSpace
 
-    def getCompData(self, unit_name):
-        return self.mCompData[unit_name]
+    def getImportSupport(self, unit_name):
+        return self.mImportSupport.get(unit_name)
 
     def getUpdateInfo(self):
         return self.mUpdatedInfo
-
-    def iterActiveOperativeUnits(self, instr_no = None):
-        for unit_instr_no, unit_h in self.mOperativeUnitSeq:
-            if instr_no is None or instr_no >= unit_instr_no:
-                yield unit_h
 
     def validateCondData(self, cond_data, op_units = None):
         try:
@@ -90,75 +83,33 @@ class FilterBase:
             if len(cond_info) != 2:
                 return False
             return self._validateCondData(cond_info[1], op_units)
-        if cond_info[0] == "import":
-            if len(cond_info) != 2:
-                return False
-            unit_name = cond_info[1]
-            if unit_name in op_units:
-                return False
-            _, unit_h = self.mCondEnv.detectUnit(unit_name, "operational")
-            if unit_h is None:
-                return False
-            op_units.add(unit_name)
-            return True
-
-        if len(cond_info) < 2:
-            print("Attn!!!")
-
-        pre_unit_kind, unit_name = cond_info[:2]
-        unit_kind, unit_h = self.mCondEnv.detectUnit(unit_name, pre_unit_kind)
+        unit_h = self.mEvalSpace.getUnit(cond_info[1])
         if unit_h is None:
             return False
-        if unit_kind == "operational":
-            if unit_name not in op_units:
-                return False
-            return unit_h.validateCondition(cond_info)
-        if unit_kind == "reserved":
-            unit_kind = cond_info[0]
-        if unit_kind == "special":
-            return unit_h.validateCondition(cond_info)
-        if cond_info[0] == "numeric":
-            return validateNumCondition(cond_info)
-        if cond_info[0] == "enum":
-            return validateEnumCondition(cond_info)
-        return False
+        return unit_h.validateCondition(cond_info, op_units)
 
     def parseCondData(self, cond_info):
         if len(cond_info) == 0:
-            return self.mCondEnv.getCondAll()
+            return self.mEvalSpace.getCondAll()
         if cond_info[0] is None:
             assert len(cond_info) == 1
-            return self.mCondEnv.getCondNone()
+            return self.mEvalSpace.getCondNone()
         if cond_info[0] == "and":
-            return self.mCondEnv.joinAnd(
+            return self.mEvalSpace.joinAnd(
                 [self.parseCondData(cc) for cc in cond_info[1:]])
         if cond_info[0] == "or":
-            return self.mCondEnv.joinOr(
+            return self.mEvalSpace.joinOr(
                 [self.parseCondData(cc) for cc in cond_info[1:]])
         if cond_info[0] == "not":
             assert len(cond_info) == 2
             return self.parseCondData(cond_info[1]).negative()
 
-        pre_unit_kind, unit_name = cond_info[:2]
-        unit_kind, unit_h = self.mCondEnv.detectUnit(unit_name, pre_unit_kind)
-        if unit_kind == "operational":
-            return unit_h.parseCondition(cond_info,
-                self.mCompData[unit_name])
-        if unit_kind == "reserved":
-            unit_kind = cond_info[0]
-        if unit_kind in {"special", "numeric", "enum"}:
-            return unit_h.parseCondition(cond_info)
-        assert False
-        return self.mCondEnv.getCondNone()
+        unit_h = self.mEvalSpace.getUnit(cond_info[1])
+        return unit_h.parseCondition(cond_info, self)
 
     def importUnit(self, instr_no, unit_name, actual_condition, hash_code):
-        _, unit_h = self.mCondEnv.detectUnit(unit_name, "operational")
-        if unit_h is None:
+        unit_h = self.mEvalSpace.getUnit(unit_name)
+        if unit_h is None or unit_h.getUnitKind() != "operative":
             return False
-        comp_data = self.mCondEnv.getCompCache(unit_name, hash_code)
-        if comp_data is None:
-            comp_data = unit_h.prepareImport(actual_condition)
-            self.mCondEnv.setCompCache(unit_name, hash_code, comp_data)
-        self.mCompData[unit_h.getName()] = comp_data
-        self.mOperativeUnitSeq.append([instr_no, unit_h])
+        self.mImportSupport[unit_name] = (hash_code, actual_condition)
         return True

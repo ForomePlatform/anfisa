@@ -28,7 +28,7 @@ from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
 from app.prepare.v_check import ViewDataChecker
-from app.filter.druid_agent import DruidAgent
+from app.xl.druid_agent import DruidAgent
 from app.view.asp_set import AspectSetH
 from export.excel import ExcelExport
 from int_ui.mirror_dir import MirrorUiDirectory

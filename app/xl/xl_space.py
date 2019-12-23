@@ -18,12 +18,25 @@
 #  limitations under the License.
 #
 
-from app.filter.cond_env import CondEnv
-from app.filter.unit import MetaUnit
+from app.eval.eval_space import EvalSpace
+from app.eval.var_unit import ReservedNumUnit
+from app.eval.condition import ZYG_BOUNDS_VAL
 #===============================================
-class XL_CondEnv(CondEnv):
-    def __init__(self, ds_h):
-        CondEnv.__init__(self, ds_h.getName(), ds_h)
+class XL_EvalSpace(EvalSpace):
+    def __init__(self, ds_h, druid_agent):
+        EvalSpace.__init__(self, ds_h)
+        self.mDruidAgent = druid_agent
+
+        self.mRandRUnit = ReservedNumUnit(self, "_rand")
+        self._addReservedUnit(self.mRandRUnit)
+        self.mOrdRUnit = ReservedNumUnit(self, "_ord")
+        self._addReservedUnit(self.mOrdRUnit)
+        self.mZygRUnits = []
+
+    def _addZygUnit(self, zyg_name):
+        r_unit_h = ReservedNumUnit(self, zyg_name)
+        self.mZygRUnits.append(r_unit_h)
+        self._addReservedUnit(r_unit_h)
 
     def getCondKind(self):
         return "xl"
@@ -37,13 +50,26 @@ class XL_CondEnv(CondEnv):
     def isDetailed(self):
         return False
 
-    def addMetaNumUnit(self, name):
-        unit_h = MetaUnit(name, "num")
-        self.addReservedUnit(unit_h)
-        return unit_h
+    def getDruidAgent(self):
+        return self.mDruidAgent
 
-    def makeNumericCond(self, unit_h, bounds, use_undef = None):
-        return XL_NumCondition(self, unit_h.getName(), bounds, use_undef)
+    def heavyMode(self):
+        return True
+
+    def getZygUnit(self, idx):
+        return self.mZygRUnits[idx]
+
+    def iterZygUnits(self):
+        return iter(self.mZygRUnits)
+
+    def makeNumericCond(self, unit_h, min_val = None, min_eq = True,
+            max_val = None, max_eq = True,  zyg_bounds = None):
+        if min_val is not None or max_val is not None:
+            assert zyg_bounds is None
+        else:
+            min_val, min_eq, max_val, max_eq = ZYG_BOUNDS_VAL[zyg_bounds]
+        return XL_NumCondition(self, unit_h.getName(),
+            [min_val, min_eq, max_val, max_eq])
 
     def makeEnumCond(self, unit_h, variants, filter_mode = ""):
         if len(variants) == 0:
@@ -59,14 +85,108 @@ class XL_CondEnv(CondEnv):
             return cond.negative()
         return cond
 
+    def reportCounts(self, condition):
+        return {"count": self.evalTotalCount(condition)}
+
+    def evalTotalCount(self, condition = None):
+        if condition is None:
+            return self.getDS().getTotal()
+        cond_repr = condition.getDruidRepr()
+        if cond_repr is None:
+            return self.getDS().getTotal()
+        if cond_repr is False:
+            return 0
+        query = {
+            "queryType": "timeseries",
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "descending": "true",
+            "aggregations": [
+                {"type": "count", "name": "count",
+                    "fieldName": "_ord"}],
+            "filter": condition.getDruidRepr(),
+            "intervals": [self.mDruidAgent.INTERVAL]}
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        return ret[0]["result"]["count"]
+
+    def _evalRecSeq(self, condition, expect_count):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
+        query = {
+            "queryType": "search",
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "searchDimensions": ["_ord"],
+            "limit": expect_count + 5,
+            "intervals": [self.mDruidAgent.INTERVAL]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        return [int(it["value"]) for it in ret[0]["result"]]
+
+    def evalRecSeq(self, condition, expect_count):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
+        query = {
+            "queryType": "topN",
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
+            "dimension": "_ord",
+            "threshold": expect_count + 5,
+            "metric": "count",
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "aggregations": [{
+                "type": "count", "name": "count",
+                "fieldName": "_ord"}],
+            "intervals": [self.mDruidAgent.INTERVAL]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        assert len(ret[0]["result"]) == expect_count
+        return [int(it["_ord"]) for it in ret[0]["result"]]
+
+    def evalSampleList(self, condition, max_count):
+        if condition is None:
+            cond_repr = None
+        else:
+            cond_repr = condition.getDruidRepr()
+            if cond_repr is False:
+                return []
+        query = {
+            "queryType": "topN",
+            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
+            "dimension": "_ord",
+            "threshold": max_count,
+            "metric": "max_rand",
+            "granularity": self.mDruidAgent.GRANULARITY,
+            "aggregations": [{
+                "type": "longMax", "name": "max_rand",
+                "fieldName": "_rand"}],
+            "intervals": [self.mDruidAgent.INTERVAL]}
+        if cond_repr is not None:
+            query["filter"] = cond_repr
+        ret = self.mDruidAgent.call("query", query)
+        assert len(ret) == 1
+        return [int(it["_ord"]) for it in ret[0]["result"]]
+
 #===============================================
 class XL_Condition:
-    def __init__(self, cond_env, cond_type):
-        self.mCondEnv = cond_env
+    def __init__(self, eval_space, cond_type):
+        self.mEvalSpace = eval_space
         self.mCondType = cond_type
 
-    def getCondEnv(self):
-        return self.mCondEnv
+    def getEvalSpace(self):
+        return self.mEvalSpace
 
     def getCondType(self):
         return self.mCondType
@@ -108,30 +228,28 @@ class XL_Condition:
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, cond_env, unit_name, bounds, use_undef = False):
-        XL_Condition.__init__(self, cond_env, "num")
+    def __init__(self, eval_space, unit_name, bounds):
+        XL_Condition.__init__(self, eval_space, "numeric")
         self.mUnitName = unit_name
         self.mBounds = bounds
-        self.mUseUndef = use_undef
 
     def getDruidRepr(self):
-        # use_undef ignored
         ret = {
             "dimension": self.mUnitName,
             "type": "bound",
-            "lowerStrict": False,
-            "upperStrict": False,
+            "lowerStrict": not self.mBounds[1],
+            "upperStrict": not self.mBounds[3],
             "ordering": "numeric"}
         if self.mBounds[0] is not None:
             ret["lower"] = str(self.mBounds[0])
-        if self.mBounds[1] is not None:
-            ret["upper"] = str(self.mBounds[1])
+        if self.mBounds[2] is not None:
+            ret["upper"] = str(self.mBounds[2])
         return ret
 
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):
-    def __init__(self, cond_env, unit_name, variant):
-        XL_Condition.__init__(self, cond_env, "enum-single")
+    def __init__(self, eval_space, unit_name, variant):
+        XL_Condition.__init__(self, eval_space, "enum-single")
         self.mUnitName = unit_name
         self.mVariant = variant
 
@@ -143,8 +261,8 @@ class XL_EnumSingleCondition(XL_Condition):
 
 #===============================================
 class XL_EnumInCondition(XL_Condition):
-    def __init__(self, cond_env, unit_name, variants):
-        XL_Condition.__init__(self, cond_env, "enum-in")
+    def __init__(self, eval_space, unit_name, variants):
+        XL_Condition.__init__(self, eval_space, "enum-in")
         self.mUnitName = unit_name
         self.mVariants = sorted(variants)
 
@@ -157,7 +275,7 @@ class XL_EnumInCondition(XL_Condition):
 #===============================================
 class XL_Negation(XL_Condition):
     def __init__(self, base_cond):
-        XL_Condition.__init__(self, base_cond.getCondEnv(), "neg")
+        XL_Condition.__init__(self, base_cond.getEvalSpace(), "neg")
         self.mBaseCond = base_cond
 
     def negative(self):
@@ -171,7 +289,7 @@ class XL_Negation(XL_Condition):
 #===============================================
 class _XL_Joiner(XL_Condition):
     def __init__(self, items, cond_type):
-        XL_Condition.__init__(self, items[0].getCondEnv(), cond_type)
+        XL_Condition.__init__(self, items[0].getEvalSpace(), cond_type)
         self.mItems = items
 
     def getItems(self):
@@ -216,8 +334,8 @@ class XL_Or(_XL_Joiner):
 
 #===============================================
 class XL_None(XL_Condition):
-    def __init__(self, cond_env):
-        XL_Condition.__init__(self, cond_env, "null")
+    def __init__(self, eval_space):
+        XL_Condition.__init__(self, eval_space, "null")
 
     def addAnd(self, other):
         return self
@@ -233,8 +351,8 @@ class XL_None(XL_Condition):
 
 #===============================================
 class XL_All(XL_Condition):
-    def __init__(self, cond_env):
-        XL_Condition.__init__(self, cond_env, "all")
+    def __init__(self, eval_space):
+        XL_Condition.__init__(self, eval_space, "all")
 
     def addAnd(self, other):
         return other

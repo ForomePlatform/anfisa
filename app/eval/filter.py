@@ -22,23 +22,16 @@ import json
 from hashlib import md5
 
 from utils.log_err import logException
-from .filter_base import FilterBase
+from .evaluation import Evaluation
 from .code_repr import formatConditionCode
 
 #===============================================
-class FilterConjunctional(FilterBase):
-
-    @classmethod
-    def buildFlt(cls, cond_env, cond_data, name = None,
+class FilterEval(Evaluation):
+    def __init__(self, eval_space, cond_data, name = None,
             updated_time = None, updated_from = None):
-        return FilterConjunctional(
-            cond_env, cond_data, name, updated_time, updated_from)
-
-    def __init__(self, cond_env, cond_data, name = None,
-            updated_time = None, updated_from = None):
-        FilterBase.__init__(self, cond_env, updated_time, updated_from)
+        Evaluation.__init__(self, eval_space, updated_time, updated_from)
         self.mFilterName = name
-        self.mBadIdxs = []
+        self.mBadIdxs = set()
         self.mCondData = cond_data
         self.mUsedOpUnits = set()
         self.mCondition = None
@@ -46,7 +39,7 @@ class FilterConjunctional(FilterBase):
         for idx, cond_data in enumerate(self.mCondData):
             hash_h.update(bytes(json.dumps(cond_data) + "\n", 'utf-8'))
             if not self.validateCondData(cond_data, self.mUsedOpUnits):
-                self.mBadIdxs.append(idx)
+                self.mBadIdxs.add(idx)
         self.mHashCode = hash_h.hexdigest()
 
     def activate(self):
@@ -60,16 +53,17 @@ class FilterConjunctional(FilterBase):
             hash_h.update(bytes(json.dumps(cond_data) + "\n", 'utf-8'))
             if cond_data[0] == "import":
                 self.importUnit(idx, cond_data[1],
-                    self.getCondEnv().joinAnd(cond_seq),
+                    self.getEvalSpace().joinAnd(cond_seq),
                     hash_h.hexdigest())
                 continue
             try:
                 cond_seq.append(self.parseCondData(cond_data))
             except Exception:
                 logException("Bad instruction after validation: %r, ds=%s"
-                    % (cond_data, self.getCondEnv().getDSName()))
-        with self.getCondEnv().getLocker():
-            self.mCondition = self.getCondEnv().joinAnd(cond_seq)
+                    % (cond_data, self.getEvalSpace().getName()))
+                self.mBadIdxs.add(idx)
+        with self.getEvalSpace().getDS():
+            self.mCondition = self.getEvalSpace().joinAnd(cond_seq)
 
     def getSolKind(self):
         return "filter"
@@ -96,14 +90,7 @@ class FilterConjunctional(FilterBase):
         return self.mCondData
 
     def reportInfo(self):
-        ret_handle = {
+        return {
             "conditions": self.mCondData,
-            "bad-idxs": self.mBadIdxs,
+            "bad-idxs": sorted(self.mBadIdxs),
             "hash": self.mHashCode}
-        names = []
-        for op_unit in self.getCondEnv().iterOpUnits():
-            if op_unit.getName() not in self.mUsedOpUnits:
-                names.append(op_unit.getName())
-        if names:
-            ret_handle["avail-import"] = names
-        return ret_handle

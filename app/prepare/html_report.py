@@ -54,8 +54,15 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
     if date_created == date_loaded:
         date_loaded = None
 
+    use_pygments = False
+    if "receipts" in ds_info:
+        for receipt in ds_info["receipts"]:
+            if receipt.get("kind") == "dtree":
+                use_pygments = True
+                break
+
     startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
-        "receipt" in ds_info and ds_info["receipt"].get("kind") == "dtree")
+        use_pygments)
     print('  <body>', file = output)
     print('    <table class="report-main">', file = output)
 
@@ -93,49 +100,63 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
                 escape(str(versions[name])), file = output)
         print('</table>', file = output)
 
-    if "receipt" in ds_info:
-        receipt = ds_info["receipt"]
-        if receipt["kind"] == "filter":
-            print('<h2>Applied filter</h2>', file = output)
-            if "filter-name" in receipt:
-                print("<p>Filter name:", '<b>' + escape(receipt["filter-name"])
-                    + '</b>', file = output)
-                if "flt-update-info" in receipt:
-                    updated_time, updated_from = receipt["flt-update-info"]
-                    print("updated at", reprDateVal(updated_time),
-                        "from", updated_from, file = output)
-                print("</p>", file = output)
-            print('<table class="report-filter">', file = output)
-            for instr in receipt["seq"]:
-                print('<tr><td>%s</td></tr>' % escape(instr), file = output)
-            print('</table>', file = output)
-        else:
-            assert receipt["kind"] == "dtree"
-            print('<h2>Applied decision tree code</h2>', file = output)
-            if "dtree-name" in receipt:
-                print("<p>Tree name:", '<b>' + escape(receipt["dtree-name"])
-                    + '</b>', file = output)
-                if "flt-update-info" in receipt:
-                    updated_time, updated_from = receipt["flt-update-info"]
-                    print("updated at", reprDateVal(updated_time),
-                        "from", updated_from, file = output)
-                print("</p>", file = output)
-            print('<table class="report-dtree">', file = output)
-            for instr, count, ret_mode in receipt["points"]:
-                print('<tr><td class="dtree-point"><div class="highlight">'
-                    + instr + '</div></td>', file = output)
-                if count is None:
-                    print('<td></td>', file = output)
-                elif ret_mode:
-                    print('<td class="point-ok">+%d</td>' % count,
-                        file = output)
-                elif ret_mode is False:
-                    print('<td class="point-drop">-%d</td>' % count,
-                        file = output)
-                else:
-                    print('<td class="point-ign">%d</td>' % count,
-                        file = output)
-            print('</table>', file = output)
+    if "receipts" in ds_info:
+        for idx, receipt in enumerate(ds_info["receipts"]):
+            _reportReceipt(output, idx, receipt)
 
     print('  </body>', file = output)
     print('</html>', file = output)
+
+#===============================================
+def _reportReceipt(output, idx_receipt, receipt):
+    if idx_receipt == 0:
+        receipt_note = None
+    else:
+        receipt_note = ('<p><i>Dataset previously[%d] selected from %s</i></p>'
+            % (-idx_receipt - 1, receipt["base"]))
+
+    if receipt["kind"] == "filter":
+        print('<h2>Applied filter</h2>', file = output)
+        if receipt_note:
+            print(receipt_note, file = output)
+        if "filter-name" in receipt:
+            print("<p>Filter name:", '<b>' + escape(receipt["filter-name"])
+                + '</b>', file = output)
+            if "eval-update-info" in receipt:
+                updated_time, updated_from = receipt["eval-update-info"]
+                print("updated at", reprDateVal(updated_time),
+                    "from", updated_from, file = output)
+            print("</p>", file = output)
+        print('<table class="report-filter">', file = output)
+        for instr in receipt["seq"]:
+            print('<tr><td>%s</td></tr>' % escape(instr), file = output)
+        print('</table>', file = output)
+    else:
+        assert receipt["kind"] == "dtree"
+        print('<h2>Applied decision tree code</h2>', file = output)
+        if receipt_note:
+            print(receipt_note, file = output)
+        if "dtree-name" in receipt:
+            print("<p>Tree name:", '<b>' + escape(receipt["dtree-name"])
+                + '</b>', file = output)
+            if "eval-update-info" in receipt:
+                updated_time, updated_from = receipt["eval-update-info"]
+                print("updated at", reprDateVal(updated_time),
+                    "from", updated_from, file = output)
+            print("</p>", file = output)
+        print('<table class="report-dtree">', file = output)
+        for instr, count, ret_mode in receipt["points"]:
+            print('<tr><td class="dtree-point"><div class="highlight">'
+                + instr + '</div></td>', file = output)
+            if count is None:
+                print('<td></td>', file = output)
+            elif ret_mode:
+                print('<td class="point-ok">+%d</td>' % count,
+                    file = output)
+            elif ret_mode is False:
+                print('<td class="point-drop">-%d</td>' % count,
+                    file = output)
+            else:
+                print('<td class="point-ign">%d</td>' % count,
+                    file = output)
+        print('</table>', file = output)

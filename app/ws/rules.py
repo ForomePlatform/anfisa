@@ -20,27 +20,22 @@
 
 from utils.variants import VariantSet
 from app.config.a_config import AnfisaConfig
-from app.filter.unit import Unit, ComplexEnumSupport
-from app.filter.condition import validateEnumCondition
+from app.eval.var_unit import ComplexEnumUnit
 #===============================================
-class RulesUnit(Unit, ComplexEnumSupport):
+class RulesUnit(ComplexEnumUnit):
     sSetupData = AnfisaConfig.configOption("rules.setup")
 
-    def __init__(self, ds_h, ):
-        Unit.__init__(self, {
-            "kind": "enum",
+    def __init__(self, ds_h):
+        ComplexEnumUnit.__init__(self, ds_h.getEvalSpace(), {
             "name": self.sSetupData["name"],
+            "sub-kind": "multi",
             "title": self.sSetupData["title"],
             "vgroup": self.sSetupData["vgroup"],
-            "render": self.sSetupData["render"]})
+            "render": self.sSetupData["render"]}, "enum")
         self.mDS = ds_h
-        self.getCondEnv().addEnumUnit(self)
 
-    def getDS(self):
-        return self.mDS
-
-    def getCondEnv(self):
-        return self.mDS.getCondEnv()
+    def isInDTrees(self):
+        return False
 
     def getVariantSet(self):
         return VariantSet([dtree_h.getDTreeName()
@@ -58,19 +53,11 @@ class RulesUnit(Unit, ComplexEnumSupport):
             dtree_h.activate()
             yield dtree_h.getDTreeName(), dtree_h.getFinalCondition()
 
-    def validateCondition(self, cond_data):
-        return validateEnumCondition(cond_data)
+    def locateContext(self, cond_data, eval_h):
+        return None
 
-    def parseCondition(self, cond_data):
-        return self.makeComplexCondition(
-            cond_data[2], cond_data[3])
-
-    def fillRecord(self, inp_data, rec_no):
-        pass
-
-    def makeStat(self, condition, repr_context = None):
-        ret = self.prepareStat()
-        detailed = self.isDetailed()
-        ret.append(self.collectComplexStat(self.mDS, condition,
-            detailed = detailed))
-        return ret
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        self.collectComplexStat(ret_handle, condition,
+            detailed = self.isDetailed())
+        return ret_handle

@@ -79,21 +79,16 @@ sConsequenceVariants = [
 def defineFilterSchema(metadata_record):
     filters = FilterPrepareSetH(metadata_record)
 
+    filters.setupZygosity("_zyg", "/__data/zygosity")
+
     cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):
         if cohorts:
             filters.multiStatusUnit("Variant_in",
                 "/_filters/cohort_has_variant[]")
-        else:
-            filters.statusUnit("Proband_Zygosity",
-                "/_view/bioinformatics/zygosity",
-                title = "Proband Zygosity")
-            filters.zygositySpecialUnit("Inheritance_Mode",
-                "/__data/zygosity",
-                config = {
-                    "x_unit": "Chromosome",
-                    "x_values": ["chrX"]},
-                title = "Inheritance Mode")
+        filters.statusUnit("Proband_Zygosity",
+            "/_view/bioinformatics/zygosity",
+            title = "Proband Zygosity")
         filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
             title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",

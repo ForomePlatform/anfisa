@@ -19,7 +19,7 @@
 #
 
 import os
-from app.filter.condition import ConditionMaker
+from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
 #===============================================
 sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
@@ -75,14 +75,13 @@ def condition_consequence_xBrowse():
 def condition_high_quality():
     return [
         ConditionMaker.condEnum("FT", ["PASS"]),
-        ConditionMaker.condNum("Proband_GQ", [50, None]),
-        ConditionMaker.condNum("Min_GQ", [40, None]),
-        ConditionMaker.condNum("QD", [4, None]),
-        ConditionMaker.condNum("FS", [None, 30])]
-
+        ConditionMaker.condNum("Proband_GQ", min_val = 50),
+        ConditionMaker.condNum("Min_GQ", min_val = 40),
+        ConditionMaker.condNum("QD", min_val = 4),
+        ConditionMaker.condNum("FS", max_val = 30)]
 
 def impacting_splicing():
-    return [ConditionMaker.condNum("splice_ai_dsmax", [0.2, None])]
+    return [ConditionMaker.condNum("splice_ai_dsmax", min_val = 0.2)]
 
 def readySolutions():
     global sSolutionsAreSet
@@ -104,7 +103,7 @@ def readySolutions():
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_HOM_REC"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.condInheritance("Inheritance_Mode",
+        ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
             ["Homozygous Recessive"])],
         requires = {"trio_base", "WS"})
 
@@ -130,7 +129,7 @@ def readySolutions():
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.condInheritance("Inheritance_Mode", ["X-linked"])],
+        ConditionMaker.condTrioInheritanceZ("Inheritance_Mode", ["X-linked"])],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
@@ -138,7 +137,7 @@ def readySolutions():
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-            ConditionMaker.condInheritance("Inheritance_Mode",
+            ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
                 ["Homozygous Recessive"])],
         requires = {"trio_base", "WS"})
 
@@ -156,7 +155,7 @@ def readySolutions():
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-            ConditionMaker.condInheritance("Inheritance_Mode",
+            ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
                 ["Autosomal Dominant"])],
         requires = {"trio_base", "WS"})
 

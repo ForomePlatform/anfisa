@@ -34,24 +34,25 @@
     background-color: rgba(0,0,0,0.4);
 }
 
-#filter-mod {
-    background-color: white;
+#filter-back #filter-mod {
     margin: 5% 2% 2% 2%; 
-    padding: 00px;
     border: 1px solid black;
     border-radius: 7px;
     height: 85%; 
     min-height: 85%;
     width: 95%;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+#filter-mod {
+    background-color: white;
+    margin: 0px; 
+    padding: 0px;
+    width: 100%;
     overflow: hidden;
     display: flex;
     align-items: stretch;
-}
-
-div#filters-import-op-list {
-    left: -120px;
-    text-align: left;
+    flex-grow: 1;
 }
 
 /********************Filter controls*****************************/
@@ -89,11 +90,14 @@ div#filter-ctrl button {
     margin: 1px;
 }
 
-div#filter-cur-cond-text {
+div#cur-cond-message {
     height: 17px;
     padding: 5px 10px 4px 10px;
     background-color: #f0f0ff;    
+    font-style: italic;
+    font-size: 13px;
 }
+
 div#filter-cur-cond {
     height: 150px;
     min-height: 120px;
@@ -176,18 +180,6 @@ div.stat-unit ul {
     padding-start: 1px;
 }
 
-span#cond-text {
-    color: #8F00E0;
-    font-weight: bold;
-    font-size: 15px;
-}
-
-span#cond-message {
-    font-style: italic;
-    font-size: 13px;
-    background-color: #f0f0ff;
-}
-
 span#cond-title {
     font-size: 15px;
     font-weight: bold;
@@ -263,8 +255,28 @@ div#op-enum-list.no-zeros div.zero {
     display: none;
 }
 
+div#cur-cond-import {
+    padding: 20px;
+}
+
 input.num-inp {
     width: 100px;
+}
+
+span.num-sign {
+    width: 25px;
+    height: 18px;
+    border: 1px dotted grey;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+span.num-sign-disabled {
+    width: 25px;
+    height: 18px;
+    border: 1px dotted grey;
+    color: grey;
+    font-weight: normal;
 }
 
 div#cond-list {

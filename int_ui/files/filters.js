@@ -25,6 +25,11 @@
  * Used in regimes: 
  * WS/XL-Filter
 /**************************************/
+function ____doImport(imp_name) {
+    sConditionsH.preSelectCond(sConditionsH.getConditions().length);
+    sOpFilterH.addCondition(["import", imp_name])
+}
+
 var sUnitsH = {
     mCallDS: null,
     mDivList: null,
@@ -100,7 +105,6 @@ var sUnitsH = {
         this.mItems = info["stat-list"];
         sConditionsH.setup(info["conditions"], info["bad-idxs"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
-        sOpCondH.setupAvailImport(info["avail-import"]);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
@@ -112,7 +116,7 @@ var sUnitsH = {
         if (unit_name) {
             var unit_idx = null;
             for (idx = 0; idx < this.mItems.length; idx++) {
-                if (unit_name == this.mItems[idx][1]["name"]) {
+                if (unit_name == this.mItems[idx]["name"]) {
                     unit_idx = idx;
                     break;
                 }                    
@@ -120,8 +124,8 @@ var sUnitsH = {
             unit_name = (unit_idx !=null)? unit_name:null;
         }
         
-        if (! unit_name) 
-            unit_name = this.mItems[0][1]["name"];
+        if (!unit_name) 
+            unit_name = this.mItems[0]["name"];
         this.mCurUnit = null;
         this.mCurZygName = null;
         
@@ -176,7 +180,7 @@ var sUnitsH = {
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
             refillUnitStat(unit_stat);
-            unit_name = unit_stat[1]["name"];
+            unit_name = unit_stat["name"];
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
@@ -462,7 +466,7 @@ var sConditionsH = {
             this.selectCond(this.findCond(sUnitsH.getCurUnitName()));
     },
 
-    findCond: function(unit_name, cond_mode) {
+    findCond: function(unit_name, cond_mode, cond_type) {
         if (this.mCurCondIdx != null && 
                 this.mBadIdxs.indexOf(this.mCurCondIdx) < 0 &&
                 this.mList[this.mCurCondIdx][1] == unit_name &&
@@ -472,7 +476,7 @@ var sConditionsH = {
             if (this.mBadIdxs.indexOf(idx) >= 0)
                 continue;
             if (this.mList[idx][1] == unit_name) {
-                if (this.mList[idx][0] == "import")
+                if (cond_type && cond_type != this.mList[idx][0])
                     continue;
                 if (cond_mode == undefined || this.mList[idx][2] == cond_mode)
                     return idx;
@@ -521,30 +525,8 @@ var sOpCondH = {
     mCondition: null,
     mIdxToUpdate: null,
     mIdxToAdd: null,
-    mBtnImportMenu: null,
-    mDivImportList: null,
-    mAvailImportList: null,
     
     init: function() {
-        this.mBtnImportMenu = document.getElementById("filter-import-op");
-        this.mDivImportList = document.getElementById("filters-import-op-list");
-    },
-    
-    setupAvailImport: function(avail_list) {
-        this.mDivImportList.style.display = "hidden";
-        this.mAvailImportList = avail_list;
-        if (this.mAvailImportList) {
-            var rep = [];
-            for (var j = 0; j < this.mAvailImportList.length; j++)
-                rep.push('<a class="drop" onclick="sOpCondH.doImport(\'' + 
-                    this.mAvailImportList[j] + '\');">import ' + 
-                    this.mAvailImportList[j] + '</a>');            
-            this.mDivImportList.innerHTML = rep.join('\n');
-            this.mBtnImportMenu.disabled = false;
-        } else {
-            this.mDivImportList.innerHTML = "";
-            this.mBtnImportMenu.disabled = true;
-        }
     },
     
     onUnitSelect: function() {
@@ -554,24 +536,32 @@ var sOpCondH = {
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();
+            sOpImportH.suspend();
             this.formCondition(null);
             return;
         } 
         unit_stat = sUnitsH.getCurUnitStat();
-        unit_type = unit_stat[0];
     
-        if (unit_stat.length == 2)
+        if (unit_stat["incomplete"])
             this.mCurTpHandler = null;
         else {
-            if (unit_type == "int" || unit_type == "float") 
-                this.mCurTpHandler = sOpNumH;
-            else
-                this.mCurTpHandler = sOpEnumH;
+            switch(unit_stat["kind"]) {
+                case "inactive":
+                    this.mCurTpHandler = sOpImportH;
+                    break;
+                case "numeric":
+                    this.mCurTpHandler = sOpNumH;
+                    break;
+                default:
+                    this.mCurTpHandler = sOpEnumH;
+            }
         }
         if (this.mCurTpHandler != sOpNumH)
             sOpNumH.suspend();
         if (this.mCurTpHandler != sOpEnumH)
             sOpEnumH.suspend();
+        if (this.mCurTpHandler != sOpImportH)
+            sOpImportH.suspend();
         document.getElementById("cur-cond-loading").style.display = 
             (this.mCurTpHandler)? "none":"block";
         if (this.mCurTpHandler) {
@@ -593,12 +583,15 @@ var sOpCondH = {
         if (condition_data != null) {
             this.mCondition = [this.mCurTpHandler.getCondType(), cur_unit_name].concat(
                 condition_data);
-            this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode);
+            this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode,
+                this.mCurTpHandler.getCondType());
             if (this.mIdxToUpdate == null) {
                 if (add_always) { 
-                    this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name);
+                    this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, undefined,
+                        this.mCurTpHandler.getCondType());
                 } else {
-                    this.mIdxToAdd = sConditionsH.findCond(cur_unit_name);
+                    this.mIdxToAdd = sConditionsH.findCond(cur_unit_name, undefined,
+                        this.mCurTpHandler.getCondType());
                     if (this.mIdxToAdd == null)
                         this.mIdxToAdd = sConditionsH.nextIdx();
                 }
@@ -608,9 +601,7 @@ var sOpCondH = {
                     sConditionsH.nextIdx(): this.mIdxToUpdate + 1;
             }
         }
-        document.getElementById("cond-text").innerHTML = 
-            (this.mCondition)? getCondDescription(this.mCondition, true):"";
-        message_el = document.getElementById("cond-message");
+        message_el = document.getElementById("cur-cond-message");
         message_el.innerHTML = (err_msg)? err_msg:"";
         message_el.className = (this.mCondition == null && 
             !err_msg.startsWith(' '))? "bad":"message";
@@ -653,11 +644,6 @@ var sOpCondH = {
             document.getElementById("filter-" + action + "-cond").disabled = 
                 avail_actions.indexOf(action) < 0;
         }
-    },
-    
-    doImport: function(imp_name) {
-        sConditionsH.preSelectCond(sConditionsH.getConditions().length);
-        sOpFilterH.addCondition(["import", imp_name])
     }
 };
 

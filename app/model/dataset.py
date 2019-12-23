@@ -18,24 +18,24 @@
 #  limitations under the License.
 #
 
-import gzip, json
+import gzip, json, abc
 from time import time
 
 from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
 from app.config.a_config import AnfisaConfig
 from app.config.view_tune import tuneAspects
+from app.config.flt_tune import tuneUnits
 from app.config.solutions import completeDsModes
-from app.filter.condition import ConditionMaker
-from app.filter.filter_conj import FilterConjunctional
-from app.filter.filter_dtree import FilterDTree
-from app.filter.code_works import cmpTrees
-from app.filter.dtree_parse import ParsedDTree
+from app.eval.condition import ConditionMaker
+from app.eval.filter import FilterEval
+from app.eval.dtree import DTreeEval
+from app.eval.code_works import cmpTrees
+from app.eval.dtree_parse import ParsedDTree
 from app.prepare.sec_ws import SecondaryWsCreation
 from .sol_broker import SolutionBroker
 from .family import FamilyInfo
 from .rest_api import RestAPI
-from .comp_hets import CompHetsOperativeUnit
 from .rec_list import RecListTask
 #===============================================
 class DataSet(SolutionBroker):
@@ -57,7 +57,12 @@ class DataSet(SolutionBroker):
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
+
         self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
+        if (self.mDataInfo.get("zygosity_var")
+                and 1 < len(self.mFamilyInfo) <= 10):
+            self.addModes({"ZYG"})
+
         self.mViewContext = None
         if self.mFamilyInfo.getCohortList():
             self.mViewContext = {"cohorts": self.mFamilyInfo.getCohortMap()}
@@ -65,21 +70,11 @@ class DataSet(SolutionBroker):
             self.mAspects[view_aspect]._setViewColMode("cohorts")
         completeDsModes(self)
 
-        self.mUnits = []
-        self.mUnitDict = dict()
         tuneAspects(self, self.mAspects)
 
-    def _addUnit(self, unit_h):
-        self.mUnits.append(unit_h)
-        assert unit_h.getName() not in self.mUnitDict, (
-            "Duplicate unit name: " + unit_h.getName())
-        self.mUnitDict[unit_h.getName()] = unit_h
-
-    def _setupUnits(self):
-        for unit_h in self.mUnits:
-            unit_h.setup()
-        CompHetsOperativeUnit.setupCondEnv(self)
-        self.setSolSpace(self.mDataVault.makeSolutionSpace(self))
+    def startService(self):
+        tuneUnits(self)
+        self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
 
     def _setAspectHitGroup(self, aspect_name, group_attr):
         self.mAspects.setAspectHitGroup(aspect_name, group_attr)
@@ -88,11 +83,12 @@ class DataSet(SolutionBroker):
         rq_descr.append("kind=" + self.mDSKind)
         rq_descr.append("dataset=" + self.mName)
 
+    @abc.abstractmethod
+    def getEvalSpace(self):
+        assert False
+
     def getApp(self):
         return self.mDataVault.getApp()
-
-    def heavyMode(self):
-        return False
 
     def getDataVault(self):
         return self.mDataVault
@@ -120,12 +116,6 @@ class DataSet(SolutionBroker):
 
     def getViewSchema(self):
         return self.mAspects.dump()
-
-    def getUnit(self, unit_name):
-        return self.mUnitDict.get(unit_name)
-
-    def iterUnits(self):
-        return iter(self.mUnits)
 
     def _openFData(self):
         return gzip.open(self.mPath + "/fdata.json.gz", "rb")
@@ -157,13 +147,20 @@ class DataSet(SolutionBroker):
     def getTagsMan(self):
         return None
 
+    def getZygUnitNames(self):
+        if self.testRequirements({"ZYG"}):
+            var_name = self.mDataInfo["zygosity_var"]
+            return ["%s_%d" % (var_name, idx)
+                for idx in range(len(self.mFamilyInfo))]
+        return []
+
     def makeSolEntry(self, key, entry_data, name,
             updated_time = None, updated_from = None):
         if key == "filter":
-            return FilterConjunctional(self.getCondEnv(), entry_data,
+            return FilterEval(self.getEvalSpace(), entry_data,
                 name, updated_time, updated_from)
         if key == "dtree":
-            return FilterDTree(self.getCondEnv(), entry_data,
+            return DTreeEval(self.getEvalSpace(), entry_data,
                 name, updated_time, updated_from)
         assert False
         return None
@@ -194,7 +191,7 @@ class DataSet(SolutionBroker):
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []
-            for unit_h in self.iterUnits():
+            for unit_h in self.getEvalSpace().iterUnits():
                 if unit_h.isScreened():
                     continue
                 if unit_h.getVGroup() != cur_v_group:
@@ -205,63 +202,34 @@ class DataSet(SolutionBroker):
                             or unit_groups[-1][0] != cur_v_group):
                         unit_groups.append([cur_v_group, []])
                 unit_groups[-1][1].append(unit_h.getName())
-            for unit_h in self.getCondEnv().iterOpUnits():
-                for group_info in unit_groups:
-                    if group_info[0] == unit_h.getVGroup():
-                        group_info[1].append(unit_h.getName())
-                        unit_h = None
-                        break
-                if unit_h is not None:
-                    unit_groups.append(
-                        [unit_h.getVGroup(), [unit_h.getName()]])
             ret["unit-groups"] = unit_groups
         return ret
 
     #===============================================
     def prepareAllUnitStat(self, condition, repr_context,
-            flt_base_h, time_end, point_no = None):
-        active_stat_list = []
-        for unit_h in flt_base_h.iterActiveOperativeUnits(point_no):
-            if time_end is False:
-                active_stat_list.append(unit_h.prepareStat())
-            else:
-                active_stat_list.append(unit_h.makeActiveStat(
-                    condition, flt_base_h, repr_context))
-            if time_end is not None and time() > time_end:
-                time_end = False
+            eval_h, time_end, point_no = None):
         ret = []
-        for unit_h in self.iterUnits():
+        for unit_h in self.getEvalSpace().iterUnits():
             if unit_h.isScreened():
                 continue
+            if point_no is not None and not unit_h.isInDTrees():
+                continue
             if time_end is False:
-                ret.append(unit_h.prepareStat())
+                ret.append(unit_h.prepareStat(eval_h))
                 continue
             ret.append(unit_h.makeStat(condition, repr_context))
             if time_end is not None and time() > time_end:
                 time_end = False
-        for act_stat in active_stat_list:
-            pos_ins = len(ret)
-            for idx, stat in enumerate(ret):
-                if stat[1].get("vgroup") == act_stat[1].get("vgroup"):
-                    pos_ins = idx + 1
-                    break
-            ret.insert(pos_ins, act_stat)
         return ret
 
     def prepareSelectedUnitStat(self, unit_names, condition,
-            repr_context, flt_base_h, time_end = None, point_no = None):
+            repr_context, eval_h, time_end = None, point_no = None):
         ret = []
-        op_units = dict()
-        for unit_h in flt_base_h.iterActiveOperativeUnits(point_no):
-            op_units[unit_h.getName()] = unit_h
         for unit_name in unit_names:
-            if unit_name in op_units:
-                ret.append(op_units[unit_name].makeActiveStat(
-                    condition, flt_base_h, repr_context))
-            else:
-                unit_h = self.getUnit(unit_name)
-                assert not unit_h.isScreened()
-                ret.append(unit_h.makeStat(condition, repr_context))
+            unit_h = self.getEvalSpace().getUnit(unit_name)
+            assert not unit_h.isScreened()
+            assert point_no is None or unit_h.isInDTrees()
+            ret.append(unit_h.makeStat(condition, repr_context))
             if time_end is not None and time() > time_end:
                 break
         return ret
@@ -282,7 +250,8 @@ class DataSet(SolutionBroker):
                 break
             if zero_idx is not None and idx >= zero_idx:
                 continue
-            counts[idx] = self.evalTotalCount(dtree_h.getActualCondition(idx))
+            counts[idx] = self.getEvalSpace().evalTotalCount(
+                dtree_h.getActualCondition(idx))
             needs_more = False
             if counts[idx] == 0 and dtree_h.checkZeroAfter(idx):
                 zero_idx = idx
@@ -291,10 +260,17 @@ class DataSet(SolutionBroker):
         return counts
 
     #===============================================
-    def _getArgContext(self, rq_args):
+    def _makeReprContext(self, rq_args, eval_h):
+        repr_context = {"eval": eval_h}
         if "ctx" in rq_args:
-            return json.loads(rq_args["ctx"])
-        return dict()
+            context = json.loads(rq_args["ctx"])
+            if (self._REST_NeedsBackup(rq_args, 'C')
+                    and "problem_group" in context):
+                assert len(context) == 1
+                context = {"problem-group": self.getFamilyInfo().idxset2ids(
+                    context["problem_group"])}
+            repr_context.update(context)
+        return repr_context
 
     def _getArgCondFilter(self, rq_args, activate_it = True):
         if "filter" in rq_args:
@@ -302,9 +278,11 @@ class DataSet(SolutionBroker):
         else:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
+                if self._REST_NeedsBackup(rq_args, 'C'):
+                    cond_data = self._REST_BackupConditionsUp(cond_data)
             else:
                 cond_data = ConditionMaker.condAll()
-            filter_h = FilterConjunctional(self.getCondEnv(), cond_data)
+            filter_h = FilterEval(self.getEvalSpace(), cond_data)
         filter_h = self.updateSolEntry("filter", filter_h)
         if activate_it:
             filter_h.activate()
@@ -316,7 +294,7 @@ class DataSet(SolutionBroker):
             if use_dtree and "dtree" in rq_args:
                 dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
             else:
-                dtree_h = FilterDTree(self.getCondEnv(), rq_args["code"])
+                dtree_h = DTreeEval(self.getEvalSpace(), rq_args["code"])
         dtree_h = self.updateSolEntry("dtree", dtree_h)
         if activate_it:
             dtree_h.activate()
@@ -325,7 +303,7 @@ class DataSet(SolutionBroker):
     sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
 
     def _getArgTimeEnd(self, rq_args):
-        if self.heavyMode() and "tm" in rq_args:
+        if self.getEvalSpace().heavyMode() and "tm" in rq_args:
             return time() + (self.sTimeCoeff * float(rq_args["tm"])) + 1E-5
         return None
 
@@ -342,16 +320,94 @@ class DataSet(SolutionBroker):
     @classmethod
     def _REST_BackupRecords(cls, record_info_seq):
         ret_handle = []
-        for idx, rinfo in enumerate(record_info_seq):
-            ret_handle.append([rinfo.get(key) for key in ("no", "lb", "cl", "mr", "dt")])
+        for rinfo in record_info_seq:
+            ret_handle.append([rinfo.get(key)
+                for key in ("no", "lb", "cl", "mr", "dt")])
         return ret_handle
 
+    def _REST_BackupStatUnits(self, stat_unit_seq):
+        ret_handle, avail_import, avail_import_titles = [], [], []
+        for unit_stat in stat_unit_seq:
+            info = [unit_stat["kind"]]
+            info_descr = dict()
+            for key in ("kind", "name", "vgroup", "title", "render",
+                    "tooltip", "family", "affected", "detailed"):
+                if key in unit_stat:
+                    info_descr[key] = unit_stat[key]
+            if "affected" in info_descr:
+                info_descr["affected"] = self.getFamilyInfo().ids2idxset(
+                    info_descr["affected"])
+            info.append(info_descr)
+            if unit_stat["kind"] == "func":
+                if unit_stat["sub-kind"] != "trio-inheritance-z":
+                    assert False
+                    continue
+                info[0] = "zygosity"
+                info += [self.getFamilyInfo().ids2idxset(
+                    unit_stat["problem-group"]), unit_stat["variants"]]
+            elif unit_stat["kind"] == "inactive":
+                avail_import.append(unit_stat["name"])
+                avail_import_titles.append(unit_stat.get("title"))
+                continue
+            elif unit_stat["kind"] == "numeric":
+                info[0] = unit_stat["sub-kind"]
+                info += [unit_stat.get("min"), unit_stat.get("max"),
+                    unit_stat["count"], 0]
+            elif unit_stat["kind"] == "transcript":
+                if unit_stat["sub-kind"] == "status":
+                    info[0] = "transcript-status"
+                else:
+                    info[0] = "transcript-multiset"
+                info.append(unit_stat.get("variants"))
+            else:
+                assert unit_stat["kind"] == "enum"
+                if unit_stat["sub-kind"] == "status":
+                    info[0] = "status"
+                info.append(unit_stat.get("variants"))
+            ret_handle.append(info)
+        return ret_handle, avail_import, avail_import_titles
+
+    def _REST_BackupConditionsUp(self, cond_data_seq):
+        ret_handler = []
+        for cond_data in cond_data_seq:
+            if cond_data[0] == "numeric":
+                min_v, max_v = cond_data[2]
+                ret_handler.append(["numeric",
+                    cond_data[1], [min_v, True, max_v, True]])
+                continue
+            if cond_data[0] == "zygosity":
+                ret_handler.append(["func", cond_data[1], {
+                    "sub-kind": "trio-inheritance-z",
+                    "problem-group": (self.getFamilyInfo().idxset2ids(
+                        cond_data[2]))},
+                    cond_data[3], cond_data[4]])
+                continue
+            ret_handler.append(cond_data)
+        return ret_handler
+
+    def _REST_BackupConditionsDown(self, cond_data_seq):
+        ret_handler = []
+        for cond_data in cond_data_seq:
+            if cond_data[0] == "numeric":
+                min_v, _, max_v, _ = cond_data[2]
+                ret_handler.append(["numeric",
+                    cond_data[1], [min_v, max_v], None])
+                continue
+            if cond_data[0] == "func":
+                func_info = cond_data[2]
+                assert func_info["sub-kind"] == "trio-inheritance-z"
+                ret_handler.append(["zygosity", cond_data[1],
+                    self.getFamilyInfo().ids2idxset(
+                        func_info["problem-group"]),
+                    cond_data[3], cond_data[4]])
+                continue
+            ret_handler.append(cond_data)
+        return ret_handler
 
     #===============================================
     @RestAPI.ds_request
     def rq__stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
-        repr_context = self._getArgContext(rq_args)
         if "instr" in rq_args:
             filter_proc_h = self._getArgCondFilter(
                 rq_args, activate_it = False)
@@ -360,6 +416,7 @@ class DataSet(SolutionBroker):
                 assert False
         filter_h = self._getArgCondFilter(rq_args)
         condition = filter_h.getCondition()
+        repr_context = self._makeReprContext(rq_args, filter_h)
         ret_handle = {
             "total": self.getTotal(),
             "kind": self.mDSKind,
@@ -368,43 +425,68 @@ class DataSet(SolutionBroker):
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "rq_id": self._makeRqId()}
-        ret_handle.update(self._reportCounts(filter_h.getCondition()))
+        ret_handle.update(self.getEvalSpace().reportCounts(
+            filter_h.getCondition()))
         ret_handle.update(filter_h.reportInfo())
+
+        if self._REST_NeedsBackup(rq_args, 'U'):
+            stat_seq, a_imp_names, a_imp_titles = self._REST_BackupStatUnits(
+                ret_handle["stat-list"])
+            ret_handle["stat-list"] = stat_seq
+            ret_handle["avail-import"] = a_imp_names
+            ret_handle["avail-import-titles"] = a_imp_titles
+
+        if self._REST_NeedsBackup(rq_args, 'C'):
+            if "conditions" in ret_handle:
+                cond_data = ret_handle["conditions"]
+                ret_handle["conditions"] = self._REST_BackupConditionsDown(
+                    cond_data)
+
         return ret_handle
 
     #===============================================
     @RestAPI.ds_request
     def rq__dtree_stat(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
-        repr_context = self._getArgContext(rq_args)
         dtree_h = self._getArgDTree(rq_args)
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
+        repr_context = self._makeReprContext(rq_args, dtree_h)
         ret_handle = {
             "total": self.getTotal(),
             "stat-list": self.prepareAllUnitStat(condition,
                 repr_context, dtree_h, time_end, point_no),
             "rq_id": self._makeRqId()}
-        ret_handle.update(self._reportCounts(condition))
+        ret_handle.update(self.getEvalSpace().reportCounts(
+            condition))
+        if self._REST_NeedsBackup(rq_args, 'U'):
+            stat_seq, _, _ = self._REST_BackupStatUnits(
+                ret_handle["stat-list"])
+            ret_handle["stat-list"] = stat_seq
         return ret_handle
 
     #===============================================
     @RestAPI.ds_request
     def rq__statunits(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
-        repr_context = self._getArgContext(rq_args)
         if "dtree" in rq_args or "code" in rq_args:
-            flt_base_h = self._getArgDTree(rq_args)
+            eval_h = self._getArgDTree(rq_args)
             point_no = int(rq_args["no"])
-            condition = flt_base_h.getActualCondition(point_no)
+            condition = eval_h.getActualCondition(point_no)
         else:
-            flt_base_h = self._getArgCondFilter(rq_args)
-            condition, point_no = flt_base_h.getCondition(), None
-        return {
+            eval_h = self._getArgCondFilter(rq_args)
+            condition, point_no = eval_h.getCondition(), None
+        repr_context = self._makeReprContext(rq_args, eval_h)
+        ret_handle = {
             "rq_id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition, repr_context,
-                flt_base_h, time_end, point_no)}
+                eval_h, time_end, point_no)}
+        if self._REST_NeedsBackup(rq_args, 'U'):
+            stat_seq, _, _ = self._REST_BackupStatUnits(
+                ret_handle["units"])
+            ret_handle["units"] = stat_seq
+        return ret_handle
 
     #===============================================
     @RestAPI.ds_request
@@ -422,9 +504,9 @@ class DataSet(SolutionBroker):
                 assert False
         dtree_h = None
         if instr and instr[0] == "EDIT":
-            parsed = ParsedDTree(self.getCondEnv(), rq_args["code"])
+            parsed = ParsedDTree(self.getEvalSpace(), rq_args["code"])
             dtree_code = parsed.modifyCode(instr[1:])
-            dtree_h = FilterDTree(self.getCondEnv(), dtree_code)
+            dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {
             "total": self.getTotal(),
@@ -505,10 +587,10 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__ds2ws(self, rq_args):
         if "dtree" in rq_args or "code" in rq_args:
-            flt_base_h = self._getArgDTree(rq_args)
+            eval_h = self._getArgDTree(rq_args)
         else:
-            flt_base_h = self._getArgCondFilter(rq_args)
-        task = SecondaryWsCreation(self, rq_args["ws"], flt_base_h,
+            eval_h = self._getArgCondFilter(rq_args)
+        task = SecondaryWsCreation(self, rq_args["ws"], eval_h,
             force_mode = "force" in rq_args)
         return {"task_id": self.getApp().runTask(task)}
 
@@ -516,11 +598,11 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__ds_list(self, rq_args):
         if "dtree" in rq_args or "code" in rq_args:
-            flt_base_h = self._getArgDTree(rq_args)
-            condition = flt_base_h.getActualCondition(int(rq_args["no"]))
+            eval_h = self._getArgDTree(rq_args)
+            condition = eval_h.getActualCondition(int(rq_args["no"]))
         else:
-            flt_base_h = self._getArgCondFilter(rq_args)
-            condition = flt_base_h.getCondition()
+            eval_h = self._getArgCondFilter(rq_args)
+            condition = eval_h.getCondition()
         return {"task_id": self.getApp().runTask(
             RecListTask(self, condition,
                 self._REST_NeedsBackup(rq_args, 'R')))}

@@ -77,15 +77,20 @@ def _reprConditionCode(cond_data, output, group_mode):
     if cond_kind == "numeric":
         if group_mode:
             output.write('(')
-        unit_name, bounds, use_undef = cond_data[1:]
-        seq = []
-        if bounds[0] is not None:
-            seq.append(str(bounds[0]))
-        seq.append(unit_name)
-        if bounds[1] is not None:
-            seq.append(str(bounds[1]))
-        assert len(seq) > 1
-        output.write(' <= '.join(seq))
+        unit_name, bounds = cond_data[1:]
+        if bounds[0] == bounds[2]:
+            output.write('%s == %s' % (unit_name, str(bounds[0])))
+        else:
+            seq = []
+            if bounds[0] is not None:
+                seq.append(str(bounds[0]))
+                seq.append('<=' if bounds[1] else '<')
+            seq.append(unit_name)
+            if bounds[2] is not None:
+                seq.append('<=' if bounds[3] else '<')
+                seq.append(str(bounds[2]))
+            assert len(seq) > 1
+            output.write(' '.join(seq))
         if group_mode:
             output.write(')')
         return
@@ -97,16 +102,16 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write(')')
         return
-    if cond_kind == "zygosity":
+    if cond_kind == "func":
         if group_mode:
             output.write('(')
-        unit_name, p_group, op_mode, values = cond_data[1:]
-        if not p_group:
-            unit_operand = unit_name + '()'
-        else:
-            unit_operand = (unit_name + '({'
-                + ','.join(map(str, sorted(p_group))) + '})')
-        _reprEnumCase(unit_operand, op_mode, values, output)
+        unit_name, func_info, op_mode, values = cond_data[1:]
+        assert func_info["sub-kind"] == "trio-inheritance-z"
+        output.write(unit_name + '(')
+        if func_info.get("problem-group"):
+            _reprValues(output, func_info["problem-group"])
+        output.write(')')
+        _reprEnumCase('', op_mode, values, output)
         if group_mode:
             output.write(')')
         return
@@ -116,7 +121,7 @@ def _reprConditionCode(cond_data, output, group_mode):
     assert False
 
 #===============================================
-def _reprEnumCase(unit_operand, op_mode, values, output, panel_name = None):
+def _reprEnumCase(unit_operand, op_mode, values, output):
     if op_mode in ("OR", ""):
         output.write('%s in {' % unit_operand)
         op_close = '}'
@@ -127,20 +132,21 @@ def _reprEnumCase(unit_operand, op_mode, values, output, panel_name = None):
         assert op_mode == "AND"
         output.write('%s in all({' % unit_operand)
         op_close = '})'
-    if panel_name is not None:
-        output.write('panel(' + panel_name + ')')
-    else:
-        q_first = True
-        for val in values:
-            if q_first:
-                q_first = False
-            else:
-                output.write(",\f")
-            if sIdPatt.match(val):
-                output.write(val)
-            else:
-                output.write('"' + val.replace('"', '\\"') + '"')
+    _reprValues(values)
     output.write(op_close)
+
+#===============================================
+def _reprValues(output, values):
+    q_first = True
+    for val in values:
+        if q_first:
+            q_first = False
+        else:
+            output.write(",\f")
+        if sIdPatt.match(val):
+            output.write(val)
+        else:
+            output.write('"' + val.replace('"', '\\"') + '"')
 
 
 #===============================================

@@ -23,7 +23,7 @@ from datetime import datetime
 from app.config.a_config import AnfisaConfig
 
 #===============================================
-class SolutionSpace:
+class SolutionEnv:
     sMaxSize = AnfisaConfig.configOption("sol-log.size")
 
     def __init__(self, mongo_connector, name):
@@ -43,7 +43,7 @@ class SolutionSpace:
         return self.mName
 
     def getAgentKind(self):
-        return "SolutionSpace"
+        return "SolutionEnv"
 
     def attachBroker(self, broker_h):
         assert broker_h not in self.mBrokers

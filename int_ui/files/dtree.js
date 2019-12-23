@@ -28,7 +28,7 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sWsPubURL = ws_pub_url;
     window.onresize  = arrangeControls;
     window.onkeydown = onKey;
-    window.name = sCommonTitle + ":" + sDSName + ":TREE";
+    window.name = sCommonTitle + ":" + sDSName + ":DTREE";
     document.getElementById("ds-name").innerHTML = sDSName;
     
     setupDSControls();
@@ -86,15 +86,6 @@ var sDecisionTree = {
         this.mPoints = info["points"];
         this.mMarkers = info["markers"];
         this._fillTreeTable();
-        /*if (info["error"]) {
-            this.mErrorMode = true;
-            this.mCounts = [];
-            this.mPoints = [];
-            this.mMarkers = [];
-            this._fillNoTree();
-        }
-        else {
-        }*/
         
         point_no = 0;
         if (this.mCurPointNo && this.mCurPointNo >= 0) {
@@ -383,7 +374,7 @@ var sUnitsH = {
         this.mCurUnit = null;        
         
         if (this.mCurUnit == null)
-            this.selectUnit(this.mItems[0][1]["name"]);
+            this.selectUnit(this.mItems[0]["name"]);
         
         this.checkDelayed();
     },
@@ -412,7 +403,6 @@ var sUnitsH = {
             return;
         this.mWaiting = true;
         this.sortVisibleDelays();
-        
         ajaxCall("statunits", this.getRqArgs() + 
             "&tm=1" + "&rq_id=" + encodeURIComponent(this.mRqId) + 
             "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)),
@@ -436,7 +426,7 @@ var sUnitsH = {
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
             refillUnitStat(unit_stat, 1);
-            unit_name = unit_stat[1]["name"];
+            unit_name = unit_stat["name"];
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
@@ -553,12 +543,11 @@ var sOpCondH = {
         this.mCurUnitName = this.mCondition[1];
         document.getElementById("cond-title").innerHTML = this.mCurUnitName;
         unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
-        unit_type = unit_stat[0];
         mode = "num";
-        if (unit_stat.length == 2) {
+        if (unit_stat["incomplete"]) {
             this.mCurTpHandler = null;
         } else {
-            if (unit_type == "int" || unit_type == "float") 
+            if (unit_stat["kind"] == "numeric") 
                 this.mCurTpHandler = sOpNumH;
             else {
                 if (sOpEnumH.readyForCondition(unit_stat, this.mCondition)) {

@@ -31,7 +31,7 @@ from app.prepare.v_check import ViewDataChecker
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
-from app.prepare.trans_prep import TranscriptPreparator
+from app.prepare.trans_prep import TransformPreparator
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
@@ -124,7 +124,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
     filter_set = defineFilterSchema(metadata_record)
 
     if ds_entry.getDSKind() == "ws":
-        trans_prep = TranscriptPreparator(
+        trans_prep = TransformPreparator(
             filter_set.getTranscriptDescrSeq(), True)
     else:
         trans_prep = None
@@ -185,6 +185,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
     flt_schema_data = filter_set.dump()
     if ds_entry.getDSKind() == "xl":
         is_ok &= DRUID_ADM.uploadDataset(ds_entry.getName(), flt_schema_data,
+            filter_set.getZygosityNames(),
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
@@ -199,6 +200,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
             "modes": [],
             "mongo": ds_entry.getName(),
             "name": ds_entry.getName(),
+            "zygosity_var": filter_set.getZygosityVarName(),
             "total": data_rec_no,
             "view_schema": view_aspects.dump()}
 

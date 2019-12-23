@@ -19,62 +19,45 @@
 #
 
 import logging
-from app.filter.unit import Unit
-from app.model.zygosity import ZygosityComplex
+from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
 #===============================================
-class XL_Unit(Unit):
-    def __init__(self, dataset_h, descr, unit_kind = None):
-        Unit.__init__(self, descr, unit_kind)
-        self.mDruidKind = descr["kind"]
-        self.mDataSet = dataset_h
-
-    def getDS(self):
-        return self.mDataSet
-
-    def getCondEnv(self):
-        return self.mDataSet.getCondEnv()
-
-    def getDruidKind(self):
-        return self.mDruidKind
-
-    def isDetailed(self):
-        return False
+class XL_Unit(VarUnit):
+    def __init__(self, eval_space, descr, unit_kind = None):
+        VarUnit.__init__(self, eval_space, descr, unit_kind)
 
     @staticmethod
-    def create(dataset_h, descr):
-        if descr["kind"] == "zygosity":
-            ret = XL_ZygosityUnit(dataset_h, descr)
-            return None if ret.isDummy() else ret
-        if descr["kind"] in {"long", "float"}:
-            return XL_NumUnit(dataset_h, descr)
-        ret = XL_EnumUnit(dataset_h, descr)
+    def create(eval_space, descr):
+        if descr["kind"] == "numeric":
+            return XL_NumUnit(eval_space, descr)
+        ret = XL_EnumUnit(eval_space, descr)
         if ret.isDummy():
             return None
         return ret
 
 #===============================================
-class XL_NumUnit(XL_Unit):
-    def __init__(self, dataset_h, descr):
-        XL_Unit.__init__(self, dataset_h, descr)
-        self.getDS().getCondEnv().addNumUnit(self)
+class XL_NumUnit(XL_Unit, NumUnitSupport):
+    def __init__(self, eval_space, descr):
+        XL_Unit.__init__(self, eval_space, descr)
+        self.mDruidKind = "float" if self.getSubKind() == "float" else "long"
 
     def _makeStat(self, condition):
         name_cnt = "_cnt_%d" % self.getNo()
         name_min = "_min_%d" % self.getNo()
         name_max = "_max_%d" % self.getNo()
-        druid_agent = self.getDS().getDruidAgent()
+        druid_agent = self.getEvalSpace().getDruidAgent()
         query = {
             "queryType": "timeseries",
-            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
+            "dataSource": druid_agent.normDataSetName(
+                self.getEvalSpace().getName()),
             "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
                 {"type": "count", "name": name_cnt,
                     "fieldName": self.getName()},
-                {"type": "%sMin" % self.getDruidKind(),
+                {"type": "%sMin" % self.mDruidKind,
                     "name": name_min,
                     "fieldName": self.getName()},
-                {"type": "%sMax" % self.getDruidKind(),
+                {"type": "%sMax" % self.mDruidKind,
                     "name": name_max,
                     "fieldName": self.getName()}],
             "intervals": [druid_agent.INTERVAL]}
@@ -89,38 +72,33 @@ class XL_NumUnit(XL_Unit):
         return [rq[0]["result"][nm] for nm in
             (name_min, name_max, name_cnt)]
 
-    def makeStat(self, condition, repr_context = None):
-        ret = self.prepareStat()
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
         vmin, vmax, count = self._makeStat(condition)
-        if count == 0:
-            vmin, vmax = None, None
-        return ret + [vmin, vmax, count, 0]
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "numeric"
-        assert cond_info[1] == self.getName()
-        bounds, use_undef = cond_info[2:]
-        return self.getCondEnv().makeNumericCond(self, bounds, use_undef)
+        ret_handle["count"] = count
+        if count > 0:
+            ret_handle["min"] = vmin
+            ret_handle["max"] = vmax
+        return ret_handle
 
 #===============================================
-class XL_EnumUnit(XL_Unit):
-    def __init__(self, dataset_h, descr):
-        XL_Unit.__init__(self, dataset_h, descr,
-            "status" if descr.get("atomic") else "enum")
+class XL_EnumUnit(XL_Unit, EnumUnitSupport):
+    def __init__(self, eval_space, descr):
+        XL_Unit.__init__(self, eval_space, descr)
         self.mVariants = [info[0]
             for info in descr["variants"]]
         self.mAccumCount = sum(info[1]
             for info in descr["variants"])
-        self.getDS().getCondEnv().addEnumUnit(self)
 
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
 
     def _makeStat(self, condition):
-        druid_agent = self.getDS().getDruidAgent()
+        druid_agent = self.getEvalSpace().getDruidAgent()
         query = {
             "queryType": "topN",
-            "dataSource": druid_agent.normDataSetName(self.getDS().getName()),
+            "dataSource": druid_agent.normDataSetName(
+                self.getEvalSpace().getName()),
             "dimension": self.getName(),
             "threshold": len(self.mVariants) + 5,
             "metric": "count",
@@ -149,38 +127,7 @@ class XL_EnumUnit(XL_Unit):
         return [[var, counts.get(var, 0)]
             for var in self.mVariants]
 
-    def makeStat(self, condition, repr_context = None):
-        ret = self.prepareStat()
-        ret.append(self._makeStat(condition))
-        return ret
-
-    def parseCondition(self, cond_info):
-        assert cond_info[0] == "enum"
-        assert cond_info[1] == self.getName()
-        filter_mode, variants = cond_info[2:]
-        return self.getCondEnv().makeEnumCond(
-            self, variants, filter_mode)
-
-#===============================================
-class XL_ZygosityUnit(XL_Unit, ZygosityComplex):
-    def __init__(self, dataset_h, descr):
-        XL_Unit.__init__(self, dataset_h, descr)
-        ZygosityComplex.__init__(self,
-            dataset_h.getFamilyInfo(), descr)
-
-        fam_units = []
-        for fam_name in self.iterFamNames():
-            fam_units.append(
-                self.getDS().getCondEnv().addMetaNumUnit(fam_name))
-        self.getDS().getCondEnv().addSpecialUnit(self)
-        self.setupSubUnits(fam_units)
-
-    def setup(self):
-        self.setupXCond()
-
-    def isDummy(self):
-        return not self.isOK()
-
-    def makeStat(self, condition, repr_context = None):
-        return ZygosityComplex.makeStat(self, self.getDS(),
-            condition, repr_context)
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        ret_handle["variants"] = self._makeStat(condition)
+        return ret_handle

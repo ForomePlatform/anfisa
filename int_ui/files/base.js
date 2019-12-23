@@ -159,8 +159,8 @@ function goToPage(page_mode, ds_name) {
         window.open("ws?ds=" + ds_name, sCommonTitle + ":" + ds_name);
         return;
     }
-    if (page_mode == "TREE") {
-        window.open("dtree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":TREE");
+    if (page_mode == "DTREE") {
+        window.open("dtree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":DTREE");
         return;
     }
     if (page_mode == "DOC") {

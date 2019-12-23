@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import abc, re, sys
+import abc, re
 from collections import Counter
 
 from utils.path_works import AttrFuncPool
@@ -154,6 +154,7 @@ class _NumericConvertor(PathValueConvertor):
 
     def dump(self):
         ret = PathValueConvertor.dump(self)
+        ret["kind"] = "numeric"
         ret["def"] = self.mCntDef
         ret["undef"] = self.mCntUndef
         ret["min"] = self.mMinValue
@@ -178,7 +179,7 @@ class FloatConvertor(_NumericConvertor):
 
     def dump(self):
         ret = _NumericConvertor.dump(self)
-        ret["kind"] = "float"
+        ret["sub-kind"] = "float"
         return ret
 
 #===============================================
@@ -196,7 +197,7 @@ class IntConvertor(_NumericConvertor):
 
     def dump(self):
         ret = _NumericConvertor.dump(self)
-        ret["kind"] = "long"
+        ret["sub-kind"] = "int"
         return ret
 
 #===============================================
@@ -204,12 +205,12 @@ class IntConvertor(_NumericConvertor):
 class EnumConvertor(PathValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
             render_mode, tooltip,
-            atomic_mode, variants = None, default_value = None,
+            sub_kind, variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
             vgroup, render_mode, tooltip)
-        self.mAtomicMode = atomic_mode
+        self.mSubKind = sub_kind
         self.mPreVariants = variants
         self.mVariantSet = None
         self.mDefaultValue = default_value
@@ -218,6 +219,7 @@ class EnumConvertor(PathValueConvertor):
         self.mCompactMode = compact_mode
         self.mCntUndef = 0
         self.mConvFunc = conv_func
+        assert sub_kind in {"status", "multi"}
         if accept_other_values:
             assert self.mPreVariants is not None
         elif self.mPreVariants is not None:
@@ -227,10 +229,10 @@ class EnumConvertor(PathValueConvertor):
         self.mVarCount = Counter()
         if self.mDefaultValue is not None:
             assert isinstance(self.mDefaultValue, str)
-            if not self.mAtomicMode:
-                self.mDefaultRet = [self.mDefaultValue]
-            else:
+            if self.mSubKind == "status":
                 self.mDefaultRet = self.mDefaultValue
+            else:
+                self.mDefaultRet = [self.mDefaultValue]
         if self.mPreVariants is not None:
             for var in self.mPreVariants:
                 assert isinstance(var, str)
@@ -258,7 +260,7 @@ class EnumConvertor(PathValueConvertor):
                 ret.append(val)
         except Exception:
             is_ok = False
-        if self.mAtomicMode and len(ret) > 1:
+        if self.mSubKind == "status" and len(ret) > 1:
             is_ok = False
         if not is_ok:
             self.regError(rec_no, values)
@@ -268,14 +270,14 @@ class EnumConvertor(PathValueConvertor):
             else:
                 self.mVarCount[self.mDefaultValue] += 1
             return self.mDefaultRet
-        if self.mAtomicMode:
+        if self.mSubKind == "status":
             return ret[0]
         return ret
 
     def dump(self):
         ret = PathValueConvertor.dump(self)
         ret["kind"] = "enum"
-        ret["atomic"] = self.mAtomicMode
+        ret["sub-kind"] = self.mSubKind
         ret["compact"] = self.mCompactMode
         ret["default"] = self.mDefaultValue
         ret["undef"] = self.mCntUndef
@@ -322,55 +324,14 @@ class PresenceConvertor(ValueConvertor):
 
     def dump(self):
         ret = ValueConvertor.dump(self)
-        ret["kind"] = "presence"
+        ret["kind"] = "enum"
+        ret["sub-kind"] = "multi"
+        ret["mean"] = "presence"
         variants = []
         for var, it_path in self.mPathInfoSeq:
             if self.mVarCount[var] > 0:
                 variants.append([var, self.mVarCount[var], it_path])
         ret["variants"] = variants
-        return ret
-
-#===============================================
-class ZygosityConvertor(ValueConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip, config, master):
-        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip)
-        self.mPath   = path
-        self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
-        self.mConfig = config
-        self.mMaster = master
-        self.mMemberIds, self.mMemberNames = None, None
-
-    def _setupFamily(self):
-        if self.mMaster.getFamilyInfo() is None:
-            print("No dataset metadata with samples info",
-                file = sys.stderr)
-            assert False
-        self.mMemberIds = [id
-            for id in self.mMaster.getFamilyInfo().iterIds()]
-        self.mMemberNames = ["%s_%d" % (self.getName(), idx)
-            for idx in range(len(self.mMemberIds))]
-
-    def process(self, rec_no, rec_data, result):
-        if self.mMemberIds is None:
-            self._setupFamily()
-        zyg_distr_seq = self.mPathF(rec_data)
-        assert len(zyg_distr_seq) == 1
-        zyg_distr = zyg_distr_seq[0]
-        assert len(zyg_distr.keys()) == len(self.mMemberNames)
-        for idx, member_id in enumerate(self.mMemberIds):
-            zyg_val = zyg_distr[member_id]
-            if zyg_val is None:
-                zyg_val = -1
-            result[self.mMemberNames[idx]] = zyg_val
-
-    def dump(self):
-        ret = ValueConvertor.dump(self)
-        ret["kind"] = "zygosity"
-        if self.mConfig is not None:
-            ret["config"] = self.mConfig
-        ret["size"] = len(self.mMemberNames)
         return ret
 
 #===============================================
@@ -411,9 +372,9 @@ class PanelConvertor(ValueConvertor):
     def dump(self):
         ret = ValueConvertor.dump(self)
         ret["kind"] = "enum"
-        ret["atomic"] = False
-        ret["compact"] = False
+        ret["sub-kind"] = "multi"
         ret["default"] = None
+        ret["mean"] = "panel"
         ret["undef"] = self.mCntUndef
         variants = []
         for var in sorted(self.mVarCount.keys()):
@@ -425,12 +386,13 @@ class PanelConvertor(ValueConvertor):
 class TransctiptConvertor(ValueConvertor):
     def __init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip,
-            tr_kind, trans_name, variants,
+            sub_kind, trans_name, variants,
             default_value = None, bool_check_value = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip)
         self.mDescr = ValueConvertor.dump(self)
-        self.mDescr["kind"] = tr_kind
+        self.mDescr["kind"] = "transcript"
+        self.mDescr["sub-kind"] = sub_kind
         self.mDescr["tr_name"] = trans_name
         self.mDescr["pre_variants"] = variants
         self.mDescr["bool_check"] = bool_check_value

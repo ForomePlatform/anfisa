@@ -41,8 +41,8 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
 #===============================================
 def _formXLPanel(output, ds_name):
     print('''
-      <div id="xl-ctrl">
-        <div id="xl-top-ctrl">
+      <div id="xl-top">
+        <div id="xl-top-ctrl-left">
           <div class="dropdown">
             <span id="control-open">&#8285;</span>
             <div id="control-menu" class="dropdown-content">
@@ -64,7 +64,7 @@ def _formXLPanel(output, ds_name):
           XL dataset: <span id="ds-name" class="bold"></span><br/>
           Variants: <span id="list-report" class="bold"></span>
         </div>
-        <div id="xl-list">
+        <div id="xl-top-ctrl-right">
             <button id="open-sub-view-rec"
                 onclick="sSubVRecH.show()">View variants</button>
         </div>

@@ -24,7 +24,7 @@ from collections import Counter
 from app.config.a_config import AnfisaConfig
 from utils.path_works import AttrFuncPool
 #===============================================
-class TranscriptPreparator:
+class TransformPreparator:
     def __init__(self, flt_schema, hard_check):
         self.mHardCheck = hard_check
         self.mConvertors = []
@@ -34,16 +34,15 @@ class TranscriptPreparator:
         self.mUnitStatSeq = []
         for unit_descr in flt_schema:
             kind = unit_descr["kind"]
-            if not kind.startswith("transcript-"):
-                if kind in ("long", "float"):
-                    self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
-                elif kind == "enum":
-                    self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
-                continue
-            if kind == "transcript-status":
-                self.mConvertors.append(TrStatusConvertor(unit_descr))
-            elif kind == "transcript-multiset":
-                self.mConvertors.append(TrMultisetConvertor(unit_descr))
+            if kind == "transcript":
+                if unit_descr["sub-kind"] == "status":
+                    self.mConvertors.append(TrStatusConvertor(unit_descr))
+                else:
+                    self.mConvertors.append(TrMultisetConvertor(unit_descr))
+            elif kind == "numeric":
+                self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
+            elif kind == "enum":
+                self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
             else:
                 assert False, "Bad kind:" + unit_descr["kind"]
 
@@ -237,7 +236,7 @@ class EnumUnitStatH:
     def __init__(self, unit_descr):
         self.mDescr = unit_descr
         self.mName = unit_descr["name"]
-        self.mAtomicMode = unit_descr["atomic"]
+        self.mAtomicMode = (unit_descr["sub-kind"] == "status")
         self.mCounts = Counter()
 
     def doRec(self, f_data):

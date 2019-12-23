@@ -395,27 +395,21 @@ def formFilterPanel(output):
             <button id="filter-redo-cond" title="Redo"
                 onclick='sOpFilterH.modify(\"redo\");'> &#8631;
             </button>
-            <div class="dropdown">
-              <button id="filter-import-op" class="op-button drop"
-                    title="Special instructions">
-                &#8285;
-              </button>
-              <div id="filters-import-op-list" class="dropdown-content">
-              </div>
-            </div>
             <span id="close-filter" class="close-it"
                 onclick="relaxView();">&times;</span>
           </div>
-          <div id="filter-cur-cond-text">
-            <span id="cond-text"></span>
-            <span id="cond-message"></span>
+          <div id="cur-cond-message">
           </div>
           <div id="filter-cur-cond">
             <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-sign"></span>
+              <span id="cond-min-sign" class="num-sign"
+                    onclick="sOpNumH.switchSign(0);"></span>
+              <span id="cond-num-value">...</span>
+              <span id="cond-max-sign" class="num-sign"
+                    onclick="sOpNumH.switchSign(1);"></span>
               <input id="cond-max-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
               <span id="cond-max" class="num-set"></span>
@@ -449,6 +443,9 @@ def formFilterPanel(output):
                   </div>
                 </div>
               </div>
+            </div>
+            <div id="cur-cond-import">
+                <span "cur-import-status">Import</span>
             </div>
             <div id="cur-cond-loading">
                <div class="loading">Loading data...</div>

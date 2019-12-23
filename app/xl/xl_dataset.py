@@ -17,12 +17,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-from time import time
+import logging
 
 from app.config.a_config import AnfisaConfig
 from app.model.dataset import DataSet
-from .xl_cond import XL_CondEnv
+from .xl_space import XL_EvalSpace
 from .xl_unit import XL_Unit
 #===============================================
 class XLDataset(DataSet):
@@ -31,145 +30,31 @@ class XLDataset(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.addModes({"XL"})
-        self.mCondEnv = XL_CondEnv(self)
-        self.mDruidAgent = self.getApp().getDruidAgent()
-        self.getCondEnv().addMetaNumUnit("_ord")
+        self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
+
+        for zyg_name in self.getZygUnitNames():
+            self.mEvalSpace._addZygUnit(zyg_name)
 
         for unit_data in self.getFltSchema():
-            if unit_data["kind"].startswith("transcript-"):
+            if unit_data["kind"] == "transcript":
                 continue
-            if self.getCondEnv().nameIsReserved(unit_data["name"]):
+            u_h = self.mEvalSpace.getUnit(unit_data["name"])
+            if u_h is not None:
+                logging.warning(
+                    "Dataset %s: unit name %s already reserved as %s, skipped"
+                    % (self.getName(), u_h.getName(), u_h.getUnitKind()))
                 continue
-            xl_unit = XL_Unit.create(self, unit_data)
+            xl_unit = XL_Unit.create(self.mEvalSpace, unit_data)
             if xl_unit is not None:
-                self._addUnit(xl_unit)
-        self._setupUnits()
+                self.mEvalSpace._addUnit(xl_unit)
+        self.startService()
 
-    def getDruidAgent(self):
-        return self.mDruidAgent
-
-    def getCondEnv(self):
-        return self.mCondEnv
-
-    def heavyMode(self):
-        return True
-
-    def _reportCounts(self, condition):
-        return {"count": self.evalTotalCount(condition)}
-
-    def makeSelectedStat(self, unit_names, condition, repr_context,
-            flt_base_h, time_end, point_no = None):
-        ret = []
-        op_units = dict()
-        for unit_h in flt_base_h.iterActiveOperativeUnits(point_no):
-            op_units[unit_h.getName()] = unit_h
-        for unit_name in unit_names:
-            if unit_name in op_units:
-                ret.append(op_units[unit_name].makeActiveStat(
-                    condition, flt_base_h, repr_context))
-            else:
-                unit_h = self.getUnit(unit_name)
-                assert not unit_h.isScreened()
-                ret.append(unit_h.makeStat(condition, repr_context))
-            if time_end is not None and time() > time_end:
-                break
-        return ret
-
-    def evalTotalCount(self, condition = None):
-        if condition is None:
-            return self.getTotal()
-        cond_repr = condition.getDruidRepr()
-        if cond_repr is None:
-            return self.getTotal()
-        if cond_repr is False:
-            return 0
-        query = {
-            "queryType": "timeseries",
-            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
-            "granularity": self.mDruidAgent.GRANULARITY,
-            "descending": "true",
-            "aggregations": [
-                {"type": "count", "name": "count",
-                    "fieldName": "_ord"}],
-            "filter": condition.getDruidRepr(),
-            "intervals": [self.mDruidAgent.INTERVAL]}
-        ret = self.mDruidAgent.call("query", query)
-        assert len(ret) == 1
-        return ret[0]["result"]["count"]
-
-    def _evalRecSeq(self, condition, expect_count):
-        if condition is None:
-            cond_repr = None
-        else:
-            cond_repr = condition.getDruidRepr()
-            if cond_repr is False:
-                return []
-        query = {
-            "queryType": "search",
-            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
-            "granularity": self.mDruidAgent.GRANULARITY,
-            "searchDimensions": ["_ord"],
-            "limit": expect_count + 5,
-            "intervals": [self.mDruidAgent.INTERVAL]}
-        if cond_repr is not None:
-            query["filter"] = cond_repr
-        ret = self.mDruidAgent.call("query", query)
-        assert len(ret) == 1
-        return [int(it["value"]) for it in ret[0]["result"]]
-
-    def evalRecSeq(self, condition, expect_count):
-        if condition is None:
-            cond_repr = None
-        else:
-            cond_repr = condition.getDruidRepr()
-            if cond_repr is False:
-                return []
-        query = {
-            "queryType": "topN",
-            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
-            "dimension": "_ord",
-            "threshold": expect_count + 5,
-            "metric": "count",
-            "granularity": self.mDruidAgent.GRANULARITY,
-            "aggregations": [{
-                "type": "count", "name": "count",
-                "fieldName": "_ord"}],
-            "intervals": [self.mDruidAgent.INTERVAL]}
-        if cond_repr is not None:
-            query["filter"] = cond_repr
-        ret = self.mDruidAgent.call("query", query)
-        assert len(ret) == 1
-        assert len(ret[0]["result"]) == expect_count
-        return [int(it["_ord"]) for it in ret[0]["result"]]
-
-    def evalSampleList(self, condition, max_count):
-        if condition is None:
-            cond_repr = None
-        else:
-            cond_repr = condition.getDruidRepr()
-            if cond_repr is False:
-                return []
-        query = {
-            "queryType": "topN",
-            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
-            "dimension": "_ord",
-            "threshold": max_count,
-            "metric": "max_rand",
-            "granularity": self.mDruidAgent.GRANULARITY,
-            "aggregations": [{
-                "type": "longMax", "name": "max_rand",
-                "fieldName": "_rand"}],
-            "intervals": [self.mDruidAgent.INTERVAL]}
-        if cond_repr is not None:
-            query["filter"] = cond_repr
-        ret = self.mDruidAgent.call("query", query)
-        assert len(ret) == 1
-        return [int(it["_ord"]) for it in ret[0]["result"]]
+    def getEvalSpace(self):
+        return self.mEvalSpace
 
     #===============================================
     def fiterRecords(self, condition, zone_data = None):
         assert zone_data is None
-        rec_count = self.evalTotalCount(condition)
+        rec_count = self.mEvalSpace.evalTotalCount(condition)
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
-        return self.evalRecSeq(condition, rec_count)
-
+        return self.mEvalSpace.evalRecSeq(condition, rec_count)

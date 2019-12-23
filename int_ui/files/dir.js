@@ -57,7 +57,7 @@ function renderWS(ds_info, tab_cnt) {
     tab_cnt.push('<span class="ref-support">');
     if (ds_info["doc"] != undefined) 
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
-    tab_cnt.push(reprRef(ds_info["name"], "TREE", "[tree]"));
+    tab_cnt.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
     tab_cnt.push('</span>');
      if (ds_info["base"]) {
         tab_cnt.push('<span class="ref-support">');
@@ -76,7 +76,7 @@ function renderXL(ds_info, tab_cnt) {
     tab_cnt.push('<span class="ref-support">');
     if (ds_info["doc"] != undefined) 
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
-    tab_cnt.push(reprRef(ds_info["name"], "TREE", "[tree]"));
+    tab_cnt.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
     tab_cnt.push('</span>');
     if (ds_info["secondary"]) {
         for (var idx = 0; idx < ds_info["secondary"].length; idx++) {

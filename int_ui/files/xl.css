@@ -32,7 +32,7 @@ body {
     padding: 0px;
 }
 
-div#xl-ctrl {
+div#xl-top {
     width: 100%;
     background-color: #333455; 
     color: white;
@@ -43,12 +43,12 @@ div#xl-ctrl {
     align-items: stretch;
 }
 
-div#xl-top-ctrl {
+div#xl-top-ctrl-left {
     flex: 2 0 60%;
     padding: 3px 10px;
 }
 
-div#xl-list {
+div#xl-top-ctrl-right {
     flex: 1 0 30%;
     margin: 5px;
 }

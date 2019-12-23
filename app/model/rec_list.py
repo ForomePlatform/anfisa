@@ -40,9 +40,9 @@ class RecListTask(ExecutionTask):
     def execIt(self):
         if self.mDS.getDSKind() == "ws":
             q_samples, q_full = False, True
-            rec_no_seq = self.mDS.evalRecSeq(self.mCondition)
+            rec_no_seq = self.mDS.getEvalSpace().evalRecSeq(self.mCondition)
         else:
-            rec_no_seq = self.mDS.evalSampleList(
+            rec_no_seq = self.mDS.getEvalSpace().evalSampleList(
                 self.mCondition, self.sViewCountFull + 5)
             if len(rec_no_seq) > self.sViewCountFull:
                 rec_no_seq = rec_no_seq[:self.sViewCountSamples]
@@ -73,7 +73,8 @@ class RecListTask(ExecutionTask):
                 rec_no_dict[rec_no] = {
                     "no": rec_no,
                     "lb": escape(pre_data.get("_label")),
-                    "cl": AnfisaConfig.normalizeColorCode(pre_data.get("_color"))}
+                    "cl": AnfisaConfig.normalizeColorCode(
+                        pre_data.get("_color"))}
         self.setStatus("Finishing")
         ret = dict()
         if q_samples:

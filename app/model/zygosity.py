@@ -19,53 +19,38 @@
 #
 
 from app.config.a_config import AnfisaConfig
-from app.filter.unit import ComplexEnumSupport
+from app.eval.var_unit import ComplexEnumUnit
 from utils.variants import VariantSet
+
 #===============================================
-class ZygosityComplex(ComplexEnumSupport):
-    def __init__(self, family_info, descr):
-        ComplexEnumSupport.__init__(self)
-        self.mFamilyInfo = family_info
-        self.mIsOK = (self.mFamilyInfo is not None
-            and 1 < len(self.mFamilyInfo) <= 10)
-        labels = AnfisaConfig.configOption("zygosity.cases")
-        self.mCaseLabels = [labels[key]
-            for key in ("homo_recess", "x_linked", "dominant", "compens")]
-        self.mVariantSet = VariantSet(self.mCaseLabels)
-        self.mConfig = descr.get("config", dict())
-        self.mXCondition = None
-        self.mFamNames = ["%s_%d" % (descr["name"], idx)
-            for idx in range(len(self.mFamilyInfo))]
-        self.mFamUnits = None
+class ZygosityUnit(ComplexEnumUnit):
+    sCaseKeys   = ("homo_recess", "x_linked", "dominant", "compens")
+    sCaseLabels = [AnfisaConfig.configOption("zygosity.cases")[key]
+        for key in sCaseKeys]
+    sVariansSet = VariantSet(sCaseLabels)
+
+    @staticmethod
+    def makeIt(ds_h, descr, x_unit, x_values,
+            before = None, after = None):
+        unit_h = ZygosityUnit(ds_h, {
+            "name": "Inheritance_Mode",
+            "title": "Inheritance Mode",
+            "vgroup": "Inheritance"}, x_unit, x_values)
+        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
+
+    def __init__(self, ds_h, descr, x_unit, x_values):
+        ComplexEnumUnit.__init__(self, ds_h.getEvalSpace(), descr,
+            unit_kind = "func", sub_kind = "trio-inheritance-z")
+
+        assert ds_h.testRequirements({"ZYG"})
+        self.mFamilyInfo = ds_h.getFamilyInfo()
+        self.mXCondition = self.getEvalSpace().makeEnumCond(
+            self.getEvalSpace().getUnit(x_unit), x_values)
         assert ("size" not in descr
             or descr["size"] == len(self.mFamilyInfo))
 
-    def iterFamNames(self):
-        return iter(self.mFamNames)
-
     def getVariantSet(self):
-        return self.mVariantSet
-
-    def setupSubUnits(self, fam_units):
-        self.mFamUnits = fam_units
-
-    def setupXCond(self):
-        x_unit_name = self.mConfig.get("x_unit", "Chromosome")
-        self.mXCondition = self.getCondEnv().makeEnumCond(
-            self.getDS().getUnit(x_unit_name),
-            self.mConfig.get("x_values", ["chrX"]))
-
-    def isOK(self):
-        return self.mIsOK
-
-    def validateCondition(self, cond_info):
-        assert cond_info[0] == "zygosity"
-        unit_name, p_group, filter_mode, variants = cond_info[1:]
-        return (filter_mode in {"", "OR", "AND", "NOT"}
-            and len(variants) > 0 and (p_group is None or len(p_group) > 0))
-
-    def getFamUnit(self, idx):
-        return self.mFamUnits[idx]
+        return self.sVariantSet
 
     def conditionZHomoRecess(self, problem_group):
         cond = self._conditionZHomoRecess(problem_group)
@@ -75,89 +60,100 @@ class ZygosityComplex(ComplexEnumSupport):
 
     def _conditionZHomoRecess(self, problem_group):
         seq = []
-        for idx, unit_h in enumerate(self.mFamUnits):
+        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
             if idx in problem_group:
-                seq.append(
-                    self.getCondEnv().makeNumericCond(unit_h, [2, None]))
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "2"))
             else:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 1]))
-        return self.getCondEnv().joinAnd(seq)
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "0-1"))
+        return self.getEvalSpace().joinAnd(seq)
 
     def conditionZXLinked(self, problem_group):
         if self.mFamilyInfo.groupHasMales(problem_group):
             return self.mXCondition.addAnd(
                 self._conditionZHomoRecess(problem_group))
-        return self.getCondEnv().getCondNone()
+        return self.getEvalSpace().getCondNone()
 
     def conditionZDominant(self, problem_group):
         seq = []
-        for idx, unit_h in enumerate(self.mFamUnits):
+        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
             if idx in problem_group:
-                seq.append(
-                    self.getCondEnv().makeNumericCond(unit_h, [1, None]))
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "1-2"))
             else:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
-        return self.getCondEnv().joinAnd(seq)
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "0"))
+        return self.getEvalSpace().joinAnd(seq)
 
     def conditionZCompens(self, problem_group):
         seq = []
-        for idx, unit_h in enumerate(self.mFamUnits):
+        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
             if idx in problem_group:
-                seq.append(self.getCondEnv().makeNumericCond(unit_h, [0, 0]))
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "0"))
             else:
-                seq.append(
-                    self.getCondEnv().makeNumericCond(unit_h, [1, None]))
-        return self.getCondEnv().joinAnd(seq)
+                seq.append(self.getEvalSpace().makeNumericCond(
+                    unit_h, zyg_bounds = "1-2"))
+        return self.getEvalSpace().joinAnd(seq)
 
     def iterComplexCriteria(self, context, variants = None):
-        problem_group = context["p_group"]
-        if variants is None or self.mCaseLabels[0] in variants:
-            yield self.mCaseLabels[0], self.conditionZHomoRecess(problem_group)
-        if variants is None or self.mCaseLabels[1] in variants:
-            yield self.mCaseLabels[1], self.conditionZXLinked(problem_group)
-        if variants is None or self.mCaseLabels[2] in variants:
-            yield self.mCaseLabels[2], self.conditionZDominant(problem_group)
-        if variants is None or self.mCaseLabels[3] in variants:
-            yield self.mCaseLabels[3], self.conditionZCompens(problem_group)
+        problem_group = context["problem-group"]
+        if variants is None or self.sCaseLabels[0] in variants:
+            yield self.sCaseLabels[0], self.conditionZHomoRecess(problem_group)
+        if variants is None or self.sCaseLabels[1] in variants:
+            yield self.sCaseLabels[1], self.conditionZXLinked(problem_group)
+        if variants is None or self.sCaseLabels[2] in variants:
+            yield self.sCaseLabels[2], self.conditionZDominant(problem_group)
+        if variants is None or self.sCaseLabels[3] in variants:
+            yield self.sCaseLabels[3], self.conditionZCompens(problem_group)
 
-    def makeStat(self, ds_h, condition, repr_context = None):
-        assert self.mIsOK
-        ret = self.prepareStat()
-        ret[1]["family"] = self.mFamilyInfo.getNames()
-        ret[1]["affected"] = self.mFamilyInfo.getAffectedGroup()
-        if repr_context is None or "problem_group" not in repr_context:
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        ret_handle["sub-kind"] = self.getSubKind()
+        ret_handle["family"] = self.mFamilyInfo.getNames()
+        ret_handle["affected"] = self.mFamilyInfo.getAffectedGroup()
+        if repr_context is None or "problem-group" not in repr_context:
             p_group = self.mFamilyInfo.getAffectedGroup()
         else:
-            p_group = {m_idx if 0 <= m_idx < len(self.mFamilyInfo)
-                else None for m_idx in repr_context["problem_group"]}
-            if None in p_group:
-                p_group.remove(None)
-        ret.append(sorted(p_group))
-        if len(p_group) == 0:
-            return ret + [None]
-        ret.append(self.collectComplexStat(ds_h, condition,
-            {"p_group": p_group}))
-        return ret
+            p_group = (set(repr_context["problem-group"]) &
+                self.mFamilyInfo.getIdSet())
+        ret_handle["problem-group"] = sorted(p_group)
+        if len(p_group) > 0:
+            self.collectComplexStat(ret_handle, condition,
+                {"problem-group": p_group})
+        else:
+            ret_handle["variants"] = None
+        return ret_handle
 
-    def parseCondition(self, cond_info):
-        if not self.mIsOK:
-            return self.getCondEnv().getCondNone()
-
-        assert cond_info[0] == "zygosity"
-        unit_name, p_group, filter_mode, variants = cond_info[1:]
-        assert len(variants) > 0
-
+    def locateContext(self, cond_data, eval_h):
+        func_info = cond_data[2]
+        assert func_info["sub-kind"] == self.getSubKind()
+        p_group = func_info.get("problem-group")
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
-        return self.makeComplexCondition(filter_mode, variants,
-            {"p_group": p_group})
+        return {"problem-group": set(p_group)}
 
-    def processInstr(self, parser, ast_args, op_mode, variants):
+    def validateCondition(self, cond_info, op_units):
+        if (len(cond_info) != 5 or cond_info[0] != "func"
+                or cond_info[1] != self.getName()):
+            return False
+        unit_name, func_info, filter_mode, variants = cond_info[1:]
+        if not (filter_mode in {"", "OR", "AND", "NOT"}
+                and isinstance(variants, list)):
+            return False
+        if func_info.get("sub-kind") != self.getSubKind():
+            return False
+        p_group = func_info.get("problem-group")
+        return p_group is None or isinstance(p_group, list)
+
+    def processAstNode(self, parser, ast_args, op_mode, variants):
         if len(ast_args) > 1:
             parser.errorIt(ast_args[1], "Extra argument not expected")
         if len(ast_args) == 0:
             p_group = self.mFamilyInfo.getAffectedGroup()
         else:
-            p_group = parser.processIntSet(ast_args[0])
-        return ["zygosity", self.getName(),
-            sorted(p_group), op_mode, variants]
+            p_group = parser.processIdSet(ast_args[0])
+        return ["func", self.getName(), {
+            "sub-kind": self.getSubKind(),
+            "problem-group": sorted(p_group)}, op_mode, variants]

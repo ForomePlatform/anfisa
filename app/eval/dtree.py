@@ -21,7 +21,7 @@
 import logging
 
 from app.config.a_config import AnfisaConfig
-from .filter_base import FilterBase
+from .evaluation import Evaluation
 from .dtree_parse import ParsedDTree
 from .code_works import HtmlPresentation
 #===============================================
@@ -113,7 +113,7 @@ class CheckPoint:
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getMaster().getCondEnv().getCondAll()
+            return self.getStory().getMaster().getEvalSpace().getCondAll()
         return self.getPrevPoint()._accumulateConditions().negative()
 
     def getInfo(self, code_lines):
@@ -157,7 +157,7 @@ class TerminalPoint(CheckPoint):
 
     def actualCondition(self):
         if self.getPrevPoint() is None:
-            return self.getStory().getMaster().getCondEnv().getCondAll()
+            return self.getStory().getMaster().getEvalSpace().getCondAll()
         if self.getPrevPoint().getLevel() == self.getLevel():
             return self.getPrevPoint()._accumulateConditions().negative()
         return self.getPrevPoint().getAppliedCondition()
@@ -183,13 +183,13 @@ class ConditionPoint(CheckPoint):
         return self.actualCondition().addAnd(self.mCondition)
 
 #===============================================
-class FilterDTree(FilterBase, CaseStory):
-    def __init__(self, cond_env, code, dtree_name = None,
+class DTreeEval(Evaluation, CaseStory):
+    def __init__(self, eval_space, code, dtree_name = None,
             updated_time = None, updated_from = None):
-        FilterBase.__init__(self, cond_env,
+        Evaluation.__init__(self, eval_space,
             updated_time, updated_from)
         CaseStory.__init__(self)
-        parsed = ParsedDTree(cond_env, code)
+        parsed = ParsedDTree(eval_space, code)
         self.mCode = parsed.getTreeCode()
         self.mError = parsed.getError()
         self.mHashCode = parsed.getHashCode()
@@ -330,7 +330,7 @@ class FilterDTree(FilterBase, CaseStory):
                 code_lines, cur_diap, marker_seq)
         return html_lines
 
-    def collectRecSeq(self, dataset):
+    def collectRecSeq(self):
         max_ws_size = AnfisaConfig.configOption("max.ws.size")
         html_lines = self._decorCode()
         ret = set()
@@ -340,7 +340,7 @@ class FilterDTree(FilterBase, CaseStory):
             if not point.isActive():
                 continue
             condition = point.actualCondition()
-            point_count = dataset.evalTotalCount(condition)
+            point_count = self.getEvalSpace().evalTotalCount(condition)
             info_seq[-1][1] = point_count
             if point.getPointKind() == "Return":
                 info_seq[-1][2] = point.getDecision()
@@ -348,17 +348,18 @@ class FilterDTree(FilterBase, CaseStory):
                 assert point.getPointKind() == "Return"
                 assert point_count < max_ws_size
                 if point_count > 0:
-                    seq = dataset.evalRecSeq(condition, point_count)
+                    seq = self.getEvalSpace().evalRecSeq(
+                        condition, point_count)
                     ret |= set(seq)
             assert len(ret) < max_ws_size
         return sorted(ret), info_seq
 
     def getFinalCondition(self):
-        assert self.getCondEnv().getCondKind() == "ws"
+        assert self.getEvalSpace().getCondKind() == "ws"
         if self.mFinalCondition is None:
             cond_seq = []
             for point in self.mPointList:
                 if point.isActive() and point.getDecision() is True:
                     cond_seq.append(point.actualCondition())
-            self.mFinalCondition = self.getCondEnv().joinOr(cond_seq)
+            self.mFinalCondition = self.getEvalSpace().joinOr(cond_seq)
         return self.mFinalCondition

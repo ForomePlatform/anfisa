@@ -76,13 +76,10 @@ class TreeFragment:
     def getMarkers(self):
         return self.mMarkers
 
-    def getMarkerInstr(self, idx):
-        return self.mMarkers[idx][1]
-
 #===============================================
 class ParsedDTree:
-    def __init__(self, cond_env, code):
-        self.mCondEnv = cond_env
+    def __init__(self, eval_space, code):
+        self.mEvalSpace = eval_space
         self.mFragments = []
         self.mCode = normalizeCode(code)
         self.mImportFragments = dict()
@@ -158,8 +155,8 @@ class ParsedDTree:
     def getTreeCode(self):
         return self.mCode
 
-    def getCondEnv(self):
-        return self.mCondEnv
+    def getEvalSpace(self):
+        return self.mEvalSpace
 
     def getFragments(self):
         return self.mFragments
@@ -209,10 +206,10 @@ class ParsedDTree:
             if (entry.name in self.mImportFragments
                     or entry.name in import_entries):
                 self.errorIt(instr, "duplicate import: " + entry.name)
-            unit_kind, _ = self.mCondEnv.detectUnit(entry.name)
-            if unit_kind in (None, "reserved"):
+            unit_h = self.mEvalSpace.getUnit(entry.name)
+            if unit_h is None or unit_h.getUnitKind() == "operative":
                 self.errorIt(instr, "Case does not provide: " + entry.name)
-            if unit_kind != "operational":
+            if unit_h.getUnitKind() != "operative":
                 self.errorIt(instr, "improper name for import: " + entry.name)
             import_entries.append(entry.name)
         frag_h = TreeFragment(0, "Import", self.mCurLineDiap,
@@ -292,36 +289,24 @@ class ParsedDTree:
                 self.errorIt(it_set,
                     "Only pseudo-function all is supported")
 
-        if not (isinstance(it_set, ast.List)
-                or isinstance(it_set, ast.Set)):
-            self.errorIt(it_set, "Set (or list) expected")
-        variants = []
-        for el in it_set.elts:
-            if isinstance(el, ast.Str):
-                val = el.s
-            elif isinstance(el, ast.Name):
-                val = el.id
-            elif isinstance(el, ast.NameConstant):
-                val = str(el.value)
-            else:
-                self.errorIt(el, "Name or string is expected as variant")
-            if val in variants:
-                self.errorIt(el, "Duplicated variant")
-            variants.append(val)
-        if len(variants) == 0:
-            self.errorIt(it_set, "Empty set")
+        variants = self.processIdSet(it_set)
+        #if len(variants) == 0:
+        #    self.errorIt(it_set, "Empty set")
 
         if isinstance(it.left, ast.Name):
             field_name = it.left.id
-            if self.mCondEnv is not None:
-                unit_kind, unit_h = self.mCondEnv.detectUnit(
-                    field_name, "enum")
-                if unit_kind == "operational":
+            if self.mEvalSpace is not None:
+                unit_h = self.mEvalSpace.getUnit(field_name)
+                if unit_h and not unit_h.isInDTrees():
+                    self.errorIt(it.left,
+                        "No support for field %s in decision trees"
+                            % field_name)
+                if unit_h and unit_h.getUnitKind() == "operative":
                     if field_name not in self.mImportFragments:
                         self.errorIt(it.left,
                             "Field %s not imported" % field_name)
-                    return ["operational", field_name, op_mode, variants]
-                if unit_kind != "enum" or unit_h is None:
+                    unit_h = unit_h.getActualUnit()
+                if unit_h is None or unit_h.getUnitKind() != "enum":
                     self.errorIt(it.left, "Improper enum field name: "
                         + field_name)
             ret = ["enum", field_name, op_mode, variants]
@@ -333,34 +318,59 @@ class ParsedDTree:
                     or not isinstance(it.left.func, ast.Name)):
                 self.errorIt(it.left, "Complex call not supported")
             field_name = it.left.func.id
-            assert self.mCondEnv is not None
-            unit_kind, unit_h = self.mCondEnv.detectUnit(
-                field_name, "special")
-            if unit_kind != "special":
-                self.errorIt(it.left, "Improper special field name")
-            ret = unit_h.processInstr(self, it.left.args, op_mode, variants)
+            assert self.mEvalSpace is not None
+            unit_h = self.mEvalSpace.getUnit(field_name)
+            if unit_h and unit_h.getUnitKind() == "operative":
+                if field_name not in self.mImportFragments:
+                    self.errorIt(it.left,
+                        "Field %s not imported" % field_name)
+                unit_h = unit_h.getActualUnit()
+            if unit_h is None or unit_h.getUnitKind() != "func":
+                self.errorIt(it.left, "Improper functional field name")
+            ret = unit_h.processAstNode(self, it.left.args, op_mode, variants)
             if ret is None:
                 self.errorIt(it.left,
-                    "Improper arguments for special field")
+                    "Improper arguments for functional field")
             self._addMarker(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")
         return None
 
     #===============================================
+    sNumOpTab = [
+        (ast.Lt,  1, False),
+        (ast.LtE, 1, True),
+        (ast.Eq,  0, True),
+        (ast.GtE, -1, True),
+        (ast.Gt, -1, False)]
+
+    @classmethod
+    def determineNumOp(cls, op):
+        for op_class, ord_mode, eq_mode in cls.sNumOpTab:
+            if isinstance(op, op_class):
+                return (ord_mode, eq_mode)
+        return None, None
+
     def _processNumInstr(self, it):
-        if len(it.ops) > 2 or (
-                len(it.ops) == 2 and it.ops[0] != it.ops[1]):
-            self.errorIt(it, "Too complex comparison")
-        if isinstance(it.ops[0], ast.LtE):
-            mode_ord = 0
-        elif isinstance(it.ops[0], ast.GtE):
-            mode_ord = 1
-        else:
-            self.errorIt(it, "Operation not supported")
+        op_modes = []
+        for op in it.ops:
+            if len(op_modes) > 1:
+                op_modes = None
+                break
+            if len(op_modes) > 0 and op_modes[0][0] == 0:
+                break
+            op_modes.append(self.determineNumOp(op))
+            if op_modes[-1][0] is None:
+                self.errorIt(it, "Operation not supported")
+        if op_modes is not None:
+            if ((len(op_modes) == 2 and op_modes[0][0] != op_modes[1][0])
+                    or len(op_modes) > 2):
+                op_modes = None
+        if not op_modes:
+            self.errorIt(it, "Unexpected complexity of numeric comparison")
+
         operands = [it.left] + it.comparators[:]
-        if mode_ord:
-            operands = operands[::-1]
+        values = []
         idx_fld = None
         for idx, op in enumerate(operands):
             if isinstance(op, ast.Name):
@@ -369,24 +379,46 @@ class ParsedDTree:
                 else:
                     self.errorIt(op,
                         "Comparison of two fields not supported")
+            else:
+                values.append(self.processFloat(op))
         if idx_fld is None:
             self.errorIt(it, "Where is a field fo compare?")
-        field_name = operands[idx_fld].id
-        if self.mCondEnv is not None:
-            unit_kind, unit_h = self.mCondEnv.detectUnit(
-                field_name, "numeric")
-            if unit_kind != "numeric" or unit_h is None:
+        field_node = operands[idx_fld]
+        field_name = field_node.id
+        if self.mEvalSpace is not None:
+            unit_h = self.mEvalSpace.getUnit(field_name)
+            if unit_h is None or unit_h.getUnitKind() != "numeric":
                 self.errorIt(operands[idx_fld],
                     "Improper numeric field name: " + field_name)
         if len(operands) == 3 and idx_fld != 1:
             self.errorIt(it, "Too complex comparison")
-        ret = ["numeric", field_name, [None, None], None]
-        for idx, op in enumerate(operands):
-            if idx < idx_fld:
-                ret[2][0] = self.processFloat(op)
-            elif idx > idx_fld:
-                ret[2][1] = self.processFloat(op)
-        self._addMarker(ret, operands[idx_fld], operands[idx_fld].id)
+        assert len(values) == len(op_modes)
+        bounds = [None, True, None, True]
+        if op_modes[0] == 0:
+            assert len(op_modes) == 0 and len(values) == 1
+            bounds[0] = values[0]
+            bounds[2] = values[0]
+        else:
+            if op_modes[0][0] < 0:
+                values = values[::-1]
+                op_modes = op_modes[::-1]
+                idx_fld = 0 if idx_fld > 0 else 1
+            if idx_fld == 0:
+                assert len(values) == 1
+                bounds[2] = values[0]
+                bounds[3] = op_modes[0][1]
+            else:
+                bounds[0] = values[0]
+                bounds[1] = op_modes[0][1]
+                if len(values) > 1:
+                    bounds[2] = values[1]
+                    bounds[3] = op_modes[1][1]
+        if bounds[0] is not None and bounds[2] is not None:
+            if ((bounds[0] == bounds[2] and not (bounds[1] and bounds[3]))
+                    or bounds[0] > bounds[2]):
+                self.errorIt(it, "Condition never success")
+        ret = ["numeric", field_name, bounds]
+        self._addMarker(ret, field_node, field_name)
         return ret
 
     #===============================================
@@ -413,6 +445,26 @@ class ParsedDTree:
                 self.errorIt(el, "Duplicated int value")
             ret.add(val)
         return ret
+
+    #===============================================
+    def processIdSet(self, it_set):
+        if not (isinstance(it_set, ast.List)
+                or isinstance(it_set, ast.Set)):
+            self.errorIt(it_set, "Set (or list) expected")
+        variants = []
+        for el in it_set.elts:
+            if isinstance(el, ast.Str):
+                val = el.s
+            elif isinstance(el, ast.Name):
+                val = el.id
+            elif isinstance(el, ast.NameConstant):
+                val = str(el.value)
+            else:
+                self.errorIt(el, "Name or string is expected as variant")
+            if val in variants:
+                self.errorIt(el, "Duplicated variant")
+            variants.append(val)
+        return variants
 
     #===============================================
     def modifyCode(self, instr):

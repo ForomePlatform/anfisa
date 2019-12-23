@@ -19,6 +19,7 @@
 #
 
 import json
+from array import array
 from xml.sax.saxutils import escape
 from io import TextIOWrapper
 
@@ -29,28 +30,36 @@ from .rules import RulesUnit
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .ws_unit import loadWS_Unit
-from .ws_cond import WS_CondEnv
+from .ws_space import WS_EvalSpace
 
 #===============================================
 class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.addModes({"WS"})
-        self.mCondEnv = WS_CondEnv(self)
-        self.mTabRecRand = []
+        self.mTabRecRand = array('q')
         self.mTabRecKey  = []
         self.mTabRecColor  = []
         self.mTabRecLabel = []
+        self.mEvalSpace = WS_EvalSpace(self,
+            self._makeRecArrayFunc(self.mTabRecRand))
 
-        self.mRulesUnit = RulesUnit(self)
-        self._addUnit(self.mRulesUnit)
+        self.mZygArrays = []
+        for idx, zyg_name in enumerate(self.getZygUnitNames()):
+            var_array = array('b')
+            self.mZygArrays.append(var_array)
+            self.mEvalSpace._addZygUnit(zyg_name,
+                self._makeRecArrayFunc(var_array))
+
         for unit_data in self.getFltSchema():
-            unit_h = loadWS_Unit(self, unit_data)
+            unit_h = loadWS_Unit(self.mEvalSpace, unit_data)
             if unit_h is not None:
-                self._addUnit(unit_h)
+                self.mEvalSpace._addUnit(unit_h)
         self._loadPData()
         self._loadFData()
-        self._setupUnits()
+        self.mRulesUnit = RulesUnit(self)
+        self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
+        self.startService()
 
         self.mTagsMan = TagsManager(self,
             AnfisaConfig.configOption("check.tags"))
@@ -62,14 +71,23 @@ class Workspace(DataSet):
                 zone_h = self.mTagsMan
                 zone_h._setTitle(zone_it.getName())
             else:
-                unit = self.getUnit(unit_name)
-                if (not unit):
+                unit_h = self.mEvalSpace.getUnit(unit_name)
+                if (not unit_h):
                     continue
-                zone_h = FilterZoneH(self, zone_it.getName(), unit)
+                zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
             self.mZoneHandlers.append(zone_h)
 
         self._setAspectHitGroup(
             *AnfisaConfig.configOption("transcript.view.setup"))
+
+        for filter_h in self.iterSolEntries("filter"):
+            filter_h.activate()
+        for dtree_h in self.iterSolEntries("dtree"):
+            dtree_h.activate()
+
+    @staticmethod
+    def _makeRecArrayFunc(val_array):
+        return lambda rec_no: val_array[rec_no]
 
     def _loadPData(self):
         with self._openPData() as inp:
@@ -91,13 +109,16 @@ class Workspace(DataSet):
                 encoding = "utf-8", line_buffering = True)
             for rec_no, line in enumerate(fdata_inp):
                 inp_data = json.loads(line.strip())
-                self.mCondEnv.addItemGroup(inp_data["$1"])
-                for unit_h in self.iterUnits():
+                self.mEvalSpace.addItemGroup(inp_data["$1"])
+                for unit_h in self.mEvalSpace.iterUnits():
                     unit_h.fillRecord(inp_data, rec_no)
-                # self.mRulesUnit.fillRulesPart(inp_data, rec_no)
+                for idx, zyg_unit_h in enumerate(
+                        self.mEvalSpace.iterZygUnits()):
+                    self.mZygArrays[idx].append(
+                        inp_data.get(zyg_unit_h.getName()))
 
-    def getCondEnv(self):
-        return self.mCondEnv
+    def getEvalSpace(self):
+        return self.mEvalSpace
 
     def getTagsMan(self):
         return self.mTagsMan
@@ -121,16 +142,11 @@ class Workspace(DataSet):
             ret_handle.append({
                 "no": rec_no,
                 "lb": escape(self.mTabRecLabel[rec_no]),
-                "cl": AnfisaConfig.normalizeColorCode(self.mTabRecColor[rec_no]),
+                "cl": AnfisaConfig.normalizeColorCode(
+                    self.mTabRecColor[rec_no]),
                 "mr": rec_no in marked_set,
                 "dt": rec_it_map_seq[idx].to01()})
         return ret_handle
-
-    def _reportCounts(self, condition):
-        count, count_items, total_items = condition.getAllCounts()
-        return {
-            "count": count,
-            "transcripts": [count_items, total_items]}
 
     def reportList(self, rec_no_seq, rec_it_map_seq, counts_transctipts):
         rep = {
@@ -146,16 +162,6 @@ class Workspace(DataSet):
 
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
-
-    def evalTotalCount(self, condition):
-        if condition is None:
-            return self.getTotal()
-        return condition.getAllCounts()[0]
-
-    def evalDetailedTotalCount(self, condition):
-        if condition is None:
-            return self.mCondEnv.getTotalCount()
-        return condition.getItemCount()
 
     def fiterRecords(self, condition, zone_data = None):
         zone_f = None
@@ -179,10 +185,6 @@ class Workspace(DataSet):
                 ret_handle.append(filter_h.getFilterName())
         return ret_handle
 
-    def evalRecSeq(self, condition, expect_count = None):
-        return [rec_no
-            for rec_no, rec_it_map in condition.iterSelection()]
-
     #===============================================
     @RestAPI.ws_request
     def rq__list(self, rq_args):
@@ -201,9 +203,10 @@ class Workspace(DataSet):
             rec_it_map_seq.append(rec_it_map)
             count_transctipts += rec_it_map.count()
         ret_handle = self.reportList(rec_no_seq, rec_it_map_seq,
-            [count_transctipts, self.mCondEnv.getTotalCount()])
+            [count_transctipts, self.mEvalSpace.getTotalCount()])
         if self._REST_NeedsBackup(rq_args, 'R'):
-            ret_handle["records"] = self._REST_BackupRecords(ret_handle["records"])
+            ret_handle["records"] = self._REST_BackupRecords(
+                ret_handle["records"])
         return ret_handle
 
     #===============================================

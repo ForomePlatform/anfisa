@@ -29,11 +29,14 @@ var sOpNumH = {
     mInfo: null,
     mInputMin: null,
     mInputMax: null,
+    mSpanSigns: null,
     mUpdateCondStr: null,
 
     init: function() {
         this.mInputMin   = document.getElementById("cond-min-inp");
         this.mInputMax   = document.getElementById("cond-max-inp");
+        this.mSpanSigns = [document.getElementById("cond-min-sign"),
+            document.getElementById("cond-max-sign")];
     },
     
     getCondType: function() {
@@ -48,40 +51,50 @@ var sOpNumH = {
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
         this.mInfo = {
-            cur_bounds: [null, null],
-            unit_type:  unit_stat[0],
-            val_min:    unit_stat[2],
-            val_max:    unit_stat[3],
-            count:      unit_stat[4]}
+            cur_bounds: [null, true, null, true],
+            unit_type:  unit_stat["sub-kind"],
+            val_min:    unit_stat["min"],
+            val_max:    unit_stat["max"],
+            count:      unit_stat["count"]}
             
         if (this.mInfo.val_min != null) {
             document.getElementById("cond-min").innerHTML = 
                 normFloatLongTail(this.mInfo.val_min);
             document.getElementById("cond-max").innerHTML = 
                 normFloatLongTail(this.mInfo.val_max, true);
-            document.getElementById("cond-sign").innerHTML = 
-                (this.mInfo.val_min == this.mInfo.val_max)? "=":"&le;";
+            sign_val = (this.mInfo.val_min == this.mInfo.val_max)? "=": "&le";
         } else {
             document.getElementById("cond-min").innerHTML = "?";
             document.getElementById("cond-max").innerHTML = "?";
-            document.getElementById("cond-sign").innerHTML = "?";
+            sign_val = "?"
         }
-            
         this.mInputMin.value = "";
         this.mInputMax.value = "";
+        this.mSpanSigns[0].innerHTML = sign_val;
+        this.mSpanSigns[0].className = "num-sign-disabled";
+        this.mSpanSigns[1].innerHTML =sign_val;
+        this.mSpanSigns[1].className = "num-sign-disabled";
     },
 
     updateCondition: function(cond) {
         this.mUpdateCondStr = JSON.stringify(cond.slice(2));
-        this.mInfo.cur_bounds   = [cond[2][0], cond[2][1]];
+        this.mInfo.cur_bounds   = cond[2].slice();
         this.mInputMin.value = (this.mInfo.cur_bounds[0] != null)?
             this.mInfo.cur_bounds[0] : "";
-        this.mInputMax.value = (this.mInfo.cur_bounds[1] != null)?
-            this.mInfo.cur_bounds[1] : "";
-        if (this.mInfo.val_min != null)
-            document.getElementById("cond-sign").innerHTML = "&le;";
+        this.mInputMax.value = (this.mInfo.cur_bounds[2] != null)?
+            this.mInfo.cur_bounds[2] : "";
     },
 
+    switchSign: function(idx) {
+        if (this.mSpanSigns[idx].className == "num-sign-disabled")
+            return;
+        this.mInfo.cur_bounds[1 + 2 * idx] = 
+            !this.mInfo.cur_bounds[1 + 2 * idx];
+        this.mSpanSigns[idx].innerHTML = 
+            this.mInfo.cur_bounds[1 + 2 * idx]? "&le;" : "&lt;";
+        this.checkControls();
+    },
+    
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
@@ -104,7 +117,7 @@ var sOpNumH = {
             }
         }
         if (this.mInputMax.value.trim() == "") {
-            this.mInfo.cur_bounds[1] = null;
+            this.mInfo.cur_bounds[2] = null;
             this.mInputMax.className = "num-inp";
         } else {
             val = toNumeric(this.mInfo.unit_type, this.mInputMax.value)
@@ -112,14 +125,28 @@ var sOpNumH = {
             if (val == null) 
                 err_msg = "Bad numeric value";
             else {
-                this.mInfo.cur_bounds[1] = val;
+                this.mInfo.cur_bounds[2] = val;
             }
         }
+        
+        if (this.mInfo.cur_bounds[0] != null && err_msg == null &&
+                this.mInfo.cur_bounds[0] == this.mInfo.cur_bounds[2] &&
+                (this.mInfo.cur_bounds[1] | this.mInfo.cur_bounds[3])) {
+            err_msg = "Out of choice: strict bounds";
+        }
+
+        this.mSpanSigns[0].innerHTML = this.mInfo.cur_bounds[1]? "&le;" : "&lt;";
+        this.mSpanSigns[1].innerHTML = this.mInfo.cur_bounds[3]? "&le;" : "&lt;";
+        this.mSpanSigns[0].className = (this.mInfo.cur_bounds[0] == null)?
+            "num-sign-disabled" : "num-sign";
+        this.mSpanSigns[1].className = (this.mInfo.cur_bounds[2] == null)?
+            "num-sign-disabled" : "num-sign";        
+        
         condition_data = null;
         if (err_msg == null) {
-            condition_data = [this.mInfo.cur_bounds, null]
+            condition_data = [this.mInfo.cur_bounds];
             if (this.mInfo.cur_bounds[0] == null && 
-                    this.mInfo.cur_bounds[1] == null)
+                    this.mInfo.cur_bounds[2] == null)
                 err_msg = "";
             if (this.mInfo.val_min != null) {
                 if (this.mInfo.cur_bounds[0] != null) {
@@ -128,10 +155,10 @@ var sOpNumH = {
                     if (this.mInfo.cur_bounds[0] < this.mInfo.val_min) 
                         err_msg = "Lower bound is below minimal value";
                 }
-                if (this.mInfo.cur_bounds[1] != null) {
-                    if (this.mInfo.cur_bounds[1] < this.mInfo.val_min) 
+                if (this.mInfo.cur_bounds[2] != null) {
+                    if (this.mInfo.cur_bounds[2] < this.mInfo.val_min) 
                         err_msg = "Upper bound is below minimum value";
-                    if (this.mInfo.cur_bounds[1] > this.mInfo.val_max)
+                    if (this.mInfo.cur_bounds[2] > this.mInfo.val_max)
                         err_msg = "Upper bound is above maximal value";
                 }
             } else {
@@ -140,8 +167,8 @@ var sOpNumH = {
             if (err_msg && this.mUpdateCondStr == null)
                 condition_data = null;
             if (this.mInfo.cur_bounds[0] != null && 
-                    this.mInfo.cur_bounds[1] != null && 
-                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[1]) {
+                    this.mInfo.cur_bounds[2] != null && 
+                    this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[2]) {
                 err_msg = "Bounds are mixed up";
                 condition_data = null;
             }
@@ -185,7 +212,7 @@ var sOpEnumH = {
     },
     
     readyForCondition: function(unit_stat, condition) {
-        if (unit_stat[0] == "zygosity")
+        if (unit_stat["kind"] == "func")
             return sZygosityH.readyForCondition(unit_stat, condition);
         return true;
     },
@@ -203,15 +230,16 @@ var sOpEnumH = {
     
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
-        if (unit_stat[0] == "zygosity") {
+        if (unit_stat["kind"] == "func") {
+            return;
             this.mSpecCtrl = sZygosityH;
-            this.mVariants = sZygosityH.setupVariants(unit_stat, this.mDivZygPGroup);
+            this.mVariants = []; //TRFsZygosityH.setupVariants(unit_stat, this.mDivZygPGroup);
             this.mOperationMode = null;
             this.mStatusMode = null;
         } else {
-            this.mVariants = unit_stat[2];
+            this.mVariants = unit_stat["variants"];
             this.mOperationMode = 0;
-            this.mStatusMode = (unit_stat[0] == "status");
+            this.mStatusMode = (unit_stat["sub-kind"] == "status");
             this.mSpecCtrl = null;
             if (this.mDivZygPGroup) {
                 this.mDivZygPGroup.style.display = "none";
@@ -223,7 +251,7 @@ var sOpEnumH = {
         for (j = 0; j < this.mVariants.length; j++) {
             var_name = this.mVariants[j][0];
             var_count = this.mVariants[j][1];
-            if (unit_stat[1]["detailed"] && var_count > 0)
+            if (unit_stat["detailed"] && var_count > 0)
                 var_count = var_count + "/" + this.mVariants[j][2];
             has_zero |= (var_count == 0);
             list_val_rep.push(this.reprVariant(var_name, var_count, j));
@@ -268,11 +296,11 @@ var sOpEnumH = {
             if(lost_vars.length > 0) {
                 list_val_rep = [];
                 lost_vars.sort();
-                var start_j = var_list.length;
                 for (j=0; j < lost_vars.length; j++)  {
                     var_name = lost_vars[j];
                     this.mDivVarList.innerHTML += this.reprVariant(
-                        var_name, 0, start_j + j, true);
+                        var_name, 0, this.mVariants.length, true);
+                    this.mVariants.push([var_name, 0, 0]);
                 }
                 needs_zeros = true;
             }
@@ -330,7 +358,10 @@ var sOpEnumH = {
         condition_data = null;
         if (sel_names.length > 0) {
             condition_data = [op_mode, sel_names];
-            err_msg = "";
+            if (sel_names.length == 1)
+                err_msg = "1 variant selected";
+            else
+                err_msg = sel_names.length + " variants selected";
         } else
             err_msg = " Out of choice"
         if (this.mSpecCtrl != null) {
@@ -349,6 +380,40 @@ var sOpEnumH = {
     
     waitForUpdate: function(unit_name) {
         this.mDivVarList.className = "wait";
+    }
+};
+
+/**************************************/
+var sOpImportH = {
+    mUnitName: null,
+
+    getCondType: function() {
+        return "import";
+    },
+
+    suspend: function() {
+        this.mUnitName = null;
+        this.careControls();
+    },
+    
+    updateUnit: function(unit_stat) {
+        this.mUnitName = unit_stat["name"]
+    },
+
+    updateCondition: function(cond) {
+        this.mUnitName = cond[1];
+    },
+
+    careControls: function() {
+        document.getElementById("cur-cond-import").style.display = 
+            (this.mUnitName == null)? "none":"block";
+    },
+
+    checkControls: function(opt) {
+        if (this.mUnitName == null) 
+            return;
+        sOpCondH.formCondition([], "", null, false);
+        this.careControls();
     }
 };
 
@@ -385,9 +450,9 @@ function zygStatCheckError(zyg_stat, err_msg) {
 /**************************************/
 function newZygCase(base, unit_stat, mode_op) {
     var size = 0;
-    if (unit_stat[3]) {
-        for (var j = 0; j < unit_stat[3].length; j++) {
-            if (unit_stat[3][j][1] > 0)
+    if (unit_stat["variants"]) {
+        for (var j = 0; j < unit_stat["variants"].length; j++) {
+            if (unit_stat["variants"][j][1] > 0)
                 size++;
         }
     }    
@@ -395,8 +460,9 @@ function newZygCase(base, unit_stat, mode_op) {
         mBase: base,
         mModeOp: mode_op,
         mUnitStat: unit_stat,
-        mProblemIdxs: (unit_stat[2] == null)? this.mBase.mDefaultIdxs:unit_stat[2],
-        mStat: unit_stat[3],
+        mProblemIdxs: (unit_stat["problem-group"] == null)? 
+            this.mBase.mDefaultIdxs:unit_stat["problem-group"],
+        mStat: unit_stat["variants"],
         mSize: size
     };
 }
@@ -461,9 +527,9 @@ var sZygosityH = {
     },
     
     _baseSetup: function(unit_stat) {
-        this.mUnitName = unit_stat[1]["name"];
-        this.mFamily = unit_stat[1]["family"];
-        this.mDefaultIdxs = unit_stat[1]["affected"];
+        this.mUnitName = unit_stat["name"];
+        this.mFamily = unit_stat["family"];
+        this.mDefaultIdxs = unit_stat["affected"];
         this.mDefaultRepr = this.mDefaultIdxs.join(',');
     },
     
@@ -527,6 +593,7 @@ var sZygosityH = {
             if (this.mSeparateOp)
                 this.mOpSetUp = true;
         }
+        return null; //TRF!!!
         if (this.mCases[mode_op].mStat == null)
             return [];
         return this.mCases[mode_op].mStat;
@@ -666,53 +733,57 @@ function fillStatList(items, unit_map, list_stat_rep,
     var group_title = false;
     for (idx = 0; idx < items.length; idx++) {
         unit_stat = items[idx];
-        unit_type = unit_stat[0];
-        unit_name   = unit_stat[1]["name"];
-        unit_title  = unit_stat[1]["title"];
-        unit_vgroup = unit_stat[1]["vgroup"];
-        unit_tooltip = unit_stat[1]["tooltip"];
+        unit_name   = unit_stat["name"];
         unit_map[unit_name] = idx;
-        if (group_title != unit_vgroup || unit_vgroup == null) {
+        if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
             if (group_title != false) {
                 list_stat_rep.push('</div>');
             }
-            group_title = unit_vgroup;
+            group_title = unit_stat["vgroup"];
             list_stat_rep.push('<div class="stat-group">');
             if (group_title != null) {
                 list_stat_rep.push('<div class="stat-group-title">' + 
-                    group_title + '</div>');
+                    group_title);
+                if (unit_name == "Rules") {
+                    list_stat_rep.push(
+                        '<span id="flt-go-dtree" ' +
+                            'title="Configure decision trees as rules..." ' +
+                        'onclick="goToPage(\'DTREE\');"">&#9874;</span>')
+                }
+                list_stat_rep.push('</div>');
             }
         }
-        list_stat_rep.push('<div id="stat--' + unit_name + 
-            '" class="stat-unit" ');
-        if (unit_tooltip) 
-            list_stat_rep.push('title="' + escapeText(unit_tooltip) + '" ');
+        func_decor = (unit_stat["kind"] == "func" || 
+            unit_stat["sub-kind"] == "func")? "(...)":"";
+        list_stat_rep.push('<div id="stat--' + unit_name + '" class="stat-unit" ');
+        if (unit_stat["tooltip"]) 
+            list_stat_rep.push('title="' + escapeText(unit_stat["tooltip"]) + '" ');
 
         list_stat_rep.push('onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
         list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
-            unit_name + '</span>');
-        if (unit_title) 
+            unit_name + func_decor + '</span>');
+        if (unit_stat["title"]) 
             list_stat_rep.push('<span class="stat-unit-title">' + 
-                unit_title + '</span>');
+                unit_stat["title"] + '</span>');
         list_stat_rep.push('</div>')
-        if (unit_name == "Rules") {
-            list_stat_rep.push(
-                '<span id="flt-go-dtree" ' +
-                'title="Configure rules via Decision Tree panel" ' +
-                'onclick="goToPage(\'DTREE\');"">&#9874;</span>')
-        }
         list_stat_rep.push('<div id="stat-data--' + unit_name + '" class="stat-unit-data">');
-        if (unit_stat.length == 2) {
+        if (unit_stat["incomplete"]) {
             unit_names_to_load.push(unit_name);
-            list_stat_rep.push('<div class="loading">Loading data...</div>');
+            list_stat_rep.push('<div class="comment">Loading data...</div>');
         } else {
-            if (unit_type == "zygosity") 
-                sZygosityH.setup(unit_stat, list_stat_rep);
-            else {
-                if (unit_type == "int" || unit_type == "float") 
+            switch (unit_stat["kind"]) {
+                case "numeric":
                     fillStatRepNum(unit_stat, list_stat_rep);
-                else
+                    break;
+                case "enum":
+                case "transcript":
                     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
+                    break;
+                case "func":
+                    break;
+                case "inactive":
+                    list_stat_rep.push('<div class="comment">Not imported</div>');
+                    break;
             }
         }
         list_stat_rep.push('</div></div>')
@@ -723,14 +794,12 @@ function fillStatList(items, unit_map, list_stat_rep,
 }
 
 function refillUnitStat(unit_stat, expand_mode) {
-    unit_type = unit_stat[0];
-    unit_name = unit_stat[1]["name"];
-    div_el = document.getElementById("stat-data--" + unit_name);
+    div_el = document.getElementById("stat-data--" + unit_stat["name"]);
     list_stat_rep = [];
-    if (unit_type == "zygosity") 
+    if (unit_stat["kind"] == "func") 
         sZygosityH.setup(unit_stat, list_stat_rep);
     else {
-        if (unit_type == "int" || unit_type == "float") 
+        if (unit_stat["kind"] == "numeric") 
             fillStatRepNum(unit_stat, list_stat_rep);
         else
             fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
@@ -740,15 +809,15 @@ function refillUnitStat(unit_stat, expand_mode) {
 }
 
 function exposeEnumUnitStat(unit_stat, expand_mode) {
-    unit_name = unit_stat[1]["name"];
     list_stat_rep = [];
     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
-    div_el = document.getElementById("stat-data--" + unit_name);
+    div_el = document.getElementById("stat-data--" + unit_stat["name"]);
     div_el.innerHTML = list_stat_rep.join('\n');
 }
 
-function topUnitStat(unit_stat) {
-    return document.getElementById("stat--" + unit_name).getBoundingClientRect().top;
+function topUnitStat(unit_name) {
+    return document.getElementById(
+        "stat--" + unit_name).getBoundingClientRect().top;
 }
 
 /**************************************/
@@ -758,10 +827,10 @@ function getCondDescription(cond, short_form) {
     if (cond != null && cond[0] == "numeric") {
         rep_cond = [];
         if (cond[2][0] != null)
-            rep_cond.push(cond[2][0] + "&nbsp;&lt;=");
+            rep_cond.push(cond[2][0] + "&nbsp;&le;");
         rep_cond.push(cond[1]);
         if (cond[2][1] != null)
-            rep_cond.push("&lt;=&nbsp;" + cond[2][1]);
+            rep_cond.push("&le;&nbsp;" + cond[2][1]);
         return rep_cond.join(" ");
     }
     rep_var = (short_form)? "":cond[1];
@@ -778,6 +847,7 @@ function getCondDescription(cond, short_form) {
         else {
             if (cond[0] == "import")
                 return "import " + cond[1];
+            console.log("Bad cond:" + JSON.stringify(cond));
             return "???";
         }
     }
@@ -807,10 +877,9 @@ function getCondDescription(cond, short_form) {
 
 /*************************************/
 function fillStatRepNum(unit_stat, list_stat_rep) {
-    val_min   = unit_stat[2];
-    val_max   = unit_stat[3];
-    count     = unit_stat[4];
-    //cnt_undef = unit_stat[5];
+    val_min   = unit_stat["min"];
+    val_max   = unit_stat["max"];
+    count     = unit_stat["count"];
     if (count == 0) {
         list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
     } else {
@@ -819,7 +888,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
                 '</span>');
         } else {
             list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
-                ' =< ...<= ' + normFloatLongTail(val_max, true) + ' </span>');
+                ' &le;&nbsp;...&nbsp;&le; ' + normFloatLongTail(val_max, true) + ' </span>');
         }
         list_stat_rep.push(': ' + reportStatCount([null, count], unit_stat));
     }
@@ -827,7 +896,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
 
 /*************************************/
 function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
-    var_list = unit_stat[2];
+    var_list = unit_stat["variants"];
     list_count = 0;
     if (var_list) {
         for (j = 0; j < var_list.length; j++) {
@@ -846,9 +915,9 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count = (list_count > 6)? 3: list_count; 
         
     if (list_count > 6 && expand_mode) {
-        unit_name = unit_stat[1]["name"];
-        list_stat_rep.push('<div onclick="exposeEnum(\'' + unit_name + 
-            '\',' + (3 - expand_mode) + ');" class="enum-exp">' + 
+        list_stat_rep.push('<div onclick="exposeEnum(\'' + 
+            unit_stat["name"] +  '\',' + (3 - expand_mode) + 
+            ');" class="enum-exp">' + 
             ((expand_mode==1)?'+':'-') + '</div>');
     }
     list_stat_rep.push('<ul>');
@@ -870,7 +939,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 }
 
 function reportStatCount(count_info, unit_stat) {
-    if (unit_stat[1]["detailed"]) {
+    if (unit_stat["detailed"]) {
         cnt_rep = count_info[1] + '(' + count_info[2] + ')';
         nm = "transcript";
     } else {

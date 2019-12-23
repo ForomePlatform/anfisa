@@ -20,59 +20,38 @@
 
 import logging
 
-from app.config.a_config import AnfisaConfig
-from app.filter.unit import Unit, ComplexEnumSupport
-from app.filter.condition import validateEnumCondition
+from app.eval.var_unit import ComplexEnumUnit
+from app.eval.operative import OperativeUnit
 
 #=====================================
-class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
-    sSetupData = AnfisaConfig.configOption("comp-hets.setup")
+class CompHetsUnit(ComplexEnumUnit):
+    @staticmethod
+    def makeIt(ds_h, descr, gene_unit, before = None, after = None):
+        unit_h = CompHetsUnit(ds_h, descr, gene_unit)
+        op_unit_h = OperativeUnit(unit_h)
+        ds_h.getEvalSpace()._insertUnit(
+            op_unit_h, before = before, after = after)
 
-    @classmethod
-    def setupCondEnv(cls, ds_h):
-        cond_env = ds_h.getCondEnv()
-        if not ds_h.testRequirements({"trio"}):
-            return False
-        for var_info in cls.sSetupData[
-                "op-variables." + cond_env.getCondKind()]:
-            name, gene_unit = var_info[:2]
-            title = var_info[2] if len(var_info) > 2 else name
-            cond_env.addOperativeUnit(
-                CompHetsOperativeUnit(ds_h, name, gene_unit, title))
-        return True
-
-    def __init__(self, ds_h, name, gene_unit, title):
-        Unit.__init__(self, {
-            "name": name,
-            "title": title,
-            "kind": "enum",
-            "vgroup": self.sSetupData["vgroup"],
-            "render": "operative"})
-        self.mDS = ds_h
-        self.mCondEnv = self.mDS.getCondEnv()
-        self.mZygUnit = self.mDS.getUnit(self.sSetupData["zygosity.unit"])
-        self.mGeneUnit = self.mDS.getUnit(gene_unit)
-
-    def getDS(self):
-        return self.mDS
-
-    def getCondEnv(self):
-        return self.mDS.getCondEnv()
+    def __init__(self, ds_h, descr, gene_unit):
+        ComplexEnumUnit.__init__(self, ds_h.getEvalSpace(), descr, "enum")
+        self.mFamilyInfo = ds_h.getFamilyInfo()
+        self.mGeneUnit = self.getEvalSpace().getUnit(gene_unit)
 
     def _prepareZygConditions(self, trio_info):
+        eval_space = self.getEvalSpace()
         zyg_base, zyg_father, zyg_mother = [
-            self.mZygUnit.getFamUnit(idx) for idx in trio_info[1:]]
-        return [self.mCondEnv.makeNumericCond(zyg_base, [1, 1]),
-            self.mCondEnv.joinAnd([
-                self.mCondEnv.makeNumericCond(zyg_father, [1, 1]),
-                self.mCondEnv.makeNumericCond(zyg_mother, [0, 0])]),
-            self.mCondEnv.joinAnd([
-                self.mCondEnv.makeNumericCond(zyg_mother, [1, 1]),
-                self.mCondEnv.makeNumericCond(zyg_father, [0, 0])])]
+            eval_space.getZygUnit(idx) for idx in trio_info[1:]]
+        return [eval_space.makeNumericCond(zyg_base, zyg_bounds = "1"),
+            eval_space.joinAnd([
+                eval_space.makeNumericCond(zyg_father, zyg_bounds = "1"),
+                eval_space.makeNumericCond(zyg_mother, zyg_bounds = "0")]),
+            eval_space.joinAnd([
+                eval_space.makeNumericCond(zyg_mother, zyg_bounds = "1"),
+                eval_space.makeNumericCond(zyg_father, zyg_bounds = "0")])]
 
     def prepareImport(self, actual_condition):
         ret = dict()
-        for trio_info in self.mDS.getFamilyInfo().getTrioSeq():
+        for trio_info in self.mFamilyInfo.getTrioSeq():
             self._prepareTrio(trio_info, actual_condition, ret)
         return ret
 
@@ -81,9 +60,9 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         c_proband, c_father, c_mother = self._prepareZygConditions(trio_info)
 
         genes1 = set()
-        stat_info = self.mGeneUnit.makeStat(self.mCondEnv.joinAnd(
-            [actual_condition, c_proband, c_father]))
-        for info in stat_info[2]:
+        stat_info = self.mGeneUnit.makeStat(self.getEvalSpace().joinAnd(
+            [actual_condition, c_proband, c_father]), repr_context = None)
+        for info in stat_info["variants"]:
             gene, count = info[:2]
             if count > 0:
                 genes1.add(gene)
@@ -92,9 +71,9 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         if len(genes1) is None:
             return
         genes2 = set()
-        stat_info = self.mGeneUnit.makeStat(self.mCondEnv.joinAnd(
-            [actual_condition, c_proband, c_mother]))
-        for info in stat_info[2]:
+        stat_info = self.mGeneUnit.makeStat(self.getEvalSpace().joinAnd(
+            [actual_condition, c_proband, c_mother]), repr_context = None)
+        for info in stat_info["variants"]:
             gene, count = info[:2]
             if count > 0:
                 genes2.add(gene)
@@ -107,30 +86,31 @@ class CompHetsOperativeUnit(Unit, ComplexEnumSupport):
         ret[trio_info[0]] = sorted(actual_genes)
 
     def iterComplexCriteria(self, context, variants = None):
-        for trio_info in self.mDS.getFamilyInfo().getTrioSeq():
+        for trio_info in self.mFamilyInfo.getTrioSeq():
             if variants is not None and trio_info[0] not in variants:
                 continue
-            gene_seq = context["comp"].get(trio_info[0])
+            gene_seq = context.get(trio_info[0])
             if not gene_seq:
                 continue
             c_proband, c_father, c_mother = self._prepareZygConditions(
                 trio_info)
-            yield trio_info[0], self.mCondEnv.joinAnd([
+            yield trio_info[0], self.getEvalSpace().joinAnd([
                 c_proband, c_father.addOr(c_mother),
-                self.mCondEnv.makeEnumCond(self.mGeneUnit, gene_seq)])
+                self.getEvalSpace().makeEnumCond(self.mGeneUnit, gene_seq)])
 
-    def makeActiveStat(self, condition, flt_base_h, repr_context):
-        ret = self.prepareStat()
-        if self.mGeneUnit.isDetailed():
-            ret[1]["detailed"] = True
-        ret.append(self.collectComplexStat(self.mDS, condition,
-            {"comp": flt_base_h.getCompData(self.getName())},
-            detailed = self.mGeneUnit.isDetailed()))
-        return ret
+    def locateContext(self, cond_data, eval_h):
+        hash_code, actual_condition = eval_h.getImportSupport(self.getName())
+        context = eval_h.getEvalSpace().getOpCacheValue(
+            self.getName(), hash_code)
+        if context is None:
+            context = self.prepareImport(actual_condition)
+            eval_h.getEvalSpace().setOpCacheValue(
+                self.getName(), hash_code, context)
+        return context
 
-    def validateCondition(self, cond_data):
-        return validateEnumCondition(cond_data)
-
-    def parseCondition(self, cond_data, calc_data):
-        return self.makeComplexCondition(
-            cond_data[2], cond_data[3], {"comp": calc_data})
+    def makeStat(self, condition, repr_context):
+        ret_handle = self.prepareStat()
+        self.collectComplexStat(ret_handle, condition,
+            self.locateContext(None, repr_context["eval"]),
+            detailed = self.mGeneUnit.isDetailed())
+        return ret_handle

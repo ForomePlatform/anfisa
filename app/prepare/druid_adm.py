@@ -21,7 +21,7 @@
 import os, sys, subprocess, json
 from datetime import datetime, timedelta
 
-from app.filter.druid_agent import DruidAgent
+from app.xl.druid_agent import DruidAgent
 #===============================================
 class DruidAdmin(DruidAgent):
     TIME_START = "2015-01-01"
@@ -46,8 +46,8 @@ class DruidAdmin(DruidAgent):
         rec_data["_rand"] = pre_data["_rand"]
 
     #===============================================
-    def uploadDataset(self, dataset_name, flt_data, fdata_name,
-            report_name = None):
+    def uploadDataset(self, dataset_name, flt_data, zygosity_names,
+            fdata_name, report_name = None):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
@@ -74,23 +74,25 @@ class DruidAdmin(DruidAgent):
             {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
-            if unit_data["kind"].startswith("transcript-"):
+            if unit_data["kind"] in {"func", "transcript"}:
                 continue
-            if unit_data["kind"] in {"long", "float"}:
+            if unit_data["kind"] == "numeric":
                 dim_container.append({
                     "name": unit_data["name"],
-                    "type": unit_data["kind"]})
-            elif unit_data["kind"] == "zygosity":
-                for idx in range(unit_data["size"]):
-                    dim_container.append({
-                        "name": "%s_%d" % (unit_data["name"], idx),
-                        "type": "long"})
+                    "type": ("float" if unit_data["sub-kind"] == "float"
+                        else "long")})
             else:
                 if len(unit_data["variants"]) == 0:
                     continue
                 if sum(info[1] for info in unit_data["variants"]) == 0:
                     continue
                 dim_container.append(unit_data["name"])
+
+        if zygosity_names is not None:
+            for name in zygosity_names:
+                dim_container.append({
+                    "name": name,
+                    "type": "long"})
 
         schema_request = {
             "type": "index",

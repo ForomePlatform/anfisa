@@ -63,24 +63,6 @@ class AnfisaConfig:
             "render": None
         },
 
-        "comp-hets.setup": {
-            "zygosity.unit": "Inheritance_Mode",
-            "vgroup": "Inheritance",
-            "Genes": "Symbol",
-            "op-variables.xl": [
-                ["Compound_Het", "Symbol",
-                    "Calculated Compound Hetreozygous"],
-                ["Compound_Het2", "Symbol",
-                    "Calculated Compound Hetreozygous"]],
-            "op-variables.ws": [
-                ["Compound_Het_transcript", "Transcript_id",
-                    "Calculated Compound Hetreozygous, transcript approx"],
-                ["Compound_Het_gene", "Transctript_gene_id",
-                    "Calculated Compound Hetreozygous, gene approx"],
-                ["Compound_Het_rough", "Symbol",
-                    "Calculated Compound Hetreozygous, rough approx"]],
-        },
-
         "transcript.path.base": "/__data/transcript_consequences",
         "transcript.view.setup": ("transcripts", "transcript_consequences"),
 
@@ -88,6 +70,7 @@ class AnfisaConfig:
 
         "job.pool.size":    3,
         "job.pool.threads": 1,
+        "op.cache.size":   50,
 
         "sol-log.size": 30}
 

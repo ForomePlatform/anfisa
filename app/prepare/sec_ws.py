@@ -26,17 +26,17 @@ from datetime import datetime
 from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
-from .trans_prep import TranscriptPreparator
+from .trans_prep import TransformPreparator
 from .html_report import reportDS
 
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, dataset, ws_name, flt_base_h,
+    def __init__(self, dataset, ws_name, eval_h,
             markup_batch = None, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = dataset
         self.mWSName = ws_name
-        self.mFltBase = flt_base_h
+        self.mEval = eval_h
         self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
         self.mForceMode = force_mode
@@ -55,25 +55,29 @@ class SecondaryWsCreation(ExecutionTask):
             return None
         self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
-        receipt = {"kind": self.mFltBase.getSolKind()}
+        receipt = {
+            "kind": self.mEval.getSolKind(),
+            "base": self.mDS.getName()
+        }
 
-        if self.mFltBase.getSolKind() == "filter":
-            if self.mFltBase.getFilterName():
-                receipt["filter-name"] = self.mFltBase.getFilterName()
-            condition = self.mFltBase.getCondition()
-            rec_count = self.mDS.evalTotalCount(condition)
+        if self.mEval.getSolKind() == "filter":
+            if self.mEval.getFilterName():
+                receipt["filter-name"] = self.mEval.getFilterName()
+            condition = self.mEval.getCondition()
+            rec_count = self.mDS.getEvalSpace().evalTotalCount(condition)
             if (rec_count < 1
                     or rec_count >= AnfisaConfig.configOption("max.ws.size")):
                 self.setStatus("Size is incorrect: %d" % rec_count)
                 return None
-            rec_no_seq = self.mDS.evalRecSeq(condition, rec_count)
-            receipt["seq"] = self.mFltBase.getPresentation()
+            rec_no_seq = self.mDS.getEvalSpace().evalRecSeq(
+                condition, rec_count)
+            receipt["seq"] = self.mEval.getPresentation()
         else:
-            if self.mFltBase.getDTreeName():
-                receipt["dtree-name"] = self.mFltBase.getDTreeName()
-            rec_no_seq, point_seq = self.mFltBase.collectRecSeq(self.mDS)
+            if self.mEval.getDTreeName():
+                receipt["dtree-name"] = self.mEval.getDTreeName()
+            rec_no_seq, point_seq = self.mEval.collectRecSeq()
             receipt["points"] = point_seq
-        receipt["flt-update-info"] = self.mFltBase.getUpdateInfo()
+        receipt["eval-update-info"] = self.mEval.getUpdateInfo()
 
         rec_no_seq = sorted(rec_no_seq)
         rec_no_set = set(rec_no_seq)
@@ -103,7 +107,7 @@ class SecondaryWsCreation(ExecutionTask):
 
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
-        trans_prep = TranscriptPreparator(flt_schema, False)
+        trans_prep = TransformPreparator(flt_schema, False)
         if self.mMarkupBatch is not None:
             self.setStatus("Evaluating markup")
             for rec_no, fdata in zip(rec_no_seq, fdata_seq):
@@ -160,6 +164,10 @@ class SecondaryWsCreation(ExecutionTask):
             meta_rec["versions"][
                 "Anfisa load"] = self.mDS.getApp().getVersionCode()
 
+        receipts = self.mDS.getDataInfo().get("receipts")
+        if receipts is not None:
+            receipts = [receipt] + receipts[:]
+
         ds_info = {
             "name": self.mWSName,
             "kind": "ws",
@@ -172,7 +180,8 @@ class SecondaryWsCreation(ExecutionTask):
             "modes": ["secondary"],
             "meta": meta_rec,
             "doc": [],
-            "receipt": receipt,
+            "zygosity_var": self.mDS.getDataInfo()["zygosity_var"],
+            "receipts": receipts,
             "date_loaded": date_loaded}
 
         with open(ws_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:

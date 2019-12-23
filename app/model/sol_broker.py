@@ -35,24 +35,24 @@ class SolutionBroker(SyncronizedObject):
         self.mStdFilterDict = None
         self.mStdFilterList = None
         self.mFilterCache = None
-        self.mSolSpace = None
+        self.mSolEnv = None
         self.mSolKinds = None
 
-    def getSolSpace(self):
-        return self.mSolSpace
+    def getSolEnv(self):
+        return self.mSolEnv
 
     #===============================================
-    def setSolSpace(self, sol_space):
-        assert self.mSolSpace is None
+    def setSolEnv(self, sol_space):
+        assert self.mSolEnv is None
         with self:
-            self.mSolSpace = sol_space
+            self.mSolEnv = sol_space
             self.mSolKinds = {kind: _SolutionKindHandler(self, kind)
                 for kind in ("filter", "dtree")}
-            self.mSolSpace.attachBroker(self)
+            self.mSolEnv.attachBroker(self)
 
     def deactivate(self):
-        if self.mSolSpace is not None:
-            self.mSolSpace.detachBroker(self)
+        if self.mSolEnv is not None:
+            self.mSolEnv.detachBroker(self)
 
     #===============================================
     def addModes(self, modes):
@@ -162,7 +162,7 @@ class _SolutionKindHandler:
         _names = []
         updated = False
         with self.mBroker:
-            for info in self.mBroker.getSolSpace().iterEntries(self.mSolKind):
+            for info in self.mBroker.getSolEnv().iterEntries(self.mSolKind):
                 name, entry_data, upd_time, upd_from = info
                 _names.append(name)
                 entry_obj = self.mEntryDict.get(name)
@@ -200,7 +200,7 @@ class _SolutionKindHandler:
         option, name = instr
         assert (name and not name.startswith(self.sStdFMark)
             and name[0].isalpha() and ' ' not in name)
-        return self.mBroker.getSolSpace().modifyEntry(
+        return self.mBroker.getSolEnv().modifyEntry(
             self.mBroker.getName(), self.mSolKind, option, name, entry_data)
 
     def updateSolEntry(self, sol_obj):
