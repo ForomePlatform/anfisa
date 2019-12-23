@@ -111,7 +111,7 @@ class SolutionBroker(SyncronizedObject):
     def iterSolEntries(self, kind):
         sol_kind_h = self.mSolKinds[kind]
         for info in sol_kind_h.getList():
-            yield sol_kind_h.pickByName(info[0])
+            yield sol_kind_h.pickByName(info["name"])
 
     def pickSolEntry(self, kind, name):
         return self.mSolKinds[kind].pickByName(name)
@@ -190,10 +190,14 @@ class _SolutionKindHandler:
         with self.mBroker:
             for idx, name in enumerate(self.mNames):
                 entry_obj = self.mEntryDict[name]
-                info = [name, idx < self.mStdCount, True]
-                info += entry_obj.getUpdateInfo()
-                info.append(entry_obj.noErrors())
-                ret_handle.append(info)
+                upd_time, upd_from = entry_obj.getUpdateInfo()
+                ret_handle.append({
+                    "name": name,
+                    "standard": idx < self.mStdCount,
+                    "upd-time": upd_time,
+                    "upd-from": upd_from,
+                    "errors": not entry_obj.noErrors()
+                })
         return ret_handle
 
     def modifySolEntry(self, instr, entry_data):

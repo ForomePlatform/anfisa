@@ -185,6 +185,14 @@ div.comment {
     font-style: italic;
 }
 
+div.upd-note {
+    text-align: right;
+    font-style: italic;
+    color: grey;
+    font-size: 80%;
+    margin-right: 20px;
+}
+
 /****************************************/
 span#control-open {
     border: 1px solid white;

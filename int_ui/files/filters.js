@@ -103,8 +103,8 @@ var sUnitsH = {
         if (sSamplesCtrl)
             sSamplesCtrl.reset(this.mCount);
         this.mItems = info["stat-list"];
-        sConditionsH.setup(info["conditions"], info["bad-idxs"]);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
+        sConditionsH.setup(info["conditions"], info["bad-idxs"]);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
@@ -287,7 +287,7 @@ var sOpFilterH = {
 
     update: function(filter_name, filter_list) {
         this.mCurFilter = (filter_name)? filter_name:"";
-        var all_filters = sFiltersH.setup(filter_list)
+        var all_filters = sFiltersH.setup(filter_name, filter_list)
         for (idx = 0; idx < this.mHistory.length; idx++) {
             hinfo = this.mHistory[idx];
             if (hinfo[0] != "" && all_filters.indexOf(hinfo[0]) < 0)
@@ -391,7 +391,7 @@ var sConditionsH = {
     setup: function(cond_list, bad_idxs) {
         this.mList = (cond_list)? cond_list:[];
         this.mBadIdxs = (bad_idxs)? bad_idxs:[];
-        var list_cond_rep = [];
+        var list_cond_rep = [sFiltersH.getCurUpdateReport()];
         for (idx = 0; idx < this.mList.length; idx++) {
             cond = this.mList[idx];
             list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
@@ -653,11 +653,12 @@ var sFiltersH = {
     mCurOp: null,
     mSelName: null,
     mComboName: null,
+    mCurFilterName: null,
+    mCurFilterInfo: null,
     mBtnOp: null,
     
     mAllList: [],
     mOpList: [],
-    mLoadList: [],
     mFltTimeDict: null,
 
     init: function() {
@@ -667,20 +668,21 @@ var sFiltersH = {
         this.mBtnOp     = document.getElementById("filter-act-op");
     },
 
-    setup: function(filter_list) { // reduced monitor.js//setupNamedFilters()
+    setup: function(filter_name, filter_list) {
+        this.mCurFilterName = filter_name;
+        this.mCurFilterInfo = null;
         var prev_all_list = JSON.stringify(this.mAllList);
         this.mOpList = [];
-        this.mLoadList = [];
         this.mAllList = [];
         this.mFltTimeDict = {};
         for (idx = 0; idx < filter_list.length; idx++) {
-            flt_name = filter_list[idx][0];
-            this.mAllList.push(flt_name);
-            if (!filter_list[idx][1])
-                this.mOpList.push(flt_name);
-            if (filter_list[idx][2])
-                this.mLoadList.push(flt_name);
-            this.mFltTimeDict[flt_name] = filter_list[idx][3];
+            flt_info = filter_list[idx];
+            if (flt_info["name"] == this.mCurFilterName)
+                this.mCurFilterInfo = flt_info;
+            this.mAllList.push(flt_info["name"]);
+            if (!flt_info["standard"])
+                this.mOpList.push(flt_info["name"]);
+            this.mFltTimeDict[flt_info["name"]] = filter_list["upd-time"];
         }
         if (prev_all_list != JSON.stringify(this.mAllList))
             onFilterListChange();
@@ -693,27 +695,41 @@ var sFiltersH = {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
-        cur_filter = sOpFilterH.getCurFilterName();
-        if (cur_filter == "") {
+        
+        if (!this.mCurFilterName) {
             this.mComboName.style.display = "none";
+            this.mInpName.value = "";
         } else {
-            this.mInpName.value = cur_filter;
+            this.mInpName.value = this.mCurFilterName;
             this.mInpName.disabled = true;
             this.mSelName.disabled = true;
             this.mComboName.style.display = "block";
         }
         this.mInpName.style.visibility = "visible";
         document.getElementById("filters-op-create").className = 
-            (sConditionsH.isEmpty() || cur_filter != "")? "disabled":"";
+            (sConditionsH.isEmpty() || !!this.mCurFilterName)? "disabled":"";
         document.getElementById("filters-op-modify").className = 
-            (sConditionsH.isEmpty() || cur_filter != "" ||
+            (sConditionsH.isEmpty() || !!this.mCurFilterName ||
                 (this.mOpList.length == 0))? "disabled":"";
         document.getElementById("filters-op-delete").className = 
-            (cur_filter == "" || 
-                this.mOpList.indexOf(cur_filter) < 0)? "disabled":"";
+            (!!this.mCurFilterName || 
+                this.mOpList.indexOf(this.mCurFilterName) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
     },
 
+    getCurUpdateReport: function() {
+        if (this.mCurFilterInfo != null) {
+            if (this.mCurFilterInfo["upd-time"] != null) {
+                var ret = '<div class="upd-note">Updated at ' + 
+                    timeRepr(this.mCurFilterInfo["upd-time"]);
+                if (this.mCurFilterInfo["upd-from"] != sDSName) 
+                    ret += ' from ' + this.mCurFilterInfo["upd-from"];
+                return ret + '</div>';
+            }
+        }
+        return '';
+    },
+    
     checkName: function() {
         if (this.mCurOp == null)
             return;
@@ -722,14 +738,13 @@ var sFiltersH = {
         filter_name = this.mInpName.value;
         q_all = this.mAllList.indexOf(filter_name) >= 0;
         q_op  = this.mOpList.indexOf(filter_name) >= 0;
-        q_load = this.mLoadList.indexOf(filter_name) >= 0;
         
         if (this.mCurOp == "modify") {
             this.mBtnOp.disabled = (!q_op) || filter_name == cur_filter;
             return;
         }
         if (this.mCurOp == "load") {
-            this.mBtnOp.disabled = (!q_load) || filter_name == cur_filter;
+            this.mBtnOp.disabled = (!q_all) || filter_name == cur_filter;
             return;
         }
         
@@ -759,7 +774,7 @@ var sFiltersH = {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mLoadList);
+        this.fillSelNames(false, this.mAllList);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
@@ -810,7 +825,6 @@ var sFiltersH = {
         filter_name = this.mInpName.value;
         q_all = this.mAllList.indexOf(filter_name) >= 0;
         q_op = this.mOpList.indexOf(filter_name) >= 0;
-        q_load = this.mLoadList.indexOf(filter_name) >= 0;
         
         switch (this.mCurOp) {
             case "create":
@@ -826,7 +840,7 @@ var sFiltersH = {
                 }
                 break;
             case "load":
-                if (q_load && filter_name != cur_filter) {
+                if (q_all && filter_name != cur_filter) {
                     sOpFilterH._updateConditions(null, filter_name);
                 }
                 break;

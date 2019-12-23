@@ -105,7 +105,9 @@ var sDecisionTree = {
 
     _fillTreeTable: function() {
         this.mAcceptedCount = 0;
-        var list_rep = ['<table class="d-tree">'];
+        var list_rep = [sDTreesH.getCurUpdateReport()];
+        
+        list_rep.push('<table class="d-tree">');
         for (var p_no = 0; p_no < this.mPoints.length; p_no++) {
             point = this.mPoints[p_no];
             p_kind = point[0];
@@ -604,11 +606,11 @@ var sDTreesH = {
     mSelName: null,
     mComboName: null,
     mCurDTreeName: null,
+    mCurDTreeInfo: null,
     mBtnOp: null,
     
     mAllList: [],
     mOpList: [],
-    mLoadList: [],
     mDTreeTimeDict: null,
 
     init: function() {
@@ -620,19 +622,19 @@ var sDTreesH = {
 
     setup: function(dtree_name, dtree_list) {
         this.mCurDTreeName = dtree_name;
+        this.mCurDTreeInfo = null;
         var prev_all_list = JSON.stringify(this.mAllList);
         this.mOpList = [];
-        this.mLoadList = [];
         this.mAllList = [];
         this.mDTreeTimeDict = {};
         for (idx = 0; idx < dtree_list.length; idx++) {
-            dtree_name = dtree_list[idx][0];
-            this.mAllList.push(dtree_name);
-            if (!dtree_list[idx][1])
-                this.mOpList.push(dtree_name);
-            if (dtree_list[idx][2])
-                this.mLoadList.push(dtree_name);
-            this.mDTreeTimeDict[dtree_name] = dtree_list[idx][3];
+            dtree_info = dtree_list[idx];
+            if (dtree_info["name"] == this.mCurDTreeName)
+                this.mCurDTreeInfo = dtree_info;
+            this.mAllList.push(dtree_info["name"]);
+            if (!dtree_info["standard"])
+                this.mOpList.push(dtree_info["name"]);
+            this.mDTreeTimeDict[dtree_info["name"]] = dtree_info["upd-time"];
         }
         //if (prev_all_list != JSON.stringify(this.mAllList))
         //    onDTreeListChange();
@@ -666,6 +668,19 @@ var sDTreesH = {
         this.mBtnOp.style.display = "none";
     },
 
+    getCurUpdateReport: function() {
+        if (this.mCurDTreeInfo != null) {
+            if (this.mCurDTreeInfo["upd-time"] != null) {
+                var ret = '<div class="upd-note">Updated at ' + 
+                    timeRepr(this.mCurDTreeInfo["upd-time"]);
+                if (this.mCurDTreeInfo["upd-from"] != sDSName) 
+                    ret += ' from ' + this.mCurDTreeInfo["upd-from"];
+                return ret + '</div>';
+            }
+        }
+        return '';
+    },
+    
     checkName: function() {
         if (this.mCurOp == null)
             return;
@@ -673,14 +688,13 @@ var sDTreesH = {
         dtree_name = this.mInpName.value;
         q_all = this.mAllList.indexOf(dtree_name) >= 0;
         q_op  = this.mOpList.indexOf(dtree_name) >= 0;
-        q_load = this.mLoadList.indexOf(dtree_name) >= 0;
         
         if (this.mCurOp == "modify") {
             this.mBtnOp.disabled = (!q_op) || dtree_name == this.mCurDTreeName;
             return;
         }
         if (this.mCurOp == "load") {
-            this.mBtnOp.disabled = (!q_load) || dtree_name == this.mCurDTreeName;
+            this.mBtnOp.disabled = (!q_all) || dtree_name == this.mCurDTreeName;
             return;
         }
         
@@ -704,15 +718,13 @@ var sDTreesH = {
     select: function() {
         this.mInpName.value = this.mSelName.value;
         this.checkName();
-        //if (this.mCurOp == "load" || this.mCurOp == "modify")
-        //    this.action();
     },
 
     startLoad: function() {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mLoadList);
+        this.fillSelNames(false, this.mAllList);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
@@ -761,7 +773,6 @@ var sDTreesH = {
         dtree_name = this.mInpName.value;
         q_all = this.mAllList.indexOf(dtree_name) >= 0;
         q_op = this.mOpList.indexOf(dtree_name) >= 0;
-        q_load = this.mLoadList.indexOf(dtree_name) >= 0;
         
         switch (this.mCurOp) {
             case "create":
@@ -777,7 +788,7 @@ var sDTreesH = {
                 }
                 break;
             case "load":
-                if (q_load && dtree_name != this.mCurDTreeName) {
+                if (q_all && dtree_name != this.mCurDTreeName) {
                     sDecisionTree.setup(false,
                         {"dtree": dtree_name});
                 }

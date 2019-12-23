@@ -325,6 +325,15 @@ class DataSet(SolutionBroker):
                 for key in ("no", "lb", "cl", "mr", "dt")])
         return ret_handle
 
+
+    @classmethod
+    def _REST_BackupSolList(cls, sol_info_seq):
+        ret_handle = []
+        for sol_info in sol_info_seq:
+            ret_handle.append([sol_info.get(key, True)
+                for key in ("name", "standard", None, "upd-time")])
+        return ret_handle
+
     def _REST_BackupStatUnits(self, stat_unit_seq):
         ret_handle, avail_import, avail_import_titles = [], [], []
         for unit_stat in stat_unit_seq:
@@ -442,6 +451,10 @@ class DataSet(SolutionBroker):
                 ret_handle["conditions"] = self._REST_BackupConditionsDown(
                     cond_data)
 
+        if self._REST_NeedsBackup(rq_args, 'L'):
+            ret_handle["filter-list"] = self._REST_BackupSolList(
+                ret_handle["filter-list"])
+
         return ret_handle
 
     #===============================================
@@ -516,6 +529,11 @@ class DataSet(SolutionBroker):
             "dtree-list": self.getSolEntryList("dtree"),
             "rq_id": self._makeRqId()}
         ret_handle.update(dtree_h.reportInfo())
+
+        if self._REST_NeedsBackup(rq_args, 'L'):
+            ret_handle["dtree-list"] = self._REST_BackupSolList(
+                ret_handle["dtree-list"])
+
         return ret_handle
 
     #===============================================
