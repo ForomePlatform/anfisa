@@ -45,7 +45,7 @@ class AnfisaConfig:
 
         "tm.coeff": .2,
 
-        "max.ws.size":  5000,
+        "max.ws.size":  9000,
         "report.lines": 100,
         "max.export.size": 300,
 

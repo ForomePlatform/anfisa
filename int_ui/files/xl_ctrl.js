@@ -73,7 +73,7 @@ var sCreateWsH = {
         this.mSpanModTitle.innerHTML = 'Create workspace for ' +
             info[0] + ' of ' + info[1];
         var err_msg = "";
-        if (info[0] >= 5000)
+        if (info[0] >= 9000)
             err_msg = "Too many variants, try to reduce";
         if (info[0] < 1)
             err_msg = "Empty set";
