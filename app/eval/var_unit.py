@@ -19,15 +19,14 @@
 #
 
 import abc
-from .condition import validateNumCondition, validateEnumCondition
 
 #===============================================
 class VarUnit:
     def __init__(self, eval_space, descr, unit_kind = None, sub_kind = None):
         self.mEvalSpace = eval_space
         self.mDescr = descr
-        self.mUnitKind  = descr["kind"] if unit_kind is None else unit_kind
-        self.mSubKind = descr.get("sub-kind") if sub_kind is None else sub_kind
+        self.mUnitKind  = descr.get("kind", unit_kind)
+        self.mSubKind = descr.get("sub-kind", sub_kind)
         self.mName  = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr.get("no", -1)
@@ -35,6 +34,12 @@ class VarUnit:
         self.mRenderMode = descr.get("render")
         self.mToolTip = descr.get("tooltip")
         self.mScreened = False
+        if unit_kind is not None:
+            assert self.mUnitKind == unit_kind, (
+                "Kind conflict: %s/%s" % (self.mUnitKind, unit_kind))
+        if sub_kind is not None:
+            assert self.mSubKind == sub_kind, (
+                "Sub-kind conflict: %s/%s" % (self.mSubKind, sub_kind))
 
     def getEvalSpace(self):
         return self.mEvalSpace
@@ -75,7 +80,7 @@ class VarUnit:
     def _setScreened(self, value = True):
         self.mScreened = value
 
-    def prepareStat(self, incomplete_eval_h = None):
+    def prepareStat(self, incomplete_mode = False):
         ret_handle = {
             "kind": self.mUnitKind,
             "name": self.mName,
@@ -88,48 +93,30 @@ class VarUnit:
             ret_handle["render"] = self.mRenderMode
         if self.mToolTip:
             ret_handle["tooltip"] = self.mToolTip
-        if incomplete_eval_h is not None:
+        if incomplete_mode:
             ret_handle["incomplete"] = True
         return ret_handle
 
 #===============================================
 #===============================================
 class NumUnitSupport:
-    def validateCondition(self, cond_info, op_units):
-        return validateNumCondition(cond_info)
-
-    def parseCondition(self, cond_info, eval_h):
-        min_val, min_eq, max_val, max_eq = cond_info[2]
+    def buildCondition(self, cond_data, eval_h):
+        min_val, min_eq, max_val, max_eq = cond_data[2]
         return self.getEvalSpace().makeNumericCond(self,
             min_val, min_eq, max_val, max_eq)
 
 #===============================================
 class EnumUnitSupport:
-    def validateCondition(self, cond_info, op_units):
-        return validateEnumCondition(cond_info)
-
-    def parseCondition(self, cond_info, eval_h):
-        filter_mode, variants = cond_info[2:]
+    def buildCondition(self, cond_data, eval_h):
+        filter_mode, variants = cond_data[2:]
+        if len(variants) == 0:
+            eval_h.operationError(cond_data,
+                "Enum %s: empty set of variants" % self.getName())
+            return self.getEvalSpace().getCondNone()
         return self.getEvalSpace().makeEnumCond(
             self, variants, filter_mode)
 
 #===============================================
-#===============================================
-class ReservedNumUnit(NumUnitSupport):
-    def __init__(self, eval_space, name, sub_kind = "int"):
-        self.mEvalSpace = eval_space
-        self.mName = name
-        self.mSubKind = sub_kind
-
-    def getName(self):
-        return self.mName
-
-    def getEvalSpace(self):
-        return self.mEvalSpace
-
-    def getSubKind(self):
-        return self.mSubKind
-
 #===============================================
 class ComplexEnumUnit(VarUnit, EnumUnitSupport):
     def __init__(self, eval_space, descr,
@@ -138,10 +125,6 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
 
     @abc.abstractmethod
     def iterComplexCriteria(self, context = None, variants = None):
-        pass
-
-    @abc.abstractmethod
-    def locateContext(self, eval_h):
         pass
 
     def collectComplexStat(self, ret_handle, base_condition,
@@ -159,8 +142,7 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
             ret_handle["detailed"] = True
         ret_handle["variants"] = val_stat_list
 
-    def parseCondition(self, cond_data, eval_h):
-        context = self.locateContext(cond_data, eval_h)
+    def buildCondition(self, cond_data, eval_h, context = None):
         filter_mode, variants = cond_data[-2:]
         single_cr_seq = []
         for _, condition in self.iterComplexCriteria(context, variants):
@@ -171,3 +153,53 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
         if filter_mode == "AND":
             return self.getEvalSpace().joinAnd(single_cr_seq)
         return self.getEvalSpace().joinOr(single_cr_seq)
+
+#===============================================
+class FunctionUnit(ComplexEnumUnit):
+    def __init__(self, eval_space, descr, sub_kind, parameters):
+        ComplexEnumUnit.__init__(self, eval_space, descr,
+            unit_kind = "func", sub_kind = sub_kind)
+        self.mParameters = parameters
+
+    def getParameters(self):
+        return self.mParameters
+
+    def makeInfoStat(self, eval_h):
+        return VarUnit.prepareStat(self, None)
+
+    @abc.abstractmethod
+    def locateContext(self, cond_data, eval_h):
+        return None
+
+    @abc.abstractmethod
+    def makeParamStat(self, condition, parameters, eval_h):
+        return None
+
+    @abc.abstractmethod
+    def validateArgs(self, func_args):
+        assert False
+
+    def buildCondition(self, cond_data, eval_h):
+        context = self.locateContext(cond_data, eval_h)
+        return ComplexEnumUnit.buildCondition(self,
+            cond_data, eval_h, context)
+
+#===============================================
+#===============================================
+class ReservedNumUnit(NumUnitSupport):
+    def __init__(self, eval_space, name, sub_kind = "int"):
+        self.mEvalSpace = eval_space
+        self.mName = name
+        self.mSubKind = sub_kind
+
+    def getUnitKind(self):
+        return "numeric"
+
+    def getName(self):
+        return self.mName
+
+    def getEvalSpace(self):
+        return self.mEvalSpace
+
+    def getSubKind(self):
+        return self.mSubKind

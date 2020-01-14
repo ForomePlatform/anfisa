@@ -19,23 +19,37 @@
 #
 
 import logging
+from cachetools import LRUCache
 
-from app.eval.var_unit import ComplexEnumUnit
-from app.eval.operative import OperativeUnit
-
+from app.config.a_config import AnfisaConfig
+from app.eval.var_unit import FunctionUnit
 #=====================================
-class CompHetsUnit(ComplexEnumUnit):
-    @staticmethod
-    def makeIt(ds_h, descr, gene_unit, before = None, after = None):
-        unit_h = CompHetsUnit(ds_h, descr, gene_unit)
-        op_unit_h = OperativeUnit(unit_h)
-        ds_h.getEvalSpace()._insertUnit(
-            op_unit_h, before = before, after = after)
+class CompHetsUnit(FunctionUnit):
+    sMaxGeneCompCount = AnfisaConfig.configOption("max.gene.comp.count")
 
-    def __init__(self, ds_h, descr, gene_unit):
-        ComplexEnumUnit.__init__(self, ds_h.getEvalSpace(), descr, "enum")
+    @staticmethod
+    def makeIt(ds_h, descr, gene_levels, before = None, after = None):
+        unit_h = CompHetsUnit(ds_h, descr, gene_levels)
+        ds_h.getEvalSpace()._insertUnit(
+            unit_h, before = before, after = after)
+
+    def __init__(self, ds_h, descr, gene_levels):
+        FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
+            sub_kind = "comp-hets", parameters = ["approx", "state"])
         self.mFamilyInfo = ds_h.getFamilyInfo()
-        self.mGeneUnit = self.getEvalSpace().getUnit(gene_unit)
+        self.mGeneLevelIdxs = dict()
+        self.mGeneUnits = dict()
+        self.mApproxInfo = []
+        for key, unit_name, level_title in gene_levels:
+            self.mGeneLevelIdxs[key] = len(self.mGeneUnits)
+            self.mGeneUnits[key] = self.getEvalSpace().getUnit(unit_name)
+            assert self.mGeneUnits[key] is not None, (
+                "Bad gene unit: " + unit_name)
+            self.mApproxInfo.append([key, level_title])
+        self.mTrioNames = [trio_info[0]
+            for trio_info in self.mFamilyInfo.getTrioSeq()]
+        self.mOpCache = LRUCache(
+            AnfisaConfig.configOption("comp-hets.cache.size"))
 
     def _prepareZygConditions(self, trio_info):
         eval_space = self.getEvalSpace()
@@ -49,19 +63,22 @@ class CompHetsUnit(ComplexEnumUnit):
                 eval_space.makeNumericCond(zyg_mother, zyg_bounds = "1"),
                 eval_space.makeNumericCond(zyg_father, zyg_bounds = "0")])]
 
-    def prepareImport(self, actual_condition):
-        ret = dict()
+    def buildConditions(self, gene_unit, actual_condition):
+        ret_handle = dict()
         for trio_info in self.mFamilyInfo.getTrioSeq():
-            self._prepareTrio(trio_info, actual_condition, ret)
-        return ret
+            self._buildTrioCond(trio_info,
+                gene_unit, actual_condition, ret_handle)
+        return ret_handle
 
-    def _prepareTrio(self, trio_info, actual_condition, ret):
-        logging.info("Comp-hets eval for %s" % trio_info[0])
+    def _buildTrioCond(self, trio_info,
+            gene_unit, actual_condition, ret_handle):
+        logging.info("Comp-hets eval for %s / %s" %
+            (trio_info[0], gene_unit.getName()))
         c_proband, c_father, c_mother = self._prepareZygConditions(trio_info)
 
         genes1 = set()
-        stat_info = self.mGeneUnit.makeStat(self.getEvalSpace().joinAnd(
-            [actual_condition, c_proband, c_father]), repr_context = None)
+        stat_info = gene_unit.makeStat(self.getEvalSpace().joinAnd(
+            [actual_condition, c_proband, c_father]), eval_h = None)
         for info in stat_info["variants"]:
             gene, count = info[:2]
             if count > 0:
@@ -71,8 +88,8 @@ class CompHetsUnit(ComplexEnumUnit):
         if len(genes1) is None:
             return
         genes2 = set()
-        stat_info = self.mGeneUnit.makeStat(self.getEvalSpace().joinAnd(
-            [actual_condition, c_proband, c_mother]), repr_context = None)
+        stat_info = gene_unit.makeStat(self.getEvalSpace().joinAnd(
+            [actual_condition, c_proband, c_mother]), eval_h = None)
         for info in stat_info["variants"]:
             gene, count = info[:2]
             if count > 0:
@@ -83,34 +100,83 @@ class CompHetsUnit(ComplexEnumUnit):
         logging.info("Result genes for comp-hets: %d" % len(actual_genes))
         if len(actual_genes) == 0:
             return
-        ret[trio_info[0]] = sorted(actual_genes)
+        if len(actual_genes) >= self.sMaxGeneCompCount:
+            logging.info("Heavy condition")
+            ret_handle[trio_info[0]] = None
+        else:
+            ret_handle[trio_info[0]] = sorted(actual_genes)
 
     def iterComplexCriteria(self, context, variants = None):
+        if context is None:
+            return
+        gene_unit = self.mGeneUnits[context["approx"]]
         for trio_info in self.mFamilyInfo.getTrioSeq():
             if variants is not None and trio_info[0] not in variants:
                 continue
-            gene_seq = context.get(trio_info[0])
+            gene_seq = context["trio"].get(trio_info[0])
             if not gene_seq:
+                yield trio_info[0], self.getEvalSpace().getCondNone()
                 continue
             c_proband, c_father, c_mother = self._prepareZygConditions(
                 trio_info)
             yield trio_info[0], self.getEvalSpace().joinAnd([
                 c_proband, c_father.addOr(c_mother),
-                self.getEvalSpace().makeEnumCond(self.mGeneUnit, gene_seq)])
+                self.getEvalSpace().makeEnumCond(gene_unit, gene_seq)])
+
+    def makeInfoStat(self, eval_h, point_no):
+        ret_handle = self.prepareStat()
+        ret_handle["trio-variants"] = self.mTrioNames
+        ret_handle["approx-modes"] = self.mApproxInfo
+        ret_handle["labels"] = eval_h.getLabelPoints(point_no)
+        return ret_handle
+
+    def _locateContext(self, parameters, eval_h, point_no = None):
+        if "state" in parameters:
+            actual_condition = eval_h.getLabelCondition(
+                parameters["state"], point_no)
+            if actual_condition is None:
+                return None, ("State label %s not defined"
+                    % parameters["state"])
+        else:
+            actual_condition = eval_h.getActualCondition(point_no)
+        approx_mode = parameters.get("approx", self.mApproxInfo[0][0])
+        if approx_mode not in self.mGeneUnits:
+            return None, "Improper approx mode %s" % approx_mode
+        build_id = approx_mode + '|' + actual_condition.hashCode()
+        with self.getEvalSpace().getDS():
+            context = self.mOpCache.get(build_id)
+        if context is None:
+            context = {
+                "approx": approx_mode,
+                "trio": self.buildConditions(self.mGeneUnits[approx_mode],
+                    actual_condition)}
+            with self.getEvalSpace().getDS():
+                self.mOpCache[build_id] = context
+        if None in context["trio"].values():
+            context, "Too heavy condition"
+        return context, None
 
     def locateContext(self, cond_data, eval_h):
-        hash_code, actual_condition = eval_h.getImportSupport(self.getName())
-        context = eval_h.getEvalSpace().getOpCacheValue(
-            self.getName(), hash_code)
-        if context is None:
-            context = self.prepareImport(actual_condition)
-            eval_h.getEvalSpace().setOpCacheValue(
-                self.getName(), hash_code, context)
+        point_no, _ = eval_h.locateCondData(cond_data)
+        context, err_msg = self._locateContext(cond_data[2], eval_h, point_no)
+        if err_msg:
+            eval_h.operationError(cond_data, err_msg)
         return context
 
-    def makeStat(self, condition, repr_context):
+    def validateArgs(self, parameters):
+        if ("state" in parameters
+                and not isinstance(parameters["state"], str)):
+            return "Bad state parameter"
+        if ("approx" in parameters
+                and not isinstance(parameters["approx"], str)):
+            return "Bad approx parameter"
+        return None
+
+    def makeParamStat(self, condition, parameters, eval_h, point_no):
+        context, err_msg = self._locateContext(parameters, eval_h, point_no)
         ret_handle = self.prepareStat()
-        self.collectComplexStat(ret_handle, condition,
-            self.locateContext(None, repr_context["eval"]),
-            detailed = self.mGeneUnit.isDetailed())
+        self.collectComplexStat(ret_handle, condition, context,
+            self.mGeneUnits[context["approx"]].isDetailed())
+        if err_msg:
+            ret_handle["err"] = err_msg
         return ret_handle

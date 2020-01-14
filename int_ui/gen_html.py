@@ -47,189 +47,6 @@ def startHtmlPage(output, title = None, html_base = None,
     print('  </head>', file = output)
 
 #===============================================
-def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
-    startHtmlPage(output,
-        common_title + "-WS " + workspace.getName(), html_base,
-        css_files = ["base.css", "vrec.css", "anf.css",
-            "filters.css", "zones.css"],
-        js_files = ["anf.js", "monitor.js", "fctrl.js", "base.js",
-            "filters.js", "zones.js"])
-
-    print('  <body onload="initWin(\'%s\', \'%s\');">' %
-        (workspace.getName(), common_title), file = output)
-    _formMainDiv(output, workspace.getName(), ws_pub_url)
-    print('    <div id="filter-back">', file = output)
-    formFilterPanel(output)
-    print('    </div>', file = output)
-    _formZonesDiv(output, workspace.iterZones())
-    formNoteDiv(output)
-
-    print(' </body>', file = output)
-    print('</html>', file = output)
-
-#===============================================
-def _formMainDiv(output, workspace_name, ws_pub_url):
-    print('''
-    <div id="top">
-        <div id="top-ws">
-            <div class="dropdown">
-                <span id="control-open">&#8285;</span>
-                <div id="control-menu" class="dropdown-content">
-                    <a class="drop" onclick="goHome();"
-                        >Home Directory</a>
-                    <a class="drop" onclick="goToPage(\'DOC\');"
-                      id="menu-doc">Documentation</a>
-                    <a class="drop" onclick="goToPage(\'DTREE\');"
-                        >Decision tree panel</a>
-                    <a class="drop" onclick="openNote();"
-                        >Dataset Note...</a>
-                    <a class=:drop" onclick="showExport();"
-                        >Export...</a>
-                </div>
-                <div id="export-result" class="drop"></div>
-            </div> <span id="ds-name" class="bold"></span>
-            <div class="nomargins">
-                Variants:&nbsp;<span id="ws-list-report" class="bold"
-                ></span>
-            </div>
-            <div class="nomargins">
-                <small>
-                  Transcripts:&nbsp;<span id="ws-transcripts-report"></span>
-                </small>
-              </div>
-        </div>
-        <div  id="top-filters">
-          Filters:
-          <div id="flt-ctrl">
-            <div id="flt-named">
-              <input id="flt-check-named" type="checkbox"
-                onchange="checkCurFilters(0);"/>
-              <select id="flt-named-select" onchange="pickNamedFilter();">
-                <option value=""></option>
-              </select>
-            </div>
-            <div id="flt-cur">
-              <input id="flt-check-current" type="checkbox"
-                onchange="checkCurFilters(1);"/>
-              <span id="flt-current-state" title="Setup filter"
-                 onclick="filterModOn();">
-              </span>
-            </div>
-          </div>
-        </div>
-        <div id="top-zones">
-          <div id="zone-ctrl">
-            Zone:
-              <span id="zone-cur-title"></span>
-              <select style="visibility:hidden;">
-                <option value=""></option>
-              </select>
-          </div>
-          <div id="zone-cur">
-            <input id="zone-check" type="checkbox"
-                onchange="checkCurZone();"/>
-            <span id="zone-descr" onclick="zoneModOn();"></span>
-          </div>
-         </div>
-         <div id="top-tags">
-            <div id="tags-ctrl">
-              Tags:
-              <select id="cur-tag" onchange="pickTag();">
-                <option value=""></option>
-              </select>
-              <span id="cur-tag-count"></span>
-            </div>
-            <div id="cur-tag-nav">
-              <span id="cur-tag-nav-first" class="tags-nav"
-                onclick="tagNav(0);">|&#9664;</span>
-              <span id="cur-tag-count-prev" class="tags-count"></span>
-              <span id="cur-tag-nav-prev" class="tags-nav"
-                onclick="tagNav(1);">&#9664;</span>
-              <span id="cur-tag-here">&#11044;</span>
-              <span id="cur-tag-nav-next" class="tags-nav"
-                onclick="tagNav(3);">&#9654;</span>
-              <span id="cur-tag-count-next" class="tags-count"></span>
-              <span id="cur-tag-nav-last" class="tags-nav"
-                onclick="tagNav(4);">&#9654;|</span>
-            </div>
-         </div>
-         <div id="top-ref">
-            <a class="ext-ref" href="%(ws_pub_url)s?ds=%(ws)s"
-                target="blank" title="To front end">&#x23f5;</a>
-        </div>
-      </div>
-      <div id="bottom">
-        <div id="bottom-left">
-          <div id="wrap-rec-list">
-            <div id="rec-list">
-            </div>
-          </div>
-        </div>
-        <div id="bottom-right">
-            <iframe id="rec-frame2" name="rec-frame2" src="norecords">
-            </iframe>
-            <iframe id="rec-frame1" name="rec-frame1" src="norecords">
-            </iframe>
-        </div>
-    </div>''' % {"ws": workspace_name, "ws_pub_url": ws_pub_url},
-    file = output)
-
-#===============================================
-def _formZonesDiv(output, zones):
-    rep_check_zones, rep_div_zones = [], []
-    for zone_h in zones:
-        zone_check_id = "zn-check--%s" % zone_h.getName()
-        rep_check_zones.append(('<span id="zn--%s">'
-            '<input id="%s" class="zone-checkbox" type="checkbox" '
-            'onchange="checkWorkZone(\'%s\');"/>'
-            '<label for="%s">%s</label></span>') %
-            (zone_h.getName(), zone_check_id, zone_h.getName(),
-            zone_check_id, escape(zone_h.getTitle())))
-        rep_div_zones.append('<div class="work-zone-list" '
-            'id="zn-div--%s"></div>' % zone_h.getName())
-    params = {
-        "check_zones": "\n".join(rep_check_zones),
-        "div_zones": "\n".join(rep_div_zones)}
-
-    print('''
-    <div id="zone-back">
-      <div id="zone-mod">
-        <div id="zone-top">
-            <p id="zone-title">Zone setup
-              <span class="close-it" onclick="relaxView();">&times;</span>
-            </p>
-        </div>
-        <div id="work-zone-area">
-          <div id="work-zone-left">
-            <div id="work-zone-kind">
-               %(check_zones)s
-            </div>
-            <div id="work-zone-wrap-list">
-                %(div_zones)s
-            </div>
-          </div>
-          <div id="zone-right">
-            <div id="work-zone-wrap-def">
-                <div id="work-zone-def">
-                </div>
-            </div>
-            <div id="work-zone-ctrl">
-              <button class="op-button"
-                  onclick="relaxView();">
-                Done
-              </button>
-              <button id="work-zone-clear" class="op-button"
-                  onclick="zoneClearSelect();">
-                Clear
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-''' % params, file = output)
-
-#===============================================
 #===============================================
 def formNoteDiv(output):
     print('''
@@ -246,15 +63,13 @@ def formNoteDiv(output):
             <textarea id="note-content"></textarea>
         </div>
         <div id="work-note-ctrl">
-              <button onclick="saveNote();">
+            <button onclick="saveNote();">
                 Save
-              </button>
-              <button onclick="relaxView();">
+            </button>
+            <button onclick="relaxView();">
                 Done
-              </button>
-              <span id="note-time"></span>
-            </div>
-          </div>
+            </button>
+            <span id="note-time"></span>
         </div>
       </div>
     </div>
@@ -332,49 +147,12 @@ def tagsBlock(output):
 </div>''', file = output)
 
 #===============================================
-def noRecords(output):
-    startHtmlPage(output, css_files = ["anf.css"])
-    print('''
-  <body>
-    <h3>No variants available</h3>
-    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
-            >zone</button>
-        or
-        <button onclick='parent.window.updateCurFilter("");'
-            >filter</button>.</p>
-  </body>
-</html>''', file = output)
-
-#===============================================
-def dirPage(output, common_title, html_base, ws_pub_url):
-    startHtmlPage(output, common_title + " home", html_base,
-        css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
-    print('''
-  <body onload="setup(\'%s\', \'%s\');">
-    <h2>%s home directory</h2>
-    <p id="p-version">System version: <span id="span-version"></span></p>
-    <div id="div-main">
-    </div>
-  </body>
-</html>''' % (common_title, ws_pub_url, common_title), file = output)
-
-#===============================================
-def notFound(output, common_title, html_base):
-    startHtmlPage(output, common_title + ": Page not found",
-        html_base, css_files = ["dir.css"])
-    print('''
-  <body>
-    <h2>Page not found</h2>
-    <p><a href="dir" target="%s">Anfisa home</a></p>
-  </body>
-</html>''' % (common_title + "/dir"), file = output)
-
 #===============================================
 def formFilterPanel(output):
     print('''
-    <div id="filter-mod">
+    <div id="filter-mod" class="panel-space">
         <div id="filter-stat">
-          <div id="stat-list">
+          <div id="stat-list" class="list-items">
           </div>
         </div>
         <div id="filter-conditions">
@@ -416,6 +194,7 @@ def formFilterPanel(output):
               <span id="num-count" class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
+              <div id="cur-cond-func-param"></div>
               <div id="wrap-cond-enum">
                 <div id="wrap-cond-enum-list">
                   <div id="cur-cond-enum-list">
@@ -444,30 +223,27 @@ def formFilterPanel(output):
                 </div>
               </div>
             </div>
-            <div id="cur-cond-import">
-                <span "cur-import-status">Import</span>
-            </div>
             <div id="cur-cond-loading">
                <div class="loading">Loading data...</div>
             </div>
           </div>
           <div id="filters-edit-ctrl">
-            <button class="op-button drop" id="filter-clear-all-cond"
+            <button class="op-button popup" id="filter-clear-all-cond"
                 onclick='sOpFilterH.modify(\"clear-all\");'>
                 Clear
             </button>
             <div class="dropdown">
-              <button class="op-button drop">
+              <button class="op-button popup">
                 Filters...
               </button>
               <div id="filters-op-list" class="dropdown-content">
-                <a class="drop" id="filters-op-load"
+                <a class="popup" id="filters-op-load"
                     onclick="sFiltersH.startLoad();">Load</a>
-                <a class="drop" id="filters-op-create"
+                <a class="popup" id="filters-op-create"
                     onclick="sFiltersH.startCreate();">Create</a>
-                <a class="drop"  id="filters-op-modify"
+                <a class="popup"  id="filters-op-modify"
                     onclick="sFiltersH.startModify();">Modify</a>
-                <a class="drop"  id="filters-op-delete"
+                <a class="popup"  id="filters-op-delete"
                     onclick="sFiltersH.deleteIt();">Delete</a>
               </div>
             </div>
@@ -491,3 +267,71 @@ def formFilterPanel(output):
           </div>
         </div>
     </div>''', file = output)
+
+#===============================================
+def formSubViewDiv(output):
+    print('''
+    <div id="sub-view-back" class="modal-back">
+      <div id="sub-view-status"></div>
+      <div id="sub-view-mod">
+        <div id="sub-view-left">
+            <div id="sub-view-ctrl">
+                <span id="sub-view-list-report"></span><br/>
+                <input id="sub-view-check-full" type="checkbox"
+                    onchange="sSubVRecH.setMode(0);"/>
+                <label for="sub-view-check-full">
+                <span id="sub-view-mod-full">Full list</span></label><br/>
+                <input id="sub-view-check-samples" type="checkbox"
+                    onchange="sSubVRecH.setMode(1);"/>
+                <label for="sub-view-check-samples">
+                <span id="sub-view-mod-samples">Samples-25</span></label><br/>
+            </div>
+            <div id="sub-view-wrap-list">
+                <div id="sub-view-list">
+                </div>
+            </div>
+        </div>
+        <div id="sub-view-right">
+            <div id="sub-view-rec-info">
+                <span id="sub-view-title"></span>
+                <span class="close-it"
+                    onclick="sViewH.modalOff();">&times;</span>
+            </div>
+            <div id="sub-view-rec-wrap">
+                <iframe id="sub-view-rec-frame"
+                    name="rec-frame1" src="norecords">
+                </iframe>
+        </div>
+      </div>
+    </div>
+''', file = output)
+
+#===============================================
+def formCreateWsDiv(output):
+    print('''
+    <div id="create-ws-back" class="modal-back">
+      <div id="create-ws-mod">
+        <div id="create-ws-top">
+            <span id="create-ws-title"></span>
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
+        </div>
+        <div id="create-ws-main">
+            <div>Workspace name:
+                <input id="create-ws-name" type="text">
+            </div>
+            <div id="create-ws-problems"></div>
+            <div id="create-ws-status"></div>
+        </div>
+        <div id="create-ws-ctrl">
+            <button id="create-ws-start" onclick="startWsCreate();">
+              Start...
+            </button>
+            <button id="create-ws-cancel" onclick="sViewH.modalOff();">
+              Cancel
+            </button>
+        </div>
+      </div>
+    </div>
+''', file = output)
+#===============================================

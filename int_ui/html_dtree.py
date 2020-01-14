@@ -18,64 +18,62 @@
 #  limitations under the License.
 #
 
-from .gen_html import startHtmlPage, formNoteDiv
-from .html_xl import formCreateWsDiv, formSubViewDiv
+import int_ui.gen_html as gen_html
 #===============================================
 def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
-    js_files = ["dtree.js", "fctrl.js", "sub_vrec.js", "xl_ctrl.js", "base.js"]
-    startHtmlPage(output,
+    gen_html.startHtmlPage(output,
         common_title + "-DTree " + ds_h.getName(), html_base,
-        css_files = ["dtree.css", "py_pygments.css", "vrec.css", "base.css"],
-        js_files = js_files)
+        css_files = ["dtree.css", "eval.css", "py_pygments.css",
+            "vrec.css", "base.css"],
+        js_files = ["dtree.js", "eval.js", "vrec.js", "base.js"])
 
     print('  <body onload="setupDTree(\'%s\', \'%s\',  \'%s\', \'%s\');">' %
         (ds_h.getName(), ds_h.getDSKind(), common_title, ws_pub_url),
         file = output)
 
-    _formDTreePanel(output, ds_h)
+    _formPanel(output)
     _formCurCondDiv(output)
     _formCmpCodeDiv(output)
     _formEditCodeDiv(output)
-    formNoteDiv(output)
 
-    formCreateWsDiv(output)
-    formSubViewDiv(output)
+    gen_html.formNoteDiv(output)
+    gen_html.formCreateWsDiv(output)
+    gen_html.formSubViewDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
 
 #===============================================
-def _formDTreePanel(output, ds_h):
+def _formPanel(output):
     print('''
       <div id="dtree-ctrl">
         <div id="dtree-top-ctrl">
           <div class="dropdown">
             <span id="control-open">&#8285;</span>
             <div id="control-menu" class="dropdown-content">
-                <a class="drop" onclick="goHome();">Home Directory</a>
-                <a class="drop" onclick="goToPage(\'DOC\');"
+                <a class="popup" onclick="goHome();">Home Directory</a>
+                <a class="popup" onclick="goToPage(\'DOC\');"
                     id="menu-doc">Documentation</a>
-                <a class="drop" onclick="goToPage(\'\');"
+                <a class="popup" onclick="goToPage(\'\');"
                     >Dataset main page</a>
-                <a class="drop" onclick="openNote();"
+                <a class="popup" onclick="openNote();"
                     >Dataset Note...</a>
-                <a class=:drop" onclick="wsCreate();"
-                    >Create workspace...</a>''', file = output)
-    print('''
+                <a class="popup" onclick="wsCreate();"
+                    >Create workspace...</a>
             </div>
           </div>&emsp;
           Dataset: <span id="ds-name" class="bold"></span><br/>
             <div id="dtree-edit-ctrl">
               <div class="dropdown">
-                <button class="op-button drop">Decision Trees...</button>
+                <button class="op-button popup">Decision Trees...</button>
                 <div id="dtree-op-list" class="dropdown-content">
-                  <a class="drop" id="dtree-op-load"
+                  <a class="popup" id="dtree-op-load"
                     onclick="sDTreesH.startLoad();">Load</a>
-                  <a class="drop" id="dtree-op-create"
+                  <a class="popup" id="dtree-op-create"
                     onclick="sDTreesH.startCreate();">Create</a>
-                  <a class="drop"  id="dtree-op-modify"
+                  <a class="popup"  id="dtree-op-modify"
                     onclick="sDTreesH.startModify();">Modify</a>
-                  <a class="drop"  id="dtree-op-delete"
+                  <a class="popup"  id="dtree-op-delete"
                     onclick="sDTreesH.deleteIt();">Delete</a>
                 </div>
               </div>
@@ -83,7 +81,7 @@ def _formDTreePanel(output, ds_h):
                 <select id="dtree-name-combo-list"
                         onchange="sDTreesH.select();">
                     <option value=""></option>
-                    <input id="dtree-name-input" type="text" />
+                    <input id="dtree-name-input" type="text">
                 </select>
               </div>
               <button id="dtree-act-op" class="op-button"
@@ -115,13 +113,13 @@ def _formDTreePanel(output, ds_h):
                 onclick="sSubVRecH.show()">View variants</button>
         </div>
       </div>
-      <div id="dtree-main">
+      <div id="dtree-main" class="panel-space">
         <div id="panel-tree">
-          <div id="decision-tree">
+          <div id="decision-tree" class="list-items">
           </div>
         </div>
         <div id="panel-stat">
-          <div id="stat-list">
+          <div id="stat-list" class="list-items">
           </div>
         </div>
       </div>''', file = output)
@@ -153,7 +151,7 @@ def _formCurCondDiv(output):
               <span id="num-count" class="num-count"></span>
             </div>
             <div id="cur-cond-enum">
-              <div id="cur-cond-zyg-problem-group"></div>
+              <div id="cur-cond-func-param"></div>
               <div id="wrap-cond-enum">
                 <div id="cur-cond-enum-list">
                     <div id="op-enum-list">

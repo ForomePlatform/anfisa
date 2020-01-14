@@ -19,11 +19,11 @@
 #
 
 from app.config.a_config import AnfisaConfig
-from app.eval.var_unit import ComplexEnumUnit
+from app.eval.var_unit import FunctionUnit
 from utils.variants import VariantSet
 
 #===============================================
-class ZygosityUnit(ComplexEnumUnit):
+class InheritanceUnit(FunctionUnit):
     sCaseKeys   = ("homo_recess", "x_linked", "dominant", "compens")
     sCaseLabels = [AnfisaConfig.configOption("zygosity.cases")[key]
         for key in sCaseKeys]
@@ -32,15 +32,12 @@ class ZygosityUnit(ComplexEnumUnit):
     @staticmethod
     def makeIt(ds_h, descr, x_unit, x_values,
             before = None, after = None):
-        unit_h = ZygosityUnit(ds_h, {
-            "name": "Inheritance_Mode",
-            "title": "Inheritance Mode",
-            "vgroup": "Inheritance"}, x_unit, x_values)
+        unit_h = InheritanceUnit(ds_h, descr, x_unit, x_values)
         ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
 
     def __init__(self, ds_h, descr, x_unit, x_values):
-        ComplexEnumUnit.__init__(self, ds_h.getEvalSpace(), descr,
-            unit_kind = "func", sub_kind = "trio-inheritance-z")
+        FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
+            sub_kind = "inheritance-z", parameters = ["problem_group"])
 
         assert ds_h.testRequirements({"ZYG"})
         self.mFamilyInfo = ds_h.getFamilyInfo()
@@ -98,7 +95,9 @@ class ZygosityUnit(ComplexEnumUnit):
         return self.getEvalSpace().joinAnd(seq)
 
     def iterComplexCriteria(self, context, variants = None):
-        problem_group = context["problem-group"]
+        if context is None:
+            return
+        problem_group = context["problem_group"]
         if variants is None or self.sCaseLabels[0] in variants:
             yield self.sCaseLabels[0], self.conditionZHomoRecess(problem_group)
         if variants is None or self.sCaseLabels[1] in variants:
@@ -108,52 +107,49 @@ class ZygosityUnit(ComplexEnumUnit):
         if variants is None or self.sCaseLabels[3] in variants:
             yield self.sCaseLabels[3], self.conditionZCompens(problem_group)
 
-    def makeStat(self, condition, repr_context):
+    def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["sub-kind"] = self.getSubKind()
         ret_handle["family"] = self.mFamilyInfo.getNames()
         ret_handle["affected"] = self.mFamilyInfo.getAffectedGroup()
-        if repr_context is None or "problem-group" not in repr_context:
+        return ret_handle
+
+    def makeParamStat(self, condition, parameters, eval_h, point_no):
+        ret_handle = self.prepareStat()
+        if parameters is None or "problem_group" not in parameters:
             p_group = self.mFamilyInfo.getAffectedGroup()
         else:
-            p_group = (set(repr_context["problem-group"]) &
-                self.mFamilyInfo.getIdSet())
-        ret_handle["problem-group"] = sorted(p_group)
+            p_group = (set(parameters["problem_group"])
+                & self.mFamilyInfo.getIdSet())
+        ret_handle["problem_group"] = sorted(p_group)
         if len(p_group) > 0:
             self.collectComplexStat(ret_handle, condition,
-                {"problem-group": p_group})
+                {"problem_group": p_group})
         else:
             ret_handle["variants"] = None
+            ret_handle["err"] = "Problem group is empty"
         return ret_handle
 
     def locateContext(self, cond_data, eval_h):
-        func_info = cond_data[2]
-        assert func_info["sub-kind"] == self.getSubKind()
-        p_group = func_info.get("problem-group")
+        p_group = cond_data[2].get("problem_group")
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
-        return {"problem-group": set(p_group)}
-
-    def validateCondition(self, cond_info, op_units):
-        if (len(cond_info) != 5 or cond_info[0] != "func"
-                or cond_info[1] != self.getName()):
-            return False
-        unit_name, func_info, filter_mode, variants = cond_info[1:]
-        if not (filter_mode in {"", "OR", "AND", "NOT"}
-                and isinstance(variants, list)):
-            return False
-        if func_info.get("sub-kind") != self.getSubKind():
-            return False
-        p_group = func_info.get("problem-group")
-        return p_group is None or isinstance(p_group, list)
-
-    def processAstNode(self, parser, ast_args, op_mode, variants):
-        if len(ast_args) > 1:
-            parser.errorIt(ast_args[1], "Extra argument not expected")
-        if len(ast_args) == 0:
-            p_group = self.mFamilyInfo.getAffectedGroup()
         else:
-            p_group = parser.processIdSet(ast_args[0])
-        return ["func", self.getName(), {
-            "sub-kind": self.getSubKind(),
-            "problem-group": sorted(p_group)}, op_mode, variants]
+            extra_names = (set(p_group) - set(self.mFamilyInfo.getNames()))
+            if len(extra_names) > 0:
+                eval_h.operationError(cond_data, "No sample(s) registered: "
+                    + ' '.join(sorted(extra_names)))
+            return None
+        if len(p_group) == 0:
+            eval_h.operationError(cond_data, "Problem group is empty")
+            return None
+        if len(cond_data[4]) == 0:
+            eval_h.operationError(cond_data,
+                "%s: empty set of variants" % self.getName())
+            return None
+        return {"problem_group": set(p_group)}
+
+    def validateArgs(self, func_args):
+        if "problem_group" in func_args:
+            if not isinstance(func_args["problem_group"], list):
+                return "Problem group expected in form of set or list"
+        return None

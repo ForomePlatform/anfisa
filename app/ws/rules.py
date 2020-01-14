@@ -53,10 +53,7 @@ class RulesUnit(ComplexEnumUnit):
             dtree_h.activate()
             yield dtree_h.getDTreeName(), dtree_h.getFinalCondition()
 
-    def locateContext(self, cond_data, eval_h):
-        return None
-
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         self.collectComplexStat(ret_handle, condition,
             detailed = self.isDetailed())

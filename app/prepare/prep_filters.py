@@ -116,15 +116,15 @@ class FilterPrepareSetH(SolutionBroker):
             variants = None, default_value = "False", bool_check_value = None):
         return self._addUnit(prep_unit.TransctiptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
-            render_mode, tooltip, "status", trans_name, variants,
-            default_value, bool_check_value))
+            render_mode, tooltip, "transcript-status", trans_name,
+            variants, default_value, bool_check_value))
 
     def transctiptMultisetUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             variants = None):
         return self._addUnit(prep_unit.TransctiptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
-            render_mode, tooltip, "multi", trans_name, variants))
+            render_mode, tooltip, "transcript-multiset", trans_name, variants))
 
     def process(self, rec_no, rec_data):
         result = dict()
@@ -205,6 +205,9 @@ class ZygosityDataPreparator:
 
     def process(self, rec_no, rec_data, result):
         zyg_distr_seq = self.mPathF(rec_data)
+        if not zyg_distr_seq:
+            assert len(self.mMemberNames) == 0
+            return
         assert len(zyg_distr_seq) == 1
         zyg_distr = zyg_distr_seq[0]
         assert len(zyg_distr.keys()) == len(self.mMemberNames)

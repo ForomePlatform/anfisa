@@ -17,18 +17,16 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import abc
-from cachetools import LRUCache
+import abc, json
+from hashlib import md5
 
-from app.config.a_config import AnfisaConfig
+from .condition import ConditionMaker
 #===============================================
 class EvalSpace:
     def __init__(self, ds_h):
         self.mDS = ds_h
         self.mUnits = []
         self.mUnitDict = dict()
-        self.mOpCache = LRUCache(
-            AnfisaConfig.configOption("op.cache.size"))
 
     def getDS(self):
         return self.mDS
@@ -99,9 +97,111 @@ class EvalSpace:
             ret = ret.addOr(cond)
         return ret
 
-    def getOpCacheValue(self, unit_name, hash_code):
-        return self.mOpCache.get(unit_name + '|' + hash_code)
+#===============================================
+class Eval_Condition:
+    def __init__(self, eval_space, cond_type, name = None):
+        self.mEvalSpace = eval_space
+        self.mCondType = cond_type
+        self.mName = name
 
-    def setOpCacheValue(self, unit_name, hash_code, data):
-        with self.mDS:
-            self.mOpCache[unit_name + '|' + hash_code] = data
+    def getEvalSpace(self):
+        return self.mEvalSpace
+
+    def getCondType(self):
+        return self.mCondType
+
+    def __not__(self):
+        assert False
+
+    def __and__(self, other):
+        assert False
+
+    def __or__(self, other):
+        assert False
+
+    @abc.abstractmethod
+    def _makeOr(self, other):
+        return None
+
+    @abc.abstractmethod
+    def _makeAnd(self, other):
+        return None
+
+    def addOr(self, other):
+        assert other is not None and other.getCondType() is not None
+        if self.mCondType == "all":
+            return self
+        elif self.mCondType == "null":
+            return other
+        if other.getCondType() == "null":
+            return self
+        elif other.getCondType() == "all":
+            return other
+        elif other.getCondType() == "or" and self.mCondType != "or":
+            return other.addOr(self)
+        return self._makeOr(other)
+
+    def addAnd(self, other):
+        assert other is not None and other.getCondType() is not None
+        if self.mCondType == "all":
+            return other
+        elif self.mCondType == "null":
+            return self
+        if other.getCondType() == "all":
+            return self
+        elif other.getCondType() == "null":
+            return other
+        elif other.getCondType() == "and" and self.mCondType != "and":
+            return other.addAnd(self)
+        return self._makeAnd(other)
+
+    @abc.abstractmethod
+    def toJSon(self):
+        return None
+
+    @abc.abstractmethod
+    def negative(self):
+        return None
+
+    @abc.abstractmethod
+    def getCondNone(self):
+        return None
+
+    @abc.abstractmethod
+    def getCondAll(self):
+        return None
+
+    def hashCode(self):
+        json_repr = self.toJSon()
+        hash_h = md5(bytes(json.dumps(json_repr), encoding="utf-8"))
+        return hash_h.hexdigest()
+
+#===============================================
+class CondSupport_None:
+
+    def toJSon(self):
+        return ConditionMaker.condNone()
+
+    def addAnd(self, other):
+        return self
+
+    def addOr(self, other):
+        return other
+
+    def negative(self):
+        return self.getEvalSpace().getCondAll()
+
+#===============================================
+class CondSupport_All:
+
+    def toJSon(self):
+        return ConditionMaker.condAll()
+
+    def addAnd(self, other):
+        return other
+
+    def addOr(self, other):
+        return self
+
+    def negative(self):
+        return self.getEvalSpace().getCondNone()

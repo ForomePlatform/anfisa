@@ -39,6 +39,7 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sCodeEditH.init();
     sDTreesH.init();
     sDecisionTree.clear();
+    sViewH.addNotifier(sDecisionTree);
 }
     
 /**************************************/
@@ -48,6 +49,7 @@ var sDecisionTree = {
     mMarkers: null,
     mCounts: null,
     mTotalCount: null,
+    mEvalState: null,
     mAcceptedCount: null,
     mCurPointNo: null,
     mMarkLoc: null,
@@ -76,6 +78,7 @@ var sDecisionTree = {
         this.mTreeCode = info["code"];
         this.mTotalCount = info["total"];
         this.mRqId = info["rq_id"];
+        this.mEvalStatus = info["eval-status"];
         sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
         sHistoryH.update(info["hash"]);
         this.mMarkLoc = null;
@@ -105,7 +108,7 @@ var sDecisionTree = {
 
     _fillTreeTable: function() {
         this.mAcceptedCount = 0;
-        var list_rep = [sDTreesH.getCurUpdateReport()];
+        var list_rep = [sDTreesH.getCurUpdateReport(this.mEvalStatus)];
         
         list_rep.push('<table class="d-tree">');
         for (var p_no = 0; p_no < this.mPoints.length; p_no++) {
@@ -116,7 +119,7 @@ var sDecisionTree = {
             p_cond = point[3];
             p_html = point[4];
             p_count = this.mCounts[p_no];
-            if (p_kind == "Import" || p_kind == "Error") {
+            if (p_kind == "Label" || p_kind == "Error") {
                 list_rep.push('<tr><td class="point-no">' + (p_no + 1) + '</td>' +
                     '<td class="point-code"><div class="highlight">' + p_html + '</div></td>' +
                     '<td class="point-count-undef">---</td></tr>');
@@ -157,8 +160,12 @@ var sDecisionTree = {
             '<a onclick="sCodeEditH.show();">Edit</a> ' +
             'or choose another code from repository</div>';
     },
+    
+    onModalOff: function() {
+        this._highlightCondition(false);
+    },
 
-    getTreeRqArgs: function(no_comp) {
+    getTreeRqArgs: function() {
         args = "ds=" + sDSName + "&no=" + 
             ((this.mCurPointNo == null)? -1:this.mCurPointNo)  +
             "&code=" + encodeURIComponent(this.mTreeCode);
@@ -221,6 +228,14 @@ var sDecisionTree = {
         document.getElementById("report-rejected").innerHTML = rep_rejected;
     },
     
+    deselectCurPoint: function() {
+        if (this.mCurPointNo != null && this.mCurPointNo >= 0) {
+            var prev_el = document.getElementById("p_td__" + this.mCurPointNo);
+            prev_el.className = "";
+        }
+        this.mCurPointNo = null;
+    },
+    
     selectPoint: function(point_no) {
         var pos = this.mPointDelay.indexOf(point_no);
         if ( pos > 0) {
@@ -240,10 +255,7 @@ var sDecisionTree = {
             if (new_el == null) 
                 return;
         }
-        if (this.mCurPointNo != null && this.mCurPointNo >= 0) {
-            var prev_el = document.getElementById("p_td__" + this.mCurPointNo);
-            prev_el.className = "active";
-        }
+        this.deselectCurPoint();
         this.mCurPointNo = point_no;
         if (point_no >= 0)
             new_el.className = "cur";
@@ -321,21 +333,19 @@ var sUnitsH = {
     mTotal: null,
     mUnitMap: null,
     mCurUnit: null,
-    mCurZygName: null,
     mWaiting: false,
     mPostAction: null,
-    mCtx: {},
     mRqId: null,
     mUnitsDelay: null,
     mTimeH: null,
+    mCurFuncName: null,
     
     init: function() {
         this.mDivList = document.getElementById("stat-list");
     },
     
     setup: function() {
-        var args = sDecisionTree.getTreeRqArgs() + "&tm=0" +
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+        var args = sDecisionTree.getTreeRqArgs() + "&tm=0";
         this.mRqId = false;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
@@ -366,7 +376,12 @@ var sUnitsH = {
             this.mTotal : this.mCount + "/" + this.mTotal;
         sSubVRecH.reset(this.mCount);
             
-        this.mItems = info["stat-list"].slice();
+        //this.mItems = info["stat-list"].slice();
+        this.mItems = [];
+        for (var idx=0; idx < info["stat-list"].length; idx++) {
+            if (info["stat-list"][idx]["kind"] != "func")
+                this.mItems.push(info["stat-list"][idx]);
+        }
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
@@ -374,6 +389,7 @@ var sUnitsH = {
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
+        this.mCurFuncName = null;
         
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0]["name"]);
@@ -391,11 +407,8 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
-    getRqArgs: function(no_ctx) {
-        ret = sDecisionTree.getTreeRqArgs(no_ctx);
-        if (!no_ctx)
-            ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
-        return ret;
+    getRqArgs: function() {
+        return sDecisionTree.getTreeRqArgs();
     },
     
     loadUnits: function() {
@@ -445,13 +458,16 @@ var sUnitsH = {
     },
     
     getCurUnitTitle: function() {
-        return (this.mCurZygName == null)? this.mCurUnit: this.mCurZygName;
+        if (this.mCurUnit == null)
+            return "?";
+        if (this.mItems[this.mUnitMap[this.mCurUnit]]["kind"] == "func")
+            return this.mCurUnit + "()";
+        return this.mCurUnit;
     },
     
     getCurUnitName: function() {
         return this.mCurUnit;
     },
-    
     getCurUnitStat: function() {
         if (this.mCurUnit == null)
             return null;
@@ -477,16 +493,12 @@ var sUnitsH = {
         this.checkUnitDelay(stat_unit);
     },
     
-    updateZygUnit: function(zyg_name) {
-        if (this.mCurZygName != null) {
-            this.mCurZygName = zyg_name;
-            this.mItems[this.mUnitMap[zyg_name]] = unit_stat;
+    updateFuncUnit: function(unit_name, unit_stat) {
+        if (this.mCurFuncName != null) {
+            this.mCurFuncName = unit_name;
+            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
             this.selectUnit(this.mCurUnit, true);
         }
-    },
-    
-    setCtxPar: function(key, val) {
-        this.mCtx[key] = val;
     },
     
     prepareWsCreate: function() {
@@ -546,13 +558,14 @@ var sOpCondH = {
         document.getElementById("cond-title").innerHTML = this.mCurUnitName;
         unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
         mode = "num";
-        if (unit_stat["incomplete"]) {
+        //TRF!!!
+        if (unit_stat == undefined || unit_stat["incomplete"]) {
             this.mCurTpHandler = null;
         } else {
             if (unit_stat["kind"] == "numeric") 
                 this.mCurTpHandler = sOpNumH;
-            else {
-                if (sOpEnumH.readyForCondition(unit_stat, this.mCondition)) {
+            else  {
+                if (unit_stat["kind"] == "enum") {
                     this.mCurTpHandler = sOpEnumH;
                     mode = "enum";
                 } else {
@@ -668,17 +681,26 @@ var sDTreesH = {
         this.mBtnOp.style.display = "none";
     },
 
-    getCurUpdateReport: function() {
+    getCurUpdateReport: function(eval_status) {
+        if (this.mCurDTreeInfo == null && eval_status == "ok")
+            return '';
+        var ret = ['<div class="upd-note">'];
+        if (eval_status == "fatal") {
+            ret.push('<span class="bad">Conditions contain errors</span>');
+        } else {
+            if (eval_status == "runtime")
+                ret.push('<span class="warn">Runtime problems</span>'); 
+        }
         if (this.mCurDTreeInfo != null) {
             if (this.mCurDTreeInfo["upd-time"] != null) {
-                var ret = '<div class="upd-note">Updated at ' + 
-                    timeRepr(this.mCurDTreeInfo["upd-time"]);
+                ret.push('Updated at ' + 
+                    timeRepr(this.mCurDTreeInfo["upd-time"]));
                 if (this.mCurDTreeInfo["upd-from"] != sDSName) 
-                    ret += ' from ' + this.mCurDTreeInfo["upd-from"];
-                return ret + '</div>';
+                    ret.push(' from ' + this.mCurDTreeInfo["upd-from"]);
             }
         }
-        return '';
+        ret.push('</div>');
+        return ret.join('\n');
     },
     
     checkName: function() {
@@ -1139,9 +1161,10 @@ function arrangeControls() {
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
         cond_mod_height = el_cond_mod.offsetHeight;
-        el_zyp_problem = document.getElementById("cur-cond-zyg-problem-group");
-        if (el_zyp_problem.style.display != "none") 
-            cond_mod_height -= el_zyp_problem.getBoundingClientRect().height;
+        //TRF: no such element....
+        el_zyg_problem = document.getElementById("cur-cond-zyg-problem-group");
+        if (el_zyg_problem && el_zyg_problem.style.display != "none") 
+            cond_mod_height -= el_zyg_problem.getBoundingClientRect().height;
         document.getElementById("wrap-cond-enum").style.height = 
             Math.max(10, cond_mod_height - 110);
     }
@@ -1150,14 +1173,6 @@ function arrangeControls() {
 
 function onKey(key_event) {
     sSubVRecH.onKey(key_event);
-}
-
-function onModalOff() {
-    sDecisionTree._highlightCondition(false);
-}
-
-function updateZygCondStat(unit_name) {
-    sDecisionTree.markRenewEdit();
 }
 
 function fixMark() {
@@ -1173,6 +1188,6 @@ function editMark(point_no, instr_idx) {
     sDecisionTree.markEdit(point_no, instr_idx);
 }
 
-function exposeEnum(unit_name, expand_mode) {
-    exposeEnumUnitStat(sUnitsH.getUnitStat(unit_name), expand_mode);
+function renderEnum(unit_name, expand_mode) {
+    renderEnumUnitStat(sUnitsH.getUnitStat(unit_name), expand_mode);
 }

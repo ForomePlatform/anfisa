@@ -34,7 +34,7 @@ class FamilyInfo:
                     del self.mMembers[idx]
                     self.mMembers.insert(0, it)
                 break
-        assert self.mMembers[0]["id"] == proband_id
+        assert len(self.mMembers) == 0 or self.mMembers[0]["id"] == proband_id
 
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
@@ -54,7 +54,7 @@ class FamilyInfo:
                 continue
             idx_mother = self.mIdMap.get(it.get("mother"))
             if idx_mother is not None:
-                trio_name = "Proband" if idx == 0 else it["id"]
+                trio_name = "Proband" if idx == 0 else it["name"]
                 self.mTrioSeq.append(
                     (trio_name, idx, idx_father, idx_mother))
 

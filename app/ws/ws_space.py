@@ -20,8 +20,9 @@
 
 from bitarray import bitarray
 
-from app.eval.eval_space import EvalSpace
-from app.eval.condition import ZYG_BOUNDS_VAL
+from app.eval.eval_space import (EvalSpace, Eval_Condition,
+    CondSupport_None, CondSupport_All)
+from app.eval.condition import ConditionMaker, ZYG_BOUNDS_VAL
 from .ws_unit import WS_ReservedNumUnit
 
 #===============================================
@@ -81,31 +82,10 @@ class WS_EvalSpace(EvalSpace):
             assert zyg_bounds is None
         else:
             min_val, min_eq, max_val, max_eq = ZYG_BOUNDS_VAL[zyg_bounds]
-        eval_func = self.numericFilterFunc(min_val, min_eq, max_val, max_eq)
-        if unit_h.isDetailed():
-            def fill_items_f(it_idx):
-                return eval_func(unit_h.getItemVal(it_idx))
-            fill_groups_f = None
-        else:
-            def fill_groups_f(rec_no):
-                return eval_func(unit_h.getRecVal(rec_no))
-            fill_items_f = None
-        return WS_Condition(self, "numeric", unit_h.getName(),
-            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
+        return WS_CondNumeric.create(unit_h, min_val, min_eq, max_val, max_eq)
 
     def makeEnumCond(self, unit_h, variants, filter_mode = ""):
-        eval_func = self.enumFilterFunc(filter_mode,
-            unit_h.getVariantSet().makeIdxSet(variants))
-        if unit_h.isDetailed():
-            def fill_items_f(it_idx):
-                return eval_func(unit_h.getItemVal(it_idx))
-            fill_groups_f = None
-        else:
-            def fill_groups_f(rec_no):
-                return eval_func(unit_h.getRecVal(rec_no))
-            fill_items_f = None
-        return WS_Condition(self, "enum", unit_h.getName(),
-            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
+        return WS_CondEnum.create(unit_h, variants, filter_mode)
 
     @staticmethod
     def numericFilterFunc(min_val, min_eq, max_val, max_eq):
@@ -160,12 +140,10 @@ class WS_EvalSpace(EvalSpace):
         return condition.getItemCount()
 
 #===============================================
-class WS_Condition:
-    def __init__(self, eval_space, cond_type, name, bit_arr = None,
+class WS_Condition(Eval_Condition):
+    def __init__(self, eval_space, cond_type, bit_arr = None,
             fill_groups_f = None, fill_items_f = None, detailed = None):
-        self.mEvalSpace = eval_space
-        self.mCondType = cond_type
-        self.mName = name
+        Eval_Condition.__init__(self, eval_space, cond_type)
         self.mBitArray = bit_arr
         self.mDetailed = detailed
         if self.mBitArray is not None:
@@ -191,48 +169,16 @@ class WS_Condition:
                 if not self.mDetailed:
                     self.mDetailed = False
 
-    def getEvalSpace(self):
-        return self.mEvalSpace
-
-    def getCondType(self):
-        return self.mCondType
-
-    def getCondName(self):
-        return self.mName
-
     def getBitArray(self):
         return self.mBitArray
 
     def isDetailed(self):
         return self.mDetailed
 
-    def __not__(self):
-        assert False
-
-    def __and__(self, other):
-        assert False
-
-    def __or__(self, other):
-        assert False
-
-    def addOr(self, other):
-        assert other is not None and other.getCondType() is not None
-        if other.getCondType() == "or":
-            return other.addOr(self)
-        elif other.getCondType() == "null":
-            return self
-        elif other.getCondType() == "all":
-            return other
+    def _makeOr(self, other):
         return WS_Or([self, other])
 
-    def addAnd(self, other):
-        assert other is not None and other.getCondType() is not None
-        if other.getCondType() == "and":
-            return other.addAnd(self)
-        elif other.getCondType() == "all":
-            return self
-        elif other.getCondType() == "null":
-            return other
+    def _makeAnd(self, other):
         return WS_And([self, other])
 
     def negative(self):
@@ -258,7 +204,7 @@ class WS_Condition:
         for _, rec_it_map in self.iterSelection():
             count_grp += 1
             count_items += rec_it_map.count()
-        return (count_grp, count_items, self.mEvalSpace.getTotalCount())
+        return (count_grp, count_items, self.getEvalSpace().getTotalCount())
 
     def getItemCount(self):
         return self.mBitArray.count()
@@ -271,7 +217,7 @@ class WS_Condition:
 
     def iterItemIdx(self):
         grp_idx = 0
-        groups = self.mEvalSpace.getGroups()
+        groups = self.getEvalSpace().getGroups()
         idx_max = len(groups) - 1
         for idx_pos in self.mBitArray.itersearch(self.sPattTrue):
             while (grp_idx < idx_max and idx_pos >= groups[grp_idx + 1][0]):
@@ -279,12 +225,64 @@ class WS_Condition:
             yield grp_idx, idx_pos
 
 #===============================================
+class WS_CondNumeric(WS_Condition):
+    @classmethod
+    def create(cls, unit_h, min_val, min_eq, max_val, max_eq):
+        eval_func = WS_EvalSpace.numericFilterFunc(
+            min_val, min_eq, max_val, max_eq)
+        if unit_h.isDetailed():
+            def fill_items_f(it_idx):
+                return eval_func(unit_h.getItemVal(it_idx))
+            fill_groups_f = None
+        else:
+            def fill_groups_f(rec_no):
+                return eval_func(unit_h.getRecVal(rec_no))
+            fill_items_f = None
+        return cls(unit_h.getEvalSpace(), fill_groups_f, fill_items_f,
+            (unit_h.getName(), min_val, min_eq, max_val, max_eq))
+
+    def __init__(self, eval_space, fill_groups_f, fill_items_f, data):
+        WS_Condition.__init__(self, eval_space, "numeric",
+            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
+        self.mData = data
+
+    def toJSon(self):
+        return ConditionMaker.condNum(*self.mData)
+
+#===============================================
+class WS_CondEnum(WS_Condition):
+    @classmethod
+    def create(cls, unit_h, variants, filter_mode):
+        eval_func = WS_EvalSpace.enumFilterFunc(filter_mode,
+            unit_h.getVariantSet().makeIdxSet(variants))
+        if unit_h.isDetailed():
+            def fill_items_f(it_idx):
+                return eval_func(unit_h.getItemVal(it_idx))
+            fill_groups_f = None
+        else:
+            def fill_groups_f(rec_no):
+                return eval_func(unit_h.getRecVal(rec_no))
+            fill_items_f = None
+        return cls(unit_h.getEvalSpace(), fill_groups_f, fill_items_f,
+            (unit_h.getName(), variants, filter_mode))
+
+    def __init__(self, eval_space, fill_groups_f, fill_items_f, data):
+        WS_Condition.__init__(self, eval_space, "numeric",
+            fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
+        self.mData = data
+
+    def toJSon(self):
+        return ConditionMaker.condEnum(*self.mData)
+
+#===============================================
 class WS_Negation(WS_Condition):
     def __init__(self, base_cond):
         WS_Condition.__init__(self, base_cond.getEvalSpace(), "neg",
-            "neg/" + base_cond.getCondName(),
             ~base_cond.getBitArray(), detailed = base_cond.isDetailed())
         self.mBaseCond = base_cond
+
+    def toJSon(self):
+        return ConditionMaker.condNot(self.mBaseCond.toJSon())
 
     def negative(self):
         return self.mBaseCond
@@ -292,7 +290,7 @@ class WS_Negation(WS_Condition):
 #===============================================
 class _WS_Joiner(WS_Condition):
     def __init__(self, kind, items, bit_arr, detailed):
-        WS_Condition.__init__(self, items[0].getEvalSpace(), kind, kind,
+        WS_Condition.__init__(self, items[0].getEvalSpace(), kind,
             bit_arr = bit_arr, detailed = detailed)
         self.mItems = items
         assert len(self.mItems) > 0
@@ -309,6 +307,10 @@ class WS_And(_WS_Joiner):
             bit_arr &= it.getBitArray()
             detailed |= it.isDetailed()
         _WS_Joiner.__init__(self, "and", items,  bit_arr, detailed)
+
+    def toJSon(self):
+        return ConditionMaker.joinAnd(
+            [it.toJSon() for it in self.getItems()])
 
     def addAnd(self, other):
         if other.getCondType() == "null":
@@ -332,6 +334,10 @@ class WS_Or(_WS_Joiner):
             detailed |= it.isDetailed()
         _WS_Joiner.__init__(self, "or", items,  bit_arr, detailed)
 
+    def toJSon(self):
+        return ConditionMaker.joinOr(
+            [it.toJSon() for it in self.getItems()])
+
     def addOr(self, other):
         if other.getCondType() == "null":
             return self
@@ -344,41 +350,23 @@ class WS_Or(_WS_Joiner):
         return WS_Or(self.getItems() + add_items)
 
 #===============================================
-class WS_None(WS_Condition):
+class WS_None(WS_Condition, CondSupport_None):
     def __init__(self, eval_space):
         bit_arr = bitarray(eval_space.getTotalCount())
         bit_arr.setall(False)
-        WS_Condition.__init__(self, eval_space, "null", "null",
+        WS_Condition.__init__(self, eval_space, "null",
             bit_arr, detailed = False)
-
-    def addAnd(self, other):
-        return self
-
-    def addOr(self, other):
-        return other
-
-    def negative(self):
-        return self.getEvalSpace().getCondAll()
 
     def __call__(self, rec_no):
         return False
 
 #===============================================
-class WS_All(WS_Condition):
+class WS_All(WS_Condition, CondSupport_All):
     def __init__(self, eval_space):
         bit_arr = bitarray(eval_space.getTotalCount())
         bit_arr.setall(True)
-        WS_Condition.__init__(self, eval_space, "all", "all",
+        WS_Condition.__init__(self, eval_space, "all",
             bit_arr, detailed = False)
-
-    def addAnd(self, other):
-        return other
-
-    def addOr(self, other):
-        return self
-
-    def negative(self):
-        return self.getEvalSpace().getCondNone()
 
     def __call__(self, rec_no):
         return True

@@ -86,11 +86,11 @@ def defineFilterSchema(metadata_record):
         if cohorts:
             filters.multiStatusUnit("Variant_in",
                 "/_filters/cohort_has_variant[]")
+        filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
+            title = "Called by")
         filters.statusUnit("Proband_Zygosity",
             "/_view/bioinformatics/zygosity",
             title = "Proband Zygosity")
-        filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
-            title = "Called by")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
             title = "Number of Samples", conversion = _conv_len,
             default_value = 0,
@@ -119,8 +119,8 @@ def defineFilterSchema(metadata_record):
                "/__data/most_severe_consequence",
                variants = sConsequenceVariants,
                default_value = "undefined")
-        filters.statusUnit("Canonical_Annotation",
-            "/_view/general/canonical_annotation",
+        filters.multiStatusUnit("Canonical_Annotation",
+            "/_view/general/canonical_annotation[]",
             default_value = "undefined")
         filters.intValueUnit("Number_ALTs",
             "/_filters/alts",

@@ -390,8 +390,9 @@ class TransctiptConvertor(ValueConvertor):
             default_value = None, bool_check_value = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip)
+        assert sub_kind.startswith("transcript-")
         self.mDescr = ValueConvertor.dump(self)
-        self.mDescr["kind"] = "transcript"
+        self.mDescr["kind"] = "enum"
         self.mDescr["sub-kind"] = sub_kind
         self.mDescr["tr_name"] = trans_name
         self.mDescr["pre_variants"] = variants

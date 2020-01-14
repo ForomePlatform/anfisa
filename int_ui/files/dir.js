@@ -101,8 +101,5 @@ function reprRefSec(ds_name, mode, label) {
     return ret;
 }
 
-function onModalOff() {
-}
-
 function arrangeControls() {
 }

@@ -29,8 +29,7 @@ from .code_parse import parseCodeByPortions
 class TreeFragment:
     def __init__(self, level, tp, line_diap,
             base_instr = None, err_info = None, decision = None,
-            import_entries = None, cond_data = None, markers = None,
-            hash_code = None):
+            cond_data = None, markers = None, label = None):
         self.mLevel = level
         self.mType = tp
         self.mLineDiap = line_diap
@@ -38,9 +37,8 @@ class TreeFragment:
         self.mErrInfo = err_info
         self.mCondData = cond_data
         self.mDecision = decision
-        self.mImportEntries = import_entries
         self.mMarkers = markers if markers is not None else []
-        self.mHashCode = hash_code
+        self.mLabel = label
 
     def setLineDiap(self, base_diap, full_diap):
         self.mBaseLineDiap = base_diap
@@ -67,14 +65,30 @@ class TreeFragment:
     def getDecision(self):
         return self.mDecision
 
-    def getImportEntries(self):
-        return self.mImportEntries
-
-    def getHashCode(self):
-        return self.mHashCode
+    def getLabel(self):
+        return self.mLabel
 
     def getMarkers(self):
         return self.mMarkers
+
+#===============================================
+class SingleEvalMarker:
+    def __init__(self, cond_data, location):
+        self.mCondData = cond_data
+        self.mLoc = location
+        self.mErrorMsg = None
+
+    def setError(self, error_msg):
+        self.mErrorMsg = error_msg
+
+    def getLoc(self):
+        return self.mLoc
+
+    def getCondData(self):
+        return self.mCondData
+
+    def getErrorMsg(self):
+        return self.mErrorMsg
 
 #===============================================
 class ParsedDTree:
@@ -82,8 +96,9 @@ class ParsedDTree:
         self.mEvalSpace = eval_space
         self.mFragments = []
         self.mCode = normalizeCode(code)
-        self.mImportFragments = dict()
         self.mDummyLinesReg = set()
+        self.mLabels = dict()
+        self.mFirstError = None
         hash_h = md5()
         code_lines = self.mCode.splitlines()
 
@@ -99,9 +114,10 @@ class ParsedDTree:
                     if isinstance(instr_d, ast.Return):
                         fragments.append(TreeFragment(0, "Return", line_diap,
                             decision = self.getReturnValue(instr_d)))
-                    elif isinstance(instr_d, ast.Import):
-                        fragments.append(self.processImport(instr_d,
-                            hash_h.hexdigest()))
+                    elif (isinstance(instr_d, ast.Expr)
+                            and isinstance(instr_d.value, ast.Call)):
+                        fragments.append(self.processCall(instr_d.value,
+                            len(self.mFragments)))
                     elif isinstance(instr_d, ast.If):
                         fragments += self.processIf(instr_d)
                     else:
@@ -124,8 +140,8 @@ class ParsedDTree:
                     err_info = err_info)]
             self.mFragments += fragments
         self.mHashCode = hash_h.hexdigest()
-        self.mError = None
         self.mCurLineDiap = None
+        self.mError = None
         self.mMarkers = None
         for frag_h in self.mFragments:
             self.mError = frag_h.getErrorInfo()
@@ -150,7 +166,7 @@ class ParsedDTree:
                 self.mError = err_info
 
     def getError(self):
-        return self.mError
+        return self.mFirstError
 
     def getTreeCode(self):
         return self.mCode
@@ -167,17 +183,23 @@ class ParsedDTree:
     def errorIt(self, it, msg_text):
         self.mError = (msg_text,
             it.lineno + self.mCurLineDiap[0] - 1, it.col_offset)
+        if self.mFirstError is None:
+            self.mFirstError = self.mError
         raise RuntimeError()
 
     def errorMsg(self, line_no, col_offset, msg_text):
         self.mError = (msg_text,
             line_no + self.mCurLineDiap[0] - 1, col_offset)
+        if self.mFirstError is None:
+            self.mFirstError = self.mError
         raise RuntimeError()
 
     def _addMarker(self, cond_data, it, it_name):
-        self.mMarkers.append([cond_data,
-            (it.lineno + self.mCurLineDiap[0] - 1,
-            it.col_offset, it.col_offset + len(it_name))])
+        self.mMarkers.append(
+            SingleEvalMarker(cond_data,
+                [it.lineno + self.mCurLineDiap[0] - 1,
+                it.col_offset,
+                it.col_offset + len(it_name)]))
 
     #===============================================
     def processIf(self, instr_d):
@@ -198,24 +220,23 @@ class ParsedDTree:
         return ret
 
     #===============================================
-    def processImport(self, instr, hash_code):
-        import_entries = []
-        for entry in instr.names:
-            if entry.asname is not None:
-                self.errorIt(instr, "entry with path not supported")
-            if (entry.name in self.mImportFragments
-                    or entry.name in import_entries):
-                self.errorIt(instr, "duplicate import: " + entry.name)
-            unit_h = self.mEvalSpace.getUnit(entry.name)
-            if unit_h is None or unit_h.getUnitKind() == "operative":
-                self.errorIt(instr, "Case does not provide: " + entry.name)
-            if unit_h.getUnitKind() != "operative":
-                self.errorIt(instr, "improper name for import: " + entry.name)
-            import_entries.append(entry.name)
-        frag_h = TreeFragment(0, "Import", self.mCurLineDiap,
-            import_entries = import_entries, hash_code = hash_code)
-        for nm in import_entries:
-            self.mImportFragments[nm] = frag_h
+    def processCall(self, instr, point_no):
+        assert isinstance(instr, ast.Call)
+        if instr.func.id != "label":
+            self.errorIt(instr, "Only label() function supported on top level")
+        if len(instr.args) != 1 or len(instr.keywords) != 0:
+            self.errorIt(instr, "Only one argument expected for label()")
+        if isinstance(instr.args[0], ast.Str):
+            label = instr.args[0].s
+        elif isinstance(instr.args[0], ast.Name):
+            label = instr.args[0].id
+        else:
+            self.errorIt(instr.args[0],
+                "String is expected as argument of label()")
+        if label in self.mLabels:
+            self.errorIt(instr, "Duplicate label %s" % label)
+        self.mLabels[label] = point_no
+        frag_h = TreeFragment(0, "Label", self.mCurLineDiap, label = label)
         return frag_h
 
     #===============================================
@@ -301,10 +322,9 @@ class ParsedDTree:
                     self.errorIt(it.left,
                         "No support for field %s in decision trees"
                             % field_name)
-                if unit_h and unit_h.getUnitKind() == "operative":
-                    if field_name not in self.mImportFragments:
-                        self.errorIt(it.left,
-                            "Field %s not imported" % field_name)
+                if unit_h and unit_h.getUnitKind() == "func":
+                    self.errorIt(it.left,
+                        "Field %s should be used as function" % field_name)
                     unit_h = unit_h.getActualUnit()
                 if unit_h is None or unit_h.getUnitKind() != "enum":
                     self.errorIt(it.left, "Improper enum field name: "
@@ -314,23 +334,32 @@ class ParsedDTree:
             return ret
 
         if isinstance(it.left, ast.Call):
-            if (len(it.left.keywords) > 0
-                    or not isinstance(it.left.func, ast.Name)):
-                self.errorIt(it.left, "Complex call not supported")
             field_name = it.left.func.id
             assert self.mEvalSpace is not None
             unit_h = self.mEvalSpace.getUnit(field_name)
-            if unit_h and unit_h.getUnitKind() == "operative":
-                if field_name not in self.mImportFragments:
-                    self.errorIt(it.left,
-                        "Field %s not imported" % field_name)
-                unit_h = unit_h.getActualUnit()
             if unit_h is None or unit_h.getUnitKind() != "func":
-                self.errorIt(it.left, "Improper functional field name")
-            ret = unit_h.processAstNode(self, it.left.args, op_mode, variants)
-            if ret is None:
-                self.errorIt(it.left,
-                    "Improper arguments for functional field")
+                self.errorIt(it.left, "Improper functional field name: "
+                    + field_name)
+            parameters = unit_h.getParameters()[:]
+            func_args = dict()
+            for it_arg in it.left.args:
+                if len(parameters) == 0:
+                    self.errorIt(it_arg, "Extra argument of function")
+                func_args[parameters.pop(0)] = self.processJSonData(it_arg)
+            for argval_it in it.left.keywords:
+                if argval_it.arg in func_args:
+                    self.errorIt(argval_it.value,
+                        "Argument %s duplicated" % argval_it.arg)
+                if argval_it.arg not in parameters:
+                    self.errorIt(argval_it.value,
+                        "Argument %s not expected" % argval_it.arg)
+                func_args[argval_it.arg] = self.processJSonData(
+                    argval_it.value)
+                parameters.remove(argval_it.arg)
+            err_msg = unit_h.validateArgs(func_args)
+            if err_msg:
+                self.errorIt(it.left, err_msg)
+            ret = ["func", field_name, func_args, op_mode, variants]
             self._addMarker(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")
@@ -435,19 +464,9 @@ class ParsedDTree:
         return it.n
 
     #===============================================
-    def processIntSet(self, it):
-        if not isinstance(it, ast.Set):
-            self.errorIt(it, "Set of integers is expected")
-        ret = set()
-        for el in it.elts:
-            val = self.processInt(el)
-            if el.n in ret:
-                self.errorIt(el, "Duplicated int value")
-            ret.add(val)
-        return ret
-
-    #===============================================
     def processIdSet(self, it_set):
+        if isinstance(it_set, ast.Dict) and len(it_set.keys) == 0:
+            return []
         if not (isinstance(it_set, ast.List)
                 or isinstance(it_set, ast.Set)):
             self.errorIt(it_set, "Set (or list) expected")
@@ -467,11 +486,40 @@ class ParsedDTree:
         return variants
 
     #===============================================
+    def processJSonData(self, it):
+        if isinstance(it, ast.Num):
+            return it.n
+        if isinstance(it, ast.Str):
+            return it.s
+        if isinstance(it, ast.Name):
+            return it.id
+        if isinstance(it, ast.NameConstant):
+            if it.value in (True, False, None):
+                return it.value
+            self.errorIt(it,
+                "Constant %s not expected" % str(it.value))
+        if (isinstance(it, ast.List)
+                or isinstance(it, ast.Set)):
+            return [self.processJSonData(el) for el in it.elts]
+        if isinstance(it, ast.Dict):
+            ret = dict()
+            for idx, it_key in enumerate(it.keys):
+                key = self.processJSonData(it_key)
+                if isinstance(key, ast.List) or isinstance(key, ast.Dict):
+                    self.errorIt(it_key,
+                        "Combined keys for dict are not supported")
+                ret[key] = self.processJSonData(it.values[idx])
+            return ret
+        self.errorIt(it, "Incorrect data format")
+        return None
+
+    #===============================================
     def modifyCode(self, instr):
         mode, loc, new_cond = instr
         assert mode == "mark"
-        frag_h = self.mFragments[loc[0]]
-        frag_h.getMarkers()[loc[1]][0][:] = new_cond
+        frag_no, mark_no = loc
+        frag_h = self.mFragments[frag_no]
+        frag_h.getMarkers()[mark_no].getCondData()[:] = new_cond
         code_lines = self.mCode.splitlines()
         line_from, line_to = frag_h.getLineDiap()
         dummy_lines = []

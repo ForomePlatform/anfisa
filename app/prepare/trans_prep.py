@@ -33,16 +33,16 @@ class TransformPreparator:
             AnfisaConfig.configOption("transcript.path.base"))
         self.mUnitStatSeq = []
         for unit_descr in flt_schema:
-            kind = unit_descr["kind"]
-            if kind == "transcript":
-                if unit_descr["sub-kind"] == "status":
-                    self.mConvertors.append(TrStatusConvertor(unit_descr))
-                else:
-                    self.mConvertors.append(TrMultisetConvertor(unit_descr))
-            elif kind == "numeric":
+            kind, sub_kind = unit_descr["kind"], unit_descr["sub-kind"]
+            if kind == "numeric":
                 self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
             elif kind == "enum":
-                self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
+                if sub_kind == "transcript-status":
+                    self.mConvertors.append(TrStatusConvertor(unit_descr))
+                elif sub_kind == "transcript-multiset":
+                    self.mConvertors.append(TrMultisetConvertor(unit_descr))
+                else:
+                    self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
             else:
                 assert False, "Bad kind:" + unit_descr["kind"]
 

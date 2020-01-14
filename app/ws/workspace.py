@@ -45,7 +45,7 @@ class Workspace(DataSet):
             self._makeRecArrayFunc(self.mTabRecRand))
 
         self.mZygArrays = []
-        for idx, zyg_name in enumerate(self.getZygUnitNames()):
+        for zyg_name in self.getZygUnitNames():
             var_array = array('b')
             self.mZygArrays.append(var_array)
             self.mEvalSpace._addZygUnit(zyg_name,
@@ -178,7 +178,7 @@ class Workspace(DataSet):
     def getRecFilters(self, rec_no):
         ret_handle = []
         for filter_h in self.iterSolEntries("filter"):
-            if not filter_h.noErrors():
+            if filter_h.getEvalStatus() != "ok":
                 continue
             filter_h.activate()
             if filter_h.getCondition().recInSelection(rec_no):

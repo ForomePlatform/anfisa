@@ -25,22 +25,15 @@
  * Used in regimes: 
  * WS/XL-Filter
 /**************************************/
-function ____doImport(imp_name) {
-    sConditionsH.preSelectCond(sConditionsH.getConditions().length);
-    sOpFilterH.addCondition(["import", imp_name])
-}
-
 var sUnitsH = {
     mCallDS: null,
     mDivList: null,
     mItems: null,
     mUnitMap: null,
     mCurUnit: null,
-    mCurZygName: null,
+    mCurFuncName: null,
     mCounts: null,
     mTotal: null,
-    mExportFormed: null,
-    mCtx: {},
     mRqId: null,
     mUnitsDelay: null,
     mWaiting: null,
@@ -60,8 +53,7 @@ var sUnitsH = {
     },
     
     formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
-        args =  this.mCallDS + 
-            "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
+        args =  this.mCallDS;
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
         } else {
@@ -95,16 +87,20 @@ var sUnitsH = {
         this.mCount = info["count"];
         this.mTotal = info["total"];
         this.mRqId  = info["rq_id"];
-        this.mExportFormed = false;
         var el_rep = document.getElementById("list-report");
         if (el_rep)
             el_rep.innerHTML = (this.mCount == this.mTotal)? 
                 this.mTotal : this.mCount + "/" + this.mTotal;
         if (sSamplesCtrl)
             sSamplesCtrl.reset(this.mCount);
-        this.mItems = info["stat-list"];
+        //this.mItems = info["stat-list"];
+        this.mItems = [];
+        for (var idx=0; idx < info["stat-list"].length; idx++) {
+            if (info["stat-list"][idx]["kind"] != "func")
+                this.mItems.push(info["stat-list"][idx]);
+        }
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
-        sConditionsH.setup(info["conditions"], info["bad-idxs"]);
+        sConditionsH.setup(info);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
@@ -127,7 +123,7 @@ var sUnitsH = {
         if (!unit_name) 
             unit_name = this.mItems[0]["name"];
         this.mCurUnit = null;
-        this.mCurZygName = null;
+        this.mCurFuncName = null;
         
         this.mOffline = false;
         this.selectUnit(unit_name);
@@ -141,12 +137,9 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
-    getRqArgs: function(no_ctx) {
+    getRqArgs: function() {
         ret = this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
-        if (!no_ctx) {
-            ret += "&ctx=" + encodeURIComponent(JSON.stringify(this.mCtx));
-        }
         return ret;
     },
     
@@ -196,7 +189,11 @@ var sUnitsH = {
     },
     
     getCurUnitTitle: function() {
-        return (this.mCurZygName == null)? this.mCurUnit: this.mCurZygName;
+        if (this.mCurUnit == null)
+            return "?";
+        if (this.mItems[this.mUnitMap[this.mCurUnit]]["kind"] == "func")
+            return this.mCurUnit + "()";
+        return this.mCurUnit;
     },
     
     getCurUnitName: function() {
@@ -232,23 +229,19 @@ var sUnitsH = {
                 prev_el.className = prev_el.className.replace(" cur", "");
         }
         this.mCurUnit = stat_unit;
-        this.mCurZygName = sZygosityH.checkUnitTitle(stat_unit);
+        //this.mCurFuncName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
         softScroll(new_unit_el, 1);
         sConditionsH.onUnitSelect();
         sOpCondH.onUnitSelect();
     },
     
-    updateZygUnit: function(zyg_name, unit_stat) {
-        if (this.mCurZygName != null) {
-            this.mCurZygName = zyg_name;
-            this.mItems[this.mUnitMap[zyg_name]] = unit_stat;
+    updateFuncUnit: function(unit_name, unit_stat) {
+        if (this.mCurFuncName != null) {
+            this.mCurFuncName = unit_name;
+            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
             this.selectUnit(this.mCurUnit, true);
         }
-    },
-    
-    setCtxPar: function(key, val) {
-        this.mCtx[key] = val;
     },
     
     prepareWsCreate: function() {
@@ -385,38 +378,46 @@ var sOpFilterH = {
 /**************************************/
 var sConditionsH = {
     mList: [],
-    mBadIdxs: null,
+    mCondSeq: [],
     mCurCondIdx: null,
 
-    setup: function(cond_list, bad_idxs) {
-        this.mList = (cond_list)? cond_list:[];
-        this.mBadIdxs = (bad_idxs)? bad_idxs:[];
-        var list_cond_rep = [sFiltersH.getCurUpdateReport()];
-        for (idx = 0; idx < this.mList.length; idx++) {
-            cond = this.mList[idx];
-            list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
-                'onclick="sConditionsH.selectCond(\'' + idx + '\');">&bull;&emsp;');
-            var descr = getCondDescription(cond, false);
-            if (this.mBadIdxs.indexOf(idx) >= 0) {
-                list_cond_rep.push('<button onclick="sConditionsH.delBadCond(' + idx + 
-                    ')">delete it</button>&emsp;<s>' + descr + '</s>');
+    setup: function(info) {
+        this.mList = info["conditions"];
+        this.mCondSeq = info["cond-seq"];
+        var list_cond_rep = [sFiltersH.getCurUpdateReport(info["eval-status"])];
+        for (idx = 0; idx < this.mCondSeq.length; idx++) {
+            cond_info = this.mCondSeq[idx];
+            if (!cond_info["unit"]) {
+                list_cond_rep.push('<div id="cond--' + idx + 
+                    '" class="cond-descr"><span title="' + cond_info["err"] + 
+                    '">&#x26d4;</span>&emsp;' +
+                    '<button onclick="sConditionsH.delBadCond(' + idx + 
+                    ')">delete it</button>&emsp;<s>' + cond_info["repr"] + '</s></div>');
             } else {
-                list_cond_rep.push(descr)
+                list_cond_rep.push('<div id="cond--' + idx + '" class="cond-descr" ' +
+                    'onclick="sConditionsH.selectCond(\'' + idx + '\');"')
+                if (cond_info["err"])
+                    list_cond_rep.push('><span class="warn" title="' + cond_info["err"] + 
+                    '">&#x2699;</span>&emsp;');
+                else
+                    list_cond_rep.push('>&bull;&emsp;');
+                list_cond_rep.push(cond_info["repr"]);
             }
             list_cond_rep.push('</div>')
         }
         document.getElementById("cond-list").innerHTML = list_cond_rep.join('\n');
-        var cond_idx = (this.mCurCondIdx != null && this.mCurCondIdx < this.mList.length)?
-            this.mCurCondIdx: this.mList.length - 1;
+        var cond_idx = (this.mCurCondIdx != null && 
+            this.mCurCondIdx < this.mCondSeq.length)? 
+            this.mCurCondIdx: this.mCondSeq.length - 1;
         this.mCurCondIdx = null;
-        if (cond_idx >= 0 && this.mBadIdxs.indexOf(cond_idx) < 0)
+        if (cond_idx >= 0 && this.mCondSeq[cond_idx]["unit"])
             this.selectCond(cond_idx, true);
     },
     
     selectCond: function(cond_no, force_it) {
         if (!force_it && this.mCurCondIdx == cond_no) 
             return;
-        if (cond_no != null && this.mBadIdxs.indexOf(cond_no) < 0) {
+        if (cond_no != null && this.mCondSeq[cond_no]["unit"]) {
             new_cond_el = document.getElementById("cond--" + cond_no);
             if (new_cond_el == null) 
                 return;
@@ -430,8 +431,8 @@ var sConditionsH = {
         this.mCurCondIdx = cond_no;
         if (new_cond_el != null) {
             new_cond_el.className = new_cond_el.className + " cur";
-            sZygosityH.onSelectCondition(this.mList[cond_no]);
-            sUnitsH.selectUnit(this.mList[cond_no][1], true);
+            //sZygosityH.onSelectCondition(this.mList[cond_no]);
+            sUnitsH.selectUnit(this.mCondSeq[cond_no]["unit"], true);
         }
     },
 
@@ -440,7 +441,7 @@ var sConditionsH = {
             conditions = null;
         } else {
             filter_name = null;
-            conditions = (use_conditions)? this.mList:null;
+            conditions = (use_conditions)? this.mCondSeq:null;
         }
         add_instr = (zone_data == null)? null: ["zone", JSON.stringify(zone_data)];
         return sUnitsH.formRqArgs(conditions, filter_name, false, add_instr);
@@ -462,20 +463,16 @@ var sConditionsH = {
     
     onUnitSelect: function() {
         if (this.mCurCondIdx == null || 
-                this.mList[this.mCurCondIdx][1] != sUnitsH.getCurUnitName())
+                this.mCondSeq[this.mCurCondIdx]["unit"] != sUnitsH.getCurUnitName())
             this.selectCond(this.findCond(sUnitsH.getCurUnitName()));
     },
 
     findCond: function(unit_name, cond_mode, cond_type) {
         if (this.mCurCondIdx != null && 
-                this.mBadIdxs.indexOf(this.mCurCondIdx) < 0 &&
-                this.mList[this.mCurCondIdx][1] == unit_name &&
-                this.mList[this.mCurCondIdx][0] != "import")
+                this.mCondSeq[this.mCurCondIdx]["unit"] == unit_name)
             return this.mCurCondIdx;
-        for (idx = 0; idx < this.mList.length; idx++) {
-            if (this.mBadIdxs.indexOf(idx) >= 0)
-                continue;
-            if (this.mList[idx][1] == unit_name) {
+        for (idx = 0; idx < this.mCondSeq.length; idx++) {
+            if (this.mCondSeq[idx]["unit"] == unit_name) {
                 if (cond_type && cond_type != this.mList[idx][0])
                     continue;
                 if (cond_mode == undefined || this.mList[idx][2] == cond_mode)
@@ -486,19 +483,19 @@ var sConditionsH = {
     },
     
     nextIdx: function() {
-        return this.mList.length;
+        return this.mCondSeq.length;
     },
     
     isEmpty: function() {
-        return (this.mList.length == 0);
+        return (this.mCondSeq.length == 0);
     },
     
-    getSeqLength: function() {
-        return this.mList.length;
+    getCondCount: function() {
+        return this.mCondSeq.length;
     },
     
     report: function() { 
-        if (this.mList.length == 0)
+        if (this.mCondSeq.length == 0)
             return "no conditions";
         cur_filter = sOpFilterH.getCurFilterName();
         if (cur_filter)
@@ -511,10 +508,6 @@ var sConditionsH = {
     },
 
     delBadCond: function(idx) {
-        if (this.mBadIdxs.indexOf(idx) < 0)
-            return;
-        if (this.mCurCondIdx != null && this.mCurCondIdx > idx)
-            this.mCurCondIdx -= 1;
         sOpFilterH.deleteCondition(idx);
     }
 };
@@ -536,7 +529,6 @@ var sOpCondH = {
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();
-            sOpImportH.suspend();
             this.formCondition(null);
             return;
         } 
@@ -546,9 +538,6 @@ var sOpCondH = {
             this.mCurTpHandler = null;
         else {
             switch(unit_stat["kind"]) {
-                case "inactive":
-                    this.mCurTpHandler = sOpImportH;
-                    break;
                 case "numeric":
                     this.mCurTpHandler = sOpNumH;
                     break;
@@ -560,8 +549,6 @@ var sOpCondH = {
             sOpNumH.suspend();
         if (this.mCurTpHandler != sOpEnumH)
             sOpEnumH.suspend();
-        if (this.mCurTpHandler != sOpImportH)
-            sOpImportH.suspend();
         document.getElementById("cur-cond-loading").style.display = 
             (this.mCurTpHandler)? "none":"block";
         if (this.mCurTpHandler) {
@@ -717,17 +704,26 @@ var sFiltersH = {
         this.mBtnOp.style.display = "none";
     },
 
-    getCurUpdateReport: function() {
+    getCurUpdateReport: function(eval_status) {
+        if (this.mCurFilterInfo == null && eval_status == "ok")
+            return '';
+        var ret = ['<div class="upd-note">'];
+        if (eval_status == "fatal") {
+            ret.push('<span class="bad">Conditions contain errors</span>');
+        } else {
+            if (eval_status == "runtime")
+                ret.push('<span class="warn">Runtime problems</span>'); 
+        }
         if (this.mCurFilterInfo != null) {
             if (this.mCurFilterInfo["upd-time"] != null) {
-                var ret = '<div class="upd-note">Updated at ' + 
-                    timeRepr(this.mCurFilterInfo["upd-time"]);
+                ret.push('Updated at ' + 
+                    timeRepr(this.mCurFilterInfo["upd-time"]));
                 if (this.mCurFilterInfo["upd-from"] != sDSName) 
-                    ret += ' from ' + this.mCurFilterInfo["upd-from"];
-                return ret + '</div>';
+                    ret.push(' from ' + this.mCurFilterInfo["upd-from"]);
             }
         }
-        return '';
+        ret.push('</div>');
+        return ret.join('\n');
     },
     
     checkName: function() {
@@ -873,3 +869,35 @@ var sFiltersH = {
         return this.mAllList;
     }
 };
+
+/*************************************/
+/* Export                            */
+/*************************************/
+function showExport() {
+    relaxView();
+    if (sRecList.length <= 300)
+        res_content = 'Export ' + sRecList.length + ' variants?<br>' +
+            '<button class="popup" onclick="doExport();">Export</button>' + 
+            '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
+    else
+        res_content = 'Too many variants for export: ' + 
+            sRecList.length + ' > 300.<br>' +
+            '<button class="popup" onclick="relaxView();">Cancel</button>';
+    res_el = document.getElementById("export-result");
+    res_el.innerHTML = res_content;
+    sViewH.popupOn(res_el);
+}
+
+function setupExport(info) {
+    res_el = document.getElementById("export-result");
+    if (info["fname"]) {
+        res_el.className = "popup";
+        res_el.innerHTML = 'Exported ' + sRecList.length + ' variants<br>' +
+        '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
+    } else {
+        res_el.className = "popup problems";
+        res_el.innerHTML = 'Bad configuration';
+    }
+    sViewH.popupOn(res_el);
+}
+

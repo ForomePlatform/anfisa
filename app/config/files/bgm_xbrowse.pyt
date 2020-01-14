@@ -37,7 +37,7 @@ if ((Most_Severe_Consequence in
         and (splice_ai_dsmax <= 0.2)):
     return False
 
-import Compound_Het
+label("Comp-1")
 
 # Inheritance Mode
 if Inheritance_Mode() in {"Homozygous Recessive"}:
@@ -49,7 +49,7 @@ if Inheritance_Mode() in {"X-linked"}:
 if Inheritance_Mode() in {"Autosomal Dominant"}:
     return True
 
-if Compound_Het in {Proband}:
+if Compound_Het(state="Comp-1") in {Proband}:
     return True
 
 return False

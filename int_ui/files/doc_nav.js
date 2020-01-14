@@ -95,6 +95,3 @@ function selectDoc(doc_no){
     document.getElementById("doc-title").innerHTML = cur_el.innerHTML;
     window.frames["doc-content"].location.replace(sDocArray[sCurDoc]);
 }
-
-function onModalOff() {
-}

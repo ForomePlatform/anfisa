@@ -201,32 +201,30 @@ function loadNote(content) {
 /* Top control                       */
 /*************************************/
 var sViewH = {
-    mShowToDrop: null,
-    mDropCtrls: [],
+    mPopupMode: null,
+    mPopupCtrls: [],
     mModalCtrls: [],
+    mNotifyCtrls: [],
     mBlock: false,
     
-    addToDrop: function(ctrl) {
-        if (ctrl != null)
-            this.mDropCtrls.push(ctrl);
+    addNotifier: function(ctrl) {
+        this.mNotifyCtrls.push(ctrl);
     },
-
-    dropOn: function(ctrl) {
-        if (this.mDropCtrls.indexOf(ctrl) < 0)
-            this.mDropCtrls.push(ctrl);
-        if (ctrl.style.display == "block") {
-            this.dropOff();
-        } else {
-            this.dropOff();
+    
+    popupOn: function(ctrl) {
+        if (this.mPopupCtrls.indexOf(ctrl) < 0)
+            this.mPopupCtrls.push(ctrl);
+        this.popupOff();
+        if (ctrl.style.display != "block") {
             ctrl.style.display = "block";
-            this.mShowToDrop = true;
+            this.mPopupMode = true;
         }
     },
     
-    dropOff: function() {
-        this.mShowToDrop = false;
-        for (idx = 0; idx < this.mDropCtrls.length; idx++) {
-            this.mDropCtrls[idx].style.display = "none";
+    popupOff: function() {
+        this.mPopupMode = false;
+        for (idx = 0; idx < this.mPopupCtrls.length; idx++) {
+            this.mPopupCtrls[idx].style.display = "none";
         }
         arrangeControls();
     },
@@ -235,18 +233,22 @@ var sViewH = {
         this.mBlock = false;
         if (this.mModalCtrls.indexOf(ctrl) < 0)
             this.mModalCtrls.push(ctrl);
-        this.modalOff();
+        this.modalOff(true);
         ctrl.style.display = (disp_mode)? disp_mode: "block";
     },
     
-    modalOff: function() {
+    modalOff: function(no_notify) {
         if (this.mBlock)
             return;
         for (idx = 0; idx < this.mModalCtrls.length; idx++) {
             this.mModalCtrls[idx].style.display = "none";
         }
-        onModalOff();
         arrangeControls();
+        if (! no_notify) {
+            for (idx = 0; idx < this.mNotifyCtrls.length; idx++) {
+                this.mNotifyCtrls[idx].onModalOff();
+            }
+        }
     },
     
     blockModal: function(mode) {
@@ -259,15 +261,15 @@ var sViewH = {
             if (event_ms.target == this.mModalCtrls[idx]) 
                 this.modalOff();
         }
-        if (this.mShowToDrop && !event_ms.target.matches('.drop')) {
-            this.dropOff();
+        if (this.mPopupMode && !event_ms.target.matches('.popup')) {
+            this.popupOff();
         }
     }
 };
 
 function relaxView() {
     sViewH.modalOff();
-    sViewH.dropOff();
+    sViewH.popupOff();
 }
 
 /*************************************/

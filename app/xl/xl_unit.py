@@ -37,7 +37,7 @@ class XL_Unit(VarUnit):
 #===============================================
 class XL_NumUnit(XL_Unit, NumUnitSupport):
     def __init__(self, eval_space, descr):
-        XL_Unit.__init__(self, eval_space, descr)
+        XL_Unit.__init__(self, eval_space, descr, "numeric")
         self.mDruidKind = "float" if self.getSubKind() == "float" else "long"
 
     def _makeStat(self, condition):
@@ -72,7 +72,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         return [rq[0]["result"][nm] for nm in
             (name_min, name_max, name_cnt)]
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         vmin, vmax, count = self._makeStat(condition)
         ret_handle["count"] = count
@@ -84,7 +84,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
 #===============================================
 class XL_EnumUnit(XL_Unit, EnumUnitSupport):
     def __init__(self, eval_space, descr):
-        XL_Unit.__init__(self, eval_space, descr)
+        XL_Unit.__init__(self, eval_space, descr, "enum")
         self.mVariants = [info[0]
             for info in descr["variants"]]
         self.mAccumCount = sum(info[1]
@@ -127,7 +127,7 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
         return [[var, counts.get(var, 0)]
             for var in self.mVariants]
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         ret_handle["variants"] = self._makeStat(condition)
         return ret_handle

@@ -82,7 +82,7 @@ class HtmlPresentation:
             if line_no == line_err:
                 ret.append(''.join(['<span class="line-err">',
                     escape(line[:pos]),
-                    '<span class="note-err" title="%s">&#x26a0;</span>' %
+                    '<span class="note-err" title="%s">&#x26d4;</span>' %
                     escape(err_msg),
                     escape(line[pos:]), '</span>']))
             elif line.strip().startswith('#'):
@@ -101,11 +101,14 @@ class HtmlPresentation:
         code_sheet = code_lines[:]
         line_from, line_to = line_diap
         m_cnt1, m_cnt2 = 0, 0
-        for check_no, instr_no, cond_loc in sorted(marker_seq,
+        err_msg_dict = dict()
+        for check_no, instr_no, cond_loc, err_msg in sorted(marker_seq,
                 reverse = True, key = lambda info: info[2]):
             line_no, offset_from, offset_to = cond_loc
             if not (line_from <= line_no < line_to):
                 continue
+            if err_msg:
+                err_msg_dict[(check_no, instr_no)] = err_msg
             m_cnt1 += 1
             line_text = code_sheet[line_no - 1]
             code_sheet[line_no - 1] = (line_text[:offset_to]
@@ -136,10 +139,15 @@ class HtmlPresentation:
                 instr_no = int(l_upd[j_upd:jj_upd])
                 j_upd = jj_upd + 2
                 m_cnt2 += 1
-                insert_code = ('<span class="point-edit" '
-                    + ('id="__mark_%d_%d" ' % (check_no, instr_no))
-                    + ('onclick="editMark(%d,%d);"' % (check_no, instr_no))
-                    + '>&#9874;</span>')
+                err_msg = err_msg_dict.get((check_no, instr_no))
+                if err_msg:
+                    insert_code = ('<span class="point-edit warn" title="%s" '
+                        % escape(err_msg))
+                else:
+                    insert_code = '<span class="point-edit" '
+                insert_code += ('id="__mark_%d_%d" onclick="editMark(%d,%d);"'
+                    % (check_no, instr_no, check_no, instr_no))
+                insert_code += '>&#x2699;</span>'
                 l_upd = (l_upd[:j_upd_start] + insert_code + l_upd[j_upd:])
                 j_upd += len(insert_code) - (j_upd - j_upd_start)
             lines_upd[idx] = l_upd

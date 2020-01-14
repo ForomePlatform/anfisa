@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import re
+import re, json
 from io import StringIO
 #===============================================
 def formatIfCode(cond_data):
@@ -106,17 +106,20 @@ def _reprConditionCode(cond_data, output, group_mode):
         if group_mode:
             output.write('(')
         unit_name, func_info, op_mode, values = cond_data[1:]
-        assert func_info["sub-kind"] == "trio-inheritance-z"
         output.write(unit_name + '(')
-        if func_info.get("problem-group"):
-            _reprValues(output, func_info["problem-group"])
+        q_first = False
+        for arg, val in sorted(func_info.items()):
+            if arg.startswith('__'):
+                continue
+            if q_first:
+                q_first = False
+            else:
+                output.write(', ')
+            output.write(' %s = %s' % (arg, json.dumps(val)))
         output.write(')')
         _reprEnumCase('', op_mode, values, output)
         if group_mode:
             output.write(')')
-        return
-    if cond_kind == "import":
-        output.write('import %s' % cond_data[1])
         return
     assert False
 
@@ -132,7 +135,7 @@ def _reprEnumCase(unit_operand, op_mode, values, output):
         assert op_mode == "AND"
         output.write('%s in all({' % unit_operand)
         op_close = '})'
-    _reprValues(values)
+    _reprValues(output, values)
     output.write(op_close)
 
 #===============================================

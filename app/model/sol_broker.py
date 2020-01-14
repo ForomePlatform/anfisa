@@ -196,7 +196,7 @@ class _SolutionKindHandler:
                     "standard": idx < self.mStdCount,
                     "upd-time": upd_time,
                     "upd-from": upd_from,
-                    "errors": not entry_obj.noErrors()
+                    "eval-status": entry_obj.getEvalStatus()
                 })
         return ret_handle
 

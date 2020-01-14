@@ -43,7 +43,7 @@ class AnfisaConfig:
 
         "tm.coeff": .2,
 
-        "max.ws.size":  5000,
+        "max.ws.size":  9000,
         "report.lines": 100,
         "max.export.size": 300,
 
@@ -70,9 +70,9 @@ class AnfisaConfig:
 
         "job.pool.size":    3,
         "job.pool.threads": 1,
-        "op.cache.size":   50,
+        "comp-hets.cache.size": 10,
 
-        "sol-log.size": 30}
+        "max.gene.comp.count": 10000}
 
     sTextDecor = {
         "VEP Data": "VEP<br/>Data",

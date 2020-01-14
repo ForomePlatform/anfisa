@@ -37,6 +37,12 @@ class CaseStory:
         assert False
         return None
 
+    def getCurPointNo(self):
+        if self.mParent is not None:
+            return self.mParent.getCurPointNo()
+        assert False
+        return None
+
     def getLevel(self):
         if self.mParent is None:
             return 0
@@ -68,10 +74,10 @@ class CaseStory:
 
 #===============================================
 class CheckPoint:
-    def __init__(self, story, frag, prev_point, point_no):
+    def __init__(self, story, frag, prev_point):
         self.mStory = story
         self.mFrag = frag
-        self.mPointNo = point_no
+        self.mPointNo = story.getCurPointNo()
         self.mPrevPoint = prev_point
         assert self.mFrag.getLevel() == self.mStory.getLevel()
         assert (self.mPrevPoint is None
@@ -126,20 +132,20 @@ class CheckPoint:
         return "\n".join(code_lines[line_from - 1: line_to - 1])
 
 #===============================================
-class ImportPoint(CheckPoint):
-    def __init__(self, story, frag, prev_point, point_no):
-        CheckPoint.__init__(self, story, frag, prev_point, point_no)
+class LabelPoint(CheckPoint):
+    def __init__(self, story, frag, prev_point):
+        CheckPoint.__init__(self, story, frag, prev_point)
 
     def getPointKind(self):
-        return "Import"
+        return "Label"
 
     def isActive(self):
         return False
 
 #===============================================
 class ErrorPoint(CheckPoint):
-    def __init__(self, story, frag, point_no):
-        CheckPoint.__init__(self, story, frag, None, point_no)
+    def __init__(self, story, frag):
+        CheckPoint.__init__(self, story, frag, None)
 
     def getPointKind(self):
         return "Error"
@@ -149,8 +155,8 @@ class ErrorPoint(CheckPoint):
 
 #===============================================
 class TerminalPoint(CheckPoint):
-    def __init__(self, story, frag, prev_point, point_no):
-        CheckPoint.__init__(self, story, frag, prev_point, point_no)
+    def __init__(self, story, frag, prev_point):
+        CheckPoint.__init__(self, story, frag, prev_point)
 
     def getPointKind(self):
         return "Return"
@@ -164,9 +170,9 @@ class TerminalPoint(CheckPoint):
 
 #===============================================
 class ConditionPoint(CheckPoint):
-    def __init__(self, story, frag, prev_point, point_no):
-        CheckPoint.__init__(self, story, frag, prev_point, point_no)
-        self.mCondition = self.getStory().getMaster().parseCondData(
+    def __init__(self, story, frag, prev_point):
+        CheckPoint.__init__(self, story, frag, prev_point)
+        self.mCondition = self.getStory().getMaster().buildCondition(
             self.getCondData())
         self.mSubStory = CaseStory(self.getStory(), self)
 
@@ -186,24 +192,23 @@ class ConditionPoint(CheckPoint):
 class DTreeEval(Evaluation, CaseStory):
     def __init__(self, eval_space, code, dtree_name = None,
             updated_time = None, updated_from = None):
-        Evaluation.__init__(self, eval_space,
+        parsed = ParsedDTree(eval_space, code)
+        Evaluation.__init__(self, eval_space, parsed.getHashCode(),
             updated_time, updated_from)
         CaseStory.__init__(self)
-        parsed = ParsedDTree(eval_space, code)
         self.mCode = parsed.getTreeCode()
-        self.mError = parsed.getError()
-        self.mHashCode = parsed.getHashCode()
         self.mDTreeName = dtree_name
         self.mPointList = None
         self.mFragments = parsed.getFragments()
         self.mFinalCondition = None
 
-        if self.mError is not None:
+        self.mErrorInfo = None
+        if parsed.getError() is not None:
             msg_text, lineno, offset = parsed.getError()
+            self.mErrorInfo = {
+                "line": lineno, "pos": offset, "error": msg_text}
             logging.error(("Error in tree %s code: (%d:%d) %s\n" %
-                (dtree_name if dtree_name else "", lineno, offset, msg_text))
-                + "Code:\n======\n"
-                + parsed.getTreeCode() + "\n======")
+                (dtree_name if dtree_name else "", lineno, offset, msg_text)))
 
     def isActive(self):
         return self.mPointList is not None
@@ -214,24 +219,17 @@ class DTreeEval(Evaluation, CaseStory):
         self.mPointList = []
         prev_point = None
         for instr_no, frag_h in enumerate(self.mFragments):
-            if frag_h.getInstrType() == "Error":
-                self._addPoint(ErrorPoint(self, frag_h, instr_no))
-                continue
-            if frag_h.getInstrType() == "Import":
+            self.runNextPoint(instr_no, frag_h.getLabel())
+            if frag_h.getInstrType() == "Label":
                 assert frag_h.getDecision() is None
-                self._addPoint(ImportPoint(self,
-                    frag_h, prev_point, instr_no))
-                for unit_name in frag_h.getImportEntries():
-                    assert frag_h.getHashCode() is not None
-                    is_ok = self.importUnit(instr_no, unit_name,
-                        self.getActualCondition(instr_no),
-                        frag_h.getHashCode())
-                    assert is_ok
+                self._addPoint(LabelPoint(self, frag_h, prev_point))
+                continue
+            if frag_h.getInstrType() == "Error":
+                self._addPoint(ErrorPoint(self, frag_h))
                 continue
             if frag_h.getInstrType() == "If":
                 assert frag_h.getDecision() is None
-                cond_point = ConditionPoint(self,
-                    frag_h, prev_point, instr_no)
+                cond_point = ConditionPoint(self, frag_h, prev_point)
                 self._addPoint(cond_point)
                 prev_point = cond_point
                 continue
@@ -241,12 +239,27 @@ class DTreeEval(Evaluation, CaseStory):
                     assert frag_h.getLevel() == 1
                     prev_point.getSubStory()._addPoint(
                         TerminalPoint(prev_point.getSubStory(),
-                            frag_h, prev_point, instr_no))
+                            frag_h, prev_point))
                 else:
-                    self._addPoint(TerminalPoint(self,
-                        frag_h, prev_point, instr_no))
+                    self._addPoint(TerminalPoint(self, frag_h, prev_point))
                 continue
             assert False, "Bad frag type: %s" % frag_h.getInstrType()
+        self.finishRuntime()
+
+    def operationError(self, cond_data, err_msg):
+        Evaluation.operationError(self, cond_data, err_msg)
+        for mark_info in self.mFragments[self.getCurPointNo()].getMarkers():
+            if cond_data is mark_info.getCondData():
+                mark_info.setError(err_msg)
+                return
+        assert False, "Marker not found: " + str(cond_data)
+
+    def locateCondData(self, cond_data):
+        for mark_info in self.mFragments[self.getCurPointNo()].getMarkers():
+            if cond_data is mark_info.getCondData():
+                return self.getCurPointNo(), mark_info.getErrorMsg()
+        assert False, "Not found: " + str(cond_data)
+        return None
 
     def __len__(self):
         return len(self.mPointList)
@@ -254,23 +267,20 @@ class DTreeEval(Evaluation, CaseStory):
     def getSolKind(self):
         return "dtree"
 
-    def noErrors(self):
-        return self.mError is None
-
-    def getHashCode(self):
-        return self.mHashCode
-
     def getMaster(self):
         return self
 
-    def getError(self):
-        return self.mError
+    def getErrorInfo(self):
+        return self.mErrorInfo
 
     def getCode(self):
         return self.mCode
 
     def getDTreeName(self):
         return self.mDTreeName
+
+    def getCurPointNo(self):
+        return Evaluation.getCurPointNo(self)
 
     def regPoint(self, point):
         assert point.getPointNo() == len(self.mPointList)
@@ -291,18 +301,21 @@ class DTreeEval(Evaluation, CaseStory):
         for point in self.mPointList:
             cond_seq = []
             for mark_idx, mark_info in enumerate(point.getMarkers()):
-                cond_data, cond_loc = mark_info
-                marker_seq.append((point.getPointNo(), mark_idx, cond_loc))
-                cond_seq.append(cond_data)
+                marker_seq.append((point.getPointNo(), mark_idx,
+                    mark_info.getLoc(), mark_info.getErrorMsg()))
+                cond_seq.append(mark_info.getCondData())
             if len(cond_seq) > 0:
                 marker_dict[point.getPointNo()] = cond_seq
         html_lines = self._decorCode(marker_seq)
         ret_handle = {
             "points": [point.getInfo(html_lines) for point in self.mPointList],
             "markers": marker_dict,
+            "labels": self.getLabelPoints(),
             "code": self.mCode,
             "hash": self.mHashCode,
-            "error": self.mError is not None}
+            "eval-status": self.getEvalStatus()}
+        if self.mErrorInfo:
+            ret_handle.update(self.mErrorInfo)
         if self.mDTreeName:
             ret_handle["dtree-name"] = self.mDTreeName
         return ret_handle

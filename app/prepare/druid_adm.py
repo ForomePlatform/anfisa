@@ -74,7 +74,10 @@ class DruidAdmin(DruidAgent):
             {"name": "_rand", "type": "long"}]
 
         for unit_data in flt_data:
-            if unit_data["kind"] in {"func", "transcript"}:
+            if unit_data["kind"] == "func":
+                continue
+            if (unit_data["kind"] == "enum"
+                    and unit_data["sub-kind"].startswith("transcript-")):
                 continue
             if unit_data["kind"] == "numeric":
                 dim_container.append({

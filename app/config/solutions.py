@@ -103,7 +103,7 @@ def readySolutions():
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_HOM_REC"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
+        ConditionMaker.condFunc("Inheritance_Mode", dict(),
             ["Homozygous Recessive"])],
         requires = {"trio_base", "WS"})
 
@@ -112,8 +112,8 @@ def readySolutions():
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_CMPD_HET"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.importVar("Compound_Het_transcript"),
-        ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
+        ConditionMaker.condFunc("Compound_Het",
+            {"approx": "transcript"}, ["Proband"])],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("BGM_Autosomal_Dominant", [
@@ -129,7 +129,7 @@ def readySolutions():
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-        ConditionMaker.condTrioInheritanceZ("Inheritance_Mode", ["X-linked"])],
+        ConditionMaker.condFunc("Inheritance_Mode", dict(), ["X-linked"])],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
@@ -137,7 +137,7 @@ def readySolutions():
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-            ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
+            ConditionMaker.condFunc("Inheritance_Mode", dict(),
                 ["Homozygous Recessive"])],
         requires = {"trio_base", "WS"})
 
@@ -146,8 +146,8 @@ def readySolutions():
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-            ConditionMaker.importVar("Compound_Het_transcript"),
-            ConditionMaker.condEnum("Compound_Het_transcript", ["Proband"])],
+            ConditionMaker.condFunc("Compound_Het",
+                {"approx": "transcript"}, ["Proband"])],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Auto_Dom",
@@ -155,12 +155,22 @@ def readySolutions():
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
-            ConditionMaker.condTrioInheritanceZ("Inheritance_Mode",
+            ConditionMaker.condFunc("Inheritance_Mode", dict(),
                 ["Autosomal Dominant"])],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Impact_Splicing",
-        condition_high_quality() + impacting_splicing(),
+        condition_high_quality() + impacting_splicing())
+
+    base_pack.regFilter("InSilico_Possibly_Damaging",
+        condition_high_quality() + [
+            ConditionMaker.condEnum("Rules",
+                ["Possibly_Damaging_Predictions"])],
+        requires = {"WS"})
+
+    base_pack.regFilter("InSilico_Damaging",
+        condition_high_quality() + [
+            ConditionMaker.condEnum("Rules", ["Damaging_Predictions"])],
         requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
@@ -189,25 +199,22 @@ def readySolutions():
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
-            NON_SYNONYMOUS_CSQ)],
-        requires = {"XL"})
+            NON_SYNONYMOUS_CSQ)])
 
     base_pack.regFilter("UTR_and_Worse", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
-                LOW_IMPACT_CSQ, join_mode = "NOT")],
-        requires = {"XL"})
+                LOW_IMPACT_CSQ, join_mode = "NOT")])
 
     base_pack.regFilter("Impacting_Splicing",
-        condition_high_quality() + impacting_splicing(),
-        requires = {"XL"})
+        condition_high_quality() + impacting_splicing())
 
     # Production Decision Trees
     base_pack.regDTree("BGM xBrowse Alt",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
-        requires = {"trio_base", "XL"})
+        requires = {"trio_base"})
     base_pack.regDTree("Trio Candidates",
         cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
-        requires = {"trio_base", "XL"})
+        requires = {"trio_base"})
     base_pack.regDTree("All Rare Variants",
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
     base_pack.regDTree("Hearing Loss, v.4",
@@ -244,7 +251,7 @@ def readySolutions():
         cfgPath("ttp.lst"))
     base_pack.regPanel("Symbol", "Immune_Dysregulation",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Symbol", "Autism Syndrom",
+    base_pack.regPanel("Symbol", "Autism Spectrum",
         cfgPath("autism.lst"))
     # base_pack.regPanel("Symbol", "TTP1",
     #     cfgPath("ttp1.lst"))
@@ -265,7 +272,7 @@ def readySolutions():
 def completeDsModes(ds_h):
     family_info = ds_h.getFamilyInfo()
     trio_seq = family_info.getTrioSeq()
-    if trio_seq is not None:
+    if trio_seq:
         ds_h.addModes({"trio"})
         if trio_seq[0][0] == "Proband":
             ds_h.addModes({"trio_base"})

@@ -22,7 +22,8 @@ import logging
 from io import StringIO
 
 from utils.log_err import logException
-from .gen_html import formWsPage, noRecords, dirPage, notFound
+from .html_pages import noRecords, dirPage, notFound
+from .html_ws import formWsPage
 from .html_xl import formXLPage
 from .html_dtree import formDTreePage
 from .record import reportWsRecord, reportDsRecord

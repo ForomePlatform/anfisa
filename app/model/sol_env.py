@@ -24,20 +24,15 @@ from app.config.a_config import AnfisaConfig
 
 #===============================================
 class SolutionEnv:
-    sMaxSize = AnfisaConfig.configOption("sol-log.size")
-
     def __init__(self, mongo_connector, name):
         self.mName = name
         self.mMongoAgent = mongo_connector.makeAgent(name)
         self.mBrokers = []
+        self
         self.mHandlers = {sol_kind: _SolKindMongoHandler(
             sol_kind, data_name, self.mMongoAgent)
             for sol_kind, data_name in
             (("filter", "seq"), ("dtree", "code"))}
-        self.mLogInfo = []
-        it = self.mMongoAgent.find_one({"_id": "sol-log"})
-        if it is not None:
-            self.mLogInfo = it["records"]
 
     def getName(self):
         return self.mName
@@ -64,10 +59,6 @@ class SolutionEnv:
                 broker_h.refreshSolEntries(key)
             return True
         return False
-
-    def logChange(self, sol_kind, option, sol_name):
-        #TRF: write it!!!
-        pass
 
 #===============================================
 #===============================================

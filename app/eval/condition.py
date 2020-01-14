@@ -32,18 +32,9 @@ class ConditionMaker:
         return ["enum", unit_name, join_mode, variants]
 
     @staticmethod
-    def condTrioInheritanceZ(unit_name, variants,
-            join_mode = "OR", problem_group = None):
+    def condFunc(unit_name, func_args, variants, join_mode = "OR"):
         assert join_mode in {"AND", "OR", "NOT"}
-        if problem_group is not None:
-            problem_group = sorted(problem_group)
-        return ["func", unit_name, {
-            "type": "trio-inheritance-z",
-            "problem-group": problem_group}, join_mode, variants]
-
-    @staticmethod
-    def importVar(unit_name):
-        return ["import", unit_name]
+        return ["func", unit_name, func_args, join_mode, variants]
 
     @staticmethod
     def isAll(cond_data):
@@ -58,6 +49,10 @@ class ConditionMaker:
         return [None]
 
     @staticmethod
+    def condNot(cond_data):
+        return ["not", cond_data]
+
+    @staticmethod
     def joinAnd(cond_seq):
         if len(cond_seq) == 0:
             return []
@@ -65,22 +60,49 @@ class ConditionMaker:
             return cond_seq[0]
         return ["and"] + cond_seq[:]
 
-#===============================================
-def validateNumCondition(cond_info):
-    if cond_info[0] != "numeric" or len(cond_info[2]) != 4:
-        return False
-    min_val, min_eq, max_val, max_eq = cond_info[2]
-    if min_eq not in {True, False} or max_eq not in {True, False}:
-        return False
-    return True
+    @staticmethod
+    def joinOr(cond_seq):
+        if len(cond_seq) == 0:
+            return []
+        if len(cond_seq) == 1:
+            return cond_seq[0]
+        return ["or"] + cond_seq[:]
 
 #===============================================
-def validateEnumCondition(cond_info):
-    if cond_info[0] != "enum":
-        return False
-    filter_mode, variants = cond_info[2:]
-    return (filter_mode in {"", "OR", "AND", "NOT"}
-        and len(variants) > 0)
+def validateCondition(cond_info):
+    if (isinstance(cond_info, list) and len(cond_info) > 2
+            and isinstance(cond_info[1], str)):
+        if cond_info[0] == "numeric":
+            if (len(cond_info) == 3 and isinstance(cond_info[2], list)
+                    and len(cond_info[2]) == 4):
+                min_val, min_eq, max_val, max_eq = cond_info[2]
+                if min_eq not in {True, False} or max_eq not in {True, False}:
+                    return "Numeric condition parameters mix-up"
+                return None
+            return "Bad numeric condition"
+        if cond_info[0] == "enum":
+            if len(cond_info) == 4:
+                filter_mode, variants = cond_info[2:]
+                if not isinstance(variants, list):
+                    return "Wrong list of enum variants"
+                if filter_mode not in {"", "OR", "AND", "NOT"}:
+                    return "Bad filter mode for enum condition"
+                return None
+            return "Bad enumerated condition"
+        if cond_info[0] == "func":
+            if len(cond_info) == 5:
+                params, filter_mode, variants = cond_info[2:]
+                if params is not None:
+                    if (not isinstance(params, dict) or not all(
+                            isinstance(key, str) for key in params.keys())):
+                        return "Wrong function parameters"
+                if not isinstance(variants, list):
+                    return "Wrong list of functions variants"
+                if filter_mode not in {"", "OR", "AND", "NOT"}:
+                    return "Bad filter mode for function condition"
+                return None
+            return "Bad function condition"
+    return "Improper condition"
 
 
 #===============================================

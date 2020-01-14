@@ -206,30 +206,33 @@ class DataSet(SolutionBroker):
         return ret
 
     #===============================================
-    def prepareAllUnitStat(self, condition, repr_context,
-            eval_h, time_end, point_no = None):
+    def prepareAllUnitStat(self, condition, eval_h,
+            time_end, point_no = None):
         ret = []
         for unit_h in self.getEvalSpace().iterUnits():
             if unit_h.isScreened():
                 continue
+            if unit_h.getUnitKind() == "func":
+                ret.append(unit_h.makeInfoStat(eval_h, point_no))
+                continue
             if point_no is not None and not unit_h.isInDTrees():
                 continue
             if time_end is False:
-                ret.append(unit_h.prepareStat(eval_h))
+                ret.append(unit_h.prepareStat(incomplete_mode = True))
                 continue
-            ret.append(unit_h.makeStat(condition, repr_context))
+            ret.append(unit_h.makeStat(condition, eval_h))
             if time_end is not None and time() > time_end:
                 time_end = False
         return ret
 
     def prepareSelectedUnitStat(self, unit_names, condition,
-            repr_context, eval_h, time_end = None, point_no = None):
+            eval_h, time_end = None, point_no = None):
         ret = []
         for unit_name in unit_names:
             unit_h = self.getEvalSpace().getUnit(unit_name)
-            assert not unit_h.isScreened()
+            assert not unit_h.isScreened() and unit_h.getUnitKind != "func"
             assert point_no is None or unit_h.isInDTrees()
-            ret.append(unit_h.makeStat(condition, repr_context))
+            ret.append(unit_h.makeStat(condition, eval_h))
             if time_end is not None and time() > time_end:
                 break
         return ret
@@ -260,18 +263,6 @@ class DataSet(SolutionBroker):
         return counts
 
     #===============================================
-    def _makeReprContext(self, rq_args, eval_h):
-        repr_context = {"eval": eval_h}
-        if "ctx" in rq_args:
-            context = json.loads(rq_args["ctx"])
-            if (self._REST_NeedsBackup(rq_args, 'C')
-                    and "problem_group" in context):
-                assert len(context) == 1
-                context = {"problem-group": self.getFamilyInfo().idxset2ids(
-                    context["problem_group"])}
-            repr_context.update(context)
-        return repr_context
-
     def _getArgCondFilter(self, rq_args, activate_it = True):
         if "filter" in rq_args:
             filter_h = self.pickSolEntry("filter", rq_args["filter"])
@@ -325,7 +316,6 @@ class DataSet(SolutionBroker):
                 for key in ("no", "lb", "cl", "mr", "dt")])
         return ret_handle
 
-
     @classmethod
     def _REST_BackupSolList(cls, sol_info_seq):
         ret_handle = []
@@ -348,12 +338,12 @@ class DataSet(SolutionBroker):
                     info_descr["affected"])
             info.append(info_descr)
             if unit_stat["kind"] == "func":
-                if unit_stat["sub-kind"] != "trio-inheritance-z":
+                if unit_stat["sub-kind"] != "inheritance-z":
                     assert False
                     continue
                 info[0] = "zygosity"
                 info += [self.getFamilyInfo().ids2idxset(
-                    unit_stat["problem-group"]), unit_stat["variants"]]
+                    unit_stat["problem_group"]), unit_stat["variants"]]
             elif unit_stat["kind"] == "inactive":
                 avail_import.append(unit_stat["name"])
                 avail_import_titles.append(unit_stat.get("title"))
@@ -362,11 +352,9 @@ class DataSet(SolutionBroker):
                 info[0] = unit_stat["sub-kind"]
                 info += [unit_stat.get("min"), unit_stat.get("max"),
                     unit_stat["count"], 0]
-            elif unit_stat["kind"] == "transcript":
-                if unit_stat["sub-kind"] == "status":
-                    info[0] = "transcript-status"
-                else:
-                    info[0] = "transcript-multiset"
+            elif (unit_stat["kind"] == "enum"
+                    and unit_stat["sub-kind"].startswith("transcript")):
+                info[0] = unit_stat["sub-kind"]
                 info.append(unit_stat.get("variants"))
             else:
                 assert unit_stat["kind"] == "enum"
@@ -386,8 +374,8 @@ class DataSet(SolutionBroker):
                 continue
             if cond_data[0] == "zygosity":
                 ret_handler.append(["func", cond_data[1], {
-                    "sub-kind": "trio-inheritance-z",
-                    "problem-group": (self.getFamilyInfo().idxset2ids(
+                    "sub-kind": "inheritance-z",
+                    "problem_group": (self.getFamilyInfo().idxset2ids(
                         cond_data[2]))},
                     cond_data[3], cond_data[4]])
                 continue
@@ -404,10 +392,10 @@ class DataSet(SolutionBroker):
                 continue
             if cond_data[0] == "func":
                 func_info = cond_data[2]
-                assert func_info["sub-kind"] == "trio-inheritance-z"
+                assert func_info["sub-kind"] == "inheritance-z"
                 ret_handler.append(["zygosity", cond_data[1],
                     self.getFamilyInfo().ids2idxset(
-                        func_info["problem-group"]),
+                        func_info["problem_group"]),
                     cond_data[3], cond_data[4]])
                 continue
             ret_handler.append(cond_data)
@@ -421,16 +409,15 @@ class DataSet(SolutionBroker):
             filter_proc_h = self._getArgCondFilter(
                 rq_args, activate_it = False)
             if not self.modifySolEntry("filter", json.loads(rq_args["instr"]),
-                    filter_proc_h.getCondData()):
+                    filter_proc_h.getCondDataSeq()):
                 assert False
         filter_h = self._getArgCondFilter(rq_args)
         condition = filter_h.getCondition()
-        repr_context = self._makeReprContext(rq_args, filter_h)
         ret_handle = {
             "total": self.getTotal(),
             "kind": self.mDSKind,
             "stat-list": self.prepareAllUnitStat(condition,
-                repr_context, filter_h, time_end),
+                filter_h, time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "rq_id": self._makeRqId()}
@@ -464,11 +451,10 @@ class DataSet(SolutionBroker):
         dtree_h = self._getArgDTree(rq_args)
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
-        repr_context = self._makeReprContext(rq_args, dtree_h)
         ret_handle = {
             "total": self.getTotal(),
             "stat-list": self.prepareAllUnitStat(condition,
-                repr_context, dtree_h, time_end, point_no),
+                dtree_h, time_end, point_no),
             "rq_id": self._makeRqId()}
         ret_handle.update(self.getEvalSpace().reportCounts(
             condition))
@@ -489,17 +475,32 @@ class DataSet(SolutionBroker):
         else:
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
-        repr_context = self._makeReprContext(rq_args, eval_h)
         ret_handle = {
             "rq_id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
-                json.loads(rq_args["units"]), condition, repr_context,
+                json.loads(rq_args["units"]), condition,
                 eval_h, time_end, point_no)}
         if self._REST_NeedsBackup(rq_args, 'U'):
             stat_seq, _, _ = self._REST_BackupStatUnits(
                 ret_handle["units"])
             ret_handle["units"] = stat_seq
         return ret_handle
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__statfunc(self, rq_args):
+        if "dtree" in rq_args or "code" in rq_args:
+            eval_h = self._getArgDTree(rq_args)
+            point_no = int(rq_args["no"])
+            condition = eval_h.getActualCondition(point_no)
+        else:
+            eval_h = self._getArgCondFilter(rq_args)
+            condition = eval_h.getCondition()
+            point_no = int(rq_args["no"]) if "no" in rq_args else None
+
+        unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
+        parameters = json.loads(rq_args["param"])
+        return unit_h.makeParamStat(condition, parameters, eval_h, point_no)
 
     #===============================================
     @RestAPI.ds_request
@@ -552,10 +553,9 @@ class DataSet(SolutionBroker):
         dtree_h = self._getArgDTree(rq_args,
             use_dtree = False, activate_it = False)
         ret_handle = {"code": dtree_h.getCode()}
-        if dtree_h.getError() is not None:
-            msg_text, lineno, col_offset = dtree_h.getError()
-            ret_handle.update(
-                {"line": lineno, "pos": col_offset, "error": msg_text})
+        if dtree_h.getErrorInfo() is not None:
+            msg_text, lineno, col_offset = dtree_h.getErrorInfo()
+            ret_handle.update(dtree_h.getErrorInfo())
         return ret_handle
 
     #===============================================

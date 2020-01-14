@@ -18,9 +18,10 @@
 #  limitations under the License.
 #
 
-from app.eval.eval_space import EvalSpace
+from app.eval.eval_space import (EvalSpace, Eval_Condition,
+    CondSupport_None, CondSupport_All)
 from app.eval.var_unit import ReservedNumUnit
-from app.eval.condition import ZYG_BOUNDS_VAL
+from app.eval.condition import ConditionMaker, ZYG_BOUNDS_VAL
 #===============================================
 class XL_EvalSpace(EvalSpace):
     def __init__(self, ds_h, druid_agent):
@@ -180,44 +181,14 @@ class XL_EvalSpace(EvalSpace):
         return [int(it["_ord"]) for it in ret[0]["result"]]
 
 #===============================================
-class XL_Condition:
+class XL_Condition(Eval_Condition):
     def __init__(self, eval_space, cond_type):
-        self.mEvalSpace = eval_space
-        self.mCondType = cond_type
+        Eval_Condition.__init__(self, eval_space, cond_type)
 
-    def getEvalSpace(self):
-        return self.mEvalSpace
-
-    def getCondType(self):
-        return self.mCondType
-
-    def __not__(self):
-        assert False
-
-    def __and__(self, other):
-        assert False
-
-    def __or__(self, other):
-        assert False
-
-    def addOr(self, other):
-        assert other is not None and other.getCondType() is not None
-        if other.getCondType() == "or":
-            return other.addOr(self)
-        elif other.getCondType() == "null":
-            return self
-        elif other.getCondType() == "all":
-            return other
+    def _makeOr(self, other):
         return XL_Or([self, other])
 
-    def addAnd(self, other):
-        assert other is not None and other.getCondType() is not None
-        if other.getCondType() == "and":
-            return other.addAnd(self)
-        elif other.getCondType() == "all":
-            return self
-        elif other.getCondType() == "null":
-            return other
+    def _makeAnd(self, other):
         return XL_And([self, other])
 
     def negative(self):
@@ -232,6 +203,7 @@ class XL_NumCondition(XL_Condition):
         XL_Condition.__init__(self, eval_space, "numeric")
         self.mUnitName = unit_name
         self.mBounds = bounds
+        self.mData = [unit_name] + list(bounds)
 
     def getDruidRepr(self):
         ret = {
@@ -246,12 +218,19 @@ class XL_NumCondition(XL_Condition):
             ret["upper"] = str(self.mBounds[2])
         return ret
 
+    def toJSon(self):
+        return ConditionMaker.condNum(*self.mData)
+
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):
     def __init__(self, eval_space, unit_name, variant):
         XL_Condition.__init__(self, eval_space, "enum-single")
         self.mUnitName = unit_name
         self.mVariant = variant
+        self.mData = [unit_name, [variant]]
+
+    def toJSon(self):
+        return ConditionMaker.condEnum(*self.mData)
 
     def getDruidRepr(self):
         return {
@@ -265,6 +244,10 @@ class XL_EnumInCondition(XL_Condition):
         XL_Condition.__init__(self, eval_space, "enum-in")
         self.mUnitName = unit_name
         self.mVariants = sorted(variants)
+        self.mData = [unit_name, self.mVariants]
+
+    def toJSon(self):
+        return ConditionMaker.condEnum(*self.mData)
 
     def getDruidRepr(self):
         return {
@@ -277,6 +260,9 @@ class XL_Negation(XL_Condition):
     def __init__(self, base_cond):
         XL_Condition.__init__(self, base_cond.getEvalSpace(), "neg")
         self.mBaseCond = base_cond
+
+    def toJSon(self):
+        return ConditionMaker.condNot(self.mBaseCond.toJSon())
 
     def negative(self):
         return self.mBaseCond
@@ -305,6 +291,10 @@ class XL_And(_XL_Joiner):
     def __init__(self, items):
         _XL_Joiner.__init__(self, items, "and")
 
+    def toJSon(self):
+        return ConditionMaker.joinAnd(
+            [it.toJSon() for it in self.getItems()])
+
     def addAnd(self, other):
         if other.getCondType() == "null":
             return other
@@ -321,6 +311,10 @@ class XL_Or(_XL_Joiner):
     def __init__(self, items):
         _XL_Joiner.__init__(self, items, "or")
 
+    def toJSon(self):
+        return ConditionMaker.joinOr(
+            [it.toJSon() for it in self.getItems()])
+
     def addOr(self, other):
         if other.getCondType() == "null":
             return self
@@ -333,35 +327,17 @@ class XL_Or(_XL_Joiner):
         return XL_Or(self.getItems() + add_items)
 
 #===============================================
-class XL_None(XL_Condition):
+class XL_None(XL_Condition, CondSupport_None):
     def __init__(self, eval_space):
         XL_Condition.__init__(self, eval_space, "null")
-
-    def addAnd(self, other):
-        return self
-
-    def addOr(self, other):
-        return other
-
-    def negative(self):
-        return XL_All()
 
     def getDruidRepr(self):
         return False
 
 #===============================================
-class XL_All(XL_Condition):
+class XL_All(XL_Condition, CondSupport_All):
     def __init__(self, eval_space):
         XL_Condition.__init__(self, eval_space, "all")
-
-    def addAnd(self, other):
-        return other
-
-    def addOr(self, other):
-        return self
-
-    def negative(self):
-        return XL_None()
 
     def getDruidRepr(self):
         return None

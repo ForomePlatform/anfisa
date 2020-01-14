@@ -29,8 +29,9 @@ from app.eval.var_unit import (VarUnit, NumUnitSupport, EnumUnitSupport,
 from .val_stat import NumDiapStat, EnumStat
 #===============================================
 class WS_Unit(VarUnit):
-    def __init__(self, eval_space, unit_data, unit_kind = None):
-        VarUnit.__init__(self, eval_space, unit_data, unit_kind)
+    def __init__(self, eval_space, unit_data,
+            unit_kind = None, sub_kind = None):
+        VarUnit.__init__(self, eval_space, unit_data, unit_kind, sub_kind)
         self.mExtractor = None
 
     @abc.abstractmethod
@@ -38,7 +39,7 @@ class WS_Unit(VarUnit):
         return None
 
     @abc.abstractmethod
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         return None
 
     @abc.abstractmethod
@@ -46,16 +47,17 @@ class WS_Unit(VarUnit):
         assert False
 
 #===============================================
-class NumericValueUnit(WS_Unit, NumUnitSupport):
+class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
+        assert self.getSubKind() in {"float", "int"}
         self._setScreened(self.getDescr()["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
     def getRecVal(self, rec_no):
         return self.mArray[rec_no]
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
@@ -68,9 +70,9 @@ class NumericValueUnit(WS_Unit, NumUnitSupport):
         self.mArray.append(inp_data.get(self.getName()))
 
 #===============================================
-class _EnumUnit(WS_Unit, EnumUnitSupport):
-    def __init__(self, eval_space, unit_data):
-        WS_Unit.__init__(self, eval_space, unit_data)
+class WS_EnumUnit(WS_Unit, EnumUnitSupport):
+    def __init__(self, eval_space, unit_data, sub_kind = None):
+        WS_Unit.__init__(self, eval_space, unit_data, "enum", sub_kind)
         variants_info = self.getDescr().get("variants")
         if variants_info is None:
             self._setScreened()
@@ -87,7 +89,7 @@ class _EnumUnit(WS_Unit, EnumUnitSupport):
     def getVariantList(self):
         return list(iter(self.mVariantSet))
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         enum_stat = EnumStat(self.mVariantSet)
         for rec_no, _ in condition.iterSelection():
@@ -96,9 +98,9 @@ class _EnumUnit(WS_Unit, EnumUnitSupport):
         return ret_handle
 
 #===============================================
-class StatusUnit(_EnumUnit):
+class WS_StatusUnit(WS_EnumUnit):
     def __init__(self, eval_space, unit_data):
-        _EnumUnit.__init__(self, eval_space, unit_data)
+        WS_EnumUnit.__init__(self, eval_space, unit_data, "status")
         self.mArray = array('L')
 
     def getRecVal(self, rec_no):
@@ -110,9 +112,9 @@ class StatusUnit(_EnumUnit):
         self.mArray.append(self.mVariantSet.indexOf(value))
 
 #===============================================
-class MultiSetUnit(_EnumUnit):
+class WS_MultiSetUnit(WS_EnumUnit):
     def __init__(self, eval_space, unit_data):
-        _EnumUnit.__init__(self, eval_space, unit_data)
+        WS_EnumUnit.__init__(self, eval_space, unit_data)
         self.mArraySeq = [bitarray()
             for var in iter(self.mVariantSet)]
 
@@ -136,9 +138,9 @@ class MultiSetUnit(_EnumUnit):
             self.mArraySeq[var_no].append(var_no in idx_set)
 
 #===============================================
-class MultiCompactUnit(_EnumUnit):
+class WS_MultiCompactUnit(WS_EnumUnit):
     def __init__(self, eval_space, unit_data):
-        _EnumUnit.__init__(self, eval_space, unit_data)
+        WS_EnumUnit.__init__(self, eval_space, unit_data)
         self.mArray = array('L')
         self.mPackSetDict = dict()
         self.mPackSetSeq  = [set()]
@@ -166,9 +168,10 @@ class MultiCompactUnit(_EnumUnit):
         self.mArray.append(idx)
 
 #===============================================
-class TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
+class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
-        WS_Unit.__init__(self, eval_space, unit_data, "transcript")
+        WS_Unit.__init__(self, eval_space, unit_data,
+            "enum", "transcript-status")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -195,7 +198,7 @@ class TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
             self.mArray.extend([self.mVariantSet.indexOf(value)
                 for value in values])
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
@@ -205,9 +208,10 @@ class TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         return ret_handle
 
 #===============================================
-class TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
+class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
-        WS_Unit.__init__(self, eval_space, unit_data, "transcript")
+        WS_Unit.__init__(self, eval_space, unit_data,
+            "enum", "transcript-multiset")
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -229,7 +233,7 @@ class TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
     def _fillOne(self, values):
         if values:
             idx_set = self.mVariantSet.makeIdxSet(values)
-            key = MultiCompactUnit.makePackKey(idx_set)
+            key = WS_MultiCompactUnit.makePackKey(idx_set)
             idx = self.mPackSetDict.get(key)
             if idx is None:
                 idx = len(self.mPackSetSeq)
@@ -247,7 +251,7 @@ class TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
             for values in seq:
                 self._fillOne(values)
 
-    def makeStat(self, condition, repr_context):
+    def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
@@ -260,19 +264,18 @@ class TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
 #===============================================
 def loadWS_Unit(eval_space, unit_data):
     kind = unit_data["kind"]
-    if kind == "transcript":
-        if unit_data["sub-kind"] == "status":
-            return TranscriptStatusUnit(eval_space, unit_data)
-        else:
-            return TranscriptMultisetUnit(eval_space, unit_data)
     if kind == "numeric":
-        return NumericValueUnit(eval_space, unit_data)
+        return WS_NumericValueUnit(eval_space, unit_data)
     assert kind == "enum", "Bad kind: " + kind
+    if unit_data["sub-kind"] == "transcript-status":
+        return WS_TranscriptStatusUnit(eval_space, unit_data)
+    if unit_data["sub-kind"] == "transcript-multiset":
+        return WS_TranscriptMultisetUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "status":
-        return StatusUnit(eval_space, unit_data)
+        return WS_StatusUnit(eval_space, unit_data)
     if kind == "enum" and unit_data.get("compact"):
-        return MultiCompactUnit(eval_space, unit_data)
-    return MultiSetUnit(eval_space, unit_data)
+        return WS_MultiCompactUnit(eval_space, unit_data)
+    return WS_MultiSetUnit(eval_space, unit_data)
 
 #===============================================
 class WS_ReservedNumUnit(ReservedNumUnit):

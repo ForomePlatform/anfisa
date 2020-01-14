@@ -36,7 +36,7 @@ class XLDataset(DataSet):
             self.mEvalSpace._addZygUnit(zyg_name)
 
         for unit_data in self.getFltSchema():
-            if unit_data["kind"] == "transcript":
+            if unit_data["sub-kind"].startswith("transcript-"):
                 continue
             u_h = self.mEvalSpace.getUnit(unit_data["name"])
             if u_h is not None:

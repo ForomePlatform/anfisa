@@ -18,26 +18,50 @@
 #  limitations under the License.
 #
 import abc
-from utils.log_err import logException
+
 #===============================================
 class Evaluation:
-    def __init__(self, eval_space,
+    def __init__(self, eval_space, hash_code,
             updated_time = None, updated_from = None):
         self.mEvalSpace = eval_space
-        self.mImportSupport = dict()
+        self.mHashCode = hash_code
         self.mUpdatedInfo = [updated_time, updated_from]
+        self.mPointNo = 0
+        self.mLabels = dict()
+        self.mErrors = dict()
+        self.mEvalStatus = "ok"
+
+    def getEvalSpace(self):
+        return self.mEvalSpace
+
+    def getUpdateInfo(self):
+        return self.mUpdatedInfo
+
+    def getHashCode(self):
+        return self.mHashCode
+
+    def getLabelCondition(self, label, point_no):
+        if label not in self.mLabels or self.mLabels[label] > point_no:
+            return None
+        return self.getActualCondition(self.mLabels[label])
+
+    def getLabelPoints(self, point_no = None):
+        ret = []
+        for label, p_no in self.mLabels.items():
+            if point_no is None or p_no <= point_no:
+                ret.append(label)
+        return sorted(ret)
+
+    def getPointError(self, point_no):
+        if point_no in self.mErrors:
+            return self.mErrors[point_no]
+        return None
+
+    def getEvalStatus(self):
+        return self.mEvalStatus
 
     @abc.abstractmethod
     def getSolKind(self):
-        return None
-
-    @abc.abstractmethod
-    def noErrors(self):
-        assert False
-        return False
-
-    @abc.abstractmethod
-    def getHashCode(self):
         return None
 
     @abc.abstractmethod
@@ -53,63 +77,82 @@ class Evaluation:
     def reportInfo(self):
         assert False
 
-    def getEvalSpace(self):
-        return self.mEvalSpace
+    @abc.abstractmethod
+    def getActualCondition(self, point_no):
+        assert False
 
-    def getImportSupport(self, unit_name):
-        return self.mImportSupport.get(unit_name)
+    def operationError(self, cond_data, err_msg):
+        if self.mEvalStatus == "ok":
+            self.mEvalStatus = "runtime"
 
-    def getUpdateInfo(self):
-        return self.mUpdatedInfo
+    def getCurPointNo(self):
+        return self.mPointNo
 
-    def validateCondData(self, cond_data, op_units = None):
-        try:
-            return self._validateCondData(cond_data, op_units)
-        except Exception:
-            logException("Validation failure")
-            return False
+    def inRuntime(self):
+        return self.mPointNo is not None
 
-    def _validateCondData(self, cond_info, op_units):
-        if len(cond_info) == 0:
-            return True
-        if cond_info[0] is None:
-            if len(cond_info) != 1:
-                return False
-            return True
-        if cond_info[0] in ("and", "or"):
-            return all(self._validateCondData(cc, op_units)
-                for cc in cond_info[1:])
-        if cond_info[0] == "not":
-            if len(cond_info) != 2:
-                return False
-            return self._validateCondData(cond_info[1], op_units)
-        unit_h = self.mEvalSpace.getUnit(cond_info[1])
-        if unit_h is None:
-            return False
-        return unit_h.validateCondition(cond_info, op_units)
+    def pointError(self, err_msg, point_no = None):
+        if point_no is None:
+            point_no = self.mPointNo
+        assert point_no is not None
+        assert point_no not in self.mErrors
+        self.mEvalStatus = "fatal"
+        self.mErrors[point_no] = err_msg
 
-    def parseCondData(self, cond_info):
-        if len(cond_info) == 0:
+    def finishRuntime(self):
+        assert self.mPointNo is not None
+        self.mPointNo = None
+
+    def runNextPoint(self, p_no = None, label = None):
+        if p_no is None:
+            self.mPointNo += 1
+        else:
+            assert p_no >= self.mPointNo
+            self.mPointNo = p_no
+        if label is not None:
+            assert label not in self.mLabels
+            self.mLabels[label] = self.mPointNo
+
+    def buildCondition(self, cond_data):
+        if len(cond_data) == 0:
             return self.mEvalSpace.getCondAll()
-        if cond_info[0] is None:
-            assert len(cond_info) == 1
+        if cond_data[0] is None:
+            assert len(cond_data) == 1
             return self.mEvalSpace.getCondNone()
-        if cond_info[0] == "and":
-            return self.mEvalSpace.joinAnd(
-                [self.parseCondData(cc) for cc in cond_info[1:]])
-        if cond_info[0] == "or":
-            return self.mEvalSpace.joinOr(
-                [self.parseCondData(cc) for cc in cond_info[1:]])
-        if cond_info[0] == "not":
-            assert len(cond_info) == 2
-            return self.parseCondData(cond_info[1]).negative()
-
-        unit_h = self.mEvalSpace.getUnit(cond_info[1])
-        return unit_h.parseCondition(cond_info, self)
-
-    def importUnit(self, instr_no, unit_name, actual_condition, hash_code):
-        unit_h = self.mEvalSpace.getUnit(unit_name)
-        if unit_h is None or unit_h.getUnitKind() != "operative":
-            return False
-        self.mImportSupport[unit_name] = (hash_code, actual_condition)
-        return True
+        if cond_data[0] in {"and", "or"}:
+            seq = []
+            for cc in cond_data[1:]:
+                cond = self.buildCondition(cc)
+                if cond is None:
+                    return None
+                seq.append(cond)
+            if cond_data[0] == "and":
+                return self.mEvalSpace.joinAnd(seq)
+            else:
+                return self.mEvalSpace.joinOr(seq)
+        if cond_data[0] == "not":
+            assert len(cond_data) == 2
+            cond = self.buildCondition(cond_data[1])
+            if cond is None:
+                return None
+            return cond.negative()
+        unit_h = self.mEvalSpace.getUnit(cond_data[1])
+        if unit_h is None:
+            self.pointError("Field nof found: %s" % cond_data[1])
+            return None
+        if unit_h.getUnitKind() != cond_data[0]:
+            self.pointError("Field type conflict: %s/%s"
+                % (cond_data[0], unit_h.getUnitKind()))
+            return None
+        if unit_h.getUnitKind() == "func":
+            extra_params = (set(cond_data[2].keys())
+                - set(unit_h.getParameters()))
+            if len(extra_params) > 0:
+                self.pointError("Function extra parameters: "
+                    + ' '.join(sorted(extra_params)))
+                return None
+            err_msg = unit_h.validateArgs(cond_data[2])
+            if err_msg:
+                self.pointError(err_msg)
+                return None
+        return unit_h.buildCondition(cond_data, self)

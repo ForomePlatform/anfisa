@@ -191,12 +191,11 @@ var sOpEnumH = {
     mSpecCtrl: null,
     mStatusMode: null,
     mUpdateCondStr: null,
-    mDivZygPGroup: null,
+    mDivFuncParam: null,
 
     init: function() {
         this.mDivVarList = document.getElementById("op-enum-list");
-        this.mDivZygPGroup = document.getElementById("cur-cond-zyg-problem-group");
-        sZygosityH.init(!!this.mDivZygPGroup);
+        this.mDivFuncParam = document.getElementById("cur-cond-func-param");
     },
     
     getCondType: function() {
@@ -211,12 +210,6 @@ var sOpEnumH = {
         this.careControls();
     },
     
-    readyForCondition: function(unit_stat, condition) {
-        if (unit_stat["kind"] == "func")
-            return sZygosityH.readyForCondition(unit_stat, condition);
-        return true;
-    },
-
     reprVariant: function(var_name, var_count, var_idx, is_checked) {
         var check_id = 'elcheck--' + var_idx; 
         return '<div class="enum-val' + 
@@ -225,15 +218,14 @@ var sOpEnumH = {
             ((is_checked)? 'checked ':'') + 
             'onchange="sOpEnumH.checkControls();"/><label for="' +
             check_id + '">&emsp;' + var_name + 
-            '<span class="enum-cnt">(' + var_count + ')</span></div>';
+            '<span class="count">(' + var_count + ')</span></div>';
     },
     
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
         if (unit_stat["kind"] == "func") {
-            return;
-            this.mSpecCtrl = sZygosityH;
-            this.mVariants = []; //TRFsZygosityH.setupVariants(unit_stat, this.mDivZygPGroup);
+            this.mSpecCtrl = sOpFuncH;
+            this.mVariants = []; //TRFsOpFuncH.setupVariants(unit_stat, this.mDivFuncParam);
             this.mOperationMode = null;
             this.mStatusMode = null;
         } else {
@@ -241,8 +233,8 @@ var sOpEnumH = {
             this.mOperationMode = 0;
             this.mStatusMode = (unit_stat["sub-kind"] == "status");
             this.mSpecCtrl = null;
-            if (this.mDivZygPGroup) {
-                this.mDivZygPGroup.style.display = "none";
+            if (this.mDivFuncParam) {
+                this.mDivFuncParam.style.display = "none";
             }
         }
         
@@ -267,7 +259,7 @@ var sOpEnumH = {
     updateCondition: function(cond) {
         this.mUpdateCondStr = JSON.stringify(cond.slice(2));
         if (this.mSpecCtrl != null) {
-            this.mSpecCtrl = sZygosityH;
+            this.mSpecCtrl = sOpFuncH;
             var_list = this.mSpecCtrl.getCondVarList(cond);
             op_mode = this.mSpecCtrl.getCondOpMode(cond);
         } else {
@@ -384,173 +376,91 @@ var sOpEnumH = {
 };
 
 /**************************************/
-var sOpImportH = {
-    mUnitName: null,
-
-    getCondType: function() {
-        return "import";
-    },
-
-    suspend: function() {
-        this.mUnitName = null;
-        this.careControls();
-    },
-    
-    updateUnit: function(unit_stat) {
-        this.mUnitName = unit_stat["name"]
-    },
-
-    updateCondition: function(cond) {
-        this.mUnitName = cond[1];
-    },
-
-    careControls: function() {
-        document.getElementById("cur-cond-import").style.display = 
-            (this.mUnitName == null)? "none":"block";
-    },
-
-    checkControls: function(opt) {
-        if (this.mUnitName == null) 
-            return;
-        sOpCondH.formCondition([], "", null, false);
-        this.careControls();
-    }
-};
-
 /**************************************/
-/**************************************/
-function zygCaseReportValues(zyg_case, list_stat_rep) {
-    if (zyg_case.mStat == null) {
-        list_stat_rep.push('<span class="stat-bad">Determine problem group</span>');
+function inheritanceZ_RenderValues(z_unut_stat, list_stat_rep) {
+    err_msg = inheritanceZ_CheckError(z_unut_stat, null);
+    if (err_msg != null) {
+        list_stat_rep.push('<span class="stat-bad">' + err_msg + '</span>');
         return;
     } 
-    if (zyg_case.mSize == 0) {
-        list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
-        return;
-    }
     list_stat_rep.push('<ul>');
-    for (var j = 0; j < zyg_case.mStat.length; j++) {
-        var_name = zyg_case.mStat[j][0];
-        var_count = zyg_case.mStat[j][1];
+    var variants = z_unit_stat["variants"];
+    for (var j = 0; j < variants.length; j++) {
+        var_name = variants[j][0];
+        var_count = variants[j][1];
         if (var_count == 0)
             continue;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(zyg_case.mStat[j], zyg_case.mUnitStat) + '</li>');
+            reportStatCount(variants[j], z_unit_stat) + '</li>');
     }
 }
         
-function zygStatCheckError(zyg_stat, err_msg) {
-    if (zyg_stat.mStat == null)
+function inheritanceZ_CheckError(z_unit_stat, err_msg) {
+    variants = z_unit_stat["variants"];
+    if (variants == null || variants == undefined)
         return " Determine problem group";
-    if (zyg_stat.mSize == 0)
+    var size = 0;
+    for (var j = 0; j < variants.length; j++) {
+        if (z_unit_stat[j][1] > 0)
+            size++;
+    }
+    if (size == 0)
         return "Out of choice";
     return err_msg;
 }
 
-/**************************************/
-function newZygCase(base, unit_stat, mode_op) {
-    var size = 0;
-    if (unit_stat["variants"]) {
-        for (var j = 0; j < unit_stat["variants"].length; j++) {
-            if (unit_stat["variants"][j][1] > 0)
-                size++;
-        }
-    }    
-    return {
-        mBase: base,
-        mModeOp: mode_op,
-        mUnitStat: unit_stat,
-        mProblemIdxs: (unit_stat["problem-group"] == null)? 
-            this.mBase.mDefaultIdxs:unit_stat["problem-group"],
-        mStat: unit_stat["variants"],
-        mSize: size
-    };
+function inheritanceZSameCase(z_unut_stat, problem_group) {
+    if (problem_group == null) 
+        return (inheritanceZProblemGroup(z_unut_stat, true) == null);
+    return problem_group.join(',') == z_unut_stat.mProblemGroup.join(',');
 }
 
-function zygCaseSameCase(zyg_case, problem_idxs) {
-    if (problem_idxs == null) 
-        return (zygCaseProblemIdxs(zyg_case, true) == null);
-    return problem_idxs.join(',') == zyg_case.mProblemIdxs.join(',');
-}
-
-
-function zygCaseProblemIdxs(zyg_case, check_default) {
-    if (check_default && zyg_case.mBase.mDefaultRepr == zyg_case.mProblemIdxs.join(','))
+function inheritanceZProblemGroup(z_unut_stat, check_default) {
+    if (check_default && z_unut_stat.mBase.mAffectedRepr == z_unut_stat.mProblemGroup.join(','))
         return null;
-    return zyg_case.mProblemIdxs.slice();
+    return z_unut_stat.mProblemGroup.slice();
 }
         
-function zygCaseFilIt(zyg_case, list_stat_rep) {
-    if (zyg_case.mModeOp && zyg_case.mBase.mSeparateOp) {
-        id_prefix = "zyg-fam-op-m__";
-        button_id = "zyg-fam-op-reset";
-        mode_op = 1;
-    } else {
-        id_prefix = "zyg-fam-m__";
-        button_id = "zyg-fam-reset";
-        mode_op = 0;
-    }
-    list_stat_rep.push('<div class="zyg-family">');
-    for (var idx = 0; idx < zyg_case.mBase.mFamily.length; idx++) {
-        q_checked = (zyg_case.mProblemIdxs.indexOf(idx)>=0)? " checked":"";
-        check_id = id_prefix + idx;
-        list_stat_rep.push('<div class="zyg-fam-member">' + 
+function inheritanceZ_Repr(z_unut_stat, list_stat_rep) {
+    list_stat_rep.push('<div class="inheritance-z-family">');
+    for (var idx = 0; idx < z_unut_stat.mBase.mFamily.length; idx++) {
+        q_checked = (z_unut_stat.mProblemGroup.indexOf(idx)>=0)? " checked":"";
+        check_id = "inheritance-z-fam-m__" + idx;
+        list_stat_rep.push('<div class="inheritance-z-fam-member">' + 
             '<input type="checkbox" id="' + check_id + '" ' + q_checked + 
-            ' onchange="sZygosityH.loadCase(' + mode_op + ');" /><label for="' +
-            check_id + '">&nbsp;' + zyg_case.mBase.mFamily[idx] + '</div>');
+            ' onchange="sOpFuncH.checkProblemGroup();" /><label for="' +
+            check_id + '">&nbsp;' + z_unut_stat.mBase.mFamily[idx] + '</div>');
     }
     list_stat_rep.push('</div>');
-    if (zyg_case.mBase.mDefaultIdxs.length > 0) {
-        reset_dis = (zygCaseProblemIdxs(zyg_case, true) == null)? 'disabled="true"':'';
-        list_stat_rep.push('<button id="' + button_id + '"' +
+    if (z_unut_stat.mBase.mAffectedGroup.length > 0) {
+        reset_dis = (inheritanceZProblemGroup(z_unut_stat, true) == null)? 'disabled="true"':'';
+        list_stat_rep.push('<button id="inheritance-z-fam-reset" ' +
             ' title="Reset affected group" ' + reset_dis + 
-            ' onclick="sZygosityH.resetGrp(' + mode_op + ')">Reset</button>');
+            ' onclick="sOpFuncH.resetGrp()">Reset</button>');
     }
 }
 
 /**************************************/
-var sZygosityH = {
-    mSeparateOp: false,
+var sOpFuncH = {
     mUnitName: null,
     mFamily: null,
-    mDefaultIdxs: null,
-    mDefaultRepr: null,
-    mCases: [null, null],
-    mWaitIdxs: [null, null],
+    mAffectedGroup: null,
+    mAffectedRepr: null,
+    mCurProblemGroup: null,
+    mWaitGroup: [null, null],
     mTimeH: null,
     mOpBaseUnitStat: null,
     mOpBaseCondition: null,
     mOpSetUp: null,
     
-    init: function(separate_op) {
-        this.mSeparateOp = separate_op;
+    init: function() {
     },
     
     _baseSetup: function(unit_stat) {
         this.mUnitName = unit_stat["name"];
         this.mFamily = unit_stat["family"];
-        this.mDefaultIdxs = unit_stat["affected"];
-        this.mDefaultRepr = this.mDefaultIdxs.join(',');
-    },
-    
-    readyForCondition: function(unit_stat, condition_data) {
-        if (!this.mSeparateOp)
-            return true;
-        if (this.mOpBaseUnitStat == unit_stat && condition_data == this.mOpBaseCondition)
-            return true;
-        this.mOpSetUp = false;
-        this.mOpBaseUnitStat = unit_stat;
-        this.mOpBaseCondition = condition_data;
-        if (this.mUnitName == null) {
-            this._baseSetup(unit_stat);
-        }
-        var cond_problem_idxs = condition_data[2];
-        if (JSON.stringify(cond_problem_idxs) == JSON.stringify(unit_stat[2])) {
-            this.mCases[1] = newZygCase(this, unit_stat, 1);
-            return true;
-        }
-        this.reload(1, (cond_problem_idxs == null)? this.mDefaultIdxs:cond_problem_idxs);
-        return false;
+        this.mAffectedGroup = unit_stat["affected"];
+        this.mAffectedRepr = this.mAffectedGroup.join(',');
     },
     
     setup: function(unit_stat, list_stat_rep) {
@@ -559,7 +469,6 @@ var sZygosityH = {
             this.mTimeH = null;
         }
         this._baseSetup(unit_stat);
-        this.mCases[0] = newZygCase(this, unit_stat, 0);
         if (this.mSeparateOp && this.mOpBaseUnitStat) {
             if (JSON.stringify(unit_stat) != JSON.stringify(this.mOpBaseUnitStat)) {
                 this.mOpBaseUnitStat = null;
@@ -569,31 +478,31 @@ var sZygosityH = {
                 this.mOpBaseUnitStat = unit_stat;
         }
             
-        list_stat_rep.push('<div id="zyg-wrap">');
-        list_stat_rep.push('<div id="zyg-problem">');
-        zygCaseFilIt(this.mCases[0], list_stat_rep);
+        list_stat_rep.push('<div id="inheritance-z-wrap">');
+        list_stat_rep.push('<div id="inheritance-z-problem">');
+        inheritanceZ_Repr(this.mCases[0], list_stat_rep);
         list_stat_rep.push('</div>');
-        list_stat_rep.push('<div id="zyg-stat">');
-        zygCaseReportValues(this.mCases[0], list_stat_rep);
+        list_stat_rep.push('<div id="inheritance-z-stat">');
+        inheritanceZ_RenderValues(this.mCases[0], list_stat_rep);
         list_stat_rep.push('</div></div>');
-        sUnitsH.setCtxPar("problem_group", zygCaseProblemIdxs(this.mCases[0]))
+        sUnitsH.setCtxPar("problem_group", inheritanceZProblemGroup(this.mCases[0]))
     },    
     
+    //TRF
     getCondType: function() {
-        return "zygosity";
+        return "func";
     },
     
     setupVariants: function(unit_stat, div_pgroup) {
         var mode_op = (this.mSeparateOp)? 1:0;
         if (div_pgroup && !this.mOpSetUp) {
             list_stat_rep = [];
-            zygCaseFilIt(this.mCases[mode_op], list_stat_rep);
+            inheritanceZ_Repr(this.mCases[mode_op], list_stat_rep);
             div_pgroup.innerHTML = list_stat_rep.join('\n');
             div_pgroup.style.display = "flex";
             if (this.mSeparateOp)
                 this.mOpSetUp = true;
         }
-        return null; //TRF!!!
         if (this.mCases[mode_op].mStat == null)
             return [];
         return this.mCases[mode_op].mStat;
@@ -603,19 +512,19 @@ var sZygosityH = {
         if (condition_data == null)
             return null;
         ret = condition_data.slice();
-        ret.splice(0, 0, zygCaseProblemIdxs(this.mCases[(this.mSeparateOp)? 1:0], true));
+        ret.splice(0, 0, inheritanceZProblemGroup(this.mCases[(this.mSeparateOp)? 1:0], true));
         return ret;
     },
     
     checkError: function(condition_data, err_msg) {
-        return zygStatCheckError(this.mCases[(this.mSeparateOp)? 1:0], err_msg);
+        return inheritanceZ_CheckError(this.mCases[(this.mSeparateOp)? 1:0], err_msg);
     },
     
-    getUnitTitle: function(problem_idxs) {
-        if (problem_idxs == null) 
+    getUnitTitle: function(problem_group) {
+        if (problem_group == null) 
             return this.mUnitName + '()';
-        var problem_repr = problem_idxs.join(',');
-        if (problem_repr == this.mDefaultRepr)
+        var problem_repr = problem_group.join(',');
+        if (problem_repr == this.mAffectedRepr)
             return this.mUnitName + '()';        
         return this.mUnitName + '({' + problem_repr + '})';        
     },
@@ -638,91 +547,77 @@ var sZygosityH = {
         if (condition_data[1] != this.mUnitName)
             return;
         this.reSelect(0, condition_data[2]);
-        this.loadCase(0);
+        this.checkProblemGroup();
     },
     
     resetGrp: function(mode_op) {
-        this.reSelect(mode_op, this.mDefaultIdxs);
-        this.loadCase(mode_op);
+        this.reSelect(mode_op, this.mAffectedGroup);
+        this.checkProblemGroup();
     },
 
-    reSelect: function(mode_op, problem_idxs) {
-        if (problem_idxs == null)
-            problem_idxs = this.mDefaultIdxs;
-        var id_prefix = (mode_op)?"zyg-fam-op-m__" : "zyg-fam-m__";
+    reSelect: function(mode_op, problem_group) {
+        if (problem_group == null)
+            problem_group = this.mAffectedGroup;
+        var id_prefix = (mode_op)?"inheritance-z-fam-op-m__" : "inheritance-z-fam-m__";
         for (var idx = 0; idx < this.mFamily.length; idx++)
             document.getElementById(id_prefix + idx).checked =
-                (problem_idxs.indexOf(idx) >= 0);
+                (problem_group.indexOf(idx) >= 0);
     },
     
-    collectIdxs: function(mode_op) {
-        var id_prefix = (mode_op)?"zyg-fam-op-m__" : "zyg-fam-m__";
-        var problem_idxs = [];
+    collectPGroup: function(mode_op) {
+        var id_prefix = (mode_op)?"inheritance-z-fam-op-m__" : "inheritance-z-fam-m__";
+        var problem_group = [];
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             if (document.getElementById(id_prefix + idx).checked)
-                problem_idxs.push(idx);
+                problem_group.push(idx);
         }
-        return problem_idxs;
+        return problem_group;
     },
     
-    loadCase: function(mode_op) {
+    checkProblemGroup: function(mode_op) {
         if (this.mTimeH == null)
-            this.mTimeH = setInterval(function(){sZygosityH.reload(mode_op);}, 30)
-        document.getElementById((mode_op)? "zyg-fam-op-reset":"zyg-fam-reset").disabled = 
-            zygCaseProblemIdxs(this.mCases[mode_op], true) == null;
+            this.mTimeH = setInterval(function(){sOpFuncH.reload(mode_op);}, 30)
+        document.getElementById("inheritance-z-fam-reset").disabled = 
+            inheritanceZProblemGroup(this.mCases[mode_op], true) == null;
     },
 
-    reload: function(mode_op, problem_idxs) {
+    //TRF: no mode_op
+    reload: function(mode_op, problem_group) {
         clearInterval(this.mTimeH);
         this.mTimeH = null;
         var check_same = true;
-        if (problem_idxs == undefined) 
-            var problem_idxs = this.collectIdxs(mode_op);
+        if (problem_group == undefined) 
+            var problem_group = this.collectPGroup(mode_op);
         else
             check_same = false;
-        if (check_same && this.mCases[mode_op] && 
-                zygCaseSameCase(this.mCases[mode_op], problem_idxs)) {
-            if (this.mCases[1 - mode_op] == null) 
-                return;
-            problem_idxs = this.collectIdxs(1 - mode_op);
-            if (zygCaseSameCase(this.mCases[1-mode_op], problem_idxs))
-                return;
-            mode_op = 1 - mode_op;
-        }
         if (mode_op == 0) {
-            sUnitsH.setCtxPar("problem_group", problem_idxs);
+            sUnitsH.setCtxPar("problem_group", problem_group);
             document.getElementById("stat-data--" + this.mUnitName).className = "wait";
         }
         if (mode_op || !self.mSeparateOp) 
-            document.getElementById("zyg-stat").className = "wait";
-        var args = sUnitsH.getRqArgs(mode_op == 1) + 
+            document.getElementById("inheritance-z-stat").className = "wait";
+        var args = sUnitsH.getRqArgs() + 
             "&units=" + encodeURIComponent(JSON.stringify([this.mUnitName]));
         sOpEnumH.waitForUpdate();
         if (mode_op == 1) {
             args += "&ctx=" + encodeURIComponent(
-                JSON.stringify({"problem_group": problem_idxs}));
+                JSON.stringify({"problem_group": problem_group}));
         }
         ajaxCall("statunits", args, 
-            function(info){sZygosityH._reload(info, mode_op);})
+            function(info){sOpFuncH._reload(info, mode_op);})
     },
     
     _reload: function(info, mode_op) {
         var unit_stat = info["units"][0];
         this.mCases[mode_op] = newZygCase(this, unit_stat, mode_op);
-        if (mode_op == 0) {
-            rep_list = [];
-            zygCaseReportValues(this.mCases[0], rep_list);
-            zyg_div = document.getElementById("zyg-stat");
-            zyg_div.innerHTML = rep_list.join('\n');
-            zyg_div.className = "";
-            sUnitsH.updateZygUnit(this.mUnitName, unit_stat);
-            if (!self.mSeparateOp) 
-                refillUnitStat(unit_stat);
-        } else {
-            updateZygCondStat(this.mUnitName);
-        }
-        if (this.mCases[1 - mode_op])
-            this.loadCase(1-mode_op);
+        rep_list = [];
+        inheritanceZ_RenderValues(this.mCases[0], rep_list);
+        inh_div = document.getElementById("inheritance-z-stat");
+        inh_div.innerHTML = rep_list.join('\n');
+        inh_div.className = "";
+        sUnitsH.updateZygUnit(this.mUnitName, unit_stat);
+        if (!self.mSeparateOp) 
+            refillUnitStat(unit_stat);
     }
 };
 
@@ -748,7 +643,7 @@ function fillStatList(items, unit_map, list_stat_rep,
                     list_stat_rep.push(
                         '<span id="flt-go-dtree" ' +
                             'title="Configure decision trees as rules..." ' +
-                        'onclick="goToPage(\'DTREE\');"">&#9874;</span>')
+                        'onclick="goToPage(\'DTREE\');"">&#x2699;</span>')
                 }
                 list_stat_rep.push('</div>');
             }
@@ -781,9 +676,6 @@ function fillStatList(items, unit_map, list_stat_rep,
                     break;
                 case "func":
                     break;
-                case "inactive":
-                    list_stat_rep.push('<div class="comment">Not imported</div>');
-                    break;
             }
         }
         list_stat_rep.push('</div></div>')
@@ -797,7 +689,7 @@ function refillUnitStat(unit_stat, expand_mode) {
     div_el = document.getElementById("stat-data--" + unit_stat["name"]);
     list_stat_rep = [];
     if (unit_stat["kind"] == "func") 
-        sZygosityH.setup(unit_stat, list_stat_rep);
+        sOpFuncH.setup(unit_stat, list_stat_rep);
     else {
         if (unit_stat["kind"] == "numeric") 
             fillStatRepNum(unit_stat, list_stat_rep);
@@ -808,7 +700,7 @@ function refillUnitStat(unit_stat, expand_mode) {
     div_el.className = "";
 }
 
-function exposeEnumUnitStat(unit_stat, expand_mode) {
+function renderEnumUnitStat(unit_stat, expand_mode) {
     list_stat_rep = [];
     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
     div_el = document.getElementById("stat-data--" + unit_stat["name"]);
@@ -818,61 +710,6 @@ function exposeEnumUnitStat(unit_stat, expand_mode) {
 function topUnitStat(unit_name) {
     return document.getElementById(
         "stat--" + unit_name).getBoundingClientRect().top;
-}
-
-/**************************************/
-function getCondDescription(cond, short_form) {
-    if (cond == null)
-        return "";
-    if (cond != null && cond[0] == "numeric") {
-        rep_cond = [];
-        if (cond[2][0] != null)
-            rep_cond.push(cond[2][0] + "&nbsp;&le;");
-        rep_cond.push(cond[1]);
-        if (cond[2][1] != null)
-            rep_cond.push("&le;&nbsp;" + cond[2][1]);
-        return rep_cond.join(" ");
-    }
-    rep_var = (short_form)? "":cond[1];
-    if (cond[0] == "enum") {
-        op_mode = cond[2];
-        sel_names = cond[3];
-    } else {
-        if (cond[0] == "zygosity") {
-            op_mode = cond[3];
-            sel_names = cond[4];
-            if (!short_form)
-                rep_var = sZygosityH.getUnitTitle(cond[2]);
-        }
-        else {
-            if (cond[0] == "import")
-                return "import " + cond[1];
-            console.log("Bad cond:" + JSON.stringify(cond));
-            return "???";
-        }
-    }
-    var selection = [];
-    for (j=0; j<sel_names.length; j++) {
-        if (/^[A-Za-z0-9_]+$/u.test(sel_names[j]))
-            selection.push(sel_names[j]);
-        else
-            selection.push('"' + sel_names[j] + '"');
-    }
-    selection = '{' + selection.join(', ') + '}';
-    
-    switch(op_mode) {
-        case "NOT":
-            rep_cond = rep_var + '&nbsp;not&nbsp;in&nbsp;' + selection;
-            break;
-        case "AND":
-            rep_cond = rep_var + '&nbsp;in&nbsp;all(' + selection + ')';
-            break;
-        default:
-            rep_cond = rep_var + '&nbsp;in&nbsp;' + selection;
-    }
-    if (short_form && rep_cond.length > 80)
-        return rep_cond.substr(0, 77) + '...';
-    return rep_cond
 }
 
 /*************************************/
@@ -915,7 +752,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count = (list_count > 6)? 3: list_count; 
         
     if (list_count > 6 && expand_mode) {
-        list_stat_rep.push('<div onclick="exposeEnum(\'' + 
+        list_stat_rep.push('<div onclick="renderEnum(\'' + 
             unit_stat["name"] +  '\',' + (3 - expand_mode) + 
             ');" class="enum-exp">' + 
             ((expand_mode==1)?'+':'-') + '</div>');
@@ -949,3 +786,166 @@ function reportStatCount(count_info, unit_stat) {
     return '<span class="stat-count">' + cnt_rep + ' ' + nm +  
         ((count_info[1]>1)? 's':'') + '</span>';
 }
+
+/*************************************/
+/* Create WS                         */
+/*************************************/
+var sCreateWsH = {
+    mStage: null,
+    mDSNames: null,
+    mSpanModTitle: null,
+    mInputModName: null,
+    mDivModProblems: null,
+    mDivModStatus: null,
+    mButtonModStart: null,
+    mButtonModCancel: null,
+    mTaskId: null,
+    mTimeH: null,
+    
+    init: function() {
+        this.mSpanModTitle = document.getElementById("create-ws-title");
+        this.mInputModName = document.getElementById("create-ws-name");
+        this.mDivModProblems = document.getElementById("create-ws-problems");
+        this.mDivModStatus = document.getElementById("create-ws-status");
+        this.mButtonModStart = document.getElementById("create-ws-start");
+        this.mButtonModCancel = document.getElementById("create-ws-cancel");
+    },
+    
+    show: function() {
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mDSNames = null;
+        this.mTaskId = null;
+        
+        var info = sUnitsH.prepareWsCreate();
+        if (info == null) 
+            return;
+        
+        this.mSpanModTitle.innerHTML = 'Create workspace for ' +
+            info[0] + ' of ' + info[1];
+        var err_msg = "";
+        if (info[0] >= 9000)
+            err_msg = "Too many variants, try to reduce";
+        if (info[0] < 1)
+            err_msg = "Empty set";
+        this.mDivModProblems.innerHTML = err_msg;
+        if (err_msg) {
+            this.mStage = "BAD";
+            this.checkControls();
+            sViewH.modalOn(document.getElementById("create-ws-back"));
+            return;
+        }
+        this.mStage = "NAMES";
+        ajaxCall("dirinfo", "", function(info) {
+            sCreateWsH._setupName(info);})
+    },
+    
+    _nameReserved: function(dsname) {
+        return this.mDSNames.indexOf(dsname) >= 0;
+    },
+    
+    _setupName: function(dirinfo) {
+        this.mDSNames = dirinfo["reserved"];
+        var no = 1;
+        var own_name = sDSName.match(/\_(.*)$/)[1];
+        var ws_name;
+        while (true) {
+            ws_name = "ws" + no + '_' + own_name;
+            if (!this._nameReserved(ws_name))
+                break;
+            no += 1;
+        }
+        this.mInputModName.value = ws_name;
+        this.mStage = "READY";
+        this.checkControls();
+        sViewH.modalOn(document.getElementById("create-ws-back"));
+    },
+    
+    checkControls: function() {
+        if (this.mStage == "BAD")
+            this.mInputModName.value = "";
+        this.mInputModName.disabled = (this.mStage != "READY");
+        err_msg = "";
+        if (this.mStage == "READY") {
+            if (this._nameReserved(this.mInputModName.value)) 
+                err_msg = "Name is reserved, try another one";
+            this.mDivModProblems.innerHTML = err_msg;
+        }
+        this.mButtonModStart.disabled = (this.mStage != "READY" || err_msg);
+        if (this.mStage == "BAD" || this.mStage == "READY") {
+            this.mDivModProblems.style.display = "block";
+            this.mDivModStatus.style.display = "none";
+            this.mDivModStatus.innerHTML = "";
+        } else {
+            this.mDivModProblems.style.display = "none";
+            this.mDivModStatus.style.display = "block";
+        }
+        this.mButtonModCancel.disabled = (this.mStage == "WAIT");
+    },
+    
+    startIt: function() {
+        if (this.mStage != "READY")
+            return;
+         this.checkControls();
+        if (this.mButtonModStart.disabled)
+            return;
+        sViewH.blockModal(true);
+        this.mStage = "WAIT";
+        ajaxCall("ds2ws", sUnitsH.getWsCreateArgs() +
+            "&ws=" + encodeURIComponent(this.mInputModName.value),
+            function(info) {sCreateWsH._setupTask(info);})
+    },
+    
+    _setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.checkTask();
+    },
+    
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sCreateWsH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info != null && info[0] == false) {
+            this.mDivModStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sCreateWsH.checkTask()}, 3000);
+            this.checkControls();
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mStage = "DONE";
+        sViewH.blockModal(false);
+        this.checkControls();
+        if (info == null) {
+            this.mDivModStatus.innerHTML = "Task information lost";
+        } else {
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                target_ref = (sWsPubURL != "ws")? '': (' target="' + 
+                    sCommonTitle + ':' + info[0]["ws"] + '"'); 
+                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsPubURL + 
+                    '?ds=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
+            }
+        }
+    }
+};
+
+function wsCreate() {
+    sCreateWsH.show();
+}
+
+function startWsCreate() {
+    sCreateWsH.startIt();
+}
+

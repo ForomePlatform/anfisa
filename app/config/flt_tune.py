@@ -20,12 +20,12 @@
 #  limitations under the License.
 #
 
-from app.model.zygosity import ZygosityUnit
+from app.model.zygosity import InheritanceUnit
 from app.model.comp_hets import CompHetsUnit
 #===============================================
 def tuneUnits(ds_h):
     if ds_h.testRequirements({"ZYG"}):
-        ZygosityUnit.makeIt(ds_h, {
+        InheritanceUnit.makeIt(ds_h, {
             "name": "Inheritance_Mode",
             "title": "Inheritance Mode",
             "vgroup": "Inheritance"},
@@ -34,31 +34,20 @@ def tuneUnits(ds_h):
 
     if ds_h.testRequirements({"ZYG", "WS"}):
         CompHetsUnit.makeIt(ds_h, {
-            "name":   "Compound_Het_transcript",
-            "title":  "Calculated Compound Hetreozygous, transcript approx",
+            "name":   "Compound_Het",
+            "title":  "Calculated Compound Heterozygous",
             "vgroup": "Inheritance"},
-            gene_unit = "Transcript_id")
-        CompHetsUnit.makeIt(ds_h, {
-            "name":   "Compound_Het_gene",
-            "title":  "Calculated Compound Hetreozygous, gene approx",
-            "vgroup": "Inheritance"},
-            gene_unit = "Transctript_gene_id")
-        CompHetsUnit.makeIt(ds_h, {
-            "name":   "Compound_Het_rough",
-            "title":  "Calculated Compound Hetreozygous, rough approx",
-            "vgroup": "Inheritance"},
-            gene_unit = "Symbol")
+            gene_levels = [
+                ["transcript", "Transcript_id", "shared transcript"],
+                ["gene", "Transctript_gene_id", "shared gene"],
+                ["rough", "Symbol", "non-intersecting transcripts"]])
 
     if ds_h.testRequirements({"ZYG", "XL"}):
         CompHetsUnit.makeIt(ds_h, {
             "name":   "Compound_Het",
             "title":  "Calculated Compound Hetreozygous",
             "vgroup": "Inheritance"},
-            gene_unit = "Symbol")
-        CompHetsUnit.makeIt(ds_h, {
-            "name":   "Compound_Het2",
-            "title":  "Calculated Compound Hetreozygous",
-            "vgroup": "Inheritance"},
-            gene_unit = "Symbol")
+            gene_levels = [
+                ["rough", "Symbol", "rough approx"]])
 
 #===============================================
