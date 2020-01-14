@@ -770,7 +770,7 @@ var sDTreesH = {
     },
 
     startModify: function() {
-        if (sDecisionTree.isEmpty() || !this.mCurDTreeName)
+        if (sDecisionTree.isEmpty() || this.mCurDTreeName)
             return;
         this.fillSelNames(false, this.mOpList);
         this.mCurOp = "modify";
