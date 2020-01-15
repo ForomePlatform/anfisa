@@ -395,6 +395,12 @@ def defineFilterSchema(metadata_record):
             "/_view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")
 
+    with filters.viewGroup("Pharmacogenomics"):
+        filters.multiStatusUnit("Diseases", "/_filters/pharmacogenomics_diseases[]",
+            default_value = "N/A")
+        filters.multiStatusUnit("Chemicals", "/_filters/pharmacogenomics_chemicals[]",
+            default_value = "N/A")
+
     # required = {"debug"}
     with filters.viewGroup("Debug_Info"):
         filters.intValueUnit("Severity", "/_filters/severity",

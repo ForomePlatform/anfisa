@@ -32,8 +32,10 @@ def defineViewSchema(metadata_record = None):
         AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
         AspectH("view_db", "Databases", "_view", field = "databases"),
         AspectH("view_pred", "Predictions", "_view", field = "predictions"),
+        AspectH("view_pharmagkb", "Pharmacogenomics", "_view", field = "pharmacogenomics"),
         AspectH("view_genetics", "Bioinformatics", "_view",
-            field = "bioinformatics")]
+            field = "bioinformatics")
+    ]
 
     cohorts = metadata_record.get("cohorts")
     if cohorts:
@@ -292,6 +294,13 @@ def defineViewSchema(metadata_record = None):
             is_seq = True),
         AttrH("polyphen2_hdiv_score", title = "Polyphen 2 HDIV score",
             is_seq = True)])
+
+    aspects["view_pharmagkb"].setAttributes([
+        AttrH("diseases", title = "Diseases", is_seq = True),
+        AttrH("chemicals", title = "Chemicals", is_seq = True),
+        AttrH("notes", title = "Notes", is_seq = True),
+        AttrH("pmids", title = "PMIDs", is_seq = True)
+        ])
 
     aspects["view_genetics"].setAttributes([
         AttrH("zygosity", title = "Zygosity"),
