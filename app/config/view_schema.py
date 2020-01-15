@@ -229,14 +229,13 @@ def defineViewSchema(metadata_record = None):
             is_seq = True, kind = "link"),
         AttrH("gtex", kind = "place",),
         AttrH("gene_cards", title = "GeneCards",
-            is_seq = True, kind = "link"),
+            is_seq = True, kind = "place"),
         AttrH("grev", is_seq = True, kind = "place"),
         AttrH("medgen", is_seq = True, kind = "place"),
-        AttrH("pubmed_search", title = "PubMed Search Results",
-            is_seq = True, kind = "link"),
+        # AttrH("pubmed_search", title = "PubMed Search Results",
+        #     is_seq = True, kind = "link"),
         AttrH("beacons", title = "Observed at", is_seq = True),
-        AttrH("beacon_url", title = "Search Beacons",
-            is_seq = True, kind = "link")])
+        AttrH("references", is_seq=True, kind = "place")])
 
     aspects["view_pred"].setAttributes([
         AttrH("lof_score", title = "LoF Score",

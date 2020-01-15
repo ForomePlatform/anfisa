@@ -255,9 +255,13 @@ def defineFilterSchema(metadata_record):
             "/_view/databases/clinVar_submitters",
             title = "Number of ClinVar Submitters",
             conversion = _conv_len, default_value = 0)
+
+        filters.multiStatusUnit("PMIDs",
+            "/_view/databases/references[]",
+            title = "PMIDs", compact_mode = True)
         filters.intValueUnit("Number_pmid",
-            "/_view/databases/hgmd_pmids",
-            title = "Number of PMIDs in HGMD",
+            "/_view/databases/references",
+            title = "Number of PMIDs",
             conversion = _conv_len, default_value = 0)
 
         # filters.multiStatusUnit("beacons",
