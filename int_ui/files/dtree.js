@@ -379,6 +379,7 @@ var sUnitsH = {
         //this.mItems = info["stat-list"].slice();
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
+            //TRF: temporary filter
             if (info["stat-list"][idx]["kind"] != "func")
                 this.mItems.push(info["stat-list"][idx]);
         }
@@ -455,23 +456,6 @@ var sUnitsH = {
             sOpCondH.checkDelay(unit_name);
         }
         this.checkDelayed();
-    },
-    
-    getCurUnitTitle: function() {
-        if (this.mCurUnit == null)
-            return "?";
-        if (this.mItems[this.mUnitMap[this.mCurUnit]]["kind"] == "func")
-            return this.mCurUnit + "()";
-        return this.mCurUnit;
-    },
-    
-    getCurUnitName: function() {
-        return this.mCurUnit;
-    },
-    getCurUnitStat: function() {
-        if (this.mCurUnit == null)
-            return null;
-        return this.mItems[this.mUnitMap[this.mCurUnit]];
     },
     
     getUnitStat: function(unit_name) {
@@ -555,8 +539,9 @@ var sOpCondH = {
         this.mCondition = condition;
         this.mNewCondition = null;
         this.mCurUnitName = this.mCondition[1];
-        document.getElementById("cond-title").innerHTML = this.mCurUnitName;
         unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
+        document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
+            (unit_stat["kind"] == "func")? "()" : "";
         mode = "num";
         //TRF!!!
         if (unit_stat == undefined || unit_stat["incomplete"]) {
@@ -589,7 +574,7 @@ var sOpCondH = {
         arrangeControls();
     },
     
-    formCondition: function(condition_data, err_msg, cond_mode, add_always) {
+    formCondition: function(condition_data, err_msg, add_always) {
         if (condition_data != null) {
             cur_unit_name = this.mCondition[1];
             this.mNewCondition = [this.mCurTpHandler.getCondType(), 

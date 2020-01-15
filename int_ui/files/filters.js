@@ -93,14 +93,15 @@ var sUnitsH = {
                 this.mTotal : this.mCount + "/" + this.mTotal;
         if (sSamplesCtrl)
             sSamplesCtrl.reset(this.mCount);
+        //TRF: temporary restriction
         //this.mItems = info["stat-list"];
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
             if (info["stat-list"][idx]["kind"] != "func")
                 this.mItems.push(info["stat-list"][idx]);
         }
-        sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         sConditionsH.setup(info);
+        sOpFilterH.update(info["cur-filter"], info["filter-list"]);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
@@ -441,7 +442,7 @@ var sConditionsH = {
             conditions = null;
         } else {
             filter_name = null;
-            conditions = (use_conditions)? this.mCondSeq:null;
+            conditions = (use_conditions)? this.mList:null;
         }
         add_instr = (zone_data == null)? null: ["zone", JSON.stringify(zone_data)];
         return sUnitsH.formRqArgs(conditions, filter_name, false, add_instr);
@@ -467,15 +468,13 @@ var sConditionsH = {
             this.selectCond(this.findCond(sUnitsH.getCurUnitName()));
     },
 
-    findCond: function(unit_name, cond_mode, cond_type) {
+    findCond: function(unit_name, cond_type) {
         if (this.mCurCondIdx != null && 
                 this.mCondSeq[this.mCurCondIdx]["unit"] == unit_name)
             return this.mCurCondIdx;
         for (idx = 0; idx < this.mCondSeq.length; idx++) {
             if (this.mCondSeq[idx]["unit"] == unit_name) {
-                if (cond_type && cond_type != this.mList[idx][0])
-                    continue;
-                if (cond_mode == undefined || this.mList[idx][2] == cond_mode)
+                if (!cond_type || cond_type == this.mList[idx][0])
                     return idx;
             }
         }
@@ -523,9 +522,8 @@ var sOpCondH = {
     },
     
     onUnitSelect: function() {
-        unit_title = sUnitsH.getCurUnitTitle();
         unit_name = sUnitsH.getCurUnitName();
-        document.getElementById("cond-title").innerHTML = (unit_title)? unit_title:"";
+        document.getElementById("cond-title").innerHTML = sUnitsH.getCurUnitTitle();
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();
@@ -562,7 +560,7 @@ var sOpCondH = {
         }
     },
     
-    formCondition: function(condition_data, err_msg, cond_mode, add_always) {
+    formCondition: function(condition_data, err_msg, add_always) {
         cur_unit_name = sUnitsH.getCurUnitName();
         this.mCondition   = null;
         this.mIdxToAdd    = null;
@@ -570,14 +568,14 @@ var sOpCondH = {
         if (condition_data != null) {
             this.mCondition = [this.mCurTpHandler.getCondType(), cur_unit_name].concat(
                 condition_data);
-            this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, cond_mode,
+            this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, 
                 this.mCurTpHandler.getCondType());
             if (this.mIdxToUpdate == null) {
                 if (add_always) { 
-                    this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, undefined,
+                    this.mIdxToUpdate = sConditionsH.findCond(cur_unit_name, 
                         this.mCurTpHandler.getCondType());
                 } else {
-                    this.mIdxToAdd = sConditionsH.findCond(cur_unit_name, undefined,
+                    this.mIdxToAdd = sConditionsH.findCond(cur_unit_name, 
                         this.mCurTpHandler.getCondType());
                     if (this.mIdxToAdd == null)
                         this.mIdxToAdd = sConditionsH.nextIdx();

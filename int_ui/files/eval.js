@@ -178,7 +178,7 @@ var sOpNumH = {
             err_msg = " ";
             condition_data = null;
         }
-        sOpCondH.formCondition(condition_data, err_msg, this.mInfo.op, false);
+        sOpCondH.formCondition(condition_data, err_msg, false);
         this.careControls();
     }
 };
@@ -366,258 +366,12 @@ var sOpEnumH = {
             condition_data = null;
         }
 
-        sOpCondH.formCondition(condition_data, err_msg, op_mode, true);
+        sOpCondH.formCondition(condition_data, err_msg, true);
         this.careControls();
     },
     
     waitForUpdate: function(unit_name) {
         this.mDivVarList.className = "wait";
-    }
-};
-
-/**************************************/
-/**************************************/
-function inheritanceZ_RenderValues(z_unut_stat, list_stat_rep) {
-    err_msg = inheritanceZ_CheckError(z_unut_stat, null);
-    if (err_msg != null) {
-        list_stat_rep.push('<span class="stat-bad">' + err_msg + '</span>');
-        return;
-    } 
-    list_stat_rep.push('<ul>');
-    var variants = z_unit_stat["variants"];
-    for (var j = 0; j < variants.length; j++) {
-        var_name = variants[j][0];
-        var_count = variants[j][1];
-        if (var_count == 0)
-            continue;
-        list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(variants[j], z_unit_stat) + '</li>');
-    }
-}
-        
-function inheritanceZ_CheckError(z_unit_stat, err_msg) {
-    variants = z_unit_stat["variants"];
-    if (variants == null || variants == undefined)
-        return " Determine problem group";
-    var size = 0;
-    for (var j = 0; j < variants.length; j++) {
-        if (z_unit_stat[j][1] > 0)
-            size++;
-    }
-    if (size == 0)
-        return "Out of choice";
-    return err_msg;
-}
-
-function inheritanceZSameCase(z_unut_stat, problem_group) {
-    if (problem_group == null) 
-        return (inheritanceZProblemGroup(z_unut_stat, true) == null);
-    return problem_group.join(',') == z_unut_stat.mProblemGroup.join(',');
-}
-
-function inheritanceZProblemGroup(z_unut_stat, check_default) {
-    if (check_default && z_unut_stat.mBase.mAffectedRepr == z_unut_stat.mProblemGroup.join(','))
-        return null;
-    return z_unut_stat.mProblemGroup.slice();
-}
-        
-function inheritanceZ_Repr(z_unut_stat, list_stat_rep) {
-    list_stat_rep.push('<div class="inheritance-z-family">');
-    for (var idx = 0; idx < z_unut_stat.mBase.mFamily.length; idx++) {
-        q_checked = (z_unut_stat.mProblemGroup.indexOf(idx)>=0)? " checked":"";
-        check_id = "inheritance-z-fam-m__" + idx;
-        list_stat_rep.push('<div class="inheritance-z-fam-member">' + 
-            '<input type="checkbox" id="' + check_id + '" ' + q_checked + 
-            ' onchange="sOpFuncH.checkProblemGroup();" /><label for="' +
-            check_id + '">&nbsp;' + z_unut_stat.mBase.mFamily[idx] + '</div>');
-    }
-    list_stat_rep.push('</div>');
-    if (z_unut_stat.mBase.mAffectedGroup.length > 0) {
-        reset_dis = (inheritanceZProblemGroup(z_unut_stat, true) == null)? 'disabled="true"':'';
-        list_stat_rep.push('<button id="inheritance-z-fam-reset" ' +
-            ' title="Reset affected group" ' + reset_dis + 
-            ' onclick="sOpFuncH.resetGrp()">Reset</button>');
-    }
-}
-
-/**************************************/
-var sOpFuncH = {
-    mUnitName: null,
-    mFamily: null,
-    mAffectedGroup: null,
-    mAffectedRepr: null,
-    mCurProblemGroup: null,
-    mWaitGroup: [null, null],
-    mTimeH: null,
-    mOpBaseUnitStat: null,
-    mOpBaseCondition: null,
-    mOpSetUp: null,
-    
-    init: function() {
-    },
-    
-    _baseSetup: function(unit_stat) {
-        this.mUnitName = unit_stat["name"];
-        this.mFamily = unit_stat["family"];
-        this.mAffectedGroup = unit_stat["affected"];
-        this.mAffectedRepr = this.mAffectedGroup.join(',');
-    },
-    
-    setup: function(unit_stat, list_stat_rep) {
-        if (this.mTimeH) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
-        this._baseSetup(unit_stat);
-        if (this.mSeparateOp && this.mOpBaseUnitStat) {
-            if (JSON.stringify(unit_stat) != JSON.stringify(this.mOpBaseUnitStat)) {
-                this.mOpBaseUnitStat = null;
-                this.mOpBaseCondition = null;
-                this.mCases[1] = null;
-            } else 
-                this.mOpBaseUnitStat = unit_stat;
-        }
-            
-        list_stat_rep.push('<div id="inheritance-z-wrap">');
-        list_stat_rep.push('<div id="inheritance-z-problem">');
-        inheritanceZ_Repr(this.mCases[0], list_stat_rep);
-        list_stat_rep.push('</div>');
-        list_stat_rep.push('<div id="inheritance-z-stat">');
-        inheritanceZ_RenderValues(this.mCases[0], list_stat_rep);
-        list_stat_rep.push('</div></div>');
-        sUnitsH.setCtxPar("problem_group", inheritanceZProblemGroup(this.mCases[0]))
-    },    
-    
-    //TRF
-    getCondType: function() {
-        return "func";
-    },
-    
-    setupVariants: function(unit_stat, div_pgroup) {
-        var mode_op = (this.mSeparateOp)? 1:0;
-        if (div_pgroup && !this.mOpSetUp) {
-            list_stat_rep = [];
-            inheritanceZ_Repr(this.mCases[mode_op], list_stat_rep);
-            div_pgroup.innerHTML = list_stat_rep.join('\n');
-            div_pgroup.style.display = "flex";
-            if (this.mSeparateOp)
-                this.mOpSetUp = true;
-        }
-        if (this.mCases[mode_op].mStat == null)
-            return [];
-        return this.mCases[mode_op].mStat;
-    },
-    
-    transCondition: function(condition_data) {
-        if (condition_data == null)
-            return null;
-        ret = condition_data.slice();
-        ret.splice(0, 0, inheritanceZProblemGroup(this.mCases[(this.mSeparateOp)? 1:0], true));
-        return ret;
-    },
-    
-    checkError: function(condition_data, err_msg) {
-        return inheritanceZ_CheckError(this.mCases[(this.mSeparateOp)? 1:0], err_msg);
-    },
-    
-    getUnitTitle: function(problem_group) {
-        if (problem_group == null) 
-            return this.mUnitName + '()';
-        var problem_repr = problem_group.join(',');
-        if (problem_repr == this.mAffectedRepr)
-            return this.mUnitName + '()';        
-        return this.mUnitName + '({' + problem_repr + '})';        
-    },
-    
-    checkUnitTitle: function(unit_name) {
-        if (unit_name != this.mUnitName)
-            return null;
-        return this.getUnitTitle();
-    },
-    
-    getCondOpMode: function(condition_data) {
-        return condition_data[3];
-    },
-    
-    getCondVarList: function(condition_data) {
-        return condition_data[4];
-    },
-    
-    onSelectCondition: function(condition_data) {
-        if (condition_data[1] != this.mUnitName)
-            return;
-        this.reSelect(0, condition_data[2]);
-        this.checkProblemGroup();
-    },
-    
-    resetGrp: function(mode_op) {
-        this.reSelect(mode_op, this.mAffectedGroup);
-        this.checkProblemGroup();
-    },
-
-    reSelect: function(mode_op, problem_group) {
-        if (problem_group == null)
-            problem_group = this.mAffectedGroup;
-        var id_prefix = (mode_op)?"inheritance-z-fam-op-m__" : "inheritance-z-fam-m__";
-        for (var idx = 0; idx < this.mFamily.length; idx++)
-            document.getElementById(id_prefix + idx).checked =
-                (problem_group.indexOf(idx) >= 0);
-    },
-    
-    collectPGroup: function(mode_op) {
-        var id_prefix = (mode_op)?"inheritance-z-fam-op-m__" : "inheritance-z-fam-m__";
-        var problem_group = [];
-        for (var idx = 0; idx < this.mFamily.length; idx++) {
-            if (document.getElementById(id_prefix + idx).checked)
-                problem_group.push(idx);
-        }
-        return problem_group;
-    },
-    
-    checkProblemGroup: function(mode_op) {
-        if (this.mTimeH == null)
-            this.mTimeH = setInterval(function(){sOpFuncH.reload(mode_op);}, 30)
-        document.getElementById("inheritance-z-fam-reset").disabled = 
-            inheritanceZProblemGroup(this.mCases[mode_op], true) == null;
-    },
-
-    //TRF: no mode_op
-    reload: function(mode_op, problem_group) {
-        clearInterval(this.mTimeH);
-        this.mTimeH = null;
-        var check_same = true;
-        if (problem_group == undefined) 
-            var problem_group = this.collectPGroup(mode_op);
-        else
-            check_same = false;
-        if (mode_op == 0) {
-            sUnitsH.setCtxPar("problem_group", problem_group);
-            document.getElementById("stat-data--" + this.mUnitName).className = "wait";
-        }
-        if (mode_op || !self.mSeparateOp) 
-            document.getElementById("inheritance-z-stat").className = "wait";
-        var args = sUnitsH.getRqArgs() + 
-            "&units=" + encodeURIComponent(JSON.stringify([this.mUnitName]));
-        sOpEnumH.waitForUpdate();
-        if (mode_op == 1) {
-            args += "&ctx=" + encodeURIComponent(
-                JSON.stringify({"problem_group": problem_group}));
-        }
-        ajaxCall("statunits", args, 
-            function(info){sOpFuncH._reload(info, mode_op);})
-    },
-    
-    _reload: function(info, mode_op) {
-        var unit_stat = info["units"][0];
-        this.mCases[mode_op] = newZygCase(this, unit_stat, mode_op);
-        rep_list = [];
-        inheritanceZ_RenderValues(this.mCases[0], rep_list);
-        inh_div = document.getElementById("inheritance-z-stat");
-        inh_div.innerHTML = rep_list.join('\n');
-        inh_div.className = "";
-        sUnitsH.updateZygUnit(this.mUnitName, unit_stat);
-        if (!self.mSeparateOp) 
-            refillUnitStat(unit_stat);
     }
 };
 
@@ -671,10 +425,10 @@ function fillStatList(items, unit_map, list_stat_rep,
                     fillStatRepNum(unit_stat, list_stat_rep);
                     break;
                 case "enum":
-                case "transcript":
                     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
                     break;
                 case "func":
+                    //TRF: write it
                     break;
             }
         }
@@ -689,6 +443,7 @@ function refillUnitStat(unit_stat, expand_mode) {
     div_el = document.getElementById("stat-data--" + unit_stat["name"]);
     list_stat_rep = [];
     if (unit_stat["kind"] == "func") 
+        //TRF: write it...
         sOpFuncH.setup(unit_stat, list_stat_rep);
     else {
         if (unit_stat["kind"] == "numeric") 

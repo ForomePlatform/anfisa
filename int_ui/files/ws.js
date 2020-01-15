@@ -243,18 +243,6 @@ function onFilterListChange() {
     clearFilterOpMode();
 }
 
-function pickNamedFilter() {
-    updateCurFilter(sSelectFltNamed.value);
-}
-
-function checkCurFilters(mode_filter) {
-    if (mode_filter == 0) {
-        updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
-    } else {
-        updateCurFilter((sCheckFltCurrent.checked)? "":null);
-    }
-}
-
 function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
@@ -271,7 +259,7 @@ function updateCurFilter(filter_name, force_it) {
         sElFltCurState.innerHTML = cond_len + " condition" + ((cond_len>1)? "s":"");
         sElFltCurState.className = "";
         sCheckFltCurrent.disabled = false;
-        sCheckFltCurrent.checked = (sCurFilterName == "");
+        sCheckFltCurrent.checked = (!sCurFilterName);
     } 
     sCheckFltNamed.checked = !!sCurFilterName;
     reloadList();
