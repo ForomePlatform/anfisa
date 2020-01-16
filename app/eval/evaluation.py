@@ -145,13 +145,13 @@ class Evaluation:
                 % (cond_data[0], unit_h.getUnitKind()))
             return None
         if unit_h.getUnitKind() == "func":
-            extra_params = (set(cond_data[2].keys())
+            extra_params = (set(cond_data[4].keys())
                 - set(unit_h.getParameters()))
             if len(extra_params) > 0:
                 self.pointError("Function extra parameters: "
                     + ' '.join(sorted(extra_params)))
                 return None
-            err_msg = unit_h.validateArgs(cond_data[2])
+            err_msg = unit_h.validateArgs(cond_data[4])
             if err_msg:
                 self.pointError(err_msg)
                 return None

@@ -188,7 +188,7 @@ var sOpEnumH = {
     mVariants: null,
     mOperationMode: null,
     mDivVarList: null,
-    mSpecCtrl: null,
+    mFuncCtrl: null,
     mStatusMode: null,
     mUpdateCondStr: null,
     mDivFuncParam: null,
@@ -199,9 +199,7 @@ var sOpEnumH = {
     },
     
     getCondType: function() {
-        if (this.mSpecCtrl != null)
-            return this.mSpecCtrl.getCondType();
-        return "enum";
+        return (this.mFuncCtrl != null)? "func" : "enum";
     },
     
     suspend: function() {
@@ -224,18 +222,20 @@ var sOpEnumH = {
     updateUnit: function(unit_stat) {
         this.mUpdateCondStr = null;
         if (unit_stat["kind"] == "func") {
-            this.mSpecCtrl = sOpFuncH;
-            this.mVariants = []; //TRFsOpFuncH.setupVariants(unit_stat, this.mDivFuncParam);
+            this.mFuncCtrl = sFuncCtrlDict[unit_stat["sub-kind"]];
+            this.mFuncCtrl.setup(unit_stat);
+            this.mVariants = [];
             this.mOperationMode = null;
             this.mStatusMode = null;
         } else {
             this.mVariants = unit_stat["variants"];
             this.mOperationMode = 0;
             this.mStatusMode = (unit_stat["sub-kind"] == "status");
-            this.mSpecCtrl = null;
-            if (this.mDivFuncParam) {
-                this.mDivFuncParam.style.display = "none";
-            }
+            this.mFuncCtrl = null;
+        }
+        if (this.mDivFuncParam) {
+            this.mDivFuncParam.style.display = 
+                (this.mFuncCtrl == null)? "none":"visible";
         }
         
         list_val_rep = [];
@@ -258,14 +258,11 @@ var sOpEnumH = {
     
     updateCondition: function(cond) {
         this.mUpdateCondStr = JSON.stringify(cond.slice(2));
-        if (this.mSpecCtrl != null) {
-            this.mSpecCtrl = sOpFuncH;
-            var_list = this.mSpecCtrl.getCondVarList(cond);
-            op_mode = this.mSpecCtrl.getCondOpMode(cond);
-        } else {
-            var_list = cond[3];
-            op_mode = cond[2];
+        if (this.mFuncCtrl != null) {
+            this.mFuncCtrl.updateCondition(cond);
         }
+        var_list = cond[3];
+        op_mode = cond[2];
         if (this.mOperationMode != null)
             this.mOperationMode = ["OR", "AND", "NOT"].indexOf(op_mode);
         needs_zeros = false;
@@ -301,7 +298,9 @@ var sOpEnumH = {
         this.checkControls();
     },
     
-    careControls: function() {
+    careControls: function(in_check) {
+        if (this.mFuncCtrl != null)
+            this.mFuncCtrl.careControls(in_check);
         document.getElementById("cur-cond-enum").style.display = 
             (this.mVariants == null)? "none":"block";
         for (idx = 1; idx < 3; idx++) {
@@ -328,7 +327,7 @@ var sOpEnumH = {
     checkControls: function(opt) {
         if (this.mVariants == null) 
             return;
-        this.careControls();
+        this.careControls(true);
         var err_msg = null;
         if (opt != undefined && this.mOperationMode != null) {
             if (this.mOperationMode == opt)
@@ -356,9 +355,9 @@ var sOpEnumH = {
                 err_msg = sel_names.length + " variants selected";
         } else
             err_msg = " Out of choice"
-        if (this.mSpecCtrl != null) {
-            condition_data = this.mSpecCtrl.transCondition(condition_data);
-            err_msg = this.mSpecCtrl.checkError(condition_data, err_msg);
+        if (this.mFuncCtrl != null) {
+            condition_data.push(this.mFuncCtrl.getCurParams());
+            err_msg = this.mFuncCtrl.checkError(condition_data, err_msg);
         }
         if (this.mUpdateCondStr && !err_msg && condition_data &&
                 JSON.stringify(condition_data) == this.mUpdateCondStr) {

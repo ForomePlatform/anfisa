@@ -34,7 +34,7 @@ class ConditionMaker:
     @staticmethod
     def condFunc(unit_name, func_args, variants, join_mode = "OR"):
         assert join_mode in {"AND", "OR", "NOT"}
-        return ["func", unit_name, func_args, join_mode, variants]
+        return ["func", unit_name, join_mode, variants, func_args]
 
     @staticmethod
     def isAll(cond_data):
@@ -91,10 +91,10 @@ def validateCondition(cond_info):
             return "Bad enumerated condition"
         if cond_info[0] == "func":
             if len(cond_info) == 5:
-                params, filter_mode, variants = cond_info[2:]
-                if params is not None:
-                    if (not isinstance(params, dict) or not all(
-                            isinstance(key, str) for key in params.keys())):
+                filter_mode, variants, func_args = cond_info[2:]
+                if func_args is not None:
+                    if (not isinstance(func_args, dict) or not all(
+                            isinstance(key, str) for key in func_args.keys())):
                         return "Wrong function parameters"
                 if not isinstance(variants, list):
                     return "Wrong list of functions variants"

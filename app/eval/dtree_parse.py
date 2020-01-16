@@ -359,7 +359,7 @@ class ParsedDTree:
             err_msg = unit_h.validateArgs(func_args)
             if err_msg:
                 self.errorIt(it.left, err_msg)
-            ret = ["func", field_name, func_args, op_mode, variants]
+            ret = ["func", field_name, op_mode, variants, func_args]
             self._addMarker(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")

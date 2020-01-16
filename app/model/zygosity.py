@@ -130,7 +130,7 @@ class InheritanceUnit(FunctionUnit):
         return ret_handle
 
     def locateContext(self, cond_data, eval_h):
-        p_group = cond_data[2].get("problem_group")
+        p_group = cond_data[4].get("problem_group")
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
         else:
@@ -142,7 +142,7 @@ class InheritanceUnit(FunctionUnit):
         if len(p_group) == 0:
             eval_h.operationError(cond_data, "Problem group is empty")
             return None
-        if len(cond_data[4]) == 0:
+        if len(cond_data[3]) == 0:
             eval_h.operationError(cond_data,
                 "%s: empty set of variants" % self.getName())
             return None

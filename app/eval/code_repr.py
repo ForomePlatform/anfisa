@@ -105,7 +105,7 @@ def _reprConditionCode(cond_data, output, group_mode):
     if cond_kind == "func":
         if group_mode:
             output.write('(')
-        unit_name, func_info, op_mode, values = cond_data[1:]
+        unit_name, op_mode, values, func_info = cond_data[1:]
         output.write(unit_name + '(')
         q_first = False
         for arg, val in sorted(func_info.items()):

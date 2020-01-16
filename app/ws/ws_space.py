@@ -267,7 +267,7 @@ class WS_CondEnum(WS_Condition):
             (unit_h.getName(), variants, filter_mode))
 
     def __init__(self, eval_space, fill_groups_f, fill_items_f, data):
-        WS_Condition.__init__(self, eval_space, "numeric",
+        WS_Condition.__init__(self, eval_space, "enum",
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
         self.mData = data
 

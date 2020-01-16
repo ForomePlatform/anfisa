@@ -373,6 +373,7 @@ class DTreeEval(Evaluation, CaseStory):
             cond_seq = []
             for point in self.mPointList:
                 if point.isActive() and point.getDecision() is True:
+                    assert point.getPointKind() == "Return"
                     cond_seq.append(point.actualCondition())
             self.mFinalCondition = self.getEvalSpace().joinOr(cond_seq)
         return self.mFinalCondition

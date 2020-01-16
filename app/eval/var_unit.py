@@ -143,7 +143,7 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
         ret_handle["variants"] = val_stat_list
 
     def buildCondition(self, cond_data, eval_h, context = None):
-        filter_mode, variants = cond_data[-2:]
+        filter_mode, variants = cond_data[2:4]
         single_cr_seq = []
         for _, condition in self.iterComplexCriteria(context, variants):
             single_cr_seq.append(condition)

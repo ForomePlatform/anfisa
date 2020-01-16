@@ -158,7 +158,7 @@ class CompHetsUnit(FunctionUnit):
 
     def locateContext(self, cond_data, eval_h):
         point_no, _ = eval_h.locateCondData(cond_data)
-        context, err_msg = self._locateContext(cond_data[2], eval_h, point_no)
+        context, err_msg = self._locateContext(cond_data[4], eval_h, point_no)
         if err_msg:
             eval_h.operationError(cond_data, err_msg)
         return context
