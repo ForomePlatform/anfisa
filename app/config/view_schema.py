@@ -32,7 +32,8 @@ def defineViewSchema(metadata_record = None):
         AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
         AspectH("view_db", "Databases", "_view", field = "databases"),
         AspectH("view_pred", "Predictions", "_view", field = "predictions"),
-        AspectH("view_pharmagkb", "Pharmacogenomics", "_view", field = "pharmacogenomics"),
+        AspectH("view_pharmagkb", "Pharmacogenomics", "_view",
+            field = "pharmacogenomics"),
         AspectH("view_genetics", "Bioinformatics", "_view",
             field = "bioinformatics")
     ]

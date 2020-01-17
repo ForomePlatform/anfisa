@@ -374,10 +374,10 @@ class DataSet(SolutionBroker):
                 continue
             if cond_data[0] == "zygosity":
                 ret_handler.append(["func",
-                    cond_data[1], cond_data[3], cond_data[4], {
-                    "sub-kind": "inheritance-z",
-                    "problem_group": (self.getFamilyInfo().idxset2ids(
-                        cond_data[2]))}])
+                    cond_data[1], cond_data[3], cond_data[4],
+                    {"sub-kind": "inheritance-z",
+                        "problem_group": (self.getFamilyInfo().idxset2ids(
+                            cond_data[2]))}])
                 continue
             ret_handler.append(cond_data)
         return ret_handler

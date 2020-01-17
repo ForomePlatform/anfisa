@@ -376,12 +376,12 @@ var sUnitsH = {
             this.mTotal : this.mCount + "/" + this.mTotal;
         sSubVRecH.reset(this.mCount);
             
-        //this.mItems = info["stat-list"].slice();
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
-            //TRF: temporary filter
-            if (info["stat-list"][idx]["kind"] != "func")
-                this.mItems.push(info["stat-list"][idx]);
+            if (info["stat-list"][idx]["kind"] == "func" &&
+                !selectFuncCtrl(info["stat-list"][idx]))
+                continue;
+            this.mItems.push(info["stat-list"][idx]);
         }
         this.mUnitMap = {};
         this.mUnitsDelay = [];
@@ -541,7 +541,7 @@ var sOpCondH = {
         this.mCurUnitName = this.mCondition[1];
         unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
         document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
-            (unit_stat["kind"] == "func")? "()" : "";
+            ((unit_stat["kind"] == "func")? "()" : "");
         mode = "num";
         //TRF!!!
         if (unit_stat == undefined || unit_stat["incomplete"]) {
@@ -550,7 +550,7 @@ var sOpCondH = {
             if (unit_stat["kind"] == "numeric") 
                 this.mCurTpHandler = sOpNumH;
             else  {
-                if (unit_stat["kind"] == "enum") {
+                if (unit_stat["kind"] == "enum" || unit_stat["kind"] == "func") {
                     this.mCurTpHandler = sOpEnumH;
                     mode = "enum";
                 } else {

@@ -52,6 +52,12 @@ var sUnitsH = {
         this.setup();
     },
     
+    getRqArgs: function() {
+        ret = this.mCallDS + "&conditions=" + 
+            encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
+        return ret;
+    },
+    
     formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
         args =  this.mCallDS;
         if (filter_name) {
@@ -93,15 +99,16 @@ var sUnitsH = {
                 this.mTotal : this.mCount + "/" + this.mTotal;
         if (sSamplesCtrl)
             sSamplesCtrl.reset(this.mCount);
-        //TRF: temporary restriction
-        //this.mItems = info["stat-list"];
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
-            if (info["stat-list"][idx]["kind"] != "func")
-                this.mItems.push(info["stat-list"][idx]);
+            if (info["stat-list"][idx]["kind"] == "func" &&
+                !selectFuncCtrl(info["stat-list"][idx]))
+                continue;
+            this.mItems.push(info["stat-list"][idx]);
         }
         sConditionsH.setup(info);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
+        updateCurFilter(sOpFilterH.getCurFilterName(), true);
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
@@ -136,12 +143,6 @@ var sUnitsH = {
         if (this.mWaiting || this.mTimeH != null || this.mUnitsDelay.length == 0)
             return;
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
-    },
-    
-    getRqArgs: function() {
-        ret = this.mCallDS + "&conditions=" + 
-            encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
-        return ret;
     },
     
     loadUnits: function() {
@@ -295,7 +296,6 @@ var sOpFilterH = {
         if (this.mCurFilter != "" && 
                 all_filters.indexOf(this.mCurFilter) < 0)
             this.mCurFilter = "";
-        updateCurFilter(this.mCurFilter, true);
     },
     
     getCurFilterName: function() {

@@ -213,8 +213,9 @@ class Beacons_AttrH(AttrH):
     template = base + "pos={pos}&chrom={chrom}&allele={a}&ref={r}&rs=GRCh37"
 
     @staticmethod
-    def makeLink(c, p, r, a):
-        return (Beacons_AttrH.template.format(chrom=c,pos=p,r=r,a=a))
+    def makeLink(chrom, pos, ref, alt):
+        return (Beacons_AttrH.template.format(
+            chrom = chrom, pos = pos, r = ref, a = alt))
 
     def __init__(self, view):
         AttrH.__init__(self, "Beacons",
@@ -224,12 +225,12 @@ class Beacons_AttrH(AttrH):
         self.setAspect(view)
 
     def htmlRepr(self, obj, top_rec_obj):
-        c = top_rec_obj["__data"]["seq_region_name"]
-        p = top_rec_obj["__data"]["start"]
-        r = top_rec_obj["__data"]["ref"]
-        a = top_rec_obj["__data"]["alt"]
+        chrom = top_rec_obj["__data"]["seq_region_name"]
+        pos = top_rec_obj["__data"]["start"]
+        ref = top_rec_obj["__data"]["ref"]
+        alt = top_rec_obj["__data"]["alt"]
 
-        url = self.makeLink(c, p, r, a)
+        url = self.makeLink(chrom, pos, ref, alt)
         link = (('<span title="Search Beacons">')
             + ('<a href="%s" target="Beacons">Search Beacons</a>' % (url))
             + '</span>')
@@ -240,7 +241,7 @@ class PMID_AttrH(AttrH):
 
     @staticmethod
     def makeLink(pmid):
-        return ("https://www.ncbi.nlm.nih.gov/pubmed/{}".format(pmid))
+        return ("https://www.ncbi.nlm.nih.gov/pubmed/%s" % pmid)
 
     def __init__(self, view):
         AttrH.__init__(self, "references",

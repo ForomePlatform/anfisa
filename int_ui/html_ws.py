@@ -26,7 +26,7 @@ def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
         common_title + "-WS " + workspace.getName(), html_base,
         css_files = ["ws.css", "filters.css", "eval.css",
             "zones.css", "vrec.css", "base.css"],
-        js_files = ["ws.js", "filters.js", "eval.js",
+        js_files = ["ws.js", "filters.js", "eval.js", "func.js",
             "zones.js", "base.js"])
 
     print('  <body onload="initWin(\'%s\', \'%s\');">' %

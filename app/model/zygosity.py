@@ -49,16 +49,16 @@ class InheritanceUnit(FunctionUnit):
     def getVariantSet(self):
         return self.sVariantSet
 
-    def conditionZHomoRecess(self, problem_group):
-        cond = self._conditionZHomoRecess(problem_group)
-        if self.mFamilyInfo.groupHasMales(problem_group):
+    def conditionZHomoRecess(self, p_idxset):
+        cond = self._conditionZHomoRecess(p_idxset)
+        if self.mFamilyInfo.groupHasMales(p_idxset):
             return self.mXCondition.negative().addAnd(cond)
         return cond
 
-    def _conditionZHomoRecess(self, problem_group):
+    def _conditionZHomoRecess(self, p_idxset):
         seq = []
         for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in problem_group:
+            if idx in p_idxset:
                 seq.append(self.getEvalSpace().makeNumericCond(
                     unit_h, zyg_bounds = "2"))
             else:
@@ -66,16 +66,16 @@ class InheritanceUnit(FunctionUnit):
                     unit_h, zyg_bounds = "0-1"))
         return self.getEvalSpace().joinAnd(seq)
 
-    def conditionZXLinked(self, problem_group):
-        if self.mFamilyInfo.groupHasMales(problem_group):
+    def conditionZXLinked(self, p_idxset):
+        if self.mFamilyInfo.groupHasMales(p_idxset):
             return self.mXCondition.addAnd(
-                self._conditionZHomoRecess(problem_group))
+                self._conditionZHomoRecess(p_idxset))
         return self.getEvalSpace().getCondNone()
 
-    def conditionZDominant(self, problem_group):
+    def conditionZDominant(self, p_idxset):
         seq = []
         for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in problem_group:
+            if idx in p_idxset:
                 seq.append(self.getEvalSpace().makeNumericCond(
                     unit_h, zyg_bounds = "1-2"))
             else:
@@ -83,10 +83,10 @@ class InheritanceUnit(FunctionUnit):
                     unit_h, zyg_bounds = "0"))
         return self.getEvalSpace().joinAnd(seq)
 
-    def conditionZCompens(self, problem_group):
+    def conditionZCompens(self, p_idxset):
         seq = []
         for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in problem_group:
+            if idx in p_idxset:
                 seq.append(self.getEvalSpace().makeNumericCond(
                     unit_h, zyg_bounds = "0"))
             else:
@@ -97,19 +97,19 @@ class InheritanceUnit(FunctionUnit):
     def iterComplexCriteria(self, context, variants = None):
         if context is None:
             return
-        problem_group = context["problem_group"]
+        p_idxset = context["p_idxset"]
         if variants is None or self.sCaseLabels[0] in variants:
-            yield self.sCaseLabels[0], self.conditionZHomoRecess(problem_group)
+            yield self.sCaseLabels[0], self.conditionZHomoRecess(p_idxset)
         if variants is None or self.sCaseLabels[1] in variants:
-            yield self.sCaseLabels[1], self.conditionZXLinked(problem_group)
+            yield self.sCaseLabels[1], self.conditionZXLinked(p_idxset)
         if variants is None or self.sCaseLabels[2] in variants:
-            yield self.sCaseLabels[2], self.conditionZDominant(problem_group)
+            yield self.sCaseLabels[2], self.conditionZDominant(p_idxset)
         if variants is None or self.sCaseLabels[3] in variants:
-            yield self.sCaseLabels[3], self.conditionZCompens(problem_group)
+            yield self.sCaseLabels[3], self.conditionZCompens(p_idxset)
 
     def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["family"] = self.mFamilyInfo.getNames()
+        ret_handle["family"] = self.mFamilyInfo.getIds()
         ret_handle["affected"] = self.mFamilyInfo.getAffectedGroup()
         return ret_handle
 
@@ -123,7 +123,7 @@ class InheritanceUnit(FunctionUnit):
         ret_handle["problem_group"] = sorted(p_group)
         if len(p_group) > 0:
             self.collectComplexStat(ret_handle, condition,
-                {"problem_group": p_group})
+                {"p_idxset": self.mFamilyInfo.ids2idxset(p_group)})
         else:
             ret_handle["variants"] = None
             ret_handle["err"] = "Problem group is empty"
@@ -134,11 +134,11 @@ class InheritanceUnit(FunctionUnit):
         if p_group is None:
             p_group = self.mFamilyInfo.getAffectedGroup()
         else:
-            extra_names = (set(p_group) - set(self.mFamilyInfo.getNames()))
+            extra_names = (set(p_group) - set(self.mFamilyInfo.getIds()))
             if len(extra_names) > 0:
                 eval_h.operationError(cond_data, "No sample(s) registered: "
                     + ' '.join(sorted(extra_names)))
-            return None
+                return None
         if len(p_group) == 0:
             eval_h.operationError(cond_data, "Problem group is empty")
             return None
@@ -146,7 +146,7 @@ class InheritanceUnit(FunctionUnit):
             eval_h.operationError(cond_data,
                 "%s: empty set of variants" % self.getName())
             return None
-        return {"problem_group": set(p_group)}
+        return {"p_idxset": self.mFamilyInfo.ids2idxset(p_group)}
 
     def validateArgs(self, func_args):
         if "problem_group" in func_args:

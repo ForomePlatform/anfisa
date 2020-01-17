@@ -25,7 +25,7 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
         common_title + "-DTree " + ds_h.getName(), html_base,
         css_files = ["dtree.css", "eval.css", "py_pygments.css",
             "vrec.css", "base.css"],
-        js_files = ["dtree.js", "eval.js", "vrec.js", "base.js"])
+        js_files = ["dtree.js", "eval.js", "func.js", "vrec.js", "base.js"])
 
     print('  <body onload="setupDTree(\'%s\', \'%s\',  \'%s\', \'%s\');">' %
         (ds_h.getName(), ds_h.getDSKind(), common_title, ws_pub_url),

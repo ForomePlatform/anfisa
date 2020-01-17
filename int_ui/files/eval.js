@@ -202,9 +202,16 @@ var sOpEnumH = {
         return (this.mFuncCtrl != null)? "func" : "enum";
     },
     
+    renderFuncDiv: function(content) {
+        this.mDivFuncParam.innerHTML = content;
+    },
+    
     suspend: function() {
+        if (this.mFuncCtrl)
+            this.mFuncCtrl.suspend()
         this.mVariants = null;
         this.mOperationMode = null;
+        this.mFuncCtrl = null;
         this.careControls();
     },
     
@@ -220,25 +227,27 @@ var sOpEnumH = {
     },
     
     updateUnit: function(unit_stat) {
+        if (this.mFuncCtrl)
+            this.mFuncCtrl.suspend()
         this.mUpdateCondStr = null;
+        this.mOperationMode = 0;
+        this.mStatusMode = (unit_stat["sub-kind"] == "status");
         if (unit_stat["kind"] == "func") {
-            this.mFuncCtrl = sFuncCtrlDict[unit_stat["sub-kind"]];
+            this.mFuncCtrl = selectFuncCtrl(unit_stat);
             this.mFuncCtrl.setup(unit_stat);
-            this.mVariants = [];
-            this.mOperationMode = null;
-            this.mStatusMode = null;
         } else {
-            this.mVariants = unit_stat["variants"];
-            this.mOperationMode = 0;
-            this.mStatusMode = (unit_stat["sub-kind"] == "status");
             this.mFuncCtrl = null;
+            this._setupVariants(unit_stat["variants"]);
         }
-        if (this.mDivFuncParam) {
-            this.mDivFuncParam.style.display = 
-                (this.mFuncCtrl == null)? "none":"visible";
-        }
-        
-        list_val_rep = [];
+        this.mDivFuncParam.style.display = 
+            (this.mFuncCtrl == null)? "none":"";
+    },
+
+    _setupVariants: function(variants) {
+        this.mVariants = variants;
+        if (this.mVariants == null)
+            this.mVariants = [];
+        var list_val_rep = [];
         has_zero = false;
         for (j = 0; j < this.mVariants.length; j++) {
             var_name = this.mVariants[j][0];
@@ -260,9 +269,12 @@ var sOpEnumH = {
         this.mUpdateCondStr = JSON.stringify(cond.slice(2));
         if (this.mFuncCtrl != null) {
             this.mFuncCtrl.updateCondition(cond);
+        } else {
+            this._updateState(cond[2], cond[3]);
         }
-        var_list = cond[3];
-        op_mode = cond[2];
+    },
+    
+    _updateState: function(op_mode, var_list) {
         if (this.mOperationMode != null)
             this.mOperationMode = ["OR", "AND", "NOT"].indexOf(op_mode);
         needs_zeros = false;
@@ -324,6 +336,17 @@ var sOpEnumH = {
         this.mDivVarList.className = (show_zeros)? "":"no-zeros";
     },
     
+    getSelected: function() {
+        var sel_names = [];
+        if (this.mVariants != null) {
+            for (j=0; j < this.mVariants.length; j++) {
+                if (document.getElementById("elcheck--" + j).checked)
+                    sel_names.push(this.mVariants[j][0]);
+            }
+        }
+        return sel_names;
+    },
+    
     checkControls: function(opt) {
         if (this.mVariants == null) 
             return;
@@ -335,11 +358,7 @@ var sOpEnumH = {
             else
                 this.mOperationMode = opt;
         }
-        sel_names = [];
-        for (j=0; j < this.mVariants.length; j++) {
-            if (document.getElementById("elcheck--" + j).checked)
-                sel_names.push(this.mVariants[j][0]);
-        }
+        sel_names = this.getSelected();
         op_mode = "";
         if (this.mOperationMode != null)
             op_mode = ["", "AND", "NOT"][this.mOperationMode];
@@ -356,7 +375,8 @@ var sOpEnumH = {
         } else
             err_msg = " Out of choice"
         if (this.mFuncCtrl != null) {
-            condition_data.push(this.mFuncCtrl.getCurParams());
+            if (condition_data)
+                condition_data.push(this.mFuncCtrl.getCurParams());
             err_msg = this.mFuncCtrl.checkError(condition_data, err_msg);
         }
         if (this.mUpdateCondStr && !err_msg && condition_data &&
@@ -427,7 +447,6 @@ function fillStatList(items, unit_map, list_stat_rep,
                     fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
                     break;
                 case "func":
-                    //TRF: write it
                     break;
             }
         }
@@ -442,7 +461,6 @@ function refillUnitStat(unit_stat, expand_mode) {
     div_el = document.getElementById("stat-data--" + unit_stat["name"]);
     list_stat_rep = [];
     if (unit_stat["kind"] == "func") 
-        //TRF: write it...
         sOpFuncH.setup(unit_stat, list_stat_rep);
     else {
         if (unit_stat["kind"] == "numeric") 

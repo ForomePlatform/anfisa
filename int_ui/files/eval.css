@@ -250,10 +250,12 @@ div#create-ws-status {
 div#cur-cond-func-param{
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
+    justify-content: space-between;
     white-space: nowrap;
     margin-bottom: 5px;
     font-size: 90%;
+    width: 100%;
 }
 
 div#inheritance-z-wrap {
@@ -290,5 +292,6 @@ div#inheritance-z-stat ul {
 
 button#inheritance-z-fam-reset {
     padding: 0px !important;
+    float: right;
 }
 

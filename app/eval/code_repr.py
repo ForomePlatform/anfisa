@@ -107,15 +107,13 @@ def _reprConditionCode(cond_data, output, group_mode):
             output.write('(')
         unit_name, op_mode, values, func_info = cond_data[1:]
         output.write(unit_name + '(')
-        q_first = False
+        q_first = True
         for arg, val in sorted(func_info.items()):
-            if arg.startswith('__'):
-                continue
             if q_first:
                 q_first = False
             else:
                 output.write(', ')
-            output.write(' %s = %s' % (arg, json.dumps(val)))
+            output.write('%s = %s' % (arg, json.dumps(val)))
         output.write(')')
         _reprEnumCase('', op_mode, values, output)
         if group_mode:

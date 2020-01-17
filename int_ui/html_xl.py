@@ -25,7 +25,7 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
         html_base,
         css_files = ["xl.css", "filters.css", "eval.css",
             "vrec.css", "base.css"],
-        js_files = ["xl.js", "filters.js", "eval.js",
+        js_files = ["xl.js", "filters.js", "eval.js", "func.js",
             "vrec.js", "base.js"])
 
     print('  <body onload="setupXLFilters(\'%s\', \'%s\', \'%s\');">' %

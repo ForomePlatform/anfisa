@@ -82,6 +82,9 @@ class FamilyInfo:
     def iterIds(self):
         return iter(self.mIds)
 
+    def getIds(self):
+        return self.mIds
+
     def getIdSet(self):
         return set(self.mIds)
 
