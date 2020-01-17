@@ -219,8 +219,8 @@ def readySolutions():
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
     base_pack.regDTree("Hearing Loss, v.4",
         cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
-    base_pack.regDTree("Hearing Loss, v.2",
-        cfgPathSeq(["quality.pyt", "hearing_loss_v2.pyt"]))
+    base_pack.regDTree("Hearing Loss, v.5",
+        cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
     base_pack.regDTree("ACMG59",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
 

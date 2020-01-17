@@ -196,7 +196,10 @@ def defineViewSchema(metadata_record = None):
         AttrH("genome_an", title = "Genome AN"),
         AttrH("exome_an", title = "Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq=True),
-        AttrH("pop_max", title = "PopMax",)])
+        AttrH("raw_popmax", title = "PopMax (including inbred)",),
+        AttrH("gnomad_popmax", title="PopMax Ancestry", ),
+        AttrH("gnomad_popmax_af", title="PopMax AF", )
+    ])
 
     aspects["view_db"].setAttributes([
         AttrH("hgmd", title = "HGMD"),
@@ -205,7 +208,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("hgmd_phenotypes", title = "HGMD Phenotypes",
             is_seq = True),
         AttrH("hgmd_pmids", title = "HGMD PMIDs",
-            is_seq = True, kind = "link"),
+            is_seq = True, kind = "place"),
         AttrH("omim", title = "OMIM",
             is_seq = True, kind = "place"),
         AttrH("clinVar_variants", title = "ClinVar Variants",
