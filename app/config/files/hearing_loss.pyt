@@ -59,7 +59,7 @@ if (Most_Severe_Consequence not in {
 #  And: PopMax < 0.01
 #       (minimum 2000 alleles total in ancestral group)')
 if (gnomAD_AF <= .0007 and 
-        (gnomAD_PopMax_AN <= 2000 or gnomAD_PopMax_AF <= .01)):
+        (gnomAD_PopMax_AN_Inbred <= 2000 or gnomAD_PopMax_AF_Inbred <= .01)):
     return True
 
 return False

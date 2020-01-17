@@ -214,18 +214,35 @@ def defineFilterSchema(metadata_record):
             render_mode = "log,<")
         filters.floatValueUnit("gnomAD_PopMax_AF",
             "/_filters/gnomad_popmax_af",
-            tooltip = "Maximum allele frequency across all populations",
+            tooltip = "Maximum allele frequency across outbred populations",
             diap = (0., 1.), default_value = 0.,
-            title = "gnomAD PopMax Allele Frequency",
+            title = "PopMax Allele Frequency",
             render_mode = "log,<")
         filters.statusUnit("gnomAD_PopMax",
             "/_filters/gnomad_popmax", default_value = "None",
-            title = "gnomAD PopMax Ancestry",
-            tooltip = "Population that has the maximum allele frequency")
+            title = "PopMax Ancestry",
+            tooltip = "Outbred population that has the maximum allele frequency")
         filters.intValueUnit("gnomAD_PopMax_AN",
             "/_filters/gnomad_popmax_an",
             default_value = 0,
-            title = "gnomAD: Number of alleles in PopMax Ancestry",
+            title = "Number of alleles in outbred PopMax Ancestry",
+            render_mode = "log,>")
+        filters.floatValueUnit("gnomAD_PopMax_AF_Inbred",
+            "/_filters/gnomad_raw_popmax_af",
+            tooltip = "Maximum allele frequency across all populations "
+                      + "(including inbred)",
+            diap = (0., 1.), default_value = 0.,
+            title = "PopMax Allele Frequency (including inbred)",
+            render_mode = "log,<")
+        filters.statusUnit("gnomAD_PopMax_Inbred",
+            "/_filters/gnomad_raw_popmax", default_value = "None",
+            title = "PopMax Ancestry (including inbred)",
+            tooltip = "Population, including inbred, that has the maximum "
+                      + "allele frequency")
+        filters.intValueUnit("gnomAD_PopMax_AN_Inbred",
+            "/_filters/gnomad_raw_popmax_an",
+            default_value = 0,
+            title = "Number of alleles in (inbred) PopMax Ancestry",
             render_mode = "log,>")
         filters.intValueUnit("gnomAD_Hom",
             "/_filters/gnomad_hom",
@@ -244,7 +261,7 @@ def defineFilterSchema(metadata_record):
             ("LMM", "/_view/databases/lmm_significance"),
             ("GeneDx", "/_view/databases/gene_dx_significance"),
             ("GnomAD", "/_filters/gnomad_af_fam"),
-            ("HGMD", "/_view/databases/hgmd_pmids[]"),
+            ("HGMD", "/__data/hgmd_pmids[]"),
             ("OMIM", "/_view/databases/omim")],
             title = "Presence in Databases")
 
@@ -404,6 +421,11 @@ def defineFilterSchema(metadata_record):
             "/_filters/pharmacogenomics_diseases[]", default_value = "N/A")
         filters.multiStatusUnit("Chemicals",
             "/_filters/pharmacogenomics_chemicals[]", default_value = "N/A")
+
+    with filters.viewGroup("Expression"):
+        filters.multiStatusUnit("Mostly_Expressed_in", "/_view/general/mostly_expressed[]",
+            default_value = "N/A")
+
 
     # required = {"debug"}
     with filters.viewGroup("Debug_Info"):
