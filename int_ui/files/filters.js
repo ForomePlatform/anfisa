@@ -48,7 +48,7 @@ var sUnitsH = {
         sFiltersH.init();
         sOpCondH.init();
         sOpNumH.init();
-        sOpEnumH.init();
+        sOpEnumH.init("filter-cur-cond", 10);
         this.setup();
     },
     
@@ -101,8 +101,7 @@ var sUnitsH = {
             sSamplesCtrl.reset(this.mCount);
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
-            if (info["stat-list"][idx]["kind"] == "func" &&
-                !selectFuncCtrl(info["stat-list"][idx]))
+            if (sOpFuncH.notSupported(info["stat-list"][idx]))
                 continue;
             this.mItems.push(info["stat-list"][idx]);
         }

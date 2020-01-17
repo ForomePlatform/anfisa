@@ -192,10 +192,15 @@ var sOpEnumH = {
     mStatusMode: null,
     mUpdateCondStr: null,
     mDivFuncParam: null,
+    mArrangeBase: null,
+    mArrangeDelta: null,
 
-    init: function() {
+    init: function(arrange_base, arrange_delta) {
+        this.mArrangeBase = arrange_base;
+        this.mArrangeDelta = arrange_delta;
         this.mDivVarList = document.getElementById("op-enum-list");
         this.mDivFuncParam = document.getElementById("cur-cond-func-param");
+        sOpFuncH.init();
     },
     
     getCondType: function() {
@@ -208,7 +213,7 @@ var sOpEnumH = {
     
     suspend: function() {
         if (this.mFuncCtrl)
-            this.mFuncCtrl.suspend()
+            this.mFuncCtrl.stop()
         this.mVariants = null;
         this.mOperationMode = null;
         this.mFuncCtrl = null;
@@ -228,21 +233,19 @@ var sOpEnumH = {
     
     updateUnit: function(unit_stat) {
         if (this.mFuncCtrl)
-            this.mFuncCtrl.suspend()
+            this.mFuncCtrl.stop()
         this.mUpdateCondStr = null;
         this.mOperationMode = 0;
         this.mStatusMode = (unit_stat["sub-kind"] == "status");
         if (unit_stat["kind"] == "func") {
-            this.mFuncCtrl = selectFuncCtrl(unit_stat);
+            this.mFuncCtrl = sOpFuncH;
             this.mFuncCtrl.setup(unit_stat);
         } else {
             this.mFuncCtrl = null;
             this._setupVariants(unit_stat["variants"]);
         }
-        this.mDivFuncParam.style.display = 
-            (this.mFuncCtrl == null)? "none":"";
     },
-
+    
     _setupVariants: function(variants) {
         this.mVariants = variants;
         if (this.mVariants == null)
@@ -314,7 +317,7 @@ var sOpEnumH = {
         if (this.mFuncCtrl != null)
             this.mFuncCtrl.careControls(in_check);
         document.getElementById("cur-cond-enum").style.display = 
-            (this.mVariants == null)? "none":"block";
+            (this.mVariants == null)? "none":"grid";
         for (idx = 1; idx < 3; idx++) {
             vmode = ["or", "and", "not"][idx];
             document.getElementById("cond-mode-" + vmode + "-span").
@@ -323,6 +326,26 @@ var sOpEnumH = {
             document.getElementById("cond-mode-" + vmode).checked =
                 (idx == this.mOperationMode);
         }
+        this.arrangeControls();
+    },
+
+    arrangeControls: function() {
+        if (!this.mArrangeBase)
+            return;
+        if (document.getElementById("cur-cond-enum").style.display == "none")
+            return;
+        block_h = document.getElementById(this.mArrangeBase).
+            getBoundingClientRect().height;
+        if (this.mFuncCtrl != null) {
+            this.mDivFuncParam.style.display = "flex";
+            block_h -= this.mDivFuncParam.getBoundingClientRect().height;
+        } else { 
+            this.mDivFuncParam.style.display = "none";
+        }
+        if ( block_h < this.mArrangeDelta)
+            return;
+        document.getElementById("cur-cond-enum-list").style.height = 
+            block_h - this.mArrangeDelta;
     },
 
     careEnumZeros: function(opt) {

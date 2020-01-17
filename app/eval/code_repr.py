@@ -113,7 +113,7 @@ def _reprConditionCode(cond_data, output, group_mode):
                 q_first = False
             else:
                 output.write(', ')
-            output.write('%s = %s' % (arg, json.dumps(val)))
+            output.write('%s = %s' % (arg, json.dumps(val, sort_keys = True)))
         output.write(')')
         _reprEnumCase('', op_mode, values, output)
         if group_mode:

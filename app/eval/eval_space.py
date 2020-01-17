@@ -173,7 +173,8 @@ class Eval_Condition:
 
     def hashCode(self):
         json_repr = self.toJSon()
-        hash_h = md5(bytes(json.dumps(json_repr), encoding="utf-8"))
+        hash_h = md5(bytes(json.dumps(json_repr, sort_keys = True),
+            encoding="utf-8"))
         return hash_h.hexdigest()
 
 #===============================================

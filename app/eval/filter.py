@@ -31,7 +31,7 @@ class FilterEval(Evaluation):
     def __init__(self, eval_space, cond_data_seq, name = None,
             updated_time = None, updated_from = None):
         Evaluation.__init__(self, eval_space,
-            md5(bytes(json.dumps(cond_data_seq),
+            md5(bytes(json.dumps(cond_data_seq, sort_keys = True),
                 encoding = "utf-8")).hexdigest(),
             updated_time, updated_from)
         self.mFilterName = name
@@ -43,7 +43,8 @@ class FilterEval(Evaluation):
             err_msg = validateCondition(cond_data)
             if err_msg:
                 self.pointError(err_msg, point_no = idx)
-                self.mPresentation.append("#? " + json.dumps(cond_data))
+                self.mPresentation.append("#? "
+                    + json.dumps(cond_data, sort_keys = True))
             else:
                 self.mPresentation.append(formatConditionCode(cond_data))
         self.mCondition = None
@@ -61,7 +62,8 @@ class FilterEval(Evaluation):
             try:
                 cond = self.buildCondition(cond_data)
             except Exception:
-                logException("On build condition: " + json.dumps(cond_data))
+                logException("On build condition: "
+                    + json.dumps(cond_data, sort_keys = True))
                 self.pointError("Runtime error")
                 cond = None
             if cond is None:
@@ -82,7 +84,8 @@ class FilterEval(Evaluation):
         for idx, cond_data in enumerate(self.mCondDataSeq):
             if the_cond_data is cond_data:
                 return idx, self.mOperationErrors.get(idx)
-        assert False, "Not found: " + json.dumps(the_cond_data)
+        assert False, "Not found: " + json.dumps(the_cond_data,
+            sort_keys = True)
         return None
 
     def getSolKind(self):

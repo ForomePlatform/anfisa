@@ -113,6 +113,7 @@ div#cur-cond-numeric {
     overflow: hidden;
     height: 40px;
     min-height: 40px;
+    flex-grow: 1;
 }
 
 div#cur-cond-enum {
@@ -120,6 +121,8 @@ div#cur-cond-enum {
     margin:  0px;
     margin-left: 5px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 span#cond-num-value {
@@ -132,7 +135,6 @@ div#op-enum-list {
     margin: 0px;
     padding: 0px;
     overflow-y: auto;
-    display: block;
 }
 
 div#cur-cond-enum-ctrl {
@@ -163,6 +165,7 @@ div#cond-list {
     height: auto !important;
     max-height: 100%;
     max-width: 100%;
+    white-space: nowrap;
 }
 
 input.num-inp {
@@ -248,8 +251,10 @@ div#create-ws-status {
 /********************func*****************************/
 
 div#cur-cond-func-param{
+    flex-grow: 0;
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     white-space: nowrap;

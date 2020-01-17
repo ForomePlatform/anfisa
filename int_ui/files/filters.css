@@ -141,27 +141,18 @@ div#wrap-cond-enum {
     margin: 0px;
     width: 100%;
     overflow: hidden;
-    height: 100%;
+    min-height: 50px;
     display: flex;
     flex-direction: row;
-}
-
-div#wrap-cond-enum-list {
-    padding: 0px 5px;
-    margin: 0px;
-    flex-grow: 1;
-    display: grid;
-    overflow: hidden;    
-    border: 1px solid black;
 }
 
 div#cur-cond-enum-list {
     padding: 0px;
     margin: 2px;
-    min-width: 200px;
+    min-width: 400px;
     display: grid;
-    vertical-align: top;
-    overflow: hidden;
+    overflow: auto;
+    border: 1px grey dotted;
 }
 
 div#cur-cond-message {

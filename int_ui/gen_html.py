@@ -196,11 +196,9 @@ def formFilterPanel(output):
             <div id="cur-cond-enum">
               <div id="cur-cond-func-param"></div>
               <div id="wrap-cond-enum">
-                <div id="wrap-cond-enum-list">
-                  <div id="cur-cond-enum-list">
-                     <div id="op-enum-list">
-                     </div>
-                  </div>
+                <div id="cur-cond-enum-list">
+                    <div id="op-enum-list">
+                    </div>
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">

@@ -378,8 +378,7 @@ var sUnitsH = {
             
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
-            if (info["stat-list"][idx]["kind"] == "func" &&
-                !selectFuncCtrl(info["stat-list"][idx]))
+            if (sOpFuncH.notSupported(info["stat-list"][idx]))
                 continue;
             this.mItems.push(info["stat-list"][idx]);
         }
@@ -558,10 +557,8 @@ var sOpCondH = {
                 }
             }
         }
-        if (this.mCurTpHandler != sOpNumH)
-            sOpNumH.suspend();
-        if (this.mCurTpHandler != sOpEnumH)
-            sOpEnumH.suspend();
+        sOpNumH.suspend();
+        sOpEnumH.suspend();
         document.getElementById("cur-cond-loading").style.display = 
             (this.mCurTpHandler)? "none":"block";
         if (this.mCurTpHandler) {
@@ -1154,6 +1151,7 @@ function arrangeControls() {
             Math.max(10, cond_mod_height - 110);
     }
     sSubVRecH.arrangeControls();
+    sOpEnumH.arrangeControls();
 }
 
 function onKey(key_event) {

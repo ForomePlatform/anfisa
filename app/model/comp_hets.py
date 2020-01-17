@@ -177,6 +177,7 @@ class CompHetsUnit(FunctionUnit):
         ret_handle = self.prepareStat()
         self.collectComplexStat(ret_handle, condition, context,
             self.mGeneUnits[context["approx"]].isDetailed())
+        ret_handle.update(parameters)
         if err_msg:
             ret_handle["err"] = err_msg
         return ret_handle

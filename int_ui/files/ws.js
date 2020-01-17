@@ -83,12 +83,11 @@ function setupList(info) {
 function arrangeControls() {
     if (sSamplesCtrl != null) {
         sSamplesCtrl.arrangeControls();
-        return;
-    }
-    
+    }    
     document.getElementById("top").style.height = 60;
     document.getElementById("rec-list").style.height = window.innerHeight - 61;
     sZoneH.arrangeControls();
+    sOpEnumH.arrangeControls();
 }
 
 function refreshRecList() {
@@ -173,6 +172,7 @@ function onClick(event_ms) {
 function filterModOn() {
     clearFilterOpMode();
     sViewH.modalOn(document.getElementById("filter-back"));
+    arrangeControls();
 }
 
 function zoneModOn() {

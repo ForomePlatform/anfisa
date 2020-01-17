@@ -61,6 +61,7 @@ function doExport() {
 /**************************************/
 function arrangeControls() {
     sSubVRecH.arrangeControls();
+    sOpEnumH.arrangeControls();
 }
 
 function onKey(event_key) {

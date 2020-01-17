@@ -221,7 +221,8 @@ def defineFilterSchema(metadata_record):
         filters.statusUnit("gnomAD_PopMax",
             "/_filters/gnomad_popmax", default_value = "None",
             title = "PopMax Ancestry",
-            tooltip = "Outbred population that has the maximum allele frequency")
+            tooltip =
+                "Outbred population that has the maximum allele frequency")
         filters.intValueUnit("gnomAD_PopMax_AN",
             "/_filters/gnomad_popmax_an",
             default_value = 0,
@@ -423,9 +424,8 @@ def defineFilterSchema(metadata_record):
             "/_filters/pharmacogenomics_chemicals[]", default_value = "N/A")
 
     with filters.viewGroup("Expression"):
-        filters.multiStatusUnit("Mostly_Expressed_in", "/_view/general/mostly_expressed[]",
-            default_value = "N/A")
-
+        filters.multiStatusUnit("Mostly_Expressed_in",
+            "/_view/general/mostly_expressed[]", default_value = "N/A")
 
     # required = {"debug"}
     with filters.viewGroup("Debug_Info"):
