@@ -28,7 +28,7 @@ from .code_works import HtmlPresentation
 class CaseStory:
     def __init__(self, parent = None, start = None):
         self.mParent = parent
-        self.mPoints = []
+        self.mStoryPoints = []
         self.mStartPoint  = start
 
     def getMaster(self):
@@ -52,19 +52,19 @@ class CaseStory:
         return self.mStartPoint
 
     def _getLastPoint(self):
-        if len(self.mPoints) > 0:
-            return self.mPoints[-1]
+        if len(self.mStoryPoints) > 0:
+            return self.mStoryPoints[-1]
         return self.mStartPoint
 
     def _addPoint(self, point):
         self.getMaster().regPoint(point)
-        self.mPoints.append(point)
+        self.mStoryPoints.append(point)
 
     def checkDetermined(self):
-        if (len(self.mPoints) == 0
-                or self.mPoints[-1].getPointKind() != "Return"):
+        if (len(self.mStoryPoints) == 0
+                or self.mStoryPoints[-1].getPointKind() != "Return"):
             return self
-        for cond_point in self.mPoints[:-1]:
+        for cond_point in self.mStoryPoints[:-1]:
             if not cond_point.isActive():
                 continue
             ret = cond_point.getSubStory().checkDetermined()
@@ -94,6 +94,9 @@ class CheckPoint:
 
     def getPointKind(self):
         assert False
+
+    def activate(self):
+        pass
 
     def isActive(self):
         return True
@@ -172,9 +175,13 @@ class TerminalPoint(CheckPoint):
 class ConditionPoint(CheckPoint):
     def __init__(self, story, frag, prev_point):
         CheckPoint.__init__(self, story, frag, prev_point)
+        self.mCondition = None
+        self.mSubStory = CaseStory(self.getStory(), self)
+
+    def activate(self):
         self.mCondition = self.getStory().getMaster().buildCondition(
             self.getCondData())
-        self.mSubStory = CaseStory(self.getStory(), self)
+
 
     def getPointKind(self):
         return "If"
@@ -285,11 +292,14 @@ class DTreeEval(Evaluation, CaseStory):
     def regPoint(self, point):
         assert point.getPointNo() == len(self.mPointList)
         self.mPointList.append(point)
+        point.activate()
 
     def pointNotActive(self, point_no):
         return not self.mPointList[point_no].isActive()
 
     def getActualCondition(self, point_no):
+        if not (0 <= point_no < len(self.mPointList)):
+            print("Bad point:",  point_no)
         return self.mPointList[point_no].actualCondition()
 
     def checkZeroAfter(self, point_no):

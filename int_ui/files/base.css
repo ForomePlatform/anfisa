@@ -175,6 +175,10 @@ input.bad {
     font-weight: bold;
 }
 
+.comment {
+    font-style: italic;
+}
+
 .hit {
     font-weight: bold;
     color: #500000;
@@ -188,10 +192,6 @@ input.bad {
 span.note-time {
     margin-left: 10px;
     font-size: 80%;
-    font-style: italic;
-}
-
-div.comment {
     font-style: italic;
 }
 

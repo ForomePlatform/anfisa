@@ -84,7 +84,7 @@ class WS_EvalSpace(EvalSpace):
             min_val, min_eq, max_val, max_eq = ZYG_BOUNDS_VAL[zyg_bounds]
         return WS_CondNumeric.create(unit_h, min_val, min_eq, max_val, max_eq)
 
-    def makeEnumCond(self, unit_h, variants, filter_mode = ""):
+    def makeEnumCond(self, unit_h, variants, filter_mode = "OR"):
         return WS_CondEnum.create(unit_h, variants, filter_mode)
 
     @staticmethod

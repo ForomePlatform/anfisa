@@ -29,10 +29,13 @@ var sOpFuncH = {
     mCurFuncH: null,
     mRuntimeErr: null,
     mTimeH: null,
+    mOpVariants: null,
+    mOpMode: null,
 
     init: function() {
         this.mFDict = {
-            "inheritance-z": sFunc_InheritanceZ
+            "inheritance-z": sFunc_InheritanceZ,
+            "comp-hets": sFunc_CompoundHet
         };
     },
     
@@ -42,72 +45,70 @@ var sOpFuncH = {
         return (!this.mFDict[unit_stat["sub-kind"]]);
     },
     
-    getCurParams: function() {
-        return this.mCurFuncH.getCurParams();
+    stop: function() {
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mUnitStat = null;
+        this.mCurFuncH = null;
+        this.mRuntimeErr = null;
+        this.mOpVariants = null;
+        this.mOpMode = null;
     },
     
     setup: function(func_unit_stat) {
+        this.stop();
         this.mUnitStat = func_unit_stat;
         this.mCurFuncH = this.mFDict[func_unit_stat["sub-kind"]];
         this.mCurFuncH.setup(func_unit_stat);
-        this.mRuntimeErr = null;
         this.renderParams();
         this.reloadStat();
     },
     
-    updateCondition: function(cond_data) {
-        needs_reload = false;
-        if (cond_data != null) {
-            needs_reload = this.mCurFuncH.updateCondition(cond_data);
-        }
-        this.renderParams();
-        if (needs_reload)
-            this.reloadStat(cond_data);
+    getCurParams: function() {
+        return this.mCurFuncH.getCurParams();
     },
     
-    reloadStat: function() {
+    updateCondition: function(cond_data) {
+        this.mOpMode = cond_data[2];
+        this.mOpVariants = cond_data[3];
+        this.mCurFuncH.updateCondition(cond_data);
+    },
+    
+    reloadStat: function(scan_variants) {
+        if (scan_variants)
+            this.mOpVariants = sOpEnumH.getSelected();
         sOpEnumH.waitForUpdate();
         if (this.mTimeH == null) {
             this.mTimeH = setInterval(function(){sOpFuncH._reloadStat();}, 2);
         }
     },
 
-    stop: function() {
-        if (this.mTimeH != null) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
-    },
-    
-    _reloadStat: function(cond_data) {
+    _reloadStat: function() {
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
         ajaxCall("statfunc", sUnitsH.getRqArgs() + "&unit=" + this.mUnitStat["name"] + 
             "&param=" + encodeURIComponent(JSON.stringify(this.mCurFuncH.getCurParams())),
-            function(info){sOpFuncH._setupStat(info, cond_data);})
+            function(info){sOpFuncH._setupStat(info);})
     },
     
-    _setupStat: function(info, cond_data) {
+    _setupStat: function(info) {
         if (this.mUnitStat == null)
             return;
         this.mRuntimeErr = info["err"];
-        if (cond_data == null)
-            sel_variants = sOpEnumH.getSelected();
-        if (this.mCurFuncH.expectedStat(info, cond_data)) {
+        if (this.mCurFuncH.acceptStat(info, this.mOpCondData) || this.mOpCondData) {
             sOpEnumH._setupVariants(info["variants"]);
-            if ( cond_data != undefined) 
-                sOpEnumH._updateState(cond_data[2], cond_data[3]);
-            else
-                sOpEnumH._updateState(null, sel_variants);
+            sOpEnumH._updateState(this.mOpMode, this.mOpVariants);
+            this.mOpMode = null;
             sOpEnumH.checkControls();
         }
     },
     
     careControls: function(in_check) {
-        if (this.mCurFuncH.checkControls(in_check))
-            this.reloadStat();
+        this.mCurFuncH.checkControls(in_check);
     },
  
     checkError: function(condition_data, err_msg) {
@@ -128,50 +129,37 @@ var sOpFuncH = {
 var sFunc_InheritanceZ = {
     mAffectedGroup: null,
     mFamily: null,
-    mPGroup: undefined,
+    mCurPGroup: null,
     
     setup: function(func_unit_stat) {
         this.mAffectedGroup = func_unit_stat["affected"];
         this.mFamily = func_unit_stat["family"];
-        this.mPGroup = undefined;
+        this.mCurPGroup = null;
     },
     
     updateCondition: function(cond_data) {
         if (cond_data != null) {
             p_group = cond_data[4]["problem_group"];
-            this.mPGroup = (p_group)? p_group : undefined;
-            return true;
+            this.mCurPGroup = (p_group)? p_group : null;
+            sOpFuncH.renderParams();
+            sOpFuncH.reloadStat();
+        } else {
+            sOpEnumH.renderParams();
         }
-        return false;
     },
     
-    expectedStat: function(info, cond_data) {
+    acceptStat: function(info, cond_data) {
         var p_group = info["problem_group"];
         if (!p_group)
-            p_group = undefined;
+            p_group = null;
         if (p_group && JSON.stringify(p_group) == JSON.stringify(this.mAffectedGroup))
-            p_group = undefined;
-        return (JSON.stringify(p_group) == JSON.stringify(this.mPGroup));
+            p_group = null;
+        return (JSON.stringify(p_group) == JSON.stringify(this.mCurPGroup));
     },
     
-    checkControls: function(in_check) {
-        var p_group = [];
-        for (var idx = 0; idx < this.mFamily.length; idx++) {
-            if (document.getElementById("inheritance-z-fam-m__" + idx).checked)
-                p_group.push(this.mFamily[idx]);
-        }
-        if (p_group.join('|') == this.mAffectedGroup.join('|'))
-            p_group = undefined;
-        document.getElementById("inheritance-z-fam-reset").disabled = (!p_group);
-        if (JSON.stringify(p_group) == JSON.stringify(this.mPGroup))
-            return false;
-        this.mPGroup = p_group;
-        return true;
-    },
- 
     getCurParams: function() {
-        if (this.mPGroup)
-            return {"problem_group": this.mPGroup};
+        if (this.mCurPGroup)
+            return {"problem_group": this.mCurPGroup};
         return {};
     },
     
@@ -186,14 +174,14 @@ var sFunc_InheritanceZ = {
      
     renderIt: function() {
         var list_stat_rep = ['<div class="comment">Problem group:</div>'];
-        var p_group = (this.mPGroup == null)? this.mAffectedGroup : this.mPGroup;
+        var p_group = (this.mCurPGroup == null)? this.mAffectedGroup : this.mCurPGroup;
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             sample_id = this.mFamily[idx];
             q_checked = (p_group.indexOf(sample_id) >= 0)? " checked":"";
             check_id = "inheritance-z-fam-m__" + idx;
             list_stat_rep.push('<div class="inheritance-z-fam-member">' + 
                 '<input type="checkbox" id="' + check_id + '" ' + q_checked + 
-                ' onchange="sOpFuncH.careControls();" /><label for="' +
+                ' onchange="sFunc_InheritanceZ.checkControls();" /><label for="' +
                 check_id + '">&nbsp;' + this.mFamily[idx] + '</div>');
         }
         list_stat_rep.push('</div>');
@@ -203,11 +191,136 @@ var sFunc_InheritanceZ = {
         return list_stat_rep.join('\n');
     },   
 
+    checkControls: function(in_check) {
+        var p_group = [];
+        for (var idx = 0; idx < this.mFamily.length; idx++) {
+            if (document.getElementById("inheritance-z-fam-m__" + idx).checked)
+                p_group.push(this.mFamily[idx]);
+        }
+        if (p_group.join('|') == this.mAffectedGroup.join('|'))
+            p_group = null;
+        document.getElementById("inheritance-z-fam-reset").disabled = (!p_group);
+        if (JSON.stringify(p_group) == JSON.stringify(this.mCurPGroup))
+            return;
+        this.mCurPGroup = p_group;
+        sOpFuncH.reloadStat(true);
+    },
+ 
     resetGrp: function() {
-        this.mPGroup = undefined;
+        this.mCurPGroup = null;
         sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        sOpFuncH.reloadStat(true);
     }
+}
+    
+/**************************************/
+var sFunc_CompoundHet = {
+    mLabels: null,
+    mApproxModes: null,
+    mApproxTitles: null,
+    mCurApprox: null,
+    mCurState: undefined,
+    
+    setup: function(func_unit_stat) {
+        this.mLabels = func_unit_stat["labels"];
+        this.mApproxModes = [];
+        this.mApproxTitles = [];
+        for (idx = 0; idx< func_unit_stat["approx-modes"].length; idx++) {
+            this.mApproxModes.push(func_unit_stat["approx-modes"][idx][0]);
+            this.mApproxTitles.push(func_unit_stat["approx-modes"][idx][1]);
+        }
+        this.mCurApprox = null;
+        this.mCurState = null;
+    },
+    
+    updateCondition: function(cond_data) {
+        if (cond_data != null) {
+            v_approx = cond_data[4]["approx"];
+            v_state = cond_data[4]["state"];
+            if (this.mApproxModes.indexOf(v_approx) < 1)
+                v_approx = null;
+            if (this.mLabels.indexOf(v_state) < 0)
+                v_state = null;
+            if (v_approx != this.mCurApprox || v_state != this.mCurState) {
+                this.mCurApprox = v_approx;
+                this.mCurState = v_state;
+                sOpFuncH.renderParams();
+            }
+            sOpFuncH.reloadStat();
+        }
+    },
+    
+    acceptStat: function(info, cond_data) {
+        v_approx = info["approx"];
+        v_state = info["state"];
+        if (this.mApproxModes.indexOf(v_approx) < 1)
+            v_approx = null;
+        if (this.mLabels.indexOf(v_state) < 0)
+            v_state = null;
+        return (v_approx == this.mCurApprox && v_state == this.mCurState);
+    },
+    
+    getCurParams: function() {
+        var ret = {};
+        if (this.mCurApprox)
+            ret["approx"] = this.mCurApprox;
+        if (this.mCurState)
+            ret["state"] = this.mCurState;
+        return ret;
+    },
+    
+    checkError: function(cond_data) {        
+        v_approx = cond_data[4]["approx"];
+        v_state = cond_data[4]["state"];
+        if (v_approx && this.mApproxModes.indexOf(v_approx) < 0)
+            return "Bad approx mode: " + v_approx;
+        if (v_state && this.mLabels.indexOf(v_state) < 0)
+            return "Label " + v_state + " not found";
+        return null;
+    },
+     
+    renderIt: function() {
+        var list_stat_rep = [
+            '<div><span class="comment">Approx:</span>&nbsp<select ' + 
+            'id="compound-het-approx" onchange="sFunc_CompoundHet.checkControls();"' + 
+            ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
+        for (idx = 0; idx < this.mApproxModes.length; idx++) {
+            list_stat_rep.push('<option value="' + this.mApproxModes[idx] + '" ' +
+                ((this.mApproxModes[idx] == this.mCurApprox || (idx == 0 && !this.mCurApprox))?
+                    " selected ": "") +
+                '>' + this.mApproxTitles[idx] + '</option>');
+        }
+        list_stat_rep.push('</select></div>');
+        list_stat_rep.push(
+            '<div><span class="comment">State:</span>&nbsp<select ' + 
+            'id="compound-het-state" onchange="sFunc_CompoundHet.checkControls();"' + 
+            ((this.mLabels.length == 0)? " disabled":"") + '>');
+        list_stat_rep.push(
+            '<option value=""' + ((this.mLabels.length == 0)? " selected":"") + '>' +
+            '-current-</option>');
+        for (idx = 0; idx < this.mLabels.length; idx++) {
+            list_stat_rep.push('<option value="' + this.mLabels[idx] + '" ' +
+                ((this.mLabels[idx] == this.mCurState)? " selected ": "") +
+                '>' + this.mLabels[idx] + '</option>');
+        }
+        list_stat_rep.push('</select></div>');
+        list_stat_rep.push('<div></div>');
+        return list_stat_rep.join('\n');
+    },   
+
+    checkControls: function(in_check) {
+        v_approx = document.getElementById('compound-het-approx').value;
+        v_state = document.getElementById('compound-het-state').value;
+        if (this.mApproxModes.indexOf(v_approx) < 1)
+            v_approx = null;
+        if (this.mLabels.indexOf(v_state) < 0)
+            v_state = null;
+        if (v_approx != this.mCurApprox || v_state != this.mCurState) {
+            this.mCurApprox = v_approx;
+            this.mCurState = v_state;
+            sOpFuncH.reloadStat(true);
+        }
+    }        
 }
     
 /**************************************/
