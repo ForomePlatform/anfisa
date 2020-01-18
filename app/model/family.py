@@ -46,7 +46,7 @@ class FamilyInfo:
             if it["affected"]:
                 self.mAffectedGroup.append(it["id"])
             if it["sex"] == 1:
-                self.mMaleSet.add(idx)
+                self.mMaleSet.add(it["id"])
         self.mTrioSeq = []
         for idx, it in enumerate(self.mMembers):
             idx_father = self.mIdMap.get(it.get("father"))
@@ -54,9 +54,9 @@ class FamilyInfo:
                 continue
             idx_mother = self.mIdMap.get(it.get("mother"))
             if idx_mother is not None:
-                trio_name = "Proband" if idx == 0 else it["name"]
-                self.mTrioSeq.append(
-                    (trio_name, idx, idx_father, idx_mother))
+                trio_id = "Proband" if idx == 0 else it["id"]
+                self.mTrioSeq.append((trio_id, self.mIds[idx],
+                    self.mIds[idx_father], self.mIds[idx_mother]))
 
         self.mCohortList = None
         self.mCohortMap = None
@@ -85,8 +85,11 @@ class FamilyInfo:
     def getIds(self):
         return self.mIds
 
-    def getIdSet(self):
-        return set(self.mIds)
+    def complement(self, p_group):
+        return set(self.mIds) - set(p_group)
+
+    def filter(self, p_group):
+        return set(self.mIds) & set(p_group)
 
     def getNames(self):
         return self.mNames

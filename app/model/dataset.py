@@ -35,6 +35,7 @@ from app.eval.dtree_parse import ParsedDTree
 from app.prepare.sec_ws import SecondaryWsCreation
 from .sol_broker import SolutionBroker
 from .family import FamilyInfo
+from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
 #===============================================
@@ -62,6 +63,7 @@ class DataSet(SolutionBroker):
         if (self.mDataInfo.get("zygosity_var")
                 and 1 < len(self.mFamilyInfo) <= 10):
             self.addModes({"ZYG"})
+        self.mZygSupport = None
 
         self.mViewContext = None
         if self.mFamilyInfo.getCohortList():
@@ -73,6 +75,7 @@ class DataSet(SolutionBroker):
         tuneAspects(self, self.mAspects)
 
     def startService(self):
+        self.mZygSupport = ZygositySupport(self)
         tuneUnits(self)
         self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
 
@@ -146,6 +149,9 @@ class DataSet(SolutionBroker):
 
     def getTagsMan(self):
         return None
+
+    def getZygositySupport(self):
+        return self.mZygSupport
 
     def getZygUnitNames(self):
         if self.testRequirements({"ZYG"}):

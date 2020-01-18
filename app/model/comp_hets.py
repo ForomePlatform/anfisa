@@ -36,7 +36,7 @@ class CompHetsUnit(FunctionUnit):
     def __init__(self, ds_h, descr, gene_levels):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
             sub_kind = "comp-hets", parameters = ["approx", "state"])
-        self.mFamilyInfo = ds_h.getFamilyInfo()
+        self.mZygSupport = ds_h.getZygositySupport()
         self.mGeneLevelIdxs = dict()
         self.mGeneUnits = dict()
         self.mApproxInfo = []
@@ -46,26 +46,24 @@ class CompHetsUnit(FunctionUnit):
             assert self.mGeneUnits[key] is not None, (
                 "Bad gene unit: " + unit_name)
             self.mApproxInfo.append([key, level_title])
-        self.mTrioNames = [trio_info[0]
-            for trio_info in self.mFamilyInfo.getTrioSeq()]
+        self.mTrioIds = [trio_info[0]
+            for trio_info in self.mZygSupport.getTrioSeq()]
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
 
     def _prepareZygConditions(self, trio_info):
-        eval_space = self.getEvalSpace()
-        zyg_base, zyg_father, zyg_mother = [
-            eval_space.getZygUnit(idx) for idx in trio_info[1:]]
-        return [eval_space.makeNumericCond(zyg_base, zyg_bounds = "1"),
-            eval_space.joinAnd([
-                eval_space.makeNumericCond(zyg_father, zyg_bounds = "1"),
-                eval_space.makeNumericCond(zyg_mother, zyg_bounds = "0")]),
-            eval_space.joinAnd([
-                eval_space.makeNumericCond(zyg_mother, zyg_bounds = "1"),
-                eval_space.makeNumericCond(zyg_father, zyg_bounds = "0")])]
+        id_base,  id_father,  id_mother = trio_info[1:]
+        return [
+            self.mZygSupport.conditionScenario(
+                {"1": {id_base}}),
+            self.mZygSupport.conditionScenario(
+                {"1": {id_father},  "0": {id_mother}}),
+            self.mZygSupport.conditionScenario(
+                {"0": {id_father},  "1": {id_mother}})]
 
     def buildConditions(self, gene_unit, actual_condition):
         ret_handle = dict()
-        for trio_info in self.mFamilyInfo.getTrioSeq():
+        for trio_info in self.mZygSupport.getTrioSeq():
             self._buildTrioCond(trio_info,
                 gene_unit, actual_condition, ret_handle)
         return ret_handle
@@ -110,7 +108,7 @@ class CompHetsUnit(FunctionUnit):
         if context is None:
             return
         gene_unit = self.mGeneUnits[context["approx"]]
-        for trio_info in self.mFamilyInfo.getTrioSeq():
+        for trio_info in self.mZygSupport.getTrioSeq():
             if variants is not None and trio_info[0] not in variants:
                 continue
             gene_seq = context["trio"].get(trio_info[0])
@@ -125,7 +123,7 @@ class CompHetsUnit(FunctionUnit):
 
     def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["trio-variants"] = self.mTrioNames
+        ret_handle["trio-variants"] = self.mTrioIds
         ret_handle["approx-modes"] = self.mApproxInfo
         ret_handle["labels"] = eval_h.getLabelPoints(point_no)
         return ret_handle

@@ -18,138 +18,64 @@
 #  limitations under the License.
 #
 
-from app.config.a_config import AnfisaConfig
-from app.eval.var_unit import FunctionUnit
-from utils.variants import VariantSet
-
 #===============================================
-class InheritanceUnit(FunctionUnit):
-    sCaseKeys   = ("homo_recess", "x_linked", "dominant", "compens")
-    sCaseLabels = [AnfisaConfig.configOption("zygosity.cases")[key]
-        for key in sCaseKeys]
-    sVariansSet = VariantSet(sCaseLabels)
-
-    @staticmethod
-    def makeIt(ds_h, descr, x_unit, x_values,
-            before = None, after = None):
-        unit_h = InheritanceUnit(ds_h, descr, x_unit, x_values)
-        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
-
-    def __init__(self, ds_h, descr, x_unit, x_values):
-        FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
-            sub_kind = "inheritance-z", parameters = ["problem_group"])
-
-        assert ds_h.testRequirements({"ZYG"})
+class ZygositySupport:
+    def __init__(self,  ds_h):
+        self.mEvalSpace = ds_h.getEvalSpace()
         self.mFamilyInfo = ds_h.getFamilyInfo()
-        self.mXCondition = self.getEvalSpace().makeEnumCond(
-            self.getEvalSpace().getUnit(x_unit), x_values)
-        assert ("size" not in descr
-            or descr["size"] == len(self.mFamilyInfo))
+        self.mXCondition = None
 
-    def getVariantSet(self):
-        return self.sVariantSet
+    def setupX(self, x_unit, x_values):
+        self.mXCondition = self.mEvalSpace.makeEnumCond(
+            self.mEvalSpace.getUnit(x_unit), x_values)
 
-    def conditionZHomoRecess(self, p_idxset):
-        cond = self._conditionZHomoRecess(p_idxset)
-        if self.mFamilyInfo.groupHasMales(p_idxset):
+    def getFamilyInfo(self):
+        return self.mFamilyInfo
+
+    def getAffectedGroup(self):
+        return self.mFamilyInfo.getAffectedGroup()
+
+    def getIds(self):
+        return self.mFamilyInfo.getIds()
+
+    def filter(self, p_group):
+        return self.mFamilyInfo.filter(p_group)
+
+    def getTrioSeq(self):
+        return self.mFamilyInfo.getTrioSeq()
+
+    def conditionScenario(self, scenario):
+        seq = []
+        for zyg_bounds, seq_samples in scenario.items():
+            for idx in self.mFamilyInfo.ids2idxset(seq_samples):
+                seq.append(self.mEvalSpace.makeNumericCond(
+                    self.mEvalSpace.getZygUnit(idx), zyg_bounds = zyg_bounds))
+        return self.mEvalSpace.joinAnd(seq)
+
+    def conditionZHomoRecess(self, problem_group):
+        cond = self._conditionZHomoRecess(problem_group)
+        if self.mFamilyInfo.groupHasMales(problem_group):
             return self.mXCondition.negative().addAnd(cond)
         return cond
 
-    def _conditionZHomoRecess(self, p_idxset):
-        seq = []
-        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in p_idxset:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "2"))
-            else:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "0-1"))
-        return self.getEvalSpace().joinAnd(seq)
+    def _conditionZHomoRecess(self, problem_group):
+        return self.conditionScenario({
+            "2": problem_group,
+            "0-1": self.mFamilyInfo.complement(problem_group)})
 
-    def conditionZXLinked(self, p_idxset):
-        if self.mFamilyInfo.groupHasMales(p_idxset):
+    def conditionZXLinked(self, problem_group):
+        if self.mFamilyInfo.groupHasMales(problem_group):
             return self.mXCondition.addAnd(
-                self._conditionZHomoRecess(p_idxset))
-        return self.getEvalSpace().getCondNone()
+                self._conditionZHomoRecess(problem_group))
+        return self.mEvalSpace.getCondNone()
 
-    def conditionZDominant(self, p_idxset):
-        seq = []
-        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in p_idxset:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "1-2"))
-            else:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "0"))
-        return self.getEvalSpace().joinAnd(seq)
+    def conditionZDominant(self, problem_group):
+        return self.conditionScenario({
+            "1-2": problem_group,
+            "0": self.mFamilyInfo.complement(problem_group)})
 
-    def conditionZCompens(self, p_idxset):
-        seq = []
-        for idx, unit_h in enumerate(self.getEvalSpace().iterZygUnits()):
-            if idx in p_idxset:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "0"))
-            else:
-                seq.append(self.getEvalSpace().makeNumericCond(
-                    unit_h, zyg_bounds = "1-2"))
-        return self.getEvalSpace().joinAnd(seq)
+    def conditionZCompens(self, problem_group):
+        return self.conditionScenario({
+            "0": problem_group,
+            "1-2": self.mFamilyInfo.complement(problem_group)})
 
-    def iterComplexCriteria(self, context, variants = None):
-        if context is None:
-            return
-        p_idxset = context["p_idxset"]
-        if variants is None or self.sCaseLabels[0] in variants:
-            yield self.sCaseLabels[0], self.conditionZHomoRecess(p_idxset)
-        if variants is None or self.sCaseLabels[1] in variants:
-            yield self.sCaseLabels[1], self.conditionZXLinked(p_idxset)
-        if variants is None or self.sCaseLabels[2] in variants:
-            yield self.sCaseLabels[2], self.conditionZDominant(p_idxset)
-        if variants is None or self.sCaseLabels[3] in variants:
-            yield self.sCaseLabels[3], self.conditionZCompens(p_idxset)
-
-    def makeInfoStat(self, eval_h, point_no):
-        ret_handle = self.prepareStat()
-        ret_handle["family"] = self.mFamilyInfo.getIds()
-        ret_handle["affected"] = self.mFamilyInfo.getAffectedGroup()
-        return ret_handle
-
-    def makeParamStat(self, condition, parameters, eval_h, point_no):
-        ret_handle = self.prepareStat()
-        if parameters is None or "problem_group" not in parameters:
-            p_group = self.mFamilyInfo.getAffectedGroup()
-        else:
-            p_group = (set(parameters["problem_group"])
-                & self.mFamilyInfo.getIdSet())
-        ret_handle["problem_group"] = sorted(p_group)
-        if len(p_group) > 0:
-            self.collectComplexStat(ret_handle, condition,
-                {"p_idxset": self.mFamilyInfo.ids2idxset(p_group)})
-        else:
-            ret_handle["variants"] = None
-            ret_handle["err"] = "Problem group is empty"
-        return ret_handle
-
-    def locateContext(self, cond_data, eval_h):
-        p_group = cond_data[4].get("problem_group")
-        if p_group is None:
-            p_group = self.mFamilyInfo.getAffectedGroup()
-        else:
-            extra_names = (set(p_group) - set(self.mFamilyInfo.getIds()))
-            if len(extra_names) > 0:
-                eval_h.operationError(cond_data, "No sample(s) registered: "
-                    + ' '.join(sorted(extra_names)))
-                return None
-        if len(p_group) == 0:
-            eval_h.operationError(cond_data, "Problem group is empty")
-            return None
-        if len(cond_data[3]) == 0:
-            eval_h.operationError(cond_data,
-                "%s: empty set of variants" % self.getName())
-            return None
-        return {"p_idxset": self.mFamilyInfo.ids2idxset(p_group)}
-
-    def validateArgs(self, func_args):
-        if "problem_group" in func_args:
-            if not isinstance(func_args["problem_group"], list):
-                return "Problem group expected in form of set or list"
-        return None
