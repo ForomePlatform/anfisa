@@ -425,7 +425,7 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Expression"):
         filters.multiStatusUnit("Mostly_Expressed_in",
-            "/_view/general/mostly_expressed[]", default_value = "N/A")
+            "/_filters/top_tissues[]", default_value = "N/A")
 
     # required = {"debug"}
     with filters.viewGroup("Debug_Info"):

@@ -173,38 +173,45 @@ def readySolutions():
     base_pack.regFilter("InSilico_Possibly_Damaging",
         condition_high_quality() + [
             ConditionMaker.condEnum("Rules",
-                [stdNm("Possibly_Damaging_Predictions")])],
-        requires = {"WS"})
+                [stdNm("Possibly_Damaging_Predictions")])])
 
     base_pack.regFilter("InSilico_Damaging",
         condition_high_quality() + [
             ConditionMaker.condEnum("Rules",
-                [stdNm("Damaging_Predictions")])],
-        requires = {"WS"})
+                [stdNm("Damaging_Predictions")])])
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
-        ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_01")]),
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
-        requires = {"WS"})
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_02", [
-        ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_02")]),
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
-        requires = {"WS"})
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03", [
-        ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
-        requires = {"WS"})
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03_5", [
-        ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
-        ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
-        requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_01")]),
+    #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
+    #     requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_02", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_02")]),
+    #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
+    #     requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
+    #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
+    #     requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03_5", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
+    #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
+    #     requires = {"WS"})
+    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
+            ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])
+        ])
+    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
+            ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])
+        ])
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
-        ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
-        requires = {"WS"})
+            ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])
+        ])
+    # base_pack.regFilter("SEQaBOO_ACMG59", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
+    #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
+    #     requires = {"WS"})
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
@@ -232,6 +239,8 @@ def readySolutions():
         cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
     base_pack.regDTree("ACMG59",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
+    base_pack.regDTree("Damaging_Predictions",
+        cfgPathSeq(["quality.pyt", "damaging.pyt"]))
 
     # Test trees
     # base_pack.regDTree("Q Test",
