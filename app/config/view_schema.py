@@ -197,9 +197,8 @@ def defineViewSchema(metadata_record = None):
         AttrH("genome_an", title = "Genome AN"),
         AttrH("exome_an", title = "Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq=True),
-        AttrH("raw_popmax", title = "PopMax (including inbred)",),
-        AttrH("gnomad_popmax", title="PopMax Ancestry", ),
-        AttrH("gnomad_popmax_af", title="PopMax AF", )
+        AttrH("popmax", title="PopMax (outbred populations)", ),
+        AttrH("raw_popmax", title = "PopMax (including inbred)",)
     ])
 
     aspects["view_db"].setAttributes([
