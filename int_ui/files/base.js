@@ -156,6 +156,10 @@ function goToPage(page_mode, ds_name) {
         window.open("doc_nav?ds=" + ds_name, sCommonTitle + ":" + ds_name + ':DOC');        
         return;
     }
+    if (page_mode == "SUBDIR") {
+        window.open("subdir?ds=" + ds_name, sCommonTitle + ":" + ds_name + ':SUBDIR');        
+        return;
+    }
     console.log("BAD PAGE MODE: " +  page_mode);
 }
 

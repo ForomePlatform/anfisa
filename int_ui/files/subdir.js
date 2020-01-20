@@ -20,12 +20,14 @@
  *
  */
 
+var sDSName = null;
 var sCommonTitle = null;
 var sWsExtUrl = null;
 
-function setup(common_title, ws_ext_url) {
+function setup(common_title, ws_ext_url, ds_name) {
     sCommonTitle = common_title;
     sWsExtUrl = ws_ext_url;
+    sDSName = ds_name;
     window.name = sCommonTitle + ":DIR";
     ajaxCall("dirinfo", "", setupDirData);
 }
@@ -33,46 +35,16 @@ function setup(common_title, ws_ext_url) {
 function setupDirData(info) {
     document.getElementById("span-version").innerHTML = info["version"];
     var tab_cnt = ["<table>"];
-    for (idx = 0; idx < info["workspaces"].length; idx++) {
-        renderWS(info["workspaces"][idx], tab_cnt);
-    }
-    if (info["xl-datasets"] && info["xl-datasets"].length > 0) {
-        tab_cnt.push('<tr><td colspan="2"></td></tr>');
-        for (idx = 0; idx < info["xl-datasets"].length; idx++) {
+    for (idx = 0; idx < info["xl-datasets"].length; idx++) {
+        if (info["xl-datasets"][idx]["name"] == sDSName)
             renderXL(info["xl-datasets"][idx], tab_cnt);
-        }
     }
     tab_cnt.push("</table>");
     document.getElementById("div-main").innerHTML = tab_cnt.join('\n');
 }
 
-
-function renderWS(ds_info, tab_cnt) {
-    tab_cnt.push('<tr><td class="name">')
-    if (sWsExtUrl) 
-        tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
-            '?ws=' + ds_info["name"] + '" target="_blank" ' +
-            'title="To front end">&#x23f5;</a>')
-    tab_cnt.push(reprRef(ds_info["name"], "WS"));
-    if (ds_info["doc"] != undefined)
-        tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
-     if (ds_info["base"]) {
-        tab_cnt.push('<span class="ref-support">');
-        tab_cnt.push('<br>&emsp;&lt;-&nbsp;' + reprRefSec(ds_info["base"], "XL"));
-        tab_cnt.push('</span>');
-     }
-    if (ds_info["doc"] != undefined)
-        
-    tab_cnt.push('</td>')
-    tab_cnt.push('<td class="note">' + ds_info["note"].replace('\n', '<br>') + 
-        '</td></tr>');
-}
-
 function renderXL(ds_info, tab_cnt) {
-    tab_cnt.push('<tr><td class="name">');
-    if (ds_info["secondary"]) 
-        tab_cnt.push(reprRefSubDir(ds_info["name"]));
-    tab_cnt.push(reprRef(ds_info["name"], "XL"));
+    tab_cnt.push('<tr><td class="name">' + reprRef(ds_info["name"], "XL"));
     tab_cnt.push('<span class="ref-support">');
     if (ds_info["doc"] != undefined) 
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
@@ -80,7 +52,13 @@ function renderXL(ds_info, tab_cnt) {
     tab_cnt.push('</span>');
     if (ds_info["secondary"]) {
         for (var idx = 0; idx < ds_info["secondary"].length; idx++) {
-            tab_cnt.push('<br>&emsp;-&gt;&nbsp;' + 
+            if (sWsExtUrl) 
+                ext_ref = '<a class="ext-ref" href="' + sWsExtUrl + 
+                    '?ws=' + ds_info["secondary"][idx] + '" target="_blank" ' +
+                    'title="To front end">&#x23f5;</a>&nbsp;';
+            else
+                ext_ref = "";
+            tab_cnt.push('<br>&emsp;-&gt;&nbsp;' + ext_ref +
                 reprRefSec(ds_info["secondary"][idx], "WS"));
         }
     }
@@ -100,13 +78,6 @@ function reprRefSec(ds_name, mode, label) {
         ds_name + '\')">' + ((label)? label: ds_name) + '</span>';
     return ret;
 }
-
-function reprRefSubDir(ds_name) {
-    ret = '<span class="ds-ref" onclick="goToPage(\'SUBDIR\', \'' + 
-        ds_name + '\')" title="To sub-directory dataset page">&#x23fa;</span>'
-    return ret;
-}
-
 
 function onModalOff() {
 }
