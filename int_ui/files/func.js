@@ -35,6 +35,7 @@ var sOpFuncH = {
     init: function() {
         this.mFDict = {
             "inheritance-z": sFunc_InheritanceZ,
+            "custom-inheritance-z": sFunc_CustomInheritanceZ,
             "comp-hets": sFunc_CompoundHet
         };
     },
@@ -44,12 +45,16 @@ var sOpFuncH = {
             return false;
         return (!this.mFDict[unit_stat["sub-kind"]]);
     },
-    
-    stop: function() {
+
+    dropDelay: function() {
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
+    },
+    
+    stop: function() {
+        this.dropDelay();
         this.mUnitStat = null;
         this.mCurFuncH = null;
         this.mRuntimeErr = null;
@@ -62,8 +67,6 @@ var sOpFuncH = {
         this.mUnitStat = func_unit_stat;
         this.mCurFuncH = this.mFDict[func_unit_stat["sub-kind"]];
         this.mCurFuncH.setup(func_unit_stat);
-        this.renderParams();
-        this.reloadStat();
     },
     
     getCurParams: function() {
@@ -79,6 +82,13 @@ var sOpFuncH = {
     reloadStat: function(scan_variants) {
         if (scan_variants)
             this.mOpVariants = sOpEnumH.getSelected();
+        zero_variants = this.mCurFuncH.checkBad();
+        if (zero_variants != null) {
+            sOpEnumH._setupVariants(zero_variants);
+            sOpEnumH.waitForUpdate();
+            sOpEnumH.checkControls();
+            return;
+        }
         sOpEnumH.waitForUpdate();
         if (this.mTimeH == null) {
             this.mTimeH = setInterval(function(){sOpFuncH._reloadStat();}, 2);
@@ -86,10 +96,7 @@ var sOpFuncH = {
     },
 
     _reloadStat: function() {
-        if (this.mTimeH != null) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
+        this.dropDelay();
         ajaxCall("statfunc", sUnitsH.getRqArgs() + "&unit=" + this.mUnitStat["name"] + 
             "&param=" + encodeURIComponent(JSON.stringify(this.mCurFuncH.getCurParams())),
             function(info){sOpFuncH._setupStat(info);})
@@ -111,12 +118,13 @@ var sOpFuncH = {
         this.mCurFuncH.checkControls(in_check);
     },
  
-    checkError: function(condition_data, err_msg) {
+    checkError: function(pre_cond_data, err_msg) {
         if (this.mRuntimeErr)
             return this.mRuntimeErr;
-        if (err_msg) 
-            return err_msg;
-        return this.mCurFuncH.checkError(condition_data);
+        f_err_msg = this.mCurFuncH.checkError(pre_cond_data);
+        if (f_err_msg)
+            return f_err_msg;
+        return err_msg;
     },
      
     renderParams: function() {
@@ -130,11 +138,17 @@ var sFunc_InheritanceZ = {
     mAffectedGroup: null,
     mFamily: null,
     mCurPGroup: null,
+    mZeroVariants: null,
     
     setup: function(func_unit_stat) {
         this.mAffectedGroup = func_unit_stat["affected"];
         this.mFamily = func_unit_stat["family"];
         this.mCurPGroup = null;
+        this.mZeroVariants = [];
+        for(idx = 0; idx < func_unit_stat["variants"].length; idx++)
+            this.mZeroVariants.push([func_unit_stat["variants"][idx], 0]);
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
     },
     
     updateCondition: function(cond_data) {
@@ -146,6 +160,13 @@ var sFunc_InheritanceZ = {
         } else {
             sOpEnumH.renderParams();
         }
+    },
+    
+    checkBad: function() {
+        if (this.mCurPGroup == null)
+            return (this.mAffectedGroup.length == 0)? this.mZeroVariants: null;
+        else
+            return (this.mCurPGroup.length == 0)? this.mZeroVariants: null;
     },
     
     acceptStat: function(info, cond_data) {
@@ -163,11 +184,8 @@ var sFunc_InheritanceZ = {
         return {};
     },
     
-    checkError: function(condition_data) {
-        var p_group = condition_data[4]["problem-group"];
-        if (!p_group)
-            p_group = this.mAffectedGroup;
-        if (p_group.length == 0) 
+    checkError: function(pre_cond_data) {
+        if (this.checkBad() != null)
             return "Empty problem group";
         return null;
     },
@@ -214,6 +232,164 @@ var sFunc_InheritanceZ = {
 }
     
 /**************************************/
+var Z_MODES = ["0", "0-1", "1", "1-2", "2"];
+
+function emptyScenario(scenario) {
+    if (scenario.length == 0)
+        return true;
+    for (j=0; j < Z_MODES.length; j++)
+        if (scenario[Z_MODES[j]])
+            return false;
+    return true;
+}
+
+function renderScenario(scenario, family, ctrl_name, scope_option, out_rep) {
+    var tab_fam = {};
+    for (j=0; j < Z_MODES.length; j++) {
+        if (scenario[Z_MODES[j]]) {
+            for (idx=0; idx < scenario[Z_MODES[j]].length; idx++)
+                tab_fam[scenario[Z_MODES[j]][idx]] = j + 1;
+        }
+    }
+    for (var idx = 0; idx < family.length; idx++) {
+        sample_id = family[idx];
+        q_val = (tab_fam[sample_id])? tab_fam[sample_id]:0;
+        check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
+        out_rep.push('<div class="c-inheritance-z-fam-member">' + sample_id + 
+            '&nbsp<select id="' + check_id + 
+            '" onchange="' + ctrl_name + '.checkControls();">');
+        out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
+            '>--</option>');
+        for (j=0; j < Z_MODES.length; j++) {
+            out_rep.push('<option value="' + (j+1) + '" ' + 
+                ((q_val == j + 1)? "selected " : "") + '>' + Z_MODES[j] + '</option>');
+        }
+        out_rep.push('</select></div>')
+    }
+}
+
+function checkScenario(family, ctrl_name, scope_option) {
+    var scenario = {};
+    for (j=0; j < Z_MODES.length; j++) {
+        if (scenario[Z_MODES[j]]) {
+            for (idx=0; idx < scenario[Z_MODES[j]].length; idx++)
+                tab_fam[Z_MODES[j][idx]] = j + 1;
+        }
+    }
+    for (var idx = 0; idx < family.length; idx++) {
+        sample_id = family[idx];
+        check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
+        zyg_val = parseInt(document.getElementById(check_id).value);
+        if (zyg_val > 0) {
+            if (scenario[Z_MODES[zyg_val - 1]])
+                scenario[Z_MODES[zyg_val - 1]].push(sample_id);
+            else
+                scenario[Z_MODES[zyg_val - 1]] = [sample_id];
+        }
+    }
+    return scenario;
+}
+
+function buildScenario(family, affected_group, zyg_a, zyg_n) {
+    group0 = [];
+    group1 = [];
+    for (var idx = 0; idx < family.length; idx++) {
+        sample_id = family[idx];
+        if (affected_group.indexOf(sample_id) >= 0)
+            group0.push(sample_id);
+        else
+            group1.push(sample_id);
+    }
+    var scenario = {};
+    if (group0.length > 0)
+        scenario[zyg_a] = group0;
+    if (group1.length > 0)
+        scenario[zyg_n] = group1;
+    return scenario;
+}
+
+/**************************************/
+var sFunc_CustomInheritanceZ = {
+    mAffectedGroup: null,
+    mFamily: null,
+    mCurScenario: null,
+    
+    setup: function(func_unit_stat) {
+        this.mAffectedGroup = func_unit_stat["affected"];
+        this.mFamily = func_unit_stat["family"];
+        this.mCurScenario = buildScenario(
+                this.mFamily, this.mAffectedGroup, "2", "0-1");
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
+    },
+    
+    updateCondition: function(cond_data) {
+        if (cond_data != null) {
+            p_scenario = cond_data[4]["scenario"];
+            this.mCurScenario = (p_scenario)? p_scenario : {};
+            sOpFuncH.renderParams();
+            sOpFuncH.reloadStat();
+        } else {
+            sOpEnumH.renderParams();
+        }
+    },
+    
+    checkBad: function() {
+        if (emptyScenario(this.mCurScenario)) {
+            return [["True", 0]];
+        }
+        return null;
+    },
+    
+    acceptStat: function(info, cond_data) {
+        return (JSON.stringify(info["scenario"]) == JSON.stringify(this.mCurScenario));
+    },
+    
+    getCurParams: function() {
+        return {"scenario": this.mCurScenario};
+    },
+    
+    checkError: function(pre_cond_data) {
+        if (emptyScenario(this.mCurScenario))
+            return "Empty scenario";
+        return null;
+    },
+     
+    renderIt: function() {
+        var list_stat_rep = ['<div class="comment">Scenario:</div>'];
+        renderScenario(this.mCurScenario, this.mFamily, "sFunc_CustomInheritanceZ", 
+            "", list_stat_rep);
+        list_stat_rep.push('</div>');
+        list_stat_rep.push('<div><button id="c-inheritance-z-fam-reset" ' +
+            ' title="Reset scenario" ' +
+            'onclick="sFunc_CustomInheritanceZ.resetS()">Reset as</button>&emsp;' +
+            '<select id="inheritance-z-fam-reset-select">' +
+            '<option value="2|0-1">Homozygous Recessive/X-linked</option>' +
+            '<option value="1-2|0">Autosomal Dominant</option>' +
+            '<option value="0|1-2">Compensational</option>' +
+            '</select></div>');
+        return list_stat_rep.join('\n');
+    },   
+
+    checkControls: function(in_check) {
+        var p_scenario = checkScenario(this.mFamily, "sFunc_CustomInheritanceZ", "");
+        if (JSON.stringify(p_scenario) == JSON.stringify(this.mCurScenario))
+            return;
+        this.mCurScenario = p_scenario;
+        sOpFuncH.reloadStat(true);
+    },
+
+    resetS: function() {
+        z_cases = document.getElementById
+            ("inheritance-z-fam-reset-select").value.split('|');
+        this.mCurScenario = buildScenario(
+                this.mFamily, this.mAffectedGroup, z_cases[0], z_cases[1]);
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat(true);
+    }
+}
+    
+/**************************************/
 var sFunc_CompoundHet = {
     mLabels: null,
     mApproxModes: null,
@@ -231,6 +407,8 @@ var sFunc_CompoundHet = {
         }
         this.mCurApprox = null;
         this.mCurState = null;
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
     },
     
     updateCondition: function(cond_data) {
@@ -269,9 +447,15 @@ var sFunc_CompoundHet = {
         return ret;
     },
     
-    checkError: function(cond_data) {        
-        v_approx = cond_data[4]["approx"];
-        v_state = cond_data[4]["state"];
+    checkBad: function() {
+        return null;
+    },
+    
+    checkError: function(pre_cond_data) {
+        if (pre_cond_data == null)
+            return null;
+        v_approx = pre_cond_data[2]["approx"];
+        v_state = pre_cond_data[2]["state"];
         if (v_approx && this.mApproxModes.indexOf(v_approx) < 0)
             return "Bad approx mode: " + v_approx;
         if (v_state && this.mLabels.indexOf(v_state) < 0)

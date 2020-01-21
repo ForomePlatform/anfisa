@@ -397,15 +397,15 @@ var sOpEnumH = {
                 err_msg = sel_names.length + " variants selected";
         } else
             err_msg = " Out of choice"
-        if (this.mFuncCtrl != null) {
-            if (condition_data)
-                condition_data.push(this.mFuncCtrl.getCurParams());
-            err_msg = this.mFuncCtrl.checkError(condition_data, err_msg);
-        }
         if (this.mUpdateCondStr && !err_msg && condition_data &&
                 JSON.stringify(condition_data) == this.mUpdateCondStr) {
             err_msg = " ";
             condition_data = null;
+        }
+        if (this.mFuncCtrl != null) {
+            if (condition_data)
+                condition_data.push(this.mFuncCtrl.getCurParams());
+            err_msg = this.mFuncCtrl.checkError(condition_data, err_msg);
         }
 
         sOpCondH.formCondition(condition_data, err_msg, true);

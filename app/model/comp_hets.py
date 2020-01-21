@@ -17,114 +17,56 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-import logging
 from cachetools import LRUCache
 
 from app.config.a_config import AnfisaConfig
 from app.eval.var_unit import FunctionUnit
 #=====================================
 class CompHetsUnit(FunctionUnit):
-    sMaxGeneCompCount = AnfisaConfig.configOption("max.gene.comp.count")
-
     @staticmethod
-    def makeIt(ds_h, descr, gene_levels, before = None, after = None):
-        unit_h = CompHetsUnit(ds_h, descr, gene_levels)
+    def makeIt(ds_h, descr, before = None, after = None):
+        unit_h = CompHetsUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(
             unit_h, before = before, after = after)
 
-    def __init__(self, ds_h, descr, gene_levels):
+    def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
             sub_kind = "comp-hets", parameters = ["approx", "state"])
         self.mZygSupport = ds_h.getZygositySupport()
-        self.mGeneLevelIdxs = dict()
-        self.mGeneUnits = dict()
-        self.mApproxInfo = []
-        for key, unit_name, level_title in gene_levels:
-            self.mGeneLevelIdxs[key] = len(self.mGeneUnits)
-            self.mGeneUnits[key] = self.getEvalSpace().getUnit(unit_name)
-            assert self.mGeneUnits[key] is not None, (
-                "Bad gene unit: " + unit_name)
-            self.mApproxInfo.append([key, level_title])
-        self.mTrioIds = [trio_info[0]
-            for trio_info in self.mZygSupport.getTrioSeq()]
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
 
-    def _prepareZygConditions(self, trio_info):
+    def _buildTrioRequest(self, trio_info,  approx_mode,  actual_condition):
         id_base,  id_father,  id_mother = trio_info[1:]
-        return [
-            self.mZygSupport.conditionScenario(
-                {"1": {id_base}}),
-            self.mZygSupport.conditionScenario(
-                {"1": {id_father},  "0": {id_mother}}),
-            self.mZygSupport.conditionScenario(
-                {"0": {id_father},  "1": {id_mother}})]
+        c_rq = [
+            [1,  {"1": [id_base,  id_father],  "0": [id_mother]}],
+            [1,  {"1": [id_base,  id_mother],  "0": [id_father]}]]
+        return self.mZygSupport.makeCompoundRequest(
+            approx_mode, actual_condition, c_rq, self.getName())
 
-    def buildConditions(self, gene_unit, actual_condition):
+    def buildConditions(self, approx_mode, actual_condition):
         ret_handle = dict()
         for trio_info in self.mZygSupport.getTrioSeq():
-            self._buildTrioCond(trio_info,
-                gene_unit, actual_condition, ret_handle)
+            ret_handle[trio_info[0]] = self._buildTrioRequest(
+                trio_info, approx_mode, actual_condition)
         return ret_handle
-
-    def _buildTrioCond(self, trio_info,
-            gene_unit, actual_condition, ret_handle):
-        logging.info("Comp-hets eval for %s / %s" %
-            (trio_info[0], gene_unit.getName()))
-        c_proband, c_father, c_mother = self._prepareZygConditions(trio_info)
-
-        genes1 = set()
-        stat_info = gene_unit.makeStat(self.getEvalSpace().joinAnd(
-            [actual_condition, c_proband, c_father]), eval_h = None)
-        for info in stat_info["variants"]:
-            gene, count = info[:2]
-            if count > 0:
-                genes1.add(gene)
-        logging.info("Eval genes1 for %s comp-hets: %d" %
-            (trio_info[0], len(genes1)))
-        if len(genes1) is None:
-            return
-        genes2 = set()
-        stat_info = gene_unit.makeStat(self.getEvalSpace().joinAnd(
-            [actual_condition, c_proband, c_mother]), eval_h = None)
-        for info in stat_info["variants"]:
-            gene, count = info[:2]
-            if count > 0:
-                genes2.add(gene)
-        logging.info("Eval genes2 for %s comp-hets: %d" %
-            (trio_info[0], len(genes2)))
-        actual_genes = genes1 & genes2
-        logging.info("Result genes for comp-hets: %d" % len(actual_genes))
-        if len(actual_genes) == 0:
-            return
-        if len(actual_genes) >= self.sMaxGeneCompCount:
-            logging.info("Heavy condition")
-            ret_handle[trio_info[0]] = None
-        else:
-            ret_handle[trio_info[0]] = sorted(actual_genes)
 
     def iterComplexCriteria(self, context, variants = None):
         if context is None:
             return
-        gene_unit = self.mGeneUnits[context["approx"]]
-        for trio_info in self.mZygSupport.getTrioSeq():
-            if variants is not None and trio_info[0] not in variants:
+        trio_dict = context["trio-dict"]
+        for trio_id, _, _, _ in self.mZygSupport.getTrioSeq():
+            if variants is not None and trio_id not in variants:
                 continue
-            gene_seq = context["trio"].get(trio_info[0])
-            if not gene_seq:
-                yield trio_info[0], self.getEvalSpace().getCondNone()
-                continue
-            c_proband, c_father, c_mother = self._prepareZygConditions(
-                trio_info)
-            yield trio_info[0], self.getEvalSpace().joinAnd([
-                c_proband, c_father.addOr(c_mother),
-                self.getEvalSpace().makeEnumCond(gene_unit, gene_seq)])
+            trio_crit = trio_dict[trio_id]
+            if trio_crit is not None:
+                yield trio_id,  trio_crit
 
     def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["trio-variants"] = self.mTrioIds
-        ret_handle["approx-modes"] = self.mApproxInfo
+        ret_handle["trio-variants"] = [trio_info[0]
+            for trio_info in self.mZygSupport.getTrioSeq()]
+        ret_handle["approx-modes"] = self.mZygSupport.getApproxInfo()
         ret_handle["labels"] = eval_h.getLabelPoints(point_no)
         return ret_handle
 
@@ -137,20 +79,22 @@ class CompHetsUnit(FunctionUnit):
                     % parameters["state"])
         else:
             actual_condition = eval_h.getActualCondition(point_no)
-        approx_mode = parameters.get("approx", self.mApproxInfo[0][0])
-        if approx_mode not in self.mGeneUnits:
-            return None, "Improper approx mode %s" % approx_mode
+        approx_mode = self.mZygSupport.normalizeApprox(
+            parameters.get("approx"))
+        if approx_mode is False:
+            return None, "Improper approx mode %s" % parameters["approx"]
+
         build_id = approx_mode + '|' + actual_condition.hashCode()
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
         if context is None:
             context = {
                 "approx": approx_mode,
-                "trio": self.buildConditions(self.mGeneUnits[approx_mode],
-                    actual_condition)}
+                "trio-dict": self.buildConditions(
+                    approx_mode, actual_condition)}
             with self.getEvalSpace().getDS():
                 self.mOpCache[build_id] = context
-        if None in context["trio"].values():
+        if None in context["trio-dict"].values():
             context, "Too heavy condition"
         return context, None
 
@@ -174,8 +118,10 @@ class CompHetsUnit(FunctionUnit):
         context, err_msg = self._locateContext(parameters, eval_h, point_no)
         ret_handle = self.prepareStat()
         self.collectComplexStat(ret_handle, condition, context,
-            self.mGeneUnits[context["approx"]].isDetailed())
+            self.mZygSupport.getGeneUnit(context["approx"]).isDetailed())
         ret_handle.update(parameters)
         if err_msg:
             ret_handle["err"] = err_msg
         return ret_handle
+
+#=====================================

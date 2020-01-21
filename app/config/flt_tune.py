@@ -20,21 +20,21 @@
 #  limitations under the License.
 #
 
-from app.model.inheritance import InheritanceUnit
+from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
 from app.model.comp_hets import CompHetsUnit
 
 #===============================================
-GENE_LEVELS = [
-    ["transcript", "Transcript_id", "shared transcript"],
-    ["gene", "Transctript_gene_id", "shared gene"],
-    ["rough", "Symbol", "non-intersecting transcripts"]]
-
-#===============================================
 def tuneUnits(ds_h):
-    global GENE_LEVELS
+    zyg_support = ds_h.getZygositySupport()
+    zyg_support.setupX(x_unit = "Chromosome", x_values = ["chrX"])
 
-    ds_h.getZygositySupport().setupX(
-        x_unit = "Chromosome", x_values = ["chrX"],)
+    if ds_h.testRequirements({"WS"}):
+        zyg_support.regGeneApprox("transcript",
+            "Transcript_id", "shared transcript")
+        zyg_support.regGeneApprox("gene",
+            "Transctript_gene_id", "shared gene")
+    zyg_support.regGeneApprox("rough",
+        "Symbol", "non-intersecting transcripts")
 
     if ds_h.testRequirements({"ZYG"}):
         InheritanceUnit.makeIt(ds_h, {
@@ -43,11 +43,18 @@ def tuneUnits(ds_h):
             "vgroup": "Inheritance"},
             before = "Proband_Zygosity")
 
+    if (ds_h.testRequirements({"ZYG"})
+            or len(ds_h.getFamilyInfo()) == 1):
+        CustomInheritanceUnit.makeIt(ds_h, {
+            "name": "Custom_Inheritance_Mode",
+            "title": "Custom Inheritance Mode",
+            "vgroup": "Inheritance"},
+            before = "Proband_Zygosity")
+
+    if ds_h.testRequirements({"ZYG"}):
         CompHetsUnit.makeIt(ds_h, {
             "name":   "Compound_Het",
-            "title":  "Calculated Compound Heterozygous",
-            "vgroup": "Inheritance"},
-            gene_levels = GENE_LEVELS if ds_h.testRequirements({"WS"})
-                else GENE_LEVELS[-1:])
+            "title":  "Calculated Compound",
+            "vgroup": "Inheritance"})
 
 #===============================================

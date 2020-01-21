@@ -182,7 +182,6 @@ class ConditionPoint(CheckPoint):
         self.mCondition = self.getStory().getMaster().buildCondition(
             self.getCondData())
 
-
     def getPointKind(self):
         return "If"
 

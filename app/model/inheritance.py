@@ -59,6 +59,7 @@ class InheritanceUnit(FunctionUnit):
         ret_handle = self.prepareStat()
         ret_handle["family"] = self.mZygSupport.getIds()
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
+        ret_handle["variants"] = self.sCaseLabels
         return ret_handle
 
     def makeParamStat(self, condition, parameters, eval_h, point_no):
@@ -99,4 +100,58 @@ class InheritanceUnit(FunctionUnit):
         if "problem_group" in func_args:
             if not isinstance(func_args["problem_group"], list):
                 return "Problem group expected in form of set or list"
+        return None
+
+#===============================================
+class CustomInheritanceUnit(FunctionUnit):
+
+    @staticmethod
+    def makeIt(ds_h, descr, before = None, after = None):
+        unit_h = CustomInheritanceUnit(ds_h, descr)
+        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
+
+    def __init__(self, ds_h, descr):
+        FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
+            sub_kind = "custom-inheritance-z", parameters = ["scenario"])
+        self.mZygSupport = ds_h.getZygositySupport()
+
+    def iterComplexCriteria(self, context, variants = None):
+        if context is None:
+            return
+        if variants is None or "True" in variants:
+            yield ("True",
+                self.mZygSupport.conditionScenario(context["scenario"]))
+
+    def makeInfoStat(self, eval_h, point_no):
+        ret_handle = self.prepareStat()
+        ret_handle["family"] = self.mZygSupport.getIds()
+        ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
+        return ret_handle
+
+    def makeParamStat(self, condition, parameters, eval_h, point_no):
+        ret_handle = self.prepareStat()
+        ret_handle.update(parameters)
+        scenario = parameters.get("scenario")
+        if not scenario:
+            ret_handle["variants"] = None
+            ret_handle["err"] = "Empty zygosity scenario"
+        else:
+            self.collectComplexStat(ret_handle, condition,
+                {"scenario": scenario})
+        return ret_handle
+
+    def locateContext(self, cond_data, eval_h):
+        scenario = cond_data[4].get("scenario")
+        if not scenario:
+            eval_h.operationError(cond_data, "Empty zygosity scenario")
+            return None
+        if len(cond_data[3]) == 0:
+            eval_h.operationError(cond_data,
+                "%s: empty set of variants" % self.getName())
+            return None
+        return {"scenario": scenario}
+
+    def validateArgs(self, func_args):
+        if "scenario" in func_args:
+            return self.mZygSupport.validateScenario(func_args["scenario"])
         return None

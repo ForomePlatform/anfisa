@@ -182,32 +182,33 @@ def readySolutions():
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
-    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_01")]),
+    #     ConditionMaker.condEnum("Rules",
+    #        [stdNm("SEQaBOO_Hearing_Loss_v_01")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
     #     requires = {"WS"})
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_02", [
-    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_02")]),
+    #     ConditionMaker.condEnum("Rules",
+    #        [stdNm("SEQaBOO_Hearing_Loss_v_02")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
     #     requires = {"WS"})
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03", [
-    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
+    #     ConditionMaker.condEnum("Rules",
+    #        [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "NOT")],
     #     requires = {"WS"})
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_03_5", [
-    #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
+    #     ConditionMaker.condEnum("Rules",
+    #        [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
     #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
     #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
-            ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])
-        ])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])])
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
-            ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])
-        ])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])])
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
-            ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])
-        ])
+        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])])
     # base_pack.regFilter("SEQaBOO_ACMG59", [
     #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
@@ -219,7 +220,7 @@ def readySolutions():
 
     base_pack.regFilter("UTR_and_Worse", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
-                LOW_IMPACT_CSQ, join_mode = "NOT")])
+            LOW_IMPACT_CSQ, join_mode = "NOT")])
 
     base_pack.regFilter("Impacting_Splicing",
         condition_high_quality() + impacting_splicing())
