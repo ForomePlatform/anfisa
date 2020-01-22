@@ -21,7 +21,7 @@
 #
 
 from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
-from app.model.comp_hets import CompHetsUnit
+from app.model.comp_hets import CompHetsUnit, CompoundRequestUnit
 
 #===============================================
 def tuneUnits(ds_h):
@@ -56,5 +56,8 @@ def tuneUnits(ds_h):
             "name":   "Compound_Het",
             "title":  "Calculated Compound",
             "vgroup": "Inheritance"})
-
+        CompoundRequestUnit.makeIt(ds_h, {
+            "name":   "Compound_Request",
+            "title":  "Calculated Compound Request",
+            "vgroup": "Inheritance"})
 #===============================================

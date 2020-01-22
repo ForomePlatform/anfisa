@@ -79,12 +79,15 @@ var sOpFuncH = {
         this.mCurFuncH.updateCondition(cond_data);
     },
     
-    reloadStat: function(scan_variants) {
-        if (scan_variants)
-            this.mOpVariants = sOpEnumH.getSelected();
+    keepSelection: function() {
+        this.mOpVariants = sOpEnumH.getSelected();
+    },
+
+    reloadStat: function() {
         zero_variants = this.mCurFuncH.checkBad();
         if (zero_variants != null) {
             sOpEnumH._setupVariants(zero_variants);
+            sOpEnumH._updateState(this.mOpMode, this.mOpVariants);
             sOpEnumH.waitForUpdate();
             sOpEnumH.checkControls();
             return;
@@ -221,104 +224,149 @@ var sFunc_InheritanceZ = {
         if (JSON.stringify(p_group) == JSON.stringify(this.mCurPGroup))
             return;
         this.mCurPGroup = p_group;
-        sOpFuncH.reloadStat(true);
+        sOpFuncH.keepSelection();
+        sOpFuncH.reloadStat();
     },
  
     resetGrp: function() {
+        sOpFuncH.keepSelection();
         this.mCurPGroup = null;
         sOpFuncH.renderParams();
-        sOpFuncH.reloadStat(true);
+        sOpFuncH.reloadStat();
     }
 }
     
 /**************************************/
-var Z_MODES = ["0", "0-1", "1", "1-2", "2"];
+sZygSuportH = {
+    Z_MODES: ["0", "0-1", "1", "1-2", "2"],
 
-function emptyScenario(scenario) {
-    if (scenario.length == 0)
+    emptyScenario: function(scenario) {
+        if (scenario.length == 0)
+            return true;
+        for (j=0; j < this.Z_MODES.length; j++)
+            if (scenario[this.Z_MODES[j]])
+                return false;
         return true;
-    for (j=0; j < Z_MODES.length; j++)
-        if (scenario[Z_MODES[j]])
-            return false;
-    return true;
-}
+    },
 
-function renderScenario(scenario, family, ctrl_name, scope_option, out_rep) {
-    var tab_fam = {};
-    for (j=0; j < Z_MODES.length; j++) {
-        if (scenario[Z_MODES[j]]) {
-            for (idx=0; idx < scenario[Z_MODES[j]].length; idx++)
-                tab_fam[scenario[Z_MODES[j]][idx]] = j + 1;
+    renderScenario: function(
+        scenario, family, ctrl_name, scope_option, out_rep) {
+        var tab_fam = {};
+        for (j=0; j < this.Z_MODES.length; j++) {
+            if (scenario[this.Z_MODES[j]]) {
+                for (idx=0; idx < scenario[this.Z_MODES[j]].length; idx++)
+                    tab_fam[scenario[this.Z_MODES[j]][idx]] = j + 1;
+            }
         }
-    }
-    for (var idx = 0; idx < family.length; idx++) {
-        sample_id = family[idx];
-        q_val = (tab_fam[sample_id])? tab_fam[sample_id]:0;
-        check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
-        out_rep.push('<div class="c-inheritance-z-fam-member">' + sample_id + 
-            '&nbsp<select id="' + check_id + 
-            '" onchange="' + ctrl_name + '.checkControls();">');
-        out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
-            '>--</option>');
-        for (j=0; j < Z_MODES.length; j++) {
-            out_rep.push('<option value="' + (j+1) + '" ' + 
-                ((q_val == j + 1)? "selected " : "") + '>' + Z_MODES[j] + '</option>');
+        for (var idx = 0; idx < family.length; idx++) {
+            sample_id = family[idx];
+            q_val = (tab_fam[sample_id])? tab_fam[sample_id]:0;
+            check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
+            out_rep.push('<div class="c-inheritance-z-fam-member">' + sample_id + 
+                '&nbsp<select id="' + check_id + 
+                '" onchange="' + ctrl_name + '.checkControls();">');
+            out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
+                '>--</option>');
+            for (j=0; j < this.Z_MODES.length; j++) {
+                out_rep.push('<option value="' + (j+1) + '" ' + 
+                    ((q_val == j + 1)? "selected " : "") + '>' + this.Z_MODES[j] + '</option>');
+            }
+            out_rep.push('</select></div>')
         }
-        out_rep.push('</select></div>')
-    }
-}
+    },
 
-function checkScenario(family, ctrl_name, scope_option) {
-    var scenario = {};
-    for (j=0; j < Z_MODES.length; j++) {
-        if (scenario[Z_MODES[j]]) {
-            for (idx=0; idx < scenario[Z_MODES[j]].length; idx++)
-                tab_fam[Z_MODES[j][idx]] = j + 1;
+    checkScenario: function(family, ctrl_name, scope_option) {
+        var scenario = {};
+        for (j=0; j < this.Z_MODES.length; j++) {
+            if (scenario[this.Z_MODES[j]]) {
+                for (idx=0; idx < scenario[this.Z_MODES[j]].length; idx++)
+                    tab_fam[this.Z_MODES[j][idx]] = j + 1;
+            }
         }
-    }
-    for (var idx = 0; idx < family.length; idx++) {
-        sample_id = family[idx];
-        check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
-        zyg_val = parseInt(document.getElementById(check_id).value);
-        if (zyg_val > 0) {
-            if (scenario[Z_MODES[zyg_val - 1]])
-                scenario[Z_MODES[zyg_val - 1]].push(sample_id);
+        for (var idx = 0; idx < family.length; idx++) {
+            sample_id = family[idx];
+            check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
+            zyg_el = document.getElementById(check_id);
+            zyg_val = parseInt(zyg_el.value);
+            zyg_el.parentElement.className = (zyg_val > 0)? "":"blocked";
+            if (zyg_val > 0) {
+                if (scenario[this.Z_MODES[zyg_val - 1]])
+                    scenario[this.Z_MODES[zyg_val - 1]].push(sample_id);
+                else
+                    scenario[this.Z_MODES[zyg_val - 1]] = [sample_id];
+            }
+        }
+        return scenario;
+    },
+
+    buildScenario: function(family, affected_group, zyg_a, zyg_n) {
+        group0 = [];
+        group1 = [];
+        for (var idx = 0; idx < family.length; idx++) {
+            sample_id = family[idx];
+            if (affected_group.indexOf(sample_id) >= 0)
+                group0.push(sample_id);
             else
-                scenario[Z_MODES[zyg_val - 1]] = [sample_id];
+                group1.push(sample_id);
         }
+        var scenario = {};
+        if (group0.length > 0)
+            scenario[zyg_a] = group0;
+        if (group1.length > 0)
+            scenario[zyg_n] = group1;
+        return scenario;
+    },
+    
+    sameScenario: function(sc1, sc2) {
+        return (JSON.stringify(sc1) == JSON.stringify(sc2));
+    },
+    
+    evalResetVariants: function(family, affected_group) {
+        return [{}, 
+            this.buildScenario(family, affected_group, "2", "0-1"),
+            this.buildScenario(family, affected_group, "1-2", "0"),
+            this.buildScenario(family, affected_group, "0", "1-2")];
+    },
+    
+    renderResetGroup: function(ctrl_name, out_rep) {
+        out_rep.push('<div><span class="comment">Reset</span>&nbsp;' +
+            '<select id="inheritance-z-fam-reset-select" onchange="' +
+            ctrl_name + '.resetScenario()" ><option value=""></option>');
+        out_rep.push(
+            '<option value="0">-empty-</option>' +
+            '<option value="2|0-1">Homozygous Recessive/X-linked</option>' +
+            '<option value="1-2|0">Autosomal Dominant</option>' +
+            '<option value="0|1-2">Compensational</option>' +
+            '</select></div>');
+    },
+    
+    updateResetGroup: function(scenario, reset_variants) {
+        var cur_idx = 0;
+        for (idx=0; idx < 4; idx++) {
+            if (this.sameScenario(scenario, reset_variants[idx])) {
+                cur_idx = idx + 1;
+                break;
+            }
+        }
+        document.getElementById
+            ("inheritance-z-fam-reset-select").selectedIndex = cur_idx;
     }
-    return scenario;
-}
-
-function buildScenario(family, affected_group, zyg_a, zyg_n) {
-    group0 = [];
-    group1 = [];
-    for (var idx = 0; idx < family.length; idx++) {
-        sample_id = family[idx];
-        if (affected_group.indexOf(sample_id) >= 0)
-            group0.push(sample_id);
-        else
-            group1.push(sample_id);
-    }
-    var scenario = {};
-    if (group0.length > 0)
-        scenario[zyg_a] = group0;
-    if (group1.length > 0)
-        scenario[zyg_n] = group1;
-    return scenario;
 }
 
 /**************************************/
 var sFunc_CustomInheritanceZ = {
     mAffectedGroup: null,
     mFamily: null,
+    mResetVariants: null,
     mCurScenario: null,
     
     setup: function(func_unit_stat) {
         this.mAffectedGroup = func_unit_stat["affected"];
         this.mFamily = func_unit_stat["family"];
-        this.mCurScenario = buildScenario(
-                this.mFamily, this.mAffectedGroup, "2", "0-1");
+        this.mResetVariants = sZygSuportH.evalResetVariants(
+            this.mFamily, this.mAffectedGroup);
+        this.mCurScenario = this.mResetVariants[1];
+        sOpFuncH.mOpVariants = ["True"];
         sOpFuncH.renderParams();
         sOpFuncH.reloadStat();
     },
@@ -335,14 +383,14 @@ var sFunc_CustomInheritanceZ = {
     },
     
     checkBad: function() {
-        if (emptyScenario(this.mCurScenario)) {
+        if (sZygSuportH.emptyScenario(this.mCurScenario)) {
             return [["True", 0]];
         }
         return null;
     },
     
     acceptStat: function(info, cond_data) {
-        return (JSON.stringify(info["scenario"]) == JSON.stringify(this.mCurScenario));
+        return sZygSuportH.sameScenario(info["scenario"], this.mCurScenario);
     },
     
     getCurParams: function() {
@@ -350,42 +398,40 @@ var sFunc_CustomInheritanceZ = {
     },
     
     checkError: function(pre_cond_data) {
-        if (emptyScenario(this.mCurScenario))
+        if (sZygSuportH.emptyScenario(this.mCurScenario))
             return "Empty scenario";
         return null;
     },
      
     renderIt: function() {
         var list_stat_rep = ['<div class="comment">Scenario:</div>'];
-        renderScenario(this.mCurScenario, this.mFamily, "sFunc_CustomInheritanceZ", 
-            "", list_stat_rep);
+        sZygSuportH.renderScenario(this.mCurScenario, 
+            this.mFamily, "sFunc_CustomInheritanceZ", "", list_stat_rep);
         list_stat_rep.push('</div>');
-        list_stat_rep.push('<div><button id="c-inheritance-z-fam-reset" ' +
-            ' title="Reset scenario" ' +
-            'onclick="sFunc_CustomInheritanceZ.resetS()">Reset as</button>&emsp;' +
-            '<select id="inheritance-z-fam-reset-select">' +
-            '<option value="2|0-1">Homozygous Recessive/X-linked</option>' +
-            '<option value="1-2|0">Autosomal Dominant</option>' +
-            '<option value="0|1-2">Compensational</option>' +
-            '</select></div>');
+        sZygSuportH.renderResetGroup("sFunc_CustomInheritanceZ", list_stat_rep);
         return list_stat_rep.join('\n');
     },   
 
     checkControls: function(in_check) {
-        var p_scenario = checkScenario(this.mFamily, "sFunc_CustomInheritanceZ", "");
-        if (JSON.stringify(p_scenario) == JSON.stringify(this.mCurScenario))
+        var p_scenario = sZygSuportH.checkScenario(
+            this.mFamily, "sFunc_CustomInheritanceZ", "");
+        sZygSuportH.updateResetGroup(p_scenario, this.mResetVariants);
+        if (sZygSuportH.sameScenario(p_scenario, this.mCurScenario))
             return;
+        sOpFuncH.keepSelection();
         this.mCurScenario = p_scenario;
-        sOpFuncH.reloadStat(true);
+        sOpFuncH.reloadStat();
     },
 
-    resetS: function() {
-        z_cases = document.getElementById
-            ("inheritance-z-fam-reset-select").value.split('|');
-        this.mCurScenario = buildScenario(
-                this.mFamily, this.mAffectedGroup, z_cases[0], z_cases[1]);
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat(true);
+    resetScenario: function() {
+        cur_idx = document.getElementById
+            ("inheritance-z-fam-reset-select").selectedIndex;
+        if (cur_idx > 0) {
+            sOpFuncH.keepSelection();
+            this.mCurScenario = this.mResetVariants[cur_idx - 1];
+            sOpFuncH.renderParams();
+            sOpFuncH.reloadStat();
+        }
     }
 }
     
@@ -395,10 +441,12 @@ var sFunc_CompoundHet = {
     mApproxModes: null,
     mApproxTitles: null,
     mCurApprox: null,
+    mTrioVariants: null,
     mCurState: undefined,
     
     setup: function(func_unit_stat) {
         this.mLabels = func_unit_stat["labels"];
+        this.mTrioVariants = func_unit_stat["trio-variants"];
         this.mApproxModes = [];
         this.mApproxTitles = [];
         for (idx = 0; idx< func_unit_stat["approx-modes"].length; idx++) {
@@ -407,6 +455,7 @@ var sFunc_CompoundHet = {
         }
         this.mCurApprox = null;
         this.mCurState = null;
+        sOpFuncH.mOpVariants = [this.mTrioVariants[0]];
         sOpFuncH.renderParams();
         sOpFuncH.reloadStat();
     },
@@ -502,7 +551,8 @@ var sFunc_CompoundHet = {
         if (v_approx != this.mCurApprox || v_state != this.mCurState) {
             this.mCurApprox = v_approx;
             this.mCurState = v_state;
-            sOpFuncH.reloadStat(true);
+            sOpFuncH.keepSelection();
+            sOpFuncH.reloadStat();
         }
     }        
 }
