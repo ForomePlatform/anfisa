@@ -229,6 +229,9 @@ def readySolutions():
     base_pack.regDTree("BGM xBrowse Alt",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
         requires = {"trio_base"})
+    base_pack.regDTree("BGM_Strict",
+        cfgPathSeq(["bgm_strict.pyt"]),
+        requires = {"trio_base"})
     base_pack.regDTree("Trio Candidates",
         cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
         requires = {"trio_base"})
