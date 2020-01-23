@@ -33,6 +33,21 @@ def dirPage(output, common_title, html_base, ws_pub_url):
 </html>''' % (common_title, ws_pub_url, common_title), file = output)
 
 #===============================================
+def subdirPage(output, common_title, html_base, ws_url, ds_h):
+    startHtmlPage(output,
+        common_title + " " + ds_h.getName() + " subdirectory", html_base,
+        css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
+    print('''
+  <body onload="setupSubDir(\'%s\', \'%s\', \'%s\');">
+    <h2>Dataset %s directory</h2>
+    <p id="p-version">System version: <span id="span-version"></span></p>
+    <div id="div-main">
+    </div>
+  </body>
+</html>''' % (common_title, ws_url, ds_h.getName(), ds_h.getName()),
+    file = output)
+
+#===============================================
 def notFound(output, common_title, html_base):
     startHtmlPage(output, common_title + ": Page not found",
         html_base, css_files = ["base.css"])

@@ -249,7 +249,8 @@ class EnumUnitStatH:
 
     def finishUp(self):
         variants = []
-        for name, _ in self.mDescr["variants"]:
+        for info in self.mDescr["variants"]:
+            name = info[0]
             cnt = self.mCounts[name]
             if cnt > 0:
                 variants.append([name, cnt])

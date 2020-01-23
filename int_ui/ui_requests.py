@@ -22,7 +22,7 @@ import logging
 from io import StringIO
 
 from utils.log_err import logException
-from .html_pages import noRecords, dirPage, notFound
+from .html_pages import noRecords, dirPage, subdirPage, notFound
 from .html_ws import formWsPage
 from .html_xl import formXLPage
 from .html_dtree import formDTreePage
@@ -90,6 +90,13 @@ class IntUI:
         if rq_path == "/dir":
             output = StringIO()
             dirPage(output, cls.sHtmlTitle, cls.sHtmlBase, cls.sWsPubURL)
+            return serv_h.makeResponse(content = output.getvalue())
+
+        if rq_path == "/subdir":
+            dataset = data_vault.getDS(rq_args["ds"])
+            output = StringIO()
+            subdirPage(output, cls.sHtmlTitle,
+                cls.sHtmlBase, cls.sWsPubURL, dataset)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/norecords":

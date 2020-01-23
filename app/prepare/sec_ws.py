@@ -167,6 +167,8 @@ class SecondaryWsCreation(ExecutionTask):
         receipts = self.mDS.getDataInfo().get("receipts")
         if receipts is not None:
             receipts = [receipt] + receipts[:]
+        else:
+            receipts = [receipt]
 
         ds_info = {
             "name": self.mWSName,

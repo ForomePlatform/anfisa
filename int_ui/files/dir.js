@@ -22,23 +22,43 @@
 
 var sCommonTitle = null;
 var sWsExtUrl = null;
+var sDSName = null;
 
 function setup(common_title, ws_ext_url) {
     sCommonTitle = common_title;
     sWsExtUrl = ws_ext_url;
-    window.name = sCommonTitle + ":DIR";
+    if (sDSName != null)
+        window.name = sCommonTitle + ":" + sDSName + ":SUBDIR";
+    else
+        window.name = sCommonTitle + ":DIR";
     ajaxCall("dirinfo", "", setupDirData);
+}
+
+function setupSubDir(common_title, ws_ext_url, ds_name) {
+    sDSName = ds_name;
+    setup(common_title, ws_ext_url);
 }
 
 function setupDirData(info) {
     document.getElementById("span-version").innerHTML = info["version"];
     var tab_cnt = ["<table>"];
     for (idx = 0; idx < info["workspaces"].length; idx++) {
+        if (sDSName != null) {
+            if (sDSName == info["workspaces"][idx]["name"])
+                renderWS(info["workspaces"][idx], tab_cnt, true);
+            continue;
+        }
         renderWS(info["workspaces"][idx], tab_cnt);
     }
     if (info["xl-datasets"] && info["xl-datasets"].length > 0) {
-        tab_cnt.push('<tr><td colspan="2"></td></tr>');
+        if (sDSName == null) 
+            tab_cnt.push('<tr><td colspan="2"></td></tr>');
         for (idx = 0; idx < info["xl-datasets"].length; idx++) {
+            if (sDSName != null) {
+                if (sDSName == info["xl-datasets"][idx]["name"])
+                    renderXL(info["xl-datasets"][idx], tab_cnt, true);
+                continue;
+            }
             renderXL(info["xl-datasets"][idx], tab_cnt);
         }
     }
@@ -47,7 +67,7 @@ function setupDirData(info) {
 }
 
 
-function renderWS(ds_info, tab_cnt) {
+function renderWS(ds_info, tab_cnt, subdir_mode) {
     tab_cnt.push('<tr><td class="name">')
     if (sWsExtUrl) 
         tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
@@ -71,8 +91,11 @@ function renderWS(ds_info, tab_cnt) {
         '</td></tr>');
 }
 
-function renderXL(ds_info, tab_cnt) {
-    tab_cnt.push('<tr><td class="name">' + reprRef(ds_info["name"], "XL"));
+function renderXL(ds_info, tab_cnt, subdir_mode) {
+    tab_cnt.push('<tr><td class="name">');
+    if (!subdir_mode && ds_info["secondary"]) 
+        tab_cnt.push(reprRefSubDir(ds_info["name"]));
+    tab_cnt.push(reprRef(ds_info["name"], "XL"));
     tab_cnt.push('<span class="ref-support">');
     if (ds_info["doc"] != undefined) 
         tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
@@ -99,6 +122,16 @@ function reprRefSec(ds_name, mode, label) {
     ret = '<span class="ds-ref-sec" onclick="goToPage(\'' + mode + '\', \'' + 
         ds_name + '\')">' + ((label)? label: ds_name) + '</span>';
     return ret;
+}
+
+function reprRefSubDir(ds_name) {
+    ret = '<span class="ds-ref" onclick="goToPage(\'SUBDIR\', \'' + 
+        ds_name + '\')" title="To sub-directory dataset page">&#x25b7;</span>'
+    return ret;
+}
+
+
+function onModalOff() {
 }
 
 function arrangeControls() {
