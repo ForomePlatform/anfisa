@@ -73,12 +73,14 @@ class ZygositySupport:
     #=========================
     # Scenarios
     #=========================
-    def conditionScenario(self, scenario):
+    def conditionScenario(self, scenario, null_mode = False):
         seq = []
         for zyg_bounds, seq_samples in scenario.items():
             for idx in self.mFamilyInfo.ids2idxset(seq_samples):
                 seq.append(self.mEvalSpace.makeNumericCond(
                     self.mEvalSpace.getZygUnit(idx), zyg_bounds = zyg_bounds))
+        if (null_mode and len(seq) == 0):
+            return None
         return self.mEvalSpace.joinAnd(seq)
 
     def conditionZHomoRecess(self, problem_group):
@@ -116,9 +118,12 @@ class ZygositySupport:
         set_genes = None
         union_cond = self.mEvalSpace.getCondNone()
         for min_count, scenario in c_rq:
+            cond_scenario = self.conditionScenario(scenario, True)
+            if cond_scenario is None:
+                continue
+            union_cond = union_cond.addOr(actual_condition)
             if min_count < 1:
                 continue
-            cond_scenario = self.conditionScenario(scenario)
             stat_info = self.mGeneUnits[approx_mode].makeStat(
                 actual_condition.addAnd(cond_scenario), None)
             genes = set()
@@ -132,7 +137,6 @@ class ZygositySupport:
                 set_genes = genes
             if len(set_genes) == 0:
                 return self.mEvalSpace.getCondNone()
-            union_cond = union_cond.addOr(actual_condition)
         if set_genes is None:
             return self.mEvalSpace.getCondNone()
         if len(set_genes) >= self.sMaxGeneCompCount:
@@ -141,6 +145,15 @@ class ZygositySupport:
             (unit_name,  len(set_genes)))
         return union_cond.addAnd(self.mEvalSpace.makeEnumCond(
             self.mGeneUnits[approx_mode], sorted(set_genes)))
+
+    @classmethod
+    def emptyRequest(cls, request):
+        for rq_var in request:
+            if rq_var[0] > 0:
+                for val in rq_var[1].values():
+                    if val:
+                        return False
+        return True
 
     #=========================
     # Validation
@@ -158,4 +171,17 @@ class ZygositySupport:
                     or not all(isinstance(v,  str) for v in val)):
                 return ("Values in scenario dict "
                     + "should be lists of identifiers")
+        return None
+
+    @classmethod
+    def validateRequest(cls,  request):
+        if not isinstance(request, list):
+            return "Request expected in form of list"
+        for idx, rq_var in enumerate(request):
+            if (not isinstance(rq_var, list) or len(rq_var) != 2
+                    or not isinstance(rq_var[0], int)):
+                return "Invalid request record no %d" % (idx + 1)
+            err_msg = cls.validateScenario(rq_var[1])
+            if err_msg:
+                return err_msg + (" in record no %d" % (idx + 1))
         return None

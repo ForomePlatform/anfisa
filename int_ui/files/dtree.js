@@ -1143,10 +1143,9 @@ function arrangeControls() {
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
         cond_mod_height = el_cond_mod.offsetHeight;
-        //TRF: no such element....
-        el_zyg_problem = document.getElementById("cur-cond-zyg-problem-group");
-        if (el_zyg_problem && el_zyg_problem.style.display != "none") 
-            cond_mod_height -= el_zyg_problem.getBoundingClientRect().height;
+        func_el= document.getElementById("cur-cond-func-param");
+        if (func_el && func_el.style.display != "none") 
+            cond_mod_height -= func_el.getBoundingClientRect().height;
         document.getElementById("wrap-cond-enum").style.height = 
             Math.max(10, cond_mod_height - 110);
     }

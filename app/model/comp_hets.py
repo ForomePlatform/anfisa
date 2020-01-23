@@ -142,21 +142,6 @@ class CompoundRequestUnit(FunctionUnit):
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
 
-    def _buildTrioRequest(self, trio_info,  approx_mode,  actual_condition):
-        id_base,  id_father,  id_mother = trio_info[1:]
-        c_rq = [
-            [1,  {"1": [id_base,  id_father],  "0": [id_mother]}],
-            [1,  {"1": [id_base,  id_mother],  "0": [id_father]}]]
-        return self.mZygSupport.makeCompoundRequest(
-            approx_mode, actual_condition, c_rq, self.getName())
-
-    def buildConditions(self, approx_mode, actual_condition):
-        ret_handle = dict()
-        for trio_info in self.mZygSupport.getTrioSeq():
-            ret_handle[trio_info[0]] = self._buildTrioRequest(
-                trio_info, approx_mode, actual_condition)
-        return ret_handle
-
     def iterComplexCriteria(self, context, variants = None):
         if context is None:
             return
@@ -194,8 +179,10 @@ class CompoundRequestUnit(FunctionUnit):
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
         if context is None:
-            context = {"crit": self.mZygSupport.makeCompoundRequest(
-                approx_mode, actual_condition, c_rq, self.getName())}
+            context = {
+                "approx": approx_mode,
+                "crit": self.mZygSupport.makeCompoundRequest(
+                    approx_mode, actual_condition, c_rq, self.getName())}
             with self.getEvalSpace().getDS():
                 self.mOpCache[build_id] = context
         if context["crit"] is None:

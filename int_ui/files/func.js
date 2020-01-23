@@ -20,6 +20,7 @@
  *
  */
 
+
 /**************************************/
 /* Support for different functions
 /**************************************/
@@ -36,7 +37,8 @@ var sOpFuncH = {
         this.mFDict = {
             "inheritance-z": sFunc_InheritanceZ,
             "custom-inheritance-z": sFunc_CustomInheritanceZ,
-            "comp-hets": sFunc_CompoundHet
+            "comp-hets": sFunc_CompoundHet,
+            "comp-request": sFunc_CompoundRequest
         };
     },
     
@@ -176,9 +178,9 @@ var sFunc_InheritanceZ = {
         var p_group = info["problem_group"];
         if (!p_group)
             p_group = null;
-        if (p_group && JSON.stringify(p_group) == JSON.stringify(this.mAffectedGroup))
+        if (p_group && sameData(p_group, this.mAffectedGroup))
             p_group = null;
-        return (JSON.stringify(p_group) == JSON.stringify(this.mCurPGroup));
+        return sameData(p_group, this.mCurPGroup);
     },
     
     getCurParams: function() {
@@ -194,7 +196,8 @@ var sFunc_InheritanceZ = {
     },
      
     renderIt: function() {
-        var list_stat_rep = ['<div class="comment">Problem group:</div>'];
+        var list_stat_rep = ['<div class="func-parameters">',
+            '<div class="comment">Problem group:</div>'];
         var p_group = (this.mCurPGroup == null)? this.mAffectedGroup : this.mCurPGroup;
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             sample_id = this.mFamily[idx];
@@ -206,9 +209,10 @@ var sFunc_InheritanceZ = {
                 check_id + '">&nbsp;' + this.mFamily[idx] + '</div>');
         }
         list_stat_rep.push('</div>');
-        list_stat_rep.push('<button id="inheritance-z-fam-reset" ' +
+        list_stat_rep.push('<div class="wrapped"><button id="inheritance-z-fam-reset" ' +
             ' title="Reset affected group" ' +
-            'onclick="sFunc_InheritanceZ.resetGrp()">Reset</button>&emsp;');
+            'onclick="sFunc_InheritanceZ.resetGrp()">Reset</button></div>');
+        list_stat_rep.push('</div>');        
         return list_stat_rep.join('\n');
     },   
 
@@ -221,7 +225,7 @@ var sFunc_InheritanceZ = {
         if (p_group.join('|') == this.mAffectedGroup.join('|'))
             p_group = null;
         document.getElementById("inheritance-z-fam-reset").disabled = (!p_group);
-        if (JSON.stringify(p_group) == JSON.stringify(this.mCurPGroup))
+        if (sameData(p_group, this.mCurPGroup))
             return;
         this.mCurPGroup = p_group;
         sOpFuncH.keepSelection();
@@ -249,6 +253,14 @@ sZygSuportH = {
         return true;
     },
 
+    emptyRequest: function(request) {
+        for (idx=0; idx < request.length; idx++) {
+            if (request[idx][0] >= 1 && !this.emptyScenario(request[idx][1]))
+                return false;
+        }
+        return true;
+    },
+    
     renderScenario: function(
         scenario, family, ctrl_name, scope_option, out_rep) {
         var tab_fam = {};
@@ -262,7 +274,7 @@ sZygSuportH = {
             sample_id = family[idx];
             q_val = (tab_fam[sample_id])? tab_fam[sample_id]:0;
             check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
-            out_rep.push('<div class="c-inheritance-z-fam-member">' + sample_id + 
+            out_rep.push('<div class="wrapped">' + sample_id + 
                 '&nbsp<select id="' + check_id + 
                 '" onchange="' + ctrl_name + '.checkControls();">');
             out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
@@ -275,7 +287,7 @@ sZygSuportH = {
         }
     },
 
-    checkScenario: function(family, ctrl_name, scope_option) {
+    scanScenario: function(family, scope_option) {
         var scenario = {};
         for (j=0; j < this.Z_MODES.length; j++) {
             if (scenario[this.Z_MODES[j]]) {
@@ -317,10 +329,6 @@ sZygSuportH = {
         return scenario;
     },
     
-    sameScenario: function(sc1, sc2) {
-        return (JSON.stringify(sc1) == JSON.stringify(sc2));
-    },
-    
     evalResetVariants: function(family, affected_group) {
         return [{}, 
             this.buildScenario(family, affected_group, "2", "0-1"),
@@ -329,7 +337,7 @@ sZygSuportH = {
     },
     
     renderResetGroup: function(ctrl_name, out_rep) {
-        out_rep.push('<div><span class="comment">Reset</span>&nbsp;' +
+        out_rep.push('<div class="wrapped"><span class="comment">Reset</span>&nbsp;' +
             '<select id="inheritance-z-fam-reset-select" onchange="' +
             ctrl_name + '.resetScenario()" ><option value=""></option>');
         out_rep.push(
@@ -343,7 +351,7 @@ sZygSuportH = {
     updateResetGroup: function(scenario, reset_variants) {
         var cur_idx = 0;
         for (idx=0; idx < 4; idx++) {
-            if (this.sameScenario(scenario, reset_variants[idx])) {
+            if (sameData(scenario, reset_variants[idx])) {
                 cur_idx = idx + 1;
                 break;
             }
@@ -390,7 +398,7 @@ var sFunc_CustomInheritanceZ = {
     },
     
     acceptStat: function(info, cond_data) {
-        return sZygSuportH.sameScenario(info["scenario"], this.mCurScenario);
+        return sameData(info["scenario"], this.mCurScenario);
     },
     
     getCurParams: function() {
@@ -404,19 +412,19 @@ var sFunc_CustomInheritanceZ = {
     },
      
     renderIt: function() {
-        var list_stat_rep = ['<div class="comment">Scenario:</div>'];
+        var list_stat_rep = ['<div class="func-parameters">',
+            '<div class="comment">Scenario:</div>'];
         sZygSuportH.renderScenario(this.mCurScenario, 
             this.mFamily, "sFunc_CustomInheritanceZ", "", list_stat_rep);
-        list_stat_rep.push('</div>');
         sZygSuportH.renderResetGroup("sFunc_CustomInheritanceZ", list_stat_rep);
+        list_stat_rep.push('</div>');
         return list_stat_rep.join('\n');
     },   
 
     checkControls: function(in_check) {
-        var p_scenario = sZygSuportH.checkScenario(
-            this.mFamily, "sFunc_CustomInheritanceZ", "");
+        var p_scenario = sZygSuportH.scanScenario(this.mFamily, "");
         sZygSuportH.updateResetGroup(p_scenario, this.mResetVariants);
-        if (sZygSuportH.sameScenario(p_scenario, this.mCurScenario))
+        if (sameData(p_scenario, this.mCurScenario))
             return;
         sOpFuncH.keepSelection();
         this.mCurScenario = p_scenario;
@@ -513,7 +521,7 @@ var sFunc_CompoundHet = {
     },
      
     renderIt: function() {
-        var list_stat_rep = [
+        var list_stat_rep = ['<div class="func-parameters">',
             '<div><span class="comment">Approx:</span>&nbsp<select ' + 
             'id="compound-het-approx" onchange="sFunc_CompoundHet.checkControls();"' + 
             ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
@@ -537,7 +545,7 @@ var sFunc_CompoundHet = {
                 '>' + this.mLabels[idx] + '</option>');
         }
         list_stat_rep.push('</select></div>');
-        list_stat_rep.push('<div></div>');
+        list_stat_rep.push('<div></div></div>');
         return list_stat_rep.join('\n');
     },   
 
@@ -558,3 +566,221 @@ var sFunc_CompoundHet = {
 }
     
 /**************************************/
+var sFunc_CompoundRequest = {
+    mLabels: null,
+    mApproxModes: null,
+    mApproxTitles: null,
+    mAffectedGroup: null,
+    mFamily: null,
+    mCurApprox: null,
+    mCurRequest: undefined,
+    mCurState: undefined,
+    mCurRequest: null,
+    mCurLine: null,
+    mPrevCurLine: null,
+    
+    setup: function(func_unit_stat) {
+        this.mLabels = func_unit_stat["labels"];
+        this.mApproxModes = [];
+        this.mApproxTitles = [];
+        for (idx = 0; idx< func_unit_stat["approx-modes"].length; idx++) {
+            this.mApproxModes.push(func_unit_stat["approx-modes"][idx][0]);
+            this.mApproxTitles.push(func_unit_stat["approx-modes"][idx][1]);
+        }
+        this.mAffectedGroup = func_unit_stat["affected"];
+        this.mFamily = func_unit_stat["family"];
+        this.mResetVariants = sZygSuportH.evalResetVariants(
+            this.mFamily, this.mAffectedGroup);
+        this.mCurApprox = null;
+        this.mCurState = null;
+        this.mCurLine = 0;
+        this.mPrevCurLine = null;
+        this.mCurRequest = [[1, {}]];
+        sOpFuncH.mOpVariants = ["True"];
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
+    },
+    
+    updateCondition: function(cond_data) {
+        if (cond_data != null) {
+            v_approx = cond_data[4]["approx"];
+            v_state = cond_data[4]["state"];
+            v_request = cond_data[4]["request"];
+            if (this.mApproxModes.indexOf(v_approx) < 1)
+                v_approx = null;
+            if (this.mLabels.indexOf(v_state) < 0)
+                v_state = null;
+            if (v_approx != this.mCurApprox || v_state != this.mCurState ||
+                    !sameData(v_request, this.mCurRequest)) {
+                this.mCurApprox = v_approx;
+                this.mCurState = v_state;
+                this.mCurRequest = v_request;
+                sOpFuncH.renderParams();
+            }
+            sOpFuncH.reloadStat();
+        }
+    },
+    
+    acceptStat: function(info, cond_data) {
+        v_approx = info["approx"];
+        v_state = info["state"];
+        v_request = info["request"];
+        if (this.mApproxModes.indexOf(v_approx) < 1)
+            v_approx = null;
+        if (this.mLabels.indexOf(v_state) < 0)
+            v_state = null;
+        return (v_approx == this.mCurApprox && v_state == this.mCurState &&
+            sameData(v_request, this.mCurRequest));
+    },
+    
+    getCurParams: function() {
+        var ret = {"request": this.mCurRequest};
+        if (this.mCurApprox)
+            ret["approx"] = this.mCurApprox;
+        if (this.mCurState)
+            ret["state"] = this.mCurState;
+        return ret;
+    },
+    
+    checkBad: function() {
+        if (sZygSuportH.emptyRequest(this.mCurRequest)) {
+            return [["True", 0]];
+        }
+        return null;
+    },
+    
+    checkError: function(pre_cond_data) {
+        if (pre_cond_data == null)
+            return null;
+        v_approx = pre_cond_data[2]["approx"];
+        v_state = pre_cond_data[2]["state"];
+        v_request = pre_cond_data[2]["request"];
+        if (sZygSuportH.emptyRequest(v_request))
+            return "Empty request";
+        if (v_approx && this.mApproxModes.indexOf(v_approx) < 0)
+            return "Bad approx mode: " + v_approx;
+        if (v_state && this.mLabels.indexOf(v_state) < 0)
+            return "Label " + v_state + " not found";
+        return null;
+    },
+     
+    renderIt: function() {
+        this.mPrevCurLine = null;
+        var list_stat_rep = [
+            '<div class="func-parameters">' +
+            '<div><span class="comment">Approx:</span>&nbsp<select ' + 
+            'id="compound-het-approx" onchange="sFunc_CompoundRequest.checkControls();"' + 
+            ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
+        for (idx = 0; idx < this.mApproxModes.length; idx++) {
+            list_stat_rep.push('<option value="' + this.mApproxModes[idx] + '" ' +
+                ((this.mApproxModes[idx] == this.mCurApprox || (idx == 0 && !this.mCurApprox))?
+                    " selected ": "") +
+                '>' + this.mApproxTitles[idx] + '</option>');
+        }
+        list_stat_rep.push('</select></div>');
+        list_stat_rep.push(
+            '<div><span class="comment">State:</span>&nbsp<select ' + 
+            'id="compound-het-state" onchange="sFunc_CompoundRequest.checkControls();"' + 
+            ((this.mLabels.length == 0)? " disabled":"") + '>');
+        list_stat_rep.push(
+            '<option value=""' + ((this.mLabels.length == 0)? " selected":"") + '>' +
+            '-current-</option>');
+        for (idx = 0; idx < this.mLabels.length; idx++) {
+            list_stat_rep.push('<option value="' + this.mLabels[idx] + '" ' +
+                ((this.mLabels[idx] == this.mCurState)? " selected ": "") +
+                '>' + this.mLabels[idx] + '</option>');
+        }
+        list_stat_rep.push('</select></div></div>');
+        list_stat_rep.push('<div id="comp-rq-request">');
+        for (idx = 0; idx < this.mCurRequest.length; idx++) {
+            list_stat_rep.push('<div class="comp-rq-item-block"' +
+                ' id="comp-rq-line' + idx + '"' +
+                ' onclick="sFunc_CompoundRequest.setCur(' + idx + ')">');
+            list_stat_rep.push('<div class="wrapped">' +
+                '<input type="number" min="0"' +
+                ' title = "minimal count of events" class="w50"' +
+                ' id="comp-rq-item--' + idx + '"' +
+                ' onchange="sFunc_CompoundRequest.checkControls()"' + 
+                ' value="' + this.mCurRequest[idx][0] + '"/></div>');
+            sZygSuportH.renderScenario(this.mCurRequest[idx][1], 
+                this.mFamily, "sFunc_CompoundRequest", "__" + idx, list_stat_rep);
+            list_stat_rep.push('</div>');
+        }
+        list_stat_rep.push('</div>');
+        list_stat_rep.push('<div class="func-parameters">');
+        list_stat_rep.push('<div class="wrapped"><button ' + 
+            ((this.mCurRequest.length < 5)? "": "disabled ") + 
+            'onclick="sFunc_CompoundRequest.addLine()">Add</button></div>');
+        list_stat_rep.push('<div class="wrapped"><button ' + 
+            ((this.mCurRequest.length > 1)? "": "disabled ") + 
+            'onclick="sFunc_CompoundRequest.delLine()">Remove</button></div>');
+        sZygSuportH.renderResetGroup("sFunc_CompoundRequest", list_stat_rep);
+        list_stat_rep.push('</div>');
+        return list_stat_rep.join('\n');
+    },   
+
+    checkControls: function(in_check) {
+        v_approx = document.getElementById('compound-het-approx').value;
+        v_state = document.getElementById('compound-het-state').value;
+        v_request = [];
+        for (idx = 0; idx < this.mCurRequest.length; idx++) {
+            v_request.push([parseInt(document.getElementById("comp-rq-item--" + idx).value),
+                sZygSuportH.scanScenario(this.mFamily, "__" + idx)]);
+        }
+        if (this.mApproxModes.indexOf(v_approx) < 1)
+            v_approx = null;
+        if (this.mLabels.indexOf(v_state) < 0)
+            v_state = null;
+        if (v_approx != this.mCurApprox || v_state != this.mCurState || 
+            !sameData(v_request, this.mCurRequest)) {
+            this.mCurApprox = v_approx;
+            this.mCurState = v_state;
+            this.mCurRequest = v_request;
+            sOpFuncH.keepSelection();
+            sOpFuncH.reloadStat();
+        }
+        if (this.mPrevCurLine != null) {
+            line_el = document.getElementById("comp-rq-line" + this.mPrevCurLine);
+            if (line_el) {
+                line_el.className = line_el.className.split(' ')[0];
+            }
+        }
+        this.mCurLine = Math.min(this.mCurLine, this.mCurRequest.length - 1);
+        this.mPrevCurLine = this.mCurLine;
+        line_el = document.getElementById("comp-rq-line" + this.mPrevCurLine);
+        line_el.className = line_el.className.split(' ')[0] + ' cur';
+        sZygSuportH.updateResetGroup(
+            this.mCurRequest[this.mCurLine][1], this.mResetVariants);
+    },
+    
+    setCur: function(line_no) {
+        this.mCurLine = line_no;
+        this.checkControls();
+    },
+    
+    addLine: function() {
+        this.mCurLine = this.mCurRequest.length;
+        this.mCurRequest.push([1, {}]);
+        sOpFuncH.keepSelection();
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
+    },
+    
+    delLine: function() {
+        this.mCurRequest.splice(this.mCurLine, 1);
+        sOpFuncH.keepSelection();
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
+    },
+    
+    resetScenario: function() {
+        cur_idx = document.getElementById
+            ("inheritance-z-fam-reset-select").selectedIndex;
+        if (cur_idx > 0) {
+            sOpFuncH.keepSelection();
+            this.mCurRequest[this.mCurLine][1] = this.mResetVariants[cur_idx - 1];
+            sOpFuncH.renderParams();
+            sOpFuncH.reloadStat();
+        }
+    }
+}

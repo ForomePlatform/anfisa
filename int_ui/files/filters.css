@@ -80,8 +80,9 @@ div#filter-ctrl button {
 }
 
 div#filter-cur-cond {
-    height: 150px;
-    min-height: 120px;
+    
+    height: 200px;
+    min-height: 200px;
     vertical-align: top;
     overflow: hidden;
     margin: 0px;

@@ -251,6 +251,14 @@ div#create-ws-status {
 /********************func*****************************/
 
 div#cur-cond-func-param{
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+}
+
+div.func-parameters{
     flex-grow: 0;
     display: flex;
     flex-direction: row;
@@ -300,3 +308,26 @@ button#inheritance-z-fam-reset {
     float: right;
 }
 
+div#comp-rq-request {
+    display: block;
+    max-height: 70px;
+    width: 100%;
+    overflow: auto;
+    font-size: 90%;
+}
+
+div.comp-rq-item-block {
+    border: 1px dotted black;
+    width: 95%;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+div.comp-rq-item-block.cur {
+    cursor: inherit;
+    background-color: #E0F0FF;
+    border: 1px dotted #0000D0;
+}

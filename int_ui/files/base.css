@@ -221,6 +221,9 @@ span.count {
     margin: 10px;
 }
 
+.w50 {
+    width: 50px;
+}
 /****************************************/
 span#control-open {
     border: 1px solid white;
@@ -337,4 +340,8 @@ div#work-note-ctrl {
     margin: 5px;
     padding: 5px;
     text-align: center;
+}
+
+div.wrapped {
+    padding: 10px;
 }
