@@ -73,14 +73,12 @@ class ZygositySupport:
     #=========================
     # Scenarios
     #=========================
-    def conditionScenario(self, scenario, null_mode = False):
+    def conditionScenario(self, scenario):
         seq = []
         for zyg_bounds, seq_samples in scenario.items():
             for idx in self.mFamilyInfo.ids2idxset(seq_samples):
                 seq.append(self.mEvalSpace.makeNumericCond(
                     self.mEvalSpace.getZygUnit(idx), zyg_bounds = zyg_bounds))
-        if (null_mode and len(seq) == 0):
-            return None
         return self.mEvalSpace.joinAnd(seq)
 
     def conditionZHomoRecess(self, problem_group):
@@ -118,8 +116,8 @@ class ZygositySupport:
         set_genes = None
         union_cond = self.mEvalSpace.getCondNone()
         for min_count, scenario in c_rq:
-            cond_scenario = self.conditionScenario(scenario, True)
-            if cond_scenario is None:
+            cond_scenario = self.conditionScenario(scenario)
+            if cond_scenario.getCondType() == "null":
                 continue
             union_cond = union_cond.addOr(actual_condition)
             if min_count < 1:
@@ -141,6 +139,7 @@ class ZygositySupport:
             return self.mEvalSpace.getCondNone()
         if len(set_genes) >= self.sMaxGeneCompCount:
             return None
+        assert union_cond.getCondType() != "null"
         logging.info("Eval compound genes for %s: %d" %
             (unit_name,  len(set_genes)))
         return union_cond.addAnd(self.mEvalSpace.makeEnumCond(

@@ -610,6 +610,8 @@ var sFunc_CompoundRequest = {
                 v_approx = null;
             if (this.mLabels.indexOf(v_state) < 0)
                 v_state = null;
+            if (v_request.length == 0)
+                v_request = [[1, {}]];
             if (v_approx != this.mCurApprox || v_state != this.mCurState ||
                     !sameData(v_request, this.mCurRequest)) {
                 this.mCurApprox = v_approx;

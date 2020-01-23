@@ -334,6 +334,9 @@ class XL_None(XL_Condition, CondSupport_None):
     def getDruidRepr(self):
         return False
 
+    def negative(self):
+        return self.getEvalSpace().getCondAll()
+
 #===============================================
 class XL_All(XL_Condition, CondSupport_All):
     def __init__(self, eval_space):
@@ -341,5 +344,8 @@ class XL_All(XL_Condition, CondSupport_All):
 
     def getDruidRepr(self):
         return None
+
+    def negative(self):
+        return self.getEvalSpace().getCondNone()
 
 #===============================================
