@@ -335,7 +335,7 @@ class XL_None(XL_Condition, CondSupport_None):
         return False
 
     def negative(self):
-        return self.getEvalSpace().getCondAll()
+        return XL_All(self.getEvalSpace())
 
 #===============================================
 class XL_All(XL_Condition, CondSupport_All):
@@ -346,6 +346,6 @@ class XL_All(XL_Condition, CondSupport_All):
         return None
 
     def negative(self):
-        return self.getEvalSpace().getCondNone()
+        return XL_None(self.getEvalSpace())
 
 #===============================================

@@ -357,6 +357,9 @@ class WS_None(WS_Condition, CondSupport_None):
         WS_Condition.__init__(self, eval_space, "null",
             bit_arr, detailed = False)
 
+    def negative(self):
+        return WS_All(self.getEvalSpace())
+
     def __call__(self, rec_no):
         return False
 
@@ -367,6 +370,9 @@ class WS_All(WS_Condition, CondSupport_All):
         bit_arr.setall(True)
         WS_Condition.__init__(self, eval_space, "all",
             bit_arr, detailed = False)
+
+    def negative(self):
+        return WS_None(self.getEvalSpace())
 
     def __call__(self, rec_no):
         return True
