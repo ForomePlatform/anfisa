@@ -47,8 +47,8 @@ def tuneAspects(dataset, aspects):
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
     assert attr_h.getName().lower() != attr_h.getName(), (
-        "Attribute " +  attr_h.getName() +
-        ": attributes for tuning resetup must contain uppercase letters")
+        "Attribute " + attr_h.getName()
+        + ": attributes for tuning resetup must contain uppercase letters")
     idx1 = aspect_h.find(attr_h.getName().lower())
     idx2 = aspect_h.find(attr_h.getName())
     if idx1 >= 0:

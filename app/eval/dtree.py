@@ -166,7 +166,7 @@ class TerminalPoint(CheckPoint):
 
     def isActive(self):
         if (self.getPrevPoint()
-            and self.getPrevPoint().getLevel() < self.getLevel()):
+                and self.getPrevPoint().getLevel() < self.getLevel()):
             return self.getPrevPoint().isActive()
         return True
 
@@ -189,7 +189,7 @@ class ConditionPoint(CheckPoint):
             self.getCondData())
         if self.mCondition is None:
             self.mCondition = (
-            self.getStory().getMaster().getEvalSpace().getCondNone())
+                self.getStory().getMaster().getEvalSpace().getCondNone())
 
     def isActive(self):
         return self.mCondition.getCondType() != "null"
