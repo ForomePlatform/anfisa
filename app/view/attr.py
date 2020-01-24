@@ -29,6 +29,8 @@ class AttrH:
     #===============================================
     def __init__(self, name, kind = None, title = None,
             is_seq = False, tooltip = None):
+        assert kind != "place" or name.lower() == name, (
+            "Placement attribute %s: must be lowercase" % name)
         self.mAspect = None
         self.mName = name
         self.mTitle = (title if title is not None else name)
@@ -86,7 +88,7 @@ class AttrH:
         try:
             val_obj = obj.get(self.mName) if obj else None
             repr_text = None
-            if val_obj is 0:
+            if val_obj == 0 and isinstance(val_obj, int):
                 return ("0", self.getMainKind())
             if val_obj:
                 if self.mIsSeq:
@@ -109,7 +111,8 @@ class AttrH:
             return ("???", "none")
 
     def _htmlRepr(self, value):
-        if not value and value is not 0:
+        if (not value and not isinstance(value, int)
+                and not isinstance(value, float)):
             return None
         if "json" in self.mKinds:
             return jsonHtmlRepr(value)

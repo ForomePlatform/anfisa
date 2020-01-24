@@ -31,11 +31,11 @@ class IndexBZ2:
         self.mLock = Lock()
         assert b'IdxBZ2' == self._read(0, 6)
         tab_loc = array('L')
-        tab_loc.fromstring(self._read(6, 16))
+        tab_loc.frombytes(self._read(6, 16))
         pos, length = tab_loc
         self.mIdxTable = array('L')
         if length > 0:
-            self.mIdxTable.fromstring(self._read(pos, length))
+            self.mIdxTable.frombytes(self._read(pos, length))
             last_start, last_count = self.mIdxTable[-4:-2]
             self.mTotalCount = int(last_start + last_count)
             self.mChunks = self.mIdxTable[::4]

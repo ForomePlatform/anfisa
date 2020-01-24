@@ -72,7 +72,7 @@ var sOpNumH = {
         this.mInputMax.value = "";
         this.mSpanSigns[0].innerHTML = sign_val;
         this.mSpanSigns[0].className = "num-sign-disabled";
-        this.mSpanSigns[1].innerHTML =sign_val;
+        this.mSpanSigns[1].innerHTML = sign_val;
         this.mSpanSigns[1].className = "num-sign-disabled";
     },
 
@@ -131,7 +131,7 @@ var sOpNumH = {
         
         if (this.mInfo.cur_bounds[0] != null && err_msg == null &&
                 this.mInfo.cur_bounds[0] == this.mInfo.cur_bounds[2] &&
-                (this.mInfo.cur_bounds[1] | this.mInfo.cur_bounds[3])) {
+                (!this.mInfo.cur_bounds[1] || !this.mInfo.cur_bounds[3])) {
             err_msg = "Out of choice: strict bounds";
         }
 

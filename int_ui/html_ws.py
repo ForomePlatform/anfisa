@@ -60,6 +60,8 @@ def _formPanel(output, workspace_name, ws_pub_url):
                         >Dataset Note...</a>
                     <a class="popup" onclick="showExport();"
                         >Export...</a>
+                    <a class="popup" onclick="wsCreate();"
+                        >Create workspace...</a>
                 </div>
                 <div id="export-result" class="popup"></div>
             </div> <span id="ds-name" class="bold"></span>

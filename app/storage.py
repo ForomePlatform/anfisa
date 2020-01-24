@@ -202,6 +202,7 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
             "modes": [],
             "mongo": ds_entry.getName(),
             "name": ds_entry.getName(),
+            "root": ds_entry.getName(),
             "zygosity_var": filter_set.getZygosityVarName(),
             "total": data_rec_no,
             "view_schema": view_aspects.dump()}

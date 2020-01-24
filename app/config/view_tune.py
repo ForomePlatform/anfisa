@@ -32,8 +32,8 @@ def tuneAspects(dataset, aspects):
     _resetupAttr(view_db, OMIM_AttrH(view_gen))
     _resetupAttr(view_db, GREV_AttrH(view_gen))
     _resetupAttr(view_db, MEDGEN_AttrH(view_gen))
-    _resetupAttr(view_db, GeneCards_AttrH(view_gen))
-    _resetupAttr(view_db, Beacons_AttrH(view_gen))
+    _resetupAttr(view_db, GENE_CARDS_AttrH(view_gen))
+    _resetupAttr(view_db, BEACONS_AttrH(view_gen))
     _resetupAttr(view_db, PMID_AttrH(view_db))
     _resetupAttr(view_db, HGMD_PMID_AttrH(view_db))
 
@@ -46,6 +46,9 @@ def tuneAspects(dataset, aspects):
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
+    assert attr_h.getName().lower() != attr_h.getName(), (
+        "Attribute " +  attr_h.getName() +
+        ": attributes for tuning resetup must contain uppercase letters")
     idx1 = aspect_h.find(attr_h.getName().lower())
     idx2 = aspect_h.find(attr_h.getName())
     if idx1 >= 0:
@@ -184,14 +187,15 @@ class MEDGEN_AttrH(AttrH):
                 + '</span>')
         return ('<br>'.join(links), "norm")
 
-class GeneCards_AttrH(AttrH):
+#===============================================
+class GENE_CARDS_AttrH(AttrH):
 
     @staticmethod
     def makeLink(gene):
         return ("https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + gene)
 
     def __init__(self, view):
-        AttrH.__init__(self, "gene_cards",
+        AttrH.__init__(self, "GENE_CARDS",
             title = "GeneCards", tooltip = "Read GeneCards")
         self.setAspect(view)
 
@@ -208,17 +212,17 @@ class GeneCards_AttrH(AttrH):
         return ('<br>'.join(links), "norm")
 
 #===============================================
-class Beacons_AttrH(AttrH):
-    base = "https://beacon-network.org/#/search?"
-    template = base + "pos={pos}&chrom={chrom}&allele={a}&ref={r}&rs=GRCh37"
+class BEACONS_AttrH(AttrH):
+    sBase = "https://beacon-network.org/#/search?"
+    sArgs = "pos={pos}&chrom={chrom}&allele={alt}&ref={ref}&rs=GRCh37"
 
-    @staticmethod
-    def makeLink(chrom, pos, ref, alt):
-        return (Beacons_AttrH.template.format(
-            chrom = chrom, pos = pos, r = ref, a = alt))
+    @classmethod
+    def makeLink(cls, chrom, pos, ref, alt):
+        return cls.sBase + (cls.sArgs.format(
+            chrom = chrom, pos = pos, ref = ref, alt = alt))
 
     def __init__(self, view):
-        AttrH.__init__(self, "Beacons",
+        AttrH.__init__(self, "BEACONS",
             title = "Beacons",
             tooltip = "Search what other organizations have "
                       "observed the same variant")
@@ -227,8 +231,8 @@ class Beacons_AttrH(AttrH):
     def htmlRepr(self, obj, top_rec_obj):
         chrom = top_rec_obj["__data"]["seq_region_name"]
         pos = top_rec_obj["__data"]["start"]
-        ref = top_rec_obj["__data"]["ref"]
-        alt = top_rec_obj["__data"]["alt"]
+        ref = top_rec_obj["_filters"]["ref"]
+        alt = top_rec_obj["_filters"]["alt"]
 
         url = self.makeLink(chrom, pos, ref, alt)
         link = (('<span title="Search Beacons">')
@@ -244,7 +248,7 @@ class PMID_AttrH(AttrH):
         return ("https://www.ncbi.nlm.nih.gov/pubmed/%s" % pmid)
 
     def __init__(self, view):
-        AttrH.__init__(self, "references",
+        AttrH.__init__(self, "REFERENCES",
             title = "Found in PubMed", tooltip = "PubMed Abstracts")
         self.setAspect(view)
 
@@ -265,9 +269,8 @@ class PMID_AttrH(AttrH):
 
 #===============================================
 class HGMD_PMID_AttrH(PMID_AttrH):
-
     def __init__(self, view):
-        AttrH.__init__(self, "hgmd_pmids",
+        AttrH.__init__(self, "HGMD_PMIDs",
             title = "HGMD PMIDs", tooltip = "PubMed Abstracts (from HGMD)")
         self.setAspect(view)
 

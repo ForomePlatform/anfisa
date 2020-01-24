@@ -57,7 +57,8 @@ class SecondaryWsCreation(ExecutionTask):
         logging.info("Prepare workspace creation: %s" % self.mWSName)
         receipt = {
             "kind": self.mEval.getSolKind(),
-            "base": self.mDS.getName()
+            "base": self.mDS.getName(),
+            "root": self.mDS.getRootDSName()
         }
 
         if self.mEval.getSolKind() == "filter":
@@ -179,6 +180,7 @@ class SecondaryWsCreation(ExecutionTask):
             "total_items": total_item_count,
             "mongo": self.mWSName,
             "base": self.mDS.getName(),
+            "root": self.mDS.getRootDSName(),
             "modes": ["secondary"],
             "meta": meta_rec,
             "doc": [],

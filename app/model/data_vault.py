@@ -126,7 +126,7 @@ class DataVault(SyncronizedObject):
     def getBaseDS(self, ws_h):
         return self.mDataSets.get(ws_h.getBaseDSName())
 
-    def getSecondaryWS(self, ds_h):
+    def getSecondaryWSNames(self, ds_h):
         ret = []
         for ws_h in self.mDataSets.values():
             if ws_h.getBaseDSName() == ds_h.getName():
@@ -134,14 +134,13 @@ class DataVault(SyncronizedObject):
         return sorted(ret, key = lambda ws_h: ws_h.getName())
 
     def makeSolutionEnv(self, ds_h):
-        base_name = ds_h.getBaseDSName()
-        if not base_name:
-            base_name = ds_h.getName()
+        root_name = ds_h.getRootDSName()
+        assert root_name
         with self:
-            if base_name not in self.mSolEnvDict:
-                self.mSolEnvDict[base_name] = SolutionEnv(
-                    self.mApp.getMongoConnector(), base_name)
-            return self.mSolEnvDict[base_name]
+            if root_name not in self.mSolEnvDict:
+                self.mSolEnvDict[root_name] = SolutionEnv(
+                    self.mApp.getMongoConnector(), root_name)
+            return self.mSolEnvDict[root_name]
 
     #===============================================
     @RestAPI.vault_request

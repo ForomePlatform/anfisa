@@ -49,6 +49,7 @@ var sUnitsH = {
         sOpCondH.init();
         sOpNumH.init();
         sOpEnumH.init("filter-cur-cond", 10);
+        sCreateWsH.init();
         this.setup();
     },
     

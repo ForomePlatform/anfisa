@@ -147,6 +147,9 @@ class DataSet(SolutionBroker):
     def getBaseDSName(self):
         return self.mDataInfo.get("base")
 
+    def getRootDSName(self):
+        return self.mDataInfo.get("root")
+
     def getTagsMan(self):
         return None
 
@@ -179,12 +182,13 @@ class DataSet(SolutionBroker):
             "kind": self.mDSKind,
             "note": note,
             "total": self.getTotal(),
+            "root": self.getRootDSName(),
             "date-note": time_label}
         base_h = self.mDataVault.getBaseDS(self)
         if base_h is not None:
             ret["base"] = base_h.getName()
         if navigation_mode:
-            secondary_seq = self.mDataVault.getSecondaryWS(self)
+            secondary_seq = self.mDataVault.getSecondaryWSNames(self)
             if secondary_seq:
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
             ret["doc-support"] = "doc" in self.mDataInfo
