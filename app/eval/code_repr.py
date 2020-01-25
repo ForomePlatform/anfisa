@@ -49,7 +49,7 @@ def formatIfCode(cond_data):
 def formatConditionCode(cond_data):
     rep = StringIO()
     _reprConditionCode(cond_data, rep, False)
-    return rep.getvalue()
+    return rep.getvalue().replace('\f', ' ')
 
 
 #===============================================

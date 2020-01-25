@@ -194,7 +194,7 @@ class SecondaryWsCreation(ExecutionTask):
 
         os.mkdir(ws_dir + "/doc")
         with open(ws_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
-            reportDS(outp, ds_info, mongo_agent)
+            reportDS(outp, ds_info, mongo_agent, self.mDS.getDataInfo())
 
         with open(ws_dir + "/active", "w", encoding = "utf-8") as outp:
             print("", file = outp)

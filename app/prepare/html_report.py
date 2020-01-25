@@ -61,31 +61,31 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
                 use_pygments = True
                 break
 
+    info_sheet = [ (title, ds_info[key]) for title, key in
+        [("Name", "name"), ("Kind", "kind"), ("Variants", "total")]
+    ]
+    info_sheet.append(("Created at", reprDateVal(date_created)))
+    info_sheet.append(("Reloaded at", reprDateVal(date_loaded)))
+    if ds_info["base"] != ds_info["name"]:
+        info_sheet.append(("Base dataset", ds_info["base"]))
+    if base_ds_info:
+        info_sheet.append(("Base variants", base_ds_info["total"]))
+        info_sheet.append(("Base loaded at",
+            reprDateVal(base_ds_info["date_loaded"])))
+    if ds_info["root"] != ds_info["base"]:
+        info_sheet.append(("Root dataset", ds_info["root"]))
+
     startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
         use_pygments)
     print('  <body>', file = output)
     print('    <table class="report-main">', file = output)
-
-    for key, title, val in [
-            ("name", "Name", None),
-            ("kind", "Kind", None),
-            ("total", "Variants", None),
-            (None, "Created at", reprDateVal(date_created)),
-            (None, "Reloaded at", reprDateVal(date_loaded)),
-            (None, "Base dataset", base_ds_info["name"]
-                if base_ds_info is not None else None),
-            (None, "Base variants", base_ds_info["total"]
-                if base_ds_info is not None else None),
-            (None, "Base loaded at", reprDateVal(base_ds_info["date_loaded"])
-                if base_ds_info is not None else None)]:
-        if key is not None:
-            val = ds_info.get(key)
+    for title, val in info_sheet:
         if val is None:
             continue
-        val = str(val)
-        print('<tr><td class="rep-title">%s</td>' % escape(title),
+        print('    <tr><td class="rep-title">%s</td>' % escape(title),
             file = output)
-        print('<td class="rep-val">%s<td></tr>' % escape(val), file = output)
+        print('    <td class="rep-val">%s<td></tr>' % escape(str(val)),
+            file = output)
     print('    </table>', file = output)
 
     if ("versions" in ds_info["meta"]
@@ -109,16 +109,9 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
 
 #===============================================
 def _reportReceipt(output, idx_receipt, receipt):
-    if idx_receipt == 0:
-        receipt_note = None
-    else:
-        receipt_note = ('<p><i>Dataset previously[%d] selected from %s</i></p>'
-            % (-idx_receipt - 1, receipt["base"]))
-
     if receipt["kind"] == "filter":
-        print('<h2>Applied filter</h2>', file = output)
-        if receipt_note:
-            print(receipt_note, file = output)
+        print('<h2>Filter applied in %s</h2>'
+            % escape(receipt["base"]), file = output)
         if "filter-name" in receipt:
             print("<p>Filter name:", '<b>' + escape(receipt["filter-name"])
                 + '</b>', file = output)
@@ -133,9 +126,8 @@ def _reportReceipt(output, idx_receipt, receipt):
         print('</table>', file = output)
     else:
         assert receipt["kind"] == "dtree"
-        print('<h2>Applied decision tree code</h2>', file = output)
-        if receipt_note:
-            print(receipt_note, file = output)
+        print('<h2>Decision tree code applied in %s</h2>'
+            % escape(receipt["base"]), file = output)
         if "dtree-name" in receipt:
             print("<p>Tree name:", '<b>' + escape(receipt["dtree-name"])
                 + '</b>', file = output)

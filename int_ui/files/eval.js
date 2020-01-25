@@ -587,7 +587,7 @@ function reportStatCount(count_info, unit_stat) {
 /*************************************/
 var sCreateWsH = {
     mStage: null,
-    mDSNames: null,
+    mDSNameList: null,
     mSpanModTitle: null,
     mInputModName: null,
     mDivModProblems: null,
@@ -611,7 +611,7 @@ var sCreateWsH = {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
-        this.mDSNames = null;
+        this.mDSNameList = null;
         this.mTaskId = null;
         
         var info = sUnitsH.prepareWsCreate();
@@ -621,6 +621,8 @@ var sCreateWsH = {
         this.mSpanModTitle.innerHTML = 'Create workspace for ' +
             info[0] + ' of ' + info[1];
         var err_msg = "";
+        if (info[0] == info[1])
+            err_msg = "Select subset of variants, operation is trivial";
         if (info[0] >= 9000)
             err_msg = "Too many variants, try to reduce";
         if (info[0] < 1)
@@ -638,16 +640,24 @@ var sCreateWsH = {
     },
     
     _nameReserved: function(dsname) {
-        return this.mDSNames.indexOf(dsname) >= 0;
+        return this.mDSNameList.indexOf(dsname) >= 0;
     },
     
     _setupName: function(dirinfo) {
-        this.mDSNames = dirinfo["reserved"];
+        this.mDSNameList = dirinfo["reserved"];
+        ds_name_parts = sDSName.split('_');
+        if (ds_name_parts[0].toLowerCase() == "xl") {
+            name_idx = 0;
+            name_prefix = "ws";
+        } else {
+            name_idx = ds_name_parts.length;
+            ds_name_parts.push("");
+            name_prefix = "";
+        }        
         var no = 1;
-        var own_name = sDSName.match(/\_(.*)$/)[1];
-        var ws_name;
         while (true) {
-            ws_name = "ws" + no + '_' + own_name;
+            ds_name_parts[name_idx] = name_prefix + no;
+            ws_name = ds_name_parts.join('_');
             if (!this._nameReserved(ws_name))
                 break;
             no += 1;

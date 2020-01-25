@@ -34,10 +34,11 @@ var sCheckFltCurrent = null;
 var sSelectFltNamed  = null;
 var sElFltCurState   = null;
 
-function initWin(workspace_name, common_title) {
+function initWin(workspace_name, common_title, ws_pub_url) {
     sDSName = workspace_name; 
     sDSKind = "ws";
     sCommonTitle = common_title;
+    sWsPubURL = ws_pub_url;
     sUnitsH.init("ds=" + sDSName, false);
     window.name = sCommonTitle + ":" + sDSName;
     document.getElementById("ds-name").innerHTML = sDSName;

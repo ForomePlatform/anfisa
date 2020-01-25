@@ -29,8 +29,8 @@ def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
         js_files = ["ws.js", "filters.js", "eval.js", "func.js",
             "zones.js", "base.js"])
 
-    print('  <body onload="initWin(\'%s\', \'%s\');">' %
-        (workspace.getName(), common_title), file = output)
+    print('  <body onload="initWin(\'%s\', \'%s\', \'%s\');">' %
+        (workspace.getName(), common_title, ws_pub_url), file = output)
     _formPanel(output, workspace.getName(), ws_pub_url)
     print('    <div id="filter-back">', file = output)
     gen_html.formFilterPanel(output)
