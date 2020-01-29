@@ -204,8 +204,8 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 class EnumConvertor(PathValueConvertor):
     def __init__(self, name, path, title, unit_no, vgroup,
-            render_mode, tooltip,
-            sub_kind, variants = None, default_value = None,
+            render_mode, tooltip, sub_kind, variants = None,
+            default_value = None, value_map = None,
             separators = None, compact_mode = False,
             accept_other_values = False, conv_func = None):
         PathValueConvertor.__init__(self, name, path, title, unit_no,
@@ -214,6 +214,7 @@ class EnumConvertor(PathValueConvertor):
         self.mPreVariants = variants
         self.mVariantSet = None
         self.mDefaultValue = default_value
+        self.mValueMap = value_map
         self.mDefaultRet = None
         self.mSeparators = re.compile(separators) if separators else None
         self.mCompactMode = compact_mode
@@ -251,6 +252,11 @@ class EnumConvertor(PathValueConvertor):
                             mod_values.append(v)
             is_ok = True
             mod_values = map(str, mod_values)
+            if self.mValueMap is not None:
+                mod_values = list(mod_values)
+                for idx, variant in enumerate(mod_values):
+                    if variant in self.mValueMap:
+                        mod_values[idx] = self.mValueMap[variant]
             for val in set(mod_values):
                 if (self.mVariantSet is not None
                         and val not in self.mVariantSet):

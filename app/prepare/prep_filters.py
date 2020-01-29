@@ -80,11 +80,11 @@ class FilterPrepareSetH(SolutionBroker):
 
     def statusUnit(self, name, path, title = None,
             variants = None, default_value = "False",
-            accept_other_values = False,
+            accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            "status", variants, default_value,
+            "status", variants, default_value, value_map,
             accept_other_values = accept_other_values))
 
     def presenceUnit(self, name, var_info_seq, title = None,
@@ -96,11 +96,11 @@ class FilterPrepareSetH(SolutionBroker):
     def multiStatusUnit(self, name, path, title = None,
             variants = None, default_value = None,
             separators = None, compact_mode = False,
-            accept_other_values = False, render_mode = None, tooltip = None,
-            conversion = None):
+            accept_other_values = False, value_map = None,
+            render_mode = None, tooltip = None, conversion = None):
         return self._addUnit(prep_unit.EnumConvertor(name, path, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
-            "multi", variants, default_value,
+            "multi", variants, default_value, value_map,
             separators = separators, compact_mode = compact_mode,
             accept_other_values = accept_other_values,
             conv_func = conversion))

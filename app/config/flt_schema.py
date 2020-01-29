@@ -341,14 +341,15 @@ def defineFilterSchema(metadata_record):
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
             title = "Categorized Benign in HGMD",
             default_value = "Not in HGMD",
-            render_mode = "replace(True/Benign, False/Not Benign)")
+            value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
         filters.multiStatusUnit("HGMD_Tags", "/_view/databases/hgmd_tags[]",
             default_value = "None")
 
         # research_only = True
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar",
-            title = "Categorized Benign in ClinVar by all submitters")
+            title = "Categorized Benign in ClinVar by all submitters",
+            value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
         filters.multiStatusUnit("ClinVar_Significance",
             "/__data/clinvar_significance[]",
             title = "Clinical Significance in ClinVar")
@@ -378,7 +379,9 @@ def defineFilterSchema(metadata_record):
         filters.statusUnit("Clinvar_Trusted_Benign",
             "/_filters/clinvar_trusted_benign",
             default_value = "No data",
-            title = "Categorized Benign by Clinvar Trusted Submitters")
+            title = "Categorized Benign by Clinvar Trusted Submitters",
+            value_map = {"True": "Benign by Trusted submitters",
+                "False": "Unknown"})
         filters.multiStatusUnit("LMM_Significance",
             "/__data/lmm", title = "Clinical Significance by LMM")
         filters.multiStatusUnit("GeneDx_Significance",
