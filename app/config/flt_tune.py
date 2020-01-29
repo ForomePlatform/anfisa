@@ -22,9 +22,13 @@
 
 from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
 from app.model.comp_hets import CompHetsUnit, CompoundRequestUnit
+from .favor import FavorSchema
 
 #===============================================
 def tuneUnits(ds_h):
+    if ds_h.getDataSchema() == "FAVOR":
+        FavorSchema.tuneUnits(ds_h)
+        return
     zyg_support = ds_h.getZygositySupport()
     zyg_support.setupX(x_unit = "Chromosome", x_values = ["chrX"])
 

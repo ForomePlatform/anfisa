@@ -38,9 +38,12 @@ from app.config.view_schema import defineViewSchema
 from app.config.solutions import readySolutions
 from app.model.mongo_db import MongoConnector
 #=====================================
-sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
-sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
+try:
+    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
+    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
+except:
+    pass
 
 if sys.version_info < (3, 7):
     from backports.datetime_fromisoformat import MonkeyPatch
@@ -152,6 +155,8 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         pdata_out = TextIOWrapper(pdata_stream,
             encoding = "utf-8", line_buffering = True)
         for record in input_reader:
+            if record["_filters"]["ref"] == None:
+                record["_filters"]["ref"] = ""
             flt_data = filter_set.process(data_rec_no, record)
             view_checker.regValue(data_rec_no, record)
             print(json.dumps(record, ensure_ascii = False), file = vdata_stdin)

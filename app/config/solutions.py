@@ -22,6 +22,7 @@ import os
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
+from .favor import FavorSchema
 #===============================================
 sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
 
@@ -96,8 +97,9 @@ def readySolutions():
     if sSolutionsAreSet:
         return
     sSolutionsAreSet = True
-    base_pack = SolutionPack("BASE")
-    SolutionPack.regDefaultPack(base_pack)
+    FavorSchema.readySolutions()
+
+    base_pack = SolutionPack("CASE")
     SolutionPack.regPack(base_pack)
 
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
@@ -292,13 +294,16 @@ def readySolutions():
 
 
 def completeDsModes(ds_h):
-    family_info = ds_h.getFamilyInfo()
-    trio_seq = family_info.getTrioSeq()
-    if trio_seq:
-        ds_h.addModes({"trio"})
-        if trio_seq[0][0] == "Proband":
-            ds_h.addModes({"trio_base"})
-            if len(family_info) == 3:
-                ds_h.addModes({"trio_pure"})
-    if ds_h.getDataInfo()["meta"].get("cohorts"):
-        ds_h.addModes({"cohorts"})
+    if ds_h.getDataSchema == "CASE":
+        family_info = ds_h.getFamilyInfo()
+        trio_seq = family_info.getTrioSeq()
+        if trio_seq:
+            ds_h.addModes({"trio"})
+            if trio_seq[0][0] == "Proband":
+                ds_h.addModes({"trio_base"})
+                if len(family_info) == 3:
+                    ds_h.addModes({"trio_pure"})
+        if ds_h.getDataInfo()["meta"].get("cohorts"):
+            ds_h.addModes({"cohorts"})
+    elif ds_h.getDataSchema == "FAVOR":
+        FavorSchema.completeDsModes(ds_h)

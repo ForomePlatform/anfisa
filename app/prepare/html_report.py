@@ -61,19 +61,21 @@ def reportDS(output, ds_info, mongo_agent, base_ds_info = None):
                 use_pygments = True
                 break
 
-    info_sheet = [ (title, ds_info[key]) for title, key in
+    info_sheet = [(title, ds_info[key]) for title, key in
         [("Name", "name"), ("Kind", "kind"), ("Variants", "total")]
     ]
     info_sheet.append(("Created at", reprDateVal(date_created)))
     info_sheet.append(("Reloaded at", reprDateVal(date_loaded)))
-    if ds_info["base"] != ds_info["name"]:
+    if ds_info.get("base") is not None:
         info_sheet.append(("Base dataset", ds_info["base"]))
-    if base_ds_info:
-        info_sheet.append(("Base variants", base_ds_info["total"]))
-        info_sheet.append(("Base loaded at",
-            reprDateVal(base_ds_info["date_loaded"])))
-    if ds_info["root"] != ds_info["base"]:
-        info_sheet.append(("Root dataset", ds_info["root"]))
+        if base_ds_info:
+            info_sheet.append(("Base variants", base_ds_info["total"]))
+            info_sheet.append(("Base loaded at",
+                reprDateVal(base_ds_info["date_loaded"])))
+        if ds_info["root"] != ds_info["name"]:
+            info_sheet.append(("Root dataset", ds_info["root"]))
+    else:
+        assert ds_info["root"] == ds_info["name"]
 
     startHtmlReport(output, "Anfisa dataset %s report" % ds_info["name"],
         use_pygments)

@@ -21,7 +21,7 @@
 import sys
 
 from app.prepare.prep_filters import FilterPrepareSetH
-
+from .favor import FavorSchema
 #===============================================
 def _conv_len(arr):
     if arr:
@@ -77,6 +77,12 @@ sConsequenceVariants = [
 
 #===============================================
 def defineFilterSchema(metadata_record):
+    data_schema = metadata_record.get("data_schema")
+    if data_schema == "FAVOR":
+        return FavorSchema.defineFilterSchema(metadata_record)
+    assert data_schema is None or data_schema == "CASE", (
+        "Bad data schema: " + data_schema)
+
     filters = FilterPrepareSetH(metadata_record)
 
     filters.setupZygosity("_zyg", "/__data/zygosity")
@@ -178,7 +184,7 @@ def defineFilterSchema(metadata_record):
 
         filters.intValueUnit("Start_Pos", "/__data/start",
             title = "Start Position",
-            render_mode = "neighborhood", default_value=sys.maxsize)
+            render_mode = "neighborhood", default_value = sys.maxsize)
         filters.intValueUnit("End_Pos", "/__data/end",
             title = "End Position", default_value = 0,
             render_mode = "neighborhood")

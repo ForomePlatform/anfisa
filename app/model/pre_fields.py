@@ -50,16 +50,20 @@ class PresentationFieldPathSeq:
             for path in path_seq]
 
     def process(self, rec_data, result):
-        result[self.mName] = self.mSeparator.join(
-            map(str, [func(rec_data)[0] for func in self.mFuncSeq]))
+        values = []
+        for func in self.mFuncSeq:
+            vvv = func(rec_data)
+            assert len(vvv) > 0, "Not found data path: " + func.getPathRepr()
+            values.append(vvv[0])
+        result[self.mName] = self.mSeparator.join(map(str, values))
 
 #===============================================
 class PresentationData:
     sFields = [
         PresentationFieldPath("_color", "/__data/color_code"),
         PresentationFieldPath("_label", "/__data/label"),
-        PresentationFieldPathSeq("_key", '-',
-            ["/__data/seq_region_name", "/__data/start", "/__data/end"]),
+        PresentationFieldPathSeq("_key", '-', ["/_filters/chromosome",
+            "/_filters/start", "/_filters/ref", "/_filters/alt"]),
         PresentationFieldHash("_rand", "_key")]
 
     @classmethod

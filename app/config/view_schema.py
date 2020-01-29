@@ -22,9 +22,17 @@ from app.view.asp_set import AspectSetH
 from app.view.aspect import AspectH
 from app.view.attr import AttrH
 from app.view.colgrp import ColGroupsH
+from .favor import FavorSchema
 
 #===============================================
 def defineViewSchema(metadata_record = None):
+    data_schema = (metadata_record.get("data_schema")
+        if metadata_record else None)
+    if data_schema == "FAVOR":
+        return FavorSchema.defineViewSchema(metadata_record)
+    assert data_schema is None or data_schema == "CASE", (
+        "Bad data schema: " + data_schema)
+
     aspect_list = [
         AspectH("view_gen", "General", "_view", field = "general"),
         AspectH("view_qsamples", "Quality", "_view",
@@ -38,7 +46,7 @@ def defineViewSchema(metadata_record = None):
             field = "bioinformatics")
     ]
 
-    cohorts = metadata_record.get("cohorts")
+    cohorts = metadata_record.get("cohorts") if metadata_record else None
     if cohorts:
         cohort_columns = [["ALL",  "ALL"]] + [
             [ch["name"],  ch.get("title",  ch["name"])] for ch in cohorts]
@@ -196,8 +204,8 @@ def defineViewSchema(metadata_record = None):
         AttrH("hem", title = "Number of hemizygotes"),
         AttrH("genome_an", title = "Genome AN"),
         AttrH("exome_an", title = "Exome AN"),
-        AttrH("url", title = "URL", kind = "link", is_seq=True),
-        AttrH("popmax", title="PopMax (outbred populations)", ),
+        AttrH("url", title = "URL", kind = "link", is_seq = True),
+        AttrH("popmax", title = "PopMax (outbred populations)", ),
         AttrH("raw_popmax", title = "PopMax (including inbred)",)
     ])
 
@@ -339,7 +347,7 @@ def defineViewSchema(metadata_record = None):
     if cohorts:
         aspects["view_cohorts"].setAttributes([
             AttrH("AF"),
-            AttrH("AF2", title="AF_Hom")])
+            AttrH("AF2", title = "AF_Hom")])
 
     aspects["_main"].setAttributes([
         AttrH("label"),

@@ -45,7 +45,8 @@ class DataSet(SolutionBroker):
     def __init__(self, data_vault, dataset_info, dataset_path,
             sol_pack_name = None):
         SolutionBroker.__init__(self,
-            dataset_info.get("modes"), sol_pack_name)
+            dataset_info["meta"].get("data_schema", "CASE"),
+            dataset_info.get("modes"))
         self.addModes(data_vault.getApp().getRunModes())
         self.mDataVault = data_vault
         self.mDataInfo = dataset_info
@@ -182,11 +183,9 @@ class DataSet(SolutionBroker):
             "kind": self.mDSKind,
             "note": note,
             "total": self.getTotal(),
+            "base": self.getBaseDSName(),
             "root": self.getRootDSName(),
             "date-note": time_label}
-        base_h = self.mDataVault.getBaseDS(self)
-        if base_h is not None:
-            ret["base"] = base_h.getName()
         if navigation_mode:
             secondary_seq = self.mDataVault.getSecondaryWSNames(self)
             if secondary_seq:
@@ -196,6 +195,7 @@ class DataSet(SolutionBroker):
             ret["src-versions"] = self.getSourceVersions()
         if "doc" in self.mDataInfo:
             ret["doc"] = self.mDataInfo["doc"]
+            base_h = self.mDataVault.getBaseDS(self)
             if base_h is not None and "doc" in base_h.getDataInfo():
                 ret["doc-base"] = base_h.getDataInfo()["doc"]
         if not navigation_mode:

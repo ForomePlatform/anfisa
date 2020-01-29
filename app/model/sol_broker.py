@@ -26,11 +26,13 @@ from app.config.a_config import AnfisaConfig
 from .sol_pack import SolutionPack
 #===============================================
 class SolutionBroker(SyncronizedObject):
-    def __init__(self, modes = None, pack_name = None):
+    def __init__(self, data_schema, modes):
         SyncronizedObject.__init__(self)
-        self.mSolPack = SolutionPack.select(pack_name)
+        self.mDataSchema = data_schema
+        self.mSolPack = SolutionPack.select(data_schema)
         self.mLock  = Lock()
         self.mModes = set()
+        self.mModes.add(self.mDataSchema)
         self.addModes(modes)
         self.mStdFilterDict = None
         self.mStdFilterList = None
@@ -40,6 +42,9 @@ class SolutionBroker(SyncronizedObject):
 
     def getSolEnv(self):
         return self.mSolEnv
+
+    def getDataSchema(self):
+        return self.mDataSchema
 
     #===============================================
     def setSolEnv(self, sol_space):

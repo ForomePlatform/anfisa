@@ -21,9 +21,13 @@
 #
 
 from app.view.attr import AttrH
+from .favor import FavorSchema
 
 #===============================================
-def tuneAspects(dataset, aspects):
+def tuneAspects(ds_h, aspects):
+    if ds_h.getDataSchema() == "FAVOR":
+        FavorSchema.tuneAspects(ds_h, aspects)
+        return
     view_gen = aspects["view_gen"]
     view_db = aspects["view_db"]
 
@@ -37,12 +41,12 @@ def tuneAspects(dataset, aspects):
     _resetupAttr(view_db, PMID_AttrH(view_db))
     _resetupAttr(view_db, HGMD_PMID_AttrH(view_db))
 
-    if "meta" not in dataset.getDataInfo():
+    if "meta" not in ds_h.getDataInfo():
         return
-    case = dataset.getDataInfo()["meta"].get("case")
-    samples = dataset.getDataInfo()["meta"].get("samples")
+    case = ds_h.getDataInfo()["meta"].get("case")
+    samples = ds_h.getDataInfo()["meta"].get("samples")
     _resetupAttr(view_gen,
-        IGV_AttrH(dataset.getApp(), view_gen, case, samples))
+        IGV_AttrH(ds_h.getApp(), view_gen, case, samples))
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):

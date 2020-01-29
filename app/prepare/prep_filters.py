@@ -26,7 +26,8 @@ from app.model.sol_broker import SolutionBroker
 #===============================================
 class FilterPrepareSetH(SolutionBroker):
     def __init__(self, metadata_record,  modes = None):
-        SolutionBroker.__init__(self, modes)
+        SolutionBroker.__init__(self,
+            metadata_record.get("data_schema", "CASE"), modes)
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
@@ -130,7 +131,8 @@ class FilterPrepareSetH(SolutionBroker):
         result = dict()
         for unit in self.mUnits:
             unit.process(rec_no, rec_data, result)
-        self.mZygosityData.process(rec_no, rec_data, result)
+        if self.mZygosityData is not None:
+            self.mZygosityData.process(rec_no, rec_data, result)
         return result
 
     def reportProblems(self, output):

@@ -22,7 +22,7 @@
 class FamilyInfo:
     def __init__(self, meta_record):
         self.mMembers = sorted(meta_record["samples"].values(),
-            key = lambda it: it["id"])
+            key = lambda it: it["id"]) if "samples" in meta_record else []
         proband_id = meta_record.get("proband")
         if proband_id is None:
             for it in self.mMembers:

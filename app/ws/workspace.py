@@ -77,8 +77,9 @@ class Workspace(DataSet):
                 zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
             self.mZoneHandlers.append(zone_h)
 
-        self._setAspectHitGroup(
-            *AnfisaConfig.configOption("transcript.view.setup"))
+        if self.getDataSchema() == "CASE":
+            self._setAspectHitGroup(
+                *AnfisaConfig.configOption("transcript.view.setup"))
 
         for filter_h in self.iterSolEntries("filter"):
             filter_h.activate()

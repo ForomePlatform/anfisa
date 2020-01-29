@@ -46,6 +46,9 @@ class _AttrFunc:
     def getPath(self):
         return self.mPath
 
+    def getPathRepr(self):
+        return ''.join(self.mPath)
+
     def isSeq(self):
         return self.mIsSeq
 
