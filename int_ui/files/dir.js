@@ -23,6 +23,9 @@
 var sCommonTitle = null;
 var sWsExtUrl = null;
 var sDSName = null;
+var sDSList = null;
+var sDSDict = null;
+var sCurIdx = null;
 
 function setup(common_title, ws_ext_url) {
     sCommonTitle = common_title;
@@ -40,86 +43,91 @@ function setupSubDir(common_title, ws_ext_url, ds_name) {
 }
 
 function setupDirData(info) {
-    document.getElementById("span-version").innerHTML = info["version"];
-    var tab_cnt = ["<table>"];
-    for (idx = 0; idx < info["workspaces"].length; idx++) {
-        if (sDSName != null) {
-            if (sDSName == info["workspaces"][idx]["name"])
-                renderWS(info["workspaces"][idx], tab_cnt, true);
-            continue;
-        }
-        renderWS(info["workspaces"][idx], tab_cnt);
+    sDSList = info["ds-list"];
+    sDSDict = info["ds-dict"];
+    sCurIdx = null;
+    document.getElementById("app-version").innerHTML = info["version"];
+    document.getElementById("ds-info").innerHTML = "";
+    var rep_seq = [];
+    var idx_from = 0;
+    var idx_to = sDSList.length;
+    if (sDSName) {
+        idx_from = sDSDict[sDSName]["v-idx"];
+        idx_to = sDSDict[sDSName]["v-idx-to"];
     }
-    if (info["xl-datasets"] && info["xl-datasets"].length > 0) {
-        if (sDSName == null) 
-            tab_cnt.push('<tr><td colspan="2"></td></tr>');
-        for (idx = 0; idx < info["xl-datasets"].length; idx++) {
-            if (sDSName != null) {
-                if (sDSName == info["xl-datasets"][idx]["name"])
-                    renderXL(info["xl-datasets"][idx], tab_cnt, true);
-                continue;
-            }
-            renderXL(info["xl-datasets"][idx], tab_cnt);
+    var idx_cur = null;
+    for (idx = idx_from; idx < idx_to; idx++) {
+        ds_name = sDSList[idx];
+        ds_info = sDSDict[ds_name];
+        rep_seq.push('<div id="_ds_entry' + idx + '" ');
+        if (ds_info["kind"]) {
+            rep_seq.push('class="list-ds-entry" onclick="selectDS(' + 
+                idx + ')">');
+            if (idx_cur == null)
+                idx_cur = idx;
         }
+        else
+            rep_seq.push('class="list-ds-empty-entry">');
+        if (ds_info["v-level"] > 0) {
+            spaces = [];
+            for (j = 0; j < ds_info["v-level"]; j++)
+                spaces.push('&emsp;');
+            spaces.push('&#x25cb;&nbsp;')
+            rep_seq.push(spaces.join(''));
+        } else {
+            if (!sDSName) 
+                rep_seq.push(
+                    '<span class="ds-ref" onclick="goToPage(\'SUBDIR\', \'' + 
+                    ds_name + 
+                    '\')" title="To sub-directory dataset page">&#x25b6;</span>&emsp;');
+        }
+        rep_seq.push(ds_name + '</div>');
     }
-    tab_cnt.push("</table>");
-    document.getElementById("div-main").innerHTML = tab_cnt.join('\n');
+    arrangeControls();
+    document.getElementById("dir-list").innerHTML = rep_seq.join('\n');
+    selectDS(idx_cur);
 }
 
-
-function renderWS(ds_info, tab_cnt, subdir_mode) {
-    tab_cnt.push('<tr><td class="name">')
-    if (sWsExtUrl) 
-        tab_cnt.push('<a class="ext-ref" href="' + sWsExtUrl + 
-            '?ds=' + ds_info["name"] + '" target="_blank" ' +
-            'title="To front end">&#x23f5;</a>')
-    tab_cnt.push(reprRef(ds_info["name"], "WS"));
-    tab_cnt.push('<span class="ref-support">');
-    if (ds_info["doc"] != undefined) 
-        tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
-    tab_cnt.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
-    tab_cnt.push('</span>');
-     if (ds_info["base"]) {
-        tab_cnt.push('<span class="ref-support">');
-        tab_cnt.push('<br>&emsp;&lt;-&nbsp;' + reprRefSec(ds_info["base"], "XL"));
-        tab_cnt.push('</span>');
-     }
-    if (ds_info["doc"] != undefined)
-        
-    tab_cnt.push('</td>')
-    tab_cnt.push('<td class="note">' + ds_info["note"].replace('\n', '<br>') + 
-        '</td></tr>');
-}
-
-function renderXL(ds_info, tab_cnt, subdir_mode) {
-    tab_cnt.push('<tr><td class="name">');
-    if (!subdir_mode && ds_info["secondary"]) 
-        tab_cnt.push(reprRefSubDir(ds_info["name"]));
-    tab_cnt.push(reprRef(ds_info["name"], "XL"));
-    tab_cnt.push('<span class="ref-support">');
-    if (ds_info["doc"] != undefined) 
-        tab_cnt.push(reprRef(ds_info["name"], "DOC", "[doc]"));
-    tab_cnt.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
-    tab_cnt.push('</span>');
-    if (ds_info["secondary"]) {
-        for (var idx = 0; idx < ds_info["secondary"].length; idx++) {
-            tab_cnt.push('<br>&emsp;-&gt;&nbsp;' + 
-                reprRefSec(ds_info["secondary"][idx], "WS"));
-        }
+function selectDS(ds_idx) {
+    if (ds_idx == sCurIdx) 
+        return;
+    if (sCurIdx != null) {
+        div_el = document.getElementById("_ds_entry" + sCurIdx);
+        div_el.className = div_el.className.split(' ')[0];
     }
-    tab_cnt.push('</td>')
-    tab_cnt.push('<td class="note">' + ds_info["note"].replace('\n', '<br>') + 
-        '</td></tr>');
+    sCurIdx = ds_idx;
+    div_el = document.getElementById("_ds_entry" + sCurIdx);
+    div_el.className = div_el.className.split(' ')[0] + ' cur';
+    ds_info = sDSDict[sDSList[sCurIdx]];
+    var rep_seq = ['<div id="ds-cur">'];
+    if (ds_info["kind"] == "ws") {
+        if (sWsExtUrl)
+            rep_seq.push('<a class="ext-ref" href="' + sWsExtUrl + 
+                '?ds=' + ds_info["name"] + '" target="_blank" ' +
+                'title="To front end">&#x23f5;</a>')
+        rep_seq.push(reprRef(ds_info["name"], "WS"));
+    } else {
+        rep_seq.push(reprRef(ds_info["name"], "XL"));
+    }
+    rep_seq.push('<span class="ref-zone">');
+    if (ds_info["doc"] != undefined) 
+        rep_seq.push(reprRef(ds_info["name"], "DOC", "[doc]"));
+    rep_seq.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
+    rep_seq.push('<span></div>');
+    if (ds_info["note"]) {
+        rep_seq.push('<div class="ds-note">');
+        rep_seq.push('<p class="comment">Note:');
+        if (ds_info["date-note"] != null)
+            rep_seq.push('<span class="note-date">' +  
+                "Modified at " + timeRepr(ds_info["date-note"]) + '</span>');
+        rep_seq.push('</p><p class="the-note">' + 
+            ds_info["note"].replace('\n', '<br>') + '</p></div>');
+    }
+    document.getElementById("ds-info").innerHTML = rep_seq.join('\n');
 }
 
 function reprRef(ds_name, mode, label) {
     ret = '<span class="ds-ref" onclick="goToPage(\'' + mode + '\', \'' + 
-        ds_name + '\')">' + ((label)? label: ds_name) + '</span>';
-    return ret;
-}
-
-function reprRefSec(ds_name, mode, label) {
-    ret = '<span class="ds-ref-sec" onclick="goToPage(\'' + mode + '\', \'' + 
         ds_name + '\')">' + ((label)? label: ds_name) + '</span>';
     return ret;
 }
@@ -135,4 +143,5 @@ function onModalOff() {
 }
 
 function arrangeControls() {
+    document.getElementById("dir-main").style.height = window.innerHeight - 60;
 }

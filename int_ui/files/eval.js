@@ -587,7 +587,7 @@ function reportStatCount(count_info, unit_stat) {
 /*************************************/
 var sCreateWsH = {
     mStage: null,
-    mDSNameList: null,
+    mDSDir: null,
     mSpanModTitle: null,
     mInputModName: null,
     mDivModProblems: null,
@@ -611,7 +611,7 @@ var sCreateWsH = {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
         }
-        this.mDSNameList = null;
+        this.mDSDir = null;
         this.mTaskId = null;
         
         var info = sUnitsH.prepareWsCreate();
@@ -639,12 +639,12 @@ var sCreateWsH = {
             sCreateWsH._setupName(info);})
     },
     
-    _nameReserved: function(dsname) {
-        return this.mDSNameList.indexOf(dsname) >= 0;
+    _nameReserved: function(ds_name) {
+        return this.mDSDir[ds_name] !=  undefined;
     },
     
     _setupName: function(dirinfo) {
-        this.mDSNameList = dirinfo["reserved"];
+        this.mDSDir = dirinfo["ds-dict"];
         ds_name_parts = sDSName.split('_');
         if (ds_name_parts[0].toLowerCase() == "xl") {
             name_idx = 0;

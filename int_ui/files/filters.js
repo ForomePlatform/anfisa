@@ -873,13 +873,13 @@ var sFiltersH = {
 /*************************************/
 function showExport() {
     relaxView();
-    if (sRecList.length <= 300)
-        res_content = 'Export ' + sRecList.length + ' variants?<br>' +
+    if (getCurCount() <= 300)
+        res_content = 'Export ' + getCurCount() + ' variants?<br>' +
             '<button class="popup" onclick="doExport();">Export</button>' + 
             '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
     else
         res_content = 'Too many variants for export: ' + 
-            sRecList.length + ' > 300.<br>' +
+            getCurCount() + ' > 300.<br>' +
             '<button class="popup" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("export-result");
     res_el.innerHTML = res_content;
@@ -890,7 +890,7 @@ function setupExport(info) {
     res_el = document.getElementById("export-result");
     if (info["fname"]) {
         res_el.className = "popup";
-        res_el.innerHTML = 'Exported ' + sRecList.length + ' variants<br>' +
+        res_el.innerHTML = 'Exported ' + getCurCount() + ' variants<br>' +
         '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
     } else {
         res_el.className = "popup problems";

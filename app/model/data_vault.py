@@ -123,8 +123,8 @@ class DataVault(SyncronizedObject):
                 ds_kind == "xl" and isinstance(ds_h, XLDataset))
             del self.mDataSets[ds_name]
 
-    def getBaseDS(self, ws_h):
-        return self.mDataSets.get(ws_h.getBaseDSName())
+    def getBaseDS(self, ds_h):
+        return self.mDataSets.get(ds_h.getBaseDSName())
 
     def getSecondaryWSNames(self, ds_h):
         ret = []
@@ -143,24 +143,52 @@ class DataVault(SyncronizedObject):
             return self.mSolEnvDict[root_name]
 
     #===============================================
+    @staticmethod
+    def _emptyDSEntry(name, root = None):
+        return {"name": name, "kind": None, "root": name if name else root}
+
+    @classmethod
+    def _entryPath(cls, ds_dict, ds_info):
+        if not ds_info.get("base"):
+            return [ds_info["name"]]
+        return (cls._entryPath(ds_dict, ds_dict[ds_info["base"]])
+            + [ds_info["name"]])
+
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
-        rep = {
-            "version": self.mApp.getVersionCode(),
-            "workspaces": [],
-            "xl-datasets": [],
-            "reserved": []}
-        for ds_name in sorted(self.mDataSets.keys()):
-            ds_h = self.mDataSets[ds_name]
-            if ds_h.getDSKind() == "ws":
-                rep["workspaces"].append(
-                    ds_h.dumpDSInfo(navigation_mode = True))
-            else:
-                rep["xl-datasets"].append(
-                    ds_h.dumpDSInfo(navigation_mode = True))
+        ds_dict =  {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
+            for ds_h in self.mDataSets.values()}
+        for ds_info in ds_dict.values():
+            if ds_info.get("base") and ds_info["base"] not in ds_dict:
+                ds_dict[ds_info["base"]] = self._emptyDSEntry(
+                    ds_info["base"], ds_info["root"])
+            if ds_info["root"] not in ds_dict:
+                ds_dict[ds_info["root"]] = self._emptyDSEntry(
+                    ds_info["root"])
+        ds_sheet = [self._entryPath(ds_dict, ds_info)
+            for ds_info in ds_dict.values()]
+        ds_sheet.sort()
+        ds_list = []
+        for idx, ds_path in enumerate(ds_sheet):
+            ds_info = ds_dict[ds_path[-1]]
+            assert ds_info["name"] == ds_path[-1]
+            ds_info["v-level"] = len(ds_path) - 1
+            ds_info["v-idx"] = len(ds_list)
+            ds_list.append(ds_path[-1])
+            idx_to = idx + 1
+            while (idx_to + 1 < len(ds_sheet)
+                    and len(ds_sheet[idx_to + 1]) > len(ds_path)
+                    and ds_sheet[idx_to + 1][:len(ds_path)] == ds_path):
+                idx_to += 1
+            ds_info["v-idx-to"] = idx_to
         for reserved_path in glob(self.mVaultDir + "/*"):
-            rep["reserved"].append(os.path.basename(reserved_path))
-        return rep
+            name = os.path.basename(reserved_path)
+            if name not in ds_dict:
+                ds_dict[name] = None
+        return {
+            "version": self.mApp.getVersionCode(),
+            "ds-list": ds_list,
+            "ds-dict": ds_dict}
 
     #===============================================
     @RestAPI.vault_request

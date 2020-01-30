@@ -29,34 +29,87 @@ h2 {
     color: #333455; 
 }
 
-p#p-version {
+div#div-version {
     font-style: italic;
     text-align: right;
+    height: 20px;
 }
 
-span#span-version{
+span#app-version{
     font-style: normal;
     text-weight: bold;
 }
 
-table {
+div#dir-main {
     width: 100%;
+    margin: 0px;
+    padding: 0px;
+    display: flex;
+    flex-direction: row;    
 }
 
-td {
+div#dir-list {
+    width: 45%;
+    display: block;
+    overflow: auto;
+}
+
+div#dir-info {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    white-space: nowrap;
     padding: 20px;
 }
 
-td.name {
-    background-color: #333455;
-    text-align: left;
-    vertical-align: top;
-    width: 40%;
-    color: #F0F0F0; 
+div#ds-info {
+    flex-grow: 1;
+    width: 100%;
+    margin: 0px;
+    padding: 0px;
 }
 
-span.ref-support {
+div.list-ds-entry {
+    background-color: #333455;
+    cursor: pointer;
+    color: white;
+    height: 20px;
+    padding: 10px;
+}
+
+div.list-ds-entry.cur {
+    color: yellow;
+    cursor: inherit;
+    font-weight: bold;
+}
+
+div#list-ds-empty-entry {
+    background-color: grey;
+    height: 30px;
+    padding: 10px;
+}
+
+div#ds-cur {
+    background-color: #333455;
+    color: white;
+    font-weight: bold;
+    height: 40px;
+    padding: 10px;
+    width: 100%;
+}
+
+div.ds-note {
+    width: 100%;
+}
+
+p.the-note {
+    border: 1px solid grey;
+}
+
+span.note-date {
     float: right;
+    font-size: 80%;
 }
 
 span.ds-ref {
@@ -64,21 +117,12 @@ span.ds-ref {
     cursor: pointer;
 }
 
-span.ds-ref-sec {
-    cursor: pointer;
-}
-
 span.ds-ref:hover, span.ds-ref-sec:hover {
     color: yellow;
 }
 
-td.note {
-    color: black;
-    background-color: #f6f6f7;
-    font-weight: bold;
-    text-align: left;
-    vertical-align: top;
-    width: 30%;
+span.ref-zone {
+    float: right;
 }
 
 a.ext-ref {

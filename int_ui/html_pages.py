@@ -26,8 +26,14 @@ def dirPage(output, common_title, html_base, ws_pub_url):
     print('''
   <body onload="setup(\'%s\', \'%s\');">
     <h2>%s home directory</h2>
-    <p id="p-version">System version: <span id="span-version"></span></p>
-    <div id="div-main">
+    <div id="dir-main">
+       <div id="dir-list"></div>
+       <div id="dir-info">
+            <div id="div-version">
+                System version:&nbsp;<span id="app-version"</span>
+            </div>
+            <div id="ds-info"></div>
+       </div>
     </div>
   </body>
 </html>''' % (common_title, ws_pub_url, common_title), file = output)
@@ -40,8 +46,14 @@ def subdirPage(output, common_title, html_base, ws_url, ds_h):
     print('''
   <body onload="setupSubDir(\'%s\', \'%s\', \'%s\');">
     <h2>Dataset %s directory</h2>
-    <p id="p-version">System version: <span id="span-version"></span></p>
-    <div id="div-main">
+    <div id="dir-main">
+       <div id="dir-list"></div>
+       <div id="dir-info">
+            <div id="div-version">
+                System version:&nbsp;<span id="app-version"</span>
+            </div>
+            <div id="ds-info"></div>
+       </div>
     </div>
   </body>
 </html>''' % (common_title, ws_url, ds_h.getName(), ds_h.getName()),
