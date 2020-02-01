@@ -249,10 +249,18 @@ def readySolutions():
         cfgPath("ttp.lst"))
     base_pack.regPanel("Symbol", "Immune_Dysregulation",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Symbol", "Autism Spectrum",
+    base_pack.regPanel("Symbol", "Autism_Spectrum",
         cfgPath("autism.lst"))
-    base_pack.regPanel("Symbol", "bgm0424",
-        cfgPath("bgm0424.lst"))
+    base_pack.regPanel("Symbol", "Holoprosencephaly",
+        cfgPath("hpe.lst"))
+    base_pack.regPanel("Symbol", "Tubulinopathies",
+        cfgPath("tubulinopathies.lst"))
+    base_pack.regPanel("Symbol", "Notch_Signaling_Pathway",
+        cfgPath("notch.lst"))
+    base_pack.regPanel("Symbol", "SSH1_Interactors",
+        cfgPath("ssh.lst"))
+    base_pack.regPanel("Symbol", "Wnt1_Interactors",
+        cfgPath("wnt.lst"))
     # base_pack.regPanel("Symbol", "TTP1",
     #     cfgPath("ttp1.lst"))
     # base_pack.regPanel("Symbol", "TTP2",
