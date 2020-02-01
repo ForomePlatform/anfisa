@@ -37,16 +37,12 @@ class RulesUnit(ComplexEnumUnit):
     def isInDTrees(self):
         return False
 
+    def isDetailed(self):
+        return True
+
     def getVariantSet(self):
         return VariantSet([dtree_h.getDTreeName()
             for dtree_h in self.mDS.iterSolEntries("dtree")])
-
-    def isDetailed(self):
-        for dtree_h in self.mDS.iterSolEntries("dtree"):
-            dtree_h.activate()
-            if dtree_h.getFinalCondition().isDetailed():
-                return True
-        return False
 
     def iterComplexCriteria(self, context, variants = None):
         for dtree_h in self.mDS.iterSolEntries("dtree"):

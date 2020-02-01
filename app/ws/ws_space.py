@@ -29,7 +29,7 @@ from .ws_unit import WS_ReservedNumUnit
 class WS_EvalSpace(EvalSpace):
     def __init__(self, ds_h, rec_rand_f):
         EvalSpace.__init__(self, ds_h)
-        self.mTotal = 0
+        self.mTotalCounts = [0, 0]
         self.mGroups = []
         self.mZygRUnits = []
 
@@ -52,11 +52,12 @@ class WS_EvalSpace(EvalSpace):
         return iter(self.mZygRUnits)
 
     def addItemGroup(self, grp_size):
-        self.mGroups.append((self.mTotal, grp_size))
-        self.mTotal += max(1, grp_size)
+        self.mGroups.append((self.mTotalCounts[1], grp_size))
+        self.mTotalCounts[0] += 1
+        self.mTotalCounts[1] += max(1, grp_size)
 
-    def getTotalCount(self):
-        return self.mTotal
+    def getTotalCounts(self):
+        return self.mTotalCounts
 
     def getGroupCount(self):
         return len(self.mGroups)
@@ -119,25 +120,14 @@ class WS_EvalSpace(EvalSpace):
             return lambda idx_set: len(idx_set & base_idx_set) == all_len
         return lambda idx_set: len(idx_set & base_idx_set) > 0
 
-    def reportCounts(self, condition):
-        count, count_items, total_items = condition.getAllCounts()
-        return {
-            "count": count,
-            "transcripts": [count_items, total_items]}
-
     def evalRecSeq(self, condition, expect_count = None):
         return [rec_no
             for rec_no, rec_it_map in condition.iterSelection()]
 
-    def evalTotalCount(self, condition):
+    def evalTotalCounts(self, condition):
         if condition is None:
-            return self.getDS().getTotal()
-        return condition.getAllCounts()[0]
-
-    def evalDetailedTotalCount(self, condition):
-        if condition is None:
-            return self.mTotal
-        return condition.getItemCount()
+            return self.getTotalCounts()
+        return condition.getCounts()
 
 #===============================================
 class WS_Condition(Eval_Condition):
@@ -199,12 +189,12 @@ class WS_Condition(Eval_Condition):
             if group_val.any():
                 yield rec_no, group_val
 
-    def getAllCounts(self):
+    def getCounts(self):
         count_grp, count_items = 0, 0
         for _, rec_it_map in self.iterSelection():
             count_grp += 1
             count_items += rec_it_map.count()
-        return (count_grp, count_items, self.getEvalSpace().getTotalCount())
+        return [count_grp, count_items]
 
     def getItemCount(self):
         return self.mBitArray.count()
@@ -352,7 +342,7 @@ class WS_Or(_WS_Joiner):
 #===============================================
 class WS_None(WS_Condition, CondSupport_None):
     def __init__(self, eval_space):
-        bit_arr = bitarray(eval_space.getTotalCount())
+        bit_arr = bitarray(eval_space.getTotalCounts()[1])
         bit_arr.setall(False)
         WS_Condition.__init__(self, eval_space, "null",
             bit_arr, detailed = False)
@@ -366,7 +356,7 @@ class WS_None(WS_Condition, CondSupport_None):
 #===============================================
 class WS_All(WS_Condition, CondSupport_All):
     def __init__(self, eval_space):
-        bit_arr = bitarray(eval_space.getTotalCount())
+        bit_arr = bitarray(eval_space.getTotalCounts()[1])
         bit_arr.setall(True)
         WS_Condition.__init__(self, eval_space, "all",
             bit_arr, detailed = False)

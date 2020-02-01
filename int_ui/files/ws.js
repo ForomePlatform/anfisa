@@ -66,15 +66,15 @@ function reloadList() {
 }
 
 function setupList(info) {
-    if (info["workspace"] != sDSName)
+    if (info["ds"] != sDSName)
         return;
-    var rep = '<b>' + info["filtered"] + '</b>';
-    if (info["total"] != info["filtered"]) 
-        rep += "&nbsp;/&nbsp;" + info["total"];
+    var rep = '<b>' + info["filtered-counts"][0] + '</b>';
+    if (info["total-counts"][0] != info["filtered-counts"][0]) 
+        rep += "&nbsp;/&nbsp;" + info["total-counts"][0];
     document.getElementById("ws-list-report").innerHTML = rep;
-    rep = '<b>' + info["transcripts"][0] + '</b>';
-    if (info["transcripts"][0] != info["transcripts"][1])
-        rep += "&nbsp;/&nbsp;" + info["transcripts"][1];
+    rep = '<b>' + info["filtered-counts"][1] + '</b>';
+    if (info["total-counts"][1] != info["filtered-counts"][1]) 
+        rep += "&nbsp;/&nbsp;" + info["total-counts"][1];
     document.getElementById("ws-transcripts-report").innerHTML = rep;
     sRecList = info["records"];
     refreshRecList();

@@ -572,7 +572,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 
 function reportStatCount(count_info, unit_stat) {
     if (unit_stat["detailed"]) {
-        cnt_rep = count_info[1] + '(' + count_info[2] + ')';
+        cnt_rep = count_info[2] + '(' + count_info[1] + ')';
         nm = "transcript";
     } else {
         cnt_rep = count_info[1];

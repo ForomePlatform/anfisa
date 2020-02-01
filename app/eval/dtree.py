@@ -376,7 +376,7 @@ class DTreeEval(Evaluation, CaseStory):
             if not point.isActive():
                 continue
             condition = point.actualCondition()
-            point_count = self.getEvalSpace().evalTotalCount(condition)
+            point_count = self.getEvalSpace().evalTotalCounts(condition)[0]
             info_seq[-1][1] = point_count
             if point.getPointKind() == "Return":
                 info_seq[-1][2] = point.getDecision()

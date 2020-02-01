@@ -47,10 +47,10 @@ var sDecisionTree = {
     mTreeCode: null,
     mPoints: null,
     mMarkers: null,
-    mCounts: null,
-    mTotalCount: null,
+    mPointCounts: null,
+    mTotalCounts: null,
     mEvalState: null,
-    mAcceptedCount: null,
+    mAcceptedCounts: null,
     mCurPointNo: null,
     mMarkLoc: null,
     mErrorMode: null,
@@ -76,7 +76,7 @@ var sDecisionTree = {
     
     _setup: function(info) {
         this.mTreeCode = info["code"];
-        this.mTotalCount = info["total"];
+        this.mTotalCounts = info["total-counts"];
         this.mRqId = info["rq_id"];
         this.mEvalStatus = info["eval-status"];
         sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
@@ -85,7 +85,7 @@ var sDecisionTree = {
         this.mPostTreeAction = null;
         this.mPointDelay = [];
         this.mErrorMode = false;
-        this.mCounts = info["counts"];
+        this.mPointCounts = info["point-counts"];
         this.mPoints = info["points"];
         this.mMarkers = info["markers"];
         this._fillTreeTable();
@@ -106,8 +106,14 @@ var sDecisionTree = {
         this.loadDelayed();
     },
 
+    _renderTr: function(tr_count) {
+        if (tr_count)
+            return '&thinsp;<span class="tr-count">/' + tr_count + '</span>';
+        return "";
+    },
+    
     _fillTreeTable: function() {
-        this.mAcceptedCount = 0;
+        this.mAcceptedCounts = (this.mTotalCounts.length > 1)? [0, 0] : [0];
         var list_rep = [sDTreesH.getCurUpdateReport(this.mEvalStatus)];
         
         list_rep.push('<table class="d-tree">');
@@ -118,35 +124,45 @@ var sDecisionTree = {
             p_decision = point[2];
             p_cond = point[3];
             p_html = point[4];
-            p_count = this.mCounts[p_no];
+            p_count = this.mPointCounts[p_no];
             if (p_kind == "Label" || p_kind == "Error") {
-                list_rep.push('<tr><td class="point-no">' + (p_no + 1) + '</td>' +
-                    '<td class="point-code"><div class="highlight">' + p_html + '</div></td>' +
-                    '<td class="point-count-undef">---</td></tr>');
+                list_rep.push('<tr><td class="point-count undef">---</td>' +
+                    '<td class="point-no">' + (p_no + 1) + '</td>' +
+                    '<td class="point-code"><div class="highlight">' + p_html + 
+                    '</div></td></tr>');
                 continue
             }
             list_rep.push('<tr id="p_td__' + p_no + 
                 '" class="active" onclick="sDecisionTree.selectPoint(' + p_no + ');">');
-            list_rep.push('<td class="point-no">' + (p_no + 1) + '</td>');
-            list_rep.push('<td class="point-code"><div class="highlight">' +
-                p_html + '</div></td>');
             if (p_count == null) {
                 this.mPointDelay.push(p_no);
                 count_repr = '<span id="p_count__' + p_no + '">...</span>';
-            } else 
-                count_repr = p_count;
-            if (p_decision) {
-                this.mAcceptedCount += p_count;
-                list_rep.push('<td class="point-count-accept">+' + 
-                    count_repr + '</td>');
             } else {
-                if (p_decision == false) 
-                    list_rep.push(
-                        '<td class="point-count-reject">-' + count_repr + '</td>');
-                else 
-                    list_rep.push(
-                        '<td class="point-count">' + count_repr + '</td>');
+                count_repr = "" + p_count[0];
+                if (p_count.length > 1)
+                    count_repr += this._renderTr(p_count[1]);
+                if (p_decision) {
+                    this.mAcceptedCounts[0] += p_count[0];
+                    if (p_count.length > 1)
+                        this.mAcceptedCounts[1] += p_count[1];
+                }
             }
+            mode = "";
+            sign_mode = "";
+            if (p_decision) {
+                mode = " accept";
+                sign_mode = "+";
+            } else {
+                if (p_decision == false) { 
+                    mode = " reject"
+                    sign_mode = "-";
+                }
+            }            
+            list_rep.push('<td class="point-count' + mode + '">' + 
+                sign_mode + count_repr + '</td>');
+            list_rep.push('<td class="point-no">' + (p_no + 1) + '</td>');
+            list_rep.push('<td class="point-code"><div class="highlight">' +
+                p_html + '</div></td>');
             list_rep.push('</tr>');
         }
         list_rep.push('</table>'); 
@@ -154,7 +170,7 @@ var sDecisionTree = {
     },
     
     _fillNoTree: function() {
-        this.mAcceptedCount = 0;
+        this.mAcceptedCounts = [0];
         document.getElementById("decision-tree").innerHTML = 
             '<div class="error">Tree code has errors, <br/>' +
             '<a onclick="sCodeEditH.show();">Edit</a> ' +
@@ -190,18 +206,24 @@ var sDecisionTree = {
     _loadDelayed: function(info) {
         if (info["rq_id"] != this.mRqId)
             return;
-        for (var p_no = 0; p_no < info["counts"].length; p_no++) {
-            p_count = info["counts"][p_no];
+        for (var p_no = 0; p_no < info["point-counts"].length; p_no++) {
+            p_count = info["point-counts"][p_no];
             if (p_count == null)
                 continue;
             pos = this.mPointDelay.indexOf(p_no);
             if (pos < 0)
                 continue;
             this.mPointDelay.splice(pos, 1);
-            this.mCounts[p_no] = p_count;
-            if (this.mPoints[p_no][2]) 
-                this.mAcceptedCount += p_count;
-            document.getElementById("p_count__" + p_no).innerHTML = "" + p_count;
+            this.mPointCounts[p_no] = p_count;
+            if (this.mPoints[p_no][2]) {
+                this.mAcceptedCounts[0] += p_count[0];
+                if (p_count.length > 1)
+                    this.mAcceptedCounts[1] += p_count[1];
+            }
+            count_repr = "" + p_count[0];
+            if (p_count.length > 1)
+                count_repr += this._renderTr(p_count[1]);
+            document.getElementById("p_count__" + p_no).innerHTML = count_repr;
         }
         this.careControls();
         if (this.mPointDelay.length > 0) {
@@ -216,10 +238,14 @@ var sDecisionTree = {
     },
     
     careControls: function() {
-        var accepted = this.getAcceptedCount();
+        var accepted = this.getAcceptedCounts();
         if (accepted != null) {
-            rep_accepted = accepted;
-            rep_rejected = this.mTotalCount - accepted;
+            rep_accepted = "" + accepted[0];
+            rep_rejected = this.mTotalCounts[0] - accepted[0];
+            if (accepted.length > 0) {
+                rep_accepted += this._renderTr(accepted[1]);
+                rep_rejected += this._renderTr(this.mTotalCounts[1] - accepted[1]);
+            }
         } else {
             rep_accepted = "?";
             rep_rejected = "?";
@@ -294,10 +320,10 @@ var sDecisionTree = {
                 JSON.stringify(["EDIT", "mark", this.mMarkLoc, new_cond])});
     },
     
-    getAcceptedCount: function() {
+    getAcceptedCounts: function() {
         if (this.mPointDelay.length > 0)
             return null;
-        return this.mAcceptedCount;
+        return this.mAcceptedCounts;
     },
     
     hasError: function() {
@@ -305,7 +331,7 @@ var sDecisionTree = {
     },
     
     getTotalCount: function() {
-        return this.mTotalCount;
+        return this.mTotalCounts[0];
     },
     
     getTreeCode: function() {
@@ -329,8 +355,8 @@ var sDecisionTree = {
 var sUnitsH = {
     mDivList: null,
     mItems: null,
-    mCount: null,
-    mTotal: null,
+    mFilteredCounts: null,
+    mTotalCounts: null,
     mUnitMap: null,
     mCurUnit: null,
     mWaiting: false,
@@ -370,11 +396,13 @@ var sUnitsH = {
     _setup: function(info) {
         this.mWaiting = false;
         this.mRqId  = info["rq_id"];
-        this.mCount = info["count"];
-        this.mTotal = info["total"];
-        document.getElementById("list-report").innerHTML = (this.mCount == this.mTotal)?
-            this.mTotal : this.mCount + "/" + this.mTotal;
-        sSubVRecH.reset(this.mCount);
+        this.mFilteredCounts = info["filtered-counts"];
+        this.mTotalCounts = info["total-counts"];
+        document.getElementById("list-report").innerHTML = 
+            (this.mFilteredCounts[0] == this.mTotalCounts[0])?
+                this.mTotalCounts[0] : 
+                this.mFilteredCounts[0] + "/" + this.mTotalCounts[0];
+        sSubVRecH.reset(this.mFilteredCounts[0]);
             
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
@@ -485,12 +513,12 @@ var sUnitsH = {
     },
     
     prepareWsCreate: function() {
-        accepted = sDecisionTree.getAcceptedCount();
+        var accepted = sDecisionTree.getAcceptedCounts();
         if (accepted == null) {
             sDecisionTree.loadDelayed("sCreateWsH.show();");
             return null;
         }
-        return [sDecisionTree.getAcceptedCount(), sDecisionTree.getTotalCount()];
+        return [accepted[0], sDecisionTree.getTotalCount()];
     },
     
     getWsCreateArgs: function() {
@@ -498,7 +526,7 @@ var sUnitsH = {
     },
 
     getCurCount: function() {
-        return this.mCount;
+        return this.mFilteredCounts[0];
     },
     
     sortVisibleDelays: function() {

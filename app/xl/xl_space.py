@@ -27,6 +27,7 @@ class XL_EvalSpace(EvalSpace):
     def __init__(self, ds_h, druid_agent):
         EvalSpace.__init__(self, ds_h)
         self.mDruidAgent = druid_agent
+        self.mTotalCounts = [ds_h.getTotal()]
 
         self.mRandRUnit = ReservedNumUnit(self, "_rand")
         self._addReservedUnit(self.mRandRUnit)
@@ -47,6 +48,9 @@ class XL_EvalSpace(EvalSpace):
 
     def getCondAll(self):
         return XL_All(self)
+
+    def getTotalCounts(self):
+        return self.mTotalCounts
 
     def isDetailed(self):
         return False
@@ -86,17 +90,14 @@ class XL_EvalSpace(EvalSpace):
             return cond.negative()
         return cond
 
-    def reportCounts(self, condition):
-        return {"count": self.evalTotalCount(condition)}
-
-    def evalTotalCount(self, condition = None):
+    def evalTotalCounts(self, condition = None):
         if condition is None:
-            return self.getDS().getTotal()
+            return self.getTotalCounts()
         cond_repr = condition.getDruidRepr()
         if cond_repr is None:
-            return self.getDS().getTotal()
+            return self.getTotalCounts()
         if cond_repr is False:
-            return 0
+            return [0]
         query = {
             "queryType": "timeseries",
             "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
@@ -109,7 +110,7 @@ class XL_EvalSpace(EvalSpace):
             "intervals": [self.mDruidAgent.INTERVAL]}
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
-        return ret[0]["result"]["count"]
+        return [ret[0]["result"]["count"]]
 
     def _evalRecSeq(self, condition, expect_count):
         if condition is None:

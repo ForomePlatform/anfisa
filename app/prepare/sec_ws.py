@@ -65,7 +65,7 @@ class SecondaryWsCreation(ExecutionTask):
             if self.mEval.getFilterName():
                 receipt["filter-name"] = self.mEval.getFilterName()
             condition = self.mEval.getCondition()
-            rec_count = self.mDS.getEvalSpace().evalTotalCount(condition)
+            rec_count = self.mDS.getEvalSpace().evalTotalCounts(condition)[0]
             if (rec_count < 1
                     or rec_count >= AnfisaConfig.configOption("max.ws.size")):
                 self.setStatus("Size is incorrect: %d" % rec_count)

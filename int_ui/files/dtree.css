@@ -224,38 +224,47 @@ table.d-tree tr.active {
     cursor: pointer;
 }
 
-td.point-no {
+table.d-tree td.point-no {
     width: 15px;
-    color: grey;
-    text-align: right;
+    color: white;
+    text-align: center;
+    font-size: 80%;
+    background-color: #D0D0D0;
+    border-right: 6px solid #A0A0A0;
+    border-bottom: 3px solid #A0A0A0;
+    border-left: 6px solid #C0C0C0;
+    border-top: 3px solid #C0C0C0;
+    padding: 0px 5px 0px 5px;
 }
 
 td.point-cond {
     text-align: left;
 }
 
-td.point-count, td.point-count-accept, td.point-count-reject, td.point-count-undef {
-    width: 60px;
-}
-
 td.point-count {
+    width: 80px;
     text-align: right;
     font-style: italic;
     color: #000080;
+    font-size: 90%;
 }
 
-td.point-count-undef {
+td.point-count.undef {
     text-align: center;
     color: #A0A0A0;
 }
 
-td.point-count-accept {
+td.point-count.accept {
     font-weight: bold;
     text-align: left;
     color: #006F00;
 }
 
-td.point-count-reject {
+span.tr-count {
+    font-size: 80%;
+}
+
+table.d-tree td.point-count.reject {
     font-weight: bold;
     text-align: left;
     color: #6F3800;

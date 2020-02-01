@@ -133,10 +133,9 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
         for name, condition in self.iterComplexCriteria(context):
             if base_condition is not None:
                 condition = condition.addAnd(base_condition)
-            info = [name, self.getEvalSpace().evalTotalCount(condition)]
-            if detailed:
-                info.insert(1, self.getEvalSpace().evalDetailedTotalCount(
-                    condition))
+            info = [name] + self.getEvalSpace().evalTotalCounts(condition)
+            if not detailed:
+                info = info[:2]
             val_stat_list.append(info)
         if detailed:
             ret_handle["detailed"] = True

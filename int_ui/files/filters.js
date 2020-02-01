@@ -32,8 +32,8 @@ var sUnitsH = {
     mUnitMap: null,
     mCurUnit: null,
     mCurFuncName: null,
-    mCounts: null,
-    mTotal: null,
+    mTotalCounts: null,
+    mFilteredCounts: null,
     mRqId: null,
     mUnitsDelay: null,
     mWaiting: null,
@@ -91,15 +91,19 @@ var sUnitsH = {
     _setup: function(info) {
         this.mOffline = true;
         this.mWaiting = false;
-        this.mCount = info["count"];
-        this.mTotal = info["total"];
+        this.mFilteredCounts = info["filtered-counts"];
+        this.mTotalCounts = info["total-counts"];
         this.mRqId  = info["rq_id"];
         var el_rep = document.getElementById("list-report");
-        if (el_rep)
-            el_rep.innerHTML = (this.mCount == this.mTotal)? 
-                this.mTotal : this.mCount + "/" + this.mTotal;
+        if (el_rep) {
+            if (this.mFilteredCounts[0] == this.mTotalCounts[0])
+                el_rep.innerHTML = 
+                    this.mFilteredCounts[0] + "/" + this.mTotalCounts[0];
+            else
+                el_rep.innerHTML = this.mFilteredCounts[0] + "";
+        }
         if (sSamplesCtrl)
-            sSamplesCtrl.reset(this.mCount);
+            sSamplesCtrl.reset(this.mFilteredCounts[0]);
         this.mItems = [];
         for (var idx=0; idx < info["stat-list"].length; idx++) {
             if (sOpFuncH.notSupported(info["stat-list"][idx]))
@@ -247,7 +251,7 @@ var sUnitsH = {
     },
     
     prepareWsCreate: function() {
-        return [this.mCount, this.mTotal];
+        return [this.mFilteredCounts[0], this.mTotalCounts[0]];
     },
     
     getWsCreateArgs: function() {
@@ -256,7 +260,7 @@ var sUnitsH = {
     },
     
     getCurCount: function() {
-        return this.mCount;
+        return this.mFilteredCounts[0];
     },
     
     sortVisibleDelays: function() {

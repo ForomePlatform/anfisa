@@ -85,6 +85,6 @@ class EnumStat:
         for idx, variant in enumerate(iter(self.mVariantSet)):
             info = [variant, self.mStat.get(idx, 0)]
             if self.mGroupStat is not None:
-                info.append(self.mGroupStat.get(idx, 0))
+                info.insert(1, self.mGroupStat.get(idx, 0))
             rep_list.append(info)
         ret_handle["variants"] = rep_list

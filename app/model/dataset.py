@@ -263,13 +263,13 @@ class DataSet(SolutionBroker):
                 break
             if zero_idx is not None and idx >= zero_idx:
                 continue
-            counts[idx] = self.getEvalSpace().evalTotalCount(
+            counts[idx] = self.getEvalSpace().evalTotalCounts(
                 dtree_h.getActualCondition(idx))
             needs_more = False
-            if counts[idx] == 0 and dtree_h.checkZeroAfter(idx):
+            if counts[idx][0] == 0 and dtree_h.checkZeroAfter(idx):
                 zero_idx = idx
                 for idx1 in range(zero_idx, len(dtree_h)):
-                    counts[idx1] = 0
+                    counts[idx1] = counts[idx][:]
         return counts
 
     #===============================================
@@ -424,15 +424,14 @@ class DataSet(SolutionBroker):
         filter_h = self._getArgCondFilter(rq_args)
         condition = filter_h.getCondition()
         ret_handle = {
-            "total": self.getTotal(),
             "kind": self.mDSKind,
+            "total-counts": self.getEvalSpace().getTotalCounts(),
+            "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
                 filter_h, time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "rq_id": self._makeRqId()}
-        ret_handle.update(self.getEvalSpace().reportCounts(
-            filter_h.getCondition()))
         ret_handle.update(filter_h.reportInfo())
 
         if self._REST_NeedsBackup(rq_args, 'U'):
@@ -462,12 +461,11 @@ class DataSet(SolutionBroker):
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
         ret_handle = {
-            "total": self.getTotal(),
+            "total-counts": self.getEvalSpace().getTotalCounts(),
+            "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
                 dtree_h, time_end, point_no),
             "rq_id": self._makeRqId()}
-        ret_handle.update(self.getEvalSpace().reportCounts(
-            condition))
         if self._REST_NeedsBackup(rq_args, 'U'):
             stat_seq, _, _ = self._REST_BackupStatUnits(
                 ret_handle["stat-list"])
@@ -533,12 +531,13 @@ class DataSet(SolutionBroker):
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {
-            "total": self.getTotal(),
             "kind": self.mDSKind,
-            "counts": self.prepareDTreePointCounts(
+            "total-counts": self.getEvalSpace().getTotalCounts(),
+            "point-counts": self.prepareDTreePointCounts(
                 dtree_h, time_end = time_end),
             "dtree-list": self.getSolEntryList("dtree"),
             "rq_id": self._makeRqId()}
+
         ret_handle.update(dtree_h.reportInfo())
 
         if self._REST_NeedsBackup(rq_args, 'L'):
@@ -553,7 +552,7 @@ class DataSet(SolutionBroker):
         time_end = self. _getArgTimeEnd(rq_args)
         dtree_h = self._getArgDTree(rq_args)
         return {
-            "counts": self.prepareDTreePointCounts(dtree_h,
+            "point-counts": self.prepareDTreePointCounts(dtree_h,
                 json.loads(rq_args["points"]), time_end),
             "rq_id": rq_args.get("rq_id")}
 

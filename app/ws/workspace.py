@@ -149,12 +149,11 @@ class Workspace(DataSet):
                 "dt": rec_it_map_seq[idx].to01()})
         return ret_handle
 
-    def reportList(self, rec_no_seq, rec_it_map_seq, counts_transctipts):
+    def reportList(self, rec_no_seq, rec_it_map_seq, counts):
         rep = {
-            "workspace": self.getName(),
-            "total": self.getTotal(),
-            "transcripts": counts_transctipts,
-            "filtered": len(rec_no_seq)}
+            "ds": self.getName(),
+            "total-counts": self.mEvalSpace.getTotalCounts(),
+            "filtered-counts": counts}
         rep["records"] = self.reportRecords(rec_no_seq, rec_it_map_seq)
         return rep
 
@@ -196,15 +195,15 @@ class Workspace(DataSet):
         else:
             zone_f = None
         rec_no_seq, rec_it_map_seq = [], []
-        count_transctipts = 0
+        counts = [0, 0]
         for rec_no, rec_it_map in filter_h.getCondition().iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
             rec_no_seq.append(rec_no)
             rec_it_map_seq.append(rec_it_map)
-            count_transctipts += rec_it_map.count()
-        ret_handle = self.reportList(rec_no_seq, rec_it_map_seq,
-            [count_transctipts, self.mEvalSpace.getTotalCount()])
+            counts[0] += 1
+            counts[1] += rec_it_map.count()
+        ret_handle = self.reportList(rec_no_seq, rec_it_map_seq, counts)
         if self._REST_NeedsBackup(rq_args, 'R'):
             ret_handle["records"] = self._REST_BackupRecords(
                 ret_handle["records"])

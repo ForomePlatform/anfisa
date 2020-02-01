@@ -55,6 +55,6 @@ class XLDataset(DataSet):
     #===============================================
     def fiterRecords(self, condition, zone_data = None):
         assert zone_data is None
-        rec_count = self.mEvalSpace.evalTotalCount(condition)
+        rec_count = self.mEvalSpace.evalTotalCounts(condition)[0]
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         return self.mEvalSpace.evalRecSeq(condition, rec_count)
