@@ -42,7 +42,7 @@ try:
     sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
     sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
     sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-except:
+except Exception:
     pass
 
 if sys.version_info < (3, 7):
@@ -155,8 +155,6 @@ def createDataSet(app_config, ds_entry, force_drop, report_lines):
         pdata_out = TextIOWrapper(pdata_stream,
             encoding = "utf-8", line_buffering = True)
         for record in input_reader:
-            if record["_filters"]["ref"] == None:
-                record["_filters"]["ref"] = ""
             flt_data = filter_set.process(data_rec_no, record)
             view_checker.regValue(data_rec_no, record)
             print(json.dumps(record, ensure_ascii = False), file = vdata_stdin)

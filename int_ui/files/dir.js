@@ -79,7 +79,7 @@ function setupDirData(info) {
                 rep_seq.push(
                     '<span class="ds-ref" onclick="goToPage(\'SUBDIR\', \'' + 
                     ds_name + 
-                    '\')" title="To sub-directory dataset page">&#x25b6;</span>&emsp;');
+                    '\')" title="To sub-directory dataset page">&#x1f5c0;</span>&emsp;');
         }
         rep_seq.push(ds_name + '</div>');
     }

@@ -156,7 +156,7 @@ class DataVault(SyncronizedObject):
 
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
-        ds_dict =  {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
+        ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
             for ds_h in self.mDataSets.values()}
         for ds_info in ds_dict.values():
             if ds_info.get("base") and ds_info["base"] not in ds_dict:
