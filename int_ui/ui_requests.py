@@ -26,7 +26,7 @@ from .html_pages import noRecords, dirPage, subdirPage, notFound
 from .html_ws import formWsPage
 from .html_xl import formXLPage
 from .html_dtree import formDTreePage
-from .record import reportWsRecord, reportDsRecord
+from .record import reportRecord
 from .doc_nav import formDocNavigationPage
 #===============================================
 class IntUI:
@@ -62,30 +62,23 @@ class IntUI:
     @classmethod
     def _finishRequest(cls, serv_h, rq_path, rq_args, data_vault):
         if rq_path == "/ws":
-            workspace = data_vault.getDS(rq_args["ds"], "ws")
-            if workspace is None:
+            ds_h = data_vault.getDS(rq_args["ds"], "ws")
+            if ds_h is None:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
             formWsPage(output, cls.sHtmlTitle, cls.sHtmlBase,
-                workspace, cls.sWsPubURL)
+                ds_h, cls.sWsPubURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/rec":
-            workspace = data_vault.getDS(rq_args["ds"], "ws")
+            ds_h = data_vault.getDS(rq_args["ds"])
+            if ds_h is None:
+                return cls.notFoundResponse(serv_h)
             rec_no = int(rq_args.get("rec"))
-            if workspace:
-                output = StringIO()
-                reportWsRecord(output, workspace, rec_no,
-                    rq_args.get("details"), rq_args.get("port"))
-                return serv_h.makeResponse(content = output.getvalue())
-
-        if rq_path == "/ds_rec":
-            dataset = data_vault.getDS(rq_args["ds"])
-            rec_no = int(rq_args.get("rec"))
-            if dataset:
-                output = StringIO()
-                reportDsRecord(output, dataset, rec_no)
-                return serv_h.makeResponse(content = output.getvalue())
+            output = StringIO()
+            reportRecord(output, ds_h, rec_no, rq_args.get("details"),
+                int(rq_args.get("port", -1)))
+            return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/dir":
             output = StringIO()
@@ -93,10 +86,12 @@ class IntUI:
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/subdir":
-            dataset = data_vault.getDS(rq_args["ds"])
+            ds_h = data_vault.getDS(rq_args["ds"])
+            if ds_h is None:
+                return cls.notFoundResponse(serv_h)
             output = StringIO()
             subdirPage(output, cls.sHtmlTitle,
-                cls.sHtmlBase, cls.sWsPubURL, dataset)
+                cls.sHtmlBase, cls.sWsPubURL, ds_h)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/norecords":
@@ -105,12 +100,12 @@ class IntUI:
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/xl_flt":
-            xl_ds = data_vault.getDS(rq_args["ds"], "xl")
-            if xl_ds is None:
+            ds_h = data_vault.getDS(rq_args["ds"], "xl")
+            if ds_h is None:
                 return cls.notFoundResponse(serv_h)
             output = StringIO()
             formXLPage(output, cls.sHtmlTitle, cls.sHtmlBase,
-                xl_ds, cls.sWsPubURL)
+                ds_h, cls.sWsPubURL)
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/dtree":
@@ -123,11 +118,11 @@ class IntUI:
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/doc_nav":
-            dataset = data_vault.getDS(rq_args["ds"])
-            if dataset:
+            ds_h = data_vault.getDS(rq_args["ds"])
+            if ds_h:
                 output = StringIO()
                 formDocNavigationPage(output,
-                    cls.sHtmlTitle, cls.sHtmlBase, dataset)
+                    cls.sHtmlTitle, cls.sHtmlBase, ds_h)
                 return serv_h.makeResponse(content = output.getvalue())
 
         logging.error("BAD server request: " + rq_path)

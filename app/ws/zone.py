@@ -20,8 +20,8 @@
 
 #===============================================
 class ZoneH:
-    def __init__(self, workspace, title):
-        self.mDS = workspace
+    def __init__(self, ds_h, title):
+        self.mDS = ds_h
         self.mTitle = title
 
     def _setTitle(self, title):
@@ -41,8 +41,8 @@ class ZoneH:
 
 #===============================================
 class FilterZoneH(ZoneH):
-    def __init__(self, workspace, title, unit):
-        ZoneH.__init__(self, workspace, title)
+    def __init__(self, ds_h, title, unit):
+        ZoneH.__init__(self, ds_h, title)
         self.mUnit = unit
 
     def getName(self):

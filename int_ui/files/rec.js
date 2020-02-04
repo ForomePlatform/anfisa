@@ -25,10 +25,89 @@ var sViewPort = null;
 var sCurTabEl = null;
 var sBlockedTabEl = null;
 var sBaseAspect = null;
+var sUseTags = null;
 
-var sAloneWS    = null;
-var sAloneRecID = null;
+/**************************************/
+function init_r(port, init_aspect, rec_id, use_tags, ws_name) {
+    sViewPort = port;
+    sBaseAspect = init_aspect;
+    sUseTags = use_tags;
+    if (sViewPort > 0) {
+        tab_port_data = window.parent.sTabPortData;
+        if ( tab_port_data[sViewPort] == null ) {
+            tab_port_data[sViewPort] = init_aspect;
+        }
+    } else {
+        if (sViewPort == 0) {
+            if (window.parent.sSubViewCurAspect == null)
+                window.parent.sSubViewCurAspect = sBaseAspect;
+            else
+                sBaseAspect = window.parent.sSubViewCurAspect;
+        } else {
+            el = document.getElementById("img-wrap");
+            el.innerHTML = "<b>Dataset</b>: " + ws_name + 
+                "<br/><b>Variant</b>: " + rec_id;
+            el.onclick = null;
+            el.className = "info";
+        }
+    }
+    if (sUseTags)
+        initTagsEnv(ws_name, rec_id, (sViewPort > 0)? sCtrl_WS : sCtrl_gen);
+    sStarted = true;
+    if (sViewPort > 0) {
+        window.parent.updateTabCfg();
+    } else {
+        pickAspect(sBaseAspect);
+    }
+    checkCohortCtrl();
+    window.onclick = onClick;
+    window.onresize = arrangeControls;
+    arrangeControls();
+}
 
+
+/**************************************/
+sCtrl_WS = {
+    getCurTag: function() {
+        return window.parent.sCurTag;
+    },
+    
+    updateTagsInfo: function(info) {
+        if (info["marker"]) 
+            parent.window.updateRecordMark(
+                info["marker"][0], info["marker"][1]);
+        parent.window.checkTagsIntVersion(info["tags-version"]);
+    },
+    
+    updateNavigation: function(tag) {
+        window.parent.checkTabNavigation(tag);
+    }
+}
+
+sCtrl_gen = {
+    getCurTag: function() {
+        return null;
+    },
+    
+    updateTagsInfo: function(info) {
+    },
+    
+    updateNavigation: function(tag) {
+    }
+}
+
+/**************************************/
+function onClick(event_ms) {
+    window.parent.sViewH.onclick(event_ms);
+}
+
+function arrangeControls() {
+    document.getElementById("r-cnt-container").style.height = 
+        Math.max(30, window.innerHeight - 10 -
+            document.getElementById("r-tab").style.height);
+}
+
+/**************************************/
 function pickAspect(aspect_id) {
     if (sViewPort > 0) {
         if (sBlockedTabEl != null && sBlockedTabEl.id == "la--" + aspect_id)
@@ -36,6 +115,8 @@ function pickAspect(aspect_id) {
         window.parent.sTabPortData[sViewPort] = aspect_id;
         window.parent.updateTabCfg();
     } else {
+        if (sViewPort == 0)
+            window.parent.sSubViewCurAspect = aspect_id;
         var cur_cnt_id = "a--" + aspect_id;
         tabcontent = document.getElementsByClassName("r-tabcnt");
         for (i = 0; i < tabcontent.length; i++) {
@@ -52,23 +133,27 @@ function pickAspect(aspect_id) {
     }
 }
 
+/**************************************/
 function tabCfgChange() {
-    if (sViewPort < 1) 
-        return;
-    tab_port_data = window.parent.sTabPortData;
-    tab_port_data[0] = !tab_port_data[0];
-    window.parent.updateTabCfg();
+    if (sViewPort > 0) {
+        tab_port_data = window.parent.sTabPortData;
+        tab_port_data[0] = !tab_port_data[0];
+        window.parent.updateTabCfg();
+    }
 }
 
+/**************************************/
 function resetTabPort() {
-    if (sViewPort < 1) 
-        return;
-    window.parent.sTabPortData[sViewPort] = sBaseAspect;
+    if (sViewPort > 0) 
+        window.parent.sTabPortData[sViewPort] = sBaseAspect;
 }
 
+/**************************************/
 function updateCfg(reset_port) {
+    if (sViewPort < 1)
+        return
     var tab_port_data = window.parent.sTabPortData;
-    if (sViewPort == null || tab_port_data[sViewPort] == null)
+    if (tab_port_data[sViewPort] == null)
         return;
     document.getElementById("img-tab2").src = 
         tab_port_data[0]? "ui/images/tab2-exp.png": "ui/images/tab2-col.png";
@@ -97,43 +182,13 @@ function updateCfg(reset_port) {
         sBlockedTabEl = document.getElementById(
             "la--" + tab_port_data[3 - sViewPort]);
         sBlockedTabEl.disabled = true;
-    }        
-}
-
-function init_r(port, init_aspect, ws_name, rec_id) {
-    sViewPort = port;
-    sBaseAspect = init_aspect;
-    if (sViewPort > 0) {
-        tab_port_data = window.parent.sTabPortData;
-        if ( tab_port_data[sViewPort] == null ) {
-            tab_port_data[sViewPort] = init_aspect;
-        }
-    } else {
-        sAloneWS = ws_name;
-        sAloneRecID = rec_id;
-        el = document.getElementById("img-wrap");
-        el.innerHTML = "<b>Dataset</b>: " + ws_name + 
-            "<br/><b>Variant</b>: " + rec_id;
-        el.onclick = null;
-        el.className = "info";
     }
-    initTagsEnv();
-    sStarted = true;
-    if (sViewPort > 0) {
-        window.parent.updateTabCfg();
-    } else {
-        pickAspect(sBaseAspect);
-    }
-    checkCohortCtrl();
-    window.onclick = onClick;
+    arrangeControls();
 }
 
-function onClick(event_ms) {
-    window.parent.onClick(event_ms);
-}
-
+/**************************************/
 function checkCohortCtrl() {
-    if (!window.parent.sCohortList)
+    if (sViewPort < 0 || !window.parent.sCohortList)
         return;
     var cohort_list = window.parent.sCohortList;
     add_rep = ['<br/><p>Cohort visibility:'];
@@ -148,7 +203,10 @@ function checkCohortCtrl() {
     refreshCohorts();
 }
 
+/**************************************/
 function refreshCohorts() {
+    if (sViewPort < 0 || !window.parent.sCohortList)
+        return;
     var cohort_list = window.parent.sCohortList;
     for (idx = 0; idx < cohort_list.length; idx++) {
         check_it = window.parent.sCohortViewCheck[cohort_list[idx]];
@@ -160,7 +218,10 @@ function refreshCohorts() {
     }
 }
 
+/**************************************/
 function _checkCohorts() {
+    if (sViewPort < 0 || !window.parent.sCohortList)
+        return;
     var cnt = 0;
     var cohort_list = window.parent.sCohortList;
     for (idx = 0; idx < cohort_list.length; idx++) {

@@ -98,7 +98,7 @@ pre {
 }
 
 /********************Tab Bar*****************************/
-.r-tab {
+#r-tab {
     display: block;
     height: 40px;
     border-bottom: solid 1px #e0e0e0;
@@ -108,7 +108,7 @@ pre {
 }
 
 /* Style the buttons that are used to open the tab content */
-.r-tab button {
+#r-tab button {
     background-color: #f0f0f0;
     color: black;
     font-weight: bold;
@@ -126,14 +126,14 @@ pre {
     border-bottom: solid 1px #f0f0f0;
 }
 
-.r-tab button.tech {
+#r-tab button.tech {
     font-weight: normal;
     font-size: 12px;
     text-align: center;
 }
     
 /* Create an active/current tablink class */
-.r-tab button.active {
+#r-tab button.active {
     background-color: #ffffff;
     color: black;
     cursor: default;
@@ -145,7 +145,7 @@ pre {
     bottom: -1px;
 }
 
-.r-tab button:disabled, .r-tab button[disabled] {
+#r-tab button:disabled, #r-tab button[disabled] {
     color: #888888;
     cursor: not-allowed;
     border-top: solid 3px #e0e0e0;
@@ -153,7 +153,7 @@ pre {
     border-right: solid 3px #e0e0e0;
 }
 
-.r-tab button:hover {
+#r-tab button:hover {
     border-top: solid 3px #e0e0e0;
     border-left: solid 3px #e0e0e0;
     border-right: solid 3px #e0e0e0;

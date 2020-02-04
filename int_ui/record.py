@@ -22,77 +22,52 @@ from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
-def reportWsRecord(output, workspace, rec_no, details, port):
-    startHtmlPage(output,
-        css_files = ["base.css", "a_rec.css", "tags.css"],
-        js_files = ["a_rec.js", "tags.js", "base.js"])
-    if port == "2":
-        print('<body onload="init_r(2, \'%s\');">' %
-            workspace.getFirstAspectID(), file = output)
-    elif port == "1":
-        print('<body onload="init_r(1, \'%s\');">' %
-            workspace.getLastAspectID(), file = output)
+def reportRecord(output, ds_h, rec_no, details = None, port = -1):
+    css_files = ["rec.css", "base.css"]
+    js_files = ["rec.js", "base.js"]
+    use_tags = "false"
+    if ds_h.getDSKind() == "ws" and port >= 0:
+        css_files.append("tags.css")
+        js_files.append("tags.js")
+        use_tags = "true"
     else:
-        print('<body onload="init_r(0, \'%s\', \'%s\', %d);">' %
-            (workspace.getFirstAspectID(), workspace.getName(), rec_no),
+        assert port < 1
+    startHtmlPage(output, css_files = css_files, js_files = js_files)
+
+    print('<body onload="init_r(%d, \'%s\', %d, %s, \'%s\');">' % (port,
+        ds_h.getLastAspectID() if port == 1 else ds_h.getFirstAspectID(),
+        rec_no, use_tags, ds_h.getName()), file = output)
+
+    print('<div id="r-tab">', file = output)
+    print('<span id="img-wrap" onclick="tabCfgChange();">'
+        '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
+        file = output)
+
+    asp_data_seq = ds_h.getViewRepr(rec_no, details)
+    for asp_data in asp_data_seq:
+        print('<button class="r-tablnk %s" id="la--%s" '
+            'onclick="pickAspect(\'%s\')">%s</button>' %
+            (asp_data["kind"], asp_data["name"], asp_data["name"],
+            AnfisaConfig.decorText(asp_data["title"])), file = output)
+    if use_tags == "true":
+        tags_asp_name = AnfisaConfig.configOption("aspect.tags.name")
+        print('<button class="r-tablnk %s" id="la--%s" '
+            'onclick="pickAspect(\'%s\')">%s</button>' %
+            ("tech",  tags_asp_name, tags_asp_name,
+            AnfisaConfig.textMessage("aspect.tags.title")), file = output)
+    print('</div>', file = output)
+
+    print('<div id="r-cnt-container">', file = output)
+    for asp_data in asp_data_seq:
+        print('<div id="a--%s" class="r-tabcnt">' %
+            asp_data["name"], file = output)
+        _reportAspect(output, asp_data)
+        print('</div>', file = output)
+    if use_tags == "true":
+        print(('<div id="a--%s" class="r-tabcnt">' % tags_asp_name),
             file = output)
-    print('<div class="r-tab">', file = output)
-    print('<span id="img-wrap" onclick="tabCfgChange();">'
-        '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
-        file = output)
-    asp_data_seq = workspace.getViewRepr(rec_no, details)
-    for asp_data in asp_data_seq:
-        print('<button class="r-tablnk %s" id="la--%s" '
-            'onclick="pickAspect(\'%s\')">%s</button>' %
-            (asp_data["kind"], asp_data["name"], asp_data["name"],
-            AnfisaConfig.decorText(asp_data["title"])), file = output)
-    tags_asp_name = AnfisaConfig.configOption("aspect.tags.name")
-    print('<button class="r-tablnk %s" id="la--%s" '
-        'onclick="pickAspect(\'%s\')">%s</button>' %
-        ("tech",  tags_asp_name, tags_asp_name,
-        AnfisaConfig.textMessage("aspect.tags.title")), file = output)
-    print('</div>', file = output)
-
-    print('<div id="r-cnt-container">', file = output)
-    for asp_data in asp_data_seq:
-        print('<div id="a--%s" class="r-tabcnt">' %
-            asp_data["name"], file = output)
-        _reportAspect(output, asp_data)
+        tagsBlock(output)
         print('</div>', file = output)
-    print(('<div id="a--%s" class="r-tabcnt">' % tags_asp_name), file = output)
-    tagsBlock(output)
-    print('</div>', file = output)
-
-    print('</div>', file = output)
-    print('</body>', file = output)
-    print('</html>', file = output)
-
-#===============================================
-def reportDsRecord(output, dataset, rec_no):
-    startHtmlPage(output,
-        css_files = ["base.css", "a_rec.css"],
-        js_files = ["xl_rec.js"])
-    print('<body onload="init_r(\'%s\', \'%s\', %d);">' %
-        (dataset.getFirstAspectID(), dataset.getName(), rec_no), file = output)
-    print('<div class="r-tab">', file = output)
-    print('<span id="img-wrap" onclick="tabCfgChange();">'
-        '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
-        file = output)
-    asp_data_seq = dataset.getViewRepr(rec_no, None)
-    for asp_data in asp_data_seq:
-        print('<button class="r-tablnk %s" id="la--%s" '
-            'onclick="pickAspect(\'%s\')">%s</button>' %
-            (asp_data["kind"], asp_data["name"], asp_data["name"],
-            AnfisaConfig.decorText(asp_data["title"])), file = output)
-    print('</div>', file = output)
-
-    print('<div id="r-cnt-container">', file = output)
-    for asp_data in asp_data_seq:
-        print('<div id="a--%s" class="r-tabcnt">' %
-            asp_data["name"], file = output)
-        _reportAspect(output, asp_data)
-        print('</div>', file = output)
-    print('</div>', file = output)
 
     print('</div>', file = output)
     print('</body>', file = output)

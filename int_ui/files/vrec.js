@@ -162,11 +162,13 @@ var sSubVRecH = {
         this.mCurRecIdx = rec_idx;
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
         new_rec_el.className = new_rec_el.className + " press";
-        var rec_info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
+        rec_info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
+        var args = "rec?ds=" + sDSName + "&rec=" + rec_info["no"] + "&port=0";
+        if (rec_info["dt"])
+            args += "&details=" + rec_info["dt"];
         this.mSpanRecTitle.innerHTML = rec_info["lb"];
         softScroll(new_rec_el);
-        window.frames['rec-frame1'].location.replace(
-            "ds_rec?ds=" + sDSName + "&rec=" + rec_info["no"]);
+        window.frames['rec-frame1'].location.replace(args);
     },
     
     onKey: function(event_key) {
@@ -187,6 +189,5 @@ var sSubVRecH = {
             Math.max(10, el_mod_height - 110);
         document.getElementById("sub-view-rec-wrap").style.height=
             Math.max(10, el_mod_height - 30);
-            
     }
 };

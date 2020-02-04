@@ -136,29 +136,23 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
-    def reportRecords(self, rec_no_seq, rec_it_map_seq):
-        marked_set = self.mTagsMan.getMarkedSet()
-        ret_handle = []
-        for idx, rec_no in enumerate(rec_no_seq):
-            ret_handle.append({
-                "no": rec_no,
-                "lb": escape(self.mTabRecLabel[rec_no]),
-                "cl": AnfisaConfig.normalizeColorCode(
-                    self.mTabRecColor[rec_no]),
-                "mr": rec_no in marked_set,
-                "dt": rec_it_map_seq[idx].to01()})
-        return ret_handle
-
-    def reportList(self, rec_no_seq, rec_it_map_seq, counts):
-        rep = {
-            "ds": self.getName(),
-            "total-counts": self.mEvalSpace.getTotalCounts(),
-            "filtered-counts": counts}
-        rep["records"] = self.reportRecords(rec_no_seq, rec_it_map_seq)
-        return rep
+    def reportRecord(self, rec_no, rec_it_map = None, marked_set = None):
+        ret = {
+            "no": rec_no,
+            "lb": escape(self.mTabRecLabel[rec_no]),
+            "cl": AnfisaConfig.normalizeColorCode(
+                self.mTabRecColor[rec_no])}
+        if marked_set is not None:
+            ret["mr"] = rec_no in marked_set
+        if rec_it_map is not None:
+            ret["dt"] = rec_it_map.to01()
+        return ret
 
     def getRecKey(self, rec_no):
         return self.mTabRecKey[rec_no]
+
+    def getRecRand(self, rec_no):
+        return self.mTabRecRand[rec_no]
 
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
@@ -194,16 +188,20 @@ class Workspace(DataSet):
             zone_f = self.getZone(zone_name).getRestrictF(variants)
         else:
             zone_f = None
-        rec_no_seq, rec_it_map_seq = [], []
         counts = [0, 0]
+        records = []
+        marked_set = self.mTagsMan.getMarkedSet()
         for rec_no, rec_it_map in filter_h.getCondition().iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
-            rec_no_seq.append(rec_no)
-            rec_it_map_seq.append(rec_it_map)
+            records.append(self.reportRecord(rec_no, rec_it_map, marked_set))
             counts[0] += 1
             counts[1] += rec_it_map.count()
-        ret_handle = self.reportList(rec_no_seq, rec_it_map_seq, counts)
+        ret_handle = {
+            "ds": self.getName(),
+            "total-counts": self.mEvalSpace.getTotalCounts(),
+            "filtered-counts": counts,
+            "records": records}
         if self._REST_NeedsBackup(rq_args, 'R'):
             ret_handle["records"] = self._REST_BackupRecords(
                 ret_handle["records"])

@@ -71,11 +71,8 @@ span.stat-unit-title {
 }
 
 div.stat-unit ul {
-    margin-before: 0px;
-    margin-after: 0px;
     margin-top: 0px;
     margin-bottom: 0px;
-    padding-start: 1px;
 }
 
 span.stat-count{

@@ -20,7 +20,7 @@
  *
  */
 
-var sRecTags      = null;
+var sRecTags       = null;
 var sTagOrder      = null;
 var sCheckTags     = null;
 var sCurTagIdx     = null;
@@ -29,6 +29,8 @@ var sTagCntChanged = null;
 var sTimeH         = null;
 var sPrevTag       = null;
 var sHasTags       = null;
+var sTagsArgs      = null;
+var sMasterCtrl    = null;
 
 var sBtnNewTag    = null;
 var sBtnSaveTag   = null;
@@ -41,7 +43,7 @@ var sInpTagName   = null;
 var sInpTagValue  = null;
 var sInpTagNameList = null;
 
-function initTagsEnv() {
+function initTagsEnv(ws_name, rec_id, master_ctrl) {
     sBtnNewTag      = document.getElementById("tg-tag-new"); 
     sBtnCreateTag   = document.getElementById("tg-tag-create"); 
     sBtnSaveTag     = document.getElementById("tg-tag-save"); 
@@ -53,21 +55,13 @@ function initTagsEnv() {
     sInpTagName     = document.getElementById("tg-tag-name"); 
     sInpTagValue    = document.getElementById("tg-tag-value-content");
     sInpTagNameList = document.getElementById("tg-tags-tag-list");
+    sTagsArgs = "ds=" + ws_name +  "&rec=" + rec_id;
+    sMasterCtrl = master_ctrl;
     loadTags(null);
 }
 
-function loadTags(tags_to_update){
-    if (sViewPort > 0) {
-        if (parent.window.sCurRecID == null)
-            return;
-        ws_name = parent.window.sDSName;
-        rec_id = parent.window.sCurRecID;
-    } else {
-        ws_name = sAloneWS;
-        rec_id = sAloneRecID;
-    }
-    
-    var args = "ds=" + ws_name +  "&rec=" + rec_id;
+function loadTags(tags_to_update) {
+    var args = sTagsArgs;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
     ajaxCall("tags", args, setupTags);
@@ -120,7 +114,7 @@ function setupTags(info) {
     if (sTagOrder.length > 0) {
         idx = sTagOrder.indexOf(sPrevTag);
         if (idx < 0 && sViewPort > 0)
-            idx = sTagOrder.indexOf(window.parent.sCurTag);
+            idx = sTagOrder.indexOf(sMasterCtrl.getCurTag());
         pickTag((idx >=0)? idx: 0);
     }
     
@@ -150,14 +144,10 @@ function setupTags(info) {
     option.value = "_note";
     sInpTagNameList.append(option);
     sInpTagNameList.selectedIndex = -1;
-    if (info["marker"]) {
-        parent.window.updateRecordMark(info["marker"][0], info["marker"][1])
-    }
     document.getElementById("tags-time").innerHTML = (info["time"])?
         ('Updated: <span class="note-time">' + 
             timeRepr(info["time"]) + '</span>') : '';
-    
-    parent.window.checkTagsIntVersion(info["tags-version"]);    
+    sMasterCtrl.updateTagsInfo(info);
 }
 
 function updateTagsState() {
@@ -236,7 +226,7 @@ function tagEnvSave(force_it) {
     tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
     sPrevTag = sInpTagName.value;
     loadTags(tags_to_update);
-    window.parent.checkTabNavigation(sPrevTag);
+    sMasterCtrl.updateNavigation(sPrevTag);
 }
 
 function tagEnvCancel() {
@@ -256,7 +246,7 @@ function tagEnvDelete() {
         sPrevTag = null;
         sCurTagIdx = null;
         loadTags(tags_to_update);
-        window.parent.checkTabNavigation(tag_name);
+        sMasterCtrl.updateNavigation(tag_name);
     }
 }
 
@@ -267,7 +257,7 @@ function tagEnvClearAll() {
         sPrevTag = null;
         sCurTagIdx = null;
         loadTags({});
-        window.parent.checkTabNavigation(null);       
+        sMasterCtrl.updateNavigation(null);       
     }
 }
 
@@ -278,7 +268,7 @@ function tagEnvUndo() {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("UNDO");
-        window.parent.checkTabNavigation(null);
+        sMasterCtrl.updateNavigation(null);       
     }
 }
 
@@ -289,7 +279,7 @@ function tagEnvRedo() {
         sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
         sCurTagIdx = null;
         loadTags("REDO");
-        window.parent.checkTabNavigation(null);
+        sMasterCtrl.updateNavigation(null);       
     }
 }
 

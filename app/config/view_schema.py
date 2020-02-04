@@ -127,7 +127,9 @@ def defineViewSchema(metadata_record = None):
             tooltip = "Open this variant in local IGV "
             "(https://software.broadinstitute.org/software/igv/)"),
         AttrH("ucsc", title = "View in UCSC", kind = "place",
-            tooltip = "View this variant in UCSC Browser")
+            tooltip = "View this variant in UCSC Browser"),
+        AttrH("transcripts",
+            title = "Transcripts", is_seq = True),
     ])
 
     aspects["view_qsamples"].setAttributes([

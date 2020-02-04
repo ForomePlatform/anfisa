@@ -21,21 +21,21 @@ from xml.sax.saxutils import escape
 
 import int_ui.gen_html as gen_html
 #===============================================
-def formWsPage(output, common_title, html_base, workspace, ws_pub_url):
+def formWsPage(output, common_title, html_base, ds_h, ws_pub_url):
     gen_html.startHtmlPage(output,
-        common_title + "-WS " + workspace.getName(), html_base,
+        common_title + "-WS " + ds_h.getName(), html_base,
         css_files = ["ws.css", "filters.css", "eval.css",
             "zones.css", "vrec.css", "base.css"],
         js_files = ["ws.js", "filters.js", "eval.js", "func.js",
             "zones.js", "base.js"])
 
     print('  <body onload="initWin(\'%s\', \'%s\', \'%s\');">' %
-        (workspace.getName(), common_title, ws_pub_url), file = output)
-    _formPanel(output, workspace.getName(), ws_pub_url)
+        (ds_h.getName(), common_title, ws_pub_url), file = output)
+    _formPanel(output, ds_h.getName(), ws_pub_url)
     print('    <div id="filter-back">', file = output)
     gen_html.formFilterPanel(output)
     print('    </div>', file = output)
-    _formZonesDiv(output, workspace.iterZones())
+    _formZonesDiv(output, ds_h.iterZones())
     gen_html.formNoteDiv(output)
     gen_html.formCreateWsDiv(output)
 

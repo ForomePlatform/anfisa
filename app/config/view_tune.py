@@ -19,10 +19,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import json
+from xml.sax.saxutils import escape
+from bitarray import bitarray
 
 from app.view.attr import AttrH
 from .favor import FavorSchema
-
 #===============================================
 def tuneAspects(ds_h, aspects):
     if ds_h.getDataSchema() == "FAVOR":
@@ -47,6 +49,8 @@ def tuneAspects(ds_h, aspects):
     samples = ds_h.getDataInfo()["meta"].get("samples")
     _resetupAttr(view_gen,
         IGV_AttrH(ds_h.getApp(), view_gen, case, samples))
+
+    view_gen[view_gen.find("transcripts")].setReprFunc(reprGenTranscripts)
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
@@ -77,10 +81,10 @@ class UCSC_AttrH(AttrH):
         AttrH.__init__(self, "UCSC")
         self.setAspect(view_gen)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        start = int(top_rec_obj["__data"]["start"])
-        end = int(top_rec_obj["__data"]["end"])
-        region_name = top_rec_obj["__data"]["seq_region_name"]
+    def htmlRepr(self, obj, v_context):
+        start = int(v_context["data"]["__data"]["start"])
+        end = int(v_context["data"]["__data"]["end"])
+        region_name = v_context["data"]["__data"]["seq_region_name"]
         link1 = self.makeLink(region_name, start, end, 10)
         link2 = self.makeLink(region_name, start, end, 250)
         return ('<table cellpadding="50"><tr><td>'
@@ -103,8 +107,8 @@ class GTEx_AttrH(AttrH):
             tooltip = "View this gene on GTEx portal")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["_view"]["general"]["genes"]
+    def htmlRepr(self, obj, v_context):
+        genes = v_context["data"]["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -128,8 +132,8 @@ class OMIM_AttrH(AttrH):
         AttrH.__init__(self, "OMIM")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["_view"]["general"]["genes"]
+    def htmlRepr(self, obj, v_context):
+        genes = v_context["data"]["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -153,8 +157,8 @@ class GREV_AttrH(AttrH):
             tooltip = "Search GeneReviews®")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["_view"]["general"]["genes"]
+    def htmlRepr(self, obj, v_context):
+        genes = v_context["data"]["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -179,8 +183,8 @@ class MEDGEN_AttrH(AttrH):
             title = "MedGen", tooltip = "Search MedGen")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["_view"]["general"]["genes"]
+    def htmlRepr(self, obj, v_context):
+        genes = v_context["data"]["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -203,8 +207,8 @@ class GENE_CARDS_AttrH(AttrH):
             title = "GeneCards", tooltip = "Read GeneCards")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        genes = top_rec_obj["_view"]["general"]["genes"]
+    def htmlRepr(self, obj, v_context):
+        genes = v_context["data"]["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
@@ -232,11 +236,11 @@ class BEACONS_AttrH(AttrH):
                       "observed the same variant")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, top_rec_obj):
-        chrom = top_rec_obj["__data"]["seq_region_name"]
-        pos = top_rec_obj["__data"]["start"]
-        ref = top_rec_obj["_filters"]["ref"]
-        alt = top_rec_obj["_filters"]["alt"]
+    def htmlRepr(self, obj, v_context):
+        chrom = v_context["data"]["__data"]["seq_region_name"]
+        pos = v_context["data"]["__data"]["start"]
+        ref = v_context["data"]["_filters"]["ref"]
+        alt = v_context["data"]["_filters"]["alt"]
 
         url = self.makeLink(chrom, pos, ref, alt)
         link = (('<span title="Search Beacons">')
@@ -256,11 +260,11 @@ class PMID_AttrH(AttrH):
             title = "Found in PubMed", tooltip = "PubMed Abstracts")
         self.setAspect(view)
 
-    def get_pmids(self, top_rec_obj):
-        return top_rec_obj["_view"]["databases"]["references"]
+    def get_pmids(self, v_context):
+        return v_context["data"]["_view"]["databases"]["references"]
 
-    def htmlRepr(self, obj, top_rec_obj):
-        pmids = self.get_pmids(top_rec_obj)
+    def htmlRepr(self, obj, v_context):
+        pmids = self.get_pmids(v_context)
         if (not pmids):
             return None
         links = []
@@ -278,8 +282,8 @@ class HGMD_PMID_AttrH(PMID_AttrH):
             title = "HGMD PMIDs", tooltip = "PubMed Abstracts (from HGMD)")
         self.setAspect(view)
 
-    def get_pmids(self, top_rec_obj):
-        return top_rec_obj["__data"]["hgmd_pmids"]
+    def get_pmids(self, v_context):
+        return v_context["data"]["__data"]["hgmd_pmids"]
 
 #===============================================
 class IGV_AttrH(AttrH):
@@ -304,13 +308,13 @@ class IGV_AttrH(AttrH):
             "&genome=hg19&merge=false&name=%s") % (
                 file_urls, ",".join(samples_names))
 
-    def htmlRepr(self, obj, top_rec_obj):
+    def htmlRepr(self, obj, v_context):
         if self.mPreUrl is None:
             return None
-        start = int(top_rec_obj["__data"]["start"])
-        end = int(top_rec_obj["__data"]["end"])
+        start = int(v_context["data"]["__data"]["start"])
+        end = int(v_context["data"]["__data"]["end"])
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
-            top_rec_obj["__data"]["seq_region_name"],
+            v_context["data"]["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
         return ('<table><tr><td><span title="For this link to work, '
             + 'make sure that IGV is running on your computer">'
@@ -319,3 +323,25 @@ class IGV_AttrH(AttrH):
             + '"https://software.broadinstitute.org/software/igv/download"'
             + ' target="_blank">'
             + 'Download IGV</a></td></tr></table>', "norm")
+
+#===============================================
+def reprGenTranscripts(val, v_context):
+    if not val:
+        return None
+    if "details" in v_context:
+        details = bitarray(v_context["details"])
+    else:
+        details = None
+
+    ret_handle = ['<ul>']
+    for idx, it in enumerate(val):
+        if details is not None and details[idx]:
+            mod = ' class="hit"'
+        else:
+            mod = ''
+        ret_handle.append(
+            "<li%s><b>%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>"
+            % (mod, escape(it.get("id", "?")), escape(it.get("gene", "?")),
+            escape(json.dumps(it.get("transcript_annotations", "?")))))
+    ret_handle.append("</ul>")
+    return ('\n'.join(ret_handle), "norm")

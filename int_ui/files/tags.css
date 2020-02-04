@@ -106,6 +106,7 @@ span#tg-filters-list.empty {
 
 div#tg-tags-wrap-list {
     flex-grow: 1;
+    height: 150px;
     overflow: hidden;
     display: grid;
     border: 1px solid black;

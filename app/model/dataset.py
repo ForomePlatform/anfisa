@@ -66,9 +66,9 @@ class DataSet(SolutionBroker):
             self.addModes({"ZYG"})
         self.mZygSupport = None
 
-        self.mViewContext = None
+        self.mViewContext = dict()
         if self.mFamilyInfo.getCohortList():
-            self.mViewContext = {"cohorts": self.mFamilyInfo.getCohortMap()}
+            self.mViewContext["cohorts"] = self.mFamilyInfo.getCohortMap()
             view_aspect = AnfisaConfig.configOption("view.cohorts.aspect")
             self.mAspects[view_aspect]._setViewColMode("cohorts")
         completeDsModes(self)
@@ -136,7 +136,11 @@ class DataSet(SolutionBroker):
 
     def getViewRepr(self, rec_no, details = None):
         rec_data = self.getRecordData(rec_no)
-        return self.mAspects.getViewRepr(rec_data, details, self.mViewContext)
+        v_context = self.mViewContext.copy()
+        if details is not None:
+            v_context["details"] = details
+        v_context["data"] = rec_data
+        return self.mAspects.getViewRepr(rec_data, v_context)
 
     def getSourceVersions(self):
         if "versions" in self.mDataInfo["meta"]:

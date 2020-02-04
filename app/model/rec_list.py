@@ -26,38 +26,45 @@ from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 #===============================================
 class RecListTask(ExecutionTask):
-
     sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
     sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
     sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
 
-    def __init__(self, dataset, condition, rest_backup_records = False):
+    def __init__(self, ds_h, condition, rest_backup_records = False):
         ExecutionTask.__init__(self, "Prepare variants...")
-        self.mDS = dataset
+        self.mDS = ds_h
         self.mCondition = condition
         self.mRestBackRec = rest_backup_records
+        self.mResSamples = None
+        self.mResFull = None
 
-    def execIt(self):
-        if self.mDS.getDSKind() == "ws":
-            q_samples, q_full = False, True
-            rec_no_seq = self.mDS.getEvalSpace().evalRecSeq(self.mCondition)
+    def _detectModes(self, rec_count):
+        if rec_count > self.sViewCountFull:
+            self.mResSamples = []
+        elif rec_count <= self.sViewMinSamples:
+            self.mResFull = []
         else:
-            rec_no_seq = self.mDS.getEvalSpace().evalSampleList(
-                self.mCondition, self.sViewCountFull + 5)
-            if len(rec_no_seq) > self.sViewCountFull:
-                rec_no_seq = rec_no_seq[:self.sViewCountSamples]
-                q_samples, q_full = True, False
-            elif len(rec_no_seq) <= self.sViewMinSamples:
-                q_samples, q_full = False, True
-            else:
-                q_samples, q_full = True, True
+            self.mResSamples = []
+            self.mResFull = []
 
+    def _reportRecord_XL(self, rec_no, rec_data):
+        return {
+            "no": rec_no,
+            "lb": escape(rec_data.get("_label")),
+            "cl": AnfisaConfig.normalizeColorCode(
+                rec_data.get("_color"))}
+
+    def collectRecords_XL(self):
+        rec_no_seq = self.mDS.getEvalSpace().evalSampleList(
+            self.mCondition, self.sViewCountFull + 5)
+        self._detectModes(len(rec_no_seq))
+        rec_no_seq = rec_no_seq[:self.sViewCountFull]
         total = self.mDS.getTotal()
         step_cnt = total // 100
         cur_progress = 0
         next_cnt = step_cnt
         self.setStatus("Preparation progress: 0%")
-        rec_no_dict = {rec_no: None for rec_no in rec_no_seq}
+        rec_dict = {rec_no: None for rec_no in rec_no_seq}
         with self.mDS._openPData() as inp:
             pdata_inp = TextIOWrapper(inp,
                 encoding = "utf-8", line_buffering = True)
@@ -67,25 +74,42 @@ class RecListTask(ExecutionTask):
                     cur_progress += 1
                     self.setStatus("Preparation progress: %d%s" %
                         (min(cur_progress, 100), '%'))
-                if rec_no not in rec_no_dict:
+                if rec_no not in rec_dict:
                     continue
-                pre_data = json.loads(line.strip())
-                rec_no_dict[rec_no] = {
-                    "no": rec_no,
-                    "lb": escape(pre_data.get("_label")),
-                    "cl": AnfisaConfig.normalizeColorCode(
-                        pre_data.get("_color"))}
+                rec_dict[rec_no] = self._reportRecord_XL(
+                    rec_no, json.loads(line.strip()))
         self.setStatus("Finishing")
-        ret = dict()
-        if q_samples:
-            ret["samples"] = [rec_no_dict[rec_no]
+        if self.mResSamples is not None:
+            self.mResSamples = [rec_dict[rec_no]
                 for rec_no in rec_no_seq[:self.sViewCountSamples]]
-            if self.mRestBackRec:
-                ret["samples"] = self.mDS._REST_BackupRecords(ret["samples"])
-        if q_full:
-            ret["records"] = [rec_no_dict[rec_no]
+        if self.mResFull is not None:
+            self.mResFull = [rec_dict[rec_no]
                 for rec_no in sorted(rec_no_seq)]
-            if self.mRestBackRec:
-                ret["records"] = self.mDS._REST_BackupRecords(ret["records"])
+
+    def collectRecords_WS(self):
+        req_rep_seq = []
+        rand_sheet = []
+        for rec_no, rec_it_map in self.mCondition.iterSelection():
+            req_rep_seq.append(self.mDS.reportRecord(rec_no, rec_it_map))
+            rand_sheet.append((self.mDS.getRecRand(rec_no), len(rand_sheet)))
+        self._detectModes(len(req_rep_seq))
+        self.mResFull = req_rep_seq
+        if self.mResSamples is not None:
+            self.mResSamples = [req_rep_seq[idx]
+                for _, idx in sorted(rand_sheet)[:self.sViewCountSamples]]
+
+    def execIt(self):
+        if self.mDS.getDSKind() == "ws":
+            self.collectRecords_WS()
+        else:
+            self.collectRecords_XL()
+        ret = dict()
+        if self.mResSamples:
+            ret["samples"] = self.mResSamples
+        if self.mResFull:
+            ret["records"] = self.mResFull
+        if self.mRestBackRec:
+            for key in ("samples", "records"):
+                ret[key] = self.mDS._REST_BackupRecords(ret[key])
         self.setStatus("Done")
         return ret

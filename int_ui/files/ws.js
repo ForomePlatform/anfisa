@@ -457,5 +457,3 @@ function checkTagsIntVersion(tags_int_version) {
 function checkTabNavigation(tag_name) {
     sTagSupportH.checkNavigation(tag_name);
 }
-
-

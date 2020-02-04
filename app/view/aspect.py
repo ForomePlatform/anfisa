@@ -122,7 +122,7 @@ class AspectH:
             mode = data["mode"])
 
     #===============================================
-    def getViewRepr(self, rec_data, details = None, view_context = None):
+    def getViewRepr(self, rec_data, view_context = None):
         ret = {
             "name": self.mName,
             "title": self.mTitle,
@@ -139,7 +139,7 @@ class AspectH:
         hit_columns = None
         if self.mColGroups:
             objects, prefix_head, hit_columns = self.mColGroups.formColumns(
-                objects, details)
+                objects, view_context.get("details"))
             if prefix_head:
                 ret["colhead"] = [[escape(title), count]
                     for title, count in prefix_head]
@@ -152,7 +152,7 @@ class AspectH:
             values = []
             cnt_good = 0
             for obj in objects:
-                obj_repr = attr.htmlRepr(obj, rec_data)
+                obj_repr = attr.htmlRepr(obj, view_context)
                 if obj_repr is not None:
                     cnt_good += (obj_repr != ('-', "none"))
                     values.append(obj_repr)

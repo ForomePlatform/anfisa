@@ -178,7 +178,7 @@ class AnfisaApp:
                 + rep_out.getvalue())
         assert is_ok
         aspects = AspectSetH.load(view_aspects.dump())
-        return aspects.getViewRepr(record)
+        return aspects.getViewRepr(record, dict())
 
     @classmethod
     def runTask(cls, task):

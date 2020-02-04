@@ -37,6 +37,7 @@ class AttrH:
         self.mKinds = kind.split() if kind else ["norm"]
         self.mToolTip = tooltip
         self.mIsSeq = is_seq
+        self.mReprFunc = None
 
     def setAspect(self, asp):
         self.mAspect = asp
@@ -69,6 +70,9 @@ class AttrH:
     def getFullName(self):
         return self.mAspect.getName() + '.' + self.mName
 
+    def setReprFunc(self, repr_func):
+        self.mReprFunc = repr_func
+
     #===============================================
     def dump(self):
         ret = {
@@ -84,9 +88,11 @@ class AttrH:
             is_seq = data["is_seq"], tooltip = data.get("tooltip"))
 
     #===============================================
-    def htmlRepr(self, obj, top_rec_obj):
+    def htmlRepr(self, obj, view_context):
         try:
             val_obj = obj.get(self.mName) if obj else None
+            if self.mReprFunc:
+                return self.mReprFunc(val_obj, view_context)
             repr_text = None
             if val_obj == 0 and isinstance(val_obj, int):
                 return ("0", self.getMainKind())

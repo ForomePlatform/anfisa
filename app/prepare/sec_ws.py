@@ -31,10 +31,10 @@ from .html_report import reportDS
 
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, dataset, ws_name, eval_h,
+    def __init__(self, ds_h, ws_name, eval_h,
             markup_batch = None, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
-        self.mDS = dataset
+        self.mDS = ds_h
         self.mWSName = ws_name
         self.mEval = eval_h
         self.mMarkupBatch = markup_batch

@@ -26,8 +26,8 @@ from .zone import ZoneH
 
 #===============================================
 class TagsManager(ZoneH):
-    def __init__(self, workspace, check_tag_list):
-        ZoneH.__init__(self, workspace, "_tags")
+    def __init__(self, ds_h, check_tag_list):
+        ZoneH.__init__(self, ds_h, "_tags")
         self.mTagSets = defaultdict(set)
         self.mIntVersion = 0
         self.mMarkedSet = set()
