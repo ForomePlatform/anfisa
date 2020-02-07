@@ -54,8 +54,8 @@ class RestAgent:
                 + add_path + " response: " + str(res.status)
                 + " reason: " + str(res.reason))
             if res.status != 200:
-                raise RuntimeError("Druid call failure:\n"
-                    + str(content, "utf-8"))
+                raise RuntimeError(("Druid call failure (%r):\n" % res.status)
+                    + str(content, "utf-8") + '\n========')
         finally:
             res.close()
         if method == "DELETE":

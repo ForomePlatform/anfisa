@@ -89,6 +89,24 @@ class Worker(threading.Thread):
             task_h.execIt(self.mMaster)
 
 #===============================================
+class PeriodicalWorker(threading.Thread):
+    def __init__(self, master, name, func, timeout):
+        threading.Thread.__init__(self)
+        self.mMaster = master
+        self.mName = name
+        self.mFunc = func
+        self.mTimeout = timeout
+        self.start()
+
+    def run(self):
+        while True:
+            try:
+                self.mFunc()
+            except Exception:
+                logException("Periodic work %s failed" % self.mName)
+            self.mMaster._sleep(self.mTimeout)
+
+#===============================================
 class JobPool:
     def __init__(self, thread_count, pool_size):
         self.mThrCondition = threading.Condition()
@@ -103,9 +121,16 @@ class JobPool:
 
         self.mWorkers = [Worker(self)
             for idx in range(int(thread_count))]
+        self.mPeriodicalWorkers = dict()
 
     def getLock(self):
         return self.mLock
+
+    def addPeriodicalWorker(self, name, func, timeout):
+        with self.mThrCondition:
+            assert name not in self.mPeriodicalWorkers
+            self.mPeriodicalWorkers[name] = PeriodicalWorker(
+                self, name, func, timeout)
 
     def close(self):
         with self.mThrCondition:
@@ -113,7 +138,16 @@ class JobPool:
             self.mThrCondition.notify()
         for _ in range(1000):
             with self.mThrCondition:
-                if all(not w.is_alive() for w in self.mWorkers):
+                needs_wait = False
+                for w in self.mPeriodicalWorkers.values():
+                    if w.is_alive():
+                        needs_wait = True
+                        break
+                for w in self.mWorkers:
+                    if w.is_alive():
+                        needs_wait = True
+                        break
+                if not needs_wait:
                     return
             time.sleep(.001)
 
@@ -145,6 +179,10 @@ class JobPool:
                     if len(self.mTaskPool) > 0:
                         return self.mTaskPool.pop()
                 self.mThrCondition.wait()
+
+    def _sleep(self, timeout):
+        with self.mThrCondition:
+            self.mThrCondition.wait_for(lambda: self.mTerminating, timeout)
 
     def askTaskStatus(self, task_uid):
         with self.mLock:

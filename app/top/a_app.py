@@ -76,6 +76,10 @@ class AnfisaApp:
             AnfisaConfig.configOption("job.pool.threads"),
             AnfisaConfig.configOption("job.pool.size"))
 
+        cls.sJobPool.addPeriodicalWorker("vault_update",
+            cls.sDataVault.scanAll,
+            float(cls.sConfig.get("job.update.timeout", 10)))
+
         signal.signal(signal.SIGTERM, terminateAll)
         signal.signal(signal.SIGHUP, terminateAll)
         signal.signal(signal.SIGINT, terminateAll)

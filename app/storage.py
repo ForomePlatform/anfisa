@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, gzip, codecs, json, os, shutil, re,  time
+import sys, gzip, codecs, json, os, shutil, re, time, logging
 from argparse import ArgumentParser
 from io import StringIO, TextIOWrapper
 from datetime import datetime
@@ -383,6 +383,8 @@ class DSEntry:
 
 #===============================================
 if __name__ == '__main__':
+    logging.root.setLevel(logging.INFO)
+
     parser = ArgumentParser()
     parser.add_argument("-d", "--dir",
         help = "Storage directory control file")

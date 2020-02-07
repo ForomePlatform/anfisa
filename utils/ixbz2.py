@@ -136,12 +136,12 @@ class FormatterIndexBZ2:
 
     def close(self):
         self._makeChunk(q_final = True)
-        tab_content = self.mIdxTable.tostring()
+        tab_content = self.mIdxTable.tobytes()
         tab_loc = array('L')
         tab_loc.extend([self.mFile.tell(), len(tab_content)])
         self.mFile.write(tab_content)
         self.mFile.seek(6)
-        self.mFile.write(tab_loc.tostring())
+        self.mFile.write(tab_loc.tobytes())
         self.mFile.close()
         if self.mReportOutput is not None:
             self.mReportOutput.append((

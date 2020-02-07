@@ -37,43 +37,62 @@ class DataVault(SyncronizedObject):
         self.mLock  = Lock()
         self.mDataSets = dict()
         self.mSolEnvDict = dict()
+        self.mScanModeLevel = 0
+        self.scanAll(False)
 
-        workspaces = []
         names = [[], []]
-        for active_path in glob(self.mVaultDir + "/*/active"):
+        for ds_h in self.mDataSets.values():
+            if ds_h.getDSKind() == "xl":
+                names[0].append(ds_h.getName())
+            else:
+                names[1].append(ds_h.getName())
+        logging.info("Vault %s started with %d/%d datasets" %
+            (self.mVaultDir, len(names[0]), len(names[1])))
+        if len(names[0]) > 0:
+            logging.info("XL-datasets: " + " ".join(sorted(names[0])))
+        if len(names[1]) > 0:
+            logging.info("WS-datasets: " + " ".join(sorted(names[1])))
+
+    def scanAll(self, report_it = True):
+        with self:
+            if self.mScanModeLevel > 0:
+                self.mScanModeLevel = 2
+                return False
+            self.mScanModeLevel = 1
+        while True:
+            self._scanAll(report_it)
+            with self:
+                if self.mScanModeLevel < 2:
+                    self.mScanModeLevel = 0
+                    return True
+
+    def _scanAll(self, report_it):
+        prev_set = set(self.mDataSets.keys())
+        new_path_list = list(glob(self.mVaultDir + "/*/active"))
+        new_set = set()
+        for active_path in new_path_list:
             ds_path = os.path.dirname(active_path)
             info_path = ds_path + "/dsinfo.json"
             if not os.path.exists(info_path):
                 continue
-            with open(info_path, "r", encoding = "utf-8") as inp:
-                ds_info = json.loads(inp.read())
-            if ds_info["kind"] == "xl":
-                assert ds_info["name"] not in self.mDataSets
+            ds_name = os.path.basename(ds_path)
+            if ds_name not in prev_set:
                 try:
-                    ds_h = XLDataset(self, ds_info, ds_path)
+                    self.loadDS(ds_name)
                 except Exception:
-                    logException("Bad XL-dataset load: " + ds_info["name"])
+                    logException("Bad dataset load: " + ds_name)
                     continue
-                self.mDataSets[ds_info["name"]] = ds_h
-                names[0].append(ds_info["name"])
+                new_set.add(ds_name)
             else:
-                assert ds_info["kind"] == "ws"
-                workspaces.append((ds_info, ds_path))
-        for ds_info, ds_path in workspaces:
-            assert ds_info["name"] not in self.mDataSets
-            try:
-                ws_h = Workspace(self, ds_info, ds_path)
-            except Exception:
-                logException("Bad WS-dataset load: " + ds_info["name"])
-                continue
-            self.mDataSets[ds_info["name"]] = ws_h
-            names[1].append(ds_info["name"])
-        logging.info("Vault %s started with %d/%d datasets" %
-            (self.mVaultDir, len(names[0]), len(names[1])))
-        if len(names[0]) > 0:
-            logging.info("XL-datasets: " + " ".join(names[0]))
-        if len(names[1]) > 0:
-            logging.info("WS-datasets: " + " ".join(names[1]))
+                prev_set.remove(ds_name)
+        if len(new_set) > 0 and report_it:
+            logging.info(("New loaded datasets(%d): " % len(new_set))
+                + " ".join(sorted(new_set)))
+        if len(prev_set) > 0:
+            logging.info(("Dropped datasets(%d): " % len(prev_set))
+                + " ".join(sorted(prev_set)))
+            for ds_name in prev_set:
+                self.unloadDS(ds_name)
 
     def descrContext(self, rq_args, rq_descr):
         if "ds" in rq_args:
@@ -90,7 +109,7 @@ class DataVault(SyncronizedObject):
     def getDS(self, ds_name, ds_kind = None):
         ds_h = self.mDataSets.get(ds_name)
         if ds_h and ds_kind is not None and ds_h.getDSKind() != ds_kind:
-            assert False, "DS kinds conflictsL %s/%s" % (
+            assert False, "DS kinds conflicts: %s/%s" % (
                 ds_h.getDSKind(), ds_kind)
         return ds_h
 
@@ -99,28 +118,27 @@ class DataVault(SyncronizedObject):
             return ds_name not in self.mDataSets
 
     def loadDS(self, ds_name, ds_kind = None):
+        with self:
+            assert ds_name not in self.mDataSets
         ds_path = self.mVaultDir + '/' + ds_name
         info_path = ds_path + "/dsinfo.json"
         with open(info_path, "r", encoding = "utf-8") as inp:
             ds_info = json.loads(inp.read())
         assert ds_info["name"] == ds_name
-        assert not ds_kind or ds_info["kind"] == "ws"
+        assert not ds_kind or ds_info["kind"] == ds_kind
+        if ds_info["kind"] == "xl":
+            ds_h = XLDataset(self, ds_info, ds_path)
+        else:
+            assert ds_info["kind"] == "ws"
+            ds_h = Workspace(self, ds_info, ds_path)
         with self:
-            if ds_info["name"] not in self.mDataSets:
-                if ds_info["kind"] == "xl":
-                    ds_h = XLDataset(self, ds_info, ds_path)
-                else:
-                    assert ds_info["kind"] == "ws"
-                    ds_h = Workspace(self, ds_info, ds_path)
-                self.mDataSets[ds_info["name"]] = ds_h
+            self.mDataSets[ds_info["name"]] = ds_h
         return ds_name
 
     def unloadDS(self, ds_name, ds_kind = None):
         with self:
             ds_h = self.mDataSets[ds_name]
-            assert not ds_kind or (
-                ds_kind == "ws" and isinstance(ds_h, Workspace)) or (
-                ds_kind == "xl" and isinstance(ds_h, XLDataset))
+            assert not ds_kind or ds_kind == ds_h.getDSKind()
             del self.mDataSets[ds_name]
 
     def getBaseDS(self, ds_h):
@@ -158,7 +176,7 @@ class DataVault(SyncronizedObject):
     def rq__dirinfo(self, rq_args):
         ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
             for ds_h in self.mDataSets.values()}
-        for ds_info in ds_dict.values():
+        for ds_info in list(ds_dict.values()):
             if ds_info.get("base") and ds_info["base"] not in ds_dict:
                 ds_dict[ds_info["base"]] = self._emptyDSEntry(
                     ds_info["base"], ds_info["root"])
@@ -204,12 +222,6 @@ class DataVault(SyncronizedObject):
     #===============================================
     # Administrator authorization required
     @RestAPI.vault_request
-    def rq__adm_ds_on(self, rq_args):
-        self.loadDS(rq_args["ds"])
-        return []
-
-    #===============================================
-    @RestAPI.vault_request
-    def rq__adm_ds_off(self, rq_args):
-        self.unloadDS(rq_args["ds"])
-        return []
+    def rq__adm_update(self, rq_args):
+        self.scanAll()
+        return "Updated"

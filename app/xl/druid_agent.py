@@ -25,9 +25,9 @@ class DruidAgent:
     INTERVAL = "2015-01-01/2015-12-31"
 
     sDefaultUrls = {
-        "index": "http://localhost:8090/druid/indexer/v1/task",
-        "query": "http://localhost:8082/druid/v2",
-        "sql":   "http://localhost:8082/druid/v2/sql",
+        "index": "http://localhost:8081/druid/indexer/v1/task",
+        "query": "http://localhost:8888/druid/v2",
+        "sql":   "http://localhost:8888/druid/v2/sql",
         "coord": "http://localhost:8081/druid/coordinator/v1"}
 
     def __init__(self, config):
