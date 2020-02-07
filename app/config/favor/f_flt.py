@@ -33,4 +33,11 @@ def defFavorFlt(metadata_record):
             default_value = 0,
             title = "Debug line no of variant")
 
+    with filters.viewGroup("Genes"):
+        genes_unit = filters.multiStatusUnit("Symbol",
+            "/_view/general/genes[]",
+            compact_mode = True)
+        filters.panelStatusUnit("Panels", genes_unit,
+            view_path = "/_view/general/gene_panels")
+
     return filters
