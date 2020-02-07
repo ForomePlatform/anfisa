@@ -65,6 +65,7 @@ class DataVault(SyncronizedObject):
                 if self.mScanModeLevel < 2:
                     self.mScanModeLevel = 0
                     return True
+                self.mScanModeLevel = 1
 
     def _scanAll(self, report_it):
         prev_set = set(self.mDataSets.keys())
