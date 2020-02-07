@@ -26,8 +26,8 @@ from .f_tune import tuneFavorAspects, tuneFavorUnits, completeFavorDS
 class FavorSchema:
 
     @classmethod
-    def readySolutions(cls):
-        return solutionsFavor()
+    def readySolutions(cls, sol_pack):
+        solutionsFavor(sol_pack)
 
     @classmethod
     def defineViewSchema(cls, metadata_record):

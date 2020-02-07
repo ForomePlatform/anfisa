@@ -18,8 +18,6 @@
 #  limitations under the License.
 #
 
-from app.model.sol_pack import SolutionPack
 #===============================================
-def solutionsFavor():
-    sol_pack = SolutionPack("FAVOR")
-    SolutionPack.regPack(sol_pack)
+def solutionsFavor(sol_pack):
+    pass

@@ -92,16 +92,24 @@ def condition_high_quality():
 def impacting_splicing():
     return [ConditionMaker.condNum("splice_ai_dsmax", min_val = 0.2)]
 
+#===============================================
 def readySolutions():
     global sSolutionsAreSet
     if sSolutionsAreSet:
         return
     sSolutionsAreSet = True
-    FavorSchema.readySolutions()
+    favor_pack = SolutionPack("FAVOR")
+    setupSymbolPanels(favor_pack)
+    FavorSchema.readySolutions(favor_pack)
+    SolutionPack.regPack(favor_pack)
 
     base_pack = SolutionPack("CASE")
+    setupSymbolPanels(base_pack)
+    readySolutions_Case(base_pack)
     SolutionPack.regPack(base_pack)
 
+#===============================================
+def readySolutions_Case(base_pack):
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
     base_pack.regFilter("BGM_De_Novo", [
         condition_consequence_xBrowse(),
@@ -259,6 +267,14 @@ def readySolutions():
     # base_pack.regDTree("H Test",
     #     [cfgPath("hearing_loss.pyt")])
 
+    base_pack.regZone("Gene", "Symbol")
+    base_pack.regZone("Gene List", "Panels")
+    base_pack.regZone("Sample", "Has_Variant")
+    base_pack.regZone("Cohort", "Variant_in",  requires = {"cohorts"})
+    base_pack.regZone("Tag", "_tags")
+
+#===============================================
+def setupSymbolPanels(base_pack):
     base_pack.regPanel("Symbol", "ACMG59",
         cfgPath("acmg59.lst"))
     base_pack.regPanel("Symbol", "All_Hearing_Loss",
@@ -295,13 +311,6 @@ def readySolutions():
     #     cfgPath("ttp3.lst"))
     # base_pack.regPanel("Symbol", "TTP4",
     #     cfgPath("ttp4.lst"))
-
-    base_pack.regZone("Gene", "Symbol")
-    base_pack.regZone("Gene List", "Panels")
-    base_pack.regZone("Sample", "Has_Variant")
-    base_pack.regZone("Cohort", "Variant_in",  requires = {"cohorts"})
-    base_pack.regZone("Tag", "_tags")
-
 
 def completeDsModes(ds_h):
     if ds_h.getDataSchema == "CASE":
