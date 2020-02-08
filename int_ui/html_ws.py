@@ -62,6 +62,8 @@ def _formPanel(output, workspace_name, ws_pub_url):
                         >Export...</a>
                     <a class="popup" onclick="wsCreate();"
                         >Create workspace...</a>
+                    <a class="popup" onclick="tabReport();"
+                        >Tab report</a>
                 </div>
                 <div id="export-result" class="popup"></div>
             </div> <span id="ds-name" class="bold"></span>

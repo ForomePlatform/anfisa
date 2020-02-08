@@ -29,18 +29,29 @@ def defFavorView(metadata_record):
 
     aspect_list = [
         AspectH("view_bas", "Basic", "_view", field = "general"),
-        AspectH("view_variant_category", "Variant Category", "_view", field = "variant_category"),
-        AspectH("view_allele_frequencies", "Frequencies", "_view", field = "allele_frequencies"),
-        AspectH("view_integrative_score", "Score", "_view", field = "integrative_score"),
-        AspectH("view_protein_function", "Protein Function", "_view", field = "protein_function"),
-        AspectH("view_conservation", "Conservation", "_view", field = "conservation"),
+        AspectH("view_variant_category", "Variant Category", "_view",
+            field = "variant_category"),
+        AspectH("view_allele_frequencies", "Frequencies", "_view",
+            field = "allele_frequencies"),
+        AspectH("view_integrative_score", "Score", "_view",
+            field = "integrative_score"),
+        AspectH("view_protein_function", "Protein Function", "_view",
+            field = "protein_function"),
+        AspectH("view_conservation", "Conservation", "_view",
+            field = "conservation"),
         AspectH("view_epigenetics", "Epigenetics", "_view",
                 col_groups = ColGroupsH(attr = "epigenetics")),
-        AspectH("view_transcription_factors", "Transcription Factors", "_view", field = "transcription_factors"),
-        AspectH("view_chromatin_states", "Chromatin States", "_view", field = "chromatin_states"),
-        AspectH("view_local_nucleotide_diversity", "Nucleotide Diversity", "_view", field = "local_nucleotide_diversity"),
-        AspectH("view_mutation_rate", "Mutation Rate", "_view", field = "mutation_rate"),
-        AspectH("view_mappability", "Mappability", "_view", field = "mappability"),
+        AspectH("view_transcription_factors", "Transcription Factors", "_view",
+            field = "transcription_factors"),
+        AspectH("view_chromatin_states", "Chromatin States", "_view",
+            field = "chromatin_states"),
+        AspectH("view_local_nucleotide_diversity",
+            "Nucleotide Diversity", "_view",
+            field = "local_nucleotide_diversity"),
+        AspectH("view_mutation_rate", "Mutation Rate", "_view",
+            field = "mutation_rate"),
+        AspectH("view_mappability", "Mappability", "_view",
+            field = "mappability"),
         AspectH("_main", "VEP Data", "__data")
     ]
 
@@ -57,7 +68,7 @@ def defFavorView(metadata_record):
     ])
 
     aspects["view_allele_frequencies"].setAttributes([
-            AttrH("GENCODE_Category", title = "GENCODE Category")
+        AttrH("GENCODE_Category", title = "GENCODE Category")
     ])
 
     aspects["view_integrative_score"].setAttributes([
@@ -98,7 +109,8 @@ def defFavorView(metadata_record):
     ])
 
     aspects["view_local_nucleotide_diversity"].setAttributes([
-        AttrH("APC_Local_Nucleotide_Diversity", title = "APC Local Nucleotide Diversity")
+        AttrH("APC_Local_Nucleotide_Diversity",
+        title = "APC Local Nucleotide Diversity")
     ])
 
     aspects["view_mutation_rate"].setAttributes([

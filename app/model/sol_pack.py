@@ -119,6 +119,10 @@ class SolutionPack:
         self.mItems.append(SolutionItem("zone",
             zone_title,  unit_name, requires, self.mUsedNames))
 
+    def regTabSchema(self, tab_schema, requires = None):
+        self.mItems.append(SolutionItem("tab-schema",
+            tab_schema.getName(), tab_schema, requires, self.mUsedNames))
+
     #===============================================
     def iterItems(self, kind, test_f):
         for it in self.mItems:

@@ -20,7 +20,6 @@
 
 import json
 from io import TextIOWrapper
-from xml.sax.saxutils import escape
 
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
@@ -47,13 +46,6 @@ class RecListTask(ExecutionTask):
             self.mResSamples = []
             self.mResFull = []
 
-    def _reportRecord_XL(self, rec_no, rec_data):
-        return {
-            "no": rec_no,
-            "lb": escape(rec_data.get("_label")),
-            "cl": AnfisaConfig.normalizeColorCode(
-                rec_data.get("_color"))}
-
     def collectRecords_XL(self):
         rec_no_seq = self.mDS.getEvalSpace().evalSampleList(
             self.mCondition, self.sViewCountFull + 5)
@@ -76,7 +68,7 @@ class RecListTask(ExecutionTask):
                         (min(cur_progress, 100), '%'))
                 if rec_no not in rec_dict:
                     continue
-                rec_dict[rec_no] = self._reportRecord_XL(
+                rec_dict[rec_no] = self.mDS.shortPDataReport(
                     rec_no, json.loads(line.strip()))
         self.setStatus("Finishing")
         if self.mResSamples is not None:

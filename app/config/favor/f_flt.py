@@ -40,25 +40,24 @@ def defFavorFlt(metadata_record):
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
-                           variants=["chr1", "chr2", "chr3", "chr4", "chr5",
-                                     "chr6", "chr7", "chr8", "chr9", "chr10",
-                                     "chr11", "chr12", "chr13", "chr14", "chr15",
-                                     "chr16", "chr17", "chr18", "chr19", "chr20",
-                                     "chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
-                           default_value="undefined")
+            variants=["chr1", "chr2", "chr3", "chr4", "chr5",
+                "chr6", "chr7", "chr8", "chr9", "chr10",
+                "chr11", "chr12", "chr13", "chr14", "chr15",
+                "chr16", "chr17", "chr18", "chr19", "chr20",
+                "chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
+            default_value="undefined")
 
         filters.intValueUnit("Start_Pos", "/_filters/start",
-                             title="Start Position",
-                             render_mode="neighborhood", default_value=sys.maxsize)
+            title="Start Position",
+            render_mode="neighborhood", default_value=sys.maxsize)
         filters.intValueUnit("End_Pos", "/_filters/end",
-                             title="End Position", default_value=0,
-                             render_mode="neighborhood")
+            title="End Position", default_value=0,
+            render_mode="neighborhood")
 
     with filters.viewGroup("Genes"):
-        genes_unit = filters.multiStatusUnit("Symbol",
-            "/_filters/genes[]",
-            compact_mode=True),
-        filters.panelStatusUnit("Panels", genes_unit[0],
+        genes_unit = filters.multiStatusUnit("Symbol", "/_filters/genes[]",
+            compact_mode = True)
+        filters.panelsUnit("Panels", genes_unit[0],
             view_path="/_view/general/gene_panels")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",
@@ -74,10 +73,10 @@ def defFavorFlt(metadata_record):
     with filters.viewGroup("GENCODE"):
         filters.multiStatusUnit("GENCODE Category",
             "/_filters/gencode_category",
-            compact_mode=True),
+            compact_mode=True)
         filters.multiStatusUnit("GENCODE Exonic Category",
             "/_filters/gencode_exonic_category",
-            compact_mode=True),
+            compact_mode=True)
 
     with filters.viewGroup("Predictions"):
         filters.multiStatusUnit("Clinvar",
@@ -112,6 +111,5 @@ def defFavorFlt(metadata_record):
             tooltip = "Sort intolerated from tolerated (An amino acid at a "
                 "position is tolerated | The most frequentest amino acid "
                 "being tolerated).")
-
 
     return filters

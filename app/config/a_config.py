@@ -51,15 +51,15 @@ class AnfisaConfig:
         "xl.view.count.samples": 25,
         "xl.view.min.samples": 50,
 
-        "max.tree.versions": 30,
+        "max.tab.rq.size": 50,
 
         "filter.std.mark": u"\u23da",
         "code.error.mark": u"\u26a0",
 
         "rules.setup": {
             "name": "Rules",
-            "title": None,
             "vgroup": "Decision trees application",
+            "title": None,
             "render": None
         },
 

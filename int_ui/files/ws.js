@@ -438,6 +438,21 @@ sTagSupportH = {
     }
 };
 
+
+//=====================================
+function tabReport() {
+    if (sCurRecNo == null)
+        return;
+    var seq_rec_no = [];
+    for (idx = sCurRecNo; idx < sViewRecNoSeq.length; idx++) {
+        seq_rec_no.push(sViewRecNoSeq[idx]);
+        if (seq_rec_no.length >= 10)
+            break;
+    }
+    window.open("tab_report?ds=" + sDSName + "&schema=demo&seq=" + 
+        encodeURIComponent(JSON.stringify(seq_rec_no)));
+}
+
 //=====================================
 function pickTag() {
     sTagSupportH.pickTag();

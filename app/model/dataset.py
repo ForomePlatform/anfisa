@@ -20,6 +20,7 @@
 
 import gzip, json, abc
 from time import time
+from xml.sax.saxutils import escape
 
 from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
@@ -41,7 +42,10 @@ from .rec_list import RecListTask
 #===============================================
 class DataSet(SolutionBroker):
     sStatRqCount = 0
+    sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
+    sMaxTabRqSize = AnfisaConfig.configOption("max.tab.rq.size")
 
+    #===============================================
     def __init__(self, data_vault, dataset_info, dataset_path,
             sol_pack_name = None):
         SolutionBroker.__init__(self,
@@ -118,6 +122,7 @@ class DataSet(SolutionBroker):
     def getFamilyInfo(self):
         return self.mFamilyInfo
 
+    #===============================================
     def getViewSchema(self):
         return self.mAspects.dump()
 
@@ -178,6 +183,15 @@ class DataSet(SolutionBroker):
                 name, updated_time, updated_from)
         assert False
         return None
+
+    #===============================================
+    @classmethod
+    def shortPDataReport(cls, rec_no, rec_data):
+        return {
+            "no": rec_no,
+            "lb": escape(rec_data.get("_label")),
+            "cl": AnfisaConfig.normalizeColorCode(
+                rec_data.get("_color"))}
 
     #===============================================
     def dumpDSInfo(self, navigation_mode = False):
@@ -304,8 +318,6 @@ class DataSet(SolutionBroker):
         if activate_it:
             dtree_h.activate()
         return dtree_h
-
-    sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
 
     def _getArgTimeEnd(self, rq_args):
         if self.getEvalSpace().heavyMode() and "tm" in rq_args:
@@ -637,6 +649,14 @@ class DataSet(SolutionBroker):
         return {"task_id": self.getApp().runTask(
             RecListTask(self, condition,
                 self._REST_NeedsBackup(rq_args, 'R')))}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__tab_report(self, rq_args):
+        seq_rec_no = json.loads(rq_args["seq"])
+        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
+        return [tab_schema.reportRecord(self, rec_no)
+            for rec_no in seq_rec_no[:self.sMaxTabRqSize]]
 
     #===============================================
     @RestAPI.ds_request

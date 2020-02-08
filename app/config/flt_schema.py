@@ -140,7 +140,7 @@ def defineFilterSchema(metadata_record):
         genes_unit = filters.multiStatusUnit("Symbol",
             "/_view/general/genes[]",
             compact_mode = True)
-        filters.panelStatusUnit("Panels", genes_unit,
+        filters.panelsUnit("Panels", genes_unit,
             view_path = "/_view/general/gene_panels")
         #filters.multiStatusUnit("Transcripts",
         #    "/__data/transcript_consequences[]", compact_mode = True,

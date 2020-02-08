@@ -105,7 +105,7 @@ class FilterPrepareSetH(SolutionBroker):
             accept_other_values = accept_other_values,
             conv_func = conversion))
 
-    def panelStatusUnit(self, name, unit_base, title = None,
+    def panelsUnit(self, name, unit_base, title = None,
             render_mode = None, tooltip = None,
             view_path = None):
         return self._addUnit(prep_unit.PanelConvertor(self,

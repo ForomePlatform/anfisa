@@ -22,6 +22,7 @@ import os
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
+from app.model.tab_report import VariantsTabReportSchema
 from .favor import FavorSchema
 #===============================================
 sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
@@ -272,6 +273,11 @@ def readySolutions_Case(base_pack):
     base_pack.regZone("Sample", "Has_Variant")
     base_pack.regZone("Cohort", "Variant_in",  requires = {"cohorts"})
     base_pack.regZone("Tag", "_tags")
+
+    demo_tab_schema = VariantsTabReportSchema("demo", use_tags = True)
+    demo_tab_schema.addField("symbol", "/_view/general/genes[]")
+    demo_tab_schema.addField("gnomAD_AF", "/_filters/gnomad_af_fam")
+    base_pack.regTabSchema(demo_tab_schema)
 
 #===============================================
 def setupSymbolPanels(base_pack):

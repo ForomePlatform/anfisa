@@ -72,6 +72,12 @@ class SolutionBroker(SyncronizedObject):
     def iterStdItems(self, item_kind):
         return self.mSolPack.iterItems(item_kind, self.testRequirements)
 
+    def getStdItem(self, item_kind, item_name):
+        for it in self.mSolPack.iterItems(item_kind, self.testRequirements):
+            if it.getName() == item_name:
+                return it
+        return None
+
     #===============================================
     def getUnitPanelNames(self, unit_name):
         ret = []

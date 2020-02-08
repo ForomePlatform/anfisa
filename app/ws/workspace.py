@@ -154,6 +154,9 @@ class Workspace(DataSet):
     def getRecRand(self, rec_no):
         return self.mTabRecRand[rec_no]
 
+    def getTagsReport(self, rec_no):
+        return self.mTagsMan.makeRecReport(rec_no)
+
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
 
