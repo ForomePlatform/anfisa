@@ -156,8 +156,8 @@ class SecondaryWsCreation(ExecutionTask):
         total_item_count = trans_prep.finishUp()
 
         date_loaded = datetime.now().isoformat()
-        mongo_agent = self.mDS.getApp().getMongoConnector().getWSAgent(
-            self.mWSName)
+        mongo_agent = self.mDS.getApp().getMongoConnector().getDSAgent(
+            self.mWSName, "ws")
         mongo_agent.checkCreationDate(date_loaded)
 
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))

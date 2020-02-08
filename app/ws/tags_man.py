@@ -44,9 +44,9 @@ class TagsManager(ZoneH):
         return self.mMarkedSet
 
     def _loadDataSet(self):
-        mongo_agent = self.getDS().getMongoAgent()
+        sol_env = self.getDS().getSolEnv()
         for rec_no, rec_key in self.getDS().iterRecKeys():
-            data_obj = mongo_agent.getTagsData(rec_key)
+            data_obj = sol_env.getTagsData(rec_key)
             if data_obj is not None:
                 for tag in data_obj.keys():
                     if self._goodKey(tag):
@@ -76,7 +76,7 @@ class TagsManager(ZoneH):
     def updateRec(self, rec_no, tags_to_update):
         rec_key = self.getDS().getRecKey(rec_no)
         return self._changeRecord(rec_no, rec_key,
-            self.getDS().getMongoAgent().getTagsData(rec_key), tags_to_update)
+            self.getDS().getSolEnv().getTagsData(rec_key), tags_to_update)
 
     def getTagListInfo(self):
         return {
@@ -88,7 +88,7 @@ class TagsManager(ZoneH):
 
     def _getRecData(self, rec_no):
         rec_key = self.getDS().getRecKey(rec_no)
-        rec_data = self.getDS().getMongoAgent().getTagsData(rec_key)
+        rec_data = self.getDS().getSolEnv().getTagsData(rec_key)
         if rec_data is None:
             return (dict(), None, None)
         return (dict(filter(self._goodPair, rec_data.items())),
@@ -156,7 +156,7 @@ class TagsManager(ZoneH):
             new_rec_data['_h'] = [len(h_stack), h_stack]
         if new_rec_data is None:
             return
-        self.getDS().getMongoAgent().setTagsData(
+        self.getDS().getSolEnv().setTagsData(
             rec_key, new_rec_data, rec_data)
         tags_prev = set(rec_data.keys() if rec_data is not None else [])
         tags_new  = set(new_rec_data.keys())

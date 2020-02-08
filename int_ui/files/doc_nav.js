@@ -54,13 +54,13 @@ function setupDocList(info) {
     _fillExtraDoc(sDocInfo["doc"], "", doc_path, list_doc_rep);
     if (sDocInfo["doc-base"] != undefined) {
         var doc_base_path = "doc/" + sDocInfo["base"] + "/";
-        list_doc_rep.push('<div class="grp-ref"><span>XL-base ' + 
+        list_doc_rep.push('<div class="grp-ref"><span>Base ' + 
             sDocInfo["base"] + '</span>');
         list_doc_rep.push('<div id="doc__' + sDocArray.length + 
             '" class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
-            ')">XL-base info</div>');
+            ')">Base info</div>');
         sDocArray.push(doc_base_path + "info.html");
-        _fillExtraDoc(sDocInfo["doc-base"], "XL-base ", doc_base_path, list_doc_rep);
+        _fillExtraDoc(sDocInfo["doc-base"], "Base ", doc_base_path, list_doc_rep);
         list_doc_rep.push('</div>');
     }
     document.getElementById("doc-list").innerHTML = list_doc_rep.join('\n');

@@ -98,23 +98,6 @@ class SolutionBroker(SyncronizedObject):
         return None
 
     #===============================================
-    def getFilters(self):
-        return [(it.getName(), it.getData())
-            for it in self.iterStdItems("filter")]
-
-    #===============================================
-    def getStdTreeCodeNames(self):
-        return [it.getName() for it in self.iterStdItems("tree_code")]
-
-    def getStdTreeCode(self, code_name):
-        for it in self.iterStdItems("dtree"):
-            if it.getName() == code_name or code_name is None:
-                return it.getData()
-        logging.error("Request for bad std tree: " + code_name)
-        assert False
-        return None
-
-    #===============================================
     def refreshSolEntries(self, kind):
         with self:
             self.mSolKinds[kind].refreshSolEntries()

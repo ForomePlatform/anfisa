@@ -26,13 +26,13 @@ from app.config.a_config import AnfisaConfig
 class SolutionEnv:
     def __init__(self, mongo_connector, name):
         self.mName = name
-        self.mMongoAgent = mongo_connector.makeAgent(name)
+        self.mMongoAgent = mongo_connector.getPlainAgent(name)
         self.mBrokers = []
-        self
         self.mHandlers = {sol_kind: _SolKindMongoHandler(
             sol_kind, data_name, self.mMongoAgent)
             for sol_kind, data_name in
             (("filter", "seq"), ("dtree", "code"))}
+        self.mTagHander = _SolTagsMongoHandler(self.mMongoAgent)
 
     def getName(self):
         return self.mName
@@ -60,7 +60,12 @@ class SolutionEnv:
             return True
         return False
 
-#===============================================
+    def getTagsData(self, rec_key):
+        return self.mTagHander.getData(rec_key)
+
+    def setTagsData(self, rec_key, pairs, prev_data = False):
+        self.mTagHander.setData(rec_key, pairs, prev_data)
+
 #===============================================
 class _SolKindMongoHandler:
     def __init__(self, key, value_name, mongo_agent):
@@ -75,8 +80,7 @@ class _SolKindMongoHandler:
             if it_id.startswith(self.mPrefix):
                 name = it_id[self.mPrefLen:]
                 self.mData[name] = [it[self.mValName],
-                    AnfisaConfig.normalizeTime(it.get("time")),
-                    it["from"]]
+                    AnfisaConfig.normalizeTime(it.get("time")), it["from"]]
 
     def getSolKind(self):
         return self.mSolKind
@@ -105,3 +109,30 @@ class _SolKindMongoHandler:
             del self.mData[name]
             return True
         return False
+
+#===============================================
+class _SolTagsMongoHandler:
+    def __init__(self, mongo_agent):
+        self.mMongoAgent = mongo_agent
+
+    def getData(self, rec_key):
+        return self.mMongoAgent.find_one({"_id": "rec-" + rec_key})
+
+    def setData(self, rec_key, pairs, prev_data = False):
+        data = pairs.copy()
+        data["_id"] = "rec-" + rec_key
+        update_instr = dict()
+        if len(pairs) > 0:
+            update_instr["$set"] = {key: value
+                for key, value in pairs.items()}
+        if prev_data is False:
+            prev_data = self.getTagsData(rec_key)
+        unset_keys = set(prev_data.keys() if prev_data is not None else [])
+        unset_keys -= set(pairs.keys())
+        if "_id" in unset_keys:
+            unset_keys.remove("_id")
+        if len(unset_keys) > 0:
+            update_instr["$unset"] = {key: "" for key in unset_keys}
+        if len(update_instr) > 0:
+            self.mMongoAgent.update(
+                {"_id": "rec-" + rec_key}, update_instr, upsert = True)

@@ -33,33 +33,22 @@ class MongoConnector:
         if port is None:
             port  = 27017
         self.mMongo = MongoClient(host,  port)
-        self.mAgents = {}
+        self.mDSAgents = dict()
+        self.mPlainAgents = dict()
 
     def close(self):
         self.mMongo.close()
 
-    def getWSAgent(self, name):
-        if name not in self.mAgents:
-            self.mAgents[name] = MongoWSAgent(self,
-                self.mMongo[self.mPath][name], name)
-        return self.mAgents[name]
-
-    def getXLAgent(self, name):
-        if name not in self.mAgents:
-            self.mAgents[name] = MongoXLAgent(self,
-                self.mMongo[self.mPath][name], name)
-        return self.mAgents[name]
-
     def getDSAgent(self, name, kind):
-        if kind.lower() == "ws":
-            return self.getWSAgent(name)
-        if kind.lower() == "xl":
-            return self.getXLAgent(name)
-        assert False
-        return None
+        if name not in self.mDSAgents:
+            self.mDSAgents[name] = MongoDSAgent(self,
+                self.mMongo[self.mPath][name], name)
+        return self.mDSAgents[name]
 
-    def makeAgent(self, name):
-        return self.mMongo[self.mPath][name]
+    def getPlainAgent(self, name):
+        if name not in self.mPlainAgents:
+            self.mPlainAgents[name] = self.mMongo[self.mPath][name]
+        return self.mPlainAgents[name]
 
 #===============================================
 class MongoDSAgent:
@@ -107,42 +96,3 @@ class MongoDSAgent:
         self.mAgent.update({"_id": "note"},
             {"$set": {"note": note.strip(), "time": time_label}},
             upsert = True)
-
-#===============================================
-class MongoWSAgent(MongoDSAgent):
-    def __init__(self, connector, agent, name):
-        MongoDSAgent.__init__(self, connector, agent, name)
-
-    def getAgentKind(self):
-        return "WS"
-
-    #===== TagsData
-    def getTagsData(self, rec_key):
-        return self.mAgent.find_one({"_id": "rec-" + rec_key})
-
-    def setTagsData(self, rec_key, pairs, prev_data = False):
-        data = pairs.copy()
-        data["_id"] = "rec-" + rec_key
-        update_instr = dict()
-        if len(pairs) > 0:
-            update_instr["$set"] = {key: value
-                for key, value in pairs.items()}
-        if prev_data is False:
-            prev_data = self.getTagsData(rec_key)
-        unset_keys = set(prev_data.keys() if prev_data is not None else [])
-        unset_keys -= set(pairs.keys())
-        if "_id" in unset_keys:
-            unset_keys.remove("_id")
-        if len(unset_keys) > 0:
-            update_instr["$unset"] = {key: "" for key in unset_keys}
-        if len(update_instr) > 0:
-            self.mAgent.update(
-                {"_id": "rec-" + rec_key}, update_instr, upsert = True)
-
-#===============================================
-class MongoXLAgent(MongoDSAgent):
-    def __init__(self, connector, agent, name):
-        MongoDSAgent.__init__(self, connector, agent, name)
-
-    def getAgentKind(self):
-        return "XL"
