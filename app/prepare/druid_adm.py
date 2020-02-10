@@ -98,34 +98,42 @@ class DruidAdmin(DruidAgent):
                     "type": "long"})
 
         schema_request = {
-            "type": "index_parallel",
-            "spec": {
-                "dataSchema": {
-                    "dataSource": druid_dataset_name,
-                    "timestampSpec": {
-                        "column": "time",
-                        "format": "auto"
-                    },
-                    "dimensionsSpec": {
-                        "dimensions": dim_container},
-                    "metricsSpec": [{
-                        "type": "count",
-                        "name": "count"
-                    }],
-                    "granularitySpec": {
-                        "segmentGranularity":  self.GRANULARITY,
-                        "queryGranularity": "none",
-                        "intervals": [self.INTERVAL]}},
-                "ioConfig": {
-                    "type": "index_parallel",
-                    "inputSource": {
-                        "type": "local",
-                        "baseDir": base_dir,
-                        "filter": filter_name},
-                    "inputFormat": {
-                        "type": "json"}},
-                "tuningConfig": {
-                    "type": "index_parallel"}}}
+            "type" : "index",
+            "spec" : {
+                "dataSchema" : {
+                    "dataSource" : druid_dataset_name,
+                    "parser" : {
+                        "type" : "string",
+                        "parseSpec" : {
+                            "format" : "json",
+                            "dimensionsSpec" : {
+                                "dimensions" : dim_container,
+                                "dimensionExclusions" : [],
+                                "spatialDimensions" : []},
+                            "timestampSpec": {
+                                "column": "time"}}},
+                    "metricsSpec" : [{
+                        "type" : "count",
+                        "name" : "count"
+                    },],
+                    "granularitySpec" : {
+                        "type" : "uniform",
+                        "segmentGranularity" : self.GRANULARITY,
+                        "queryGranularity" : "none",
+                        "intervals" : [self.INTERVAL],
+                        "rollup" : False}},
+                "ioConfig" : {
+                    "type" : "index",
+                    "firehose" : {
+                        "type" : "local",
+                        "baseDir" : base_dir,
+                        "filter" : filter_name},
+                    "appendToExisting" : False},
+                "tuningConfig" : {
+                    "type" : "index",
+                    "targetPartitionSize" : 5000000,
+                    "maxRowsInMemory" : 25000,
+                    "forceExtendableShardSpecs" : True}}}
 
         if report_name is not None:
             with open(report_name, "w", encoding="utf-8") as outp:
