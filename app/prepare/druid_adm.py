@@ -98,42 +98,34 @@ class DruidAdmin(DruidAgent):
                     "type": "long"})
 
         schema_request = {
-            "type": "index",
+            "type": "index_parallel",
             "spec": {
                 "dataSchema": {
                     "dataSource": druid_dataset_name,
-                    "parser": {
-                        "type": "string",
-                        "parseSpec": {
-                            "format": "json",
-                            "dimensionsSpec": {
-                                "dimensions": dim_container,
-                                "dimensionExclusions": [],
-                                "spatialDimensions": []},
-                            "timestampSpec": {
-                                "column": "time"}}},
+                    "timestampSpec": {
+                        "column": "time",
+                        "format": "auto"
+                    },
+                    "dimensionsSpec": {
+                        "dimensions": dim_container},
                     "metricsSpec": [{
                         "type": "count",
                         "name": "count"
                     }],
                     "granularitySpec": {
-                        "type": "uniform",
-                        "segmentGranularity": self.GRANULARITY,
+                        "segmentGranularity":  self.GRANULARITY,
                         "queryGranularity": "none",
-                        "intervals": [self.INTERVAL],
-                        "rollup": False}},
+                        "intervals": [self.INTERVAL]}},
                 "ioConfig": {
-                    "type": "index",
-                    "firehose": {
+                    "type": "index_parallel",
+                    "inputSource": {
                         "type": "local",
                         "baseDir": base_dir,
                         "filter": filter_name},
-                    "appendToExisting": False},
+                    "inputFormat": {
+                        "type": "json"}},
                 "tuningConfig": {
-                    "type": "index",
-                    "targetPartitionSize": 5000000,
-                    "maxRowsInMemory": 25000,
-                    "forceExtendableShardSpecs": True}}}
+                    "type": "index_parallel"}}}
 
         if report_name is not None:
             with open(report_name, "w", encoding="utf-8") as outp:
