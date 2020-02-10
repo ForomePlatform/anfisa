@@ -376,12 +376,12 @@ sTagSupportH = {
         j = 0; k = 0;
         for (idx = 0; idx < this.mTagRecList.length; idx++) {
             rec_no = this.mTagRecList[idx];
-            while (j < sRecList.length && sRecList[j][0] < rec_no) {
+            while (j < sRecList.length && sRecList[j]["no"] < rec_no) {
                 j++;
             }
             if (j >= sRecList.length)
                 break;
-            if (sRecList[j][0] != rec_no)
+            if (sRecList[j]["no"] != rec_no)
                 continue;
             if (rec_no == sCurRecID) {
                 this.mNavSheet[2] = 0;

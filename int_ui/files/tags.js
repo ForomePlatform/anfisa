@@ -36,8 +36,6 @@ var sBtnNewTag    = null;
 var sBtnSaveTag   = null;
 var sBtnCancelTag = null;
 var sBtnDeleteTag = null;
-var sBtnUndoTag   = null;
-var sBtnRedoTag   = null;
 var sBtnClearTags = null;
 var sInpTagName   = null;
 var sInpTagValue  = null;
@@ -49,8 +47,6 @@ function initTagsEnv(ws_name, rec_id, master_ctrl) {
     sBtnSaveTag     = document.getElementById("tg-tag-save"); 
     sBtnCancelTag   = document.getElementById("tg-tag-cancel"); 
     sBtnDeleteTag   = document.getElementById("tg-tag-delete"); 
-    sBtnUndoTag     = document.getElementById("tg-tag-undo"); 
-    sBtnRedoTag     = document.getElementById("tg-tag-redo"); 
     sBtnClearTags   = document.getElementById("tg-tag-clear-all"); 
     sInpTagName     = document.getElementById("tg-tag-name"); 
     sInpTagValue    = document.getElementById("tg-tag-value-content");
@@ -118,9 +114,6 @@ function setupTags(info) {
         pickTag((idx >=0)? idx: 0);
     }
     
-    sBtnUndoTag.disabled = (sViewPort < 1) || !info["can_undo"];
-    sBtnRedoTag.disabled = (sViewPort < 1) || !info["can_redo"];
-
     updateTagsState();
     
     for (idx = sInpTagNameList.length - 1; idx > 0; idx--) {
@@ -144,16 +137,16 @@ function setupTags(info) {
     option.value = "_note";
     sInpTagNameList.append(option);
     sInpTagNameList.selectedIndex = -1;
-    document.getElementById("tags-time").innerHTML = (info["time"])?
+    document.getElementById("tags-time").innerHTML = (info["upd-time"])?
         ('Updated: <span class="note-time">' + 
-            timeRepr(info["time"]) + '</span>') : '';
+            timeRepr(info["upd-time"]) + '</span>') : '';
     sMasterCtrl.updateTagsInfo(info);
 }
 
 function updateTagsState() {
     sBtnClearTags.disabled  = (sViewPort < 1) || (!sHasTags);
     if (sCurTagIdx == null) {
-        sInpTagName.value = "";
+        //sInpTagName.value = "";
         sInpTagValue.value = "";
     } else {
         tag_name = sTagOrder[sCurTagIdx];
@@ -168,9 +161,9 @@ function checkTagInputs() {
     var tag_name = sInpTagName.value.trim();
     pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
-        sTagNameOK = tag_name && /^\S+$/u.test(tag_name) && 
-            (tag_name == "_note" || 
-            tag_name[0].toLowerCase() != tag_name[0].toUpperCase()) &&
+        sTagNameOK = tag_name && tag_name.length > 0 && 
+            (tag_name.indexOf('_') < 0 || tag_name == "_note") && 
+            tag_name[0].toLowerCase() != tag_name[0].toUpperCase() &&
             sCheckTags.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
     } else {
@@ -257,28 +250,6 @@ function tagEnvClearAll() {
         sPrevTag = null;
         sCurTagIdx = null;
         loadTags({});
-        sMasterCtrl.updateNavigation(null);       
-    }
-}
-
-function tagEnvUndo() {
-    if (sViewPort < 1)
-        return;
-    if (!sBtnUndoTag.disabled) {
-        sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
-        sCurTagIdx = null;
-        loadTags("UNDO");
-        sMasterCtrl.updateNavigation(null);       
-    }
-}
-
-function tagEnvRedo() {
-    if (sViewPort < 1)
-        return;
-    if (!sBtnRedoTag.disabled) {
-        sPrevTag = (sCurTagIdx != null)? sTagOrder[sCurTagIdx] :  null;
-        sCurTagIdx = null;
-        loadTags("REDO");
         sMasterCtrl.updateNavigation(null);       
     }
 }

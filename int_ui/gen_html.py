@@ -131,14 +131,6 @@ def tagsBlock(output):
             onclick="tagEnvClearAll();">
           Clear
         </button>
-        <button id="tg-tag-undo" class="op-button" title="Undo"
-            onclick="tagEnvUndo();">
-          &#8630;
-        </button>
-        <button id="tg-tag-redo" class="op-button"  title="Redo"
-            onclick="tagEnvRedo();">
-          &#8631;
-        </button>
         <span id="tags-time">
         </span>
       </div>

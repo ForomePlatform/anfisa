@@ -36,7 +36,8 @@ class VariantsTabReportSchema:
         rec_data = ds_h.getRecordData(rec_no)
         ret_handle = {"_no": rec_no}
         if self.mUseTags and ds_h.getDSKind() == "ws":
-            ret_handle["_tags"] = ds_h.getTagsReport(rec_no)
+            ret_handle["_tags"] = ds_h.getTagsMan().makeRecReport(rec_no)
+
         for field_h in self.mFields:
             field_h.process(rec_data, ret_handle)
         return ret_handle

@@ -38,6 +38,7 @@ class DataVault(SyncronizedObject):
         self.mDataSets = dict()
         self.mSolEnvDict = dict()
         self.mScanModeLevel = 0
+        self.mIntVersion = 0
         self.scanAll(False)
 
         names = [[], []]
@@ -134,6 +135,7 @@ class DataVault(SyncronizedObject):
             ds_h = Workspace(self, ds_info, ds_path)
         with self:
             self.mDataSets[ds_info["name"]] = ds_h
+        self.mIntVersion += 1
         return ds_name
 
     def unloadDS(self, ds_name, ds_kind = None):
@@ -141,6 +143,7 @@ class DataVault(SyncronizedObject):
             ds_h = self.mDataSets[ds_name]
             assert not ds_kind or ds_kind == ds_h.getDSKind()
             del self.mDataSets[ds_name]
+            self.mIntVersion += 1
 
     def getBaseDS(self, ds_h):
         return self.mDataSets.get(ds_h.getBaseDSName())

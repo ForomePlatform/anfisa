@@ -41,6 +41,7 @@ class Workspace(DataSet):
         self.mTabRecKey  = []
         self.mTabRecColor  = []
         self.mTabRecLabel = []
+        self.mKey2Idx = None
         self.mEvalSpace = WS_EvalSpace(self,
             self._makeRecArrayFunc(self.mTabRecRand))
 
@@ -57,12 +58,11 @@ class Workspace(DataSet):
                 self.mEvalSpace._addUnit(unit_h)
         self._loadPData()
         self._loadFData()
+        self.mTagsMan = TagsManager(self,
+            AnfisaConfig.configOption("check.tags"))
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
         self.startService()
-
-        self.mTagsMan = TagsManager(self,
-            AnfisaConfig.configOption("check.tags"))
 
         self.mZoneHandlers  = []
         for zone_it in self.iterStdItems("zone"):
@@ -103,6 +103,7 @@ class Workspace(DataSet):
                         ("_label", self.mTabRecLabel)):
                     tab.append(pre_data.get(key))
         assert len(self.mTabRecRand) == self.getTotal()
+        self.mKey2Idx = {key: idx for idx, key in enumerate(self.mTabRecKey)}
 
     def _loadFData(self):
         with self._openFData() as inp:
@@ -136,6 +137,9 @@ class Workspace(DataSet):
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
+    def getRecNoByKey(self, key):
+        return self.mKey2Idx.get(key)
+
     def reportRecord(self, rec_no, rec_it_map = None, marked_set = None):
         ret = {
             "no": rec_no,
@@ -153,9 +157,6 @@ class Workspace(DataSet):
 
     def getRecRand(self, rec_no):
         return self.mTabRecRand[rec_no]
-
-    def getTagsReport(self, rec_no):
-        return self.mTagsMan.makeRecReport(rec_no)
 
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
@@ -215,12 +216,12 @@ class Workspace(DataSet):
     def rq__tags(self, rq_args):
         rec_no = int(rq_args.get("rec"))
         if rq_args.get("tags") is not None:
-            tags_to_update = json.loads(rq_args.get("tags"))
+            tags_data = json.loads(rq_args.get("tags"))
             with self:
-                self.mTagsMan.updateRec(rec_no, tags_to_update)
+                self.mTagsMan.updateRec(rec_no, tags_data)
         rep = self.mTagsMan.makeRecReport(rec_no)
         rep["filters"] = self.getRecFilters(rec_no)
-        rep["tags-version"] = self.mTagsMan.getIntVersion()
+        rep["tags-version"] = self.getSolEnv().getIntVersion("tags")
         return rep
 
     #===============================================

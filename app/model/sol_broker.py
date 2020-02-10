@@ -100,7 +100,10 @@ class SolutionBroker(SyncronizedObject):
     #===============================================
     def refreshSolEntries(self, kind):
         with self:
-            self.mSolKinds[kind].refreshSolEntries()
+            if kind in self.mSolKinds:
+                self.mSolKinds[kind].refreshSolEntries()
+            elif kind == "tags" and self.getDSKind() == "ws":
+                self.getTagsMan().refreshTags()
 
     def iterSolEntries(self, kind):
         sol_kind_h = self.mSolKinds[kind]
@@ -190,7 +193,9 @@ class _SolutionKindHandler:
                     "standard": idx < self.mStdCount,
                     "upd-time": upd_time,
                     "upd-from": upd_from,
-                    "eval-status": entry_obj.getEvalStatus()
+                    "eval-status": entry_obj.getEvalStatus(),
+                    "sol-version": self.mBroker.getSolEnv().getIntVersion(
+                        self.mSolKind)
                 })
         return ret_handle
 
