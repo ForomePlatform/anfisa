@@ -123,7 +123,7 @@ def _reportReceipt(output, idx_receipt, receipt):
                     "from", updated_from, file = output)
             print("</p>", file = output)
         print('<table class="report-filter">', file = output)
-        for instr in receipt["seq"]:
+        for instr in receipt["f-presentation"]:
             print('<tr><td>%s</td></tr>' % escape(instr), file = output)
         print('</table>', file = output)
     else:
@@ -139,7 +139,7 @@ def _reportReceipt(output, idx_receipt, receipt):
                     "from", updated_from, file = output)
             print("</p>", file = output)
         print('<table class="report-dtree">', file = output)
-        for instr, count, ret_mode in receipt["points"]:
+        for instr, count, ret_mode in receipt["p-presentation"]:
             print('<tr><td class="dtree-point"><div class="highlight">'
                 + instr + '</div></td>', file = output)
             if count is None:

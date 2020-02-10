@@ -72,12 +72,14 @@ class SecondaryWsCreation(ExecutionTask):
                 return None
             rec_no_seq = self.mDS.getEvalSpace().evalRecSeq(
                 condition, rec_count)
-            receipt["seq"] = self.mEval.getPresentation()
+            receipt["f-presentation"] = self.mEval.getPresentation()
+            receipt["conditions"] = self.mEval.getCondDataSeq()
         else:
             if self.mEval.getDTreeName():
                 receipt["dtree-name"] = self.mEval.getDTreeName()
             rec_no_seq, point_seq = self.mEval.collectRecSeq()
-            receipt["points"] = point_seq
+            receipt["p-presentation"] = point_seq
+            receipt["dtree-code"] = self.mEval.getCode()
         receipt["eval-update-info"] = self.mEval.getUpdateInfo()
 
         rec_no_seq = sorted(rec_no_seq)
