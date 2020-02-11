@@ -78,6 +78,10 @@ div.list-ds-entry {
     padding: 10px;
 }
 
+div.list-ds-space {
+    height: 5px;
+}
+
 div.list-ds-entry.cur {
     color: yellow;
     cursor: inherit;
@@ -109,7 +113,7 @@ p.the-note {
 
 span.note-date {
     float: right;
-    font-size: 80%;
+    font-size: 75%;
 }
 
 span.ds-ref {

@@ -160,7 +160,7 @@ class SecondaryWsCreation(ExecutionTask):
         date_loaded = datetime.now().isoformat()
         mongo_agent = self.mDS.getApp().getMongoConnector().getDSAgent(
             self.mWSName, "ws")
-        mongo_agent.checkCreationDate(date_loaded)
+        mongo_agent.updateCreationDate(date_loaded)
 
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
         if "versions" in meta_rec:

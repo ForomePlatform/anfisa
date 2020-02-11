@@ -62,6 +62,8 @@ class DataSet(SolutionBroker):
         self.mAspects = AspectSetH.load(dataset_info["view_schema"])
         self.mFltSchema = dataset_info["flt_schema"]
         self.mPath = dataset_path
+        self.mFInfo = self.mDataVault.checkFileStat(
+            self.mPath + "/dsinfo.json")
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
 
         self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
@@ -83,6 +85,9 @@ class DataSet(SolutionBroker):
         self.mZygSupport = ZygositySupport(self)
         tuneUnits(self)
         self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
+
+    def isUpToDate(self, fstat_info):
+        return fstat_info == self.mFInfo
 
     def _setAspectHitGroup(self, aspect_name, group_attr):
         self.mAspects.setAspectHitGroup(aspect_name, group_attr)
@@ -198,6 +203,7 @@ class DataSet(SolutionBroker):
         note, time_label = self.getMongoAgent().getNote()
         ret = {
             "name": self.mName,
+            "upd-time": self.getMongoAgent().getCreationDate(),
             "kind": self.mDSKind,
             "note": note,
             "total": self.getTotal(),

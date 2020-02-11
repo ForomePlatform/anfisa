@@ -101,7 +101,7 @@ class AnfisaConfig:
     @classmethod
     def normalizeTime(cls, time_label):
         if time_label is None:
-            return '2019-03-01T00:00:00'
+            return None
         return time_label
 
     @classmethod

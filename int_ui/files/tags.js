@@ -162,8 +162,9 @@ function checkTagInputs() {
     pickTag(sTagOrder.indexOf(tag_name));
     if (sCurTagIdx == null) {
         sTagNameOK = tag_name && tag_name.length > 0 && 
-            (tag_name.indexOf('_') < 0 || tag_name == "_note") && 
-            tag_name[0].toLowerCase() != tag_name[0].toUpperCase() &&
+            (tag_name == "_note" || 
+                (tag_name.indexOf('_') < 0 && 
+                tag_name[0].toLowerCase() != tag_name[0].toUpperCase())) &&
             sCheckTags.indexOf(tag_name) < 0;
         sTagCntChanged = !!(sInpTagValue.value.trim());
     } else {

@@ -59,6 +59,9 @@ function setupDirData(info) {
     for (idx = idx_from; idx < idx_to; idx++) {
         ds_name = sDSList[idx];
         ds_info = sDSDict[ds_name];
+        if (ds_info["v-level"] == 0) {
+            rep_seq.push('<div class="list-ds-space"></div>');
+        }
         rep_seq.push('<div id="_ds_entry' + idx + '" ');
         if (ds_info["kind"]) {
             rep_seq.push('class="list-ds-entry" onclick="selectDS(' + 
@@ -81,7 +84,11 @@ function setupDirData(info) {
                     ds_name + 
                     '\')" title="To sub-directory dataset page">&#x1f5c0;</span>&emsp;');
         }
-        rep_seq.push(ds_name + '</div>');
+        rep_seq.push(ds_name);
+        if (ds_info["upd-time"])
+            rep_seq.push('<span class="note-date">' + 
+                timeRepr(ds_info["upd-time"]) + '</span>');
+        rep_seq.push('</div>');
     }
     arrangeControls();
     document.getElementById("dir-list").innerHTML = rep_seq.join('\n');

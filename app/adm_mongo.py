@@ -17,350 +17,178 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
-import sys, codecs, json
+import sys, codecs, json, re
 from argparse import ArgumentParser
-from copy import deepcopy
 from pymongo import MongoClient
-
 #=====================================
-sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
-sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
+try:
+    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
+    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
+    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
+except Exception:
+    pass
+
 #===============================================
 parser = ArgumentParser()
-parser.add_argument("-H", "--host",  default = "localhost",
-    help = "MongoDB host")
-parser.add_argument("-P", "--port",  type = int, default = 27017,
-    help = "MongoDB port")
-parser.add_argument("-d", "--database", default = "Anfisa",
-    help = "Anfisa database in MongoDB")
-parser.add_argument("-c", "--config",
-    help = "Anfisa config file(anfisa.json), "
-        "use it instead of host/port/database")
-parser.add_argument("-C", "--config_default", action = "store_true",
-    help = "Use it for config = ./anfisa.json")
-parser.add_argument("command", nargs="+",
-    help="Commands, use help command for list")
+parser.add_argument("-c", "--config", default = "./anfisa.json",
+    help = "Anfisa config file")
+parser.add_argument("-a", "--aspects", default = "FDT",
+    help = "Aspects: All/Filter/Dtree/Tags/Info")
+parser.add_argument("--pretty", action = "store_true",
+    help = "Pretty JSON print")
+parser.add_argument("--dry", action = "store_true",
+    help = "Dry run: just report instead of data change")
+parser.add_argument("-m", "--mode", default = "list",
+    help="Command: list/dump/restore/drop")
+parser.add_argument("datasets", nargs = "*",
+    help = "Dataset names or pattern with '*'")
 run_args = parser.parse_args()
 
 #===============================================
-def readContent(content):
-    for line in content.split('\n'):
-        line = line.strip()
-        if not line:
-            continue
-        obj = json.loads(line)
-        if obj is None or isinstance(obj, str):
-            continue
-        yield obj
-
-def updateMRec(agent, obj):
-    set_data = dict()
-    for key, val in obj.items():
-        if key == '_id':
-            obj_id = val
-        else:
-            set_data[key] = val
-    agent.update({'_id': obj_id}, {"$set": set_data}, upsert = True)
+sAspectMap = {
+    "I": "dsinfo",
+    "F": "filter",
+    "D": "dtree",
+    "T": "tags"
+}
 
 #===============================================
-def cleanRecordTags(it):
-    rec = deepcopy(it)
-    for sub_tags in rec['_h'][1]:
-        if '_id' in sub_tags:
-            del sub_tags['_id']
-    return rec
-
-def _filterTagState(state, tag_name):
-    ret = dict()
-    for key, value in state.items():
-        if not key.startswith('_') and key != tag_name:
-            ret[key] = value
-    return json.dumps(ret, sort_keys = True)
-
-def clearRecordOneTag(rec, tag_name, out_seq):
-    if tag_name not in rec and all(tag_name not in sub_tags
-            for sub_tags in rec['_h'][1]):
-        return
-    rec_id = rec['_id']
-    base_idx = rec['_h'][0]
-    hist_seq = [_filterTagState(state, tag_name)
-        for state in rec['_h'][1]]
-    if base_idx >= len(hist_seq):
-        base_idx = len(hist_seq)
-        hist_seq.append(_filterTagState(rec, tag_name))
-    idx = 1
-    while idx < len(hist_seq):
-        if hist_seq[idx - 1] == hist_seq[idx]:
-            del hist_seq[idx]
-            if base_idx >= idx:
-                base_idx -= 1
+class NameFilter:
+    def __init__(self, datasets):
+        self.mNameSet = set()
+        self.mRegExps = []
+        if len(datasets) == 0:
+            self._addRegex('*')
         else:
-            idx += 1
-    hist_seq = [json.loads(descr) for descr in hist_seq]
-    if len(hist_seq) == 1 and len(hist_seq[0]) == 0:
-        out_seq.append((rec_id, None))
-        return
-    set_data = deepcopy(hist_seq[base_idx])
-    if base_idx + 1 == len(hist_seq):
-        del hist_seq[base_idx]
-    set_data['_h'] = [base_idx, hist_seq]
-    instr = {"$set": set_data}
-    if tag_name in rec:
-        instr["$unset"] = {tag_name: ""}
-    out_seq.append((rec_id, instr))
+            for ds_nm in datasets:
+                if '*' in ds_nm:
+                    self._addRegex(ds_nm)
+                else:
+                    self.mNameSet.add(ds_nm)
 
-#===============================================
-class CmdInfo:
-    sCmdList = []
+    def _addRegex(self, ds_nm_patt):
+        assert '*' in ds_nm_patt
+        chunks = [re.escape(chunk) for chunk in ds_nm_patt.split('*')]
+        self.mRegExps.append(re.compile(r'\b' + '.*'.join(chunks) + r'\b'))
 
-    def __init__(self, name, args = "ds", create_support = False):
-        self.mName = name
-        self.mArgs = args
-        self.mCreateSupp = create_support
-        self.sCmdList.append(self)
-
-    def getDSName(self, cmd_seq):
-        if len(self.mArgs) > 0 and self.mArgs[0] == "ds":
-            return cmd_seq[1]
-        return None
-
-    def hasCreateSupport(self):
-        return self.mCreateSupp
-
-    def checkArgs(self, cmd_seq):
-        if len(cmd_seq) < 1 or cmd_seq[0] != self.mName:
-            return None
-        if len(self.mArgs) > 0 and self.mArgs[-1] == "datafile":
-            if len(cmd_seq) == 1 + len(self.mArgs):
-                with open(cmd_seq[-1], "r", encoding = "utf-8") as inp:
-                    content = inp.read()
-                cmd_seq[-1] = content
-                return cmd_seq
-            elif len(cmd_seq) == len(self.mArgs):
-                content = sys.stdin.read()
-                cmd_seq.append(content)
-                return cmd_seq
-            print("Improper call arguments", file = sys.stderr)
-            return False
-        if len(cmd_seq) == 1 + len(self.mArgs):
-            return cmd_seq
-        print("Improper call arguments", file = sys.stderr)
+    def filterName(self, ds_name):
+        if ds_name in self.mNameSet:
+            return True
+        for patt in self.mRegExps:
+            if patt.match(ds_name):
+                return True
         return False
 
-    def report(self, output):
-        print("\t%s %s" % (self.mName, " ".join(self.mArgs)), file = output)
+    def filterNames(self, ds_list):
+        for ds_name in ds_list:
+            if self.filterName(ds_name):
+                yield ds_name
 
-    @classmethod
-    def reportAll(cls, output):
-        for cmd_info in cls.sCmdList:
-            cmd_info.report(output)
-
-    @classmethod
-    def checkCall(cls, cmd_seq):
-        for cmd_info in cls.sCmdList:
-            ret = cmd_info.checkArgs(cmd_seq)
-            if ret is not None:
-                return (ret, cmd_info.getDSName(cmd_seq),
-                    cmd_info.hasCreateSupport())
-        print("Command not supported", file = sys.stderr)
-        return False, None, None
+def presentation(obj, pretty_mode):
+    if pretty_mode:
+        return json.dumps(obj,
+            indent = 4, sort_keys = True, ensure_ascii = False)
+    return json.dumps(obj, ensure_ascii = False)
 
 
 #===============================================
-CmdInfo("ds-list", [], True)
-CmdInfo("filter-list", ["ds"], True)
-CmdInfo("tag-list", ["ds"], True)
-CmdInfo("dump-filters", ["ds"], True)
-CmdInfo("dump-tags", ["ds"], True)
-CmdInfo("dump-rules", ["ds"], True)
-CmdInfo("load-tags", ["ds", "datafile"], create_support = True)
-CmdInfo("load-filters", ["ds", "datafile"], create_support = True)
-CmdInfo("load-rules", ["ds", "datafile"], create_support = True)
-CmdInfo("del-filter", ["ds", "filter_name"])
-CmdInfo("del-tag", ["ds", "tag_name"])
-CmdInfo("drop-filters", ["ds"])
-CmdInfo("drop-tags", ["ds"])
-CmdInfo("drop-rules", ["ds"])
-CmdInfo("drop-ds", ["ds"])
+with open(run_args.config, "r", encoding = "utf-8") as inp:
+    cfg = json.loads(inp.read())
+
+mongo_db = MongoClient(
+    cfg.get("mongo-host"), cfg.get("mongo-port"))[cfg["mongo-db"]]
 
 #===============================================
-if run_args.command[0] == "help":
-    print(' ===Anfisa/MongoDB administration tool===', file = sys.stderr)
-    print(' * List of commands *', file = sys.stderr)
-    CmdInfo.reportAll(sys.stderr)
-    sys.exit()
-cmd_seq, ds_name, cr_supp = CmdInfo.checkCall(run_args.command)
-if not cmd_seq:
+aspects = set()
+for asp_code in run_args.aspects:
+    if asp_code.upper() == "A":
+        aspects = set(sAspectMap.values())
+    elif asp_code.upper() in sAspectMap:
+        aspects.add(sAspectMap[asp_code.upper()])
+    else:
+        assert False, (
+            "Bad aspect code: %s (All/Info/Filter/Dtree/Tags)" % asp_code)
+
+assert len(aspects) > 0, "Aspect (All/Info/Filter/Dtree/Tags) not defined"
+
+print("//Aspects: " + " ".join(sorted(aspects)), file = sys.stderr)
+
+#===============================================
+name_flt = NameFilter(run_args.datasets)
+
+ds_present_set = set()
+for coll_name in mongo_db.list_collection_names():
+    if coll_name != "system.indexes":
+        ds_present_set.add(coll_name)
+
+if run_args.mode == "list":
+    print(presentation(name_flt.filterNames(ds_present_set),
+        run_args.pretty))
     sys.exit()
 
-if run_args.config_default:
-    config_path = "./anfisa.json"
-else:
-    config_path = run_args.config
-if config_path:
-    with open(config_path, "r", encoding = "utf-8") as inp:
-        cfg = json.loads(inp.read())
-    database = cfg["mongo-db"]
-    host, port = cfg.get("mongo-host"), cfg.get("mongo-port")
-else:
-    database = run_args.database
-    host, port = run_args.host,  run_args.port
+if run_args.mode == "dump":
+    for ds_name in name_flt.filterNames(ds_present_set):
+        print(presentation({"_tp": "DS", "name": ds_name}, run_args.pretty))
+        for it in mongo_db[ds_name].find():
+            if it.get("_tp") in aspects:
+                rep_it = dict()
+                for name, val in it.items():
+                    if name != "_id":
+                        rep_it[name] = val
+                print(presentation(rep_it, run_args.pretty))
+    sys.exit()
 
-mongo = MongoClient(host,  port)
-if ds_name is not None:
-    m_db = mongo[database]
-    if ds_name not in m_db.list_collection_names():
-        if cr_supp:
-            print("DS %s is possibly creating" % ds_name,
-                file = sys.stderr)
+if run_args.mode == "drop":
+    for ds_name in name_flt.filterNames(ds_present_set):
+        if len(aspects) == len(sAspectMap):
+            print("-> Dataset to drop:\t", ds_name)
+            if not run_args.dry:
+                mongo_db[ds_name].drop()
         else:
-            print("DS not found", ds_name, file = sys.stderr)
-            sys.exit()
-    m_ds = m_db[ds_name]
-else:
-    m_db = mongo[database]
-
-#===============================================
-if cmd_seq[0] == "ds-list":
-    ret = []
-    for coll_name in m_db.list_collection_names():
-        if coll_name != "system.indexes":
-            ret.append(coll_name)
-    print(json.dumps(ret))
+            cnt = 0
+            for it in mongo_db[ds_name].find():
+                if it.get("_tp") in aspects:
+                    cnt += 1
+            if cnt == 0:
+                print("--> Nothing to drop in:\t", ds_name)
+                continue
+            print("-> Records to drop in\t", ds_name, "count=", cnt)
+            if not run_args.dry:
+                for asp in aspects:
+                    mongo_db[ds_name].delete_many({"_tp": asp})
     sys.exit()
 
-#===============================================
-if cmd_seq[0] == "filter-list":
-    ret = []
-    for it in m_ds.find({'_tp': "flt"}):
-        it_name = it['_id']
-        if it_name.startswith("flt-"):
-            ret.append(it_name[4:])
-    print(json.dumps(ret, sort_keys = True, indent = 4))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "tag-list":
-    ret = set()
-    for it in m_ds.find():
-        if not it['_id'].startswith("rec-"):
+if run_args.mode == "restore":
+    ds_name = None
+    cnt = None
+    for line in sys.stdin:
+        line = line.strip()
+        if not line or line.startswith('#'):
             continue
-        for key in it.keys():
-            if not key.startswith('_'):
-                ret.add(key)
-    print(json.dumps(sorted(ret)))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "dump-filters":
-    ret = []
-    for it in m_ds.find({'_tp': "flt"}):
-        it_name = it['_id']
-        if it_name.startswith("flt-"):
-            ret.append(deepcopy(it))
-    for rec in ret:
-        print(json.dumps(rec))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "dump-tags":
-    ret = []
-    for it in m_ds.find():
-        if not it['_id'].startswith("rec-"):
+        it = json.loads(line)
+        if it["_tp"] == "DS":
+            if ds_name is not None:
+                print("-> Added records:", cnt)
+            ds_name = it["name"]
+            if not name_flt.filterName(ds_name):
+                ds_name = None
+            else:
+                cnt = 0
+                print("-> Dataset", ds_name)
             continue
-        ret.append(cleanRecordTags(it))
-    for rec in ret:
-        print(json.dumps(rec))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "dump-rules":
-    ret = None
-    it = m_ds.find_one({'_id': 'params'})
-    if it is not None:
-        ret = deepcopy(it["params"])
-    print(json.dumps(ret))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "load-filters":
-    cnt = 0
-    for instr in readContent(cmd_seq[2]):
-        assert instr['_tp'] == "flt"
-        updateMRec(m_ds, instr)
+        if ds_name is None:
+            continue
+        if it["_tp"] not in aspects:
+            continue
         cnt += 1
-    print(json.dumps("FILTERS LOADED: %d" % cnt))
+        if run_args.dry:
+            continue
+        key_instr = {"_tp": it["_tp"]}
+        if "name" in it:
+            key_instr["name"] = it["name"]
+        mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
+    if ds_name is not None:
+        print("-> Added records:", cnt)
     sys.exit()
 
-#===============================================
-if cmd_seq[0] == "load-tags":
-    cnt = 0
-    for instr in readContent(cmd_seq[2]):
-        assert instr['_id'].startswith("rec-")
-        updateMRec(m_ds, instr)
-        cnt += 1
-    print(json.dumps("TAGS LOADED: %d" % cnt))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "load-rules":
-    cnt = 0
-    for data in readContent(cmd_seq[2]):
-        assert all(len(pair) == 2 for pair in data)
-        m_ds.update({'_id': "params"},
-            {"$set": {'params': data}}, upsert = True)
-        cnt += 1
-    print(json.dumps("RULES LOADED: %d" % cnt))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "del-filter":
-    filter_name = cmd_seq[2]
-    m_ds.remove({'_id': "flt-" + filter_name})
-    print(json.dumps("FILTER %s DELETED" % filter_name))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "del-tag":
-    tag_name = cmd_seq[2]
-    seq_update = []
-    for it in m_ds.find():
-        if it['_id'].startswith("rec-"):
-            clearRecordOneTag(it, tag_name, seq_update)
-    for rec_id, instr in seq_update:
-        if instr is not None:
-            m_ds.update({'_id': rec_id}, instr, upsert = True)
-        else:
-            m_ds.remove({'_id': rec_id})
-    print(json.dumps("TAG %s DELETED: %d records" %
-        (tag_name, len(seq_update))))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "drop-filters":
-    m_ds.remove({'_tp': "flt"})
-    print(json.dumps("FILTERS DROPPED"))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "drop-tags":
-    m_ds.remove({'_id': {"$regex": "^rec-"}})
-    print(json.dumps("TAGS DROPPED"))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "drop-rules":
-    m_ds.remove({'_id': 'params'})
-    print(json.dumps("RULES PARAMS DROPPED"))
-    sys.exit()
-
-#===============================================
-if cmd_seq[0] == "drop-ds":
-    m_ds.drop()
-    print(json.dumps("DATASET DROPPED"))
-    sys.exit()
-
-#===============================================
 print("Oops: command not supported", file = sys.stderr)

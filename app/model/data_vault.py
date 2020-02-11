@@ -68,28 +68,43 @@ class DataVault(SyncronizedObject):
                     return True
                 self.mScanModeLevel = 1
 
+    @classmethod
+    def checkFileStat(cls, fpath):
+        if not os.path.exists(fpath):
+            return None
+        fstat = os.stat(fpath)
+        return (int(fstat.st_size), int(fstat.st_mtime))
+
     def _scanAll(self, report_it):
         prev_set = set(self.mDataSets.keys())
         new_path_list = list(glob(self.mVaultDir + "/*/active"))
-        new_set = set()
+        new_set, upd_set = set(), set()
         for active_path in new_path_list:
             ds_path = os.path.dirname(active_path)
             info_path = ds_path + "/dsinfo.json"
-            if not os.path.exists(info_path):
+            info_fstat = self.checkFileStat(info_path)
+            if info_fstat is None:
                 continue
             ds_name = os.path.basename(ds_path)
-            if ds_name not in prev_set:
-                try:
-                    self.loadDS(ds_name)
-                except Exception:
-                    logException("Bad dataset load: " + ds_name)
-                    continue
-                new_set.add(ds_name)
-            else:
+            if ds_name in prev_set:
                 prev_set.remove(ds_name)
+                if self.mDataSets[ds_name].isUpToDate(info_fstat):
+                    continue
+                upd_set.add(ds_name)
+                self.unloadDS(ds_name)
+            else:
+                new_set.add(ds_name)
+            try:
+                self.loadDS(ds_name)
+            except Exception:
+                logException("Bad dataset load: " + ds_name)
+                continue
         if len(new_set) > 0 and report_it:
             logging.info(("New loaded datasets(%d): " % len(new_set))
                 + " ".join(sorted(new_set)))
+        if len(upd_set) > 0:
+            logging.info(("Reloaded datasets(%d): " % len(upd_set))
+                + " ".join(sorted(upd_set)))
         if len(prev_set) > 0:
             logging.info(("Dropped datasets(%d): " % len(prev_set))
                 + " ".join(sorted(prev_set)))

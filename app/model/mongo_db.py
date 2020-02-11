@@ -65,34 +65,33 @@ class MongoDSAgent:
 
     #===== CreationDate
     def getCreationDate(self):
-        it = self.mAgent.find_one({"_id": "created"})
+        it = self.mAgent.find_one({"_tp": "dsinfo"})
         if it is not None:
-            return AnfisaConfig.normalizeTime(it.get("time"))
+            return AnfisaConfig.normalizeTime(it.get("upd-time"))
         return None
 
-    def checkCreationDate(self, time_label = None, ajson_fname = None):
-        to_update = dict()
+    def updateCreationDate(self, time_label = None, ajson_fname = None):
+        to_update = {"upd-time": (time_label if time_label is not None
+            else datetime.now().isoformat())}
         if ajson_fname is not None:
             ajson_stat = os.stat(ajson_fname)
-            to_update["fstat"] = [ajson_fname,
+            to_update["ajson-fstat"] = [ajson_fname,
                 int(ajson_stat.st_size), int(ajson_stat.st_mtime)]
-        it = self.mAgent.find_one({"_id": "created"})
-        if it is None:
-            to_update["time"] = (time_label if time_label is not None
-                else datetime.now().isoformat())
-        if len(to_update) > 0:
-            self.mAgent.update({"_id": "created"}, {"$set": to_update})
+        else:
+            to_update["ajson-fstat"] = None
+        self.mAgent.update({"_tp": "dsinfo"}, {"$set": to_update},
+            upsert = True)
 
     #===== Note
     def getNote(self):
-        it = self.mAgent.find_one({"_id": "note"})
+        it = self.mAgent.find_one({"_tp": "dsinfo"})
         if it is not None:
-            return (it["note"].strip(),
-                AnfisaConfig.normalizeTime(it.get("time")))
+            return (it.get("note", "").strip(),
+                AnfisaConfig.normalizeTime(it.get("note-time")))
         return ("", None)
 
     def setNote(self, note):
         time_label = datetime.now().isoformat()
-        self.mAgent.update({"_id": "note"},
-            {"$set": {"note": note.strip(), "time": time_label}},
+        self.mAgent.update({"_tp": "dsinfo"},
+            {"$set": {"note": note.strip(), "note-time": time_label}},
             upsert = True)

@@ -158,9 +158,8 @@ def createDS(ds_dir, mongo_conn, druid_adm,
             print(json.dumps(view_checker.dump(), sort_keys = True,
                 indent = 4), file = outp)
 
-        mongo_agent = mongo_conn.getDSAgent(
-            ds_name, ds_kind)
-        mongo_agent.checkCreationDate(date_loaded, ds_source)
+        mongo_agent = mongo_conn.getDSAgent(ds_name, ds_kind)
+        mongo_agent.updateCreationDate(date_loaded, ds_source)
 
         with open(ds_dir + "/doc/info.html", "w", encoding = "utf-8") as outp:
             reportDS(outp, ds_info, mongo_agent)

@@ -83,7 +83,7 @@ class _SolKindMongoHandler:
         self.mData = dict()
         self.mIntVersion = 0
         for it in self.mMongoAgent.find({"_tp": self.mSolKind}):
-            name = it["_id"]
+            name = it["name"]
             self.mData[name] = [it[self.mSolKind],
                 AnfisaConfig.normalizeTime(it.get("time")), it["from"]]
 
@@ -106,7 +106,7 @@ class _SolKindMongoHandler:
     def modifyData(self, option, name, value, upd_from):
         if option == "UPDATE":
             time_label = datetime.now().isoformat()
-            self.mMongoAgent.update({"_tp": self.mSolKind, "_id": name},
+            self.mMongoAgent.update({"_tp": self.mSolKind, "name": name},
                 {"$set": {self.mSolKind: value, "_tp": self.mSolKind,
                     "time": time_label, "from": upd_from}},
                 upsert = True)
@@ -115,7 +115,7 @@ class _SolKindMongoHandler:
             self.mIntVersion += 1
             return True
         if option == "DELETE" and name in self.mData:
-            self.mMongoAgent.remove({"_tp": self.mSolKind, "_id": name})
+            self.mMongoAgent.delete_many({"_tp": self.mSolKind, "name": name})
             del self.mData[name]
             self.mIntVersion += 1
             return True
