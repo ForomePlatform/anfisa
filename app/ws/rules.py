@@ -40,6 +40,9 @@ class RulesUnit(ComplexEnumUnit):
     def isDetailed(self):
         return True
 
+    def isScreened(self):
+        return self.mDS.noSolEntries("dtree")
+
     def getVariantSet(self):
         return VariantSet([dtree_h.getDTreeName()
             for dtree_h in self.mDS.iterSolEntries("dtree")])

@@ -233,7 +233,7 @@ if __name__ == '__main__':
         help = "Anfisa configuration file, used only if --dir is unset, "
         "default = anfisa.json")
     parser.add_argument("-m", "--mode",
-        help = "Mode: create/drop/druid-push/doc-push")
+        help = "Mode: create/drop/druid-push/doc-push/register")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default = ws, "
         "actual if --dir is unset")
@@ -250,6 +250,32 @@ if __name__ == '__main__':
         help = "Delay between work with multiple datasets, in seconds")
     parser.add_argument("names", nargs = "+", help = "Dataset name(s)")
     args = parser.parse_args()
+
+    if args.mode == "register":
+        if (not args.dir or (not args.source and not args.inv)
+                or (args.source and args.inv)):
+            print("Improper arguments: mode register requires "
+                "--dir and (--source or --inv)")
+            sys.exit()
+        if len(args.names) != 1:
+            print("Only one dataset can be registered")
+            sys.exit(1)
+        dir_config = json.loads(
+            json_conf.readCommentedJSon(args.dir))
+        new_descr = {"kind": args.kind}
+        if args.source:
+            new_descr["a-json"] = args.source
+        else:
+            new_descr["inv"] = args.inv
+        dir_config["datasets"][args.names[0]] = new_descr
+        tmp_name = '~' + args.dir + '.tmp'
+        with open(tmp_name, "w", encoding = "utf-8") as outp:
+            outp.write(json.dumps(dir_config,
+                indent = 4, sort_keys = True, ensure_ascii = False))
+        os.rename(args.dir, args.dir + '~')
+        os.rename(tmp_name, args.dir)
+        print("Directory file", args.dir, "updated")
+        sys.exit()
 
     if args.dir:
         if args.config or args.source or args.inv:
@@ -304,6 +330,8 @@ if __name__ == '__main__':
         elif args.mode == "druid-push":
             pushDruid(app_config, ds_entry, druid_adm)
         elif args.mode == "doc-push":
+            pushDoc(app_config, ds_entry)
+        elif args.mode == "register":
             pushDoc(app_config, ds_entry)
         elif args.mode == "debug-info":
             print("Info:", json.dumps(

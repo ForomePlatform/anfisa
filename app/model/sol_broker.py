@@ -110,6 +110,9 @@ class SolutionBroker(SyncronizedObject):
         for info in sol_kind_h.getList():
             yield sol_kind_h.pickByName(info["name"])
 
+    def noSolEntries(self, kind):
+        return self.mSolKinds[kind].isEmpty()
+
     def pickSolEntry(self, kind, name):
         return self.mSolKinds[kind].pickByName(name)
 
@@ -154,6 +157,9 @@ class _SolutionKindHandler:
         self.mStdCount = len(self.mNames)
         self.mHashDict = {entry_obj.getHashCode(): entry_obj
             for entry_obj in self.mEntryDict.values()}
+
+    def isEmpty(self):
+        return len(self.mNames) == 0
 
     def refreshSolEntries(self):
         _names = []
