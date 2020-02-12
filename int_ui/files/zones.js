@@ -95,7 +95,7 @@ var sZoneH = {
     
     setWorkZone: function(zone_name) {
         if(zone_name && !this.mCacheList[zone_name]) {
-            loadZone(zone_name);
+            this.loadZone(zone_name);
             return;
         }
         this.mWorkCur = zone_name;
@@ -119,7 +119,7 @@ var sZoneH = {
         if (tags_int_version != this.mTagsIntVersion) {
             if (this.mCacheList["_tags"]) {
                 delete this.mCacheList["_tags"];
-                loadZone("_tags");
+                this.loadZone("_tags");
             }
             this.mTagsIntVersion = tags_int_version;
         }
@@ -161,7 +161,7 @@ var sZoneH = {
         this.mCacheSet[this.mWorkCur] = new_sel;
         document.getElementById("zn-div--" + zone_name).innerHTML =
             list_val_rep.join('\n');
-        setWorkZoneZone(this.mWorkCur);
+        this.setWorkZone(this.mWorkCur);
     },
 
     update: function() {
@@ -221,7 +221,7 @@ var sZoneH = {
             }
             el_id = 'zn--' + zone_name + '-check--' + zone_var_idx;
             document.getElementById(el_id).checked = (idx < 0);
-            update();
+            this.update();
         }
     },
 
