@@ -46,31 +46,28 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
 var sDecisionTree = {
     mTreeCode: null,
     mPoints: null,
-    mMarkers: null,
+    mCondAtoms: null,
     mPointCounts: null,
     mTotalCounts: null,
     mEvalState: null,
     mAcceptedCounts: null,
     mCurPointNo: null,
-    mMarkLoc: null,
+    mCondAtomLoc: null,
     mErrorMode: null,
     mPointDelay: null,
     mRqId: null,
     mPostTreeAction: null,
     
-    setup: function(tree_code, options) {
+    setup: function(tree_code, instr, dtree_name) {
         args = "ds=" + sDSName + "&tm=0";
         if (tree_code == true)
             tree_code = this.mTreeCode;
         if (tree_code != false)
             args += "&code=" + encodeURIComponent(tree_code);
-        if (options) {
-            for (j=0; j < 2; j++) {
-                var opt_key = ["dtree", "instr"][j];
-                if (options[opt_key])
-                    args += "&" + opt_key + "=" + encodeURIComponent(options[opt_key]);
-            }
-        }
+        if (instr)
+            args += "&instr=" + encodeURIComponent(JSON.stringify(instr));
+        if (dtree_name)
+            args += "&dtree=" + encodeURIComponent(dtree_name)
         ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     
@@ -81,13 +78,13 @@ var sDecisionTree = {
         this.mEvalStatus = info["eval-status"];
         sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
         sHistoryH.update(info["hash"]);
-        this.mMarkLoc = null;
+        this.mCondAtomLoc = null;
         this.mPostTreeAction = null;
         this.mPointDelay = [];
         this.mErrorMode = false;
         this.mPointCounts = info["point-counts"];
         this.mPoints = info["points"];
-        this.mMarkers = info["markers"];
+        this.mCondAtoms = info["cond-atoms"];
         this._fillTreeTable();
         
         point_no = 0;
@@ -275,7 +272,7 @@ var sDecisionTree = {
             return;
         sViewH.modalOff();
         this._highlightCondition(false);
-        this.mMarkLoc = null;
+        this.mCondAtomLoc = null;
         if (point_no >= 0) {
             var new_el = document.getElementById("p_td__" + point_no);
             if (new_el == null) 
@@ -288,37 +285,51 @@ var sDecisionTree = {
         sUnitsH.setup();
     },
     
-    markEdit: function(point_no, marker_idx) {
+    atomEdit: function(point_no, atom_idx) {
         this.selectPoint(point_no);
         if (sUnitsH.postAction(
-                'sDecisionTree.markEdit(' + point_no + ', ' + marker_idx + ');', true))
+                'sDecisionTree.atomEdit(' + point_no + ', ' + atom_idx + ');', true))
             return;
-        this.mMarkLoc = [point_no, marker_idx];
-        sOpCondH.show(this.mMarkers[point_no][marker_idx]);
+        this.mCondAtomLoc = [point_no, atom_idx];
+        this.showAtomCond();
         this._highlightCondition(true);
     },
     
-    markRenewEdit: function() {
-        if (this.mMarkLoc) 
-            this.markEdit(this.mMarkLoc[0], this.mMarkLoc[1]);
+    atomRenewEdit: function() {
+        if (this.mCondAtomLoc) 
+            this.atomEdit(this.mCondAtomLoc[0], this.mCondAtomLoc[1]);
     },
 
     _highlightCondition(mode) {
-        if (this.mMarkLoc == null)
+        if (this.mCondAtomLoc == null)
             return;
-        mark_el = document.getElementById(
-            '__mark_' + this.mMarkLoc[0] + '_' + this.mMarkLoc[1]);
+        atom_el = document.getElementById(
+            '__atom_' + this.mCondAtomLoc[0] + '_' + this.mCondAtomLoc[1]);
         if (mode)
-            mark_el.className += " active";
+            atom_el.className += " active";
         else
-            mark_el.className = mark_el.className.replace(" active", "");
+            atom_el.className = atom_el.className.replace(" active", "");
     },
     
-    editMarkCond: function(new_cond) {
-        if (this.mMarkLoc != null)
-            this.setup(true, {"instr": 
-                JSON.stringify(["EDIT", "mark", this.mMarkLoc, new_cond])});
+    getCurAtomLoc: function() {
+        return this.mCondAtomLoc;
     },
+
+    getCurAtomCond: function() {
+        if (this.mCondAtomLoc == null)
+            return null;
+        return this.mCondAtoms[this.mCondAtomLoc[0]][this.mCondAtomLoc[1]];
+    },
+
+    showAtomCond: function() {
+        var actions = ["atom-set"];
+        if (this.mCondAtoms[this.mCondAtomLoc[0]].length > 1)
+            actions.push("atom-delete");
+        else
+            actions.push("point-delete");
+        sOpCondH.careButtons(actions);
+        sOpCondH.show(this.getCurAtomCond());
+    },    
     
     getAcceptedCounts: function() {
         if (this.mPointDelay.length > 0)
@@ -549,17 +560,31 @@ var sOpCondH = {
     mCurTpHandler: null,
     mCondition: null,
     mNewCondition: null,
-    mButtonSet: null,
+    mButtons: {},
     mCurUnitName: null,
+    mActionList: ["atom-set", "atom-delete", "point-delete", 
+        "point-replace", "point-join-and", "point-join-or", 
+        "point-up-replace", "point-up-join-and"],
+    mCurActions: null,
 
     init: function() {
-        this.mButtonSet   = document.getElementById("cond-button-set");
+        for (idx = 0; idx < this.mActionList.length; idx++)
+            this.mButtons[this.mActionList[idx]] =
+                document.getElementById("cond-button-" + this.mActionList[idx]);
     },
     
     checkDelay: function(unit_name) {
         if (unit_name == this.mCurUnitName && 
                 document.getElementById("cur-cond-back").style.display != "none")
-            this.show(this.mCondition);
+            this.show(this.mCondition); //TRF!!!
+    },
+
+    careButtons: function(actions) {
+        this.mCurActions = actions;
+        for (idx = 0; idx < this.mActionList.length; idx++)
+            this.mButtons[this.mActionList[idx]].style.display =
+                (this.mCurActions.indexOf(this.mActionList[idx]) >= 0)?
+                "inline" : "none";
     },
     
     show: function(condition) {
@@ -570,7 +595,6 @@ var sOpCondH = {
         document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
             ((unit_stat["kind"] == "func")? "()" : "");
         mode = "num";
-        //TRF!!!
         if (unit_stat == undefined || unit_stat["incomplete"]) {
             this.mCurTpHandler = null;
         } else {
@@ -610,12 +634,15 @@ var sOpCondH = {
         message_el.innerHTML = (err_msg)? err_msg:"";
         message_el.className = (this.mNewCondition == null && 
             !err_msg.startsWith(' '))? "bad":"message";
-        this.mButtonSet.disabled = (condition_data == null);
+        this.mButtons["atom-set"].disabled = (this.getNewCondition() == null);
+        this.mButtons["atom-delete"].disabled = false;
     },
     
-    editMarkCond: function() {
-        if (this.mNewCondition && this.mNewCondition != this.mCondition)
-            sDecisionTree.editMarkCond(this.mNewCondition);
+    getNewCondition: function() {
+        if (!this.mNewCondition || 
+                this.mNewCondition == this.mCondition)
+            return null;
+        return this.mNewCondition;
     },
     
     careControls: function() {
@@ -797,8 +824,7 @@ var sDTreesH = {
         if (!this.mCurDTreeName || 
                 this.mOpList.indexOf(this.mCurDTreeName) < 0)
             return;
-        sDecisionTree.setup(true, 
-            {"instr": JSON.stringify(["DELETE", this.mCurDTreeName])});
+        sDecisionTree.setup(true, ["DTREE", "DELETE", this.mCurDTreeName]);
     },
 
     action: function() {
@@ -809,20 +835,19 @@ var sDTreesH = {
         switch (this.mCurOp) {
             case "create":
                 if (!q_all && checkIdentifier(dtree_name)) {
-                    sDecisionTree.setup(true,
-                        {"instr": JSON.stringify(["UPDATE", dtree_name])});
+                    sDecisionTree.setup(true, 
+                        ["DTREE", "UPDATE", dtree_name]);
                 }
                 break;
             case "modify":
                 if (q_op && dtree_name != this.mCurDTreeName) {
                     sDecisionTree.setup(true,
-                        {"instr": JSON.stringify(["UPDATE", dtree_name])});
+                        ["DTREE", "UPDATE", dtree_name]);
                 }
                 break;
             case "load":
                 if (q_all && dtree_name != this.mCurDTreeName) {
-                    sDecisionTree.setup(false,
-                        {"dtree": dtree_name});
+                    sDecisionTree.setup(false, null, dtree_name);
                 }
                 break;
         }
@@ -1185,17 +1210,32 @@ function onKey(key_event) {
     sSubVRecH.onKey(key_event);
 }
 
-function fixMark() {
-    sOpCondH.editMarkCond();
-    sViewH.modalOff();
+function modifyDTree(target, op) {
+    var instr = [target, op];
+    if (target == "ATOM") {
+        instr.push(sDecisionTree.getCurAtomLoc()); 
+    } else if (target == "POINT") {
+        instr.push(sDecisionTree.mCurPointNo);
+    } else {
+        console.log("Bad target for modify: " + target);
+        return;
+    }
+    if (instr[2] == null)
+        return;
+    if (op != "DELETE") {
+        instr.push(sOpCondH.getNewCondition());
+        if (!instr[3]) 
+            return;
+    }
+    sDecisionTree.setup(true, instr);
 }
 
 function versionSelect() {
     sVersionsH.selectVersion();
 }
 
-function editMark(point_no, instr_idx) {
-    sDecisionTree.markEdit(point_no, instr_idx);
+function editAtom(point_no, instr_idx) {
+    sDecisionTree.atomEdit(point_no, instr_idx);
 }
 
 function renderEnum(unit_name, expand_mode) {

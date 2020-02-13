@@ -110,8 +110,8 @@ class CheckPoint:
     def getCondData(self):
         return self.mFrag.getCondData()
 
-    def getMarkers(self):
-        return self.mFrag.getMarkers()
+    def getCondAtoms(self):
+        return self.mFrag.getCondAtoms()
 
     def _accumulateConditions(self):
         if self.getPrevPoint() is None:
@@ -268,16 +268,16 @@ class DTreeEval(Evaluation, CaseStory):
 
     def operationError(self, cond_data, err_msg):
         Evaluation.operationError(self, cond_data, err_msg)
-        for mark_info in self.mFragments[self.getCurPointNo()].getMarkers():
-            if cond_data is mark_info.getCondData():
-                mark_info.setError(err_msg)
+        for atom_info in self.mFragments[self.getCurPointNo()].getCondAtoms():
+            if cond_data is atom_info.getCondData():
+                atom_info.setError(err_msg)
                 return
-        assert False, "Marker not found: " + str(cond_data)
+        assert False, "Condition atom not found: " + str(cond_data)
 
     def locateCondData(self, cond_data):
-        for mark_info in self.mFragments[self.getCurPointNo()].getMarkers():
-            if cond_data is mark_info.getCondData():
-                return self.getCurPointNo(), mark_info.getErrorMsg()
+        for atom_info in self.mFragments[self.getCurPointNo()].getCondAtoms():
+            if cond_data is atom_info.getCondData():
+                return self.getCurPointNo(), atom_info.getErrorMsg()
         assert False, "Not found: " + str(cond_data)
         return None
 
@@ -319,20 +319,20 @@ class DTreeEval(Evaluation, CaseStory):
         return self.mPointList[point_no].getPointKind() == "If"
 
     def reportInfo(self):
-        marker_seq = []
-        marker_dict = {}
+        atom_seq = []
+        atom_dict = {}
         for point in self.mPointList:
             cond_seq = []
-            for mark_idx, mark_info in enumerate(point.getMarkers()):
-                marker_seq.append((point.getPointNo(), mark_idx,
-                    mark_info.getLoc(), mark_info.getErrorMsg()))
-                cond_seq.append(mark_info.getCondData())
+            for atom_idx, atom_info in enumerate(point.getCondAtoms()):
+                atom_seq.append((point.getPointNo(), atom_idx,
+                    atom_info.getLoc(), atom_info.getErrorMsg()))
+                cond_seq.append(atom_info.getCondData())
             if len(cond_seq) > 0:
-                marker_dict[point.getPointNo()] = cond_seq
-        html_lines = self._decorCode(marker_seq)
+                atom_dict[point.getPointNo()] = cond_seq
+        html_lines = self._decorCode(atom_seq)
         ret_handle = {
             "points": [point.getInfo(html_lines) for point in self.mPointList],
-            "markers": marker_dict,
+            "cond-atoms": atom_dict,
             "labels": self.getLabelPoints(),
             "code": self.mCode,
             "hash": self.mHashCode,
@@ -343,7 +343,7 @@ class DTreeEval(Evaluation, CaseStory):
             ret_handle["dtree-name"] = self.mDTreeName
         return ret_handle
 
-    def _decorCode(self, marker_seq = None):
+    def _decorCode(self, atom_seq = None):
         code_lines = self.mCode.splitlines()
         html_lines = []
         cur_diap = None
@@ -352,7 +352,7 @@ class DTreeEval(Evaluation, CaseStory):
             if frag_h.getInstrType() == "Error":
                 if cur_diap is not None:
                     html_lines += HtmlPresentation.decorProperCode(
-                        code_lines, cur_diap, marker_seq)
+                        code_lines, cur_diap, atom_seq)
                     cur_diap = None
                 html_lines += HtmlPresentation.presentErrorCode(
                     code_lines, frag_h.getLineDiap(), frag_h.getErrorInfo())
@@ -363,7 +363,7 @@ class DTreeEval(Evaluation, CaseStory):
                     cur_diap = [cur_diap[0], frag_h.getLineDiap()[1]]
         if cur_diap is not None:
             html_lines += HtmlPresentation.decorProperCode(
-                code_lines, cur_diap, marker_seq)
+                code_lines, cur_diap, atom_seq)
         return html_lines
 
     def collectRecSeq(self):

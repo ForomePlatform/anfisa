@@ -135,59 +135,51 @@ def _formCurCondDiv(output):
                 <span class="close-it"
                     onclick="sViewH.modalOff();">&times;</span>
             </div>
-            <div id="cond-message"></div>
-            <div id="cur-cond-numeric">
-              <span id="cond-min" class="num-set"></span>
-              <input id="cond-min-inp" class="num-inp"
-                type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-min-sign" class="num-sign"
-                    onclick="sOpNumH.switchSign(0);"></span>
-              <span id="cond-num-value">...</span>
-              <span id="cond-max-sign" class="num-sign"
-                    onclick="sOpNumH.switchSign(1);"></span>
-              <input id="cond-max-inp" class="num-inp"
-                type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-max" class="num-set"></span>
-              <span id="num-count" class="num-count"></span>
-            </div>
-            <div id="cur-cond-enum">
-              <div id="cur-cond-func-param"></div>
-              <div id="wrap-cond-enum">
-                <div id="cur-cond-enum-list">
-                    <div id="op-enum-list">
-                    </div>
-                </div>
-                <div id="cur-cond-enum-ctrl">
-                  <div id="cur-cond-enum-zeros">
-                    <label for="cur-enum-zeros">Show zeros&nbsp;</label><input
-                        id="cur-enum-zeros" type="checkbox"
-                        onchange="sOpEnumH.careEnumZeros();"/>
-                  </div>
-                  <div id="cur-cond-enum-mode">
-                    <span id="cond-mode-and-span">
-                      <input id="cond-mode-and" type="checkbox"
-                        onchange="sOpEnumH.checkControls(1);"
-                        /><label for="cond-mode-and">&nbsp;all</label>
-                    </span><br/>
-                    <span id="cond-mode-not-span">
-                      <input id="cond-mode-not" type="checkbox"
-                        onchange="sOpEnumH.checkControls(2);"
-                        /><label for="cond-mode-not">&nbsp;not</label>
-                    </span><br/>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div id="cur-cond-loading">
-                <div class="loading">Loading data...</div>
-            </div>
+            <div id="cond-message"></div>''', file = output)
+
+    gen_html.formCurConditionControls(output)
+
+    print('''
             <div id="cond-ctrl">
-                <button id="cond-button-set" onclick="fixMark();">
-                    Set
+                <button id="cond-button-atom-set"
+                    title="Tune settings of the condition"
+                    onclick="modifyDTree('ATOM', 'EDIT');"> Set
                 </button>
+                <button id="cond-button-point-join-and" title=
+                    "Join the condition with instruction by and-operation"
+                    onclick="modifyDTree('POINT', 'JOIN-AND');"> Join by AND
+                </button>
+                <button id="cond-button-point-join-or"
+                    title="Join the condition with instruction by or-operation"
+                    onclick="modifyDTree('POINT', 'JOIN-OR');"> Join by OR
+                </button>
+                <button id="cond-button-point-up-join-and" title=
+                    "Join the condition to upper instruction by and-operation"
+                    onclick="modifyDTree('POINT', 'UP-JOIN-AND');"> Join as AND
+                </button>
+                &emsp;&emsp;
+                <button id="cond-button-point-replace"
+                    title="Replace whole instruction by this condition"
+                    onclick="modifyDTree('POINT', 'REPLACE');"> Set
+                </button>
+                <button id="cond-button-point-up-replace"
+                    title="Replace whole upper instruction by this condition"
+                    onclick="modifyDTree('POINT', 'UP-REPLACE');"> Set
+                </button>
+                <button id="cond-button-atom-delete"
+                    title="Remove the condition from instruction"
+                    onclick="modifyDTree('ATOM', 'DELETE');">Delete
+                </button>
+                <button id="cond-button-point-delete"
+                    title="Delete the instruction"
+                    onclick="modifyDTree('POINT', 'DELETE');">
+                        Delete instruction
+                </button>
+                &emsp;&emsp;
                 <button onclick="sViewH.modalOff();">
                     Cancel
                 </button>
+              </div>
             </div>
         </div>
       </div>

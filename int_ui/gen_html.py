@@ -168,10 +168,58 @@ def formFilterPanel(output):
             <span id="close-filter" class="close-it"
                 onclick="relaxView();">&times;</span>
           </div>
-          <div id="cur-cond-message">
+          <div id="cur-cond-message"></div>
+          <div id="filter-cur-cond">''', file = output)
+
+    formCurConditionControls(output)
+
+    print('''
           </div>
-          <div id="filter-cur-cond">
-            <div id="cur-cond-numeric">
+          <div id="filters-edit-ctrl">
+            <button class="op-button popup" id="filter-clear-all-cond"
+                onclick='sOpFilterH.modify(\"clear-all\");'>
+                Clear
+            </button>
+            <div class="dropdown">
+              <button class="op-button popup">
+                Filters...
+              </button>
+              <div id="filters-op-list" class="dropdown-content">
+                <a class="popup" id="filters-op-load"
+                    onclick="sFiltersH.startLoad();">Load</a>
+                <a class="popup" id="filters-op-create"
+                    onclick="sFiltersH.startCreate();">Create</a>
+                <a class="popup"  id="filters-op-modify"
+                    onclick="sFiltersH.startModify();">Modify</a>
+                <a class="popup"  id="filters-op-delete"
+                    onclick="sFiltersH.deleteIt();">Delete</a>
+              </div>
+            </div>
+            <div id="filter-name-combo" class="combobox">
+              <select id="filter-name-combo-list"
+                  onchange="sFiltersH.select();">
+                <option value=""></option>
+              <input id="filter-name-input" type="text" />
+              </select>
+            </div>
+            <button id="filter-act-op" class="op-button"
+                onclick="sFiltersH.action();">
+              ...
+            </button>
+          </div>
+          <div id="filter-wrap-list-conditions">
+            <div id="filter-list-conditions">
+              <div id="cond-list">
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>''', file = output)
+
+#===============================================
+def formCurConditionControls(output):
+    print('''
+           <div id="cur-cond-numeric">
               <span id="cond-min" class="num-set"></span>
               <input id="cond-min-inp" class="num-inp"
                 type="text" onchange="sOpNumH.checkControls();"/>
@@ -215,48 +263,7 @@ def formFilterPanel(output):
             </div>
             <div id="cur-cond-loading">
                <div class="loading">Loading data...</div>
-            </div>
-          </div>
-          <div id="filters-edit-ctrl">
-            <button class="op-button popup" id="filter-clear-all-cond"
-                onclick='sOpFilterH.modify(\"clear-all\");'>
-                Clear
-            </button>
-            <div class="dropdown">
-              <button class="op-button popup">
-                Filters...
-              </button>
-              <div id="filters-op-list" class="dropdown-content">
-                <a class="popup" id="filters-op-load"
-                    onclick="sFiltersH.startLoad();">Load</a>
-                <a class="popup" id="filters-op-create"
-                    onclick="sFiltersH.startCreate();">Create</a>
-                <a class="popup"  id="filters-op-modify"
-                    onclick="sFiltersH.startModify();">Modify</a>
-                <a class="popup"  id="filters-op-delete"
-                    onclick="sFiltersH.deleteIt();">Delete</a>
-              </div>
-            </div>
-            <div id="filter-name-combo" class="combobox">
-              <select id="filter-name-combo-list"
-                  onchange="sFiltersH.select();">
-                <option value=""></option>
-              <input id="filter-name-input" type="text" />
-              </select>
-            </div>
-            <button id="filter-act-op" class="op-button"
-                onclick="sFiltersH.action();">
-              ...
-            </button>
-          </div>
-          <div id="filter-wrap-list-conditions">
-            <div id="filter-list-conditions">
-              <div id="cond-list">
-              </div>
-            </div>
-          </div>
-        </div>
-    </div>''', file = output)
+            </div>''', file = output)
 
 #===============================================
 def formSubViewDiv(output):

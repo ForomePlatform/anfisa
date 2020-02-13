@@ -33,6 +33,7 @@ from app.eval.filter import FilterEval
 from app.eval.dtree import DTreeEval
 from app.eval.code_works import cmpTrees
 from app.eval.dtree_parse import ParsedDTree
+from app.eval.dtree_mod import modifyDTreeCode
 from app.prepare.sec_ws import SecondaryWsCreation
 from .sol_broker import SolutionBroker
 from .family import FamilyInfo
@@ -540,16 +541,17 @@ class DataSet(SolutionBroker):
         instr = rq_args.get("instr")
         if instr is not None:
             instr = json.loads(instr)
-        if instr and instr[0] != "EDIT":
+        if instr and instr[0] == "DTREE":
             dtree_proc_h = self._getArgDTree(
                 rq_args, activate_it = False)
-            if not self.modifySolEntry("dtree", instr,
+            if not self.modifySolEntry("dtree", instr[1:],
                     dtree_proc_h.getCode()):
                 assert False
+            instr = None
         dtree_h = None
-        if instr and instr[0] == "EDIT":
+        if instr:
             parsed = ParsedDTree(self.getEvalSpace(), rq_args["code"])
-            dtree_code = parsed.modifyCode(instr[1:])
+            dtree_code = modifyDTreeCode(parsed, instr)
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
         ret_handle = {

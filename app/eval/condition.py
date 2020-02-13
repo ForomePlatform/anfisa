@@ -104,6 +104,37 @@ def validateCondition(cond_info):
             return "Bad function condition"
     return "Improper condition"
 
+#===============================================
+def reduceCondData(cond_data):
+    if len(cond_data) == 0 or cond_data[0] is None:
+        return cond_data
+    if cond_data[0] is False:
+        assert len(cond_data) == 1
+        return None
+    if cond_data[0] == "not":
+        sub_cond = reduceCondData[cond_data[1]]
+        if sub_cond is None:
+            return None
+        if sub_cond is cond_data[1]:
+            return cond_data
+        return ["not", sub_cond]
+    if cond_data[0] in ("and", "or"):
+        modified = False
+        seq = []
+        for idx in range(1, len(cond_data)):
+            sub_cond = reduceCondData(cond_data[idx])
+            modified |= (sub_cond is not cond_data[idx])
+            if sub_cond is not None:
+                seq.append(sub_cond)
+        if len(seq) == 0:
+            return None
+        if len(seq) == 1:
+            return seq[0]
+        if modified:
+            return [cond_data[0]] + seq
+        return cond_data
+    return cond_data
+
 
 #===============================================
 ZYG_BOUNDS_VAL = {

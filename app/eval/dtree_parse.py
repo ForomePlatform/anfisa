@@ -22,14 +22,13 @@ import sys, ast
 from hashlib import md5
 
 from utils.log_err import logException
-from .code_repr import formatIfCode
 from .code_works import normalizeCode
 from .code_parse import parseCodeByPortions
 #===============================================
 class TreeFragment:
     def __init__(self, level, tp, line_diap,
             base_instr = None, err_info = None, decision = None,
-            cond_data = None, markers = None, label = None):
+            cond_data = None, cond_atoms = None, label = None):
         self.mLevel = level
         self.mType = tp
         self.mLineDiap = line_diap
@@ -37,7 +36,7 @@ class TreeFragment:
         self.mErrInfo = err_info
         self.mCondData = cond_data
         self.mDecision = decision
-        self.mMarkers = markers if markers is not None else []
+        self.mCondAtoms = cond_atoms if cond_atoms is not None else []
         self.mLabel = label
 
     def setLineDiap(self, base_diap, full_diap):
@@ -68,11 +67,11 @@ class TreeFragment:
     def getLabel(self):
         return self.mLabel
 
-    def getMarkers(self):
-        return self.mMarkers
+    def getCondAtoms(self):
+        return self.mCondAtoms
 
 #===============================================
-class SingleEvalMarker:
+class CondAtomInfo:
     def __init__(self, cond_data, location):
         self.mCondData = cond_data
         self.mLoc = location
@@ -86,6 +85,9 @@ class SingleEvalMarker:
 
     def getCondData(self):
         return self.mCondData
+
+    def resetCondData(self, values):
+        self.mCondData[:] = values
 
     def getErrorMsg(self):
         return self.mErrorMsg
@@ -142,7 +144,7 @@ class ParsedDTree:
         self.mHashCode = hash_h.hexdigest()
         self.mCurLineDiap = None
         self.mError = None
-        self.mMarkers = None
+        self.mCondAtoms = None
         for frag_h in self.mFragments:
             self.mError = frag_h.getErrorInfo()
             if self.mError is not None:
@@ -180,6 +182,9 @@ class ParsedDTree:
     def getHashCode(self):
         return self.mHashCode
 
+    def isLineIsDummy(self, line_no):
+        return line_no in self.mDummyLinesReg
+
     def errorIt(self, it, msg_text):
         self.mError = (msg_text,
             it.lineno + self.mCurLineDiap[0] - 1, it.col_offset)
@@ -194,16 +199,16 @@ class ParsedDTree:
             self.mFirstError = self.mError
         raise RuntimeError()
 
-    def _addMarker(self, cond_data, it, it_name):
-        self.mMarkers.append(
-            SingleEvalMarker(cond_data,
+    def _regCondAtom(self, cond_data, it, it_name):
+        self.mCondAtoms.append(
+            CondAtomInfo(cond_data,
                 [it.lineno + self.mCurLineDiap[0] - 1,
                 it.col_offset,
                 it.col_offset + len(it_name)]))
 
     #===============================================
     def processIf(self, instr_d):
-        self.mMarkers = []
+        self.mCondAtoms = []
         cond_data = self._processCondition(instr_d.test)
         if len(instr_d.orelse) > 0:
             self.errorIt(instr_d.orelse[0],
@@ -213,10 +218,10 @@ class ParsedDTree:
         line_decision = instr_d.body[0].lineno + line_from - 1
         ret = [
             TreeFragment(0, "If", (line_from, line_decision),
-                markers = self.mMarkers, cond_data = cond_data),
+                cond_atoms = self.mCondAtoms, cond_data = cond_data),
             TreeFragment(1, "Return",
                 (line_decision, line_to), decision = decision)]
-        self.mMarkers = None
+        self.mCondAtoms = None
         return ret
 
     #===============================================
@@ -330,7 +335,7 @@ class ParsedDTree:
                     self.errorIt(it.left, "Improper enum field name: "
                         + field_name)
             ret = ["enum", field_name, op_mode, variants]
-            self._addMarker(ret, it.left, it.left.id)
+            self._regCondAtom(ret, it.left, it.left.id)
             return ret
 
         if isinstance(it.left, ast.Call):
@@ -360,7 +365,7 @@ class ParsedDTree:
             if err_msg:
                 self.errorIt(it.left, err_msg)
             ret = ["func", field_name, op_mode, variants, func_args]
-            self._addMarker(ret, it.left, it.left.func.id)
+            self._regCondAtom(ret, it.left, it.left.func.id)
             return ret
         self.errorIt(it.left, "Name of field is expected")
         return None
@@ -447,7 +452,7 @@ class ParsedDTree:
                     or bounds[0] > bounds[2]):
                 self.errorIt(it, "Condition never success")
         ret = ["numeric", field_name, bounds]
-        self._addMarker(ret, field_node, field_name)
+        self._regCondAtom(ret, field_node, field_name)
         return ret
 
     #===============================================
@@ -513,24 +518,8 @@ class ParsedDTree:
         self.errorIt(it, "Incorrect data format")
         return None
 
-    #===============================================
-    def modifyCode(self, instr):
-        mode, loc, new_cond = instr
-        assert mode == "mark"
-        frag_no, mark_no = loc
-        frag_h = self.mFragments[frag_no]
-        frag_h.getMarkers()[mark_no].getCondData()[:] = new_cond
-        code_lines = self.mCode.splitlines()
-        line_from, line_to = frag_h.getLineDiap()
-        dummy_lines = []
-        for line_no in range(*frag_h.getLineDiap()):
-            if line_no in self.mDummyLinesReg:
-                dummy_lines.append(code_lines[line_no - 1])
-        code_lines[line_from - 1: line_to - 1] = (dummy_lines
-            + formatIfCode(frag_h.getCondData()).splitlines())
-        return "\n".join(code_lines)
 
-
+#===============================================
 if __name__ == '__main__':
     source = sys.stdin.read()
     parser = ParsedDTree(None, source)
