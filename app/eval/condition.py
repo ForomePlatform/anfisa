@@ -50,6 +50,8 @@ class ConditionMaker:
 
     @staticmethod
     def condNot(cond_data):
+        if cond_data and cond_data[0] == "not":
+            return cond_data[1]
         return ["not", cond_data]
 
     @staticmethod

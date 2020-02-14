@@ -420,7 +420,7 @@ var sOpEnumH = {
 /*************************************/
 /*************************************/
 function fillStatList(items, unit_map, list_stat_rep, 
-        unit_names_to_load, expand_mode) {
+        unit_names_to_load, expand_mode, click_func) {
     var group_title = false;
     for (idx = 0; idx < items.length; idx++) {
         unit_stat = items[idx];
@@ -446,18 +446,26 @@ function fillStatList(items, unit_map, list_stat_rep,
         }
         func_decor = (unit_stat["kind"] == "func" || 
             unit_stat["sub-kind"] == "func")? "(...)":"";
-        list_stat_rep.push('<div id="stat--' + unit_name + '" class="stat-unit" ');
+        click_support = '';
+        if (click_func)
+            click_support = '<span class="unit-click" onclick="' +
+                click_func + '(\'' + unit_name + '\')">&#x25c0;</span>&nbsp;';
+        list_stat_rep.push('<div id="stat--' + 
+            unit_name + '" class="stat-unit" ');
         if (unit_stat["tooltip"]) 
-            list_stat_rep.push('title="' + escapeText(unit_stat["tooltip"]) + '" ');
+            list_stat_rep.push('title="' + 
+                escapeText(unit_stat["tooltip"]) + '" ');
 
-        list_stat_rep.push('onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
+        list_stat_rep.push(
+            'onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
         list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
-            unit_name + func_decor + '</span>');
+            click_support + unit_name + func_decor + '</span>');
         if (unit_stat["title"]) 
             list_stat_rep.push('<span class="stat-unit-title">' + 
                 unit_stat["title"] + '</span>');
         list_stat_rep.push('</div>')
-        list_stat_rep.push('<div id="stat-data--' + unit_name + '" class="stat-unit-data">');
+        list_stat_rep.push('<div id="stat-data--' + 
+            unit_name + '" class="stat-unit-data">');
         if (unit_stat["incomplete"]) {
             unit_names_to_load.push(unit_name);
             list_stat_rep.push('<div class="comment">Loading data...</div>');

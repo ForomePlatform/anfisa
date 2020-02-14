@@ -145,6 +145,10 @@ def _formCurCondDiv(output):
                     title="Tune settings of the condition"
                     onclick="modifyDTree('ATOM', 'EDIT');"> Set
                 </button>
+                <button id="cond-button-point-insert" title=
+                    "Insert the condition before current instruction"
+                    onclick="modifyDTree('POINT', 'INSERT');"> Insert
+                </button>
                 <button id="cond-button-point-join-and" title=
                     "Join the condition with instruction by and-operation"
                     onclick="modifyDTree('POINT', 'JOIN-AND');"> Join by AND
@@ -160,11 +164,11 @@ def _formCurCondDiv(output):
                 &emsp;&emsp;
                 <button id="cond-button-point-replace"
                     title="Replace whole instruction by this condition"
-                    onclick="modifyDTree('POINT', 'REPLACE');"> Set
+                    onclick="modifyDTree('POINT', 'REPLACE');"> Replace
                 </button>
                 <button id="cond-button-point-up-replace"
                     title="Replace whole upper instruction by this condition"
-                    onclick="modifyDTree('POINT', 'UP-REPLACE');"> Set
+                    onclick="modifyDTree('POINT', 'UP-REPLACE');"> Replace
                 </button>
                 <button id="cond-button-atom-delete"
                     title="Remove the condition from instruction"

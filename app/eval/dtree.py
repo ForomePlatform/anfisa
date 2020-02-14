@@ -48,8 +48,11 @@ class CaseStory:
             return 0
         return self.mParent.getLevel() + 1
 
-    def _getStartPoint(self):
-        return self.mStartPoint
+    def __getitem__(self, idx):
+        return self.mStoryPoints[idx]
+
+    def __len__(self):
+        return len(self.mStoryPoints)
 
     def _getLastPoint(self):
         if len(self.mStoryPoints) > 0:
@@ -113,6 +116,9 @@ class CheckPoint:
     def getCondAtoms(self):
         return self.mFrag.getCondAtoms()
 
+    def getActions(self):
+        return []
+
     def _accumulateConditions(self):
         if self.getPrevPoint() is None:
             return self.mCondition
@@ -126,9 +132,13 @@ class CheckPoint:
         return self.getPrevPoint()._accumulateConditions().negative()
 
     def getInfo(self, code_lines):
-        return [self.getPointKind(), self.getLevel(),
-            self.getDecision(), self.getCondData(),
-            self.getCodeFrag(code_lines)]
+        return {
+            "kind": self.getPointKind(),
+            "level": self.getLevel(),
+            "decision": self.getDecision(),
+            "cond-data": self.getCondData(),
+            "code-frag": self.getCodeFrag(code_lines),
+            "actions": self.getActions()}
 
     def getCodeFrag(self, code_lines):
         line_from, line_to = self.mFrag.getLineDiap()
@@ -144,6 +154,9 @@ class LabelPoint(CheckPoint):
 
     def isActive(self):
         return False
+
+    def getActions(self):
+        return ["label"]
 
 #===============================================
 class ErrorPoint(CheckPoint):
@@ -177,6 +190,10 @@ class TerminalPoint(CheckPoint):
             return self.getPrevPoint()._accumulateConditions().negative()
         return self.getPrevPoint().getAppliedCondition()
 
+    def getActions(self):
+        return ["bool-false", "bool-true"]
+        # , "comment"]
+
 #===============================================
 class ConditionPoint(CheckPoint):
     def __init__(self, story, frag, prev_point):
@@ -207,6 +224,20 @@ class ConditionPoint(CheckPoint):
         if self.mCondition is None:
             return self.actualCondition()
         return self.actualCondition().addAnd(self.mCondition)
+
+    def getActions(self):
+        ret = []
+        if self.getCondData():
+            if self.getCondData()[0] in ("and", "or"):
+                ret.append("split")
+        if (self.getPrevPoint() and self.getPrevPoint().getPointKind() == "If"
+                and (self.mSubStory[0].getDecision()
+                    == self.getPrevPoint().getSubStory()[0].getDecision())):
+            ret.append("join-and")
+            ret.append("join-or")
+        ret += ["duplicate", "negate"]
+        #  , "label", "comment"]
+        return ret
 
 #===============================================
 class DTreeEval(Evaluation, CaseStory):

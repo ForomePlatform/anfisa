@@ -192,6 +192,19 @@ span.point-edit.active {
     background-color: yellow;
 }
 
+span.unit-click {
+    border: 1px solid grey;
+    cursor: pointer;
+    font-size: 110%;
+    padding: 0px 3px 0px 3px;
+    border-radius: 3px;
+    vertical-align: super;
+}
+
+span.unit-click:hover {
+    background-color: yellow;
+}
+
 div.enum-exp {
     position: relative;
     float: left;
@@ -209,6 +222,7 @@ td.tree-comment {
 
 table.d-tree {
     width: 100%;
+    padding-bottom: 80px;
 }
 
 table.d-tree td {
@@ -234,7 +248,7 @@ table.d-tree td.point-no {
     border-bottom: 3px solid #A0A0A0;
     border-left: 6px solid #C0C0C0;
     border-top: 3px solid #C0C0C0;
-    padding: 0px 5px 0px 5px;
+    padding: 0px;
 }
 
 td.point-cond {
@@ -283,6 +297,57 @@ div.point-code {
 div.point-code.active {
     background-color: #FFFF80;
     border: 1px solid red;
+}
+
+/****************************************/
+/* The container <div> - needed to position the dropdown content */
+.instr-dropdown {
+    position: relative;
+    display: inline-block;
+    overflow: visible !important;
+}
+
+.instr-dropdown span{
+    display: inline-block;
+    padding: 0px 5px 0px 5px;
+}
+/* Dropdown Content (Hidden by Default) */
+.instr-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 100;
+    overflow: visible !important;
+    border: 1px solid black;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Links inside the dropdown */
+.instr-dropdown-content a {
+    color: black;
+    padding: 3px 10px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.instr-dropdown-content a.disabled {
+    color: grey;
+    cursor: inherit;
+}
+
+/* Change color of dropdown links on hover */
+.instr-dropdown-content a:hover {
+    background-color: #A0B0FF;
+    text-decoration: none;
+}
+
+/* Show the dropdown menu on hover */
+.instr-dropdown:hover .instr-dropdown-content {
+    display: block;
 }
 
 /********************Modal Cur-Cond*****************************/

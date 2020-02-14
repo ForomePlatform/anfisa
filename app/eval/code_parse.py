@@ -28,7 +28,7 @@ def parseCodeByPortions(code_lines, dummy_lines_reg):
         stripped = line.strip()
         if not stripped or stripped.startswith('#'):
             dummy_lines_reg.add(line_idx + 1)
-            if not stripped or base_pos is None:
+            if base_pos is None:
                 continue
         elif base_pos is not None and line[:base_pos + 1].isspace():
             continue
@@ -38,7 +38,7 @@ def parseCodeByPortions(code_lines, dummy_lines_reg):
             yield (parsed_block, error_info, (start_line_no, line_idx + 1))
             start_line_no = line_idx + 1
             base_pos, error_info = None, None
-            if stripped.startswith('#'):
+            if stripped.startswith('#') or not stripped:
                 continue
         base_pos = 0
         while line[base_pos] == ' ':

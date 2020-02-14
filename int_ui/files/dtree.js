@@ -109,6 +109,41 @@ var sDecisionTree = {
         return "";
     },
     
+    _renderInstrMenu: function(p_no, point) {
+        var menu_rep = ['<div class="instr-dropdown"><span>' + 
+                (p_no + 1) + '</span>',
+            '<div class="instr-dropdown-content">'];
+        for (var idx = 0; idx < point["actions"].length; idx++) {
+            action = point["actions"][idx];
+            q_disable = false;
+            switch(action) {
+                case "join-and":
+                    title = "Join as AND";
+                    break;
+                case "join-or":
+                    title = "Join as OR";
+                    break;
+                case "bool-true":
+                    q_disable = point["decision"]; 
+                    title = ((q_disable)? '&#x2713;':'&emsp;') + "True";
+                    break;
+                case "bool-false":
+                    q_disable = !point["decision"];
+                    title = ((!q_disable)? '&emsp;':'&#x2713;') + "False";
+                    break;
+                default:          
+                    title = action.charAt(0).toUpperCase() + action.slice(1);
+            }
+            if (q_disable)
+                menu_rep.push('<a class="disabled">' + title + '</a>');
+            else
+                menu_rep.push('<a onclick="sDecisionTree.instrAction(\'' + 
+                    action  + '\', ' + p_no + ');">' + title + '</a>');
+        }
+        menu_rep.push('</div></div');
+        return menu_rep.join('\n');
+    },
+    
     _fillTreeTable: function() {
         this.mAcceptedCounts = (this.mTotalCounts.length > 1)? [0, 0] : [0];
         var list_rep = [sDTreesH.getCurUpdateReport(this.mEvalStatus)];
@@ -116,17 +151,13 @@ var sDecisionTree = {
         list_rep.push('<table class="d-tree">');
         for (var p_no = 0; p_no < this.mPoints.length; p_no++) {
             point = this.mPoints[p_no];
-            p_kind = point[0];
-            p_lev = point[1];
-            p_decision = point[2];
-            p_cond = point[3];
-            p_html = point[4];
             p_count = this.mPointCounts[p_no];
-            if (p_kind == "Label" || p_kind == "Error") {
-                list_rep.push('<tr><td class="point-count undef">---</td>' +
-                    '<td class="point-no">' + (p_no + 1) + '</td>' +
-                    '<td class="point-code"><div class="highlight">' + p_html + 
-                    '</div></td></tr>');
+            if (point["kind"] == "Label" || point["kind"] == "Error") {
+                list_rep.push('<tr><td class="point-count undef">---</td>');
+                list_rep.push('<td class="point-no">' + 
+                    this._renderInstrMenu(p_no, point) + '</td>');
+                list_rep.push('<td class="point-code"><div class="highlight">' + 
+                    point["code-frag"] + '</div></td></tr>');
                 continue
             }
             list_rep.push('<tr id="p_td__' + p_no + 
@@ -138,7 +169,7 @@ var sDecisionTree = {
                 count_repr = "" + p_count[0];
                 if (p_count.length > 1)
                     count_repr += this._renderTr(p_count[1]);
-                if (p_decision) {
+                if (point["decision"]) {
                     this.mAcceptedCounts[0] += p_count[0];
                     if (p_count.length > 1)
                         this.mAcceptedCounts[1] += p_count[1];
@@ -146,20 +177,21 @@ var sDecisionTree = {
             }
             mode = "";
             sign_mode = "";
-            if (p_decision) {
+            if (point["decision"]) {
                 mode = " accept";
                 sign_mode = "+";
             } else {
-                if (p_decision == false) { 
+                if (point["decision"] == false) { 
                     mode = " reject"
                     sign_mode = "-";
                 }
             }            
             list_rep.push('<td class="point-count' + mode + '">' + 
                 sign_mode + count_repr + '</td>');
-            list_rep.push('<td class="point-no">' + (p_no + 1) + '</td>');
+                list_rep.push('<td class="point-no">' + 
+                    this._renderInstrMenu(p_no, point) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
-                p_html + '</div></td>');
+                point["code-frag"] + '</div></td>');
             list_rep.push('</tr>');
         }
         list_rep.push('</table>'); 
@@ -331,6 +363,27 @@ var sDecisionTree = {
         sOpCondH.show(this.getCurAtomCond());
     },    
     
+    showUnitCond: function(unit_name) {
+        if (this.mCurPointNo == null)
+            return;
+        cur_point = this.mPoints[this.mCurPointNo];
+        var actions = null;
+        if (cur_point["kind"] == "Return") {
+            if (cur_point["level"] == 0)
+                actions = ["point-insert"];
+            else
+                actions = ["point-up-join-and", "point-up-replace"];
+        } else {
+            if (cur_point["kind"] == "If") 
+                actions = ["point-replace", "point-insert", 
+                    "point-join-and", "point-join-or"];
+            else
+                return;
+        }
+        sOpCondH.careButtons(actions);
+        sOpCondH.show(null, unit_name);
+    },    
+
     getAcceptedCounts: function() {
         if (this.mPointDelay.length > 0)
             return null;
@@ -359,6 +412,11 @@ var sDecisionTree = {
     
     isEmpty: function() {
         return (this.mPoints.length < 2);
+    },
+    
+    instrAction: function(action, point_no) {
+        this.selectPoint(point_no);
+        this.setup(true, ["INSTR", action.toUpperCase(), point_no]);
     }
 }
 
@@ -424,7 +482,8 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 1);
+        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
+            1, "sDecisionTree.showUnitCond");
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
@@ -563,7 +622,7 @@ var sOpCondH = {
     mButtons: {},
     mCurUnitName: null,
     mActionList: ["atom-set", "atom-delete", "point-delete", 
-        "point-replace", "point-join-and", "point-join-or", 
+        "point-insert", "point-replace", "point-join-and", "point-join-or", 
         "point-up-replace", "point-up-join-and"],
     mCurActions: null,
 
@@ -576,7 +635,7 @@ var sOpCondH = {
     checkDelay: function(unit_name) {
         if (unit_name == this.mCurUnitName && 
                 document.getElementById("cur-cond-back").style.display != "none")
-            this.show(this.mCondition); //TRF!!!
+            this.show(this.mCondition, this.mCurUnitName); 
     },
 
     careButtons: function(actions) {
@@ -587,10 +646,13 @@ var sOpCondH = {
                 "inline" : "none";
     },
     
-    show: function(condition) {
+    show: function(condition, unit_name) {
         this.mCondition = condition;
         this.mNewCondition = null;
-        this.mCurUnitName = this.mCondition[1];
+        if (this.mCondition != null)
+            this.mCurUnitName = this.mCondition[1];
+        else
+            this.mCurUnitName = unit_name;
         unit_stat = sUnitsH.getUnitStat(this.mCurUnitName);
         document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
             ((unit_stat["kind"] == "func")? "()" : "");
@@ -615,7 +677,8 @@ var sOpCondH = {
             (this.mCurTpHandler)? "none":"block";
         if (this.mCurTpHandler) {
             this.mCurTpHandler.updateUnit(unit_stat);
-            this.mCurTpHandler.updateCondition(this.mCondition);
+            if (this.mCondition)
+                this.mCurTpHandler.updateCondition(this.mCondition);
             this.mCurTpHandler.checkControls();
         }
         document.getElementById("cur-cond-mod").className = mode;
@@ -625,17 +688,19 @@ var sOpCondH = {
     
     formCondition: function(condition_data, err_msg, add_always) {
         if (condition_data != null) {
-            cur_unit_name = this.mCondition[1];
             this.mNewCondition = [this.mCurTpHandler.getCondType(), 
-                cur_unit_name].concat(condition_data);
+                this.mCurUnitName].concat(condition_data);
         } else
             this.mNewCondition = null;
         message_el = document.getElementById("cond-message");
         message_el.innerHTML = (err_msg)? err_msg:"";
         message_el.className = (this.mNewCondition == null && 
             !err_msg.startsWith(' '))? "bad":"message";
-        this.mButtons["atom-set"].disabled = (this.getNewCondition() == null);
-        this.mButtons["atom-delete"].disabled = false;
+        for (idx = 0; idx < this.mCurActions.length; idx++) {
+            if (!this.mCurActions[idx].endsWith('-delete'))
+                this.mButtons[this.mCurActions[idx]].disabled = 
+                    (this.getNewCondition() == null);
+        }
     },
     
     getNewCondition: function() {
