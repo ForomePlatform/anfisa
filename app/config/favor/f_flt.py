@@ -81,6 +81,38 @@ def defFavorFlt(metadata_record):
 			"/_filters/gencode_exonic_category",
 			compact_mode = True)
 
+	with filters.viewGroup("TOPMed"):
+		filters.multiStatusUnit("TOPMed_QC_Status", "/_filters/top_med_qc_status[]",
+			default_value = "None")
+		filters.floatValueUnit("TOPMed Bravo AF", "/_filters/top_med_bravo_af",
+			render_mode = "linear,<", default_value = 0.)
+
+	with filters.viewGroup("Allele Frequencies"):
+		filters.floatValueUnit("ExAC03", "/_filters/exac03",
+			render_mode = "linear,<", default_value = 0.)
+
+	with filters.viewGroup("Variant Category"):
+		filters.multiStatusUnit("Disruptive Missense", "/_filters/disruptive_missense",
+			default_value = "N/A")
+		filters.multiStatusUnit("CAGE Promoter", "/_filters/cage_promoter",
+			default_value = "N/A")
+		filters.multiStatusUnit("CAGE Enhancer", "/_filters/cage_enhancer",
+			default_value = "N/A")
+		filters.multiStatusUnit("Gene Hancer", "/_filters/gene_hancer",
+			default_value = "N/A")
+		filters.multiStatusUnit("Super Enhancer", "/_filters/super_enhancer",
+			default_value = "N/A")
+
+	with filters.viewGroup("Nucleotide Diversity"):
+		filters.floatValueUnit("bStatistics", "/_filters/bstatistics",
+			render_mode = "linear,<", default_value = 0.)
+
+	with filters.viewGroup("Mutation Rate"):
+		filters.floatValueUnit("Freq1000bp", "/_filters/freq1000bp",
+			render_mode = "linear,<", default_value = 0.)
+		filters.floatValueUnit("Rare1000bp", "/_filters/rare1000bp",
+			render_mode = "linear,<", default_value = 0.)
+
 	with filters.viewGroup("Predictions"):
 		filters.multiStatusUnit("Clinvar",
 			"/_filters/clinvar[]",
