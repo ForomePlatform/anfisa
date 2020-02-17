@@ -74,7 +74,9 @@ def defFavorView(metadata_record):
 	])
 
 	aspects["view_integrative_score"].setAttributes([
-		AttrH("LINSIGHT", title = "LINSIGHT")
+		AttrH("LINSIGHT", title = "LINSIGHT"),
+		AttrH("gc", title = "GC"),
+		AttrH("cpg", title = "CpG")
 	])
 
 	aspects["view_protein_function"].setAttributes([

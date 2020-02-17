@@ -35,11 +35,6 @@ def defFavorFlt(metadata_record):
 
 	filters = FilterPrepareSetH(metadata_record)
 
-	with filters.viewGroup("Variant"):
-		filters.statusUnit("Variant_Type", "/_filters/type",
-			default_value = "Complex",
-			tooltip = "Type of variant")
-
 	with filters.viewGroup("Coordinates"):
 		filters.statusUnit("Chromosome", "/_filters/chromosome",
 			variants = ["chr1", "chr2", "chr3", "chr4", "chr5",
@@ -49,12 +44,8 @@ def defFavorFlt(metadata_record):
 				"chr21", "chr22", "chr23", "chrX", "chrY", "undefined"],
 			default_value = "undefined")
 
-		filters.intValueUnit("Start_Pos", "/_filters/start",
-			title = "Start Position",
+		filters.intValueUnit("Position", "/_filters/position",
 			render_mode = "neighborhood", default_value = sys.maxsize)
-		filters.intValueUnit("End_Pos", "/_filters/end",
-			title = "End Position", default_value = 0,
-			render_mode = "neighborhood")
 
 	with filters.viewGroup("Genes"):
 		genes_unit = filters.multiStatusUnit("Symbol",
@@ -75,8 +66,8 @@ def defFavorFlt(metadata_record):
 
 	with filters.viewGroup("GENCODE"):
 		filters.multiStatusUnit("GENCODE Category",
-			"/_filters/gencode_category",
-			compact_mode = True)
+			"/_filters/gencode_category[]",
+			default_value = "None")
 		filters.multiStatusUnit("GENCODE Exonic Category",
 			"/_filters/gencode_exonic_category",
 			compact_mode = True)
@@ -152,5 +143,11 @@ def defFavorFlt(metadata_record):
 			tooltip = "Sort intolerated from tolerated (An amino acid at a "
 			          "position is tolerated | The most frequentest amino acid "
 			          "being tolerated).")
+
+	with filters.viewGroup("Integrative Score"):
+		filters.floatValueUnit("GC", "/_filters/gc",
+			render_mode = "linear,<", default_value = 0.)
+		filters.floatValueUnit("CpG", "/_filters/cpg",
+			render_mode = "linear,<", default_value = 0.)
 
 	return filters
