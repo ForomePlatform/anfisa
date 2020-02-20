@@ -48,8 +48,13 @@ def tuneAspects(dataset, aspects):
         return
     case = dataset.getDataInfo()["meta"].get("case")
     samples = dataset.getDataInfo()["meta"].get("samples")
+    versions = dataset.getDataInfo()["meta"].get("versions")
+    if versions:
+        reference = versions.get("reference")
+    else:
+        reference = ""
     _resetupAttr(view_gen,
-        IGV_AttrH(dataset.getApp(), view_gen, case, samples))
+        IGV_AttrH(dataset.getApp(), view_gen, case, samples, reference))
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -164,8 +169,13 @@ class MEDGEN_AttrH(AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, app, view_gen, case, samples):
+    def __init__(self, app, view_gen, case, samples, reference):
         bam_base = app.getOption("http-bam-base")
+        if "hg38" in reference:
+            self.ref = "hg38"
+        else:
+            self.ref = "hg19"
+
         AttrH.__init__(self, "IGV",
             kind = "hidden" if bam_base is None else None)
         self.setAspect(view_gen)
@@ -179,20 +189,33 @@ class IGV_AttrH(AttrH):
         samples_names = [samples[id] for id in samples_ids]
 
         file_urls = ','.join([
-            "{bam_base}/{case}/{sample}.hg19.bam".format(
+            "{bam_base}/{case}/{sample}.{ref}.bam".format(
                 bam_base = bam_base,
                 case = case,
-                sample = sample_id)
+                sample = sample_id,
+                ref = self.ref
+            )
             for sample_id in samples_ids])
         self.mPreUrl = ("http://localhost:60151/load?file={file}"
-            "&genome=hg19&merge=false&name={name}").format(
+            "&genome={ref}&merge=false&name={name}").format(ref=self.ref,
                 file = file_urls, name = ",".join(samples_names))
 
     def htmlRepr(self, obj, top_rec_obj):
         if self.mPreUrl is None:
             return None
-        start = int(top_rec_obj["data"]["start"])
-        end = int(top_rec_obj["data"]["end"])
+        if self.ref == "hg19":
+            start = int(top_rec_obj["data"]["start"])
+            end = int(top_rec_obj["data"]["end"])
+        elif self.ref == "hg38":
+            try:
+                pos = top_rec_obj["view"]["general"]["hg38"]
+                start = int(pos.split(':')[1])
+                end = start + int(top_rec_obj["data"]["end"]) - \
+                    int(top_rec_obj["data"]["start"])
+            except:
+                return "ERROR"
+        else:
+            return "Unknown Reference: {}".format(self.ref)
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             top_rec_obj["data"]["seq_region_name"],
             max(0, start - 250), end + 250)
