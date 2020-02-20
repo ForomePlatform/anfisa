@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 
+import logging
 from xml.sax.saxutils import escape
 
 from .attr import AttrH
@@ -178,6 +179,8 @@ class AspectH:
                 rows.append([a_name, escape(attr.getTitle()),
                     [[val, class_name] for val, class_name in a_values]])
             except:
+                logging.error("Bad attribute repr: %s/%s: %r" 
+                    % (self.mName, a_name, a_values))
                 continue
             if attr.getToolTip():
                 rows[-1].append(attr.getToolTip())
