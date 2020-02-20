@@ -174,8 +174,11 @@ class AspectH:
             a_values = fld_data.get(a_name)
             if not a_values:
                 continue
-            rows.append([a_name, escape(attr.getTitle()),
-                [[val, class_name] for val, class_name in a_values]])
+            try:
+                rows.append([a_name, escape(attr.getTitle()),
+                    [[val, class_name] for val, class_name in a_values]])
+            except:
+                continue
             if attr.getToolTip():
                 rows[-1].append(attr.getToolTip())
         if hit_columns:
