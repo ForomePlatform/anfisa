@@ -182,10 +182,8 @@ class DataVault:
     @RestAPI.vault_request
     def rq__reccnt(self, rq_args):
         ds = self._prepareDS(rq_args)
-        modes = rq_args.get("m", "").upper()
         return ds.getViewRepr(int(rq_args.get("rec")),
-            'R' in modes or ds.getDSKind().lower == "xl",
-            details = rq_args.get("details"))
+            False, details = rq_args.get("details"))
 
     #===============================================
     @RestAPI.vault_request
