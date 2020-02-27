@@ -109,12 +109,12 @@ def defFavorFlt(metadata_record):
 			"/_filters/clinvar[]",
 			default_value = "N/A",
 			title = "Clinvar")
-		filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
-			title = "Categorized Benign in HGMD",
-			default_value = "Not in HGMD",
-			value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
-		filters.multiStatusUnit("HGMD_Tags", "/_filters/hgmd_tags[]",
-			default_value = "None")
+		# filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
+		# 	title = "Categorized Benign in HGMD",
+		# 	default_value = "Not in HGMD",
+		# 	value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
+		# filters.multiStatusUnit("HGMD_Tags", "/_filters/hgmd_tags[]",
+		# 	default_value = "None")
 
 	with filters.viewGroup("Protein Function"):
 		filters.multiStatusUnit("Polyphen_2_HVAR",

@@ -61,8 +61,8 @@ def defFavorView(metadata_record):
 	aspects["view_bas"].setAttributes([
 		AttrH("type", title = "Variant Type", tooltip = "Type of variant"),
 		AttrH("gene_panels", title = "Gene panels", is_seq = True),
-		AttrH("hgmd_pmids", title = "HGMD PMIDs",
-			is_seq = True, kind = "place"),
+		# AttrH("hgmd_pmids", title = "HGMD PMIDs",
+		# 	is_seq = True, kind = "place"),
 	])
 
 	aspects["view_variant_category"].setAttributes([

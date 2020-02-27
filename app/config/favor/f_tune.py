@@ -27,7 +27,7 @@ def tuneFavorAspects(ds_h, aspects):
 
 	view_bas = aspects["view_bas"]
 
-	_resetupAttr(view_bas, HGMD_PMID_AttrH(view_bas))
+	# _resetupAttr(view_bas, HGMD_PMID_AttrH(view_bas))
 	pass
 
 
