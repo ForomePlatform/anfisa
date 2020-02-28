@@ -287,7 +287,7 @@ def setupSymbolPanels(base_pack):
         cfgPath("all_hearing_loss.lst"))
     base_pack.regPanel("Symbol", "Reportable_Hearing_Loss",
         cfgPath("rep_hearing_loss.lst"))
-    base_pack.regPanel("Symbol", "Purpura_Fulminans",
+    base_pack.regPanel("Symbol", "Complement_System",
         cfgPath("purpura_fulminans.lst"))
     base_pack.regPanel("Symbol", "PharmGKB_VIP",
         cfgPath("pharmgkb_vip.lst"))
