@@ -191,6 +191,8 @@ class DataVault(SyncronizedObject):
         return (cls._entryPath(ds_dict, ds_dict[ds_info["base"]])
             + [ds_info["name"]])
 
+    #===============================================
+    #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
         ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)

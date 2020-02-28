@@ -45,10 +45,11 @@ def tuneAspects(ds_h, aspects):
 
     if "meta" not in ds_h.getDataInfo():
         return
-    case = ds_h.getDataInfo()["meta"].get("case")
-    samples = ds_h.getDataInfo()["meta"].get("samples")
-    _resetupAttr(view_gen,
-        IGV_AttrH(ds_h.getApp(), view_gen, case, samples))
+    meta_info = ds_h.getDataInfo()["meta"]
+    reference = meta_info["versions"].get("reference", "")
+    _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
+        meta_info.get("case"), meta_info.get("samples"),
+            "hg38" if "38" in reference else "hg19"))
 
     view_gen[view_gen.find("transcripts")].setReprFunc(reprGenTranscripts)
 
@@ -287,10 +288,11 @@ class HGMD_PMID_AttrH(PMID_AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, app, view_gen, case, samples):
+    def __init__(self, app, view_gen, case, samples, base_ref = "hg19"):
         bam_base = app.getOption("http-bam-base")
         AttrH.__init__(self, "IGV",
             kind = "hidden" if bam_base is None else None)
+        self.mBaseRef = "hg19"
         self.setAspect(view_gen)
         if bam_base is None:
             self.mPreUrl = None
@@ -302,17 +304,21 @@ class IGV_AttrH(AttrH):
         samples_names = [samples[id] for id in samples_ids]
 
         file_urls = ','.join([
-            "%s/%s/%s.hg19.bam" % (bam_base, case, sample_id)
+            "%s/%s/%s.%s.bam" % (bam_base, case, sample_id, self.mBaseRef)
             for sample_id in samples_ids])
         self.mPreUrl = ("http://localhost:60151/load?file=%s"
-            "&genome=hg19&merge=false&name=%s") % (
-                file_urls, ",".join(samples_names))
+            "&genome=%s&merge=false&name=%s") % (
+                file_urls, self.mBaseRef, ",".join(samples_names))
 
     def htmlRepr(self, obj, v_context):
         if self.mPreUrl is None:
             return None
-        start = int(v_context["data"]["__data"]["start"])
-        end = int(v_context["data"]["__data"]["end"])
+        if self.mBaseRef == "hg38":
+            # ???
+            pass
+        else:
+            start = int(v_context["data"]["__data"]["start"])
+            end = int(v_context["data"]["__data"]["end"])
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             v_context["data"]["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
