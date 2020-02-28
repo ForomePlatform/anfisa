@@ -41,7 +41,7 @@ class DruidAdmin(DruidAgent):
 
     def addFieldsToRec(self, rec_data, pre_data, rec_no):
         rec_data["time"] = (self.mStartTime
-            + timedelta( microseconds = rec_no)).isoformat()
+            + timedelta(microseconds = rec_no)).isoformat()
         rec_data["_ord"]  = rec_no
         rec_data["_rand"] = pre_data["_rand"]
 
