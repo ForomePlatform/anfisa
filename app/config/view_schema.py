@@ -93,6 +93,7 @@ def defineViewSchema(metadata_record = None):
             title = "Ensembl Transcripts (Worst)", is_seq = True),
         AttrH("ref", title = "Ref"),
         AttrH("alt", title = "Alt"),
+        AttrH("mostly_expressed", title = "Mostly expressed in", is_seq = True),
         AttrH("splice_region", title = "Splice Region", is_seq = True),
         AttrH("gene_splicer", title = "GeneSplicer", is_seq = True),
         AttrH("splice_altering", title = "Splice AI splice altering"),
@@ -193,7 +194,10 @@ def defineViewSchema(metadata_record = None):
             "the genotype we assigned to a particular sample is correct. "
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
-            "(always 0).")])
+            "(always 0)."),
+        AttrH("genotype", title="Sample Genotype")
+    ])
+
 
     aspects["view_gnomAD"].setAttributes([
         AttrH("allele", title = "Allele"),
