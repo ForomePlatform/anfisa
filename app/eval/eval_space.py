@@ -45,8 +45,10 @@ class EvalSpace:
     def iterZygUnits(self):
         assert False
 
-    def _addUnit(self, unit_h):
+    def _addUnit(self, unit_h, force_it = False):
         self.mUnits.append(unit_h)
+        if force_it and unit_h.getName() in self.mUnitDict:
+            return
         assert unit_h.getName() not in self.mUnitDict, (
             "Duplicate unit name: " + unit_h.getName())
         self.mUnitDict[unit_h.getName()] = unit_h

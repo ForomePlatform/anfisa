@@ -39,15 +39,16 @@ class DruidAdmin(DruidAgent):
         year, month, day = map(int, text.split('-'))
         return datetime(year = year, month = month, day = day)
 
-    def addFieldsToRec(self, rec_data, pre_data, rec_no):
-        rec_data["time"] = (self.mStartTime
-            + timedelta(microseconds = rec_no)).isoformat()
-        rec_data["_ord"]  = rec_no
-        rec_data["_rand"] = pre_data["_rand"]
+    def internalFltData(self, rec_no, pre_data):
+        return {
+            "time": (self.mStartTime
+                + timedelta(microseconds = rec_no)).isoformat(),
+            "_ord": rec_no,
+            "_rand": pre_data["_rand"]}
 
     #===============================================
-    def uploadDataset(self, dataset_name, flt_data, zygosity_names,
-            fdata_name, report_name = None):
+    def uploadDataset(self, dataset_name, flt_data, fdata_name,
+            zygosity_names, report_fname = None, portion_mode = False):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
@@ -128,17 +129,17 @@ class DruidAdmin(DruidAgent):
                         "type": "local",
                         "baseDir": base_dir,
                         "filter": filter_name},
-                    "appendToExisting": False},
+                    "appendToExisting": portion_mode},
                 "tuningConfig": {
                     "type": "index",
                     "targetPartitionSize": 5000000,
                     "maxRowsInMemory": 25000,
                     "forceExtendableShardSpecs": True}}}
 
-        if report_name is not None:
-            with open(report_name, "w", encoding="utf-8") as outp:
+        if report_fname is not None:
+            with open(report_fname, "w", encoding="utf-8") as outp:
                 outp.write(json.dumps(schema_request, ensure_ascii = False))
-            print("Report stored:", report_name, file = sys.stderr)
+            print("Report stored:", report_fname, file = sys.stderr)
 
         print("Upload to Druid", dataset_name,
             "started at ", datetime.now(), file = sys.stderr)

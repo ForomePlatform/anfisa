@@ -21,7 +21,6 @@
 import json
 from array import array
 from xml.sax.saxutils import escape
-from io import TextIOWrapper
 
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
@@ -91,33 +90,25 @@ class Workspace(DataSet):
         return lambda rec_no: val_array[rec_no]
 
     def _loadPData(self):
-        with self._openPData() as inp:
-            pdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            for line in pdata_inp:
-                pre_data = json.loads(line.strip())
-                for key, tab in (
-                        ("_rand",  self.mTabRecRand),
-                        ("_key",   self.mTabRecKey),
-                        ("_color", self.mTabRecColor),
-                        ("_label", self.mTabRecLabel)):
-                    tab.append(pre_data.get(key))
+        for _, pre_data in self.getRecStorage().iterPData():
+            for key, tab in (
+                    ("_rand",  self.mTabRecRand),
+                    ("_key",   self.mTabRecKey),
+                    ("_color", self.mTabRecColor),
+                    ("_label", self.mTabRecLabel)):
+                tab.append(pre_data.get(key))
         assert len(self.mTabRecRand) == self.getTotal()
         self.mKey2Idx = {key: idx for idx, key in enumerate(self.mTabRecKey)}
 
     def _loadFData(self):
-        with self._openFData() as inp:
-            fdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            for rec_no, line in enumerate(fdata_inp):
-                inp_data = json.loads(line.strip())
-                self.mEvalSpace.addItemGroup(inp_data["$1"])
-                for unit_h in self.mEvalSpace.iterUnits():
-                    unit_h.fillRecord(inp_data, rec_no)
-                for idx, zyg_unit_h in enumerate(
-                        self.mEvalSpace.iterZygUnits()):
-                    self.mZygArrays[idx].append(
-                        inp_data.get(zyg_unit_h.getName()))
+        for rec_no, f_data in self.getRecStorage().iterFData():
+            self.mEvalSpace.addItemGroup(f_data["$1"])
+            for unit_h in self.mEvalSpace.iterUnits():
+                unit_h.fillRecord(f_data, rec_no)
+            for idx, zyg_unit_h in enumerate(
+                    self.mEvalSpace.iterZygUnits()):
+                self.mZygArrays[idx].append(
+                    f_data.get(zyg_unit_h.getName()))
 
     def getEvalSpace(self):
         return self.mEvalSpace

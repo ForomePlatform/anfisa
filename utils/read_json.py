@@ -35,10 +35,10 @@ class PlainFileReader:
 #===============================================
 class GzipFileReader:
     def __init__(self, fname):
-        self.mInput = gzip.open(fname, 'rb')
+        self.mInput = gzip.open(fname, 'rt', encoding = "utf-8")
 
     def nextLine(self):
-        return self.mInput.readline().decode('utf-8')
+        return self.mInput.readline()
 
     def close(self):
         self.mInput.close()
@@ -46,10 +46,10 @@ class GzipFileReader:
 #===============================================
 class Bz2FileReader:
     def __init__(self, fname):
-        self.mInput = bz2.BZ2File.open(fname, 'rb')
+        self.mInput = bz2.BZ2File.open(fname, 'rt', encoding = "utf-8")
 
     def nextLine(self):
-        return self.mInput.readline().decode('utf-8')
+        return self.mInput.readline()
 
     def close(self):
         self.mInput.close()
@@ -125,13 +125,13 @@ def readJSonRecords(src,  transform_f = None):
             return transform_f(json.loads(line))
     for nm in names:
         if nm.endswith('.gz'):
-            with gzip.open(nm, 'rb') as inp:
+            with gzip.open(nm, 'rt', encoding = "utf-8") as inp:
                 for line in inp:
-                    yield process_f(line.decode('utf-8'))
+                    yield process_f(line)
         elif nm.endswith('.bz2'):
-            with bz2.BZ2File(nm, 'rb') as inp:
+            with bz2.BZ2File(nm, 'rt', encoding = "utf-8") as inp:
                 for line in inp:
-                    yield process_f(line.decode('utf-8'))
+                    yield process_f(line)
         else:
             with open(nm, 'r', encoding = 'utf-8') as inp:
                 for line in inp:

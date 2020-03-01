@@ -19,8 +19,7 @@
 #
 import sys, os, logging, json, gzip
 from datetime import datetime
-from io import StringIO, TextIOWrapper
-from subprocess import Popen, PIPE
+from io import StringIO
 
 from utils.read_json import JsonLineReader
 from app.config.a_config import AnfisaConfig
@@ -28,13 +27,14 @@ from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
 from app.config.solutions import readySolutions
 from app.model.pre_fields import PresentationData
+from app.model.ds_disk import DataDiskStorageWriter
 from .html_report import reportDS
 from .doc_works import prepareDocDir
 from .v_check import ViewDataChecker
 from .trans_prep import TransformPreparator
 #=====================================
-def createDS(ds_dir, mongo_conn, druid_adm,
-        ds_name, ds_source, ds_kind, ds_inv = None, report_lines = False):
+def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
+        ds_inv = None, report_lines = False, favor_storage = None):
     readySolutions()
 
     time_start = datetime.now()
@@ -42,8 +42,13 @@ def createDS(ds_dir, mongo_conn, druid_adm,
         % (ds_name, str(time_start), AnfisaConfig.getAnfisaVersion()))
     date_loaded = time_start.isoformat()
 
-    input_reader = JsonLineReader(ds_source)
-    metadata_record = input_reader.readOne()
+    if ds_source is not None:
+        input_reader = JsonLineReader(ds_source)
+        metadata_record = input_reader.readOne()
+    else:
+        metadata_record = favor_storage.getMetaData()
+        input_reader = None
+
     if metadata_record.get("record_type") != "metadata":
         logging.critical("No metadata line in %s" % ds_source)
         assert False
@@ -70,50 +75,29 @@ def createDS(ds_dir, mongo_conn, druid_adm,
     else:
         trans_prep = None
 
-    if report_lines:
-        print("Processing...", file = sys.stderr)
+    if input_reader:
+        if report_lines:
+            print("Processing...", file = sys.stderr)
 
-    data_rec_no = 0
-
-    vdata_out = Popen(sys.executable + " -m utils.ixbz2 --calm -o "
-        + ds_dir + "/vdata.ixbz2 /dev/stdin", shell = True,
-        stdin = PIPE, stderr = PIPE,
-        bufsize = 1, universal_newlines = False,
-        close_fds = True)
-
-    vdata_stdin = TextIOWrapper(vdata_out.stdin, encoding = "utf-8",
-        line_buffering = True)
-
-    with gzip.open(ds_dir + "/fdata.json.gz", 'wb') as fdata_stream, \
-            gzip.open(ds_dir + "/pdata.json.gz", 'wb') as pdata_stream:
-        fdata_out = TextIOWrapper(fdata_stream,
-            encoding = "utf-8", line_buffering = True)
-        pdata_out = TextIOWrapper(pdata_stream,
-            encoding = "utf-8", line_buffering = True)
-        for record in input_reader:
-            flt_data = filter_set.process(data_rec_no, record)
-            view_checker.regValue(data_rec_no, record)
-            print(json.dumps(record, ensure_ascii = False), file = vdata_stdin)
-            pre_data = PresentationData.make(record)
-            if druid_adm is not None:
-                druid_adm.addFieldsToRec(flt_data, pre_data, data_rec_no)
-            if trans_prep is not None:
-                trans_prep.doRec(record, flt_data)
-            print(json.dumps(flt_data, ensure_ascii = False), file = fdata_out)
-            print(json.dumps(pre_data, ensure_ascii = False), file = pdata_out)
-            data_rec_no += 1
-            if report_lines and data_rec_no % report_lines == 0:
-                sys.stderr.write("\r%d lines..." % data_rec_no)
-    if report_lines:
-        print("\nTotal lines: %d" % input_reader.getCurLineNo(),
-            file = sys.stderr)
-    input_reader.close()
-
-    _, vreport_data = vdata_out.communicate()
-    if report_lines:
-        for line in str(vreport_data, encoding="utf-8").splitlines():
-            print(line, file = sys.stderr)
-    vdata_out.wait()
+        with DataDiskStorageWriter(ds_dir, report_lines) as ds_out:
+            for rec_no, record in enumerate(input_reader):
+                flt_data = filter_set.process(rec_no, record)
+                view_checker.regValue(rec_no, record)
+                pre_data = PresentationData.make(record)
+                if druid_adm is not None:
+                    flt_data.update(
+                        druid_adm.internalFltData(rec_no, pre_data))
+                if trans_prep is not None:
+                    trans_prep.doRec(record, flt_data)
+                ds_out.putRecord(record, flt_data, pre_data)
+                if report_lines and rec_no % report_lines == 0:
+                    sys.stderr.write("\r%d lines..." % rec_no)
+            total = ds_out.getTotal()
+        if report_lines:
+            print("\nTotal lines: %d" % total, file = sys.stderr)
+        input_reader.close()
+    else:
+        total = metadata_record["variants"]
 
     rep_out = StringIO()
     is_ok = view_checker.finishUp(rep_out)
@@ -125,10 +109,10 @@ def createDS(ds_dir, mongo_conn, druid_adm,
         total_item_count = None
 
     flt_schema_data = filter_set.dump()
-    if ds_kind == "xl":
+    if ds_kind == "xl" and input_reader:
         is_ok &= druid_adm.uploadDataset(ds_name, flt_schema_data,
-            filter_set.getZygosityNames(),
             os.path.abspath(ds_dir + "/fdata.json.gz"),
+            filter_set.getZygosityNames(),
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
@@ -144,7 +128,7 @@ def createDS(ds_dir, mongo_conn, druid_adm,
             "name": ds_name,
             "root": ds_name,
             "zygosity_var": filter_set.getZygosityVarName(),
-            "total": data_rec_no,
+            "total": total,
             "view_schema": view_aspects.dump()}
 
         if total_item_count is not None:
@@ -171,11 +155,26 @@ def createDS(ds_dir, mongo_conn, druid_adm,
     else:
         print("Process terminated", file = rep_out)
 
-    with open(ds_dir + "/create.log",
-            "w", encoding = "utf-8") as outp:
+    with open(ds_dir + "/create.log", "w", encoding = "utf-8") as outp:
         print(rep_out.getvalue(), file = outp)
 
     print(rep_out.getvalue())
     time_done = datetime.now()
     logging.info("Dataset %s creation finished at %s for %s"
         % (ds_name, str(time_done), str(time_done - time_start)))
+
+#=====================================
+def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
+    filter_set = defineFilterSchema(favor_storage.getMetaData())
+    fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
+
+    with gzip.open(fdata_path, "wt", encoding = "utf-8") as outp:
+        for rec_no in range(*favor_storage.getPortionDiap(portion_no)):
+            record = favor_storage.getRecordData(rec_no)
+            flt_data = filter_set.process(rec_no, record)
+            flt_data.update(favor_storage.internalFltData(rec_no))
+            print(json.dumps(flt_data, ensure_ascii = False), file = outp)
+
+    flt_schema_data = filter_set.dump()
+    druid_adm.uploadDataset("xl_FAVOR", flt_schema_data, fdata_path,
+            filter_set.getZygosityNames(), portion_mode = True)

@@ -25,9 +25,10 @@ import utils.json_conf as json_conf
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
-from app.prepare.ds_create import createDS
+from app.prepare.ds_create import createDS, portionFavorDruidPush
 from app.config.solutions import readySolutions
 from app.model.mongo_db import MongoConnector
+from app.model.ds_favor import FavorStorageAgent
 #=====================================
 try:
     sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
@@ -123,20 +124,25 @@ def pushDruid(app_config, ds_entry, druid_adm):
         print("Process failed")
 
 #===============================================
+def _dropDruidDataset(druid_adm, ds_name, calm_mode = False):
+    if calm_mode:
+        druid_datasets = druid_adm.listDatasets()
+    else:
+        druid_datasets = [ds_name]
+    if ds_name in druid_datasets:
+        druid_adm.dropDataset(ds_name)
+    elif not calm_mode:
+        print("No dataset in Druid to drop:", ds_name)
+
+
+#===============================================
 def dropDataSet(app_config, ds_entry, druid_adm, calm_mode):
     assert ds_entry.getDSKind() in ("ws", "xl")
     vault_dir = app_config["data-vault"]
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
 
     if ds_entry.getDSKind() == "xl":
-        if calm_mode:
-            druid_datasets = druid_adm.listDatasets()
-        else:
-            druid_datasets = [ds_entry.getName()]
-        if ds_entry.getName() in druid_datasets:
-            druid_adm.dropDataset(ds_entry.getName())
-        elif not calm_mode:
-            print("No dataset in Druid to drop:", ds_entry.getName())
+        _dropDruidDataset(druid_adm, ds_entry.getName(), calm_mode)
 
     if not os.path.exists(ds_dir):
         if not calm_mode:
@@ -167,6 +173,54 @@ def pushDoc(app_config, ds_entry):
         reportDS(outp, ds_info, mongo_agent)
 
     print("Re-doc complete:", ds_dir)
+
+#===============================================
+def prepareFavorStorage(app_config):
+    portion_size, portion_min_delta = app_config["favor-portions"]
+    return FavorStorageAgent(app_config["favor-url"],
+        portion_size, portion_min_delta)
+
+#===============================================
+def initFavor(app_config, druid_adm, report_lines):
+    readySolutions()
+
+    vault_dir = app_config["data-vault"]
+    if not os.path.isdir(vault_dir):
+        os.mkdir(vault_dir)
+        print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
+
+    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
+    if os.path.exists(ds_dir):
+        print("Dataset exists:", ds_dir, file = sys.stderr)
+        assert False
+    os.mkdir(ds_dir)
+
+    mongo_conn = MongoConnector(app_config["mongo-db"],
+        app_config.get("mongo-host"), app_config.get("mongo-port"))
+
+    createDS(ds_dir, mongo_conn, druid_adm,
+        "xl_FAVOR", None, "xl", report_lines,
+        favor_storage = prepareFavorStorage(app_config))
+
+#===============================================
+def dropFavor(app_config, druid_adm, report_lines):
+    _dropDruidDataset(druid_adm, "xl_FAVOR")
+
+    vault_dir = app_config["data-vault"]
+    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
+    if not os.path.exists(ds_dir):
+        print("No dataset to drop:", ds_dir)
+        return
+    shutil.rmtree(ds_dir)
+    print("Dataset droped:", ds_dir)
+
+#===============================================
+def portionFavor(app_config, druid_adm, portion_no, report_lines):
+    favor_storage = prepareFavorStorage(app_config)
+    print("Favor portions:", favor_storage.getPortionCount())
+    vault_dir = app_config["data-vault"]
+    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
+    portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no)
 
 #===============================================
 class DSEntry:
@@ -233,7 +287,7 @@ if __name__ == '__main__':
         help = "Anfisa configuration file, used only if --dir is unset, "
         "default = anfisa.json")
     parser.add_argument("-m", "--mode",
-        help = "Mode: create/drop/druid-push/doc-push/register")
+        help = "Mode: create/drop/druid-push/doc-push/register/favor")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default = ws, "
         "actual if --dir is unset")
@@ -275,6 +329,29 @@ if __name__ == '__main__':
         os.rename(args.dir, args.dir + '~')
         os.rename(tmp_name, args.dir)
         print("Directory file", args.dir, "updated")
+        sys.exit()
+
+    if args.mode == "favor":
+        app_config = json_conf.loadJSonConfig(args.config)
+        druid_adm = DruidAdmin(app_config, False)
+        if args.names[0] == "init":
+            assert len(args.names) == 1, (
+                "favor init does not require more arguments")
+            initFavor(app_config, druid_adm, args.reportlines)
+        elif args.names[0] == "remove":
+            assert len(args.names) == 1, (
+                "favor remove does not require more arguments")
+            dropFavor(app_config, druid_adm, args.reportlines)
+        elif args.names[0] == "info":
+            print("Favor portions:",
+                prepareFavorStorage(app_config).getPortionCount())
+        else:
+            assert args.names[0] == "portion", (
+                "favor options: init/remove/info/portion <no>")
+            assert len(args.names) == 1, (
+                "favor portion requires one more argiment: portion no")
+            portion_no = int(args.names[1])
+            portionFavor(app_config, druid_adm, portion_no, args.reportlines)
         sys.exit()
 
     if args.dir:

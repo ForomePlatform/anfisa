@@ -47,6 +47,8 @@ def tuneAspects(ds_h, aspects):
         return
     meta_info = ds_h.getDataInfo()["meta"]
     reference = meta_info["versions"].get("reference", "")
+    if not reference:
+        reference = ""
     _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
         meta_info.get("case"), meta_info.get("samples"),
         "hg38" if "38" in reference else "hg19"))

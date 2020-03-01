@@ -20,7 +20,6 @@
 
 import os, json, gzip, logging, re, shutil
 from copy import deepcopy
-from io import TextIOWrapper
 from datetime import datetime
 
 from utils.ixbz2 import FormatterIndexBZ2
@@ -52,6 +51,9 @@ class SecondaryWsCreation(ExecutionTask):
     def execIt(self):
         if not self.correctWSName(self.mWSName):
             self.setStatus("Incorrect workspace name")
+            return None
+        if not self.mDS.getRecStorage().hasFullSupport():
+            self.setStatus("Sorry, not implemented yet")
             return None
         self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
@@ -96,16 +98,13 @@ class SecondaryWsCreation(ExecutionTask):
         fdata_seq = []
         cnt_delta = self.mDS.getTotal() // 20
         cnt_cur_work = 0
-        with self.mDS._openFData() as inp:
-            fdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            for rec_no, line in enumerate(fdata_inp):
-                if rec_no >= cnt_cur_work:
-                    self.setStatus("Filtering records %d%s" % (
-                        (rec_no  * 100) // self.mDS.getTotal(), '%'))
-                    cnt_cur_work += cnt_delta
-                if rec_no in rec_no_set:
-                    fdata_seq.append(json.loads(line.rstrip()))
+        for rec_no, f_data in self.mDS.getRecStorage().iterFData(rec_no_set):
+            while rec_no >= cnt_cur_work:
+                self.setStatus("Filtering records %d%s" % (
+                    (rec_no  * 100) // self.mDS.getTotal(), '%'))
+                cnt_cur_work += cnt_delta
+            assert rec_no in rec_no_set
+            fdata_seq.append(f_data)
         assert len(fdata_seq) == len(rec_no_seq)
 
         view_schema = deepcopy(self.mDS.getViewSchema())
@@ -134,23 +133,18 @@ class SecondaryWsCreation(ExecutionTask):
                 vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
 
         self.setStatus("Building indices")
-        with gzip.open(ws_dir + "/fdata.json.gz", 'wb') as fdata_stream:
-            fdata_out = TextIOWrapper(fdata_stream,
-                encoding = "utf-8", line_buffering = True)
+        with gzip.open(ws_dir + "/fdata.json.gz", 'wt',
+                encoding = "utf-8") as fdata_out:
             for fdata in fdata_seq:
                 print(json.dumps(fdata, ensure_ascii = False),
                     file = fdata_out)
 
         self.setStatus("Extracting workspace data")
-        with self.mDS._openPData() as inp, \
-                gzip.open(ws_dir + "/pdata.json.gz", 'wb') as outp:
-            pdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            pdata_outp = TextIOWrapper(outp,
-                encoding = "utf-8", line_buffering = True)
-            for rec_no, line in enumerate(pdata_inp):
-                if rec_no in rec_no_set:
-                    print(line.rstrip(), file = pdata_outp)
+        with gzip.open(ws_dir + "/pdata.json.gz",
+                'wt', encoding = "utf-8") as outp:
+            for _, it_data in self.mDS.getRecStorage().iterPData(
+                    rec_no_set):
+                print(json.dumps(it_data, ensure_ascii = False), file = outp)
 
         self.setStatus("Finishing...")
         logging.info("Finalizing workspace %s" % self.mWSName)

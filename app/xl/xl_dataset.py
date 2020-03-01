@@ -47,6 +47,21 @@ class XLDataset(DataSet):
             xl_unit = XL_Unit.create(self.mEvalSpace, unit_data)
             if xl_unit is not None:
                 self.mEvalSpace._addUnit(xl_unit)
+
+        if self.getDataSchema() == "FAVOR":
+            self.mOrdUnit = XL_Unit.create(self.mEvalSpace, {
+                "def": 2592,
+                "default": 0,
+                "kind": "numeric",
+                "max": -1,
+                "min": 0,
+                "name": "_ord",
+                "sub-kind": "int",
+                "title": "Order nubler",
+                "undef": 0,
+                "vgroup": "Debug_Info"})
+            self.mEvalSpace._addUnit(self.mOrdUnit, force_it = True)
+
         self.startService()
 
     def getEvalSpace(self):

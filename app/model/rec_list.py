@@ -18,9 +18,6 @@
 #  limitations under the License.
 #
 
-import json
-from io import TextIOWrapper
-
 from utils.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 #===============================================
@@ -55,21 +52,21 @@ class RecListTask(ExecutionTask):
         step_cnt = total // 100
         cur_progress = 0
         next_cnt = step_cnt
-        self.setStatus("Preparation progress: 0%")
-        rec_dict = {rec_no: None for rec_no in rec_no_seq}
-        with self.mDS._openPData() as inp:
-            pdata_inp = TextIOWrapper(inp,
-                encoding = "utf-8", line_buffering = True)
-            for rec_no, line in enumerate(pdata_inp):
-                if rec_no > next_cnt:
+
+        rec_dict = dict()
+        if self.mDS.getRecStorage().hasFullSupport():
+            self.setStatus("Preparation progress: 0%")
+            for rec_no, it_data in self.mDS.getRecStorage().iterPData(
+                    set(rec_no_seq)):
+                while rec_no > next_cnt:
                     next_cnt += step_cnt
                     cur_progress += 1
                     self.setStatus("Preparation progress: %d%s" %
                         (min(cur_progress, 100), '%'))
-                if rec_no not in rec_dict:
-                    continue
-                rec_dict[rec_no] = self.mDS.shortPDataReport(
-                    rec_no, json.loads(line.strip()))
+                rec_dict[rec_no] = self.mDS.shortPDataReport(rec_no, it_data)
+        else:
+            for rec_no in rec_no_seq:
+                rec_dict[rec_no] = {"no": rec_no, "lb": "-", "cl": "grey"}
         self.setStatus("Finishing")
         if self.mResSamples is not None:
             self.mResSamples = [rec_dict[rec_no]

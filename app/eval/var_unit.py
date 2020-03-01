@@ -22,7 +22,8 @@ import abc
 
 #===============================================
 class VarUnit:
-    def __init__(self, eval_space, descr, unit_kind = None, sub_kind = None):
+    def __init__(self, eval_space, descr, unit_kind = None,
+            sub_kind = None):
         self.mEvalSpace = eval_space
         self.mDescr = descr
         self.mUnitKind  = descr.get("kind", unit_kind)

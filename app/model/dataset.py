@@ -18,11 +18,10 @@
 #  limitations under the License.
 #
 
-import gzip, json, abc
+import json, abc
 from time import time
 from xml.sax.saxutils import escape
 
-from utils.ixbz2 import IndexBZ2
 from app.view.asp_set import AspectSetH
 from app.config.a_config import AnfisaConfig
 from app.config.view_tune import tuneAspects
@@ -35,6 +34,8 @@ from app.eval.code_works import cmpTrees
 from app.eval.dtree_parse import ParsedDTree
 from app.eval.dtree_mod import modifyDTreeCode
 from app.prepare.sec_ws import SecondaryWsCreation
+from .ds_disk import DataDiskStorage
+from .ds_favor import FavorStorage
 from .sol_broker import SolutionBroker
 from .family import FamilyInfo
 from .zygosity import ZygositySupport
@@ -65,7 +66,12 @@ class DataSet(SolutionBroker):
         self.mPath = dataset_path
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
-        self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
+
+        if self.getDataSchema() == "FAVOR":
+            self.mRecStorage = FavorStorage(
+                self.getApp().getOption("favor-url"))
+        else:
+            self.mRecStorage = DataDiskStorage(self, self.mPath)
 
         self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
         if (self.mDataInfo.get("zygosity_var")
@@ -128,25 +134,21 @@ class DataSet(SolutionBroker):
     def getFamilyInfo(self):
         return self.mFamilyInfo
 
+    def getRecStorage(self):
+        return self.mRecStorage
+
     #===============================================
     def getViewSchema(self):
         return self.mAspects.dump()
 
-    def _openFData(self):
-        return gzip.open(self.mPath + "/fdata.json.gz", "rb")
-
-    def _openPData(self):
-        return gzip.open(self.mPath + "/pdata.json.gz", "rb")
-
     def getRecordData(self, rec_no):
-        assert 0 <= rec_no < self.mTotal
-        return json.loads(self.mVData[rec_no])
+        return self.mRecStorage.getRecordData(rec_no)
 
     def getFirstAspectID(self):
         return self.mAspects.getFirstAspectID()
 
     def getViewRepr(self, rec_no, details = None):
-        rec_data = self.getRecordData(rec_no)
+        rec_data = self.mRecStorage.getRecordData(rec_no)
         v_context = self.mViewContext.copy()
         if details is not None:
             v_context["details"] = details
@@ -607,7 +609,7 @@ class DataSet(SolutionBroker):
     #===============================================
     @RestAPI.ds_request
     def rq__recdata(self, rq_args):
-        return self.getRecordData(int(rq_args.get("rec")))
+        return self.mRecStorage.getRecordData(int(rq_args.get("rec")))
 
     #===============================================
     @RestAPI.ds_request
