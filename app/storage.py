@@ -25,7 +25,8 @@ import utils.json_conf as json_conf
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
-from app.prepare.ds_create import createDS, portionFavorDruidPush
+from app.prepare.ds_create import (createDS,
+    portionFavorDruidPush, pushDruidDataset)
 from app.config.solutions import readySolutions
 from app.model.mongo_db import MongoConnector
 from app.model.ds_favor import FavorStorageAgent
@@ -111,13 +112,7 @@ def pushDruid(app_config, ds_entry, druid_adm):
         druid_adm.dropDataset(ds_entry.getName())
 
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
-    with open(ds_dir + "/dsinfo.json",
-            "r", encoding = "utf-8") as inp:
-        ds_info = json.loads(inp.read())
-    is_ok = druid_adm.uploadDataset(ds_entry.getName(),
-        ds_info["flt_schema"],
-        os.path.abspath(ds_dir + "/fdata.json.gz"),
-        os.path.abspath(ds_dir + "/druid_rq.json"))
+    is_ok = pushDruidDataset(ds_dir, druid_adm, ds_entry.getName())
     if is_ok:
         print("Druid dataset %s pushed" % ds_entry.getName())
     else:

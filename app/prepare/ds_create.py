@@ -164,6 +164,20 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         % (ds_name, str(time_done), str(time_done - time_start)))
 
 #=====================================
+def pushDruidDataset(ds_dir, druid_adm, ds_name):
+    readySolutions()
+    with open(ds_dir + "/dsinfo.json",
+            "r", encoding = "utf-8") as inp:
+        ds_info = json.loads(inp.read())
+    filter_set = defineFilterSchema(ds_info["meta"])
+
+    return druid_adm.uploadDataset(ds_name,
+        ds_info["flt_schema"],
+        os.path.abspath(ds_dir + "/fdata.json.gz"),
+        filter_set.getZygosityNames(),
+        os.path.abspath(ds_dir + "/druid_rq.json"))
+
+#=====================================
 def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
     readySolutions()
     filter_set = defineFilterSchema(favor_storage.getMetaData())
