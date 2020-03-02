@@ -199,7 +199,7 @@ def initFavor(app_config, druid_adm, report_lines):
         app_config.get("mongo-host"), app_config.get("mongo-port"))
 
     createDS(ds_dir, mongo_conn, druid_adm,
-        "xl_FAVOR", None, "xl", report_lines,
+        "xl_FAVOR", None, "xl", report_lines = report_lines,
         favor_storage = prepareFavorStorage(app_config))
 
 #===============================================
@@ -343,12 +343,13 @@ if __name__ == '__main__':
                 "favor remove does not require more arguments")
             dropFavor(app_config, druid_adm, args.reportlines)
         elif args.names[0] == "info":
-            print("Favor portions:",
-                prepareFavorStorage(app_config).getPortionCount())
+            favor_storage = prepareFavorStorage(app_config)
+            print("Favor size:", favor_storage.getTotal(), "portions:",
+                favor_storage.getPortionCount())
         else:
             assert args.names[0] == "portion", (
                 "favor options: init/remove/info/portion <no>")
-            assert len(args.names) == 1, (
+            assert len(args.names) == 2, (
                 "favor portion requires one more argiment: portion no")
             portion_no = int(args.names[1])
             portionFavor(app_config, druid_adm, portion_no, args.reportlines)

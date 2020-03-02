@@ -165,6 +165,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
 
 #=====================================
 def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
+    readySolutions()
     filter_set = defineFilterSchema(favor_storage.getMetaData())
     fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
 

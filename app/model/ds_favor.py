@@ -17,7 +17,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
-import json
 from datetime import datetime, timedelta
 from zlib import crc32
 
@@ -25,19 +24,17 @@ from utils.rest import RestAgent
 #===============================================
 class FavorStorage(RestAgent):
     def __init__(self, url, ds_h = None):
-        RestAgent.__init__(url, "Favor")
+        RestAgent.__init__(self, url, "Favor")
         self.mDS = ds_h
 
     def hasFullSupport(self):
         return False
 
     def getMetaData(self):
-        content = self.call("info", None, "GET")
-        return json.loads(content)
+        return self.call(None, "GET", "info")
 
     def getRecordData(self, rec_no):
-        content = self.call("variant?ord=%d" % rec_no, None, "GET")
-        return json.loads(content)
+        return self.call(None, "GET", "variant?ord=%d" % rec_no)
 
     @classmethod
     def getRandNo(cls, rec_no):
@@ -48,7 +45,7 @@ class FavorStorageAgent(FavorStorage):
     TIME_START = datetime(year = 2015, month = 1, day = 1)
 
     def __init__(self, url, portion_size, portion_min_delta):
-        FavorStorage.__init__(url)
+        FavorStorage.__init__(self, url)
         self.mPortionSize = portion_size
         self.mPortionMinDelta = portion_min_delta
         self.mMetaData = FavorStorage.getMetaData(self)
