@@ -117,7 +117,7 @@ class DruidAdmin(DruidAgent):
                     "granularitySpec": {
                         "segmentGranularity":  self.LOAD_GRANULATITY,
                         "queryGranularity": "none",
-                        "intervals": [self.INTERVAL]}},
+                        "intervals": None}},
                 "ioConfig": {
                     "type": "index_parallel",
                     "inputSource": {
