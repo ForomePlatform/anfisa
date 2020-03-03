@@ -171,9 +171,9 @@ def pushDoc(app_config, ds_entry):
 
 #===============================================
 def prepareFavorStorage(app_config):
-    portion_size, portion_min_delta = app_config["favor-portions"]
+    portion_size, portion_fetch = app_config["favor-portions"]
     return FavorStorageAgent(app_config["favor-url"],
-        portion_size, portion_min_delta)
+        portion_size, portion_fetch)
 
 #===============================================
 def initFavor(app_config, druid_adm, report_lines):

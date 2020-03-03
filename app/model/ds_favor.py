@@ -44,10 +44,10 @@ class FavorStorage(RestAgent):
 class FavorStorageAgent(FavorStorage):
     TIME_START = datetime(year = 2015, month = 1, day = 1)
 
-    def __init__(self, url, portion_size, portion_min_delta):
+    def __init__(self, url, portion_size, portion_fetch):
         FavorStorage.__init__(self, url)
         self.mPortionSize = portion_size
-        self.mPortionMinDelta = portion_min_delta
+        self.mPortionFetch = portion_fetch
         self.mMetaData = FavorStorage.getMetaData(self)
         self.mTotal = self.mMetaData["variants"]
         self.mPortionCount = self.mTotal // self.mPortionSize
@@ -66,12 +66,27 @@ class FavorStorageAgent(FavorStorage):
         assert start < self.mTotal
         return (start, min(self.mTotal, start + self.mPortionSize))
 
+    def loadRecords(self, portion_no):
+        start_no, end_no = self.getPortionDiap(portion_no)
+        if self.mPortionFetch < 2:
+            for rec_no in range(start_no, end_no):
+                yield rec_no, self.getRecordData(rec_no)
+            return
+        while start_no < end_no:
+            seq_no = list(range(start_no,
+                min(start_no + self.mPortionFetch, end_no)))
+            seq_rec = self.call("seq=[%s]" % ','.join(map(str, seq_no)),
+                "POST", "variants", json_rq_mode = False)
+            for rec_no, record in zip(seq_no, seq_rec):
+                yield (rec_no, record)
+            start_no = seq_no[-1] + 1
+
     def internalFltData(self, rec_no):
         portion_no = rec_no // self.mPortionSize
         dt = rec_no % self.mPortionSize
         return {
             "time": (self.TIME_START + timedelta(
-                minutes = portion_no * self.mPortionMinDelta,
+                minutes = portion_no,
                 microseconds = dt)).isoformat(),
             "_ord": rec_no,
             "_rand": self.getRandNo(rec_no)}

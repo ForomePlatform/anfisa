@@ -184,8 +184,7 @@ def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
     fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
 
     with gzip.open(fdata_path, "wt", encoding = "utf-8") as outp:
-        for rec_no in range(*favor_storage.getPortionDiap(portion_no)):
-            record = favor_storage.getRecordData(rec_no)
+        for rec_no, record in favor_storage.loadRecords(portion_no):
             flt_data = filter_set.process(rec_no, record)
             flt_data.update(favor_storage.internalFltData(rec_no))
             print(json.dumps(flt_data, ensure_ascii = False), file = outp)

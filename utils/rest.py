@@ -38,9 +38,14 @@ class RestAgent:
             self.mPort = 80
         self.mName = name if name else url
 
-    def call(self, request_data, method = "POST", add_path = ""):
+    def call(self, request_data, method = "POST",
+            add_path = "", json_rq_mode = True):
         if request_data is not None:
-            content = json.dumps(request_data, ensure_ascii = False)
+            if json_rq_mode:
+                content = json.dumps(request_data, ensure_ascii = False)
+            else:
+                content = request_data
+                print("C:", request_data)
         else:
             content = ""
         conn = HTTPConnection(self.mHost, self.mPort)
@@ -50,11 +55,11 @@ class RestAgent:
         res = conn.getresponse()
         try:
             content = res.read()
-            logging.info("REST " + method  + " call: " + self.mName
+            logging.info("REST " + method  + " call: " + self.mName + " "
                 + add_path + " response: " + str(res.status)
                 + " reason: " + str(res.reason))
             if res.status != 200:
-                raise RuntimeError(("Druid call failure (%r):\n" % res.status)
+                raise RuntimeError(("Rest call failure (%r):\n" % res.status)
                     + str(content, "utf-8") + '\n========')
         finally:
             res.close()
