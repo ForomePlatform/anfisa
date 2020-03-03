@@ -45,7 +45,6 @@ class RestAgent:
                 content = json.dumps(request_data, ensure_ascii = False)
             else:
                 content = request_data
-                print("C:", request_data)
         else:
             content = ""
         conn = HTTPConnection(self.mHost, self.mPort)

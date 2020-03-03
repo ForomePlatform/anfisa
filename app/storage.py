@@ -341,6 +341,12 @@ if __name__ == '__main__':
             favor_storage = prepareFavorStorage(app_config)
             print("Favor size:", favor_storage.getTotal(), "portions:",
                 favor_storage.getPortionCount())
+        elif args.names[0] == "test":
+            favor_storage = prepareFavorStorage(app_config)
+            for rec_no, record in favor_storage.loadRecords(0, 10):
+                print("Tested rec=", rec_no, "ok")
+            print("Favor size:", favor_storage.getTotal(), "portions:",
+                favor_storage.getPortionCount())
         else:
             assert args.names[0] == "portion", (
                 "favor options: init/remove/info/portion <no>")

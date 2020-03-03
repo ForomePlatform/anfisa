@@ -66,15 +66,17 @@ class FavorStorageAgent(FavorStorage):
         assert start < self.mTotal
         return (start, min(self.mTotal, start + self.mPortionSize))
 
-    def loadRecords(self, portion_no):
+    def loadRecords(self, portion_no, portion_fetch = None):
+        if portion_fetch is None:
+            portion_fetch = self.mPortionFetch
         start_no, end_no = self.getPortionDiap(portion_no)
-        if self.mPortionFetch < 2:
+        if portion_fetch < 2:
             for rec_no in range(start_no, end_no):
                 yield rec_no, self.getRecordData(rec_no)
             return
         while start_no < end_no:
             seq_no = list(range(start_no,
-                min(start_no + self.mPortionFetch, end_no)))
+                min(start_no + portion_fetch, end_no)))
             seq_rec = self.call("seq=[%s]" % ','.join(map(str, seq_no)),
                 "POST", "variants", json_rq_mode = False)
             for rec_no, record in zip(seq_no, seq_rec):
