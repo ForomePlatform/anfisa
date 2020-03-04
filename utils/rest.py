@@ -24,16 +24,22 @@ from http.client import HTTPConnection
 
 #==================================
 class RestAgent:
-    sHeaders = {
-        "Content-Type": "application/json",
-        "Encoding": "utf-8"}
+    sHeadersTab = {
+        "json": {
+            "Content-Type": "application/json",
+            "Encoding": "utf-8"},
+        "www": {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "Encoding": "utf-8"},
+    }
 
-    def __init__(self, url, name = None):
+    def __init__(self, url, name = None, header_type = "json"):
         url_info = urlsplit(url)
         assert url_info.scheme == "http"
         self.mHost = url_info.hostname
         self.mPort = url_info.port
         self.mPath = url_info.path
+        self.mHeaders = self.sHeadersTab[header_type]
         if self.mPort is None:
             self.mPort = 80
         self.mName = name if name else url
@@ -50,7 +56,7 @@ class RestAgent:
         conn = HTTPConnection(self.mHost, self.mPort)
         path = self.mPath + add_path
         conn.request(method, path,
-            body = content.encode("utf-8"), headers = self.sHeaders)
+            body = content.encode("utf-8"), headers = self.mHeaders)
         res = conn.getresponse()
         try:
             content = res.read()

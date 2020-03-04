@@ -24,7 +24,7 @@ from utils.rest import RestAgent
 #===============================================
 class FavorStorage(RestAgent):
     def __init__(self, url, ds_h = None):
-        RestAgent.__init__(self, url, "Favor")
+        RestAgent.__init__(self, url, "Favor", header_type = "www")
         self.mDS = ds_h
 
     def hasFullSupport(self):
