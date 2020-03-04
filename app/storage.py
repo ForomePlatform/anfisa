@@ -199,8 +199,6 @@ def initFavor(app_config, druid_adm, report_lines):
 
 #===============================================
 def dropFavor(app_config, druid_adm, report_lines):
-    _dropDruidDataset(druid_adm, "xl_FAVOR")
-
     vault_dir = app_config["data-vault"]
     ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
     if not os.path.exists(ds_dir):
