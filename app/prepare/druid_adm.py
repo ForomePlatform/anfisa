@@ -140,6 +140,12 @@ class DruidAdmin(DruidAgent):
         return True
 
     def dropDataset(self, dataset_name):
+        if dataset_name.startswith("xl_FOROME"):
+            sys.stdout.write("\nAre yout sure to drop dataset",
+                dataset_name, "? (.../Yes)")
+            line = sys.stdin.readline()
+            assert line.strip() == "Yes", "Drop not accepted"
+
         druid_dataset_name = self.normDataSetName(dataset_name)
         if not self.mNoCoord:
             self.call("coord", None, "DELETE", "/datasources/"

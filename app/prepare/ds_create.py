@@ -97,10 +97,13 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             print("\nTotal lines: %d" % total, file = sys.stderr)
         input_reader.close()
     else:
+        record = favor_storage.getRecordData(0)
+        view_checker.regValue(rec_no, record)
         total = metadata_record["variants"]
 
     rep_out = StringIO()
-    is_ok = view_checker.finishUp(rep_out)
+    is_ok = view_checker.finishUp(rep_out,
+        no_mode = input_reader is None)
     is_ok &= filter_set.reportProblems(rep_out)
 
     if trans_prep is not None:

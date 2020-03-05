@@ -90,8 +90,12 @@ class TypeCounter:
             return Types.sTypes[idx]
         return None
 
-    def detect(self, with_optional = True):
+    def detect(self, with_optional = True, no_mode = False):
         if self.mCounts[0] == 0:
+            if no_mode:
+                if self.mReqType > 0:
+                    return Types.sTypes[self.mReqType]
+                return "json"
             return "undef"
         if self.mReqType > 0:
             ret = self._checkType(self.mReqType, with_optional)

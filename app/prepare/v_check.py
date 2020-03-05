@@ -75,13 +75,13 @@ class AttrTypeChecker:
                 self.mErrors.append([rec_no, value])
         return is_ok
 
-    def fixType(self):
+    def fixType(self, no_mode = False):
         assert self.mDetType is False
-        tp = self.mMainTpCnt.detect()
+        tp = self.mMainTpCnt.detect(no_mode = no_mode)
         if tp == "undef":
             self.mDetType = None
         elif tp == "list":
-            self.mDetType = [True, self.mSubTpCnt.detect()]
+            self.mDetType = [True, self.mSubTpCnt.detect(no_mode = no_mode)]
             if self.mDetType[1] == "dict":
                 self.mDetType[1] = "json"
         else:
@@ -148,8 +148,8 @@ class DictTypeChecker:
             self.regIt(reg_h)
         reg_h.regValue(rec_no, val)
 
-    def fixUp(self, master, rep_output):
-        self.mOwnCnt.fixType()
+    def fixUp(self, master, rep_output, no_mode = False):
+        self.mOwnCnt.fixType(no_mode = no_mode)
         if self.mOwnCnt.getErrorCount() > 0:
             master.problem("fatal", self)
             self.mStatus = "fatal"
@@ -157,9 +157,9 @@ class DictTypeChecker:
             self.mStatus = "ok"
         for a_check in self.mChildren:
             if not isinstance(a_check, AttrTypeChecker):
-                a_check.fixUp(master, rep_output)
+                a_check.fixUp(master, rep_output, no_mode = no_mode)
                 continue
-            a_type = a_check.fixType()
+            a_type = a_check.fixType(no_mode = no_mode)
             if a_check.getBaseAttr() is None:
                 if a_check.getName().startswith('_'):
                     a_check.setStatus("skipped")
@@ -296,8 +296,8 @@ class ViewDataChecker(DictTypeChecker):
             check_name = parent_checker.getName() + '.' + check_name
         self.mProblems[code].append(check_name)
 
-    def finishUp(self, rep_output):
-        self.fixUp(self, rep_output)
+    def finishUp(self, rep_output, no_mode = False):
+        self.fixUp(self, rep_output, no_mode = no_mode)
         print("Data check result:", file = rep_output)
         group_name = None
         for code in sorted(self.mProblems.keys()):
