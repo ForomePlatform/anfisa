@@ -98,7 +98,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         input_reader.close()
     else:
         record = favor_storage.getRecordData(0)
-        view_checker.regValue(rec_no, record)
+        view_checker.regValue(0, record)
         total = metadata_record["variants"]
 
     rep_out = StringIO()
