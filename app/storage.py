@@ -20,6 +20,7 @@
 
 import sys, codecs, json, os, shutil, re, time, logging
 from argparse import ArgumentParser
+from datetime import datetime
 
 import utils.json_conf as json_conf
 from app.prepare.druid_adm import DruidAdmin
@@ -208,12 +209,70 @@ def dropFavor(app_config, druid_adm, report_lines):
     print("Dataset droped:", ds_dir)
 
 #===============================================
-def portionFavor(app_config, druid_adm, portion_no, report_lines):
+def portionFavor(app_config, druid_adm, portion_no, report_lines,
+        inside_mode = False):
     favor_storage = prepareFavorStorage(app_config)
-    print("Favor portions:", favor_storage.getPortionCount())
+    if not inside_mode:
+        print("Favor portions:", favor_storage.getPortionCount())
+    print("Push portion", portion_no)
     vault_dir = app_config["data-vault"]
     ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
     portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no)
+    print("Done portion", portion_no)
+
+#===============================================
+def _favorBatch(app_config, druid_adm, batch_dir, report_lines):
+    assert os.path.isdir(batch_dir), (
+        "Bad batch directory: " + batch_dir)
+    if os.path.exists(batch_dir + "/stop"):
+        print("STOPPED")
+        with open(batch_dir + "/log", "at") as outp:
+            print("%s: STOPED" % str(datetime.now()), file = outp)
+        return False
+    assert os.path.exists(batch_dir + "/loaded.txt"), (
+        "No file:" + batch_dir + "/loaded.txt")
+    loaded_idxs = set()
+    with open(batch_dir + "/loaded.txt", "rt") as inp:
+        for line_idx, line in enumerate(inp):
+            idx_str = line.strip()
+            assert idx_str.isdigit(), (
+                "loaded.txt at line %d: bad line" % (line_idx + 1))
+            idx = int(idx_str)
+            assert idx not in loaded_idxs, (
+                "loaded.txt at line %d: duplicated idx %d"
+                % (line_idx + 1, idx))
+            loaded_idxs.add(idx)
+    favor_storage = prepareFavorStorage(app_config)
+    p_count = favor_storage.getPortionCount()
+    next_portion = None
+    for idx in range(p_count - 1):
+        if idx not in loaded_idxs:
+            next_portion = idx
+            break
+    if next_portion is None:
+        print("MISSION COMPLETE (check last portion", p_count - 1)
+        with open(batch_dir + "/log", "at") as outp:
+            print("%s: COMPLETE" % str(datetime.now()), file = outp)
+        return False
+    with open(batch_dir + "/log", "at") as outp:
+        print("%s: Push portion %d" % (str(datetime.now()), next_portion),
+            file = outp)
+    portionFavor(app_config, druid_adm, next_portion, report_lines, True)
+    loaded_idxs.add(next_portion)
+    with open(batch_dir + "/~loaded.txt", "wt") as outp:
+        for idx in sorted(loaded_idxs):
+            print(idx, file = outp)
+    os.rename(batch_dir + "/loaded.txt", batch_dir + "/loaded.txt~")
+    os.rename(batch_dir + "/~loaded.txt", batch_dir + "/loaded.txt")
+    with open(batch_dir + "/log", "at") as outp:
+        print("%s: Done portion %d" % (str(datetime.now()), next_portion),
+            file = outp)
+    return True
+
+#===============================================
+def favorBatch(app_config, druid_adm, batch_dir, report_lines):
+    while _favorBatch(app_config, druid_adm, batch_dir, report_lines):
+        pass
 
 #===============================================
 class DSEntry:
@@ -339,12 +398,11 @@ if __name__ == '__main__':
             favor_storage = prepareFavorStorage(app_config)
             print("Favor size:", favor_storage.getTotal(), "portions:",
                 favor_storage.getPortionCount())
-        elif args.names[0] == "test":
-            favor_storage = prepareFavorStorage(app_config)
-            for rec_no, record in favor_storage.loadRecords(0, 10):
-                print("Tested rec=", rec_no, "ok")
-            print("Favor size:", favor_storage.getTotal(), "portions:",
-                favor_storage.getPortionCount())
+        elif args.names[0] == "batch":
+            assert len(args.names) == 2, (
+                "favor batch requires one more argiment: batch directory")
+            batch_dir = args.names[1]
+            favorBatch(app_config, druid_adm, batch_dir, args.reportlines)
         else:
             assert args.names[0] == "portion", (
                 "favor options: init/remove/info/portion <no>")
@@ -418,3 +476,4 @@ if __name__ == '__main__':
             sys.exit()
 
 #===============================================
+
