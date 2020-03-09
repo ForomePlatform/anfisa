@@ -23,6 +23,9 @@
 from app.view.attr import AttrH
 
 #===============================================
+from utils.log_err import logException
+
+
 def _resetupAttr(aspect_h, attr_h):
     idx1 = aspect_h.find(attr_h.getName().lower())
     idx2 = aspect_h.find(attr_h.getName())
@@ -207,12 +210,19 @@ class IGV_AttrH(AttrH):
             start = int(top_rec_obj["data"]["start"])
             end = int(top_rec_obj["data"]["end"])
         elif self.ref == "hg38":
+            pos = ""
             try:
                 pos = top_rec_obj["view"]["general"]["hg38"]
-                start = int(pos.split(':')[1])
-                end = start + int(top_rec_obj["data"]["end"]) - \
-                    int(top_rec_obj["data"]["start"])
+                coord = pos.split(':')[1]
+                if '-' in coord:
+                    x = coord.split('-')
+                    start = int (x[0].strip())
+                    end = int (x[1].strip())
+                else:
+                    start = int(coord)
+                    end = start
             except:
+                logException("Error creating IGV link for " + pos)
                 return "ERROR"
         else:
             return "Unknown Reference: {}".format(self.ref)
