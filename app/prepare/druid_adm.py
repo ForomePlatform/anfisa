@@ -160,6 +160,7 @@ class DruidAdmin(DruidAgent):
             "/metadata/datasources?includeDisabled")
 
     def mineEnumVariants(self, dataset_name, unit_name):
+        logging.info("Mine enum unit: " + unit_name)
         var_size = 100
         while True:
             query = {
@@ -179,8 +180,8 @@ class DruidAdmin(DruidAgent):
                     "Got problem with xl_unit %s: %d expect_size=%d"
                     % (unit_name, len(rq), var_size))
                 assert False
-            if len(rq[0]) >= var_size:
-                var_size *= 2
+            if len(rq[0]["result"]) >= var_size:
+                var_size *= 10
                 continue
             variants = [[rec[unit_name], rec["count"]] for rec in rq[0]["result"]]
             return sorted(variants, key = lambda info: (info[1], info[0]))
