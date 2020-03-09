@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import os, sys, subprocess, json
+import os, sys, subprocess, json, logging
 from datetime import datetime, timedelta
 
 from app.xl.druid_agent import DruidAgent
@@ -159,4 +159,31 @@ class DruidAdmin(DruidAgent):
         return self.call("coord", None, "GET",
             "/metadata/datasources?includeDisabled")
 
+    def mineEnumVariants(self, dataset_name, unit_name):
+        var_size = 100
+        while True:
+            query = {
+                "queryType": "topN",
+                "dataSource": self.normDataSetName(dataset_name),
+                "dimension": unit_name,
+                "threshold": var_size,
+                "metric": "count",
+                "granularity": self.GRANULARITY,
+                "aggregations": [{
+                    "type": "count", "name": "count",
+                    "fieldName": unit_name}],
+                "intervals": [self.INTERVAL]}
+            rq = self.call("query", query)
+            if len(rq) != 1:
+                logging.error(
+                    "Got problem with xl_unit %s: %d expect_size=%d"
+                    % (unit_name, len(rq), var_size))
+                assert False
+            if len(rq[0]) >= var_size:
+                var_size *= 2
+                continue
+            variants = [[rec[unit_name], rec["count"]] for rec in rq[0]["result"]]
+            return sorted(variants, key = lambda info: (info[1], info[0]))
+
 #===============================================
+

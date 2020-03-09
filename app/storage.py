@@ -221,6 +221,27 @@ def portionFavor(app_config, druid_adm, portion_no, report_lines,
     print("Done portion", portion_no)
 
 #===============================================
+def ftuneFavor(app_config, druid_adm, report_lines):
+    vault_dir = app_config["data-vault"]
+    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
+    with open(ds_dir + "/dsinfo.json",
+            "r", encoding = "utf-8") as inp:
+        ds_info = json.loads(inp.read())
+    for funit_entry in ds_info["flt_schema"]:
+        if funit_entry["kind"] == "enum":
+            variants = druid_adm.mineEnumVariants(
+                "xl_FAVOR", funit_entry["name"])
+            print("Unit update: %s  %d -> %d" % (funit_entry["name"],
+                len(funit_entry["variants"]), len(variants)))
+            funit_entry["variants"] = variants
+    with open(ds_dir + "/~dsinfo.json", "w", encoding = "utf-8") as outp:
+        print(json.dumps(ds_info, sort_keys = True, indent = 4),
+            file = outp)
+    os.rename(ds_dir + "/dsinfo.json", ds_dir + "/dsinfo.json~")
+    os.rename(ds_dir + "/~dsinfo.json", ds_dir + "/dsinfo.json")
+    print("Filter variants tuning done")
+
+#===============================================
 def _favorBatch(app_config, druid_adm, batch_dir, report_lines):
     assert os.path.isdir(batch_dir), (
         "Bad batch directory: " + batch_dir)
@@ -394,6 +415,10 @@ if __name__ == '__main__':
             assert len(args.names) == 1, (
                 "favor remove does not require more arguments")
             dropFavor(app_config, druid_adm, args.reportlines)
+        elif args.names[0] == "ftune":
+            assert len(args.names) == 1, (
+                "favor ftune does not require more arguments")
+            ftuneFavor(app_config, druid_adm, args.reportlines)
         elif args.names[0] == "info":
             favor_storage = prepareFavorStorage(app_config)
             print("Favor size:", favor_storage.getTotal(), "portions:",
@@ -476,4 +501,5 @@ if __name__ == '__main__':
             sys.exit()
 
 #===============================================
+
 
