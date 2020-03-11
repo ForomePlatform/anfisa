@@ -1,0 +1,39 @@
+tab_report
+==========
+
+Synopsis
+--------
+
+.. index:: 
+    tab_report; request
+
+**tab_report** 
+
+    **Arguments**: 
+
+        **ds**: dataset name
+        
+        **seq**: list of record order numbers *in JSON string representation*
+    
+        .. index:: 
+            seq; argument of tab_report
+
+        **schema**: name of data schema
+
+        .. index:: 
+            schema; argument of tab_report        
+        
+    **Return value**: *list of dictionaries*
+
+Description
+-----------
+
+The request prepares view presentation for series of :term:`variant` records in form defined by 
+schema.
+
+See also :ref:`Variant data presentations<variant_data_presentation>`
+
+In current version of the system schemes are defined in source code of the server, so the list of it is fixed.
+
+.. warning:: TODO: add list and descriptions of available schemes
+

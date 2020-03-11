@@ -119,7 +119,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
-        ds_doc_dir = ds_dir + "/doc"
+        ds_doc_dir = ds_dir + "/dsdoc"
         ds_info = {
             "date_loaded": date_loaded,
             "doc": prepareDocDir(ds_doc_dir, ds_inv),

@@ -17,12 +17,19 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from xml.sax.saxutils import escape
 
 from .gen_html import startHtmlPage
 #===============================================
-def dirPage(output, common_title, html_base, ws_pub_url):
+def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
     startHtmlPage(output, common_title + " home", html_base,
         css_files = ["dir.css", "base.css"], js_files = ["dir.js", "base.js"])
+
+    doc_sets_repr = []
+    for doc_set in doc_sets:
+        doc_sets_repr.append('<li><a href="%s" target="%s-DOC">%s</a>'
+            % (doc_set.getUrl(), common_title, escape(doc_set.getTitle())))
+
     print('''
   <body onload="setup(\'%s\', \'%s\');">
     <h2>%s home directory</h2>
@@ -35,8 +42,14 @@ def dirPage(output, common_title, html_base, ws_pub_url):
             <div id="ds-info"></div>
        </div>
     </div>
+    <div id="dir-docs">
+      <ul>
+         %s
+      </ul>
+    </div>
   </body>
-</html>''' % (common_title, ws_pub_url, common_title), file = output)
+</html>''' % (common_title, ws_pub_url, common_title,
+        "\n".join(doc_sets_repr)), file = output)
 
 #===============================================
 def subdirPage(output, common_title, html_base, ws_url, ds_h):

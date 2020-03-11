@@ -150,5 +150,8 @@ function onModalOff() {
 }
 
 function arrangeControls() {
-    document.getElementById("dir-main").style.height = window.innerHeight - 60;
+    var delta = 60;
+    if (document.getElementById("dir-docs")) 
+        delta += 40;
+    document.getElementById("dir-main").style.height = window.innerHeight - delta;
 }

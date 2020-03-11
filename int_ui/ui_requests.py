@@ -82,7 +82,8 @@ class IntUI:
 
         if rq_path == "/dir":
             output = StringIO()
-            dirPage(output, cls.sHtmlTitle, cls.sHtmlBase, cls.sWsPubURL)
+            dirPage(output, cls.sHtmlTitle, cls.sHtmlBase, cls.sWsPubURL,
+                data_vault.getApp().getDocSets())
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/subdir":

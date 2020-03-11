@@ -46,14 +46,14 @@ function arrangeControls() {
 
 function setupDocList(info) {
     sDocInfo = info;
-    var doc_path = "doc/" + sDSName + "/";
+    var doc_path = "dsdoc/" + sDSName + "/";
     sDocArray = [];
     var list_doc_rep = [];
     list_doc_rep.push('<div id="doc__0" class="doc-ref" onclick="selectDoc(0)">Info</div>');
     sDocArray.push(doc_path + "info.html");
     _fillExtraDoc(sDocInfo["doc"], "", doc_path, list_doc_rep);
     if (sDocInfo["doc-base"] != undefined) {
-        var doc_base_path = "doc/" + sDocInfo["base"] + "/";
+        var doc_base_path = "dsdoc/" + sDocInfo["base"] + "/";
         list_doc_rep.push('<div class="grp-ref"><span>Base ' + 
             sDocInfo["base"] + '</span>');
         list_doc_rep.push('<div id="doc__' + sDocArray.length + 

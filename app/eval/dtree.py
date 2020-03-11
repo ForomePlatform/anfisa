@@ -136,7 +136,6 @@ class CheckPoint:
             "kind": self.getPointKind(),
             "level": self.getLevel(),
             "decision": self.getDecision(),
-            "cond-data": self.getCondData(),
             "code-frag": self.getCodeFrag(code_lines),
             "actions": self.getActions()}
 

@@ -589,7 +589,6 @@ class DataSet(SolutionBroker):
             use_dtree = False, activate_it = False)
         ret_handle = {"code": dtree_h.getCode()}
         if dtree_h.getErrorInfo() is not None:
-            msg_text, lineno, col_offset = dtree_h.getErrorInfo()
             ret_handle.update(dtree_h.getErrorInfo())
         return ret_handle
 

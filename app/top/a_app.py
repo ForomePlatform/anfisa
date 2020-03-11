@@ -34,6 +34,7 @@ from export.excel import ExcelExport
 from int_ui.mirror_dir import MirrorUiDirectory
 from int_ui.ui_requests import IntUI
 from utils.job_pool import JobPool
+from utils.sphinx_doc import SphinxDocumentationSet
 
 #===============================================
 def terminateAll(sig, frame):
@@ -49,6 +50,7 @@ class AnfisaApp:
     sRunOptions = None
     sJobPool = None
     sTasks = dict()
+    sDocSets = []
 
     @classmethod
     def setup(cls, config, in_container):
@@ -79,6 +81,11 @@ class AnfisaApp:
         cls.sJobPool.addPeriodicalWorker("vault_update",
             cls.sDataVault.scanAll,
             float(cls.sConfig.get("job-vault-check-period", 30)))
+
+        sphinx_docs_seq = cls.sConfig.get("sphinx-doc-sets")
+        if sphinx_docs_seq:
+            for sphinx_docs_info in sphinx_docs_seq:
+                cls.sDocSets.append(SphinxDocumentationSet(*sphinx_docs_info))
 
         signal.signal(signal.SIGTERM, terminateAll)
         signal.signal(signal.SIGHUP, terminateAll)
@@ -157,6 +164,10 @@ class AnfisaApp:
         return cls.sConfig.get(name)
 
     @classmethod
+    def getDocSets(cls):
+        return cls.sDocSets
+
+    @classmethod
     def request(cls, serv_h, rq_path, rq_args, rq_descr):
         func, agent = RestAPI.lookupRequest(
             rq_path, rq_args, cls.sDataVault)
@@ -195,9 +206,9 @@ class AnfisaApp:
 
     @classmethod
     def checkFilePath(cls, path):
-        if not path.startswith("/doc/"):
+        if not path.startswith("/dsdoc/"):
             return None
-        ds_name, _, fpath = path[5:].partition('/')
+        ds_name, _, fpath = path[7:].partition('/')
         loc_path = fpath.rpartition('/')[-1]
         if loc_path == "report.css":
             return cls.sDocReportCSS

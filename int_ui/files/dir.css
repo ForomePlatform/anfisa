@@ -48,6 +48,10 @@ div#dir-main {
     flex-direction: row;    
 }
 
+div#dir-docs {
+    font-size: 80%;
+}
+
 div#dir-list {
     width: 45%;
     display: block;

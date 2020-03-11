@@ -182,8 +182,8 @@ class DruidAdmin(DruidAgent):
             if len(rq[0]) >= var_size:
                 var_size *= 2
                 continue
-            variants = [[rec[unit_name], rec["count"]] for rec in rq[0]["result"]]
+            variants = [[rec[unit_name], rec["count"]]
+                for rec in rq[0]["result"]]
             return sorted(variants, key = lambda info: (info[1], info[0]))
 
 #===============================================
-

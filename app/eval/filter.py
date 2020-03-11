@@ -127,7 +127,6 @@ class FilterEval(Evaluation):
             cond_seq.append(cond_info)
         return {
             "conditions": self.mCondDataSeq,
-            "labels": self.getLabelPoints(),
             "cond-seq": cond_seq,
             "eval-status": self.getEvalStatus(),
             "hash": self.mHashCode}
