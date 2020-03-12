@@ -67,7 +67,7 @@ class DataSet(SolutionBroker):
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
 
-        if self.getDataSchema() == "FAVOR":
+        if self.getDataSchema() == "FAVOR" and self.mDSKind == "xl":
             self.mRecStorage = FavorStorage(
                 self.getApp().getOption("favor-url"))
         else:
