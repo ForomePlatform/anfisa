@@ -27,14 +27,25 @@ class FavorStorage(RestAgent):
         RestAgent.__init__(self, url, "Favor", header_type = "www")
         self.mDS = ds_h
 
-    def hasFullSupport(self):
-        return False
+    def getKind(self):
+        return "favor"
 
     def getMetaData(self):
         return self.call(None, "GET", "info")
 
     def getRecordData(self, rec_no):
         return self.call(None, "GET", "variant?ord=%d" % rec_no)
+
+    FETCH_SIZE = 100
+    def iterRecords(self, rec_no_set):
+        rec_no_seq = rec_no_set[:]
+        while len(rec_no_seq) > 0:
+            seq_rec = self.call("seq=[%s]"
+                % ','.join(map(str, rec_no_seq[:self.FETCH_SIZE])),
+                "POST", "variants", json_rq_mode = False)
+            for idx, rec_data in enumerate(seq_rec):
+                yield rec_no_seq[idx], rec_data
+            del rec_no_seq[:self.FETCH_SIZE]
 
     def collectPReports(self, rec_no_seq, notifier = None):
         seq_rec = self.call("seq=[%s]" % ','.join(map(str, rec_no_seq)),

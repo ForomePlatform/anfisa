@@ -24,7 +24,7 @@ from collections import Counter
 from app.config.a_config import AnfisaConfig
 from utils.path_works import AttrFuncPool
 #===============================================
-class TransformPreparator:
+class TransformPreparator_WS:
     def __init__(self, flt_schema, hard_check):
         self.mHardCheck = hard_check
         self.mConvertors = []
@@ -49,7 +49,7 @@ class TransformPreparator:
     def isEmpty(self):
         return len(self.mConvertors) == 0 and len(self.mUnitStatSeq) == 0
 
-    def doRec(self, rec_data, flt_data):
+    def doRec(self, rec_no, rec_data, flt_data, pre_data):
         tr_seq_seq = self.mTransPathBaseF(rec_data)
         assert len(tr_seq_seq) <= 1
         if len(tr_seq_seq) == 1:
@@ -255,3 +255,19 @@ class EnumUnitStatH:
             if cnt > 0:
                 variants.append([name, cnt])
         self.mDescr["variants"] = variants
+
+#===============================================
+class TransformPreparator_XL:
+    def __init__(self, druid_adm):
+        self.mDruidAdm = druid_adm
+        self.mTotalItemCount = 0
+
+    def isEmpty(self):
+        return False
+
+    def doRec(self, rec_no, rec_data, flt_data, pre_data):
+        self.mTotalItemCount += 1
+        flt_data.update(self.mDruidAdm.internalFltData(rec_no, pre_data))
+
+    def finishUp(self):
+        return self.mTotalItemCount

@@ -22,6 +22,7 @@ from io import TextIOWrapper
 from subprocess import Popen, PIPE
 
 from utils.ixbz2 import IndexBZ2
+from app.model.pre_fields import PresentationData
 #===============================================
 class DataDiskStorage:
     def __init__(self, ds_h, dataset_path):
@@ -29,12 +30,16 @@ class DataDiskStorage:
         self.mPath = dataset_path
         self.mVData = IndexBZ2(self.mPath + "/vdata.ixbz2")
 
-    def hasFullSupport(self):
-        return True
+    def getKind(self):
+        return "disk"
 
     def getRecordData(self, rec_no):
         assert 0 <= rec_no < self.mDS.getTotal()
         return json.loads(self.mVData[rec_no])
+
+    def iterRecords(self, rec_no_seq):
+        for rec_no in rec_no_seq:
+            yield rec_no, self.getRecordData(rec_no)
 
     def iterFData(self, rec_no_set = None, notifier = None):
         cur_progess = 0
@@ -84,8 +89,12 @@ class DataDiskStorage:
 
 #===============================================
 class DataDiskStorageWriter:
-    def __init__(self, dataset_path, report_mode = False):
+    def __init__(self, dataset_path, filter_set, trans_prep,
+            view_checker = None, report_mode = False):
         self.mPath = dataset_path
+        self.mFilterSet = filter_set
+        self.mTransPrep = trans_prep
+        self.mViewChecker = view_checker
         self.mReportMode = report_mode
         self.mTotal = 0
         self.mVDataProc = Popen(sys.executable + " -m utils.ixbz2 --calm -o "
@@ -120,8 +129,14 @@ class DataDiskStorageWriter:
     def getTotal(self):
         return self.mTotal
 
-    def putRecord(self, record, f_data, p_data):
+    def saveRecord(self, record):
+        rec_no = self.mTotal
+        flt_data = self.mFilterSet.process(rec_no, record)
+        if self.mViewChecker is not None:
+            self.mViewChecker.regValue(rec_no, record)
+        pre_data = PresentationData.make(record)
+        self.mTransPrep.doRec(rec_no, record, flt_data, pre_data)
         print(json.dumps(record, ensure_ascii = False), file = self.mVDataOut)
-        print(json.dumps(f_data, ensure_ascii = False), file = self.mFDataOut)
-        print(json.dumps(p_data, ensure_ascii = False), file = self.mPDataOut)
+        print(json.dumps(flt_data, ensure_ascii = False), file = self.mFDataOut)
+        print(json.dumps(pre_data, ensure_ascii = False), file = self.mPDataOut)
         self.mTotal += 1

@@ -18,25 +18,24 @@
 #  limitations under the License.
 #
 
-import os, json, gzip, logging, re, shutil
+import os, json, logging, re, shutil
 from copy import deepcopy
 from datetime import datetime
 
-from utils.ixbz2 import FormatterIndexBZ2
 from utils.job_pool import ExecutionTask
+from app.model.ds_disk import DataDiskStorageWriter
 from app.config.a_config import AnfisaConfig
-from .trans_prep import TransformPreparator
+from app.config.flt_schema import defineFilterSchema
+from .trans_prep import TransformPreparator_WS
 from .html_report import reportDS
 
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
-    def __init__(self, ds_h, ws_name, eval_h,
-            markup_batch = None, force_mode = False):
+    def __init__(self, ds_h, ws_name, eval_h, force_mode = False):
         ExecutionTask.__init__(self, "Secondary WS creation")
         self.mDS = ds_h
         self.mWSName = ws_name
         self.mEval = eval_h
-        self.mMarkupBatch = markup_batch
         self.mReportLines = AnfisaConfig.configOption("report.lines")
         self.mForceMode = force_mode
 
@@ -48,12 +47,17 @@ class SecondaryWsCreation(ExecutionTask):
             return False
         return name[0].isalpha and not name.lower().startswith("xl_")
 
+    def onProgressChange(self, progress, mode):
+        if mode == "fdata":
+            self.setStatus("Filtering progress %d%s"
+                % (min(progress, 100), '%'))
+        else:
+            self.setStatus("Extraction progress %d%s"
+                % (min(progress, 100), '%'))
+
     def execIt(self):
         if not self.correctWSName(self.mWSName):
             self.setStatus("Incorrect workspace name")
-            return None
-        if not self.mDS.getRecStorage().hasFullSupport():
-            self.setStatus("Sorry, not implemented yet")
             return None
         self.setStatus("Preparing to create workspace")
         logging.info("Prepare workspace creation: %s" % self.mWSName)
@@ -96,56 +100,28 @@ class SecondaryWsCreation(ExecutionTask):
             return None
 
         fdata_seq = []
-        cnt_delta = self.mDS.getTotal() // 20
-        cnt_cur_work = 0
-        for rec_no, f_data in self.mDS.getRecStorage().iterFData(rec_no_set):
-            while rec_no >= cnt_cur_work:
-                self.setStatus("Filtering records %d%s" % (
-                    (rec_no  * 100) // self.mDS.getTotal(), '%'))
-                cnt_cur_work += cnt_delta
+        for rec_no, f_data in self.mDS.getRecStorage().iterFData(rec_no_set, self):
             assert rec_no in rec_no_set
             fdata_seq.append(f_data)
         assert len(fdata_seq) == len(rec_no_seq)
 
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
-        trans_prep = TransformPreparator(flt_schema, False)
-        if self.mMarkupBatch is not None:
-            self.setStatus("Evaluating markup")
-            for rec_no, fdata in zip(rec_no_seq, fdata_seq):
-                self.mMarkupBatch.feed(rec_no, fdata)
-            self.mMarkupBatch.finishUp(view_schema, flt_schema)
-            for rec_no, fdata in zip(rec_no_seq, fdata_seq):
-                self.mMarkupBatch.transformFData(rec_no, fdata)
+        meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
+        filter_set = defineFilterSchema(meta_rec)
+        trans_prep = TransformPreparator_WS(flt_schema, False)
 
         os.mkdir(ws_dir)
         logging.info("Fill workspace %s datafiles..." % self.mWSName)
-        with FormatterIndexBZ2(ws_dir + "/vdata.ixbz2") as vdata_out:
-            for out_rec_no, rec_no in enumerate(rec_no_seq):
-                if out_rec_no > 0 and (out_rec_no % self.mReportLines) == 0:
+
+        with DataDiskStorageWriter(ws_dir, filter_set, trans_prep) as ws_out:
+            for _, rec_data in self.mDS.getRecStorage().iterRecords(rec_no_seq):
+                ws_out.saveRecord(rec_data)
+                if ws_out.getTotal() % self.mReportLines == 0:
                     self.setStatus("Extracting records: %d/%d" %
-                        (out_rec_no, len(rec_no_seq)))
-                rec_data = self.mDS.getRecordData(rec_no)
-                if self.mMarkupBatch is not None:
-                    rec_data = deepcopy(rec_data)
-                    self.mMarkupBatch.transformRecData(rec_no, rec_data)
-                trans_prep.doRec(rec_data, fdata_seq[out_rec_no])
-                vdata_out.putLine(json.dumps(rec_data, ensure_ascii = False))
+                        (ws_out.getTotal(), len(rec_no_seq)))
 
-        self.setStatus("Building indices")
-        with gzip.open(ws_dir + "/fdata.json.gz", 'wt',
-                encoding = "utf-8") as fdata_out:
-            for fdata in fdata_seq:
-                print(json.dumps(fdata, ensure_ascii = False),
-                    file = fdata_out)
-
-        self.setStatus("Extracting workspace data")
-        with gzip.open(ws_dir + "/pdata.json.gz",
-                'wt', encoding = "utf-8") as outp:
-            for _, it_data in self.mDS.getRecStorage().iterPData(
-                    rec_no_set):
-                print(json.dumps(it_data, ensure_ascii = False), file = outp)
-
+        trans_prep.finishUp()
         self.setStatus("Finishing...")
         logging.info("Finalizing workspace %s" % self.mWSName)
 
@@ -156,7 +132,6 @@ class SecondaryWsCreation(ExecutionTask):
             self.mWSName, "ws")
         mongo_agent.updateCreationDate(date_loaded)
 
-        meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
         if "versions" in meta_rec:
             meta_rec["versions"][
                 "Anfisa load"] = self.mDS.getApp().getVersionCode()

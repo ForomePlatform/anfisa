@@ -26,16 +26,16 @@ from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
 from app.config.solutions import readySolutions
-from app.model.pre_fields import PresentationData
 from app.model.ds_disk import DataDiskStorageWriter
 from .html_report import reportDS
 from .doc_works import prepareDocDir
 from .v_check import ViewDataChecker
-from .trans_prep import TransformPreparator
+from .trans_prep import TransformPreparator_WS, TransformPreparator_XL
 #=====================================
 def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         ds_inv = None, report_lines = False, favor_storage = None):
     readySolutions()
+    assert (ds_kind == "xl") == (druid_adm is not None)
 
     time_start = datetime.now()
     logging.info("Dataset %s creation started at %s\tVersion: %s"
@@ -69,33 +69,27 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
     view_checker = ViewDataChecker(view_aspects)
     filter_set = defineFilterSchema(metadata_record)
 
-    if ds_kind == "ws":
-        trans_prep = TransformPreparator(
-            filter_set.getTranscriptDescrSeq(), True)
-    else:
-        trans_prep = None
-
     if input_reader:
         if report_lines:
             print("Processing...", file = sys.stderr)
 
-        with DataDiskStorageWriter(ds_dir, report_lines) as ds_out:
-            for rec_no, record in enumerate(input_reader):
-                flt_data = filter_set.process(rec_no, record)
-                view_checker.regValue(rec_no, record)
-                pre_data = PresentationData.make(record)
-                if druid_adm is not None:
-                    flt_data.update(
-                        druid_adm.internalFltData(rec_no, pre_data))
-                if trans_prep is not None:
-                    trans_prep.doRec(record, flt_data)
-                ds_out.putRecord(record, flt_data, pre_data)
-                if report_lines and rec_no % report_lines == 0:
-                    sys.stderr.write("\r%d lines..." % rec_no)
+        if ds_kind == "ws":
+            trans_prep = TransformPreparator_WS(
+                filter_set.getTranscriptDescrSeq(), True)
+        else:
+            trans_prep = TransformPreparator_XL(druid_adm)
+
+        with DataDiskStorageWriter(ds_dir, filter_set, trans_prep,
+                view_checker, report_lines) as ds_out:
+            for record in input_reader:
+                ds_out.saveRecord(record)
+                if report_lines and ds_out.getTotal() % report_lines == 0:
+                    sys.stderr.write("\r%d lines..." % ds_out.getTotal())
             total = ds_out.getTotal()
+        input_reader.close()
         if report_lines:
             print("\nTotal lines: %d" % total, file = sys.stderr)
-        input_reader.close()
+        trans_prep.finishUp()
     else:
         record = favor_storage.getRecordData(0)
         view_checker.regValue(0, record)
@@ -106,11 +100,6 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         no_mode = input_reader is None)
     is_ok &= filter_set.reportProblems(rep_out)
 
-    if trans_prep is not None:
-        total_item_count = trans_prep.finishUp()
-    else:
-        total_item_count = None
-
     flt_schema_data = filter_set.dump()
     if ds_kind == "xl" and input_reader:
         is_ok &= druid_adm.uploadDataset(ds_name, flt_schema_data,
@@ -119,7 +108,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
-        ds_doc_dir = ds_dir + "/dsdoc"
+        ds_doc_dir = ds_dir + "/doc"
         ds_info = {
             "date_loaded": date_loaded,
             "doc": prepareDocDir(ds_doc_dir, ds_inv),
@@ -133,9 +122,6 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             "zygosity_var": filter_set.getZygosityVarName(),
             "total": total,
             "view_schema": view_aspects.dump()}
-
-        if total_item_count is not None:
-            ds_info["total_items"] = total_item_count
 
         with open(ds_dir + "/dsinfo.json", "w", encoding = "utf-8") as outp:
             print(json.dumps(ds_info, sort_keys = True, indent = 4),

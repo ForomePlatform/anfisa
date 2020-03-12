@@ -36,6 +36,7 @@ class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.addModes({"WS"})
+        assert self.getRecStorage().getKind() == "disk"
         self.mTabRecRand = array('q')
         self.mTabRecKey  = []
         self.mTabRecColor  = []

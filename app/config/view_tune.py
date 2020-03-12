@@ -347,9 +347,15 @@ def reprGenTranscripts(val, v_context):
             mod = ' class="hit"'
         else:
             mod = ''
+        v_id = it.get("id")
+        if not v_id:
+            v_id = "?"
+        v_gene = it.get("gene")
+        if not v_gene:
+            v_gene = "?"
         ret_handle.append(
             "<li%s><b>%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>"
-            % (mod, escape(it.get("id", "?")), escape(it.get("gene", "?")),
+            % (mod, escape(v_id), escape(v_gene),
             escape(json.dumps(it.get("transcript_annotations", "?")))))
     ret_handle.append("</ul>")
     return ('\n'.join(ret_handle), "norm")
