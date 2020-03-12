@@ -140,7 +140,7 @@ class DruidAdmin(DruidAgent):
         return True
 
     def dropDataset(self, dataset_name):
-        if dataset_name.startswith("xl_FOROME"):
+        if dataset_name.startswith("xl_FAVOR"):
             sys.stdout.write("\nAre yout sure to drop dataset",
                 dataset_name, "? (.../Yes)")
             line = sys.stdin.readline()

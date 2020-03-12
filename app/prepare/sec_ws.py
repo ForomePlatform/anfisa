@@ -89,7 +89,6 @@ class SecondaryWsCreation(ExecutionTask):
         receipt["eval-update-info"] = self.mEval.getUpdateInfo()
 
         rec_no_seq = sorted(rec_no_seq)
-        rec_no_set = set(rec_no_seq)
         ws_dir = self.mDS.getDataVault().getDir() + "/" + self.mWSName
         if os.path.exists(ws_dir) and self.mForceMode:
             if self.mDS.getDataVault().getDS(self.mWSName):
@@ -98,12 +97,6 @@ class SecondaryWsCreation(ExecutionTask):
         if os.path.exists(ws_dir):
             self.setStatus("Dataset already exists")
             return None
-
-        fdata_seq = []
-        for rec_no, f_data in self.mDS.getRecStorage().iterFData(rec_no_set, self):
-            assert rec_no in rec_no_set
-            fdata_seq.append(f_data)
-        assert len(fdata_seq) == len(rec_no_seq)
 
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
@@ -114,7 +107,8 @@ class SecondaryWsCreation(ExecutionTask):
         os.mkdir(ws_dir)
         logging.info("Fill workspace %s datafiles..." % self.mWSName)
 
-        with DataDiskStorageWriter(ws_dir, filter_set, trans_prep) as ws_out:
+        with DataDiskStorageWriter(False,
+                ws_dir, filter_set, trans_prep) as ws_out:
             for _, rec_data in self.mDS.getRecStorage().iterRecords(rec_no_seq):
                 ws_out.saveRecord(rec_data)
                 if ws_out.getTotal() % self.mReportLines == 0:

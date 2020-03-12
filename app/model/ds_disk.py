@@ -21,7 +21,7 @@ import sys, gzip, json
 from io import TextIOWrapper
 from subprocess import Popen, PIPE
 
-from utils.ixbz2 import IndexBZ2
+from utils.ixbz2 import IndexBZ2, FormatterIndexBZ2
 from app.model.pre_fields import PresentationData
 #===============================================
 class DataDiskStorage:
@@ -89,7 +89,7 @@ class DataDiskStorage:
 
 #===============================================
 class DataDiskStorageWriter:
-    def __init__(self, dataset_path, filter_set, trans_prep,
+    def __init__(self, popen_mode, dataset_path, filter_set, trans_prep,
             view_checker = None, report_mode = False):
         self.mPath = dataset_path
         self.mFilterSet = filter_set
@@ -97,14 +97,20 @@ class DataDiskStorageWriter:
         self.mViewChecker = view_checker
         self.mReportMode = report_mode
         self.mTotal = 0
-        self.mVDataProc = Popen(sys.executable + " -m utils.ixbz2 --calm -o "
-            + self.mPath + "/vdata.ixbz2 /dev/stdin", shell = True,
-            stdin = PIPE, stderr = PIPE,
-            bufsize = 1, universal_newlines = False,
-            close_fds = True)
 
-        self.mVDataOut = TextIOWrapper(self.mVDataProc.stdin,
-            encoding = "utf-8", line_buffering = True)
+        if popen_mode:
+            self.mVDataProc = Popen(
+                sys.executable + " -m utils.ixbz2 --calm -o "
+                + self.mPath + "/vdata.ixbz2 /dev/stdin", shell = True,
+                stdin = PIPE, stderr = PIPE,
+                bufsize = 1, universal_newlines = False,
+                close_fds = True)
+
+            self.mVDataOut = TextIOWrapper(self.mVDataProc.stdin,
+                encoding = "utf-8", line_buffering = True)
+        else:
+            self.mVDataProc = None
+            self.mVDataOut = FormatterIndexBZ2(self.mPath + "/vdata.ixbz2")
 
         self.mFDataOut = gzip.open(self.mPath + "/fdata.json.gz",
                 'wt', encoding = "utf-8")
@@ -118,11 +124,14 @@ class DataDiskStorageWriter:
         return self
 
     def close(self):
-        _, vreport_data = self.mVDataProc.communicate()
-        if self.mReportMode:
-            for line in str(vreport_data, encoding="utf-8").splitlines():
-                print(line, file = sys.stderr)
-        self.mVDataProc.wait()
+        if self.mVDataProc is not None:
+            _, vreport_data = self.mVDataProc.communicate()
+            if self.mReportMode:
+                for line in str(vreport_data, encoding="utf-8").splitlines():
+                    print(line, file = sys.stderr)
+            self.mVDataProc.wait()
+        else:
+            self.mVDataOut.close()
         self.mFDataOut.close()
         self.mPDataOut.close()
 
@@ -136,7 +145,11 @@ class DataDiskStorageWriter:
             self.mViewChecker.regValue(rec_no, record)
         pre_data = PresentationData.make(record)
         self.mTransPrep.doRec(rec_no, record, flt_data, pre_data)
-        print(json.dumps(record, ensure_ascii = False), file = self.mVDataOut)
+        if self.mVDataProc is not None:
+            print(json.dumps(record, ensure_ascii = False),
+                file = self.mVDataOut)
+        else:
+            self.mVDataOut.putLine(json.dumps(record, ensure_ascii = False))
         print(json.dumps(flt_data, ensure_ascii = False), file = self.mFDataOut)
         print(json.dumps(pre_data, ensure_ascii = False), file = self.mPDataOut)
         self.mTotal += 1

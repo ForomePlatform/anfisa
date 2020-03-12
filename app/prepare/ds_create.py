@@ -79,7 +79,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         else:
             trans_prep = TransformPreparator_XL(druid_adm)
 
-        with DataDiskStorageWriter(ds_dir, filter_set, trans_prep,
+        with DataDiskStorageWriter(True, ds_dir, filter_set, trans_prep,
                 view_checker, report_lines) as ds_out:
             for record in input_reader:
                 ds_out.saveRecord(record)
