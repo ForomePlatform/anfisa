@@ -44,7 +44,13 @@ class SphinxDocumentationSet:
             self.mPathSource, self.mPathBuild],
             stdout = PIPE, stderr = PIPE)
         s_outputs = proc.communicate()
-        logging.info("Spinx doc set %s activated:\n %s\n%s"
-            % (self.mPathSource,
-                str(s_outputs[0], "utf-8") + "\n\t<stdout>",
-                str(s_outputs[1], "utf-8") + "\n\t<stderr>"))
+        report = ["Spinx doc set %s activated:" % self.mPathSource]
+        if s_outputs[0]:
+            report.append("<stdout>")
+            report.append(str(s_outputs[0], "utf-8"))
+        if s_outputs[1]:
+            report.append("<stderr>")
+            report.append(str(s_outputs[1], "utf-8"))
+        if len(report) == 1:
+            report.append("<done>")
+        logging.info("\n".join(report))

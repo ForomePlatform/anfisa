@@ -43,30 +43,19 @@ class RecListTask(ExecutionTask):
             self.mResSamples = []
             self.mResFull = []
 
+    def onProgressChange(self, progress, mode):
+        self.setStatus("Preparation progress: %d%s" %
+            (min(progress, 100), '%'))
+
     def collectRecords_XL(self):
         rec_no_seq = self.mDS.getEvalSpace().evalSampleList(
             self.mCondition, self.sViewCountFull + 5)
         self._detectModes(len(rec_no_seq))
         rec_no_seq = rec_no_seq[:self.sViewCountFull]
-        total = self.mDS.getTotal()
-        step_cnt = total // 100
-        cur_progress = 0
-        next_cnt = step_cnt
 
-        rec_dict = dict()
-        if self.mDS.getRecStorage().hasFullSupport():
-            self.setStatus("Preparation progress: 0%")
-            for rec_no, it_data in self.mDS.getRecStorage().iterPData(
-                    set(rec_no_seq)):
-                while rec_no > next_cnt:
-                    next_cnt += step_cnt
-                    cur_progress += 1
-                    self.setStatus("Preparation progress: %d%s" %
-                        (min(cur_progress, 100), '%'))
-                rec_dict[rec_no] = self.mDS.shortPDataReport(rec_no, it_data)
-        else:
-            for rec_no in rec_no_seq:
-                rec_dict[rec_no] = {"no": rec_no, "lb": "-", "cl": "grey"}
+        self.setStatus("Preparation progress: 0%")
+        rec_dict = self.mDS.getRecStorage().collectPReports(
+            set(rec_no_seq), self)
         self.setStatus("Finishing")
         if self.mResSamples is not None:
             self.mResSamples = [rec_dict[rec_no]

@@ -187,4 +187,20 @@ class DruidAdmin(DruidAgent):
                 for rec in rq[0]["result"]]
             return sorted(variants, key = lambda info: (info[1], info[0]))
 
+    def mineTotal(self, dataset_name,):
+        query = {
+            "queryType": "timeseries",
+            "dataSource": self.normDataSetName(self.getName()),
+            "granularity": self.GRANULARITY,
+            "descending": "true",
+            "aggregations": [
+                {"type": "count", "name": "count",
+                    "fieldName": "_ord"}],
+            "filter": None,
+            "intervals": [self.INTERVAL]}
+        ret = self.call("query", query)
+        assert len(ret) == 1
+        return ret[0]["result"]["count"]
+
+
 #===============================================

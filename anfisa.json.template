@@ -19,13 +19,13 @@
     },
     "sphinx-doc-sets": [
         ["Installation and Development Anfisa Documentation",
-            "${HOME}/doc/dev/", "${WORK}/doc/dev/", "/doc/dev/"]
+            "${HOME}/doc/dev/", "${WORK}/doc/dev/", "doc/dev/"]
     ],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
         ["/ui", "${HOME}/int_ui/files"],
         ["--/ui", "${WORK}/ui"],
-        ["/doc/dev/", "${WORK}/doc/dev/"],
+        ["/doc/", "${WORK}/doc/"],
         ["/excel", "${WORK}/export/work"]], 
     "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "doc-report-css": "${HOME}/int_ui/files/report.css",

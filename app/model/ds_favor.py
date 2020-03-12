@@ -92,3 +92,8 @@ class FavorStorageAgent(FavorStorage):
                 microseconds = dt)).isoformat(),
             "_ord": rec_no,
             "_rand": self.getRandNo(rec_no)}
+
+    def collectPReports(self, rec_no_seq, notifier = None):
+        seq_rec = self.call("seq=[%s]" % ','.join(map(str, rec_no_seq)),
+            "POST", "titles", json_rq_mode = False)
+        return {it_data["no"]: it_data for it_data in seq_rec}

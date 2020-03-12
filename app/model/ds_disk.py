@@ -36,21 +36,51 @@ class DataDiskStorage:
         assert 0 <= rec_no < self.mDS.getTotal()
         return json.loads(self.mVData[rec_no])
 
-    def iterFData(self, rec_no_set = None):
+    def iterFData(self, rec_no_set = None, notifier = None):
+        cur_progess = 0
+        if notifier:
+            total = self.mDS.getTotal()
+            step_cnt = total // 100
+            next_cnt = step_cnt
+        else:
+            next_cnt = 0
+
         with gzip.open(self.mPath + "/fdata.json.gz",
                 "rt", encoding = "utf-8") as inp:
             for rec_no, line in enumerate(inp):
+                while next_cnt > 0 and rec_no > next_cnt:
+                    next_cnt += step_cnt
+                    cur_progess += 1
+                    notifier.onProgressChange(cur_progess, "fdata")
                 if rec_no_set is not None and rec_no not in rec_no_set:
                     continue
                 yield rec_no, json.loads(line.strip())
 
-    def iterPData(self, rec_no_set = None):
+    def iterPData(self, rec_no_set = None, notifier = None):
+        cur_progess = 0
+        if notifier:
+            total = self.mDS.getTotal()
+            step_cnt = total // 100
+            next_cnt = step_cnt
+        else:
+            next_cnt = 0
+
         with gzip.open(self.mPath + "/pdata.json.gz",
                 "rt", encoding = "utf-8") as inp:
             for rec_no, line in enumerate(inp):
+                while next_cnt > 0 and rec_no > next_cnt:
+                    next_cnt += step_cnt
+                    cur_progess += 1
+                    notifier.onProgressChange(cur_progess, "pdata")
                 if rec_no_set is not None and rec_no not in rec_no_set:
                     continue
                 yield rec_no, json.loads(line.strip())
+
+    def collectPReports(self, rec_no_seq, notifier = None):
+        ret = dict()
+        for rec_no, it_data in self.iterPData(set(rec_no_seq), notifier):
+            ret[rec_no] = self.mDS.shortPDataReport(rec_no, it_data)
+        return ret
 
 #===============================================
 class DataDiskStorageWriter:

@@ -223,14 +223,16 @@ def portionFavor(app_config, druid_adm, portion_no, report_lines,
 #===============================================
 def ftuneFavor(app_config, druid_adm, report_lines):
     vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
+    ds_name = "xl_FAVOR"
+    ds_dir = os.path.abspath(vault_dir + "/" + ds_name)
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
+    ds_info["total"] = druid_adm.mineTotal(ds_name)
     for funit_entry in ds_info["flt_schema"]:
         if funit_entry["kind"] == "enum":
             variants = druid_adm.mineEnumVariants(
-                "xl_FAVOR", funit_entry["name"])
+                ds_name, funit_entry["name"])
             print("Unit update: %s  %d -> %d" % (funit_entry["name"],
                 len(funit_entry["variants"]), len(variants)))
             funit_entry["variants"] = variants

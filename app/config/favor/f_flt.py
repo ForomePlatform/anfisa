@@ -49,7 +49,8 @@ def defFavorFlt(metadata_record):
 
     with filters.viewGroup("Genes"):
         genes_unit = filters.multiStatusUnit("Symbol",
-            "/_filters/genes[]",
+            #  "/_filters/genes[]",
+            "/_view/general/genes[]",
             compact_mode = True)
         filters.panelsUnit("Panels", genes_unit,
             view_path = "/_view/general/gene_panels")
