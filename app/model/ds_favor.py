@@ -36,6 +36,11 @@ class FavorStorage(RestAgent):
     def getRecordData(self, rec_no):
         return self.call(None, "GET", "variant?ord=%d" % rec_no)
 
+    def collectPReports(self, rec_no_seq, notifier = None):
+        seq_rec = self.call("seq=[%s]" % ','.join(map(str, rec_no_seq)),
+            "POST", "titles", json_rq_mode = False)
+        return {it_data["no"]: it_data for it_data in seq_rec}
+
     @classmethod
     def getRandNo(cls, rec_no):
         return crc32(bytes("Favor-%d" % rec_no, 'utf-8'))
@@ -92,8 +97,3 @@ class FavorStorageAgent(FavorStorage):
                 microseconds = dt)).isoformat(),
             "_ord": rec_no,
             "_rand": self.getRandNo(rec_no)}
-
-    def collectPReports(self, rec_no_seq, notifier = None):
-        seq_rec = self.call("seq=[%s]" % ','.join(map(str, rec_no_seq)),
-            "POST", "titles", json_rq_mode = False)
-        return {it_data["no"]: it_data for it_data in seq_rec}

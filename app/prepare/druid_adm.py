@@ -183,13 +183,13 @@ class DruidAdmin(DruidAgent):
             if len(rq[0]["result"]) >= var_size:
                 var_size *= 10
                 continue
-            return sorted([rec[unit_name], rec["count"]]
-                for rec in rq[0]["result"])
+            return sorted([[str(rec[unit_name]), rec["count"]]
+                for rec in rq[0]["result"]])
 
-    def mineTotal(self, dataset_name,):
+    def mineTotal(self, dataset_name):
         query = {
             "queryType": "timeseries",
-            "dataSource": self.normDataSetName(self.getName()),
+            "dataSource": self.normDataSetName(dataset_name),
             "granularity": self.GRANULARITY,
             "descending": "true",
             "aggregations": [
@@ -199,7 +199,7 @@ class DruidAdmin(DruidAgent):
             "intervals": [self.INTERVAL]}
         ret = self.call("query", query)
         assert len(ret) == 1
-        return ret[0]["result"]["count"]
+        return int(ret[0]["result"]["count"])
 
 
 #===============================================

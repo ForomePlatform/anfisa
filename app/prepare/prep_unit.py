@@ -359,21 +359,21 @@ class PanelConvertor(ValueConvertor):
 
     def process(self, rec_no, rec_data, result):
         pitems = result.get(self.mBaseUnitName)
+        res_val = []
         if pitems:
             pitems = set(pitems)
-            res_val = []
             for pname, pset in self.mPanelSets.items():
                 if len(pitems & pset) > 0:
                     res_val.append(pname)
                     self.mVarCount[pname] += 1
             if res_val:
                 res_val.sort()
-                result[self.getName()] = res_val
                 if self.mViewPath:
                     data = rec_data
                     for nm in self.mViewPath[:-1]:
                         data = data[nm]
                     data[self.mViewPath[-1]] = res_val
+        result[self.getName()] = res_val
 
     def dump(self):
         ret = ValueConvertor.dump(self)
