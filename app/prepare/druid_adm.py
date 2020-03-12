@@ -183,9 +183,8 @@ class DruidAdmin(DruidAgent):
             if len(rq[0]["result"]) >= var_size:
                 var_size *= 10
                 continue
-            variants = [[rec[unit_name], rec["count"]]
-                for rec in rq[0]["result"]]
-            return sorted(variants, key = lambda info: (info[1], info[0]))
+            return sorted([rec[unit_name], rec["count"]]
+                for rec in rq[0]["result"])
 
     def mineTotal(self, dataset_name,):
         query = {
