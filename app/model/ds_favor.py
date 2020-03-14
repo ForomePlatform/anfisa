@@ -37,6 +37,7 @@ class FavorStorage(RestAgent):
         return self.call(None, "GET", "variant?ord=%d" % rec_no)
 
     FETCH_SIZE = 100
+
     def iterRecords(self, rec_no_set):
         rec_no_seq = rec_no_set[:]
         while len(rec_no_seq) > 0:

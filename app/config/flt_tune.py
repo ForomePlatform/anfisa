@@ -22,6 +22,7 @@
 
 from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
 from app.model.comp_hets import CompHetsUnit, CompoundRequestUnit
+from app.model.region_func import RegionFuncUnit
 from .favor import FavorSchema
 
 #===============================================
@@ -29,6 +30,19 @@ def tuneUnits(ds_h):
     if ds_h.getDataSchema() == "FAVOR":
         FavorSchema.tuneUnits(ds_h)
         return
+
+    RegionFuncUnit.makeIt(ds_h,
+        {
+            "name":     "GeneRegion",
+            "title":    "Gene Region",
+            "vgroup":   "Coordinates"},
+        {
+            "chrom":    "Chromosome",
+            "start":    "Start_Pos",
+            "end":      "End_Pos",
+            "symbol":   "Symbol"
+        }, before = "Chromosome")
+
     zyg_support = ds_h.getZygositySupport()
     zyg_support.setupX(x_unit = "Chromosome", x_values = ["chrX"])
 

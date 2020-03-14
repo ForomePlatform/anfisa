@@ -19,7 +19,7 @@
 #
 
 from app.view.attr import AttrH
-
+from app.model.region_func import RegionFuncUnit
 
 # ===============================================
 def tuneFavorAspects(ds_h, aspects):
@@ -33,7 +33,18 @@ def tuneFavorAspects(ds_h, aspects):
 # ===============================================
 def tuneFavorUnits(ds_h):
     assert ds_h.getDataSchema() == "FAVOR"
-    pass
+
+    RegionFuncUnit.makeIt(ds_h,
+        {
+            "name":     "GeneRegion",
+            "title":    "Gene Region",
+            "vgroup":   "Coordinates"},
+        {
+            "chrom":    "Chromosome",
+            "start":    "Position",
+            "end":      "Position",
+            "symbol":   "Symbol"
+        }, before = "Chromosome")
 
 # ===============================================
 def completeFavorDS(ds_h):

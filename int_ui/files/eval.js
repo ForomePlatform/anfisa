@@ -163,9 +163,9 @@ var sOpNumH = {
                 }
             } else {
                 err_msg = "Out of choice"
+                if (this.mUpdateCondStr == null)
+                    condition_data = null;
             }
-            if (err_msg && this.mUpdateCondStr == null)
-                condition_data = null;
             if (this.mInfo.cur_bounds[0] != null && 
                     this.mInfo.cur_bounds[2] != null && 
                     this.mInfo.cur_bounds[0] > this.mInfo.cur_bounds[2]) {

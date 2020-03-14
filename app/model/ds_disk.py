@@ -150,6 +150,8 @@ class DataDiskStorageWriter:
                 file = self.mVDataOut)
         else:
             self.mVDataOut.putLine(json.dumps(record, ensure_ascii = False))
-        print(json.dumps(flt_data, ensure_ascii = False), file = self.mFDataOut)
-        print(json.dumps(pre_data, ensure_ascii = False), file = self.mPDataOut)
+        print(json.dumps(flt_data, ensure_ascii = False),
+            file = self.mFDataOut)
+        print(json.dumps(pre_data, ensure_ascii = False),
+            file = self.mPDataOut)
         self.mTotal += 1

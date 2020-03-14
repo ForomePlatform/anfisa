@@ -38,7 +38,8 @@ var sOpFuncH = {
             "inheritance-z": sFunc_InheritanceZ,
             "custom-inheritance-z": sFunc_CustomInheritanceZ,
             "comp-hets": sFunc_CompoundHet,
-            "comp-request": sFunc_CompoundRequest
+            "comp-request": sFunc_CompoundRequest,
+            "region": sFunc_Region
         };
     },
     
@@ -275,7 +276,7 @@ sZygSuportH = {
             q_val = (tab_fam[sample_id])? tab_fam[sample_id]:0;
             check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
             out_rep.push('<div class="wrapped">' + sample_id + 
-                '&nbsp<select id="' + check_id + 
+                '&nbsp;<select id="' + check_id + 
                 '" onchange="' + ctrl_name + '.checkControls();">');
             out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
                 '>--</option>');
@@ -522,7 +523,7 @@ var sFunc_CompoundHet = {
      
     renderIt: function() {
         var list_stat_rep = ['<div class="func-parameters">',
-            '<div><span class="comment">Approx:</span>&nbsp<select ' + 
+            '<div><span class="comment">Approx:</span>&nbsp;<select ' + 
             'id="compound-het-approx" onchange="sFunc_CompoundHet.checkControls();"' + 
             ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
         for (idx = 0; idx < this.mApproxModes.length; idx++) {
@@ -533,7 +534,7 @@ var sFunc_CompoundHet = {
         }
         list_stat_rep.push('</select></div>');
         list_stat_rep.push(
-            '<div><span class="comment">State:</span>&nbsp<select ' + 
+            '<div><span class="comment">State:</span>&nbsp;<select ' + 
             'id="compound-het-state" onchange="sFunc_CompoundHet.checkControls();"' + 
             ((this.mLabels.length == 0)? " disabled":"") + '>');
         list_stat_rep.push(
@@ -670,7 +671,7 @@ var sFunc_CompoundRequest = {
         this.mPrevCurLine = null;
         var list_stat_rep = [
             '<div class="func-parameters">' +
-            '<div><span class="comment">Approx:</span>&nbsp<select ' + 
+            '<div><span class="comment">Approx:</span>&nbsp;<select ' + 
             'id="compound-het-approx" onchange="sFunc_CompoundRequest.checkControls();"' + 
             ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
         for (idx = 0; idx < this.mApproxModes.length; idx++) {
@@ -681,7 +682,7 @@ var sFunc_CompoundRequest = {
         }
         list_stat_rep.push('</select></div>');
         list_stat_rep.push(
-            '<div><span class="comment">State:</span>&nbsp<select ' + 
+            '<div><span class="comment">State:</span>&nbsp;<select ' + 
             'id="compound-het-state" onchange="sFunc_CompoundRequest.checkControls();"' + 
             ((this.mLabels.length == 0)? " disabled":"") + '>');
         list_stat_rep.push(
@@ -786,3 +787,78 @@ var sFunc_CompoundRequest = {
         }
     }
 }
+
+/**************************************/
+var sFunc_Region = {
+    mCurLocus: undefined,
+    
+    setup: function(func_unit_stat) {
+        this.mCurLocus = func_unit_stat["locus"];
+        if (!this.mCurLocus)
+            this.mCurLocus = null;
+        sOpFuncH.mOpVariants = ["True"];
+        sOpFuncH.renderParams();
+        sOpFuncH.reloadStat();
+    },
+    
+    updateCondition: function(cond_data) {
+        if (cond_data != null) {
+            v_locus = cond_data[4]["locus"];
+            if (v_locus != this.mCurLocus) {
+                this.mCurLocus = v_locus;
+            }
+            sOpFuncH.renderParams();
+            sOpFuncH.reloadStat();
+        } else {
+            sOpEnumH.renderParams();
+        }
+    },
+    
+    acceptStat: function(info, cond_data) {
+        v_locus = info["locus"];
+        return (v_locus == this.mCurLocus);
+    },
+    
+    getCurParams: function() {
+        var ret = {};
+        if (this.mCurLocus)
+            ret["locus"] = this.mCurLocus;
+        return ret;
+    },
+    
+    checkBad: function() {
+        if (!this.mCurLocus) {
+            return [["True", 0]];
+        }
+        return null;
+    },
+    
+    checkError: function(pre_cond_data) {
+        if (pre_cond_data == null)
+            return null;
+        v_locus = pre_cond_data[2]["locus"];
+        if (!v_locus)
+            return "Locus is empty";
+        return null;
+    },
+     
+    renderIt: function() {
+        var list_stat_rep = ['<div class="func-parameters">',
+            '<div><span class="comment">Locus:</span>&nbsp;<input ' + 
+            'id="region-locus" onchange="sFunc_Region.checkControls();" ' +
+            ((this.mCurLocus)? 'value="' + escapeText(this.mCurLocus) + '"' : '') + 
+            '>'];
+        list_stat_rep.push('</div></div>');
+        return list_stat_rep.join('\n');
+    },   
+
+    checkControls: function(in_check) {
+        v_locus = document.getElementById('region-locus').value.trim();
+        if (v_locus != this.mCurLocus) {
+            this.mCurLocus = v_locus;
+            sOpFuncH.keepSelection();
+            sOpFuncH.reloadStat();
+        }
+    }        
+}
+    

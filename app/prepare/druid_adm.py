@@ -182,8 +182,9 @@ class DruidAdmin(DruidAgent):
             if len(rq[0]["result"]) >= var_size:
                 var_size *= 10
                 continue
-            return sorted([[str(rec[unit_name]), rec["count"]]
-                for rec in rq[0]["result"]])
+            ret = [[str(rec[unit_name]), rec["count"]]
+                for rec in rq[0]["result"]]
+            return sorted(ret)
 
     def mineTotal(self, dataset_name):
         query = {

@@ -109,7 +109,8 @@ class SecondaryWsCreation(ExecutionTask):
 
         with DataDiskStorageWriter(False,
                 ws_dir, filter_set, trans_prep) as ws_out:
-            for _, rec_data in self.mDS.getRecStorage().iterRecords(rec_no_seq):
+            for _, rec_data in self.mDS.getRecStorage().iterRecords(
+                    rec_no_seq):
                 ws_out.saveRecord(rec_data)
                 if ws_out.getTotal() % self.mReportLines == 0:
                     self.setStatus("Extracting records: %d/%d" %

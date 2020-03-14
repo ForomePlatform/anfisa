@@ -19,6 +19,7 @@
 #
 
 import logging
+from utils.variants import VariantSet
 from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
 #===============================================
 class XL_Unit(VarUnit):
@@ -89,9 +90,13 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
             for info in descr["variants"]]
         self.mAccumCount = sum(info[1]
             for info in descr["variants"])
+        self.mVariantSet = VariantSet(self.mVariants)
 
     def isDummy(self):
         return len(self.mVariants) < 1 or self.mAccumCount == 0
+
+    def getVariantSet(self):
+        return self.mVariantSet
 
     def _makeStat(self, condition):
         druid_agent = self.getEvalSpace().getDruidAgent()

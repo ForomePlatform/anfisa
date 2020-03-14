@@ -324,7 +324,7 @@ class IGV_AttrH(AttrH):
                 p0, _, p1 = pos.partition('-')
                 start = int(p0.strip())
                 end = int(p1.strip()) if p1 else start
-            except:
+            except Exception:
                 logging.error("Error creating IGV link for " + str(pos))
                 return ("ERROR", "norm")
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
