@@ -119,7 +119,7 @@ class RegionFuncUnit(FunctionUnit):
                 max_val = end_val, max_eq = True))
 
         if len(loc_parts) > 2:
-            gene_values = [val.strip() for val in chrom_val[2].split(',')]
+            gene_values = [val.strip() for val in loc_parts[2].split(',')]
             if len(gene_values) < 1 or not all(gene_values):
                 return None, "Bad gene values"
             seq_cond.append(self.getEvalSpace().makeEnumCond(
