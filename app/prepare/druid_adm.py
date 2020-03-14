@@ -141,10 +141,9 @@ class DruidAdmin(DruidAgent):
 
     def dropDataset(self, dataset_name):
         if dataset_name.startswith("xl_FAVOR"):
-            sys.stdout.write("\nAre yout sure to drop dataset",
-                dataset_name, "? (.../Yes)")
-            line = sys.stdin.readline()
-            assert line.strip() == "Yes", "Drop not accepted"
+            validated = input("\nAre yout sure to drop dataset "
+                + dataset_name + "? (.../Yes)")
+            assert validated == "Yes", "Drop not accepted"
 
         druid_dataset_name = self.normDataSetName(dataset_name)
         if not self.mNoCoord:

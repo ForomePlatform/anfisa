@@ -87,7 +87,10 @@ class TagsManager(ZoneH):
         ret["upd-from"] = upd_from
         return ret
 
-    def getRestrictF(self, variants):
+    def getRestrictF(self, variants, restrict_f = None):
+        if restrict_f is not None:
+            return lambda rec_no: (
+                restrict_f(rec_no) and self.checkVariants(rec_no, variants))
         return lambda rec_no: self.checkVariants(rec_no, variants)
 
     def checkVariants(self, rec_no, variants):
@@ -104,7 +107,7 @@ class TagsManager(ZoneH):
         rep = {
             "tag-list": tag_list,
             "tag": tag_name,
-            "tags-version": self.getDS().getSolEnv().getIntVersion("tags")}
+            "tags-state": self.getDS().getSolEnv().getIntVersion("tags")}
         if tag_name:
             rep["records"] = sorted(self.mTagSets[tag_name])
         return rep

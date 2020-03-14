@@ -83,7 +83,7 @@ var sUnitsH = {
         }
         this.mDivList.className = "wait";
         this.mWaiting = true;
-        ajaxCall("stat", 
+        ajaxCall("ds_stat", 
             this.formRqArgs(conditions, filter_name, true, add_instr), 
             function(info){sUnitsH._setup(info);})
     },
@@ -93,7 +93,7 @@ var sUnitsH = {
         this.mWaiting = false;
         this.mFilteredCounts = info["filtered-counts"];
         this.mTotalCounts = info["total-counts"];
-        this.mRqId  = info["rq_id"];
+        this.mRqId  = info["rq-id"];
         var el_rep = document.getElementById("list-report");
         if (el_rep) {
             if (this.mFilteredCounts[0] == this.mTotalCounts[0])
@@ -168,7 +168,7 @@ var sUnitsH = {
     },
     
     _loadUnits: function(info) {
-        if (info["rq_id"] != this.mRqId) 
+        if (info["rq-id"] != this.mRqId) 
             return;
         this.mWaiting = false;
         var cur_el = (this.mCurUnit)? this._unitDivEl(this.mCurUnit): null;

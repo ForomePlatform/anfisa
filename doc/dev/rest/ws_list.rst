@@ -19,8 +19,14 @@ Synopsis
             :doc:`condition descriptors<s_condition>`
             *in JSON string representation*
 
-        **zone**: *optional* :doc:`zone descriptor<s_zone>`
-            *in JSON string representation*
+        **zone**: *optional* :
+        
+        | ``[`` list of zone settings
+        |       ``[``
+        |             **[0]**:  zone name, *string*
+        |             **[1]**:  ``[`` variants ``]``, *list of strings*
+        |        ``]``, ...
+        | ``]``  *in JSON string representation*
         
     **Return value**: 
     
@@ -47,10 +53,17 @@ The request affects only :term:`workspaces<workspace>` and return list of
 
 If arguments **filter**, **conditions**, **zone** are not set, 
 result of request is the complete list of records in dataset returns. 
-Otherwise result is restricted by :term:`filter` and/or condition on :term:`zone`.
+Otherwise result is restricted by :term:`filter` and/or condition on 
+:term:`zones<zone>`.
 
 To define :term:`filter` use either **filter** or **conditions**. See details 
 :ref:`here<fiter_conditions>`.
+
+Comment
+-------
+The request format supports applying of multiple zones, butthe current user i
+nterface allows to set only one zone at time. Extension of the user interface
+is expected in future development.
 
 See also
 --------

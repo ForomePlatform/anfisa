@@ -219,7 +219,7 @@ class DataSet(SolutionBroker):
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
             ret["doc-support"] = "doc" in self.mDataInfo
         else:
-            ret["src-versions"] = self.getSourceVersions()
+            ret["meta"] = self.mDataInfo["meta"]
         if "doc" in self.mDataInfo:
             ret["doc"] = self.mDataInfo["doc"]
             base_h = self.mDataVault.getBaseDS(self)
@@ -438,7 +438,7 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__stat(self, rq_args):
+    def rq__ds_stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
         if "instr" in rq_args:
             filter_proc_h = self._getArgCondFilter(
@@ -456,7 +456,7 @@ class DataSet(SolutionBroker):
                 filter_h, time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
-            "rq_id": self._makeRqId()}
+            "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
 
         if self._REST_NeedsBackup(rq_args, 'U'):
@@ -490,7 +490,7 @@ class DataSet(SolutionBroker):
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
                 dtree_h, time_end, point_no),
-            "rq_id": self._makeRqId()}
+            "rq-id": self._makeRqId()}
         if self._REST_NeedsBackup(rq_args, 'U'):
             stat_seq, _, _ = self._REST_BackupStatUnits(
                 ret_handle["stat-list"])
@@ -509,7 +509,7 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
         ret_handle = {
-            "rq_id": rq_args.get("rq_id"),
+            "rq-id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition,
                 eval_h, time_end, point_no)}
@@ -562,7 +562,7 @@ class DataSet(SolutionBroker):
             "point-counts": self.prepareDTreePointCounts(
                 dtree_h, time_end = time_end),
             "dtree-list": self.getSolEntryList("dtree"),
-            "rq_id": self._makeRqId()}
+            "rq-id": self._makeRqId()}
 
         ret_handle.update(dtree_h.reportInfo())
 
@@ -580,7 +580,7 @@ class DataSet(SolutionBroker):
         return {
             "point-counts": self.prepareDTreePointCounts(dtree_h,
                 json.loads(rq_args["points"]), time_end),
-            "rq_id": rq_args.get("rq_id")}
+            "rq-id": rq_args.get("rq_id")}
 
     #===============================================
     @RestAPI.ds_request
@@ -599,11 +599,6 @@ class DataSet(SolutionBroker):
         other_dtree_h = self.pickSolEntry("dtree", rq_args["other"])
         return {"cmp": cmpTrees(
             dtree_h.getCode(), other_dtree_h.getCode())}
-
-    #===============================================
-    @RestAPI.ds_request
-    def rq__dsmeta(self, rq_args):
-        return self.getDataInfo()["meta"]
 
     #===============================================
     @RestAPI.ds_request

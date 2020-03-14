@@ -29,7 +29,7 @@ Synopsis
 |                       **[1]**: column count, *int*
 |                    ``]``, ...
 |                ``]``
-|           "**properties**": properties information
+|           "**attrs**": properties information
 |           ``[`` *list* data for attributes
 |                ``{`` *dictionary*                
 |                      "**name**": property name, *string*

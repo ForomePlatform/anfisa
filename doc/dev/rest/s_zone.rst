@@ -6,29 +6,24 @@ Format
 
 | ``{`` *dictionary*, 
 |        "**zone**": zone name, *string*
-|        "**title**": *optional* title, *string*
+|        "**title**": title, *string*
 |        "**variants**":  ``[`` *list of strings* ``]``
 | ``}``
 
 Description
 -----------
 
-The descriptor contains information about zone selection is used in API as follows:
-
-    * In request :doc:`ws_list` it is used as input argument
+The descriptor contains information about zones state. It is used in 
+request :doc:`zone_list` as return value, either in single or serial form; 
     
-      **title** is not necessary here, and **variants** means selection list 
-
-    * Request :doc:`zone_list` returns zone descriptor either in single or serial form; 
-    
-        - In serial form **variants** is dropped
-      
-        - In single form **variants** means the complete list of values (but not selection) 
+In serial form **variants** is dropped.
+Property **title** is used for rendering. Property **zone** is hidden for 
+the user, and is base technical identifier of zone.
 
 In current version the following zones are provided:
 
     ===========  =================   =======================
-     title        zone_id
+     **title**      **zone**
     ===========  =================   =======================
     Gene          ``Symbol``
     Gene_List     ``Panels``
@@ -37,10 +32,6 @@ In current version the following zones are provided:
     Cohort        ``Variant_in``     *in special cases*
     ===========  =================   =======================
     
-See also 
---------
-Description in :doc:`zone_list`
-    
 Used in requests
 ----------------
-:doc:`ws_list`   :doc:`zone_list`
+:doc:`zone_list`  :doc:`ws_list`   

@@ -30,7 +30,7 @@ var sZoneH = {
     mWorkData: null,
     mWorkTitle: null,
     mWorkCur: null,
-    mTagsIntVersion: null,
+    mTagsState: null,
     mCacheList: {},
     mCacheDict: {},
     mCacheSet: {},
@@ -61,7 +61,8 @@ var sZoneH = {
             this.mElCurZState.className = "";
             this.mElCurZCheck.disabled = false;
             this.mElCurZCheck.checked = (mode_on)? true:false;
-            this.mCurState = (mode_on)? this.mWorkData: null;
+            this.mCurState = (mode_on && this.mWorkData != null)? 
+                [this.mWorkData]: null;
         }
         if (prev_zone_data != this.mCurState)
             reloadList();
@@ -115,13 +116,13 @@ var sZoneH = {
         this.update();
     },
     
-    checkTagsIntVersion: function(tags_int_version) {
-        if (tags_int_version != this.mTagsIntVersion) {
+    checkTagsState: function(tags_state) {
+        if (tags_state != this.mTagsState) {
             if (this.mCacheList["_tags"]) {
                 delete this.mCacheList["_tags"];
                 this.loadZone("_tags");
             }
-            this.mTagsIntVersion = tags_int_version;
+            this.mTagsState = tags_state;
         }
     },
 

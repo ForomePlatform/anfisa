@@ -126,6 +126,15 @@ class Workspace(DataSet):
                 return zone_h
         return None
 
+    def restrictZoneF(self, zone_data):
+        if zone_data is None:
+            return None
+        zone_info_seq = json.loads(zone_data)
+        ret_f = None
+        for zone_name, zone_variants in zone_info_seq:
+            ret_f = self.getZone(zone_name).getRestrictF(zone_variants, ret_f)
+        return ret_f
+
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
 
@@ -154,10 +163,7 @@ class Workspace(DataSet):
         return enumerate(self.mTabRecKey)
 
     def fiterRecords(self, condition, zone_data = None):
-        zone_f = None
-        if zone_data is not None:
-            zone_name, variants = json.loads(zone_data)
-            zone_f = self.getZone(zone_name).getRestrictF(variants)
+        zone_f = self.restrictZoneF(zone_data)
         rec_no_seq = []
         for rec_no, _ in condition.iterSelection():
             if zone_f is not None and not zone_f(rec_no):
@@ -177,13 +183,9 @@ class Workspace(DataSet):
 
     #===============================================
     @RestAPI.ws_request
-    def rq__list(self, rq_args):
+    def rq__ws_list(self, rq_args):
         filter_h = self._getArgCondFilter(rq_args)
-        if "zone" in rq_args:
-            zone_name, variants = json.loads(rq_args["zone"])
-            zone_f = self.getZone(zone_name).getRestrictF(variants)
-        else:
-            zone_f = None
+        zone_f = self.restrictZoneF(rq_args.get("zone"))
         counts = [0, 0]
         records = []
         marked_set = self.mTagsMan.getMarkedSet()
@@ -205,7 +207,7 @@ class Workspace(DataSet):
 
     #===============================================
     @RestAPI.ws_request
-    def rq__tags(self, rq_args):
+    def rq__ws_tags(self, rq_args):
         rec_no = int(rq_args.get("rec"))
         if rq_args.get("tags") is not None:
             tags_data = json.loads(rq_args.get("tags"))
@@ -213,7 +215,7 @@ class Workspace(DataSet):
                 self.mTagsMan.updateRec(rec_no, tags_data)
         rep = self.mTagsMan.makeRecReport(rec_no)
         rep["filters"] = self.getRecFilters(rec_no)
-        rep["tags-version"] = self.getSolEnv().getIntVersion("tags")
+        rep["tags-state"] = self.getSolEnv().getIntVersion("tags")
         return rep
 
     #===============================================
@@ -222,7 +224,7 @@ class Workspace(DataSet):
         zone = rq_args.get("zone")
         if zone is not None:
             return self.getZone(zone).makeValuesReport()
-        return [[zone_h.getName(), zone_h.getTitle()]
+        return [zone_h.makeValuesReport(serial_mode = True)
             for zone_h in self.mZoneHandlers]
 
     #===============================================

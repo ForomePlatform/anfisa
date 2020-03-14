@@ -67,6 +67,8 @@ class FavorStorageAgent(FavorStorage):
         self.mMetaData = FavorStorage.getMetaData(self)
         self.mTotal = self.mMetaData["variants"]
         self.mPortionCount = self.mTotal // self.mPortionSize
+        if self.mTotal % self.mPortionSize > 0:
+            self.mPortionCount += 1
 
     def getMetaData(self):
         return self.mMetaData

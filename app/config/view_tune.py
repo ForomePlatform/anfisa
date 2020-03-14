@@ -19,7 +19,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
+import json, logging
 from xml.sax.saxutils import escape
 from bitarray import bitarray
 
@@ -46,12 +46,9 @@ def tuneAspects(ds_h, aspects):
     if "meta" not in ds_h.getDataInfo():
         return
     meta_info = ds_h.getDataInfo()["meta"]
-    reference = meta_info["versions"].get("reference", "")
-    if not reference:
-        reference = ""
     _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
         meta_info.get("case"), meta_info.get("samples"),
-        "hg38" if "38" in reference else "hg19"))
+        meta_info["versions"].get("reference")))
 
     view_gen[view_gen.find("transcripts")].setReprFunc(reprGenTranscripts)
 
@@ -290,11 +287,11 @@ class HGMD_PMID_AttrH(PMID_AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, app, view_gen, case, samples, base_ref = "hg19"):
+    def __init__(self, app, view_gen, case, samples, reference):
         bam_base = app.getOption("http-bam-base")
         AttrH.__init__(self, "IGV",
             kind = "hidden" if bam_base is None else None)
-        self.mBaseRef = "hg19"
+        self.mBase = "hg38" if reference and "38" in reference else "hg19"
         self.setAspect(view_gen)
         if bam_base is None:
             self.mPreUrl = None
@@ -306,21 +303,30 @@ class IGV_AttrH(AttrH):
         samples_names = [samples[id] for id in samples_ids]
 
         file_urls = ','.join([
-            "%s/%s/%s.%s.bam" % (bam_base, case, sample_id, self.mBaseRef)
+            "%s/%s/%s.%s.bam" % (bam_base, case, sample_id, self.mBase)
             for sample_id in samples_ids])
         self.mPreUrl = ("http://localhost:60151/load?file=%s"
             "&genome=%s&merge=false&name=%s") % (
-                file_urls, self.mBaseRef, ",".join(samples_names))
+                file_urls, self.mBase, ",".join(samples_names))
 
     def htmlRepr(self, obj, v_context):
         if self.mPreUrl is None:
             return None
-        if self.mBaseRef == "hg38":
-            # ???
-            pass
-        else:
+
+        if self.self.mBase == "hg19":
             start = int(v_context["data"]["__data"]["start"])
             end = int(v_context["data"]["__data"]["end"])
+        else:
+            assert self.mBase == "hg38"
+            try:
+                pos = v_context["data"]["view"]["general"]["hg38"]
+                _, _, coors = pos.partition(':')
+                p0, _, p1 = pos.partition('-')
+                start = int(p0.strip())
+                end = int(p1.strip()) if p1 else start
+            except:
+                logging.error("Error creating IGV link for " + str(pos))
+                return ("ERROR", "norm")
         link = self.mPreUrl + "&locus=%s:%d-%d" % (
             v_context["data"]["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)

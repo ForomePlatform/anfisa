@@ -74,7 +74,7 @@ var sDecisionTree = {
     _setup: function(info) {
         this.mTreeCode = info["code"];
         this.mTotalCounts = info["total-counts"];
-        this.mRqId = info["rq_id"];
+        this.mRqId = info["rq-id"];
         this.mEvalStatus = info["eval-status"];
         sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
         sHistoryH.update(info["hash"]);
@@ -233,7 +233,7 @@ var sDecisionTree = {
     },
     
     _loadDelayed: function(info) {
-        if (info["rq_id"] != this.mRqId)
+        if (info["rq-id"] != this.mRqId)
             return;
         for (var p_no = 0; p_no < info["point-counts"].length; p_no++) {
             p_count = info["point-counts"][p_no];
@@ -244,7 +244,7 @@ var sDecisionTree = {
                 continue;
             this.mPointDelay.splice(pos, 1);
             this.mPointCounts[p_no] = p_count;
-            if (this.mPoints[p_no][2]) {
+            if (this.mPoints[p_no]["decision"]) {
                 this.mAcceptedCounts[0] += p_count[0];
                 if (p_count.length > 1)
                     this.mAcceptedCounts[1] += p_count[1];
@@ -464,7 +464,7 @@ var sUnitsH = {
     
     _setup: function(info) {
         this.mWaiting = false;
-        this.mRqId  = info["rq_id"];
+        this.mRqId  = info["rq-id"];
         this.mFilteredCounts = info["filtered-counts"];
         this.mTotalCounts = info["total-counts"];
         document.getElementById("list-report").innerHTML = 
@@ -527,7 +527,7 @@ var sUnitsH = {
     },
     
     _loadUnits: function(info) {
-        if (info["rq_id"] != this.mRqId) 
+        if (info["rq-id"] != this.mRqId) 
             return;
         this.mWaiting = false;
         el_list = document.getElementById("stat-list");

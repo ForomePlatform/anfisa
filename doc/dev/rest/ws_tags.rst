@@ -37,7 +37,7 @@ Synopsis
     |                        *string, time in ISO format*
     |       "**upd-from**: *optional* dataset name of last tags update, 
     |                        *string*
-    |       "**tags-version**": indicator of tags update state
+    |       "**tags-state**": indicator of tags update state
     | ``}``
 
 Description
@@ -77,9 +77,9 @@ Tagging mechanism in the system organized by the following principles
         this common state was made. Information about this state can be changed outside
         the client session. The client receives this information in properties:
 
-            .. _tags_version:
+            .. _tags_state:
         
-            * **tags-version**
+            * **tags-state**
                 Is some internal indicator value, *int* or *string*; if tag state 
                 is changing this indicator changes with it
                 

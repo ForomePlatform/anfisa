@@ -61,7 +61,7 @@ function initWin(workspace_name, common_title, ws_pub_url) {
 
 function reloadList() {
     sViewH.popupOff();
-    ajaxCall("list", sConditionsH.getCondRqArgs(sCurFilterName, 
+    ajaxCall("ws_list", sConditionsH.getCondRqArgs(sCurFilterName, 
         sZoneH.getCurState(), sCheckFltCurrent.checked), setupList);
 }
 
@@ -285,7 +285,7 @@ sTagSupportH = {
     mCurTag: null,
     mTagRecList: null,
     mNavSheet: null,
-    mIntVersion: null,
+    mTagsState: null,
     mSelCurTag: null,
     mElTagNav: null,
     mElTagCount: null,
@@ -329,8 +329,8 @@ sTagSupportH = {
             option.value = tag_name;
             this.mSelCurTag.append(option)
         }
-        this.mIntVersion = info["tags-version"];
-        checkTagsIntVersion(this.mIntVersion);
+        this.mTagsState = info["tags-state"];
+        checkTagsState(this.mTagsState);
         this.mSelCurTag.selectedIndex = tag_list.indexOf(this.mCurTag) + 1;
         this.mTagRecList = info["records"];
         this.updateNavigation();
@@ -348,8 +348,8 @@ sTagSupportH = {
         return null;
     },
 
-    checkIntVersion: function(tags_int_version) {
-        if (tags_int_version != this.mIntVersion) {
+    checkTagsState: function(tags_state) {
+        if (tags_state != this.mTagsState) {
             this.loadSelection(this.mCurTag);
         }
     },
@@ -464,9 +464,9 @@ function tagNav(mode) {
         changeRec(rec_no);
 }
 
-function checkTagsIntVersion(tags_int_version) {
-    sTagSupportH.checkIntVersion(tags_int_version);
-    sZoneH.checkTagsIntVersion(tags_int_version);
+function checkTagsState(tags_state) {
+    sTagSupportH.checkTagsState(tags_state);
+    sZoneH.checkTagsState(tags_state);
 }
 
 function checkTabNavigation(tag_name) {

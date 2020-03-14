@@ -33,7 +33,6 @@ from app.model.mongo_db import MongoConnector
 from app.model.ds_favor import FavorStorageAgent
 #=====================================
 try:
-    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
     sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
     sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
 except Exception:

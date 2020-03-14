@@ -60,7 +60,7 @@ function loadTags(tags_to_update) {
     var args = sTagsArgs;
     if (tags_to_update) 
         args += "&tags=" + encodeURIComponent(JSON.stringify(tags_to_update)); 
-    ajaxCall("tags", args, setupTags);
+    ajaxCall("ws_tags", args, setupTags);
 }
 
 function setupTags(info) {

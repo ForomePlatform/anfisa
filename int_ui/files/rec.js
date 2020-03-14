@@ -76,7 +76,7 @@ sCtrl_WS = {
         if (info["marker"]) 
             parent.window.updateRecordMark(
                 info["marker"][0], info["marker"][1]);
-        parent.window.checkTagsIntVersion(info["tags-version"]);
+        parent.window.checkTagsState(info["tags-state"]);
     },
     
     updateNavigation: function(tag) {

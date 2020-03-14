@@ -23,7 +23,7 @@ Synopsis
         | ``{`` *dictionary*
         |       "**tag-list**": all tags available, ``[`` *list of string* ``]``
         |       "**tag**": value of **tag** argument , *optional string*
-        |       "**tags-version**": indicator of tags update state
+        |       "**tags-state**": indicator of tags update state
         |       "**records**": affected variants, ``[`` *list of int* ``]``
         | ``}``
         
@@ -37,8 +37,8 @@ for:
     
     * tag navigation
 
-Property **tags-version** is the same as in request :doc:ws_tags, see 
-discussion :ref:`here<tags_version>`.
+Property **tags-state** is the same as in request :doc:ws_tags, see 
+discussion :ref:`here<tags_state>`.
 
 **tags-list** contains all tags available in dataset, both "check-box" and "text" ones 
 (in :term:`root dataset`), see details in description of :doc:`ws_tags`. 

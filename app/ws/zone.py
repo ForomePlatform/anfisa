@@ -33,11 +33,13 @@ class ZoneH:
     def getTitle(self):
         return self.mTitle
 
-    def makeValuesReport(self):
-        return {
+    def makeValuesReport(self, serial_mode = False):
+        ret = {
             "zone": self.getName(),
-            "title": self.getTitle(),
-            "variants": self.getVariants()}
+            "title": self.getTitle()}
+        if not serial_mode:
+            ret["variants"] = self.getVariants()
+        return ret
 
 #===============================================
 class FilterZoneH(ZoneH):
@@ -51,7 +53,10 @@ class FilterZoneH(ZoneH):
     def getVariants(self):
         return self.mUnit.getVariantList()
 
-    def getRestrictF(self, variants):
+    def getRestrictF(self, variants, restrict_f = None):
         cond = self.getDS().getEvalSpace().makeEnumCond(
             self.mUnit, variants)
+        if restrict_f is not None:
+            return lambda rec_no: (
+                restrict_f(rec_no) and cond.recInSelection(rec_no))
         return lambda rec_no: cond.recInSelection(rec_no)
