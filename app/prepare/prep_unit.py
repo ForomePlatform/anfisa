@@ -348,7 +348,7 @@ class PanelConvertor(ValueConvertor):
             render_mode, tooltip)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelSets = {
-            pname: set(sol_h.getUnitPanel(self.mBaseUnitName, pname))
+            pname: set(sol_h.getPanelVariants(pname))
             for pname in sol_h.getUnitPanelNames(self.mBaseUnitName)}
         self.mCntUndef = 0
         self.mVarCount = Counter()

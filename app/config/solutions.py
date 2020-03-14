@@ -252,7 +252,7 @@ def readySolutions_Case(base_pack):
         cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",
         cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
-    base_pack.regDTree("ACMG59",
+    base_pack.regDTree("ACMG59 Variants",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
     base_pack.regDTree("Damaging_Predictions",
         cfgPathSeq(["quality.pyt", "damaging.pyt"]))
@@ -281,41 +281,41 @@ def readySolutions_Case(base_pack):
 
 #===============================================
 def setupSymbolPanels(base_pack):
-    base_pack.regPanel("Symbol", "ACMG59",
+    base_pack.regPanel("ACMG59", "Symbol",
         cfgPath("acmg59.lst"))
-    base_pack.regPanel("Symbol", "All_Hearing_Loss",
+    base_pack.regPanel("All_Hearing_Loss", "Symbol",
         cfgPath("all_hearing_loss.lst"))
-    base_pack.regPanel("Symbol", "Reportable_Hearing_Loss",
+    base_pack.regPanel("Reportable_Hearing_Loss", "Symbol",
         cfgPath("rep_hearing_loss.lst"))
-    base_pack.regPanel("Symbol", "Complement_System",
+    base_pack.regPanel("Complement_System", "Symbol",
         cfgPath("purpura_fulminans.lst"))
-    base_pack.regPanel("Symbol", "PharmGKB_VIP",
+    base_pack.regPanel("PharmGKB_VIP", "Symbol",
         cfgPath("pharmgkb_vip.lst"))
-    base_pack.regPanel("Symbol", "Coagulation_System",
+    base_pack.regPanel("Coagulation_System", "Symbol",
         cfgPath("coagulation_system.lst"))
-    base_pack.regPanel("Symbol", "Thrombotic_Thrombocytopenic_Purpura",
+    base_pack.regPanel("Thrombotic_Thrombocytopenic_Purpura", "Symbol",
         cfgPath("ttp.lst"))
-    base_pack.regPanel("Symbol", "Immune_Dysregulation",
+    base_pack.regPanel("Immune_Dysregulation", "Symbol",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Symbol", "Autism_Spectrum",
+    base_pack.regPanel("Autism_Spectrum", "Symbol",
         cfgPath("autism.lst"))
-    base_pack.regPanel("Symbol", "Holoprosencephaly",
+    base_pack.regPanel("Holoprosencephaly", "Symbol",
         cfgPath("hpe.lst"))
-    base_pack.regPanel("Symbol", "Tubulinopathies",
+    base_pack.regPanel("Tubulinopathies", "Symbol",
         cfgPath("tubulinopathies.lst"))
-    base_pack.regPanel("Symbol", "Notch_Signaling_Pathway",
+    base_pack.regPanel("Notch_Signaling_Pathway", "Symbol",
         cfgPath("notch.lst"))
-    base_pack.regPanel("Symbol", "SSH1_Interactors",
+    base_pack.regPanel("SSH1_Interactors", "Symbol",
         cfgPath("ssh.lst"))
-    base_pack.regPanel("Symbol", "Wnt1_Interactors",
+    base_pack.regPanel("Wnt1_Interactors", "Symbol",
         cfgPath("wnt.lst"))
-    # base_pack.regPanel("Symbol", "TTP1",
+    # base_pack.regPanel("TTP1", "Symbol",
     #     cfgPath("ttp1.lst"))
-    # base_pack.regPanel("Symbol", "TTP2",
+    # base_pack.regPanel("TTP2", "Symbol",
     #     cfgPath("ttp2.lst"))
-    # base_pack.regPanel("Symbol", "TTP3",
+    # base_pack.regPanel("TTP3", "Symbol",
     #     cfgPath("ttp3.lst"))
-    # base_pack.regPanel("Symbol", "TTP4",
+    # base_pack.regPanel("TTP4", "Symbol",
     #     cfgPath("ttp4.lst"))
 
 def completeDsModes(ds_h):

@@ -20,6 +20,7 @@
 
 import logging
 from threading import Lock
+from collections import defaultdict
 
 from utils.sync_obj import SyncronizedObject
 from app.config.a_config import AnfisaConfig
@@ -82,15 +83,17 @@ class SolutionBroker(SyncronizedObject):
     def getUnitPanelNames(self, unit_name):
         ret = []
         for it in self.iterStdItems("panel"):
-            if it.getName() == unit_name:
-                ret.append(it.getData()[0])
+            if it.getData()[0] == unit_name:
+                ret.append(it.getName())
         return ret
 
-    def getUnitPanel(self, unit_name, panel_name, assert_mode = True):
+    def getPanelVariants(self, panel_name, unit_name = None, assert_mode = True):
         for it in self.iterStdItems("panel"):
-            if it.getName() == unit_name:
-                if it.getData()[0] == panel_name:
+            if it.getName() == panel_name:
+                if unit_name is None or it.getData()[0] == unit_name:
                     return it.getData()[1]
+        if not unit_name:
+            unit_name = "?"
         if assert_mode:
             assert False, "%s: Panel %s not found" % (unit_name, panel_name)
         else:
@@ -128,17 +131,16 @@ class SolutionBroker(SyncronizedObject):
 
     #===============================================
     def reportSolutions(self):
-        panel_info = dict()
+        ret = dict()
+        for kind in ("filter", "dtree", "zone", "tab-schema"):
+            ret[kind] = [it.getName() for it in self.iterStdItems(kind)]
+        p_units = defaultdict(list)
         for it in self.iterStdItems("panel"):
-            unit_name = it.getName()
-            if unit_name in panel_info:
-                panel_info[unit_name].append(it.getData()[0])
-            else:
-                panel_info[unit_name] = [it.getData()[0]]
-        return {
-            "codes": [it.getName()
-                for it in self.iterStdItems("tree_code")],
-            "panels": panel_info}
+            unit_name = it.getData()[0]
+            p_units[unit_name].append(it.getName())
+        for unit_name in p_units.keys():
+            ret["panel/" + unit_name] = p_units[unit_name]
+        return ret
 
 #===============================================
 class _SolutionKindHandler:

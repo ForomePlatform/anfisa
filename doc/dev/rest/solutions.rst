@@ -25,15 +25,23 @@ Description
 
 The request returns names of preset :ref:`solution items<solution_items>` available for :term:`dataset`
 
+Panel names are split to groups by unit/property names for which these panels are made. Key for group is 
+
+``panel/`` *property*
+
+(In current version all panels are made for ``Symbol``, so return dictionary contains now only 
+``"panel/Symbol"`` entry)
+
 Types of solution items supported in the current version:
 
-  ==============    ===
+  =================    ===
   filter
   dtree
-  panel
   zone
   tab-schema
-  ==============    ===
+  -----------------    ---
+  panel/*property*
+  =================    ===
 
 The request might be used for experimental extensions of the system 
 functionality and user interface.

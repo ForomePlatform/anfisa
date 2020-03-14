@@ -110,10 +110,10 @@ class SolutionPack:
             tree_code, requires, self.mUsedNames)
         self.mItems.append(it)
 
-    def regPanel(self, unit_name, panel_name, fname, requires = None):
-        self.mItems.append(SolutionItem("panel", unit_name,
-            (panel_name, self.readListFile(fname)), requires,
-            self.mUsedNames, unit_name + "/" + panel_name))
+    def regPanel(self, panel_name, unit_name, fname, requires = None):
+        self.mItems.append(SolutionItem("panel", panel_name,
+            (unit_name, self.readListFile(fname)), requires,
+            self.mUsedNames))
 
     def regZone(self, zone_title, unit_name, requires = None):
         self.mItems.append(SolutionItem("zone",
