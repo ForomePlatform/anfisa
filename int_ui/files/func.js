@@ -133,9 +133,10 @@ var sOpFuncH = {
         return err_msg;
     },
      
-    renderParams: function() {
+    renderParams: function(no_care) {
         sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt());
-        this.careControls();
+        if (!no_care)
+            this.careControls();
     }
 }
     
@@ -797,7 +798,7 @@ var sFunc_Region = {
         if (!this.mCurLocus)
             this.mCurLocus = null;
         sOpFuncH.mOpVariants = ["True"];
-        sOpFuncH.renderParams();
+        sOpFuncH.renderParams(true);
         sOpFuncH.reloadStat();
     },
     
