@@ -24,7 +24,8 @@ Synopsis
         |       "**tag-list**": all tags available, ``[`` *list of string* ``]``
         |       "**tag**": value of **tag** argument , *optional string*
         |       "**tags-state**": indicator of tags update state
-        |       "**records**": affected variants, ``[`` *list of int* ``]``
+        |       "**tag-rec-list**": *optional* affected variants, ``[`` *list of int* ``]``
+        |       "**tags-rec-list**": all tagged variants, ``[`` *list of int* ``]``
         | ``}``
         
 Description
@@ -43,11 +44,14 @@ discussion :ref:`here<tags_state>`.
 **tags-list** contains all tags available in dataset, both "check-box" and "text" ones 
 (in :term:`root dataset`), see details in description of :doc:`ws_tags`. 
     
-If **tag** is set, **records** contains ordering numbers for variants having this tag.
+If **tag** is set, **tag-rec-list** contains ordering numbers for variants having this tag.
 
-Otherwise **records** contains ordering numbers of all variants having any tag, 
+**tags-rec-list** contains ordering numbers of all variants having any tag, 
 ant this information is useful for marking these variants. (Note that marking information
 can change outside the client session)
+
+Comment
+-------
 
 See also
 --------

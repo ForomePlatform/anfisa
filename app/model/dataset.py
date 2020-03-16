@@ -348,7 +348,7 @@ class DataSet(SolutionBroker):
         ret_handle = []
         for rinfo in record_info_seq:
             ret_handle.append([rinfo.get(key)
-                for key in ("no", "lb", "cl", "mr", "dt")])
+                for key in ("no", "lb", "cl", "dt")])
         return ret_handle
 
     @classmethod

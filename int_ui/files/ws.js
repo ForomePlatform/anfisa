@@ -25,6 +25,7 @@ var sCurRecID = null;
 var sTabPortData = [false, null, null];
 var sRecList = null;
 var sViewRecNoSeq = null;
+var sViewMarks = null;
 
 var sCurFilterName = null;
 var sFltTimeDict = [];
@@ -79,6 +80,7 @@ function setupList(info) {
     sRecList = info["records"];
     refreshRecList();
     arrangeControls();
+    sTagSupportH.checkTagsState(true);
 }
 
 function arrangeControls() {
@@ -97,8 +99,8 @@ function refreshRecList() {
     for (rec_no = 0; rec_no < sRecList.length; rec_no++) {
         rinfo = sRecList[rec_no];
         class_name = 'rec-label ' + rinfo["cl"];
-        if (rinfo["mr"]) 
-            class_name += ' marked';
+        if (sViewMarks && sViewMarks.indexOf(rec_no) >= 0)
+            class_name += " marked";
         sViewRecNoSeq.push(rinfo["no"]);
         rep.push('<div id="li--' + rinfo["no"] + '" class="' + class_name + 
             '" onclick="changeRec(' + rec_no + ');">' + rinfo["lb"] + '</div>');
@@ -114,22 +116,32 @@ function refreshRecList() {
     }
 }
 
-function updateRecordMark(rec_id, rec_marked) {
-    el = document.getElementById('li--' + rec_id);
-    if (el) {
-        class_seq = el.className.split(' ');
-        if (rec_marked) {
-            if (class_seq[2] == "marked")
-                return
-            class_seq.splice(2, 0, "marked");
-        } else {
-            if (class_seq.length == 1)
-                return
-            if (class_seq[2] == "marked")          
-                class_seq.splice(2, 1);
-        }
-        el.className = class_seq.join(' ');
+function updateRecordMarks(rec_mark_seq) {
+    if (!sViewMarks)
+        sViewMarks = [];
+    var idx;
+    for(idx = 0; idx < rec_mark_seq.length; idx++) {
+        var rec_id = rec_mark_seq[idx];
+        if (sViewMarks.indexOf(rec_id) < 0)
+            _updateRecordMark(rec_id, true);
     }
+    for(idx = 0; idx < sViewMarks.length; idx++) {
+        var rec_id = sViewMarks[idx];
+        if (rec_mark_seq.indexOf(rec_id) < 0)
+            _updateRecordMark(rec_id, false);
+    }
+    sViewMarks = rec_mark_seq;
+}
+
+function _updateRecordMark(rec_id, is_marked) {
+    el = document.getElementById('li--' + rec_id);
+    if (el) { 
+        cls_val = el.className.replace(" marked", "");
+        if (is_marked)
+            el.className = cls_val + " marked";
+        else
+            el.className = cls_val;
+    }        
 }
 
 function changeRec(rec_no) {
@@ -313,11 +325,11 @@ sTagSupportH = {
         if (tag_name) 
             args += "&tag=" + tag_name;
         ajaxCall("tag_select", args, 
-            function(info) {sTagSupportH.setupSelection(info)});
+            function(info) {sTagSupportH._loadSelection(info)});
     },
 
-    setupSelection: function(info) {
-        this.mCurTag = info["tag"];
+    _loadSelection: function(info) {
+        this.mCurTag = (info["tag"])? info["tag"]: null;
         for (idx = this.mSelCurTag.length - 1; idx > 0; idx--) {
             this.mSelCurTag.remove(idx);
         }
@@ -329,10 +341,13 @@ sTagSupportH = {
             option.value = tag_name;
             this.mSelCurTag.append(option)
         }
-        this.mTagsState = info["tags-state"];
-        checkTagsState(this.mTagsState);
         this.mSelCurTag.selectedIndex = tag_list.indexOf(this.mCurTag) + 1;
-        this.mTagRecList = info["records"];
+        this.mTagRecList = (this.mCurTag)? info["tag-rec-list"]:null;
+
+        if (this.mTagsState != info["tags-state"]) {
+            this.mTagsState = info["tags-state"];
+            updateRecordMarks(info["tags-rec-list"]);
+        }
         this.updateNavigation();
     },
 
@@ -349,14 +364,14 @@ sTagSupportH = {
     },
 
     checkTagsState: function(tags_state) {
-        if (tags_state != this.mTagsState) {
+        if (tags_state != this.mTagsState || tags_state == true) {
             this.loadSelection(this.mCurTag);
         }
     },
 
     checkNavigation: function(tag_name) {
         if (this.mCurTag && (tag_name == this.mCurTag || tag_name == null)) {
-            loadSelection(this.mCurTag);
+            this.loadSelection(this.mCurTag);
         }
     },
     

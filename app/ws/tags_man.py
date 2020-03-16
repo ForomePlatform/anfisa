@@ -33,14 +33,13 @@ class TagsManager(ZoneH):
     def getName(self):
         return "_tags"
 
-    def getMarkedSet(self):
-        return self.mMarkedSet
-
     def refreshTags(self):
         self.mTagSets = defaultdict(set)
         self.mMarkedSet = set()
         for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
             rec_key, tags_data = tags_info[:2]
+            if not tags_data:
+                continue
             rec_no = self.getDS().getRecNoByKey(rec_key)
             if rec_no is not None:
                 for tag in tags_data.keys():
@@ -57,6 +56,13 @@ class TagsManager(ZoneH):
         return self.getTagList()
 
     def updateRec(self, rec_no, tags_data):
+        to_del = []
+        for key, val in tags_data.items():
+            if not key or val is False:
+                to_del.append(key)
+        for key in to_del:
+            del tags_data[key]
+
         rec_key = self.getDS().getRecKey(rec_no)
         prev_data = self.getDS().getSolEnv().getEntry("tags", rec_key)[0]
         if (prev_data is None
@@ -78,7 +84,6 @@ class TagsManager(ZoneH):
 
     def makeRecReport(self, rec_no):
         ret = self.getTagListInfo()
-        ret["marker"] = [rec_no, rec_no in self.mMarkedSet]
         rec_key = self.getDS().getRecKey(rec_no)
         tags_data, upd_time, upd_from = self.getDS().getSolEnv().getEntry(
             "tags", rec_key)
@@ -107,7 +112,8 @@ class TagsManager(ZoneH):
         rep = {
             "tag-list": tag_list,
             "tag": tag_name,
-            "tags-state": self.getDS().getSolEnv().getIntVersion("tags")}
+            "tags-state": self.getDS().getSolEnv().getIntVersion("tags"),
+            "tags-rec-list": sorted(self.mMarkedSet)}
         if tag_name:
-            rep["records"] = sorted(self.mTagSets[tag_name])
+            rep["tag-rec-list"] = sorted(self.mTagSets[tag_name])
         return rep

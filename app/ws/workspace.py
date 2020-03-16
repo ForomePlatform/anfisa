@@ -147,8 +147,6 @@ class Workspace(DataSet):
             "lb": escape(self.mTabRecLabel[rec_no]),
             "cl": AnfisaConfig.normalizeColorCode(
                 self.mTabRecColor[rec_no])}
-        if marked_set is not None:
-            ret["mr"] = rec_no in marked_set
         if rec_it_map is not None:
             ret["dt"] = rec_it_map.to01()
         return ret
@@ -188,11 +186,10 @@ class Workspace(DataSet):
         zone_f = self.restrictZoneF(rq_args.get("zone"))
         counts = [0, 0]
         records = []
-        marked_set = self.mTagsMan.getMarkedSet()
         for rec_no, rec_it_map in filter_h.getCondition().iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
-            records.append(self.reportRecord(rec_no, rec_it_map, marked_set))
+            records.append(self.reportRecord(rec_no, rec_it_map))
             counts[0] += 1
             counts[1] += rec_it_map.count()
         ret_handle = {

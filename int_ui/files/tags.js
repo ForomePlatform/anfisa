@@ -217,7 +217,8 @@ function tagEnvSave(force_it) {
             return;
     }
     tags_to_update = sRecTags;
-    tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
+    if (sInpTagName.value) 
+        tags_to_update[sInpTagName.value] = sInpTagValue.value.trim();
     sPrevTag = sInpTagName.value;
     loadTags(tags_to_update);
     sMasterCtrl.updateNavigation(sPrevTag);

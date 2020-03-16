@@ -33,10 +33,6 @@ div.rec-label {
     font-weight: bold;
 }
 
-div.rec-label.marked {
-    font-weight: normal;
-}
-
 div.rec-label:hover {
     color: #f6f6f7;
 }
@@ -81,6 +77,10 @@ div.rec-label.grey:hover {
 div.rec-label.press, div.rec-label.press:hover {
     color: #f6f6f7;
     background-color: #505070; 
+}
+
+div.rec-label.marked {
+    font-size: 14px;
 }
 
 /********************Modal SubVRec*****************************/

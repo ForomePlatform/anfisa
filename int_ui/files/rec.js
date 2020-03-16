@@ -73,9 +73,6 @@ sCtrl_WS = {
     },
     
     updateTagsInfo: function(info) {
-        if (info["marker"]) 
-            parent.window.updateRecordMark(
-                info["marker"][0], info["marker"][1]);
         parent.window.checkTagsState(info["tags-state"]);
     },
     
