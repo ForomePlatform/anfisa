@@ -50,6 +50,7 @@ Structures
    s_prop_stat
    s_dtree_point
    s_record
+   s_sol_entry
    s_zone
    s_tags
 

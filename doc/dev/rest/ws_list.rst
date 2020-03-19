@@ -34,10 +34,10 @@ Synopsis
     |       "**ds**":   dataset name, *string*
     |       "**total-counts**": ``[`` *list*
     |                       **[0]**: total count of variants, *int*
-    |                       **[0]**: total count of transcripts, *int* ``]``
+    |                       **[1]**: total count of transcripts, *int* ``]``
     |       "**filtered-counts**": ``[`` *list*
     |                       **[0]**: filtered count of variants, *int*
-    |                       **[0]**: filtered count of transcripts, *int* ``]``
+    |                       **[1]**: filtered count of transcripts, *int* ``]``
     |       "**records**: ``[`` *list* of :doc:`s_record` ``]``
     | ``}``
     

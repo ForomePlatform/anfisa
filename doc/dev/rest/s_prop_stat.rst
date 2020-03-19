@@ -14,6 +14,7 @@ Format
 |               comma-separated render options, *string* 
 |        "**tooltip**": *optional* tooltip, *string*
 |        "**incomplete**": *optional* status is incomplete, ``true``
+|        "**detailed**": *optional* transcript are in counts, ``true``
 |
 |        *in case of* **kind** = ``"numeric"``
 |        ----------------------------------- 
@@ -28,7 +29,7 @@ Format
 |                       **[0]**: value, *string*
 |                       **[1]**: count of variants, *int*
 |                       **[2]**: *optional* count of transcripts, *int*
-|               ``]``, ...
+|               ``]``, ...  ``]``
 |
 |        *in case of* **kind** = ``"func"`` 
 |        ----------------------------------- 
@@ -37,7 +38,7 @@ Format
 |                       **[0]**: value, *string*
 |                       **[1]**: count of variants, *int*
 |                       **[2]**: *optional* count of transcripts, *int*
-|               ``]``, ...
+|               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
 |         **...**: all parameters of function evaluation 
 | ``}``

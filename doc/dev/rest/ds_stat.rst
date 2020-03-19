@@ -57,7 +57,7 @@ Synopsis
     |              ``"ok"`` if evaluation is correct, other *string* otherwise
     |      **hash**: hash code associated with current filter conditions, *string*
     |      **filter-list**: names of all filters available for dataset
-    |           ``[`` *list of strings* ``]``
+    |           ``[`` *list of* :doc:`s_sol_entry` ``]``
     |      **rq_id**": unique request id, for use in secondary requests, *string*
     |  ``}``
     
