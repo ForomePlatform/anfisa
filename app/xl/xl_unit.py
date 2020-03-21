@@ -54,13 +54,13 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
             "descending": "true",
             "aggregations": [
                 {"type": "count", "name": name_cnt,
-                    "fieldName": self.getName()},
+                    "fieldName": self.getInternalName()},
                 {"type": "%sMin" % self.mDruidKind,
                     "name": name_min,
-                    "fieldName": self.getName()},
+                    "fieldName": self.getInternalName()},
                 {"type": "%sMax" % self.mDruidKind,
                     "name": name_max,
-                    "fieldName": self.getName()}],
+                    "fieldName": self.getInternalName()}],
             "intervals": [druid_agent.INTERVAL]}
         if condition is not None:
             cond_repr = condition.getDruidRepr()
@@ -104,13 +104,13 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
             "queryType": "topN",
             "dataSource": druid_agent.normDataSetName(
                 self.getEvalSpace().getName()),
-            "dimension": self.getName(),
+            "dimension": self.getInternalName(),
             "threshold": len(self.mVariants) + 5,
             "metric": "count",
             "granularity": druid_agent.GRANULARITY,
             "aggregations": [{
                 "type": "count", "name": "count",
-                "fieldName": self.getName()}],
+                "fieldName": self.getInternalName()}],
             "intervals": [druid_agent.INTERVAL]}
         if condition is not None:
             cond_repr = condition.getDruidRepr()
@@ -121,14 +121,14 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
-                (self.getName(), len(rq)))
+                (self.getInternalName(), len(rq)))
             if len(rq) == 0:
                 return [[var, 0] for var in self.mVariants]
 
         assert len(rq) == 1
         counts = dict()
         for rec in rq[0]["result"]:
-            counts[rec[self.getName()]] = rec["count"]
+            counts[rec[self.getInternalName()]] = rec["count"]
         return [[var, counts.get(var, 0)]
             for var in self.mVariants]
 

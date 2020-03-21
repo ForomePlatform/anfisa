@@ -36,32 +36,32 @@ def cell_value(ws, row, column):
     return v.strip()
 
 
-def read_mappings(path, verbose_mode):
-    if (not os.path.isfile(path)):
-        raise Exception("No Mapping file: %s" % path)
-    if (not os.access(path, os.R_OK)):
-        raise Exception("No read access to: %s" % path)
+def read_mappings(fpath, verbose_mode):
+    if (not os.path.isfile(fpath)):
+        raise Exception("No Mapping file: %s" % fpath)
+    if (not os.access(fpath, os.R_OK)):
+        raise Exception("No read access to: %s" % fpath)
 
     if verbose_mode:
-        logging.info("Reading: %s" % path)
-    wb = openpyxl.load_workbook(path, read_only=False)
+        logging.info("Reading: %s" % fpath)
+    wb = openpyxl.load_workbook(fpath, read_only=False)
 
-    mapping = _read_key_mapping(wb["key"], path)
+    mapping = _read_key_mapping(wb["key"], fpath)
     check_tags_mapping = _read_check_tags_mapping(wb["Check_Tags"],
         verbose_mode)
     wb.close()
     return mapping, check_tags_mapping
 
-def _read_key_mapping(ws, path):
+def _read_key_mapping(ws, fpath):
     if cell_value(ws, 1, 1) != "Column":
         raise Exception('First column must be called "Column". '
-                        'Worksheet "key" of file %s' % path)
+                        'Worksheet "key" of file %s' % fpath)
     key_column = 1
     map_column = getColumnByName(ws, "Mapping")
     if not map_column:
         raise Exception(
             "Column 'Mapping' is not found in Worksheet key of file %s"
-            % path)
+            % fpath)
     def_column = getColumnByName(ws, "Definition")
 
     mapping = []

@@ -26,8 +26,8 @@ from app.config.a_config import AnfisaConfig
 
 #===============================================
 class MongoConnector:
-    def __init__(self, path, host = None, port = None):
-        self.mPath = path
+    def __init__(self, data_path, host = None, port = None):
+        self.mPath = data_path
         if host is None:
             host = "localhost"
         if port is None:

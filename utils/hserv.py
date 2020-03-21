@@ -106,11 +106,11 @@ class HServHandler:
 
     #===============================================
     def parseRequest(self, environ):
-        path = environ["PATH_INFO"]
-        if self.mHtmlBase and path.startswith(self.mHtmlBase):
-            path = path[len(self.mHtmlBase):]
-        if not path:
-            path = "/"
+        rq_path = environ["PATH_INFO"]
+        if self.mHtmlBase and rq_path.startswith(self.mHtmlBase):
+            rq_path = rq_path[len(self.mHtmlBase):]
+        if not rq_path:
+            rq_path = "/"
         query_string = environ["QUERY_STRING"]
 
         query_args = dict()
@@ -140,7 +140,7 @@ class HServHandler:
             except Exception:
                 logException("Exception on read request body")
 
-        return path, query_args
+        return rq_path, query_args
 
     #===============================================
     def fileResponse(self, resp_h, fpath,
@@ -172,15 +172,15 @@ class HServHandler:
         resp_h = HServResponse(start_response)
         rq_descr = []
         try:
-            path, query_args = self.parseRequest(environ)
-            file_path = self.checkFilePath(path)
+            rq_path, query_args = self.parseRequest(environ)
+            file_path = self.checkFilePath(rq_path)
             if file_path is not None:
                 ret = self.fileResponse(resp_h,
                     file_path, query_args, True)
                 if ret is not False:
                     return ret
             return self.mApplication.request(
-                resp_h, path, query_args, rq_descr)
+                resp_h, rq_path, query_args, rq_descr)
         except Exception:
             msg = "Exception on request evaluation"
             if rq_descr:

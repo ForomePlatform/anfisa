@@ -205,10 +205,10 @@ class AnfisaApp:
         return cls.sJobPool.askTaskStatus(int(task_id))
 
     @classmethod
-    def checkFilePath(cls, path):
-        if not path.startswith("/dsdoc/"):
+    def checkFilePath(cls, fpath):
+        if not fpath.startswith("/dsdoc/"):
             return None
-        ds_name, _, fpath = path[7:].partition('/')
+        ds_name, _, fpath = fpath[7:].partition('/')
         loc_path = fpath.rpartition('/')[-1]
         if loc_path == "report.css":
             return cls.sDocReportCSS

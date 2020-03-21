@@ -19,13 +19,14 @@
 #
 
 from utils.path_works import AttrFuncPool
+from utils.ident import checkIdentifier
 import app.prepare.prep_unit as prep_unit
 from app.model.family import FamilyInfo
 from app.model.sol_broker import SolutionBroker
-
 #===============================================
 class FilterPrepareSetH(SolutionBroker):
-    def __init__(self, metadata_record,  modes = None):
+    def __init__(self, metadata_record,  modes = None,
+            check_identifiers = True):
         SolutionBroker.__init__(self,
             metadata_record.get("data_schema", "CASE"), modes)
         self.mUnits = []
@@ -34,6 +35,7 @@ class FilterPrepareSetH(SolutionBroker):
         self.mMeta = metadata_record
         self.mFamilyInfo = FamilyInfo(self.mMeta)
         self.mZygosityData = None
+        self.mCheckIdent = check_identifiers
 
     def getFamilyInfo(self):
         return self.mFamilyInfo
@@ -45,9 +47,13 @@ class FilterPrepareSetH(SolutionBroker):
         self.mVGroups[view_group_title] = ret
         return ret
 
-    def setupZygosity(self, var_name, path):
+    def checkUnitName(self, name):
+        if self.mCheckIdent:
+            assert checkIdentifier(name), "Bad unit name: " + name
+
+    def setupZygosity(self, var_name, vpath):
         assert self.mZygosityData is None
-        self.mZygosityData = ZygosityDataPreparator(var_name, path,
+        self.mZygosityData = ZygosityDataPreparator(var_name, vpath,
             self.mFamilyInfo)
 
     def _startViewGroup(self, view_group_h):
@@ -59,46 +65,52 @@ class FilterPrepareSetH(SolutionBroker):
         self.mCurVGroup = None
 
     def _addUnit(self, unit):
+        self.checkUnitName(unit.getName())
         for conv in self.mUnits:
             assert conv.getName() != unit.getName()
         self.mUnits.append(unit)
         return unit
 
-    def intValueUnit(self, name, path, title = None,
+    def intValueUnit(self, name, vpath, title = None,
             default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None):
-        return self._addUnit(prep_unit.IntConvertor(name, path, title,
+        self.checkUnitName(name)
+        return self._addUnit(prep_unit.IntConvertor(name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             default_value, diap, conversion))
 
-    def floatValueUnit(self, name, path, title = None,
+    def floatValueUnit(self, name, vpath, title = None,
             default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None):
-        return self._addUnit(prep_unit.FloatConvertor(name, path, title,
+        self.checkUnitName(name)
+        return self._addUnit(prep_unit.FloatConvertor(name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             default_value, diap, conversion))
 
-    def statusUnit(self, name, path, title = None,
+    def statusUnit(self, name, vpath, title = None,
             variants = None, default_value = "False",
             accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None):
-        return self._addUnit(prep_unit.EnumConvertor(name, path, title,
+        self.checkUnitName(name)
+        return self._addUnit(prep_unit.EnumConvertor(name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "status", variants, default_value, value_map,
             accept_other_values = accept_other_values))
 
     def presenceUnit(self, name, var_info_seq, title = None,
             render_mode = None, tooltip = None):
+        self.checkUnitName(name)
         return self._addUnit(prep_unit.PresenceConvertor(name, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             var_info_seq))
 
-    def multiStatusUnit(self, name, path, title = None,
+    def multiStatusUnit(self, name, vpath, title = None,
             variants = None, default_value = None,
             separators = None, compact_mode = False,
             accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None, conversion = None):
-        return self._addUnit(prep_unit.EnumConvertor(name, path, title,
+        self.checkUnitName(name)
+        return self._addUnit(prep_unit.EnumConvertor(name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "multi", variants, default_value, value_map,
             separators = separators, compact_mode = compact_mode,
@@ -108,6 +120,7 @@ class FilterPrepareSetH(SolutionBroker):
     def panelsUnit(self, name, unit_base, title = None,
             render_mode = None, tooltip = None,
             view_path = None):
+        self.checkUnitName(name)
         return self._addUnit(prep_unit.PanelConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, unit_base, view_path))
@@ -115,6 +128,7 @@ class FilterPrepareSetH(SolutionBroker):
     def transctiptStatusUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = "False", bool_check_value = None):
+        self.checkUnitName(name)
         return self._addUnit(prep_unit.TransctiptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-status", trans_name,
@@ -123,6 +137,7 @@ class FilterPrepareSetH(SolutionBroker):
     def transctiptMultisetUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             variants = None):
+        self.checkUnitName(name)
         return self._addUnit(prep_unit.TransctiptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-multiset", trans_name, variants))
@@ -189,9 +204,9 @@ class ViewGroupH:
 
 #===============================================
 class ZygosityDataPreparator:
-    def __init__(self, var_name, path, family_info):
+    def __init__(self, var_name, vpath, family_info):
         self.mVarName = var_name
-        self.mPath   = path
+        self.mPath   = vpath
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         assert family_info is not None, "No dataset metadata with samples info"
         self.mMemberIds = [id

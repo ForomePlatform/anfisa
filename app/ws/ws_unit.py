@@ -67,7 +67,7 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
 
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no
-        self.mArray.append(inp_data.get(self.getName()))
+        self.mArray.append(inp_data.get(self.getInternalName()))
 
 #===============================================
 class WS_EnumUnit(WS_Unit, EnumUnitSupport):
@@ -108,7 +108,7 @@ class WS_StatusUnit(WS_EnumUnit):
 
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no
-        value = inp_data[self.getName()]
+        value = inp_data[self.getInternalName()]
         self.mArray.append(self.mVariantSet.indexOf(value))
 
 #===============================================
@@ -129,7 +129,7 @@ class WS_MultiSetUnit(WS_EnumUnit):
         self.mArraySeq[idx][rec_no] = value
 
     def fillRecord(self, inp_data, rec_no):
-        values = inp_data.get(self.getName())
+        values = inp_data.get(self.getInternalName())
         if values:
             idx_set = self.mVariantSet.makeIdxSet(values)
         else:
@@ -153,7 +153,7 @@ class WS_MultiCompactUnit(WS_EnumUnit):
         return '#'.join(map(str, sorted(idx_set)))
 
     def fillRecord(self, inp_data, rec_no):
-        values = inp_data.get(self.getName())
+        values = inp_data.get(self.getInternalName())
         if values:
             idx_set = self.mVariantSet.makeIdxSet(values)
             key = self.makePackKey(idx_set)
@@ -191,7 +191,7 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         return {self.mArray[item_idx]}
 
     def fillRecord(self, inp_data, rec_no):
-        values = inp_data.get(self.getName())
+        values = inp_data.get(self.getInternalName())
         if not values:
             self.mArray.append(self.mDefaultValue)
         else:
@@ -244,7 +244,7 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
         self.mArray.append(idx)
 
     def fillRecord(self, inp_data, rec_no):
-        seq = inp_data.get(self.getName())
+        seq = inp_data.get(self.getInternalName())
         if not seq:
             self.mArray.append(0)
         else:

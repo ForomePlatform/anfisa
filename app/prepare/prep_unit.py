@@ -72,11 +72,11 @@ class ValueConvertor:
 class PathValueConvertor(ValueConvertor):
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, name, path, title, unit_no, vgroup,
+    def __init__(self, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip):
         ValueConvertor.__init__(self, name, title, unit_no,
             vgroup, render_mode, tooltip)
-        self.mPath   = path
+        self.mPath   = vpath
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
 
     @abc.abstractmethod
@@ -95,10 +95,10 @@ class PathValueConvertor(ValueConvertor):
 
 #===============================================
 class _NumericConvertor(PathValueConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup,
+    def __init__(self, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
-        PathValueConvertor.__init__(self, name, path, title, unit_no,
+        PathValueConvertor.__init__(self, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip)
         if diap is not None:
             self.mMinBound, self.mMaxBound = diap
@@ -166,10 +166,10 @@ class _NumericConvertor(PathValueConvertor):
 
 #===============================================
 class FloatConvertor(_NumericConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup,
+    def __init__(self, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
-        _NumericConvertor.__init__(self, name, path, title, unit_no,
+        _NumericConvertor.__init__(self, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip,
             default_value, diap, conv_func)
         self.checkSetup()
@@ -184,10 +184,10 @@ class FloatConvertor(_NumericConvertor):
 
 #===============================================
 class IntConvertor(_NumericConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup,
+    def __init__(self, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conv_func = None):
-        _NumericConvertor.__init__(self, name, path, title, unit_no,
+        _NumericConvertor.__init__(self, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip,
             default_value, diap, conv_func)
         self.checkSetup()
@@ -203,12 +203,12 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 #===============================================
 class EnumConvertor(PathValueConvertor):
-    def __init__(self, name, path, title, unit_no, vgroup,
+    def __init__(self, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip, sub_kind, variants = None,
             default_value = None, value_map = None,
             separators = None, compact_mode = False,
             accept_other_values = False, conv_func = None):
-        PathValueConvertor.__init__(self, name, path, title, unit_no,
+        PathValueConvertor.__init__(self, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip)
         self.mSubKind = sub_kind
         self.mPreVariants = variants

@@ -33,9 +33,9 @@ class PresentationFieldHash:
 
 #===============================================
 class PresentationFieldPath:
-    def __init__(self, name, path):
+    def __init__(self, name, vpath):
         self.mName = name
-        self.mFunc = AttrFuncPool.makeFunc(path)
+        self.mFunc = AttrFuncPool.makeFunc(vpath)
 
     def process(self, rec_data, result):
         res = self.mFunc(rec_data)
@@ -46,8 +46,8 @@ class PresentationFieldPathSeq:
     def __init__(self, name, separator, path_seq):
         self.mName = name
         self.mSeparator = separator
-        self.mFuncSeq = [AttrFuncPool.makeFunc(path)
-            for path in path_seq]
+        self.mFuncSeq = [AttrFuncPool.makeFunc(vpath)
+            for vpath in path_seq]
 
     def process(self, rec_data, result):
         values = []

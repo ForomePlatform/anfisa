@@ -54,8 +54,8 @@ class RestAgent:
         else:
             content = ""
         conn = HTTPConnection(self.mHost, self.mPort)
-        path = self.mPath + add_path
-        conn.request(method, path,
+        rq_path = self.mPath + add_path
+        conn.request(method, rq_path,
             body = content.encode("utf-8"), headers = self.mHeaders)
         res = conn.getresponse()
         try:

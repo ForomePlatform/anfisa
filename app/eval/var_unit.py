@@ -28,7 +28,7 @@ class VarUnit:
         self.mDescr = descr
         self.mUnitKind  = descr.get("kind", unit_kind)
         self.mSubKind = descr.get("sub-kind", sub_kind)
-        self.mName  = descr["name"]
+        self.mInternalName = descr["name"]
         self.mTitle = descr["title"]
         self.mNo    = descr.get("no", -1)
         self.mVGroup = descr.get("vgroup")
@@ -41,6 +41,9 @@ class VarUnit:
         if sub_kind is not None:
             assert self.mSubKind == sub_kind, (
                 "Sub-kind conflict: %s/%s" % (self.mSubKind, sub_kind))
+        self.mName  = descr["name"]
+        if ' ' in self.mName:
+            self.mName = self.mName.replace(' ', '_')
 
     def getEvalSpace(self):
         return self.mEvalSpace
@@ -50,6 +53,9 @@ class VarUnit:
 
     def getName(self):
         return self.mName
+
+    def getInternalName(self):
+        return self.mInternalName
 
     def getDescr(self):
         return self.mDescr
@@ -196,6 +202,9 @@ class ReservedNumUnit(NumUnitSupport):
         return "numeric"
 
     def getName(self):
+        return self.mName
+
+    def getInternalName(self):
         return self.mName
 
     def getEvalSpace(self):

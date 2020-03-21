@@ -33,7 +33,7 @@ def _conv_len(arr):
 def defFavorFlt(metadata_record):
     assert metadata_record.get("data_schema") == "FAVOR"
 
-    filters = FilterPrepareSetH(metadata_record)
+    filters = FilterPrepareSetH(metadata_record, check_identifiers = False)
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",

@@ -18,8 +18,10 @@
 #  limitations under the License.
 #
 
-import re, json
+import json
 from io import StringIO
+
+from utils.ident import checkIdentifier
 #===============================================
 def formatIfCode(cond_data):
     cond_kind = cond_data[0]
@@ -53,9 +55,7 @@ def formatConditionCode(cond_data):
 
 
 #===============================================
-sIdPatt = re.compile("^[A-Z_][A-Z0-9_]*$", re.I)
 def _reprConditionCode(cond_data, output, group_mode):
-    global sIdPatt
     cond_kind = cond_data[0]
     if cond_kind in ("or", "and"):
         if group_mode:
@@ -144,7 +144,7 @@ def _reprValues(output, values):
             q_first = False
         else:
             output.write(",\f")
-        if sIdPatt.match(val):
+        if checkIdentifier(val):
             output.write(val)
         else:
             output.write('"' + val.replace('"', '\\"') + '"')

@@ -73,7 +73,7 @@ class XL_EvalSpace(EvalSpace):
             assert zyg_bounds is None
         else:
             min_val, min_eq, max_val, max_eq = ZYG_BOUNDS_VAL[zyg_bounds]
-        return XL_NumCondition(self, unit_h.getName(),
+        return XL_NumCondition(self, unit_h,
             [min_val, min_eq, max_val, max_eq])
 
     def makeEnumCond(self, unit_h, variants, filter_mode = ""):
@@ -81,11 +81,11 @@ class XL_EvalSpace(EvalSpace):
             return XL_All() if filter_mode == "NOT" else XL_None()
         if filter_mode == "AND":
             return self.joinAnd([XL_EnumSingleCondition(self,
-                unit_h.getName(), variant) for variant in variants])
+                unit_h, variant) for variant in variants])
         if len(variants) == 1:
-            cond = XL_EnumSingleCondition(self, unit_h.getName(), variants[0])
+            cond = XL_EnumSingleCondition(self, unit_h, variants[0])
         else:
-            cond = XL_EnumInCondition(self, unit_h.getName(), variants)
+            cond = XL_EnumInCondition(self, unit_h, variants)
         if filter_mode == "NOT":
             return cond.negative()
         return cond
@@ -200,15 +200,15 @@ class XL_Condition(Eval_Condition):
 
 #===============================================
 class XL_NumCondition(XL_Condition):
-    def __init__(self, eval_space, unit_name, bounds):
+    def __init__(self, eval_space, unit_h, bounds):
         XL_Condition.__init__(self, eval_space, "numeric")
-        self.mUnitName = unit_name
+        self.mUnitH = unit_h
         self.mBounds = bounds
-        self.mData = [unit_name] + list(bounds)
+        self.mData = [unit_h.getName()] + list(bounds)
 
     def getDruidRepr(self):
         ret = {
-            "dimension": self.mUnitName,
+            "dimension": self.mUnitH.getInternalName(),
             "type": "bound",
             "lowerStrict": not self.mBounds[1],
             "upperStrict": not self.mBounds[3],
@@ -224,11 +224,11 @@ class XL_NumCondition(XL_Condition):
 
 #===============================================
 class XL_EnumSingleCondition(XL_Condition):
-    def __init__(self, eval_space, unit_name, variant):
+    def __init__(self, eval_space, unit_h, variant):
         XL_Condition.__init__(self, eval_space, "enum-single")
-        self.mUnitName = unit_name
+        self.mUnitH = unit_h
         self.mVariant = variant
-        self.mData = [unit_name, [variant]]
+        self.mData = [unit_h.getName(), [variant]]
 
     def toJSon(self):
         return ConditionMaker.condEnum(*self.mData)
@@ -236,16 +236,16 @@ class XL_EnumSingleCondition(XL_Condition):
     def getDruidRepr(self):
         return {
             "type": "selector",
-            "dimension": self.mUnitName,
+            "dimension": self.mUnitH.getInternalName(),
             "value": self.mVariant}
 
 #===============================================
 class XL_EnumInCondition(XL_Condition):
-    def __init__(self, eval_space, unit_name, variants):
+    def __init__(self, eval_space, unit_h, variants):
         XL_Condition.__init__(self, eval_space, "enum-in")
-        self.mUnitName = unit_name
+        self.mUnitH = unit_h
         self.mVariants = sorted(variants)
-        self.mData = [unit_name, self.mVariants]
+        self.mData = [unit_h.getName(), self.mVariants]
 
     def toJSon(self):
         return ConditionMaker.condEnum(*self.mData)
@@ -253,7 +253,7 @@ class XL_EnumInCondition(XL_Condition):
     def getDruidRepr(self):
         return {
             "type": "in",
-            "dimension": self.mUnitName,
+            "dimension": self.mUnitH.getInternalName(),
             "values": self.mVariants}
 
 #===============================================

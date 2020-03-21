@@ -35,10 +35,10 @@ def prepareDocDir(ds_doc_dir, ds_inventory, reset = False):
 #===============================================
 class _FileRegistry:
     @staticmethod
-    def normDirPath(path):
-        if not path or path.endswith('/'):
-            return path
-        return path + '/'
+    def normDirPath(dir_path):
+        if not dir_path or dir_path.endswith('/'):
+            return dir_path
+        return dir_path + '/'
 
     def __init__(self, ds_doc_dir, reset):
         self.mDestRoot = self.normDirPath(ds_doc_dir)
@@ -71,10 +71,10 @@ class _DocEnv:
     def getIdent(self):
         return self.mSrcPath
 
-    def getSourcePath(self, path):
-        if self.mSrcPath is None or not path.startswith('./'):
-            return path
-        return self.mSrcPath + path[2:]
+    def getSourcePath(self, doc_path):
+        if self.mSrcPath is None or not doc_path.startswith('./'):
+            return doc_path
+        return self.mSrcPath + doc_path[2:]
 
     def regDestPlace(self, dest_place):
         return self.mFilesReg.regPlace(dest_place, self)
