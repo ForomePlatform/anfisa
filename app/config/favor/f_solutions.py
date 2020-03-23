@@ -19,5 +19,20 @@
 #
 
 #===============================================
+import os
+
+sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
+
+def cfgPath(fname):
+    global sCfgFilePath
+    return sCfgFilePath + fname
+
+def cfgPathSeq(fnames):
+    return [cfgPath(fname) for fname in fnames]
+
 def solutionsFavor(sol_pack):
-    pass
+    sol_pack.regDTree("Hearing Loss",
+        cfgPathSeq(["favor_hearing_loss.pyt","favor_rare_damaging.pyt"]))
+    sol_pack.regDTree("ACMG59 Variants",
+        cfgPathSeq(["favor_acmg59.pyt","favor_rare_damaging.pyt"]))
+

@@ -1,4 +1,4 @@
-#Exclude  variants not detected in teh family
+#Exclude  variants not detected in the family
 if Num_Samples < 1:
     return False
 
