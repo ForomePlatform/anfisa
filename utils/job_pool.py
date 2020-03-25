@@ -20,6 +20,7 @@
 
 import threading, abc, time
 from uuid import uuid4
+from collections import defaultdict
 
 from .log_err import logException
 #===============================================
@@ -28,10 +29,14 @@ class ExecutionTask:
         self.mUID = uuid4().int
         self.mDescr = descr
         self.mStatus = "Waiting for start..."
-        self.mLock = None
+        self.mPool = None
 
-    def _setLock(self, lock):
-        self.mLock = lock
+    def _reset(self):
+        assert self.mPool is None
+        self.mStatus = "Waiting for start..."
+
+    def _setPool(self, pool):
+        self.mPool = pool
 
     def getUID(self):
         return self.mUID
@@ -43,11 +48,15 @@ class ExecutionTask:
         return self.mStatus
 
     def setStatus(self, status):
-        if self.mLock:
-            with self.mLock:
+        if self.mPool:
+            with self.mPool.getLock():
                 self.mStatus = status
         else:
             self.mStatus = status
+
+    @abc.abstractmethod
+    def getTaskType(self):
+        assert False
 
     @abc.abstractmethod
     def execIt(self):
@@ -66,12 +75,13 @@ class TaskHandler:
     def execIt(self, pool):
         result = None
         try:
-            self.mTask._setLock(pool.getLock())
+            self.mTask._setPool(pool)
             result = self.mTask.execIt()
         except Exception:
             logException("Task failed:" + self.mTask.getDescr())
             self.mTask.setStatus("Failed, ask tech support")
-        self.mTask._setLock(None)
+            result = None
+        self.mTask._setPool(None)
         pool.setResult(self.mTask, result)
 
 #===============================================
@@ -108,13 +118,14 @@ class PeriodicalWorker(threading.Thread):
 
 #===============================================
 class JobPool:
-    def __init__(self, thread_count, pool_size):
+    def __init__(self, thread_count, pool_size, memory_length):
         self.mThrCondition = threading.Condition()
         self.mLock = threading.Lock()
 
         self.mTaskPool   = []
         self.mPoolSize   = int(pool_size)
-        self.mTaskCount  = 0
+        self.mMemLegth = memory_length
+        self.mTaskCounts  = defaultdict(int)
         self.mActiveTasks = dict()
         self.mResults    = dict()
         self.mTerminating = False
@@ -157,18 +168,31 @@ class JobPool:
                 task.setStatus("POOL-OVERFLOW")
                 self.setResult(task, None)
             else:
-                self.mTaskPool.append(TaskHandler(task,
-                    self.mTaskCount, priority))
-                self.mTaskCount += 1
+                task_ord_no = self.mTaskCounts[task.getTaskType()]
+                self.mTaskCounts[task.getTaskType()] += 1
+                self.mTaskPool.append(TaskHandler(task, task_ord_no, priority))
                 self.mTaskPool.sort(key = TaskHandler.getOrd)
                 self.mActiveTasks[task.getUID()] = task
             self.mThrCondition.notify()
+
+    def _cleanUp(self):
+        to_remove = []
+        for uid, info in self.mResults:
+            task_type, task_ord_no = info[2]
+            if (task_ord_no
+                    < self.mTaskCounts[task_type] - self.mMemLegth):
+                to_remove.append(uid)
+        for uid in to_remove:
+            del self.mResults[uid]
 
     def setResult(self, task, result):
         with self.mLock:
             if task.getUID() in self.mActiveTasks:
                 del self.mActiveTasks[task.getUID()]
-            self.mResults[task.getUID()] = [result, task.getStatus()]
+            if result is not False:
+                self.mResults[task.getUID()] = [result, task.getStatus(),
+                    (task.getTaskType(), task.getOrd()[1])]
+                self._cleanUp()
 
     def _pickTask(self):
         while True:
@@ -187,7 +211,7 @@ class JobPool:
     def askTaskStatus(self, task_uid):
         with self.mLock:
             if task_uid in self.mResults:
-                return self.mResults[task_uid]
+                return self.mResults[task_uid][:2]
             if task_uid in self.mActiveTasks:
                 return [False, self.mActiveTasks[task_uid].getStatus()]
         return None

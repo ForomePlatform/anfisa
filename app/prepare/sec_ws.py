@@ -39,6 +39,9 @@ class SecondaryWsCreation(ExecutionTask):
         self.mReportLines = AnfisaConfig.configOption("report.lines")
         self.mForceMode = force_mode
 
+    def getTaskType(self):
+        return "sec-ws"
+
     sID_Pattern = re.compile('^\\S+$', re.U)
 
     @classmethod

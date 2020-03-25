@@ -19,6 +19,7 @@
 #
 
 import os
+from datetime import timedelta
 
 #===============================================
 class AnfisaConfig:
@@ -68,9 +69,15 @@ class AnfisaConfig:
 
         "view.cohorts.aspect": "view_qsamples",
 
-        "job.pool.size":    3,
-        "job.pool.threads": 1,
+        "job.pool.size":    50,
+        "job.pool.threads": 10,
+        "job.pool.memlen":  100,
+
+        "long.run.passtime": timedelta(minutes = 10),
+        "long.run.failures": 5,
+
         "comp-hets.cache.size": 10,
+
 
         "max.gene.comp.count": 10000}
 

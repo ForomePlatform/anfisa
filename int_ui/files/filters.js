@@ -644,6 +644,7 @@ var sFiltersH = {
     mComboName: null,
     mCurFilterName: null,
     mCurFilterInfo: null,
+    mCurFilterIdx: null,
     mBtnOp: null,
     
     mAllList: [],
@@ -664,10 +665,13 @@ var sFiltersH = {
         this.mOpList = [];
         this.mAllList = [];
         this.mFltTimeDict = {};
+        this.mCurFilterIdx = 0;
         for (idx = 0; idx < filter_list.length; idx++) {
             flt_info = filter_list[idx];
             if (flt_info["name"] == this.mCurFilterName)
                 this.mCurFilterInfo = flt_info;
+            if (flt_info["name"] ==this.mCurFilterName)
+                this.mCurFilterIdx = this.mAllList.length;
             this.mAllList.push(flt_info["name"]);
             if (!flt_info["standard"])
                 this.mOpList.push(flt_info["name"]);
@@ -772,7 +776,7 @@ var sFiltersH = {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList);
+        this.fillSelNames(false, this.mAllList, this.mCurFilterIdx);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
@@ -845,7 +849,7 @@ var sFiltersH = {
         }
     },
 
-    fillSelNames: function(with_empty, filter_list) {
+    fillSelNames: function(with_empty, filter_list, sel_idx) {
         if (this.mSelName == null || this.mAllList == null)
             return;
         for (idx = this.mSelName.length -1; idx >= 0; idx--) {
@@ -864,7 +868,7 @@ var sFiltersH = {
             option.value = flt_name;
             this.mSelName.append(option)
         }
-        this.mSelName.selectedIndex = 0;
+        this.mSelName.selectedIndex = (sel_idx)? sel_idx : 0;
     },
     
     getAllList: function() {

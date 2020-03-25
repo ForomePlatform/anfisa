@@ -34,6 +34,9 @@ class RecListTask(ExecutionTask):
         self.mResSamples = None
         self.mResFull = None
 
+    def getTaskType(self):
+        return "rec-list"
+
     def _detectModes(self, rec_count):
         if rec_count > self.sViewCountFull:
             self.mResSamples = []

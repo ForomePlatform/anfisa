@@ -18,11 +18,13 @@
 #  limitations under the License.
 #
 import logging
+from datetime import datetime
 
 from app.config.a_config import AnfisaConfig
 from app.model.dataset import DataSet
 from .xl_space import XL_EvalSpace
 from .xl_unit import XL_Unit
+from .long_runner import XL_LongRunner_DTreeCounts
 #===============================================
 class XLDataset(DataSet):
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
@@ -31,6 +33,7 @@ class XLDataset(DataSet):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path)
         self.addModes({"XL"})
         self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
+        self.mLongRunners = dict()
 
         for zyg_name in self.getZygUnitNames():
             self.mEvalSpace._addZygUnit(zyg_name)
@@ -73,3 +76,39 @@ class XLDataset(DataSet):
         rec_count = self.mEvalSpace.evalTotalCounts(condition)[0]
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         return self.mEvalSpace.evalRecSeq(condition, rec_count)
+
+    #===============================================
+    def prepareDTreePointCounts(self, dtree_h, rq_id,
+            point_idxs = None, time_end = None):
+        if self.mLongRunners is None:
+            return DataSet.prepareDTreePointCounts(self, dtree_h, rq_id,
+                point_idxs, time_end)
+        with self:
+            needs_start = False
+            runner = self.mLongRunners.get(rq_id)
+            if runner is None:
+                runner = XL_LongRunner_DTreeCounts(
+                    self, rq_id, dtree_h, point_idxs)
+                needs_start =  True
+                self.mLongRunners[rq_id] = runner
+        if needs_start:
+            self.getApp().runTask(runner, 2)
+            point_idxs = None
+        timeout = None
+        if time_end is not None:
+            time_now = datetime.now()
+            if time_now < time_end:
+                timeout = (time_end - time_now).total_seconds()
+        return runner.getEvaluatedCounts(point_idxs, timeout)
+
+    #===============================================
+    def _cleanUpLongRunners(self):
+        assert self.mLongRunners is not None
+        cur_datetime = datetime.now()
+        to_remove = []
+        with self:
+            for rq_id, runner in self.mLongRunners.items():
+                if runner.outOfDate(cur_datetime):
+                    to_remove.append(rq_id)
+            for rq_id in to_remove:
+                del self.mLongRunners[rq_id]

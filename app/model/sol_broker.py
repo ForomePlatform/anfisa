@@ -87,7 +87,8 @@ class SolutionBroker(SyncronizedObject):
                 ret.append(it.getName())
         return ret
 
-    def getPanelVariants(self, panel_name, unit_name = None, assert_mode = True):
+    def getPanelVariants(self, panel_name,
+            unit_name = None, assert_mode = True):
         for it in self.iterStdItems("panel"):
             if it.getName() == panel_name:
                 if unit_name is None or it.getData()[0] == unit_name:

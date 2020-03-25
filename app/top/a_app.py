@@ -76,7 +76,8 @@ class AnfisaApp:
 
         cls.sJobPool = JobPool(
             AnfisaConfig.configOption("job.pool.threads"),
-            AnfisaConfig.configOption("job.pool.size"))
+            AnfisaConfig.configOption("job.pool.size"),
+            AnfisaConfig.configOption("job.pool.memlen"))
 
         cls.sJobPool.addPeriodicalWorker("vault_update",
             cls.sDataVault.scanAll,
@@ -196,8 +197,8 @@ class AnfisaApp:
         return aspects.getViewRepr(record, dict())
 
     @classmethod
-    def runTask(cls, task):
-        cls.sJobPool.putTask(task)
+    def runTask(cls, task, priority = 10):
+        cls.sJobPool.putTask(task, priority)
         return str(task.getUID())
 
     @classmethod

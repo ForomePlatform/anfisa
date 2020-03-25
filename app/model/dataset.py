@@ -19,7 +19,7 @@
 #
 
 import json, abc
-from time import time
+from datetime import datetime, timedelta
 from xml.sax.saxutils import escape
 
 from app.view.asp_set import AspectSetH
@@ -258,7 +258,7 @@ class DataSet(SolutionBroker):
                 ret.append(unit_h.prepareStat(incomplete_mode = True))
                 continue
             ret.append(unit_h.makeStat(condition, eval_h))
-            if time_end is not None and time() > time_end:
+            if time_end is not None and datetime.now() > time_end:
                 time_end = False
         return ret
 
@@ -270,12 +270,12 @@ class DataSet(SolutionBroker):
             assert not unit_h.isScreened() and unit_h.getUnitKind != "func"
             assert point_no is None or unit_h.isInDTrees()
             ret.append(unit_h.makeStat(condition, eval_h))
-            if time_end is not None and time() > time_end:
+            if time_end is not None and datetime.now() > time_end:
                 break
         return ret
 
     #===============================================
-    def prepareDTreePointCounts(self, dtree_h,
+    def prepareDTreePointCounts(self, dtree_h, rq_id,
             point_idxs = None, time_end = None):
         counts = [None] * len(dtree_h)
         needs_more = point_idxs is not None
@@ -286,7 +286,8 @@ class DataSet(SolutionBroker):
             if dtree_h.pointNotActive(idx):
                 counts[idx] = 0
                 continue
-            if not needs_more and time_end is not None and time() > time_end:
+            if (not needs_more and time_end is not None
+                    and datetime.now() > time_end):
                 break
             if zero_idx is not None and idx >= zero_idx:
                 continue
@@ -330,12 +331,13 @@ class DataSet(SolutionBroker):
 
     def _getArgTimeEnd(self, rq_args):
         if self.getEvalSpace().heavyMode() and "tm" in rq_args:
-            return time() + (self.sTimeCoeff * float(rq_args["tm"])) + 1E-5
+            return datetime.now() +  timedelta(
+                seconds = self.sTimeCoeff * float(rq_args["tm"]) + 1E-5)
         return None
 
     def _makeRqId(self):
         self.sStatRqCount += 1
-        return str(self.sStatRqCount) + '/' + str(time())
+        return str(self.sStatRqCount) + '/' + str(datetime.now())
 
     #===============================================
     @classmethod
@@ -556,13 +558,14 @@ class DataSet(SolutionBroker):
             dtree_code = modifyDTreeCode(parsed, instr)
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
+        rq_id = self._makeRqId()
         ret_handle = {
             "kind": self.mDSKind,
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "point-counts": self.prepareDTreePointCounts(
-                dtree_h, time_end = time_end),
+                dtree_h, rq_id, time_end = time_end),
             "dtree-list": self.getSolEntryList("dtree"),
-            "rq-id": self._makeRqId()}
+            "rq-id": rq_id}
 
         ret_handle.update(dtree_h.reportInfo())
 
@@ -577,10 +580,11 @@ class DataSet(SolutionBroker):
     def rq__dtree_counts(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
         dtree_h = self._getArgDTree(rq_args)
+        rq_id = rq_args["rq_id"]
         return {
             "point-counts": self.prepareDTreePointCounts(dtree_h,
-                json.loads(rq_args["points"]), time_end),
-            "rq-id": rq_args.get("rq_id")}
+                rq_id, json.loads(rq_args["points"]), time_end),
+            "rq-id": rq_id}
 
     #===============================================
     @RestAPI.ds_request

@@ -32,7 +32,6 @@ def cfgPathSeq(fnames):
 
 def solutionsFavor(sol_pack):
     sol_pack.regDTree("Hearing Loss",
-        cfgPathSeq(["favor_hearing_loss.pyt","favor_rare_damaging.pyt"]))
+        cfgPathSeq(["favor_hearing_loss.pyt", "favor_rare_damaging.pyt"]))
     sol_pack.regDTree("ACMG59 Variants",
-        cfgPathSeq(["favor_acmg59.pyt","favor_rare_damaging.pyt"]))
-
+        cfgPathSeq(["favor_acmg59.pyt", "favor_rare_damaging.pyt"]))

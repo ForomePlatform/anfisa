@@ -722,6 +722,7 @@ var sDTreesH = {
     mComboName: null,
     mCurDTreeName: null,
     mCurDTreeInfo: null,
+    mCurDTreeIdx: null,
     mBtnOp: null,
     
     mAllList: [],
@@ -742,10 +743,13 @@ var sDTreesH = {
         this.mOpList = [];
         this.mAllList = [];
         this.mDTreeTimeDict = {};
+        this.mCurDTreeIdx = 0;
         for (idx = 0; idx < dtree_list.length; idx++) {
             dtree_info = dtree_list[idx];
             if (dtree_info["name"] == this.mCurDTreeName)
                 this.mCurDTreeInfo = dtree_info;
+            if (dtree_info["name"] == this.mCurDTreeName)
+                this.mCurDTreeIdx = this.mAllList.length;
             this.mAllList.push(dtree_info["name"]);
             if (!dtree_info["standard"])
                 this.mOpList.push(dtree_info["name"]);
@@ -848,7 +852,7 @@ var sDTreesH = {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList);
+        this.fillSelNames(false, this.mAllList, this.mCurDTreeIdx);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
@@ -918,7 +922,7 @@ var sDTreesH = {
         }
     },
 
-    fillSelNames: function(with_empty, dtree_list) {
+    fillSelNames: function(with_empty, dtree_list, sel_idx) {
         if (this.mSelName == null || this.mAllList == null)
             return;
         for (idx = this.mSelName.length -1; idx >= 0; idx--) {
@@ -937,7 +941,7 @@ var sDTreesH = {
             option.value = dtree_name;
             this.mSelName.append(option)
         }
-        this.mSelName.selectedIndex = 0;
+        this.mSelName.selectedIndex = (sel_idx)? sel_idx : 0;
     },
     
     getAllList: function() {
