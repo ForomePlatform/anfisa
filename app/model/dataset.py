@@ -302,7 +302,7 @@ class DataSet(SolutionBroker):
 
     #===============================================
     def _getArgCondFilter(self, rq_args, activate_it = True):
-        if "filter" in rq_args:
+        if rq_args.get("filter"):
             filter_h = self.pickSolEntry("filter", rq_args["filter"])
         else:
             if "conditions" in rq_args:
