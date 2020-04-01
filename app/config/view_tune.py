@@ -51,6 +51,9 @@ def tuneAspects(ds_h, aspects):
         meta_info["versions"].get("reference")))
 
     view_gen[view_gen.find("transcripts")].setReprFunc(reprGenTranscripts)
+    if ds_h.getDSKind() == "ws":
+        _resetupAttr(view_gen, OpFilters_AttrH(view_gen, ds_h))
+        _resetupAttr(view_gen, OpDTreess_AttrH(view_gen, ds_h))
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
@@ -249,19 +252,15 @@ class BEACONS_AttrH(AttrH):
         return (link, "norm")
 
 #===============================================
-class PMID_AttrH(AttrH):
+class _PMID_AttrH(AttrH):
 
     @staticmethod
     def makeLink(pmid):
         return ("https://www.ncbi.nlm.nih.gov/pubmed/%s" % pmid)
 
-    def __init__(self, view):
-        AttrH.__init__(self, "REFERENCES",
-            title = "Found in PubMed", tooltip = "PubMed Abstracts")
+    def __init__(self, view, name, title, tooltip):
+        AttrH.__init__(self, name, title = title, tooltip = tooltip)
         self.setAspect(view)
-
-    def get_pmids(self, v_context):
-        return v_context["data"]["_view"]["databases"]["references"]
 
     def htmlRepr(self, obj, v_context):
         pmids = self.get_pmids(v_context)
@@ -276,11 +275,19 @@ class PMID_AttrH(AttrH):
         return (', '.join(links), "norm")
 
 #===============================================
-class HGMD_PMID_AttrH(PMID_AttrH):
+class PMID_AttrH(_PMID_AttrH):
     def __init__(self, view):
-        AttrH.__init__(self, "HGMD_PMIDs",
+        _PMID_AttrH.__init__(self, view, "REFERENCES",
+            title = "Found in PubMed", tooltip = "PubMed Abstracts")
+
+    def get_pmids(self, v_context):
+        return v_context["data"]["_view"]["databases"]["references"]
+
+#===============================================
+class HGMD_PMID_AttrH(_PMID_AttrH):
+    def __init__(self, view):
+        _PMID_AttrH.__init__(self, view, "HGMD_PMIDs",
             title = "HGMD PMIDs", tooltip = "PubMed Abstracts (from HGMD)")
-        self.setAspect(view)
 
     def get_pmids(self, v_context):
         return v_context["data"]["__data"]["hgmd_pmids"]
@@ -365,3 +372,27 @@ def reprGenTranscripts(val, v_context):
             escape(json.dumps(it.get("transcript_annotations", "?")))))
     ret_handle.append("</ul>")
     return ('\n'.join(ret_handle), "norm")
+
+#===============================================
+class OpFilters_AttrH(AttrH):
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, "OP_filters",
+            title = "Presence in filters",
+            tooltip = "Filters positive on variant")
+        self.mDS = ds_h
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, v_context):
+        return (' '.join(self.mDS.getRecFilters(v_context["rec_no"])), "norm")
+
+#===============================================
+class OpDTreess_AttrH(AttrH):
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, "OP_dtrees",
+            title = "Presence in decision trees",
+            tooltip = "Decision trees positive on variant")
+        self.mDS = ds_h
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, v_context):
+        return (' '.join(self.mDS.getRecDTrees(v_context["rec_no"])), "norm")

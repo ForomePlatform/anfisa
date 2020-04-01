@@ -82,7 +82,7 @@ class TaskHandler:
             self.mTask.setStatus("Failed, ask tech support")
             result = None
         self.mTask._setPool(None)
-        pool.setResult(self.mTask, result)
+        pool.setResult(self.mTask, result, self.mOrdNo)
 
 #===============================================
 class Worker(threading.Thread):
@@ -124,7 +124,7 @@ class JobPool:
 
         self.mTaskPool   = []
         self.mPoolSize   = int(pool_size)
-        self.mMemLegth = memory_length
+        self.mMemLength = memory_length
         self.mTaskCounts  = defaultdict(int)
         self.mActiveTasks = dict()
         self.mResults    = dict()
@@ -164,12 +164,13 @@ class JobPool:
 
     def putTask(self, task, priority = 10):
         with self.mThrCondition:
+            task_ord_no = self.mTaskCounts[task.getTaskType()]
+            self.mTaskCounts[task.getTaskType()] += 1
             if len(self.mTaskPool) >= self.mPoolSize:
                 task.setStatus("POOL-OVERFLOW")
-                self.setResult(task, None)
-            else:
-                task_ord_no = self.mTaskCounts[task.getTaskType()]
                 self.mTaskCounts[task.getTaskType()] += 1
+                self.setResult(task, None, task_ord_no)
+            else:
                 self.mTaskPool.append(TaskHandler(task, task_ord_no, priority))
                 self.mTaskPool.sort(key = TaskHandler.getOrd)
                 self.mActiveTasks[task.getUID()] = task
@@ -177,21 +178,21 @@ class JobPool:
 
     def _cleanUp(self):
         to_remove = []
-        for uid, info in self.mResults:
+        for uid, info in self.mResults.items():
             task_type, task_ord_no = info[2]
             if (task_ord_no
-                    < self.mTaskCounts[task_type] - self.mMemLegth):
+                    < self.mTaskCounts[task_type] - self.mMemLength):
                 to_remove.append(uid)
         for uid in to_remove:
             del self.mResults[uid]
 
-    def setResult(self, task, result):
+    def setResult(self, task, result, task_ord_no):
         with self.mLock:
             if task.getUID() in self.mActiveTasks:
                 del self.mActiveTasks[task.getUID()]
             if result is not False:
                 self.mResults[task.getUID()] = [result, task.getStatus(),
-                    (task.getTaskType(), task.getOrd()[1])]
+                    (task.getTaskType(), task_ord_no)]
                 self._cleanUp()
 
     def _pickTask(self):

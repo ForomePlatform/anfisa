@@ -104,11 +104,7 @@ class ColGroupsH:
                     if len(hit_columns) != len(seq):
                         rep_count = "[%d/%d]" % (len(hit_columns), len(seq))
                     rep_count += (
-                        '&nbsp;<span id="tr-hit-span" display="none">' +
-                        '<label for="transcript_hit_check">&nbsp;' +
-                        'Show selection only</label>&nbsp;' +
-                        '<input id="transcript_hit_check" type="checkbox" ' +
-                        'onchange="_checkHitTr();"/></span>')
+                        '&nbsp;<span id="tr-hit-span"></span>')
                 else:
                     add_title_class = " no-hit"
             objects += seq

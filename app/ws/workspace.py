@@ -170,14 +170,24 @@ class Workspace(DataSet):
         return rec_no_seq
 
     def getRecFilters(self, rec_no):
-        ret_handle = []
+        ret_seq = []
         for filter_h in self.iterSolEntries("filter"):
             if filter_h.getEvalStatus() != "ok":
                 continue
             filter_h.activate()
             if filter_h.getCondition().recInSelection(rec_no):
-                ret_handle.append(filter_h.getFilterName())
-        return ret_handle
+                ret_seq.append(filter_h.getFilterName())
+        return sorted(ret_seq)
+
+    def getRecDTrees(self, rec_no):
+        ret_seq = []
+        for dtree_h in self.iterSolEntries("dtree"):
+            if dtree_h.getEvalStatus() != "ok":
+                continue
+            dtree_h.activate()
+            if dtree_h.getFinalCondition().recInSelection(rec_no):
+                ret_seq.append(dtree_h.getDTreeName())
+        return sorted(ret_seq)
 
     #===============================================
     @RestAPI.ws_request

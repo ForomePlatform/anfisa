@@ -191,8 +191,12 @@ function checkHitTransctriptsCtrl() {
         return;
     span_el = document.getElementById("tr-hit-span");
     if (span_el) {
+        span_el.innerHTML = 
+            '<label for="transcript_hit_check">&nbsp;' +
+            'Show selection only</label>&nbsp;' +
+            '<input id="transcript_hit_check" type="checkbox" ' +
+            'onchange="_checkHitTr();"/>';
         sCheckTrHit = document.getElementById("transcript_hit_check");
-        sCheckTrHit.style.display = "";
         refreshHitTranscripts();
     } else {
         sCheckTrHit = null;

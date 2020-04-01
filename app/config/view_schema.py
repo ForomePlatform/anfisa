@@ -132,6 +132,10 @@ def defineViewSchema(metadata_record = None):
             tooltip = "View this variant in UCSC Browser"),
         AttrH("transcripts",
             title = "Transcripts", is_seq = True),
+        AttrH("op_filters", title = "Presence in filters", kind = "place",
+            tooltip = "Filters positive on variant"),
+        AttrH("op_dtrees", title = "Presence in decision trees", kind = "place",
+            tooltip = "Decision trees positive on variant"),
     ])
 
     aspects["view_qsamples"].setAttributes([

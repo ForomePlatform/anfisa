@@ -153,6 +153,7 @@ class DataSet(SolutionBroker):
         if details is not None:
             v_context["details"] = details
         v_context["data"] = rec_data
+        v_context["rec_no"] = rec_no
         return self.mAspects.getViewRepr(rec_data, v_context)
 
     def getSourceVersions(self):

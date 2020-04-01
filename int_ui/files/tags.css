@@ -32,18 +32,6 @@ div#tg-all {
 }
 
 /********************Tags area*****************************/
-div#tg-wrap-filters {
-    margin: 0px;
-    padding: 0px;
-}
-
-div#tg-filters {
-    height: 20px;
-    vertical-align: middle;
-    margin: 0px 10px 5px 10px;
-    display: flex;
-}
-
 div#tg-tags {
     flex-grow: 1;
     display: flex;
@@ -91,17 +79,6 @@ div#tg-tags-ctrl-tags {
     margin: 0px;
     display: flex;
     margin-bottom: 10px;
-}
-
-span#tg-filters-list {
-    flex-grow: 1;
-    padding-left: 10px;
-}
-
-span#tg-filters-list.empty {
-    font-weight: normal;
-    font-style: italic;
-    color: grey;
 }
 
 div#tg-tags-wrap-list {

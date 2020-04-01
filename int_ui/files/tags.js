@@ -68,15 +68,6 @@ function setupTags(info) {
     sCurTagIdx = null;
     sHasTags   = false;
     
-    var el = document.getElementById("tg-filters-list");
-    if (info["filters"]) {
-        el.innerHTML = info["filters"].join(' ');
-        el.className = "";
-    } else {
-        el.innerHTML = "none";
-        el.className = "empty";
-    }
-
     sCheckTags = info["check-tags"]
     var rep = [];
     for (j=0; j< sCheckTags.length; j++) {

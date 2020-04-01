@@ -80,9 +80,6 @@ def tagsBlock(output):
     print('''
 <div id="tg-all">
   <div id="tg-wrap-filters">
-    <div id="tg-filters">
-        <i>Filters:</i> <span id="tg-filters-list"></span>
-    </div>
   </div>
   <div id="tg-tags">
     <div id="tg-title">
