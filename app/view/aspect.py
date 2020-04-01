@@ -141,8 +141,8 @@ class AspectH:
             objects, prefix_head, hit_columns = self.mColGroups.formColumns(
                 objects, view_context.get("details"))
             if prefix_head:
-                ret["colhead"] = [[escape(title), count]
-                    for title, count in prefix_head]
+                ret["colhead"] = [[title, count, add_class]
+                    for title, count, add_class in prefix_head]
         ret["columns"] = len(objects)
         fld_data = dict()
         for attr in self.mAttrs:
@@ -171,11 +171,13 @@ class AspectH:
                 [[val, class_name] for val, class_name in a_values]])
             if attr.getToolTip():
                 rows[-1].append(attr.getToolTip())
-        if hit_columns:
+        if hit_columns is not None:
             for row in rows:
                 for idx, td_info in enumerate(row[2]):
                     if idx in hit_columns:
                         td_info[1] += ' hit'
+                    else:
+                        td_info[1] += ' no-hit'
         if self.mViewColMode and view_context and rows:
             assert self.mViewColMode == "cohorts"
             c_map = view_context.get("cohorts")

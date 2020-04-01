@@ -31,6 +31,7 @@ var sCohortViewCheck = null;
 var sSamplesCtrl = null;
 var sSubViewCurAspect = null;
 
+var sViewAllTranscripts = [true];
 /*************************************/
 /* Utilities                         */
 /*************************************/

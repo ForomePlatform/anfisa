@@ -219,6 +219,16 @@ function refreshCohorts() {
     }
 }
 
+function refreshHitTranscripts(val) {
+    if (val == true || val == false)
+        sViewAllTranscripts[0] = val;
+    for (idx = 1; idx < 3; idx++) {
+        frame = window.frames['rec-frame' + idx];
+        if (frame.sStarted) 
+            frame.refreshHitTranscripts();
+    }
+}
+
 //=====================================
 // Export
 //=====================================

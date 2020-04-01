@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 
+from xml.sax.saxutils import escape
 from bitarray import bitarray
 #===============================================
 class ColGroupsH:
@@ -93,17 +94,29 @@ class ColGroupsH:
             elif len(seq) == 0:
                 continue
             rep_count = "[%d]" % len(seq)
-            if hit_columns is not None and self.mHitGroup == group_idx:
-                it_map = bitarray(details)
-                for idx in range(len(seq)):
-                    if it_map[idx]:
-                        hit_columns.add(idx + len(objects))
-                if len(hit_columns) != len(seq):
-                    rep_count = "[%d/%d]" % (len(hit_columns), len(seq))
+            add_title_class = ""
+            if hit_columns is not None:
+                if self.mHitGroup == group_idx:
+                    it_map = bitarray(details)
+                    for idx in range(len(seq)):
+                        if it_map[idx]:
+                            hit_columns.add(idx + len(objects))
+                    if len(hit_columns) != len(seq):
+                        rep_count = "[%d/%d]" % (len(hit_columns), len(seq))
+                    rep_count += (
+                        '&nbsp;<span id="tr-hit-span" display="none">' +
+                        '<label for="transcript_hit_check">&nbsp;' +
+                        'Show selection only</label>&nbsp;' +
+                        '<input id="transcript_hit_check" type="checkbox" ' +
+                        'onchange="_checkHitTr();"/></span>')
+                else:
+                    add_title_class = " no-hit"
             objects += seq
+            if title:
+                title = escape(title)
             if title and not self.mSingleColumns:
                 title += rep_count
-            prefix_head.append((title, len(seq)))
+            prefix_head.append((title, len(seq), add_title_class))
         if len(prefix_head) == 1 and prefix_head[0][0] is None:
             prefix_head = None
         return objects, prefix_head, hit_columns

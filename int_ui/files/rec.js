@@ -26,6 +26,7 @@ var sCurTabEl = null;
 var sBlockedTabEl = null;
 var sBaseAspect = null;
 var sUseTags = null;
+var sCheckTrHit = null;
 
 /**************************************/
 function init_r(port, init_aspect, rec_id, use_tags, ws_name) {
@@ -60,11 +61,11 @@ function init_r(port, init_aspect, rec_id, use_tags, ws_name) {
         pickAspect(sBaseAspect);
     }
     checkCohortCtrl();
+    checkHitTransctriptsCtrl();
     window.onclick = onClick;
     window.onresize = arrangeControls;
     arrangeControls();
 }
-
 
 /**************************************/
 sCtrl_WS = {
@@ -184,19 +185,62 @@ function updateCfg(reset_port) {
 }
 
 /**************************************/
+/**************************************/
+function checkHitTransctriptsCtrl() {
+    if (sViewPort < 0)
+        return;
+    span_el = document.getElementById("tr-hit-span");
+    if (span_el) {
+        sCheckTrHit = document.getElementById("transcript_hit_check");
+        sCheckTrHit.style.display = "";
+        refreshHitTranscripts();
+    } else {
+        sCheckTrHit = null;
+    }
+}
+
+/**************************************/
+function refreshHitTranscripts() {
+    if (sCheckTrHit == null)
+        return;
+    var no_hit_display = (window.parent.sViewAllTranscripts[0])? "": "none";
+    var seq_el = document.getElementsByClassName("no-hit");
+    for (j = 0; j < seq_el.length; j++) {
+        seq_el[j].style.display = no_hit_display;
+    }
+    sCheckTrHit.disabled = (seq_el.length == 0);
+    sCheckTrHit.checked = !window.parent.sViewAllTranscripts[0];
+}
+
+/**************************************/
+function _checkHitTr() {
+    if (sCheckTrHit == null)
+        return;
+    
+    tr_view_all = !sCheckTrHit.checked;
+    if ((!tr_view_all) != (!window.parent.sViewAllTranscripts[0])) {
+        window.parent.refreshHitTranscripts(tr_view_all);
+    }
+}
+
+/**************************************/
+/**************************************/
 function checkCohortCtrl() {
     if (sViewPort < 0 || !window.parent.sCohortList)
         return;
     var cohort_list = window.parent.sCohortList;
-    add_rep = ['<br/><p>Cohort visibility:'];
+    
+    add_rep = ['<p>Cohort visibility:'];
     for (idx = 0; idx < cohort_list.length; idx++) {
         c_name = cohort_list[idx];
         add_rep.push('<input id="__cohort__check_' + c_name + 
             '" type="checkbox" onchange="_checkCohorts();"/><label ' +
             'for="__cohort__check_' + c_name + '">&nbsp;' + c_name + '</label>');
     }
-    add_rep.push('</p>');    
-    document.getElementById('a--view_cohorts').innerHTML += add_rep.join('\n');
+    add_rep.push('</p>');
+    var ctrl_p_el = document.createElement('div');
+    ctrl_p_el.innerHTML = add_rep.join('\n');
+    document.getElementById('a--view_cohorts').appendChild(ctrl_p_el);
     refreshCohorts();
 }
 

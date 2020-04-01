@@ -208,4 +208,9 @@ div.r-tabcnt.active {
     display: block;
 }
 
+span#tr-hit-span {
+    font-style: italic;
+    font-weight: normal;
+    font-size: 12px;
+}
 
