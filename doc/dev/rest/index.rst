@@ -49,6 +49,8 @@ Structures
    s_condition
    s_prop_stat
    s_dtree_point
+   s_dtree_instr
+   s_point_count
    s_record
    s_sol_entry
    s_zone

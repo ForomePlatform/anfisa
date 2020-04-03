@@ -42,6 +42,9 @@ base dataset.
 
 Thus we have the following distribution of functionality
 
+.. _work_pages:
+
+
     * :term:`Workspace` main work page:
         - :ref:`Full viewing regime<full_viewing_regime>`
         - :term:`filtering<filter>` regime
@@ -160,11 +163,11 @@ However, the user can modify (update) conditions in sequence, and in this case
 there can not be a guaranty to keep filter consistent. So the user needs to do it
 more responsively.
     
-Status report mechanism
-------------------------
+Status report with delays
+-------------------------
 
 .. index::
-    Status reports; interface principle
+    Status reports with delays; interface principle
 
 .. _status_report:
 
@@ -195,7 +198,7 @@ functionality:
     
 - evaluation starts by requests :doc:`rest/ds_stat` or :doc:`rest/dtree_stat` 
     
-- argument **tm** in this requests (it is float value in seconds, recommended value: 1) 
+- argument **tm** in these requests (it is float value in seconds, recommended value: 1) 
     controls time period of evaluation of request; if time is over, requests fill 
     returning list of descriptors with structures without actual status report; the 
     returning value also contains property **rq-id** with unique identifier for next 
@@ -243,6 +246,37 @@ Functions support
     Use request :doc:`rest/statfunc` to evaluate proper status report for 
     functions (but not :doc:`rest/statunits`!).
 
+Decision tree points report with delays
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _dtree_points_report:
+
+If decision tree is set, it is important to evaluate number of variants (and transcripts)
+that correspond to each point in decision tree. This evaluation might be heavy, so 
+it is organized in analogy with mechanism for status reports, using 
+:term:`delayed requests<delayed request>`:
+    
+- evaluation starts by request :doc:`rest/dtree_set`
+    
+- argument **tm** in this request (it is float value in seconds, recommended value: 1) 
+    controls time period of evaluation of request; if time is over, request 
+    stops evaluation and returns ``null`` values in list of point count reports; the 
+    returning value also contains property **rq-id** with unique identifier for next 
+    series of delayed requests
+    
+- the client receives information from the server and uses it for rendering 
+    point counts; some of them are rendered in "undetermined" state
+    
+- then the client starts series of delayed requests :doc:`rest/dtree_counts` to fill up
+    undetermined counts; these requests also have argument **tm** to control
+    time period; the request might return nothing new evaluated, however it keeps 
+    evaluation process run, so after some serie of requests the complete
+    count list will be set up, and using **rq-id** argument is important for this purpose
+    
+- the client receives result of delayed request (:doc:`rest/dtree_counts`) and 
+    re-renders evaluated count information for points
+
+    
 Solution items
 --------------
 

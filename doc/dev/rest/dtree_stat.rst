@@ -13,7 +13,7 @@ Synopsis
 
         **ds**: dataset name
         
-        **tm**: *optional* time delay control option, in seconds, *float*
+        **tm**: *optional* time delay control option, in seconds, *float as string*
 
         **dtree**: *optional* name of applying decision tree
 
@@ -25,12 +25,12 @@ Synopsis
     
     | ``{`` *dictionary*
     |      "**total-counts**": count of items in dataset
-    |           ``[`` *list**
+    |           ``[`` *list*
     |               **[0]** count of variants, *int*
     |               **[1]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**filtered-counts**": count of items filtered
-    |           ``[`` *list**
+    |           ``[`` *list*
     |               **[0]** count of variants, *int*
     |               **[1]** *optional* count of transcripts, *int*
     |           ``]``
@@ -60,3 +60,4 @@ See also
 --------
 :doc:`statunits`     :doc:`statfunc`
 
+:ref:`Status reports with delays<status_report>`. 

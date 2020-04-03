@@ -122,3 +122,5 @@ for :term:`filters<filter>`, decision tree request for
 See also
 --------
 :doc:`statunits`     :doc:`statfunc`
+
+:ref:`Status reports with delays<status_report>`

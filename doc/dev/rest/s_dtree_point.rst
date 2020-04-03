@@ -14,3 +14,18 @@ Format
 | ``}`` 
 
 
+Description
+-----------
+
+The data represents information for counts of :term:`variants<variant>`, and in case of
+:term:`ws-dataset` of :term:`transcripts<transcript>` also.
+        
+If point is not applicable for counting, data is  ``0``.
+
+If evaluation of counts is incomplete, data is ``null``.
+
+See :ref:`list of INSTR actions<dtree_instr_actions>`
+
+Used in request
+----------------
+:doc:`dtree_set`

@@ -13,7 +13,7 @@ Synopsis
 
         **ds**: dataset name
         
-        **tm**: *optional* time delay control option, in seconds, *float*
+        **tm**: *optional* time delay control option, in seconds, *float as string*
 
         **rq_id**: ID of request series
         
@@ -58,4 +58,4 @@ if there is no enough time (see details for argument **tm** in references).
 See also
 --------
 :doc:`ds_stat` :doc:`dtree_stat`
-:ref:`Status reports<status_report>`
+:ref:`Status reports with delays<status_report>`

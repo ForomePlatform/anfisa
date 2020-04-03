@@ -155,7 +155,8 @@ class LabelPoint(CheckPoint):
         return False
 
     def getActions(self):
-        return ["label"]
+        #  return ["label"]
+        return []
 
 #===============================================
 class ErrorPoint(CheckPoint):
