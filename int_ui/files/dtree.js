@@ -196,6 +196,12 @@ var sDecisionTree = {
         }
         list_rep.push('</table>'); 
         document.getElementById("decision-tree").innerHTML = list_rep.join('\n');
+
+        var seq_el = document.getElementsByClassName("dtree-atom-mark");
+        for (j = 0; j < seq_el.length; j++) {
+            seq_el[j].addEventListener("click", editAtom); 
+            seq_el[j].innerHTML = "&#x2699;";
+        }
     },
     
     _fillNoTree: function() {
@@ -336,7 +342,7 @@ var sDecisionTree = {
         if (this.mCondAtomLoc == null)
             return;
         atom_el = document.getElementById(
-            '__atom_' + this.mCondAtomLoc[0] + '_' + this.mCondAtomLoc[1]);
+            '__atom_' + this.mCondAtomLoc[0] + '-' + this.mCondAtomLoc[1]);
         if (mode)
             atom_el.className += " active";
         else
@@ -1303,8 +1309,10 @@ function versionSelect() {
     sVersionsH.selectVersion();
 }
 
-function editAtom(point_no, instr_idx) {
-    sDecisionTree.atomEdit(point_no, instr_idx);
+function editAtom(evt) {
+    var atom_id = evt.target.id;
+    idxs = atom_id.substring(7).split('-');
+    sDecisionTree.atomEdit(parseInt(idxs[0]), parseInt(idxs[1]));
 }
 
 function renderEnum(unit_name, expand_mode) {

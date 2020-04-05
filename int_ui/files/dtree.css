@@ -177,7 +177,7 @@ span.note-err{
     font-weight: bold;
 }
 
-span.point-edit {
+span.dtree-atom-mark {
     border: 1px solid grey;
     cursor: pointer;
     font-size: 140%;
@@ -186,7 +186,7 @@ span.point-edit {
     vertical-align: super;
 }
 
-span.point-edit.active {
+span.dtree-atom-mark.active {
     color: red;
     border: 1px solid red;
     background-color: yellow;

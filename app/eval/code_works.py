@@ -141,13 +141,13 @@ class HtmlPresentation:
                 m_cnt2 += 1
                 err_msg = err_msg_dict.get((check_no, instr_no))
                 if err_msg:
-                    insert_code = ('<span class="point-edit warn" title="%s" '
+                    insert_code = (
+                        '<span class="dtree-atom-mark warn" title="%s" '
                         % escape(err_msg))
                 else:
-                    insert_code = '<span class="point-edit" '
-                insert_code += ('id="__atom_%d_%d" onclick="editAtom(%d,%d);"'
-                    % (check_no, instr_no, check_no, instr_no))
-                insert_code += '>&#x2699;</span>'
+                    insert_code = '<span class="dtree-atom-mark" '
+                insert_code += ('id="__atom_%d-%d"></span>'
+                    % (check_no, instr_no))
                 l_upd = (l_upd[:j_upd_start] + insert_code + l_upd[j_upd:])
                 j_upd += len(insert_code) - (j_upd - j_upd_start)
             lines_upd[idx] = l_upd
