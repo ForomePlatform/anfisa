@@ -27,7 +27,7 @@ Synopsis
 Description
 -----------
 
-Request checks if :term:`code of decision tree` is correct. 
+Request checks if :term:`decision tree code` is correct. 
 
 Returning properties **error**, **line**, **no** are set if error happens
 and correspond to the first error in the code.

@@ -43,7 +43,7 @@ Synopsis
 Description
 -----------
 
-Requests of this type return evaluated :ref:`status reports<status_report>` 
+Requests of this type initiates :doc:`../concepts/status_report`
 and form series of requests initiated by request 
 :doc:`ds_stat` or :doc:`dtree_stat`, see details in references.
 
@@ -58,4 +58,5 @@ if there is no enough time (see details for argument **tm** in references).
 See also
 --------
 :doc:`ds_stat` :doc:`dtree_stat`
-:ref:`Status reports with delays<status_report>`
+
+:doc:`../concepts/status_report`

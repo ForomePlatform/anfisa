@@ -1,5 +1,9 @@
-Soluton entry descriptor
+Soluton Entry descriptor
 ========================
+
+.. index:: 
+    Soluton Entry descriptor; data structure
+
 
 Format
 ------

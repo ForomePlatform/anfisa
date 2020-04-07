@@ -35,9 +35,8 @@ Synopsis
 Description
 -----------
 
-Request returns :ref:`status report<status_report>` 
-for :ref:`function<functions_support>` applied to 
-selection defined by arguments:
+Request returns status report for :term:`function<functions>` applied to 
+selection determined by arguments:
 
     - filter applies if either **filter** or **conditions** is set (see discussion
       :ref:`here<fiter_conditions>`)
@@ -50,11 +49,10 @@ selection defined by arguments:
         
     - otherwise selection is the full list of variants in dataset
 
-Available in the current version functions and their parameters are documented
-in :doc:`functions`. 
+See discussion and functions reference in :doc:`func_ref`.
 
 See also
 --------
 :doc:`s_prop_stat` 
-:ref:`Function support<functions_support>`
-:doc:`functions`
+
+:doc:`func_ref`

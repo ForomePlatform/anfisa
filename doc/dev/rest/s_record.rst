@@ -1,6 +1,9 @@
 Record descriptor
 =================
 
+.. index:: 
+    Record descriptor; data structure
+
 Format
 ------
 

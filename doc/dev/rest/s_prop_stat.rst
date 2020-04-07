@@ -1,6 +1,9 @@
 Property Status structure
 =========================
 
+.. index:: 
+    Property Status; data structure
+
 Format
 ------
 
@@ -33,14 +36,14 @@ Format
 |
 |        *in case of* **kind** = ``"func"`` 
 |        ----------------------------------- 
-|        "**variants**":  *optional* ``[`` values status *list*  
+|        "**variants**":  ``null``*optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
 |                       **[1]**: count of variants, *int*
 |                       **[2]**: *optional* count of transcripts, *int*
 |               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
-|         **...**: all parameters of function evaluation 
+|         **...**: function environment
 | ``}``
 
 Description
@@ -52,7 +55,7 @@ It represents status report for a :term:`filtering property` applied to
 selected set of variants. In case of :term:`workspace` selection
 also applies to :term:`transcripts<transcript>`. 
 
-See discussion on :ref:`status reports<status_report>` for understanding 
+See discussion on :doc:`../concepts/status_report` for understanding 
 general principle and details.
 
 In context of requests :doc:`ds_stat`, :doc:`dtree_stat` status report 
@@ -65,30 +68,20 @@ for filtering properties (of numeric or enum type)
 is incomplete, use request :doc:`statunits` to get them in complete
 state. 
 
-In in this context full list of status reports contains reports 
-for :ref:`functions<functions_support>`, always in incomplete state. 
+Property **sub-kind** can have the following values:
 
-Use :doc:`statfunc` request to get complete status report for 
-function, if all required parameters are set. The data structure
-in this case have some specific:
-  
-  - structure contains all parameter settings for function evaluation
-  
-  - if evaluation of function fails, the property **err** is set 
-    and **variants** is ``null``
-  
-Property **sub-type** can have the following values:
-
-  ================   =================
-   **type**           **sub-type**
-  ================   =================
+  ================   ====================
+   **kind**           **sub-kind**
+  ================   ====================
    ``"numeric"``      ``"int"``
                       ``"float"``
-  ----------------   -----------------
+  ----------------   --------------------
     ``enum``          ``"status"``
                       ``"multi"`` 
-  ================   =================
-
+  ----------------   --------------------
+    ``func``          *type of function*
+  ================   ====================
+  
 Variants for enumerated properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Complete status report for enumerated filtering properties contains
@@ -119,6 +112,22 @@ has problems in selection of interested variant in so huge lists.
 It is really heavy problem for the current version of the system. In 
 future release there should appear an effective and (probably) complex 
 solution of this problem.
+
+Functions support
+^^^^^^^^^^^^^^^^^
+
+For functions property status structure is formed in two different contexts:
+
+    - requests :doc:`ds_stat`, :doc:`dtree_stat` just declare
+        placement of function between filtering properties, so 
+        requests return structure with ``null`` as **variants** 
+        and additional properties of function environment
+        
+    - request :doc:`statfunc` returns property status 
+        with non-optional **variants** or **err** in case of error
+        in evaluation
+
+See :doc:`func_ref` for details and function reference.
 
 See also
 --------

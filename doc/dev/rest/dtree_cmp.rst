@@ -32,14 +32,12 @@ Description
 -----------
 
 Request reports difference between two :term:`decision tree` 
-:term:`codes<code of decision tree>`. 
+:term:`codes<decision tree code>`. 
 
 First decision tree is set by either **dtree** or **code** (see discussion
 :ref:`here<dtree_code>`)
  
-Second decision tree should be registered as 
-:ref:`solution item<solution_items>`, so it is stored on server side by 
-name **other**.
+Second decision tree should be registered as :doc:`solution item<../concepts/sol_pack>`, so it is stored on server side by name **other**.
 
 Result of comparison is split onto string blocks. In each block 
 two first letters on the line are the same, value of first letter indicates

@@ -1,6 +1,9 @@
 Zone descriptor
 ===============
 
+.. index:: 
+    Zone descriptor; data structure
+
 Format
 ------
 

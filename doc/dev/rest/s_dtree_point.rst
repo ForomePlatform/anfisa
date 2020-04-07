@@ -1,6 +1,9 @@
 Decision Tree Point descriptor
 ==============================
 
+.. index:: 
+    Decision Tree Point descriptor; data structure
+
 Format
 ------
 

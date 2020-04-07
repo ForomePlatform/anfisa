@@ -41,23 +41,24 @@ Synopsis
 Description
 -----------
 
-The request supports :ref:`status report mechanism<status_report>` in 
-context of :term:`decision tree`.
+The request supports :doc:`../concepts/status_report` in 
+context of :doc:`../concepts/dtree_pg`. 
+Filtering properties status data are collected in context of :term:`decision tree point`.
 
 See explanations of input argument **tm** and returning 
-properties **stat-list**, **rq-id** :ref:`here<status_report>`
+properties **stat-list**, **rq-id** :doc:`here<../concepts/status_report>`
 
-Applied decision tree is defined by either **dtree** or **code** arguments, 
+Applied :term:`decision tree` is defined by either **dtree** or **code** arguments, 
 see discussion :ref:`here<dtree_code>`. 
 
 Comments
 --------
 
 The request is much more simple comparing to its analogue :doc:`ds_stat`; both methods initiate
-:ref:`status report mechanism<status_report>`.  
+:doc:`../concepts/status_report`.
 
 See also
 --------
 :doc:`statunits`     :doc:`statfunc`
 
-:ref:`Status reports with delays<status_report>`. 
+:doc:`../concepts/status_report`

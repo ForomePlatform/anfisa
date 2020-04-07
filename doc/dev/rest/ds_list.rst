@@ -46,7 +46,7 @@ Description
 -----------
 
 The request is the principal one for organizing :ref:`auxiliary<auxiliary_viewing_regime>`
-variant of :ref:`viewing regime<viewing_regimes>`. So this request is used in context of  
+variant of :doc:`../concepts/view`. So this request is used in context of  
 of :term:`XL-dataset` or :term:`decision tree`. 
 
 The request does not return proper information at once. It creates 

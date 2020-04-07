@@ -23,7 +23,7 @@ Synopsis
 Description
 -----------
 
-The request returns names of preset :ref:`solution items<solution_items>` available for :term:`dataset`
+The request returns names of preset :doc:`../concepts/sol_pack` available for :term:`dataset`
 
 Panel names are split to groups by unit/property names for which these panels are made. Key for group is 
 

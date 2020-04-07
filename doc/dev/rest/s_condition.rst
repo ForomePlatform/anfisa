@@ -1,6 +1,18 @@
 Condition descriptor
 ====================
 
+.. index:: 
+    Condition descriptor; data structure
+
+
+:term:`Conditions` are the kernel objects of the system, since they are atomic objects
+that are used in :doc:`../concepts/filtration`. 
+
+:term:`Filters<filter>` are just list of conditions, conjunction of them. So it is important functionality for user to define and modify conditions interactively in :doc:`../concepts/filters_reg`. 
+    
+In context of :term:`decision tree` conditions have form of :term:`decision tree atomic condition`,
+and the user can modify them in interactive way in :doc:`../concepts/dtree_pg`. 
+
 Format for numeric property
 ---------------------------
 
@@ -71,19 +83,12 @@ Format for function condition
 
 Comments
 ^^^^^^^^
+    See :doc:`func_ref` for functions definition and reference.
+
     All notes to condition for enumerated property are actual in this case too.
     
     Different functions have different format of function arguments (position **[4]**) and 
     their own specific check if condition is good for this function.
     
-    Available functions and their arguments are documented in :doc:`functions`
+    Available functions and their arguments are documented in :doc:`func_ref`
 
-Description
------------
-
-    :term:`Conditions` are the kernel objects of the system, since they are atomic objects
-    that define any :term:`filtration` procedure. 
-
-    :term:`Filters<filter>` are just list of conditions, conjunction of them. So it is important functionality for user to define and modify conditions interactively. 
-    
-    But in :term:`decision tree` filtration interactive definition and modification for conditions also plays important role.

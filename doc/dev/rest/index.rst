@@ -62,4 +62,5 @@ References
 .. toctree::
    :maxdepth: 1
 
-   functions
+   func_ref
+   

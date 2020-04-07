@@ -58,11 +58,11 @@ Synopsis
 Description
 -----------
 
-The request is the principal one for organizing :term:`decision tree regime<decision tree>` for :term:`datasets<dataset>`.
+The request is the principal one for organizing :doc:`../concepts/dtree_pg` for all :term:`datasets<dataset>`.
 
-If **dtree** argument is set, decision tree with this name should be registered on 
+If **dtree** argument is set, :term:`decision tree` with this name should be registered on 
 the server side as :term:`solution item`. Otherwise the argument **code** must
-contain code of :term:`decision tree`.
+contain :term:`decision tree code`.
 
 If **instr** argument is set (see details in :doc:`s_dtree_instr`) and instruction 
 is of type ``"DTREE"``, request modifies decision tree :term:`solution item`: create, update or 
@@ -108,7 +108,7 @@ Returning properties:
     **eval-status**: property is either ``"ok"`` or evaluation error report
 
     **dtree-list**: names of all decision trees available for dataset, this properties
-        supports work with decision tree as :ref:`solution item<solution_items>` element
+        supports work with decision tree as :doc:`solution item<../concepts/sol_pack>`
  
 Comments
 --------

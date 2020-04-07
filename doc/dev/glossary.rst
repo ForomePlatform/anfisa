@@ -12,7 +12,17 @@ Anfisa glossary
     Dataset
         is a collection of variants; the system supports two kinds of datasets: 
         XL-datasets and workspaces, or WS-datasets
+
+    Case
+        is group of persons - samples - with family connections between each other whose genomic
+        information is registered in dataset.
+        
+    Sample
+        person in case, may be affected or unaffected. Proband sample in medical cases 
+        is always affected
     
+    Trio
+        tree persons: child and two parents, child is subject of trio; cases often are trio
     
     Vault
         Storage for all datasets represented in the system
@@ -25,7 +35,9 @@ Anfisa glossary
     Workspace
     WS-dataset
         comparatively small dataset (less than 9000 variants); the system provides extended functionality for this case: 
+        
         * :term:`filtration` in this case applies to :term:`transcripts<transcript>`
+        
         * :term:`tagging` and :term:`zone` selection mechanisms are available
         
     Transcript
@@ -37,7 +49,7 @@ Anfisa glossary
         
     Viewing regime
         The user can view and study all properties of selected variants in this regime. See 
-        the :ref:`discussion<viewing_regimes>` for details.
+        :doc:`concepts/view` for details.
         
     Filtration
         is the main analytic mechanism providing by the system; the user determines rules of selection variants (and their transcripts) satisfying conditions for variety of properties. The subset of variants (transcripts) can be used for detailed study in :term:`viewing regime`. The user also can create :term:`secondary workspace` and continue studies of data inside it.
@@ -60,9 +72,17 @@ Anfisa glossary
         However this functionality comparatively heavy for the user and requires accuracy.
         Decision trees are :term:`solution items<solution item>`
         
-    Code of decision tree
+    Decision tree code
         Internal representation of decision tree is portion of code in Python dialect. 
         ...
+        
+    Decision tree point
+        Single instruction of decision tree. Each point has state: set of items 
+        (variants and transcripts) that correspond to this point. 
+        
+    Decision tree state label
+        Name of state for a decision tree point. The purpose of labels is setting
+        proper parameters to some of :term:`functions`
         
     Tagging
         In :term:`workspace` context, where number of variants is not so large, the user can tag them manually. Tags are stored on the server side. See details in :doc:`rest/ws_tags`
@@ -83,21 +103,29 @@ Anfisa glossary
     Conditions
         ...
     
+    Decision tree atomic condition
+        ...
+        
     Filtering property
     Unit
-        ...
+        Property of :term:`variants<variant>` used for :doc:`concepts/filtration` purposes. 
         
     Numeric property
-        Numeric property is filtering property with numeric values, float or integer. 
-        
+        :term:`Filtering property` with numeric values
+    
     Enumerated property
-        ...
-        
+        :term:`Filtering property` with values from a enumerated list of strings
+    
     Status property
-        ...
+        :term:`Enumerated property` with single value
         
     Multiset property
-        ...
+        :term:`Enumerated property` with single value
+        
+    Functions
+        Aggregated information items that can be used in :doc:`concepts/filtration` as well
+        as :term:`filtering properties<filtering property>`, in case if parameter data 
+        is defined. See :doc:`rest/func_ref`.
         
     Dataset documentation
         Collection of documents in various formats attached to dataset or produced by the system
@@ -105,13 +133,12 @@ Anfisa glossary
         includes references to documentation on base one.
         
     Aspect
-        Representation of part of :term:`viewing properties<viewing property>` in form of 
-        single table or pre-format listing. Collection of aspects form 
-        :ref:`full presentation of variant data<variant_data_presentation>`
+        Representation of part of data on :term:`variant` in context of full view representation. See :doc:`concepts/view`
         
     Solution item
-        See the detailed description :ref:`here<solution_items>`.
-        ...
+        Item representing some application solution useful for the user. Generalization name
+        for :term:`filter`, :term:`decision tree` and some others.
+        See the discissions :doc:`concepts/sol_pack` and :doc:`concepts/sol_work`.
         
     Gene list
         ...
@@ -136,6 +163,3 @@ Anfisa glossary
         instead of the fresh version of it. The workaround for this problem is to create a mirror directory,
         copy into it all the necessary files but slightly modify their names in such a way that different
         versions of the same file will have different names. See :ref:`mirror-ui configuration setting<mirror_ui>`.
-    
-    
-    

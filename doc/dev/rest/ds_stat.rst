@@ -67,11 +67,11 @@ Description
 The request is the principal one for organizing :term:`filtering regime<filter>` for :term:`datasets<dataset>`. 
 
 The most important functionality initiated by this method is 
-:ref:`status report mechanism<status_report>`, see there explanations of 
+:doc:`../concepts/status_report`, see there explanations of 
 input argument **tm** and returning properties **stat-list**, **rq-id**
 
 The rest of information returning by the request concerns filters 
-as :ref:`solution items<solution_items>`:
+as :doc:`../concepts/sol_work`.
 
 Current conditions/filter define :term:`filter` if either **filter** or 
 **conditions** is set (see discussion :ref:`here<fiter_conditions>`). 
@@ -106,16 +106,16 @@ If argument **instr** is set, the request modifies filter on server side:
    * if **instr** is ``["DELETE"``, filter_name]`` the filter ``filter_name``
      is subject to be deleted.
      
-Please also read discussion :ref:`here<solution_work_items>`     
+See also :doc:`../concepts/sol_work`
 
 Comments
 --------
 
 The request has simple analogue :doc:`dtree_stat`: both methods initiate
-:ref:`status report mechanism<status_report>`
+:doc:`../concepts/status_report`.
 
 Also the request has analogue :doc:`dtree_set`: both methods support 
-its main objects as :ref:`solution items<solution_items>`, this request does it
+its main objects as :doc:`../concepts/sol_work`, this request does it
 for :term:`filters<filter>`, decision tree request for 
 :term:`decision trees<decision tree>`.
 
@@ -123,4 +123,7 @@ See also
 --------
 :doc:`statunits`     :doc:`statfunc`
 
-:ref:`Status reports with delays<status_report>`
+:doc:`../concepts/status_report`  
+
+:doc:`../concepts/sol_work`
+

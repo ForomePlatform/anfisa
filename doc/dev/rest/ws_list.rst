@@ -46,7 +46,7 @@ Description
 -----------
 
 The request is the principal one for organizing :ref:`full<full_viewing_regime>`
-variant of :ref:`viewing regime<viewing_regimes>`.
+variant of :doc:`../concepts/view`.
 
 The request affects only :term:`workspaces<workspace>` and return list of 
 :term:variant` record descriptors.

@@ -7,8 +7,8 @@ Anfisa Development Documentation
    intro
    
    glossary
-   
-   ui_concept
+
+   concepts/index
    
    rest/index
    
@@ -17,6 +17,8 @@ Anfisa Development Documentation
    configuration
    
    install
+   
+   zygocity
    
 Indices and tables
 ==================

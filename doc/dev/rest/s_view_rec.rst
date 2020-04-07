@@ -1,6 +1,10 @@
 View Record structure
 ================================
 
+.. index:: 
+    View Record; data structure
+
+
 Format
 ------
 
@@ -51,7 +55,7 @@ Description
 
 The data structure represents complete information sufficient for render
 full presentation of a variant in :term:`Viewing regime`. 
-See also :ref:`Variant data presentations<variant_data_presentation>`
+See also :doc:`../concepts/view`
 
 Full information is split onto series of :term:`aspects<aspect>`. 
 Aspect usually has form of table. In simple cases table contains two columns, 
