@@ -123,6 +123,7 @@ Anfisa glossary
         :term:`Enumerated property` with single value
         
     Functions
+    Filtering function
         Aggregated information items that can be used in :doc:`concepts/filtration` as well
         as :term:`filtering properties<filtering property>`, in case if parameter data 
         is defined. See :doc:`rest/func_ref`.

@@ -1,14 +1,14 @@
 Notes on Zygocity 
 =================
 
-The purpose of this text is to explain (or interprete) some portion of genomics in terms of 
-informatics. We take care of correct informatical formulations for data structures 
+The purpose of this text is to explain (or interpret) some portion of genomics in terms of 
+informatics. We take care of correct informational formulations for data structures 
 (in JSON format) and tasks to be supported.
 
 Definitions: case, samples 
 --------------------------
 
-:term:`Dataset` represents **case** i.e genomic information on one or many persons - **samples** - 
+:term:`Dataset` represents **case** i.e genomics information on one or many persons - **samples** - 
 from the same family. Each sample in case is identified by **id**.
 
 Examples of id: ``"bgm9001a1"``, ``"bgm9001u1"``
@@ -22,7 +22,7 @@ are formulated only in context of this scope.
 Zygocity states
 ---------------
 
-Most of chromosomes for human are pairwize, so a mutation/variant applying to a sample has 
+Most of chromosomes for human are pairwise, so a mutation/variant applying to a sample has 
 one of the following states:
 
     * Zygocity 0: variant is absent
@@ -49,7 +49,7 @@ So let us define the following 5 *string* (not *int*!) constants:
 
 ``“2”``,    ``“2-1”``,    ``“1”``,    ``“1-0”``,    ``“0”``
 
-Formally speaking, we can define one more meaningful constant: ``"0-2"``, but let us interprete
+Formally speaking, we can define one more meaningful constant: ``"0-2"``, but let us interpret
 this case as we do not define condition at all: all variant are passed.
 
 .. _zygocity-scenario:
@@ -85,7 +85,7 @@ Comments:
         all unaffected
 
     **Homozygous Recessive** - variant probably breaks gene, but has no effect while 
-        there is secong good (gene) copy 
+        there is second good (gene) copy 
         
     **X-linked** - variant probably bad, it affects all male samples and females
         in homozygous state
@@ -106,7 +106,7 @@ Notes:
 Zygocity events and compound requests
 -------------------------------------
 
-Let us fix some diapason or diapasons of positions on chrmomosome as "gene" (see
+Let us fix some diapason or diapasons of positions on chromosome as "gene" (see
 :ref:`below<gene_aproximations>` for details). Then for some 
 fixed zygocity scenario it is possible to count how many variants with this scenario presents
 inside the "gene". Let us call these variants as "events".
@@ -124,7 +124,7 @@ The result of compound request is not empty only if for all scenarios in the lis
     
 Strongly speaking, a compound request applies to "genes", and its result is either empty, or
 *list of lists* of variants that cause events. The current version of the system does not support 
-so complex selection objects, so we interprete result of compound request as a joined plain list of variants.
+so complex selection objects, so we interpret result of compound request as a joined plain list of variants.
 
 .. _compound-heterozygous:
 
@@ -143,10 +143,10 @@ Comments.
 * The main idea of request: let us consider case when only proband is affected. It might 
     happen that on some "gene" each parent has (different) dangerous variant in heterozygous state. 
     These variants have no effect because second copy of gene are not broken. But proband has both 
-    copies of "gene" broken: one copy is broken by one ov dangerous variants, ans second copy - 
+    copies of "gene" broken: one copy is broken by one of dangerous variants, ans second copy - 
     by another one. 
     
-* From informatical point of view, the detection of compound events is a clear taks. 
+* From informational point of view, the detection of compound events is a clear tasks. 
     In practice however there are serious difficulties to prepare proper setup for this
     detection. Results of the procedure might be good only if most part of benign variants 
     are filtered out before the detection process. It is a matter of experiments, so the 

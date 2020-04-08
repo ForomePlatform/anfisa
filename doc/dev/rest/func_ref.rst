@@ -32,7 +32,7 @@ The logic of function usage is as following:
         the condition (see :doc:`s_condition` for details of condition format).
         
 Since work with functions is a complex one, there might be additional requirements
-for Front End application to provide support of neccessary "short cuts":
+for Front End application to provide support of necessary "short cuts":
 
     - function environment should be used to set "standard" configurations of function 
         parameters;
@@ -105,7 +105,7 @@ Inheritance_mode()
     **Environment properties**: 
     
    |    **“family”**:  ``[`` *list of* id for all samples in case, first is proband ``]``
-   |    **“аffected”**:  ``[`` *list of* id, default problem group ``]``
+   |    **“affected”**:  ``[`` *list of* id, default problem group ``]``
         
     **Values**: 
 
@@ -156,7 +156,7 @@ Custom_Inheritance()
     **Environment properties**:
 
    |    **“family”**:  ``[`` *list of* id for all samples in case, first is proband ``]``
-   |    **“аffected”**:  ``[`` *list of* id, default problem group ``]``
+   |    **“affected”**:  ``[`` *list of* id, default problem group ``]``
 
     **Values**: ``["True"]``
     
@@ -207,7 +207,7 @@ presenting in the :term:`case` of :term:`dataset`. Function is available only if
 is nonempty.
 
 Special notation: if proband is subject of trio, ``"Proband"`` is used as identifier of trio, 
-otherwize trio is identified by id of its subject.
+otherwise trio is identified by id of its subject.
 
 Default value for **approx** parameter is the first item in **approx-modes** environment property.
 
@@ -251,7 +251,7 @@ Compound_Request()
     **Environment properties**: 
     
     |   **“family”**:  ``[`` *list of* id for all samples in case, first is proband ``]``
-    |   **“аffected”**:  ``[`` *list of* id, default problem group ``]``
+    |   **“affected”**:  ``[`` *list of* id, default problem group ``]``
     |   **"approx-modes"**: ``[`` *list of* available :ref:`gene approximation variants<gene_aproximations>`, *strings* ``]``
     |   **labels**: ``[`` *list of* available :term:`decision tree state labels<decision tree state label>`, *strings* ``]``
         
