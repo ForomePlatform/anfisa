@@ -119,5 +119,7 @@ support main :ref:`work pages<work_pages>` for two mechanisms of :term:`filtrati
 See also
 --------
 :doc:`dtree_counts`     :doc:`dtree_stat`
+
 :ref:`Decision tree points counters evaluation with delays<dtree_points_report>`
 
+:doc:`../concepts/dtree_syntax`

@@ -5,9 +5,9 @@ Synopsis
 --------
 
 .. index:: 
-    statunits; request
+    dtree_counts; request
 
-**statunits** 
+**dtree_counts** 
 
     **Arguments**: 
 

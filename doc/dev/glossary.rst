@@ -3,10 +3,9 @@ Anfisa glossary
 
 .. glossary::
 
-
     Variant
-        Variant is the base object of the system. It corresponds to a difference (mutation) in genome code
-        between of some fixed person and "standard" genomics sequence. 
+        Variant is the base object of the system. It corresponds to a difference 
+        (mutation) in genome code between of some fixed person and "standard" genomics sequence. 
     
     
     Dataset
@@ -18,27 +17,26 @@ Anfisa glossary
         information is registered in dataset.
         
     Sample
-        person in case, may be affected or unaffected. Proband sample in medical cases 
+        person in :term:`case`, may be affected or unaffected. Proband sample in medical cases 
         is always affected
     
     Trio
-        tree persons: child and two parents, child is subject of trio; cases often are trio
+        tree persons: child and two parents, child is subject of trio; 
+        in practice :term:`cases<case>` are often trio
     
     Vault
-        Storage for all datasets represented in the system
-    
-    
+        Storage for all :term:`datasets<dataset>` represented in the system
+        
     XL-dataset
-        eXtra Large dataset, may contain arbitrary many variants
+        eXtra Large :term:`dataset`, may contain arbitrary many variants
 
-    
     Workspace
     WS-dataset
-        comparatively small dataset (less than 9000 variants); the system provides extended functionality for this case: 
+        comparatively small dataset (less than 9000 variants); object of :doc:`concepts/ws_pg`
         
-        * :term:`filtration` in this case applies to :term:`transcripts<transcript>`
+        :term:`Filtration` in this case applies to :term:`transcripts<transcript>`
         
-        * :term:`tagging` and :term:`zone` selection mechanisms are available
+        :term:`Tagging` and :term:`zone` selection mechanisms are available for workspaces.
         
     Transcript
         there are two meanings for this term in context of the system:
@@ -62,27 +60,23 @@ Anfisa glossary
         :term:`variants<variant>` (:term:`transcripts<transcript>`) one by one, in conjunctional way.
         Filters are :term:`solution items<solution item>`
         
-    Filtered properties status regime
-        ...
-        
     Decision tree
         implementation of :term:`filtration` where :term:`conditions` are applied to 
-        :term:`variants<variant>` (:term:`transcripts<transcript>`) in form of decision tree. It is
-        very powerful tool, and can be used for complex and accurate selection user tasks.
-        However this functionality comparatively heavy for the user and requires accuracy.
+        :term:`variants<variant>` (:term:`transcripts<transcript>`) in form of decision tree. 
+        See :doc:`concepts/dtree_syntax` for definitions.
         Decision trees are :term:`solution items<solution item>`
         
     Decision tree code
         Internal representation of decision tree is portion of code in Python dialect. 
-        ...
+        See :doc:`concepts/dtree_syntax`
         
     Decision tree point
-        Single instruction of decision tree. Each point has state: set of items 
-        (variants and transcripts) that correspond to this point. 
-        
+        Single instruction of decision tree. Points of main types have state: set of items 
+        (variants and transcripts) that correspond to this point. See :doc:`concepts/dtree_syntax`
+
     Decision tree state label
-        Name of state for a decision tree point. The purpose of labels is setting
-        proper parameters to some of :term:`functions`
+        Name of state for a :term:`decision tree point`. See :doc:`concepts/dtree_syntax`.
+        The purpose of labels is setting proper parameters to some of complex :term:`functions`
         
     Tagging
         In :term:`workspace` context, where number of variants is not so large, the user can tag them manually. Tags are stored on the server side. See details in :doc:`rest/ws_tags`
@@ -95,16 +89,18 @@ Anfisa glossary
         and then this subset is ready for careful detailed manual study
         
     Root dataset
-        ...
+        For :term:`secondary workspace` it is original dataset that was loaded in :term:`vault` directly
         
     Viewing property
-        ...
+        Property of variant shown in :term:`viewing regime`
         
     Conditions
-        ...
+        Conditions on various :term:`filtering properties<filtering property>`, 
+        see :doc:`rest/s_condition`.
     
     Decision tree atomic condition
-        ...
+        Atomic condition for :term:`filtering property` used in :term:`decision tree point`,
+        see :doc:`concepts/dtree_syntax`
         
     Filtering property
     Unit
@@ -142,13 +138,16 @@ Anfisa glossary
         See the discissions :doc:`concepts/sol_pack` and :doc:`concepts/sol_work`.
         
     Gene list
-        ...
+        List of genes registered in the system as :term:`solution item`
         
     Export
-        ...
+        Operation of creation (external) Excel document for selected variants. Selection 
+        shoulld be limited (up to 300 entries). Document is stored on server side, see
+        :ref:`configuration settings<export_cfg>`.
         
     Delayed request    
-        ...
+        A request that needs to be complete only if the main request has returned imcomplete
+        information. Forms series. See details in :doc:`concepts/status_report`
     
     Background task
         The system cannot perform immediately some of tasks, so it evaluate them with some delay. Once such a tasks initiates, the client periodically call the server request :doc:`rest/job_status` whether the task is done. 

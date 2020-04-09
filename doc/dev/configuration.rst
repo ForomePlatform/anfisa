@@ -9,22 +9,22 @@ The file is formed in extended JSON format, extension mean:
 
 The following options are supported.
 
-* **file-path-def**, *dictionary*
-
 .. index:: 
     file-path-def; service configuration option
+
+* **file-path-def**, *dictionary*
 
 The directory macro ${HOME} is predefined; here we define more macros, 
 in particular the macro ${WORK}::
 
     "file-path-def": {"WORK": "${HOME}/../a-setup"},
 
-* **host**, *string*
-* **port**, *int*
-
 .. index:: 
     host; service configuration option
     port; service configuration option
+
+* **host**, *string*
+* **port**, *int*
 
 Host and port are used in the stand-alone configuration to setup the server on a
 specific port, ignored in the server (UWIGI container) mode::
@@ -32,10 +32,10 @@ specific port, ignored in the server (UWIGI container) mode::
     "host": "0.0.0.0",
     "port": 8190,
 
-* **html-base**, *string*
-
 .. index:: 
     html-base; service configuration option
+
+* **html-base**, *string*
 
 Used in the internal UI: its HTML pages need to know their location in terms of
 URL addresses, just to make correct reference to REST API or other pages of
@@ -43,43 +43,45 @@ the internal UI, in case of server setup with NextGen UI should end in ‘/​ap
 
     "html-base": "/anfisa/",
 
-* **html-ws-url**, *string*
-    
 .. index:: 
     html-ws-url; service configuration option
+    
+* **html-ws-url**, *string*
     
 Address of the NextGen UI base page if the NextGen UI is set up, else keep the default value ​"ws"::
 
     "html-ws-url": "ws",
 
-* **html-title**, *string*
-    
 .. index:: 
     html-title; service configuration option
 
+* **html-title**, *string*
+    
 Title prefix used in the pages of the Legacy UI::
 
     "html-title": "Anfisa",`
 
-* **mongo-db**, *string*
-    
 .. index:: 
     mongo-db; service configuration option
 
+* **mongo-db**, *string*
+    
 The database in MongoDB used by the system::
 
     "mongo-db": "Anfisa",
-    
-    
-* **data-vault**, *string*
-    
+        
 .. index:: 
     data-vault; service configuration option
+    
+* **data-vault**, *string*
     
 The location of the vault directory::
 
     "data-vault": "${WORK}/vault",
 
+.. index:: 
+    run-options; service configuration option
+    
 * **run-options**, *list*
 
     Some additional option to configure Anfisa service. Currently out of use::
@@ -87,7 +89,9 @@ The location of the vault directory::
     "run-options": []
 
 .. _job_vault_check_period:         
-
+    
+.. index:: 
+    job-vault-check-period; service configuration option
     
 * **job-vault-check-period**, *int*
 
@@ -95,42 +99,51 @@ The location of the vault directory::
     
         "job-vault-check-period": 30,
         
-* **http-bam-base**, *string*
-    
 .. index:: 
     http-bam-base; service configuration option
-
+    
+* **http-bam-base**, *string*
+    
 HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this option
 and set it up correctly if the server provides access to BAM-files, otherwise keep it
 commented::
     
     "http-bam-base": “http://<server>/anfisa/links/"`
 
+.. index:: 
+    export; service configuration option
+
+.. _export_cfg: 
+
 * **export**, *dictionary*
 
-  Configuration of export functionality
+    Configuration of export functionality
 
-  * **excel-template**, *string*
+.. index:: 
+    excel-template; service configuration option
+
+* **excel-template**, *string*
     
     The template used to configure the Excel export styles.
     During evaluation of the script deploy.sh the file is being downloaded from URL:
     "​https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx​"
 
-  * **work-dir**, *string*
+.. index:: 
+    work-dir; service configuration option
+
+* **work-dir**, *string*
    
     The directory where the service stores exported files
     
-.. index:: 
-    export; service configuration option
-    excel-template; service configuration option
-    work-dir; service configuration option
-
 ::
 
     "export": {
         "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",`
         "work-dir": "${WORK}/export/work"
     }
+
+.. index:: 
+    dir-files; service configuration option
 
 * **dir-files**, *list*
 
@@ -142,9 +155,6 @@ commented::
         ["--/ui", "${WORK}/ui"],
         ["/excel", "${WORK}/export/work"]],
 
-  .. index:: 
-    export; service configuration option
-        
   Comments for instructions in example:
   
   * ``"/ui/images", "/ui"``:
@@ -169,11 +179,11 @@ commented::
     external client
 
 .. _mirror_ui: 
-    
-* **mirror-ui**, *list*
 
-    .. index:: 
-        mirror-ui; service configuration option
+.. index:: 
+    mirror-ui; service configuration option
+
+* **mirror-ui**, *list*
 
     This instruction turns the :term:`anti-cache mechanism` on; it consists of the
     paths to the source and target directories for mirroring (drop two leading
@@ -181,14 +191,17 @@ commented::
 
     "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
 
+.. index:: 
+    druid; service configuration option
+
 * **druid**, *dictionary*
 
     See the section about Druid in installation documentation
 
-* **logging**, *dictionary*
+.. index:: 
+    logging; service configuration option
 
-    .. index:: 
-        logging; service configuration option
+* **logging**, *dictionary*
 
     Some standard Python way to configure the logging of a service. Please pay
     attention to one specific line of this stuff:    
@@ -199,14 +212,15 @@ commented::
             ...
             "filename": "${WORK}/logs/anfisa.log"
         }
-    
+
+.. index:: 
+    doc-report-css; service configuration option
+    doc-pygments-css; service configuration option
+
     
 * **doc-report-css**, *string*
 * **doc-pygments-css**, *string*
     
-    .. index:: 
-        doc-report-css; service configuration option
-        doc-pygments-css; service configuration option
 
     These two options are used to configure styling of documentation pages for datasets::
         
