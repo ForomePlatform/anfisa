@@ -60,6 +60,9 @@ Anfisa glossary
         :term:`variants<variant>` (:term:`transcripts<transcript>`) one by one, in conjunctional way.
         Filters are :term:`solution items<solution item>`
         
+    Filtering regime
+        Regime for work with :term:`filters<filter>`, see :doc:`concepts/filters_reg`
+        
     Decision tree
         implementation of :term:`filtration` where :term:`conditions` are applied to 
         :term:`variants<variant>` (:term:`transcripts<transcript>`) in form of decision tree. 
@@ -136,6 +139,11 @@ Anfisa glossary
         Item representing some application solution useful for the user. Generalization name
         for :term:`filter`, :term:`decision tree` and some others.
         See the discissions :doc:`concepts/sol_pack` and :doc:`concepts/sol_work`.
+        
+    Rules
+        Aggregated :term:`multiset property` that detects what :term:`decision trees<decision tree>`
+        are positive on the variant. Available only in :term:`filtering regime` in 
+        :doc:`concepts/ws_pg`. 
         
     Gene list
         List of genes registered in the system as :term:`solution item`

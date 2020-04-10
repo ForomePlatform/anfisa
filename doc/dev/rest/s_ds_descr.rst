@@ -17,9 +17,10 @@ Format
 |                           ``null`` or *string*
 |       "**root**":     name of root dataset if dataset is secondary, 
 |                           *string*
-|       "**doc**":      *optional* reference to documentation, *string*
-|       "**base-doc**:  *optional* reference to documentation of the base dataset, 
-|                           if dataset is secondary, *string*
+|       "**doc**":      documentation list for dataset, 
+|               ``[`` *list of* :doc:`s_doc_descr` ``]``
+|       "**base-doc**:  *optional* documentation list for the base dataset, 
+|               ``[`` *list of* :doc:`s_doc_descr` ``]``
 |       
 |       *in case of* :doc:`dirinfo` *request*:
 |       --------------------------------------
@@ -68,4 +69,8 @@ annotation. It is located in **metadata** returning property:
     
 Used in requests
 ----------------
-:doc:`dirinfo`   :doc:`dsinfo`
+:doc:`dirinfo`   
+
+:doc:`dsinfo`
+
+:doc:`s_doc_descr`

@@ -31,7 +31,7 @@ Description
 The request prepares view presentation for series of :term:`variant` records in form defined by 
 schema.
 
-See also :doc:`../concepts/view`
+See also :doc:`../concepts/view_pre`
 
 In current version of the system schemes are defined in source code of the server, so the list of it is fixed.
 

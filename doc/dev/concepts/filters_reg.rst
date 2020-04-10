@@ -4,8 +4,11 @@ Filtering regime
 User logic
 ----------
 
-Filtering regime is supported in main :term:`dataset` pages, for 
-:term:`workspaces<workspace>` as well as for :term:`XL-datasets<xl-dataset>`.
+Filtering regime is supported in main :term:`dataset` pages:
+    
+    - for :term:`workspaces<workspace>` in :doc:`ws_pg` 
+    
+    - for :term:`XL-datasets<xl-dataset>` in :doc:`xl_pg`.
 
 The principal scenario of this regime is to build :term:`filter`, i.e. sequence
 of :term:`conditions`.
@@ -53,7 +56,7 @@ There are 4 areas on filtering panel:
 
     * Current condition area
     
-    This area is used for create or update condition for a filtering propery and function.
+    This area is used for create or update condition for a filtering property and function.
     It looks and behave different for different kind of filtering property or function: 
     for numeric properties it is small, for enumerated ones it contains possibly
     large control for variants of values, for functions it might be even more wide
@@ -77,7 +80,7 @@ There are controls needed to work out various not-ready situations:
     
         In use until request :doc:`../rest/ds_stat` is not complete. The user sees some shadowed previous
         content of the area but the interface is not responsible for it. (It is possible
-        to clear the area, but it might be unfomfortable for the user)
+        to clear the area, but it might be uncomfortable for the user)
         
     * State "Loading information..." for Current condition area
     
@@ -95,10 +98,10 @@ Technical details
 
 Priority of properties in status report mechanism
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    Priority of properties can be controled in request :doc:`../rest/statunits` by 
+    Priority of properties can be controlled in request :doc:`../rest/statunits` by 
     reordering items in **units** argument. If the user clicks on some property, it should
     be loaded with top priority. Next priority have properties that are visible by the user 
-    (if the user can scroll Units area). All other properties migth be loaded later.
+    (if the user can scroll Units area). All other properties might be loaded later.
     
 Current selection
 ^^^^^^^^^^^^^^^^^
@@ -122,7 +125,7 @@ can use status property descriptors to guarantee nonempty result of condition be
 otherwise only update logic is possible without any guarantee.
 
 If the user selects a filtering property, and the client does not have its status descriptor 
-yet, the Current Condition area needs to keep state "Loaging information..." until 
+yet, the Current Condition area needs to keep state "Loading information..." until 
 the request :doc:`../rest/statunits` with the required descriptor is being completed.
     
 Enumerated properties in Current Condition area 
@@ -133,8 +136,8 @@ Enumerated properties in Current Condition area
 
     join mode: ``"OR"`` *or* ``"AND"`` *or* ``"NOT"``
 
-    Mode ``"OR"`` is common for most part of contitions, it needs to be either 
-    preselected or even hidden to choice. 
+    Mode ``"OR"`` is common for most part of conditions, it needs to be either 
+    pre selected or even hidden to choice. 
 
     Note also that in case of :term:`status property` operation AND is out of sense. 
 
@@ -143,18 +146,18 @@ Enumerated properties in Current Condition area
     contains these values with zero counts. These values should be hidden 
     for the user in normal situation. 
 
-    But in case where condition over propery uses these values, they 
+    But in case where condition over property uses these values, they 
     needs to be visible. So checkbox "Show zeros" needs to be provided in 
     the user interface to resolve this coincidence. 
     
     One more problem: condition might use variant of value that does not 
     present in property status descriptor at all. To work out this situation
-    propery these values need to be added to the rendering list of values,
+    accurately these values need to be added to the rendering list of values,
     with zero counts. 
     
 - Long lists. Length of value variants can be very long, especially in case 
     of :term:`XL-datasets<XL-dataset>`. It might cause heavy but worthless 
-    trafic between the server and client. In future releases we are planning
+    traffic between the server and client. In future releases we are planning
     to comlexify API for these cases to provide more effective and useful solution.
         
 REST API requests 
