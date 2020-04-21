@@ -1,5 +1,6 @@
 tag_select
 ==========
+        **Tag navigation support**
 
 Synopsis
 --------
@@ -56,3 +57,5 @@ Comment
 See also
 --------
 :doc:`ws_tags`
+
+:doc:`../concepts/ws_pg`

@@ -1,5 +1,6 @@
 dtree_cmp
 =========
+        **Comparison of decision trees**
 
 Synopsis
 --------

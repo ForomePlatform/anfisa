@@ -24,7 +24,7 @@ On different pages the system provides two variants of viewing regime
         
     .. _auxiliary_viewing_regime:
         
-    Auxiliary viewing regime
+    * Auxiliary viewing regime
     
         REST API request: :doc:`../rest/ds_list`
 

@@ -1,5 +1,6 @@
 dtree_counts
 ============
+        **Delayed evaluations of item counts for decision tree points**
 
 Synopsis
 --------

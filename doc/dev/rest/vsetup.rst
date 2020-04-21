@@ -1,5 +1,6 @@
 vsetup
 ======
+        **View data schema information**
 
 Synopsis
 --------
@@ -20,7 +21,7 @@ Synopsis
 |           "**name**":  aspect name, *string*
 |           "**title**": aspect title, *string*
 |           "**source**": type: presentation or technical , ``"view"`` *or* ``"data"``
-|           "**field**": path to base point, *optional string*
+|           "**field**": path to property in JSON terms, *optional string*
 |           "**ignored**": if aspect is hidden, *boolean**
 |           "**col_groups**": column groups, *optional*
 |                ``[`` *list of pairs*

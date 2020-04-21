@@ -1,5 +1,6 @@
 solutions
 =========
+        **Solution items information**
 
 Synopsis
 --------
@@ -45,3 +46,7 @@ Types of solution items supported in the current version:
 
 The request might be used for experimental extensions of the system 
 functionality and user interface.
+
+See also
+--------
+:doc:`../concepts/sol_pack`

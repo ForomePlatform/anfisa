@@ -1,5 +1,6 @@
 ds_stat
 =======
+        **Filtering regime support**
 
 Synopsis
 --------

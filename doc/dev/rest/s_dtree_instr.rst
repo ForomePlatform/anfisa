@@ -40,7 +40,8 @@ Blocks are identified by index of first point.
 
 .. _dtree_instr_actions:
 
-For each point list of available actions is prepared in  **actions** property of :doc:`s_dtree_point`.
+For each :term:`point<decision tree point>` list of available actions 
+is prepared in  **actions** property of :doc:`s_dtree_point`.
 
 Format
 ^^^^^^
@@ -71,7 +72,7 @@ Actions:
     
     **DELETE**: delete logical block    
     
-    **LABEL**: set/drop label, not yet implemented
+    **LABEL**: set/drop :term:`label<decision tree state label>`, not yet implemented
     
     **COMMENTS**: edit comments to block, not yet implemented
 
@@ -79,7 +80,7 @@ POINT modifying actions
 -----------------------
 
 Actions of this type are caused by insertion of new condition over filtering property
-into some point of decision tree.
+into some :term:`point of decision tree<decision tree point>`.
 
 Format
 ^^^^^^

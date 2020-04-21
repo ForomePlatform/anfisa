@@ -1,5 +1,6 @@
 ds2ws
 =====
+        **Creation of secondary workspace**
 
 Synopsis
 --------

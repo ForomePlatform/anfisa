@@ -65,15 +65,16 @@ Decision tree points report with delays
 .. _dtree_points_report:
 
 If decision tree is set, it is important to evaluate number of variants (and transcripts)
-that correspond to each point in decision tree. This evaluation might be heavy, so 
-it is organized in analogy with mechanism for status reports, using 
-:term:`delayed requests<delayed request>`:
+that correspond to each :term:`point<decision tree point>` in decision tree. 
+This evaluation might be heavy, so it is organized in analogy with mechanism for status 
+reports, using :term:`delayed requests<delayed request>`:
     
 - evaluation starts by request :doc:`../rest/dtree_set`
     
 - argument **tm** in this request (it is float value in seconds, recommended value: 1) 
     controls time period of evaluation of request; if time is over, request 
-    stops evaluation and returns ``null`` values in list of point count reports; the 
+    stops evaluation and returns ``null`` values in list of :term:`point<decision tree point>`
+    count reports; the 
     returning value also contains property **rq-id** with unique identifier for next 
     series of delayed requests
     

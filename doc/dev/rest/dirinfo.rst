@@ -1,5 +1,6 @@
 dirinfo
 =======
+        **Vault information**
 
 Synopsis
 --------

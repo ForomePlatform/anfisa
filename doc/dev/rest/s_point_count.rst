@@ -20,8 +20,9 @@ Format
 Description
 -----------
 
-The data represents information for counts of :term:`variants<variant>`, and in case of
-:term:`ws-dataset` of :term:`transcripts<transcript>` also.
+The data represents information for counts of :term:`variants<variant>` (and 
+also of :term:`transcripts<transcript>` in case of :term:`ws-dataset`) associated
+with a :term:`decision tree point`.
         
 If point is not applicable for counting, data is  ``0``.
 

@@ -1,5 +1,6 @@
 job_status
 ==========
+        **Job status**
 
 Synopsis
 --------

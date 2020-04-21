@@ -1,5 +1,6 @@
 dtree_set
 =========
+        **Decision tree page setup**
 
 Synopsis
 --------
@@ -77,7 +78,8 @@ Returning properties:
     **code**: Decision tree is defined by its code written in a dialect of Python. Returning 
         property **code** contains actual state of it.
 
-    **points**: Decision tree splits into sequence of so called "points". Each point is one 
+    **points**: Decision tree splits into sequence of 
+        :term:`decision tree points<decision tree point>`. Each point sontrols one 
         or more lines in Python code, possibly with comment lines. Property **points** contain 
         information on them, see :doc:`s_dtree_point` for details. 
     
@@ -88,8 +90,9 @@ Returning properties:
         request :doc:`dtree_counts` using property **rq-id** as input argument. 
         See details of this mechanism :ref:`here<dtree_points_report>`
 
-    **cond-atoms**: Points of kind ``"If"`` contain :term:`conditions`, and some of them 
-        are atomic conditions on filtering properties. We call them "atoms". Atoms are
+    **cond-atoms**: Point of kind ``"If"`` contains one or many 
+        :term:`decision tree atomic conditions<decision tree atomic condition>`, or in short
+        form "atoms". Atoms are
         active zones in user interface: the user can change atomic condition and it 
         causes modification of decision tree of kind ``"ATOM"``
     
@@ -98,8 +101,8 @@ Returning properties:
         integer keys(indexes of points of type ``"If"``) and values as 
         list of :doc:`s_condition` structures.
     
-    **labels**: The property contains all labels of states defined on decision tree, it might 
-        be used for rendering purposes.
+    **labels**: The property contains all :term:`state labels<decision tree state label>` 
+        defined on decision tree, it might be used for rendering purposes.
         
     **error**, **line**, **pos**: in case of errors in code of decision tree, these tree 
         properties refer first error in the code, it might be used in rendering or work with 

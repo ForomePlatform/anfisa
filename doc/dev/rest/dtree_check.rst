@@ -1,5 +1,6 @@
 dtree_check
 ===========
+        **Decision tree code check**
 
 Synopsis
 --------

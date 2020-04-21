@@ -9,8 +9,7 @@ of the whole information about variant is heavy.
 REST API supports two ways for rendering data concerning :term:`variants<variant>`:
     
 * :doc:`../rest/reccnt` 
-    request prepares most portion of details of rendering on the 
-    server side. 
+    request prepares most portion of details of rendering on the server side. 
     
     The whole variant data is split onto fixed collection of :term:`aspects<aspect>`, 
     each one is a portion of correct HTML document presentation. 
@@ -24,6 +23,7 @@ REST API supports two ways for rendering data concerning :term:`variants<variant
     
 * :doc:`../rest/tab_report` 
     request has only serial form, and provides selected
-    comparatively small information on variants; selection scenario are configured on 
+    comparatively small information on variants in tabular form; 
+    selection scenario are configured on 
     the server side.
     

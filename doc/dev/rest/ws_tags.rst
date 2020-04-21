@@ -1,5 +1,6 @@
 ws_tags
 =======
+        **Tagging variant information retrieval and modifications**
 
 Synopsis
 --------

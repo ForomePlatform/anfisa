@@ -1,5 +1,6 @@
 statunits
 =========
+        **Delayed evaluations for filtering property status data**
 
 Synopsis
 --------
@@ -57,6 +58,10 @@ if there is no enough time (see details for argument **tm** in references).
 
 See also
 --------
-:doc:`ds_stat` :doc:`dtree_stat`
+:doc:`ds_stat` 
+
+:doc:`dtree_stat`
 
 :doc:`../concepts/status_report`
+
+:doc:`../concepts/filters_reg`

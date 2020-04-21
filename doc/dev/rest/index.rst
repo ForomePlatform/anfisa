@@ -19,7 +19,7 @@ Requests
    :doc:`ds_list`       List of variants in auxiliary viewing regime
    :doc:`reccnt`        Aspect-based full view presentation of variant
    :doc:`recdata`       Variant full JSON data
-   :doc:`tab_report`    ???
+   :doc:`tab_report`    Viewing data in tabulated form
    :doc:`vsetup`        View data schema information
    :doc:`solutions`     Solution items information
   -------------------- -------------------------------------------------------------
@@ -34,8 +34,8 @@ Requests
   *Decision trees*
   \ 
    :doc:`dtree_set`     Decision tree page setup
-   :doc:`dtree_counts`  Delayed evaluations of item counts for decision tree poins
-   :doc:`dtree_stat`    ???
+   :doc:`dtree_counts`  Delayed evaluations of item counts for decision tree points
+   :doc:`dtree_stat`    Filtering properties status report for decision tree page
    :doc:`dtree_check`   Decision tree code check
    :doc:`dtree_cmp`     Comparison of decision trees
   -------------------- -------------------------------------------------------------

@@ -102,6 +102,7 @@ Anfisa glossary
         see :doc:`rest/s_condition`.
     
     Decision tree atomic condition
+    Atom
         Atomic condition for :term:`filtering property` used in :term:`decision tree point`,
         see :doc:`concepts/dtree_syntax`
         

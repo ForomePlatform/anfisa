@@ -1,5 +1,6 @@
 statfunc
 ========
+        **Function filtering support**
 
 Synopsis
 --------
@@ -56,3 +57,5 @@ See also
 :doc:`s_prop_stat` 
 
 :doc:`func_ref`
+
+:doc:`../concepts/filters_reg`

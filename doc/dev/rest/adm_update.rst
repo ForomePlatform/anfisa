@@ -1,5 +1,6 @@
 adm_update
 ==========
+        **Force vault state update**
 
 Synopsis
 --------

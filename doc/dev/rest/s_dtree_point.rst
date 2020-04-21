@@ -21,13 +21,13 @@ Description
 -----------
 
 Data structure is used in returning properties of request :doc:`dtree_set` and contains
-information about point of decision tree. 
+information about :term:`point of decision tree<decision tree point>`. 
 
 There are 4 kinds of points: 
 
     **If** corresponds to ``if`` Python instruction, 
     
-        Has condition with atomic :term:`conditions` on filtering properties, and 
+        Has condition with atomic :term:`condition<conditions>` on filtering properties, and 
         possibly complex structure formed by AND/OR/NOT operations
         
         Followed by point of type **Return** with **level** equal to ``1``
@@ -43,8 +43,8 @@ There are 4 kinds of points:
             
         - Last point of decision tree is always **If** point with **level** equal to ``0``.
         
-    **Label** corresponds to instruction ``label(...)`` and defines state label on decision
-        tree. 
+    **Label** corresponds to instruction ``label(...)`` and defines 
+        :term:`state label on decision tree<decision tree state label>`. 
         
     **Error** corresponds to incorect Python-style block in decision tree
     

@@ -1,5 +1,6 @@
 dtree_stat
 ==========
+        **Filtering properties status report for decision tree page**
 
 Synopsis
 --------

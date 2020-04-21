@@ -1,5 +1,6 @@
 ds_list
 =======
+        **List of variants in auxiliary viewing regime**
 
 Synopsis
 --------

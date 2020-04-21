@@ -1,5 +1,6 @@
 single_cnt
 ==========
+        **Single variant full JSON data**
 
 Synopsis
 --------

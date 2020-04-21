@@ -1,5 +1,6 @@
 zone_list
 =========
+        **Zone support information**
 
 Synopsis
 --------
@@ -44,3 +45,6 @@ Comment
 Name of a zone is some string with internal technical meaning. 
 It is hidden for user: do not use it for rendering.
 
+See also
+--------
+:doc:`../concepts/ws_pg`

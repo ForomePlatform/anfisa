@@ -1,5 +1,6 @@
 ws_list
 =======
+        **Current list of variants**
 
 Synopsis
 --------
@@ -68,3 +69,6 @@ is expected in future development.
 See also
 --------
 :doc:`ds_list`
+
+:doc:`../concepts/ws_pg`
+

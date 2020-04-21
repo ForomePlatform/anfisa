@@ -1,5 +1,6 @@
 tab_report
 ==========
+        **Viewing data in tabulated form**
 
 Synopsis
 --------
@@ -37,3 +38,8 @@ In current version of the system schemes are defined in source code of the serve
 
 .. warning:: TODO: add list and descriptions of available schemes
 
+See also
+--------
+:doc:`../concepts/view_pre`
+
+:doc:`../concepts/view`

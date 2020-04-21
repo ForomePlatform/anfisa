@@ -1,5 +1,6 @@
 dsinfo
 ======
+        **Dataset information**
 
 Synopsis
 --------

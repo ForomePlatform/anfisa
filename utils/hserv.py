@@ -34,6 +34,7 @@ class HServResponse:
         "js":     "application/javascript",
         "json":   "application/json",
         "png":    "image/png",
+        "txt":    "text/plain",
         "xlsx":   (
             "application/application/"
             "vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
