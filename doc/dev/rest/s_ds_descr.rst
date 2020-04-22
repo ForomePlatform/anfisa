@@ -5,29 +5,27 @@ Format
 ------
 
 | ``{`` *dictionary*, 
-|       "**name**":     dataset name, *string*
-|       "**kind**":     dataset kind, *either* ``"ws"`` *or* ``"xl"`` 
-|       "**upd-time**:  time of last dataset update, 
-|                           *string, time in ISO format*
-|       "**note**":     user note to dataset, ``null`` or *string*
-|       "**date-note**: time of last note update, 
-|                           ``null`` or *string, time in ISO format*
-|       "**total**":    total number of variants, *int*
-|       "**base**":     name of base dataset if dataset is secondary, 
-|                           ``null`` or *string*
-|       "**root**":     name of root dataset if dataset is secondary, 
-|                           *string*
-|       "**doc**":      documentation list for dataset, 
-|               ``[`` *list of* :doc:`s_doc_descr` ``]``
-|       "**base-doc**:  *optional* documentation list for the base dataset, 
-|               ``[`` *list of* :doc:`s_doc_descr` ``]``
+|       "**name**":         dataset name, *string*
+|       "**kind**":         dataset kind, *either* ``"ws"`` *or* ``"xl"`` 
+|       "**upd-time**:      time of last dataset update, 
+|                               *string, time in ISO format*
+|       "**note**":         user note to dataset, ``null`` or *string*
+|       "**date-note**:     time of last note update, 
+|                               ``null`` or *string, time in ISO format*
+|       "**total**":        total number of variants, *int*
+|       "**doc**":          dataset documentation, :doc:`s_doc_descr` 
+|       "**ancestors**":    information on base datasets
+|               ``[`` *list of* base datasets, root is the last
+|                   ``[`` *list*
+|                       [**0**]: name of ancestor dataset, *string*
+|                       [**1**]: *optional* dataset documentation, :doc:`s_doc_descr`
+|                   ``]``
+|               ``]``
 |       
 |       *in case of* :doc:`dirinfo` *request*:
 |       --------------------------------------
 |       "**secondary**":  *optional* list of secondary workspaces, 
 |                           *list of strings*
-|       "**doc-support**:  ``true`` if dataset has documentation, *boolean*
-|
 |
 |       *in case of* :doc:`dsinfo` *request*:
 |       -------------------------------------
@@ -54,7 +52,8 @@ context of two requests:
         In this case descriptor contains details about metadata.
     
 Descriptor provides reference **doc** to :term:`dataset documentation`, and if 
-base dataset exists, reference **base-doc** to its documentation.
+base dataset exists, reference to documentation for all **ancestors** if they are 
+present in the vault.
     
 Comment
 -------
@@ -74,3 +73,5 @@ Used in requests
 :doc:`dsinfo`
 
 :doc:`s_doc_descr`
+
+:doc:`../concepts/doc_pg`

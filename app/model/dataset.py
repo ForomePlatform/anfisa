@@ -193,6 +193,12 @@ class DataSet(SolutionBroker):
         assert False
         return None
 
+    def getDocsInfo(self):
+        ret = [None, [["Info", "info.html"]]]
+        if self.mDataInfo.get("doc"):
+            ret[-1] += self.mDataInfo["doc"]
+        return ret
+
     #===============================================
     @classmethod
     def shortPDataReport(cls, rec_no, rec_data):
@@ -210,22 +216,31 @@ class DataSet(SolutionBroker):
             "upd-time": self.getMongoAgent().getCreationDate(),
             "kind": self.mDSKind,
             "note": note,
+            "doc": self.getDocsInfo(),
             "total": self.getTotal(),
-            "base": self.getBaseDSName(),
-            "root": self.getRootDSName(),
             "date-note": time_label}
+        ancestors = []
+        base_name = self.getBaseDSName()
+        while base_name is not None:
+            base_h = self.mDataVault.getDS(base_name)
+            if base_h is None:
+                ancestors.append([base_name, None])
+                break
+            ancestors.append([base_name, base_h.getDocsInfo()])
+            base_name = base_h.getBaseDSName()
+        if self.getRootDSName() and self.getRootDSName() != self.getName():
+            if len(ancestors) == 0 or ancestors[-1][0] != self.getRootDSName():
+                root_h = self.mDataVault.getDS(self.getRootDSName())
+                ancestors.append([self.getRootDSName(),
+                    None if root_h is None else root_h.getDocsInfo()])
+        ret["ancestors"] = ancestors
+
         if navigation_mode:
             secondary_seq = self.mDataVault.getSecondaryWSNames(self)
             if secondary_seq:
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
-            ret["doc-support"] = "doc" in self.mDataInfo
         else:
             ret["meta"] = self.mDataInfo["meta"]
-        if "doc" in self.mDataInfo:
-            ret["doc"] = self.mDataInfo["doc"]
-            base_h = self.mDataVault.getBaseDS(self)
-            if base_h is not None and "doc" in base_h.getDataInfo():
-                ret["doc-base"] = base_h.getDataInfo()["doc"]
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []

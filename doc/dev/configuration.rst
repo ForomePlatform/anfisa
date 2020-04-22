@@ -217,6 +217,8 @@ commented::
     doc-report-css; service configuration option
     doc-pygments-css; service configuration option
 
+.. _docs_cfg: 
+
     
 * **doc-report-css**, *string*
 * **doc-pygments-css**, *string*

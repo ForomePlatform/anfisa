@@ -13,8 +13,11 @@ Anfisa glossary
         XL-datasets and workspaces, or WS-datasets
 
     Case
-        is group of persons - samples - with family connections between each other whose genomic
+        is group of persons - samples - with family connections between each other whose genomics
         information is registered in dataset.
+        
+    Cohort
+        is group of persons, possibly large, collected for scientific purposes
         
     Sample
         person in :term:`case`, may be affected or unaffected. Proband sample in medical cases 
@@ -139,7 +142,7 @@ Anfisa glossary
     Solution item
         Item representing some application solution useful for the user. Generalization name
         for :term:`filter`, :term:`decision tree` and some others.
-        See the discissions :doc:`concepts/sol_pack` and :doc:`concepts/sol_work`.
+        See the discussions :doc:`concepts/sol_pack` and :doc:`concepts/sol_work`.
         
     Rules
         Aggregated :term:`multiset property` that detects what :term:`decision trees<decision tree>`
@@ -151,11 +154,11 @@ Anfisa glossary
         
     Export
         Operation of creation (external) Excel document for selected variants. Selection 
-        shoulld be limited (up to 300 entries). Document is stored on server side, see
+        should be limited (up to 300 entries). Document is stored on server side, see
         :ref:`configuration settings<export_cfg>`.
         
     Delayed request    
-        A request that needs to be complete only if the main request has returned imcomplete
+        A request that needs to be complete only if the main request has returned incomplete
         information. Forms series. See details in :doc:`concepts/status_report`
     
     Background task

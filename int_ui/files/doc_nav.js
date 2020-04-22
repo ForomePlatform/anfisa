@@ -49,38 +49,41 @@ function setupDocList(info) {
     var doc_path = "dsdoc/" + sDSName + "/";
     sDocArray = [];
     var list_doc_rep = [];
-    list_doc_rep.push('<div id="doc__0" class="doc-ref" onclick="selectDoc(0)">Info</div>');
-    sDocArray.push(doc_path + "info.html");
-    _fillExtraDoc(sDocInfo["doc"], "", doc_path, list_doc_rep);
-    if (sDocInfo["doc-base"] != undefined) {
-        var doc_base_path = "dsdoc/" + sDocInfo["base"] + "/";
-        list_doc_rep.push('<div class="grp-ref"><span>Base ' + 
-            sDocInfo["base"] + '</span>');
-        list_doc_rep.push('<div id="doc__' + sDocArray.length + 
-            '" class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
-            ')">Base info</div>');
-        sDocArray.push(doc_base_path + "info.html");
-        _fillExtraDoc(sDocInfo["doc-base"], "Base ", doc_base_path, list_doc_rep);
+    _fillDocFolder(sDocInfo["doc"][1], "", sDocArray, doc_path, list_doc_rep);
+    for (var j = 0; j < sDocInfo["ancestors"].length; j++) {
+        var base_name = sDocInfo["ancestors"][j][0];
+        var base_doc = sDocInfo["ancestors"][j][1];
+        if (base_doc == null)
+            continue;
+        var doc_title = "Base";
+        if (j > 0) {
+            doc_title = (j + 1 < sDocInfo["ancestors"].length)? 
+                ("Base-" + (j+1)) : ("Root");
+        }
+        list_doc_rep.push('<div class="grp-ref"><span>' + 
+            doc_title + ' ' + base_name + '</span>');
+        _fillDocFolder(base_doc[1], doc_title + " ", 
+            sDocArray, "dsdoc/" + base_name + "/", list_doc_rep);
         list_doc_rep.push('</div>');
     }
     document.getElementById("doc-list").innerHTML = list_doc_rep.join('\n');
     selectDoc(0);
 }
 
-function _fillExtraDoc(doc_seq, prefix, doc_path, list_doc_rep) {
+function _fillDocFolder(doc_seq, prefix, doc_array, doc_path, list_doc_rep) {
     for (var idx = 0; idx < doc_seq.length; idx++) {
         doc_entry = doc_seq[idx];
         if (Array.isArray(doc_entry[1])) {
             list_doc_rep.push('<div class="grp-ref"><span>' + 
                 doc_entry[0] + '</span>');
-            _fillExtraDoc(doc_entry[1], prefix, doc_path, list_doc_rep);
+            _fillDocFolder(doc_entry[1], prefix, doc_array, doc_path, list_doc_rep);
             list_doc_rep.push('</div>');
             continue;
         }
         list_doc_rep.push('<div id="doc__' + sDocArray.length + 
             '" class="doc-ref" onclick="selectDoc(' + sDocArray.length + 
-            ')">' + prefix + doc_entry[0] + '</div>');
-        sDocArray.push(doc_path + doc_entry[1]);
+            ')">&#x2022;' + prefix + doc_entry[0] + '</div>');
+        doc_array.push(doc_path + doc_entry[1]);
     }
 }
 
@@ -92,6 +95,6 @@ function selectDoc(doc_no){
     sCurDoc = doc_no;
     cur_el = document.getElementById("doc__" + sCurDoc);
     cur_el.className = "doc-ref cur";
-    document.getElementById("doc-title").innerHTML = cur_el.innerHTML;
+    document.getElementById("doc-title").innerHTML = cur_el.innerHTML.substring(1);
     window.frames["doc-content"].location.replace(sDocArray[sCurDoc]);
 }

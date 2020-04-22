@@ -4,7 +4,6 @@ Anfisa Interface concepts
 .. toctree::
    :maxdepth: 1
 
-   functionality
    view
    view_pre
    filtration

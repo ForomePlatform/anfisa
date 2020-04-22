@@ -1,11 +1,12 @@
 Decision tree work page
 =======================
 
-:term:`Decision tree` page looks as very complex. However, essential part of its
-functionality has strong back-end support, so the Front End complexity is not so 
-difficult as one can expect.
+:term:`Decision tree` page looks very complex. However, essential part of its
+functionality has strong back-end support, so the the Front End complexity is not so 
+hard as one can expect. Essential portion of real difficulties in Front End application 
+support focuses on the same issue as in other work pages: :doc:<status_report>.
 
-It provides the following functionality issues for work with with all 
+The page provides the following functionality issues for work with with all 
 :term:`datasets<dataset>`, :term:`xl-<xl-dataset>` and 
 `ws-<ws-dataset>` ones
    
@@ -19,9 +20,18 @@ It provides the following functionality issues for work with with all
         current decision point selection, see :doc:`status_report`        
     
     - :ref:`Auxiliary viewing regime<auxiliary_viewing_regime>`, in 
-        contect of current decision point 
+        context of current decision point 
         
-    - Interactive modification of decision tree
+    - Interactive modification of decision tree, see full reference in 
+        :doc:`../rest/s_dtree_instr`. Operations of this layer are split onto 
+        three categories of operations:
+            
+        - INSTR: manipulations with logical structure of the code
+        
+        - POINT: creation of new atomic conditions in context of available 
+            properties state, and placement of them into the code of decision tree
+        
+        - ATOM: tuning atomic conditions in decision tree code
     
     - Operation support:
         
@@ -36,7 +46,7 @@ as :term:`filtration` items, otherwise in case of :term:`xl-dataset`
 :term:`variants<variant>` are used.
 
 Decision trees are powerful tool of :doc:`filtration`, they are integrated 
-with other partsof the system by two ways:
+with other parts of the system by two ways:
 
     - there is always a possibility to create :term:`secondary workspace` 
         to save result of filtration workspace
@@ -55,6 +65,9 @@ It might be useful only for control complex cases of boolean operations.
 REST API requests 
 -----------------
 For support Decision Tree work page:
+
+    - :doc:`../rest/dsinfo`
+        Dataset information
 
     - :doc:`../rest/dtree_set`
         Decision tree page setup
