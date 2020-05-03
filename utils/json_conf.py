@@ -30,6 +30,8 @@ def readCommentedJSon(fname):
         for line in inp:
             if not sCommentLinePatt.match(line):
                 lines.append(line)
+            else:
+                lines.append("")
     return "".join(lines)
 
 #========================================
