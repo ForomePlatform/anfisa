@@ -29,10 +29,10 @@ def readCommentedJSon(fname):
     with open(fname, "r", encoding = "utf-8") as inp:
         for line in inp:
             if not sCommentLinePatt.match(line):
-                lines.append(line)
+                lines.append(line.rstrip())
             else:
                 lines.append("")
-    return "".join(lines)
+    return "\n".join(lines)
 
 #========================================
 def loadJSonConfig(config_file):

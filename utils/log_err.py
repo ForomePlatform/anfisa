@@ -29,3 +29,4 @@ def logException(message, error_mode = True, limit_stack = 20):
         logging.error(message + "\n" + rep.getvalue())
     else:
         logging.warning(message + "\n" + rep.getvalue())
+    return rep.getvalue()

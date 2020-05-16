@@ -186,8 +186,9 @@ class HServHandler:
             msg = "Exception on request evaluation"
             if rq_descr:
                 msg += "\n In context: " + " ".join(rq_descr)
-            logException(msg)
-            return resp_h.makeResponse(error = 500)
+            rep_exc = logException(msg)
+            return resp_h.makeResponse(mode = "txt",
+                error = 500, content = msg + "\n" + rep_exc)
 
 #========================================
 def setupHServer(application, config_file, in_container):
