@@ -35,12 +35,15 @@ def readCommentedJSon(fname):
     return "\n".join(lines)
 
 #========================================
-def loadJSonConfig(config_file):
+def loadJSonConfig(config_file, meta_variables = None):
     content = readCommentedJSon(config_file)
     dir_name = os.path.abspath(__file__)
     for _ in range(2):
         dir_name = os.path.dirname(dir_name)
     content = content.replace('${HOME}', dir_name)
+    if meta_variables is not None:
+        for meta_name, meta_val in meta_variables:
+            content = content.replace('${%s}' % meta_name, meta_val)
     pre_config = json.loads(content)
 
     file_path_def = pre_config.get("file-path-def")
