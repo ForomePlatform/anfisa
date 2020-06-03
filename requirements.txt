@@ -4,6 +4,7 @@ Babel==2.5.3
 backports-datetime-fromisoformat
 bitarray
 bcrypt==3.1.4
+cachetools
 certifi==2018.4.16
 cffi==1.11.5
 chardet==3.0.4
