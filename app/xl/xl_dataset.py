@@ -89,7 +89,7 @@ class XLDataset(DataSet):
             if runner is None:
                 runner = XL_LongRunner_DTreeCounts(
                     self, rq_id, dtree_h, point_idxs)
-                needs_start =  True
+                needs_start = True
                 self.mLongRunners[rq_id] = runner
         if needs_start:
             self.getApp().runTask(runner, 2)

@@ -156,7 +156,8 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Transcripts"):
         filters.transctiptMultisetUnit("Transctipt_consequence",
-            "consequence_terms", variants = sConsequenceVariants)
+            "consequence_terms", variants = sConsequenceVariants,
+            default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_canonical", "canonical",
             bool_check_value = "1", default_value = "False")
         filters.transctiptStatusUnit("Transcript_biotype", "biotype",

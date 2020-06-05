@@ -347,7 +347,7 @@ class DataSet(SolutionBroker):
 
     def _getArgTimeEnd(self, rq_args):
         if self.getEvalSpace().heavyMode() and "tm" in rq_args:
-            return datetime.now() +  timedelta(
+            return datetime.now() + timedelta(
                 seconds = self.sTimeCoeff * float(rq_args["tm"]) + 1E-5)
         return None
 

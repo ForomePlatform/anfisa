@@ -190,7 +190,7 @@ class DataVault(SyncronizedObject):
                 lost_roots.add(anc_names[-1])
         for root_name in lost_roots:
             ds_info[root_name] = {
-                "name": root_name, "kind": None, "ancestors":[]}
+                "name": root_name, "kind": None, "ancestors": []}
             ds_sheet.append([root_name])
         ds_sheet.sort()
         ds_list = []
@@ -199,16 +199,16 @@ class DataVault(SyncronizedObject):
             ds_info = ds_dict[ds_path[-1]]
             assert ds_info["name"] == ds_path[-1]
             ds_list.append(ds_info["name"])
-            while (len(path_stack) > 0 and
-                    (len(path_stack[-1]) > len(ds_path)
+            while (len(path_stack) > 0
+                    and (len(path_stack[-1]) > len(ds_path)
                     or path_stack[-1] != ds_path[:len(path_stack[-1])])):
-                ds_dict[path_stack.pop()[-1]]["v-idx-to"]= idx
+                ds_dict[path_stack.pop()[-1]]["v-idx-to"] = idx
                 continue
             path_stack.append(ds_path)
             ds_info["v-level"] = len(path_stack)
             ds_info["v-idx"] = len(ds_list)
         for ds_path in path_stack:
-            ds_dict[ds_path[-1]]["v-idx-to"]= len(ds_sheet)
+            ds_dict[ds_path[-1]]["v-idx-to"] = len(ds_sheet)
         for reserved_path in glob(self.mVaultDir + "/*"):
             name = os.path.basename(reserved_path)
             if name not in ds_dict:

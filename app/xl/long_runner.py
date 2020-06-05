@@ -61,7 +61,7 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
                 try:
                     counts = self.mDS.getEvalSpace().evalTotalCounts(
                         self.mDTreeH.getActualCondition(idx))
-                except Exception  as err:
+                except Exception as err:
                     logException("Long run exception in DS=%s"
                         % self.mDS.getName())
                     self.mFailureCount += 1
@@ -77,7 +77,7 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
                         self.mNextPointIdxs.remove(idx)
                     if counts[0] == 0 and self.mDTreeH.checkZeroAfter(idx):
                         for idx1 in range(idx, len(self.mCounts)):
-                            self.mCounts[idx1]= counts[:]
+                            self.mCounts[idx1] = counts[:]
                             if idx1 in self.mNextPointIdxs:
                                 self.mNextPointIdxs.remove(idx1)
 
@@ -110,6 +110,3 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
             return self.mCounts[:]
 
     #===============================================
-
-
-
