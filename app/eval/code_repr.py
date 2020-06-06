@@ -21,7 +21,7 @@
 import json
 from io import StringIO
 
-from utils.ident import checkIdentifier
+from forome_tools.ident import checkIdentifier
 #===============================================
 def formatIfCode(cond_data):
     cond_kind = cond_data[0]

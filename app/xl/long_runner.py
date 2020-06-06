@@ -20,8 +20,8 @@
 from threading import Condition
 from datetime import datetime
 
-from utils.job_pool import ExecutionTask
-from utils.log_err import logException
+from forome_tools.job_pool import ExecutionTask
+from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 #===============================================
 class XL_LongRunner_DTreeCounts(ExecutionTask):

@@ -74,7 +74,10 @@ if __name__ == '__main__':
         path_to_json = path_to_json.format(platform=platform)
     path_to_json = path_to_json.replace("?", "{name}")
 
-    app_config = loadJSonConfig(run_args.config)
+    app_config = loadJSonConfig(run_args.config,
+        home_path = os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))))
+
     mode = run_args.mode
 
     vault = app_config["data-vault"]

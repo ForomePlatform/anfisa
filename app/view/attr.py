@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from .view_repr import jsonHtmlRepr, htmlEscape
 #===============================================
 class AttrH:

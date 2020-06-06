@@ -21,7 +21,7 @@
 import logging
 from io import StringIO
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from .html_pages import noRecords, dirPage, subdirPage, notFound
 from .html_ws import formWsPage
 from .html_xl import formXLPage

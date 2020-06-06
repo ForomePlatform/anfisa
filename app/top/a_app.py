@@ -33,8 +33,8 @@ from app.view.asp_set import AspectSetH
 from export.excel import ExcelExport
 from int_ui.mirror_dir import MirrorUiDirectory
 from int_ui.ui_requests import IntUI
-from utils.job_pool import JobPool
-from utils.sphinx_doc import SphinxDocumentationSet
+from forome_tools.job_pool import JobPool
+from forome_tools.sphinx_doc import SphinxDocumentationSet
 
 #===============================================
 def terminateAll(sig, frame):

@@ -22,7 +22,7 @@ import logging
 from threading import Lock
 from collections import defaultdict
 
-from utils.sync_obj import SyncronizedObject
+from forome_tools.sync_obj import SyncronizedObject
 from app.config.a_config import AnfisaConfig
 from .sol_pack import SolutionPack
 #===============================================

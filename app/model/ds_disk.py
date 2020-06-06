@@ -21,7 +21,7 @@ import sys, gzip, json
 from io import TextIOWrapper
 from subprocess import Popen, PIPE
 
-from utils.ixbz2 import IndexBZ2, FormatterIndexBZ2
+from forome_tools.ixbz2 import IndexBZ2, FormatterIndexBZ2
 from app.model.pre_fields import PresentationData
 #===============================================
 class DataDiskStorage:
@@ -100,7 +100,7 @@ class DataDiskStorageWriter:
 
         if popen_mode:
             self.mVDataProc = Popen(
-                sys.executable + " -m utils.ixbz2 --calm -o "
+                sys.executable + " -m forome_tools.ixbz2 --calm -o "
                 + self.mPath + "/vdata.ixbz2 /dev/stdin", shell = True,
                 stdin = PIPE, stderr = PIPE,
                 bufsize = 1, universal_newlines = False,

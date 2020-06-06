@@ -22,7 +22,7 @@ import os, json, logging, re, shutil
 from copy import deepcopy
 from datetime import datetime
 
-from utils.job_pool import ExecutionTask
+from forome_tools.job_pool import ExecutionTask
 from app.model.ds_disk import DataDiskStorageWriter
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema

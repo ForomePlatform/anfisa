@@ -20,7 +20,7 @@
 from datetime import datetime, timedelta
 from zlib import crc32
 
-from utils.rest import RestAgent
+from forome_tools.rest import RestAgent
 #===============================================
 class FavorStorage(RestAgent):
     def __init__(self, url, ds_h = None):

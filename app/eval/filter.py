@@ -21,7 +21,7 @@
 import json
 from hashlib import md5
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from .evaluation import Evaluation
 from .condition import validateCondition
 from .code_repr import formatConditionCode

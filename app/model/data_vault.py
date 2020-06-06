@@ -26,8 +26,8 @@ from .rest_api import RestAPI
 from .sol_env import SolutionEnv
 from app.ws.workspace import Workspace
 from app.xl.xl_dataset import XLDataset
-from utils.log_err import logException
-from utils.sync_obj import SyncronizedObject
+from forome_tools.log_err import logException
+from forome_tools.sync_obj import SyncronizedObject
 #===============================================
 class DataVault(SyncronizedObject):
     def __init__(self, application, vault_dir):

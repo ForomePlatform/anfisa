@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from utils.variants import VariantSet
+from forome_tools.variants import VariantSet
 from app.config.a_config import AnfisaConfig
 from app.eval.var_unit import ComplexEnumUnit
 #===============================================

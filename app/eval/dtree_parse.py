@@ -21,7 +21,7 @@
 import sys, ast
 from hashlib import md5
 
-from utils.log_err import logException
+from forome_tools.log_err import logException
 from .code_works import normalizeCode
 from .code_parse import parseCodeByPortions
 #===============================================

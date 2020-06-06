@@ -21,7 +21,7 @@ import sys, os, logging, json, gzip
 from datetime import datetime
 from io import StringIO
 
-from utils.read_json import JsonLineReader
+from forome_tools.read_json import JsonLineReader
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema

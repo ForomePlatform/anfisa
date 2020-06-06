@@ -21,7 +21,7 @@
 import abc, re
 from collections import Counter
 
-from utils.path_works import AttrFuncPool
+from forome_tools.path_works import AttrFuncPool
 #===============================================
 class ValueConvertor:
     sMAX_BAD_COUNT = 3

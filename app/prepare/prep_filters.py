@@ -18,8 +18,8 @@
 #  limitations under the License.
 #
 
-from utils.path_works import AttrFuncPool
-from utils.ident import checkIdentifier
+from forome_tools.path_works import AttrFuncPool
+from forome_tools.ident import checkIdentifier
 import app.prepare.prep_unit as prep_unit
 from app.model.family import FamilyInfo
 from app.model.sol_broker import SolutionBroker
@@ -136,11 +136,12 @@ class FilterPrepareSetH(SolutionBroker):
 
     def transctiptMultisetUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
-            variants = None):
+            variants = None, default_value = None):
         self.checkUnitName(name)
         return self._addUnit(prep_unit.TransctiptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
-            render_mode, tooltip, "transcript-multiset", trans_name, variants))
+            render_mode, tooltip, "transcript-multiset", trans_name,
+            variants, default_value))
 
     def process(self, rec_no, rec_data):
         result = dict()

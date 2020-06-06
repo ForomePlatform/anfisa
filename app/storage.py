@@ -22,7 +22,7 @@ import sys, codecs, json, os, shutil, re, time, logging
 from argparse import ArgumentParser
 from datetime import datetime
 
-import utils.json_conf as json_conf
+import forome_tools.json_conf as json_conf
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
@@ -472,7 +472,9 @@ if __name__ == '__main__':
             entries = [DSEntry(ds_name,  args.kind,  args.source)
                 for ds_name in args.names]
 
-    app_config = json_conf.loadJSonConfig(service_config_file)
+    app_config = json_conf.loadJSonConfig(service_config_file,
+        home_path = os.path.dirname(os.path.dirname(
+            os.path.abspath(__file__))))
 
     assert os.path.isdir(app_config["data-vault"])
 

@@ -22,7 +22,7 @@ import re, sys, logging
 from collections import Counter
 
 from app.config.a_config import AnfisaConfig
-from utils.path_works import AttrFuncPool
+from forome_tools.path_works import AttrFuncPool
 #===============================================
 class TransformPreparator_WS:
     def __init__(self, flt_schema, hard_check):

@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from utils.job_pool import ExecutionTask
+from forome_tools.job_pool import ExecutionTask
 from app.config.a_config import AnfisaConfig
 #===============================================
 class RecListTask(ExecutionTask):

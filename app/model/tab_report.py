@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from utils.path_works import AttrFuncPool
+from forome_tools.path_works import AttrFuncPool
 #===============================================
 class VariantsTabReportSchema:
     def __init__(self, name, use_tags = False):

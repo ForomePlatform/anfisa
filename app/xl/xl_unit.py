@@ -19,7 +19,7 @@
 #
 
 import logging
-from utils.variants import VariantSet
+from forome_tools.variants import VariantSet
 from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
 #===============================================
 class XL_Unit(VarUnit):

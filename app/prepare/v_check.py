@@ -21,7 +21,7 @@
 from collections import defaultdict
 import json
 
-from utils.types import Types, TypeCounter
+from forome_tools.types import Types, TypeCounter
 from app.view.attr import AttrH
 
 #===============================================

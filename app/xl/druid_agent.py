@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from utils.rest import RestAgent
+from forome_tools.rest import RestAgent
 #===============================================
 class DruidAgent:
     GRANULARITY = "all"
