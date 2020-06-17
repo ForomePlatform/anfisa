@@ -22,7 +22,8 @@ import sys, codecs, json, os, shutil, re, time, logging
 from argparse import ArgumentParser
 from datetime import datetime
 
-import forome_tools.json_conf as json_conf
+from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
+from forome_tools.inventory import loadDatasetInventory
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
@@ -38,6 +39,11 @@ try:
 except Exception:
     pass
 
+#========================================
+import forome_tools
+forome_tools.compatible((0, 1, 1))
+
+#========================================
 if sys.version_info < (3, 7):
     from backports.datetime_fromisoformat import MonkeyPatch
     MonkeyPatch.patch_fromisoformat()
@@ -334,7 +340,7 @@ class DSEntry:
             sys.exit()
         ds_entry_data = dir_config["datasets"][ds_name]
         if "inv" in ds_entry_data:
-            ds_inventory = json_conf.loadDatasetInventory(ds_entry_data["inv"])
+            ds_inventory = loadDatasetInventory(ds_entry_data["inv"])
             return DSEntry(ds_name,
                 ds_entry_data["kind"], ds_inventory["a-json"], ds_inventory,
                 entry_data = {
@@ -388,8 +394,7 @@ if __name__ == '__main__':
         if len(args.names) != 1:
             print("Only one dataset can be registered")
             sys.exit(1)
-        dir_config = json.loads(
-            json_conf.readCommentedJSon(args.dir))
+        dir_config = loadCommentedJSon(args.dir)
         new_descr = {"kind": args.kind}
         if args.source:
             new_descr["a-json"] = args.source
@@ -406,7 +411,8 @@ if __name__ == '__main__':
         sys.exit()
 
     if args.mode == "favor":
-        app_config = json_conf.loadJSonConfig(args.config)
+        app_config = loadJSonConfig(args.config,
+            home_base_file = __file__, home_base_level = 1)
         druid_adm = DruidAdmin(app_config, False)
         if args.names[0] == "init":
             assert len(args.names) == 1, (
@@ -443,8 +449,7 @@ if __name__ == '__main__':
             print("Incorrect usage: use --dir or "
                 "(--config, [--source, --inv])")
             sys.exit()
-        dir_config = json.loads(
-            json_conf.readCommentedJSon(args.dir))
+        dir_config = loadCommentedJSon(args.dir)
         service_config_file = dir_config["anfisa.json"]
         if len(set(args.names)) != len(args.names):
             dup_names = args.names[:]
@@ -464,7 +469,7 @@ if __name__ == '__main__':
             print("Incorrect usage: --source applies only to one ds")
             sys.exit()
         if args.inv:
-            ds_inventory = json_conf.loadDatasetInventory(args.inv)
+            ds_inventory = loadDatasetInventory(args.inv)
             ds_name = args.names[0]
             entries = [DSEntry(ds_name, args.kind, ds_inventory["a-json"],
                 ds_inventory, entry_data = {"arg-inv": ds_inventory})]
@@ -472,9 +477,8 @@ if __name__ == '__main__':
             entries = [DSEntry(ds_name,  args.kind,  args.source)
                 for ds_name in args.names]
 
-    app_config = json_conf.loadJSonConfig(service_config_file,
-        home_path = os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))))
+    app_config = loadJSonConfig(service_config_file,
+        home_base_file = __file__, home_base_level = 1)
 
     assert os.path.isdir(app_config["data-vault"])
 

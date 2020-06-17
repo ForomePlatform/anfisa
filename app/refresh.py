@@ -20,7 +20,8 @@
 
 from argparse import ArgumentParser
 
-from storage import dropDataSet, loadJSonConfig, createDataSet
+from forome_tools.json_conf import loadJSonConfig
+from storage import dropDataSet, createDataSet
 import glob
 import os
 
@@ -75,8 +76,7 @@ if __name__ == '__main__':
     path_to_json = path_to_json.replace("?", "{name}")
 
     app_config = loadJSonConfig(run_args.config,
-        home_path = os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))))
+        home_base_file = __file__, home_base_level = 1)
 
     mode = run_args.mode
 
