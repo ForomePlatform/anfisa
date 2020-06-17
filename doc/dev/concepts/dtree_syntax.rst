@@ -2,35 +2,39 @@ Decision Tree Syntax Reference
 ==============================
 
 In the text below we define and discuss a dialect of Python that 
-is used to formulate decision tree by its code.
+is used to construct a decision tree.
 
 :term:`Decision tree` is an algorithm of :term:`filtration` that allows
-to build complex procedure of :term:`variants<variant>` 
-(and :term:`transcripts<transcript>`) selection.
+to build complex procedure of :term:`variants<variant>`  selection.
 
 Decision tree logic
 -------------------
 
-The procedure of filtration builds resulting set by the following logic: 
+A Decision Tree consists of a sequence of branching points. A result of
+application of any Decision Tree is a set that we will call "final selection".
+The process starts with a set consisting of all of the variants (in a whole genome of patient
+family members or a cohort of patients). This set "travels" through a tree trunk.
+At each branching point a subset of variants is removed from the set and is either
+excluded from further consideration (thrown away) or unconditionally included in
+the final selection. Variants that have been neither excluded or included continue
+their "travel".
     
-    - on the first stage we have the whole set of items (variants or transcripts) 
-        as working selection.
+    - Initially we have the whole set of items (variants) as working selection.
         
-    - (intermediate) If-instruction of decision tree selects some subset of 
-        working selection;
-        including Return-instruction determines what shoult be done with this set: 
-        either add it to the resulting 
-        set on decision ``True`` or just drop it on ``False``:
+    - At each branching point:
+        - If-instruction selects some subset of working selection;
+        - Return-instruction determines whether the selected subset should be included in
+          the "final selection" (return ``True``) or excluded (return ``False``):
         
 |      **if** *condition* :
 |           **return** *bool decision*
         
     - after If-instruction the selection set is (probably) reduced, and next instruction
-        is applied to this reduced set; next instruction is one more If-instruction, or...
+      is applied to this reduced set; next instruction is one more If-instruction, or...
         
     - final instruction in code is always Return-instruction that determines what 
-        should be done to the rest of working selection: to add it to the resulting 
-        set on ``True`` or drop in on ``False``:
+      should be done to the rest of working selection: to include it in the "final selection"
+      (``True``) or to exclude it (``False``):
     
 |       **return** *bool decision*
 
@@ -49,25 +53,25 @@ Syntax principles
 
 There are three levels of details in description of Decision Tree Python dialect:
 
-    - **neccesary level**: the dialect deals with very restricted subset of Python, 
+    - **neccessary level**: the dialect deals with very restricted subset of Python,
         so only small amount of Python constructions are allowed in it; below is
         complete description of this subset
         
-    - **good practice level**: some constructions discussed below are recommended as
-        "good practice"; analogous constructions that are not recommended by such a way
-        might be refactored to its "good practice" analogues in process of interactive 
-        changes of decision tree
+    - **good practice level**: some constructs discussed below are recommended as
+        "good practice"; similar constructs that are not considered good practices
+        could be refactored to their "good practice" analogues in the process of interactive
+        changes of a decision tree
 
     - **simplification level**: since the dialect of Python is very "thin", for purposes 
-        of easy typing and reading it suports the following "simplifications":
+        of easy typing and reading it supports the following "simplifications":
             
             - **string constants** can be typed without quote symbols ``""`` or ``''`` if they 
                 are correct Python identifiers or constants ``True, False, None``
             
             - **lists vs. sets**: in case when code refers list objects with ``[]`` parentheses, 
-                it is good practice to use set notation with ``{}``; indeed in practically
-                all cases of usage elements order in "list" does not matter, and ``{}`` 
-                are more easily readable
+                it is good practice to use set notation with ``{}``; indeed in most
+                cases, order of elements in a "list" is irrelevant, while ``{}``
+                are more readable
                 
 Top level constructions
 -----------------------
@@ -83,40 +87,40 @@ There are three top level constructions available in the dialect:
 
 The following rules must be hold:
 
-    - All these instructions (but including Return-sub-instruction of If-instruction) must 
-        start line, no indentation
+    - All instructions (excluding Return-sub-instruction of If-instruction) must
+        start at the first character of a line, no indentation
         
-    - Top-level Return-instruction must be the last nonempty line of code
+    - A top-level Return-instruction must be the last nonempty line of code
 
     - Label-instruction can be used before any If-instruction
     
-    - Empty lines between top-level constructions are acceptable
+    - Empty lines between top-level constructions are allowed
     
-    - Comments are acceptable only in form of full line, not as a rest of coding line: 
-        such lines should start with ``#`` letter, possibly after spaces (note also that 
-        comments are not acceptable after finishing instruction)
+    - Comments are acceptable only as a full line, not as a part of a line with code;
+        comments should start with ``#`` character, possibly after spaces (note also that
+        comments are not acceptable after the last instruction)
         
-    - It is good practice to place comment lines only before top-level instructions
+    - It is a good practice to place comment lines only before top-level instructions
     
-    - *condition* in If-instruction might be heavy, so one needs multiple lines for it;
-        It is god practice to use parentheses to group these lines, but not symbols ``\``.
+    - *condition* in If-instruction might be quite long, so one might need multiple lines;
+        It is good practice to use parentheses to group these lines, instead of ``\`` characters.
     
 Condition constructions
 -----------------------
 
 Combined conditions
 ^^^^^^^^^^^^^^^^^^^
-Operators ``and``, ``or`` and ``not`` and parentheses ``()`` are fullly acceptable
-to build complex conditions from atomic ones.
+Operators ``and``, ``or`` and ``not`` and parentheses ``()`` are fully supported
+for building complex conditions from atomic ones.
 
-Atomic condition uses identifier of correspondent :term:`filtering property` once 
-per atomic condition. (See also :doc:`../rest/s_condition` for understanding of atomic 
+Atomic condition uses identifier of corresponding :term:`filtering property` once
+per atomic condition. (See also :doc:`../rest/s_condition` for understanding atomic
 operations.)
 
 Atomic numeric condition
 ^^^^^^^^^^^^^^^^^^^^^^^^
 Has form of usual Python comparison operation with operators ``<``, ``<=``, ``==``,
-``>=``, ``>``. Might have double form, for example:
+``>=``, ``>``. Double form is acceptable, for example:
 
     |   *min value* < *property_id* <= *max_value*
     
@@ -137,47 +141,51 @@ Has different form in dependency of join mode of condition:
     |           *property_id* **not in** ``{`` *set*/*list of value strings* ``}``
     |
     
-Comments:
+Notes:
 
-    - notation above uses ``{}`` set parentheses; it is a good practice, however
-        list parentheses ``[]`` are acceptable
+    - notation above uses ``{}`` set parentheses; though it is recommended as a good practice,
+        list parentheses ``[]`` are also supported
         
-    - if enumerated property is :term:`status<status property>` one, operator **in**
-        is completely adequate 
+    - operator **in** is supported for all enumerated properties, including
+        :term:`status<status property>` (single-value properties) and
+        :term:`multiset<multiset property>` (multi -value properties).
+
+        For :term:`status<status property>` its semantic is simple and intuitive.
         
-        In case of :term:`multiset<multiset property>` this notation is sophisticated: 
-        in reality condition is positive when intersection
-        of two sets is nonempty; it can be "explained" by a way that object 
+        In case of :term:`multiset<multiset property>` this notation is more sophisticated:
+        the condition is positive when intersection
+        of two sets is nonempty, i.e. at least one value of the property matches
+        at least one value in the given set; it can be "explained" by a way that object
         representing filtering property redefines operator **in** from the left
         
-    - in case of **AND** join mode interpretation of **all()** preudo-function is 
-        sophisticated even more: it can be "explained" if result of **all()** 
+    - in case of **AND** join mode interpretation of **all()** pseudo-function is
+        even more sophisticated: it can be "explained" if result of **all()**
         redefines" **in** operation in a very specific way from the right.
     
-    - in terms of Decision tree there is no strong need in **NOT** join mode,
-        since operator ``not`` is supported outside atomic conditions
+    - in terms of Decision Tree there is no strong need for **NOT** join mode,
+        because operator ``not`` is supported outside atomic conditions
         
 Atomic function conditions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-Conditions have form similar to enumerated ones up to change *property id* to 
+Function conditions have similar form to enumerated conditions with a  change of *property id* to
 
     *function_name* (*parameters*)
 
-Syntax of usage parameters is standard one for Python. Since all values of
-parameters must be JSON objects (up to change JS constants ``true/false/null``
-to Python ones ``True/False/None``), there should be no problems in setting 
-parameters up. ("Simplifications" are also acceptable in parameters).
+Syntax for parameters is Python standard. Since all values of the
+parameters must be JSON objects (however, with a change of JS constants ``true/false/null``
+to Python counterparts ``True/False/None``), there should be no problems in setting
+parameters up. ("Simplifications" are also acceptable for parameters).
     
 See :doc:`../rest/func_ref` for reference of available functions and their parameters.
 
 Decision Tree system support
 ----------------------------
 
-The following objects are explicated from code of decision tree:
+The following objects are explicated from the code of decision tree:
 
     * **Points** correspond to instruction in code; each If- or Return- instruction
-        correspons to a point with state of selection set: either working one or pre-final.
-        The user needs to know how many items (variants/transcripts) are in these sets,
+        corresponds to a point with state of selection set: either working one or pre-final.
+        The user needs to know how many items (variants) are in these sets,
         and moreover has possibility to study distribution of values for filtering 
         properties of items in these sets. (See :doc:`dtree_pg` for details)
     
@@ -191,7 +199,7 @@ The following objects are explicated from code of decision tree:
         high level of qualification and attendacy of the user, however it 
         might be very important in practice.
         
-Two regimes of decision tree modifications are supported in the system:
+A decision tree can be modified in either of two ways:
 
     * manual typing and modifications of decision tree code
     
@@ -200,7 +208,8 @@ Two regimes of decision tree modifications are supported in the system:
         
 Interactive regime allows to make any meaningful transformation of decision tree,
 so there is no strong need to use manual regime at all. Manual regime requires 
-is helpful for complex manipulations with boolean logic of conditions. 
+is helpful for complex manipulations with boolean logic of conditions and,
+of course for copy/paste operations.
 
 See also
 --------

@@ -319,7 +319,7 @@ def setupSymbolPanels(base_pack):
     #     cfgPath("ttp4.lst"))
 
 def completeDsModes(ds_h):
-    if ds_h.getDataSchema == "CASE":
+    if ds_h.getDataSchema() == "CASE":
         family_info = ds_h.getFamilyInfo()
         trio_seq = family_info.getTrioSeq()
         if trio_seq:
@@ -330,5 +330,5 @@ def completeDsModes(ds_h):
                     ds_h.addModes({"trio_pure"})
         if ds_h.getDataInfo()["meta"].get("cohorts"):
             ds_h.addModes({"cohorts"})
-    elif ds_h.getDataSchema == "FAVOR":
+    elif ds_h.getDataSchema() == "FAVOR":
         FavorSchema.completeDsModes(ds_h)
