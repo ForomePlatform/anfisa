@@ -35,6 +35,8 @@ def defineViewSchema(metadata_record = None):
 
     aspect_list = [
         AspectH("view_gen", "General", "_view", field = "general"),
+        AspectH("view_transcripts", "Transcripts", "_view",
+            col_groups = ColGroupsH(attr = "transcripts")),
         AspectH("view_qsamples", "Quality", "_view",
             col_groups = ColGroupsH(attr = "quality_samples")),
         AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
@@ -136,6 +138,50 @@ def defineViewSchema(metadata_record = None):
             tooltip = "Filters positive on variant"),
         AttrH("op_dtrees", title = "Presence in decision trees",
             kind = "place", tooltip = "Decision trees positive on variant")
+    ])
+
+    aspects["view_transcripts"].setAttributes([
+        AttrH("id", title = "Title"),
+        AttrH("gene", title="Gene"),
+        AttrH("is_canonical", title="Canonical"),
+        AttrH("is_worst", title="Worst?"),
+        AttrH("transcript_source", title="Source"),
+        AttrH("biotype", title="Biotype"),
+        AttrH("transcript_annotations", title="Consequences", is_seq=True),
+        AttrH("variant_exon", title="Exon"),
+        AttrH("variant_intron", title="Intron"),
+
+        AttrH("cpos", title="CPos"),
+        AttrH("hgvs_c_snp_eff", title="CPos SnpEff"),
+        AttrH("hgvs_c_annovar", title="CPos ANNOVAR"),
+        AttrH("ppos", title="PPos"),
+        AttrH("hgvs_p_snp_eff", title="PPos SnpEff"),
+        AttrH("hgvs_p_annovar", title="PPos ANNOVAR"),
+        AttrH("amino_acids", title="Amino acids"),
+
+        AttrH("codons", title="Codons"),
+        AttrH("codonpos", title="Codon Pos"),
+        AttrH("refcodon", title="Ref Codon"),
+
+        AttrH("polyphen2_hdiv_prediction", title="Polyphen HDIV"),
+        AttrH("polyphen2_hvar_prediction", title="Polyphen HVAR"),
+        AttrH("sift_prediction", title="SIFT"),
+        AttrH("sift_4g_prediction", title="SIFT 4G"),
+        AttrH("mutation_assessor_prediction", title="Mutation Assessor"),
+        AttrH("fathmm_prediction", title="FATHMM"),
+
+        AttrH("polyphen2_hdiv_score", title="Polyphen HDIV Score"),
+        AttrH("polyphen2_hvar_score", title="Polyphen HVAR Score"),
+        AttrH("sift_score", title="SIFT Score"),
+        AttrH("sift_4g_score", title="SIFT 4G Score"),
+        AttrH("mutation_assessor_score", title="Mutation Assessor Score"),
+        AttrH("fathmm_score", title="FATHMM Score"),
+        AttrH("mpc_score", title="MPC Score"),
+
+        AttrH("ensembl_gene_id", title="Gene Id"),
+        AttrH("ensembl_protein_id", title="Protein Id"),
+        AttrH("uniprot_acc", title="Uniprot"),
+
     ])
 
     aspects["view_qsamples"].setAttributes([

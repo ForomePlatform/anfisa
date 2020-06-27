@@ -320,7 +320,7 @@ class IGV_AttrH(AttrH):
         if self.mPreUrl is None:
             return None
 
-        if self.self.mBase == "hg19":
+        if self.mBase == "hg19":
             start = int(v_context["data"]["__data"]["start"])
             end = int(v_context["data"]["__data"]["end"])
         else:
@@ -356,8 +356,16 @@ def reprGenTranscripts(val, v_context):
 
     ret_handle = ['<ul>']
     for idx, it in enumerate(val):
+        is_canonical = it.get("is_canonical") if it else False
+        if is_canonical:
+            prefix = "[C] "
+        else:
+            prefix = ""
         if details is not None and details[idx]:
-            mod = ' class="hit"'
+            if is_canonical:
+                mod = ' class="hit"'
+            else:
+                mod = ' class="no-hit"'
         else:
             mod = ''
         v_id = it.get("id")
@@ -367,8 +375,8 @@ def reprGenTranscripts(val, v_context):
         if not v_gene:
             v_gene = "?"
         ret_handle.append(
-            "<li%s><b>%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>"
-            % (mod, escape(v_id), escape(v_gene),
+            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>"
+            % (mod, escape(prefix), escape(v_id), escape(v_gene),
             escape(json.dumps(it.get("transcript_annotations", "?")))))
     ret_handle.append("</ul>")
     return ('\n'.join(ret_handle), "norm")
