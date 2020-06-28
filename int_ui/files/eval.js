@@ -302,8 +302,8 @@ var sOpEnumH = {
                 lost_vars.sort();
                 for (j=0; j < lost_vars.length; j++)  {
                     var_name = lost_vars[j];
-                    this.mDivVarList.innerHTML += this.reprVariant(
-                        var_name, 0, this.mVariants.length, true);
+                    this.mDivVarList.insertAdjacentHTML('beforeend', 
+                        this.reprVariant(var_name, 0, this.mVariants.length, true));
                     this.mVariants.push([var_name, 0, 0]);
                 }
                 needs_zeros = true;
@@ -363,8 +363,9 @@ var sOpEnumH = {
         var sel_names = [];
         if (this.mVariants != null) {
             for (j=0; j < this.mVariants.length; j++) {
-                if (document.getElementById("elcheck--" + j).checked)
+                if (document.getElementById("elcheck--" + j).checked) {
                     sel_names.push(this.mVariants[j][0]);
+                }
             }
         }
         return sel_names;

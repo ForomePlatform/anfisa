@@ -374,13 +374,12 @@ def reprGenTranscripts(val, v_context):
         v_gene = it.get("gene")
         if not v_gene:
             v_gene = "?"
-        t_format = \
-            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>"
+        t_format = (
+            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>")
         if not is_canonical:
             t_format = t_format.replace("<b>", "").replace("</b>", "")
-        ret_handle.append(
-            t_format
-            % (mod, escape(prefix), escape(v_id), escape(v_gene),
+        ret_handle.append(t_format % (mod,
+            escape(prefix), escape(v_id), escape(v_gene),
             escape(json.dumps(it.get("transcript_annotations", "?")))))
     ret_handle.append("</ul>")
     return ('\n'.join(ret_handle), "norm")

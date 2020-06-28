@@ -140,6 +140,8 @@ class ParsedDTree:
             if err_info is not None:
                 fragments = [TreeFragment(0, "Error", line_diap,
                     err_info = err_info)]
+                if self.mFirstError is None:
+                    self.mFirstError = err_info
             self.mFragments += fragments
         self.mHashCode = hash_h.hexdigest()
         self.mCurLineDiap = None
@@ -166,6 +168,8 @@ class ParsedDTree:
                 self.mFragments[-1] = TreeFragment(0, "Error",
                     frag_h.getLineDiap(), err_info = err_info)
                 self.mError = err_info
+        if self.mFirstError is None:
+            self.mFirstError = self.mError
 
     def getError(self):
         return self.mFirstError
