@@ -94,8 +94,8 @@ class AnfisaApp:
 
     @classmethod
     def terminate(cls, sig, frame):
-        cls.sMongoConn.close()
         cls.sJobPool.close()
+        cls.sMongoConn.close()
         logging.info("Application terminated")
         sys.exit(0)
 

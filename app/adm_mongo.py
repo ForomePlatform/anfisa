@@ -124,6 +124,7 @@ for coll_name in mongo_db.list_collection_names():
 if run_args.mode == "list":
     print(presentation(name_flt.filterNames(ds_present_set),
         run_args.pretty))
+    mongo_db.close()
     sys.exit()
 
 if run_args.mode == "dump":
@@ -136,6 +137,7 @@ if run_args.mode == "dump":
                     if name != "_id":
                         rep_it[name] = val
                 print(presentation(rep_it, run_args.pretty))
+    mongo_db.close()
     sys.exit()
 
 if run_args.mode == "drop":
@@ -156,6 +158,7 @@ if run_args.mode == "drop":
             if not run_args.dry:
                 for asp in aspects:
                     mongo_db[ds_name].delete_many({"_tp": asp})
+    mongo_db.close()
     sys.exit()
 
 if run_args.mode == "restore":
@@ -189,6 +192,8 @@ if run_args.mode == "restore":
         mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
     if ds_name is not None:
         print("-> Added records:", cnt)
+    mongo_db.close()
     sys.exit()
 
+mongo_db.close()
 print("Oops: command not supported", file = sys.stderr)

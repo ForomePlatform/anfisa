@@ -99,6 +99,7 @@ def createDataSet(app_config, ds_entry, force_drop, druid_adm, report_lines):
     createDS(ds_dir, mongo_conn, druid_adm,
         ds_entry.getName(), ds_entry.getSource(), ds_entry.getDSKind(),
         ds_entry.getInv(), report_lines)
+    mongo_conn.close()
 
 #===============================================
 def pushDruid(app_config, ds_entry, druid_adm):
@@ -173,6 +174,7 @@ def pushDoc(app_config, ds_entry):
     with open(ds_doc_dir + "/info.html", "w", encoding = "utf-8") as outp:
         reportDS(outp, ds_info, mongo_agent)
 
+    mongo_conn.close()
     print("Re-doc complete:", ds_dir)
 
 #===============================================
@@ -202,6 +204,7 @@ def initFavor(app_config, druid_adm, report_lines):
     createDS(ds_dir, mongo_conn, druid_adm,
         "xl_FAVOR", None, "xl", report_lines = report_lines,
         favor_storage = prepareFavorStorage(app_config))
+    mongo_conn.close()
 
 #===============================================
 def dropFavor(app_config, druid_adm, report_lines):

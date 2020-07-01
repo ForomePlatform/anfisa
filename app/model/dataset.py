@@ -323,8 +323,6 @@ class DataSet(SolutionBroker):
         else:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
-                if self._REST_NeedsBackup(rq_args, 'C'):
-                    cond_data = self._REST_BackupConditionsUp(cond_data)
             else:
                 cond_data = ConditionMaker.condAll()
             filter_h = FilterEval(self.getEvalSpace(), cond_data)
@@ -356,105 +354,6 @@ class DataSet(SolutionBroker):
         return str(self.sStatRqCount) + '/' + str(datetime.now())
 
     #===============================================
-    @classmethod
-    def _REST_NeedsBackup(cls, rq_args, key):
-        backup_mode = rq_args.get("back", "").upper()
-        return key in backup_mode
-
-    @classmethod
-    def _REST_BackupRecords(cls, record_info_seq):
-        ret_handle = []
-        for rinfo in record_info_seq:
-            ret_handle.append([rinfo.get(key)
-                for key in ("no", "lb", "cl", "dt")])
-        return ret_handle
-
-    @classmethod
-    def _REST_BackupSolList(cls, sol_info_seq):
-        ret_handle = []
-        for sol_info in sol_info_seq:
-            ret_handle.append([sol_info.get(key, True)
-                for key in ("name", "standard", None, "upd-time")])
-        return ret_handle
-
-    def _REST_BackupStatUnits(self, stat_unit_seq):
-        ret_handle, avail_import, avail_import_titles = [], [], []
-        for unit_stat in stat_unit_seq:
-            info = [unit_stat["kind"]]
-            info_descr = dict()
-            for key in ("kind", "name", "vgroup", "title", "render",
-                    "tooltip", "family", "affected", "detailed"):
-                if key in unit_stat:
-                    info_descr[key] = unit_stat[key]
-            if "affected" in info_descr:
-                info_descr["affected"] = self.getFamilyInfo().ids2idxset(
-                    info_descr["affected"])
-            info.append(info_descr)
-            if unit_stat["kind"] == "func":
-                if unit_stat["sub-kind"] != "inheritance-z":
-                    assert False
-                    continue
-                info[0] = "zygosity"
-                info += [self.getFamilyInfo().ids2idxset(
-                    unit_stat["problem_group"]), unit_stat["variants"]]
-            elif unit_stat["kind"] == "inactive":
-                avail_import.append(unit_stat["name"])
-                avail_import_titles.append(unit_stat.get("title"))
-                continue
-            elif unit_stat["kind"] == "numeric":
-                info[0] = unit_stat["sub-kind"]
-                info += [unit_stat.get("min"), unit_stat.get("max"),
-                    unit_stat["count"], 0]
-            elif (unit_stat["kind"] == "enum"
-                    and unit_stat["sub-kind"].startswith("transcript")):
-                info[0] = unit_stat["sub-kind"]
-                info.append(unit_stat.get("variants"))
-            else:
-                assert unit_stat["kind"] == "enum"
-                if unit_stat["sub-kind"] == "status":
-                    info[0] = "status"
-                info.append(unit_stat.get("variants"))
-            ret_handle.append(info)
-        return ret_handle, avail_import, avail_import_titles
-
-    def _REST_BackupConditionsUp(self, cond_data_seq):
-        ret_handler = []
-        for cond_data in cond_data_seq:
-            if cond_data[0] == "numeric":
-                min_v, max_v = cond_data[2]
-                ret_handler.append(["numeric",
-                    cond_data[1], [min_v, True, max_v, True]])
-                continue
-            if cond_data[0] == "zygosity":
-                ret_handler.append(["func",
-                    cond_data[1], cond_data[3], cond_data[4],
-                    {"sub-kind": "inheritance-z",
-                        "problem_group": (self.getFamilyInfo().idxset2ids(
-                            cond_data[2]))}])
-                continue
-            ret_handler.append(cond_data)
-        return ret_handler
-
-    def _REST_BackupConditionsDown(self, cond_data_seq):
-        ret_handler = []
-        for cond_data in cond_data_seq:
-            if cond_data[0] == "numeric":
-                min_v, _, max_v, _ = cond_data[2]
-                ret_handler.append(["numeric",
-                    cond_data[1], [min_v, max_v], None])
-                continue
-            if cond_data[0] == "func":
-                func_info = cond_data[4]
-                assert func_info["sub-kind"] == "inheritance-z"
-                ret_handler.append(["zygosity", cond_data[1],
-                    self.getFamilyInfo().ids2idxset(
-                        func_info["problem_group"]),
-                    cond_data[2], cond_data[3]])
-                continue
-            ret_handler.append(cond_data)
-        return ret_handler
-
-    #===============================================
     @RestAPI.ds_request
     def rq__ds_stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
@@ -476,24 +375,6 @@ class DataSet(SolutionBroker):
             "cur-filter": filter_h.getFilterName(),
             "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
-
-        if self._REST_NeedsBackup(rq_args, 'U'):
-            stat_seq, a_imp_names, a_imp_titles = self._REST_BackupStatUnits(
-                ret_handle["stat-list"])
-            ret_handle["stat-list"] = stat_seq
-            ret_handle["avail-import"] = a_imp_names
-            ret_handle["avail-import-titles"] = a_imp_titles
-
-        if self._REST_NeedsBackup(rq_args, 'C'):
-            if "conditions" in ret_handle:
-                cond_data = ret_handle["conditions"]
-                ret_handle["conditions"] = self._REST_BackupConditionsDown(
-                    cond_data)
-
-        if self._REST_NeedsBackup(rq_args, 'L'):
-            ret_handle["filter-list"] = self._REST_BackupSolList(
-                ret_handle["filter-list"])
-
         return ret_handle
 
     #===============================================
@@ -509,10 +390,6 @@ class DataSet(SolutionBroker):
             "stat-list": self.prepareAllUnitStat(condition,
                 dtree_h, time_end, point_no),
             "rq-id": self._makeRqId()}
-        if self._REST_NeedsBackup(rq_args, 'U'):
-            stat_seq, _, _ = self._REST_BackupStatUnits(
-                ret_handle["stat-list"])
-            ret_handle["stat-list"] = stat_seq
         return ret_handle
 
     #===============================================
@@ -531,10 +408,6 @@ class DataSet(SolutionBroker):
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition,
                 eval_h, time_end, point_no)}
-        if self._REST_NeedsBackup(rq_args, 'U'):
-            stat_seq, _, _ = self._REST_BackupStatUnits(
-                ret_handle["units"])
-            ret_handle["units"] = stat_seq
         return ret_handle
 
     #===============================================
@@ -584,11 +457,6 @@ class DataSet(SolutionBroker):
             "rq-id": rq_id}
 
         ret_handle.update(dtree_h.reportInfo())
-
-        if self._REST_NeedsBackup(rq_args, 'L'):
-            ret_handle["dtree-list"] = self._REST_BackupSolList(
-                ret_handle["dtree-list"])
-
         return ret_handle
 
     #===============================================
@@ -671,8 +539,7 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition = eval_h.getCondition()
         return {"task_id": self.getApp().runTask(
-            RecListTask(self, condition,
-                self._REST_NeedsBackup(rq_args, 'R')))}
+            RecListTask(self, condition))}
 
     #===============================================
     @RestAPI.ds_request

@@ -26,11 +26,10 @@ class RecListTask(ExecutionTask):
     sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
     sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
 
-    def __init__(self, ds_h, condition, rest_backup_records = False):
+    def __init__(self, ds_h, condition):
         ExecutionTask.__init__(self, "Prepare variants...")
         self.mDS = ds_h
         self.mCondition = condition
-        self.mRestBackRec = rest_backup_records
         self.mResSamples = None
         self.mResFull = None
 
@@ -89,8 +88,5 @@ class RecListTask(ExecutionTask):
             ret["samples"] = self.mResSamples
         if self.mResFull:
             ret["records"] = self.mResFull
-        if self.mRestBackRec:
-            for key in ("samples", "records"):
-                ret[key] = self.mDS._REST_BackupRecords(ret[key])
         self.setStatus("Done")
         return ret

@@ -207,9 +207,6 @@ class Workspace(DataSet):
             "total-counts": self.mEvalSpace.getTotalCounts(),
             "filtered-counts": counts,
             "records": records}
-        if self._REST_NeedsBackup(rq_args, 'R'):
-            ret_handle["records"] = self._REST_BackupRecords(
-                ret_handle["records"])
         return ret_handle
 
     #===============================================
