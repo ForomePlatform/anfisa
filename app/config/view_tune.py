@@ -32,6 +32,7 @@ def tuneAspects(ds_h, aspects):
         return
     view_gen = aspects["view_gen"]
     view_db = aspects["view_db"]
+    view_t = aspects["view_transcripts"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
     _resetupAttr(view_db, GTEx_AttrH(view_gen))
@@ -42,6 +43,7 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_db, BEACONS_AttrH(view_gen))
     _resetupAttr(view_db, PMID_AttrH(view_db))
     _resetupAttr(view_db, HGMD_PMID_AttrH(view_db))
+    _resetupAttr(view_t,  UNIPROT_AttrH(view_t))
 
     if "meta" not in ds_h.getDataInfo():
         return
@@ -407,3 +409,33 @@ class OpDTreess_AttrH(AttrH):
 
     def htmlRepr(self, obj, v_context):
         return (' '.join(self.mDS.getRecDTrees(v_context["rec_no"])), "norm")
+
+#===============================================
+class UNIPROT_AttrH(AttrH):
+    base_url = "https://www.uniprot.org/uniprot/%s"
+
+    def __init__(self, view):
+        AttrH.__init__(self, "UNIPROT",
+            title = "Uniprot", tooltip = "View on Uniprot site")
+        self.setAspect(view)
+
+    @classmethod
+    def makeLink(cls, acc):
+        if '-' not in acc:
+            return cls.base_url % acc
+        parts = acc.split('-')
+        return cls.base_url % parts[0] + "#" + acc
+
+    def htmlRepr(self, obj, v_context):
+        uniprot = obj.get("uniprot_acc")
+        if (not uniprot):
+            return None
+        url = self.makeLink(uniprot)
+        link = ('<span title="Uniprot">'
+                + ('<a href="%s" target="Uniprot">%s</a>' % (url, uniprot))
+                + '</span>'
+                )
+        obj["UNIPROT"] = link
+        return super().htmlRepr(obj, v_context)
+
+

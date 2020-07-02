@@ -187,7 +187,7 @@ def defineViewSchema(metadata_record = None):
 
         AttrH("ensembl_gene_id", title="Gene Id", kind = "hidden"),
         AttrH("ensembl_protein_id", title="Protein Id", kind = "hidden"),
-        AttrH("uniprot_acc", title="Uniprot"),
+        AttrH("UNIPROT", title="Uniprot", kind="place"),
 
     ])
 
@@ -370,18 +370,18 @@ def defineViewSchema(metadata_record = None):
         AttrH("cadd_raw", title = "CADD (Raw)",
             is_seq = True,
             tooltip = "CADD Combined annotation dependent depletion"),
-        AttrH("mutation_assessor", title = "Mutation Assessor",
-            is_seq = True,
-            tooltip = "Entropy of multiple sequence alighnment.	"
-            "H: high; M: medium; L: low; N: neutral. H/M means functional "
-            "and L/N means non-functional higher values are more deleterious"),
+        # AttrH("mutation_assessor", title = "Mutation Assessor",
+        #     is_seq = True,
+        #     tooltip = "Entropy of multiple sequence alighnment.	"
+        #     "H: high; M: medium; L: low; N: neutral. H/M means functional "
+        #     "and L/N means non-functional higher values are more deleterious"),
         AttrH("sift_score", title = "SIFT score",
             is_seq = True),
         AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score",
             is_seq = True),
         AttrH("polyphen2_hdiv_score", title = "Polyphen 2 HDIV score",
             is_seq = True),
-        AttrH("mutation_assessor_scores", title="Polyphen 2 HDIV score",
+        AttrH("mutation_assessor_scores", title="MutationAssessor score (MAori)",
             tooltip= 'MutationAssessor functional impact combined score (MAori).'
                      ' Multiple entries are separated by ";", corresponding '
                      'to Uniprot_entry.',
