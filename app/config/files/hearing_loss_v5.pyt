@@ -20,8 +20,8 @@ if (not Region in {"exon"}) and Dist_from_Exon >= 6:
 
 #2.a.	Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')
-if (Clinvar_Benign in {"False"} and
-        Clinvar_Trusted_Benign in {"False", "No data"}):
+if (Clinvar_Benign in {"VUS or Pathogenic"} and
+        Clinvar_Trusted_Benign not in {"Benign by Trusted submitters"}):
     return True
 
 # 2.b.	Include All de novo variants

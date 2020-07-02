@@ -142,6 +142,9 @@ def defineFilterSchema(metadata_record):
             compact_mode = True)
         filters.panelsUnit("Panels", genes_unit,
             view_path = "/_view/general/gene_panels")
+        filters.statusUnit("EQTL_Gene", "/_filters/eqtl_gene[]",
+            title= "EQTL Gene",
+            default_value="None")
         #filters.multiStatusUnit("Transcripts",
         #    "/__data/transcript_consequences[]", compact_mode = True,
         #    conversion = lambda arr:
