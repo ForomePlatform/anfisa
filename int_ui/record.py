@@ -92,8 +92,9 @@ def _reportAspect(output, rep_data):
                 continue
             print('<tr>', file = output)
             if len(attr_data) > 3:
-                print('<td class="title" title="%s">%s</td>' % (
-                    escape(attr_data[3]), attr_data[1]), file = output)
+                tooltip = escape(attr_data[3]).replace("'", '"')
+                print('<td class="title" title=\'%s\'>%s</td>' % (
+                    tooltip, attr_data[1]), file = output)
             else:
                 print('<td class="title">%s</td>' % attr_data[1],
                     file = output)

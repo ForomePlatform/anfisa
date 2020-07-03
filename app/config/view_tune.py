@@ -145,7 +145,7 @@ class OMIM_AttrH(AttrH):
         for gene in genes:
             url = self.makeLink(gene)
             links.append(
-                ('<span title="Search OMIM Gene Map for %s">' % gene)
+                ('<span title="Search OMIM Gene Map for %s">' % escape(gene))
                 + ('<a href="%s" target="OMIM">%s</a>' % (url, gene))
                 + '</span>')
         return ('<br>'.join(links), "norm")
@@ -170,7 +170,8 @@ class GREV_AttrH(AttrH):
         for gene in genes:
             url = self.makeLink(gene)
             links.append(
-                ('<span title="Search GeneReviews&reg; for %s">' % gene)
+                ('<span title="Search GeneReviews&reg; for %s">'
+                    % escape(gene))
                 + ('<a href="%s" target="GREV">%s</a>' % (url, gene))
                 + '</span>')
         return ('<br>'.join(links), "norm")
@@ -195,7 +196,7 @@ class MEDGEN_AttrH(AttrH):
         links = []
         for gene in genes:
             url = self.makeLink(gene)
-            links.append(('<span title="Search MedGen for %s">' % gene)
+            links.append(('<span title="Search MedGen for %s">' % escape(gene))
                 + ('<a href="%s" target="MEDGEN">%s</a>' % (url, gene))
                 + '</span>')
         return ('<br>'.join(links), "norm")
@@ -219,7 +220,8 @@ class GENE_CARDS_AttrH(AttrH):
         links = []
         for gene in genes:
             url = self.makeLink(gene)
-            links.append(('<span title="Read GeneCards for %s">' % gene)
+            links.append(
+                ('<span title="Read GeneCards for %s">' % escape(gene))
                 + ('<a href="%s" target="GeneCards">%s</a>' % (url, gene))
                 + '</span>')
         return ('<br>'.join(links), "norm")
@@ -271,7 +273,8 @@ class _PMID_AttrH(AttrH):
         links = []
         for pmid in pmids:
             url = self.makeLink(pmid)
-            links.append(('<span title="PubMed abstracts for %s">' % pmid)
+            links.append(
+                ('<span title="PubMed abstracts for %s">' % escape(pmid))
                 + ('<a href="%s" target="PubMed">%s</a>' % (url, pmid))
                 + '</span>')
         return (', '.join(links), "norm")
@@ -415,7 +418,7 @@ class UNIPROT_AttrH(AttrH):
     base_url = "https://www.uniprot.org/uniprot/%s"
 
     def __init__(self, view):
-        AttrH.__init__(self, "UNIPROT",
+        AttrH.__init__(self, "UNIPROT_ACC",
             title = "Uniprot", tooltip = "View on Uniprot site")
         self.setAspect(view)
 
@@ -429,13 +432,9 @@ class UNIPROT_AttrH(AttrH):
     def htmlRepr(self, obj, v_context):
         uniprot = obj.get("uniprot_acc")
         if (not uniprot):
-            return None
+            return ('-', "none")
         url = self.makeLink(uniprot)
         link = ('<span title="Uniprot">'
-                + ('<a href="%s" target="Uniprot">%s</a>' % (url, uniprot))
-                + '</span>'
-                )
-        obj["UNIPROT"] = link
-        return super().htmlRepr(obj, v_context)
-
-
+            + ('<a href="%s" target="Uniprot">%s</a>' % (url, escape(uniprot)))
+            + '</span>')
+        return (link, "norm")

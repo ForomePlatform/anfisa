@@ -142,52 +142,53 @@ def defineViewSchema(metadata_record = None):
 
     aspects["view_transcripts"].setAttributes([
         AttrH("id", title = "Transcript Id"),
-        AttrH("gene", title="Gene"),
-        AttrH("is_canonical", title="Canonical"),
-        AttrH("gencode_basic", title="GENCODE Basic",
-              tooltip='The transcripts tagged as "basic" form part of a subset '
-                      'of representative transcripts for each gene. This subset '
-                      'prioritises full-length protein coding transcripts over '
-                      'partial or non-protein coding transcripts within the '
-                      'same gene, and intends to highlight those transcripts '
-                      'that will be useful to the majority of users.'),
-        AttrH("is_worst", title="Worst?"),
-        AttrH("transcript_source", title="Source"),
-        AttrH("biotype", title="Biotype"),
-        AttrH("transcript_annotations", title="Consequences", is_seq=True),
-        AttrH("variant_exon", title="Exon"),
-        AttrH("variant_intron", title="Intron"),
+        AttrH("gene", title = "Gene"),
+        AttrH("is_canonical", title = "Canonical"),
+        AttrH("gencode_basic", title = "GENCODE Basic",
+            tooltip =
+            'The transcripts tagged as "basic" form part of a subset '
+            'of representative transcripts for each gene. This subset '
+            'prioritises full-length protein coding transcripts over '
+            'partial or non-protein coding transcripts within the '
+            'same gene, and intends to highlight those transcripts '
+            'that will be useful to the majority of users.'),
+        AttrH("is_worst", title = "Worst?"),
+        AttrH("transcript_source", title = "Source"),
+        AttrH("biotype", title = "Biotype"),
+        AttrH("transcript_annotations", title = "Consequences", is_seq = True),
+        AttrH("variant_exon", title = "Exon"),
+        AttrH("variant_intron", title = "Intron"),
 
-        AttrH("cpos", title="CPos"),
-        AttrH("hgvs_c_snp_eff", title="CPos SnpEff"),
-        AttrH("hgvs_c_annovar", title="CPos ANNOVAR"),
-        AttrH("ppos", title="PPos"),
-        AttrH("hgvs_p_snp_eff", title="PPos SnpEff"),
-        AttrH("hgvs_p_annovar", title="PPos ANNOVAR"),
-        AttrH("amino_acids", title="Amino acids"),
+        AttrH("cpos", title = "CPos"),
+        AttrH("hgvs_c_snp_eff", title = "CPos SnpEff"),
+        AttrH("hgvs_c_annovar", title = "CPos ANNOVAR"),
+        AttrH("ppos", title = "PPos"),
+        AttrH("hgvs_p_snp_eff", title = "PPos SnpEff"),
+        AttrH("hgvs_p_annovar", title = "PPos ANNOVAR"),
+        AttrH("amino_acids", title = "Amino acids"),
 
-        AttrH("codons", title="Codons"),
-        AttrH("codonpos", title="Codon Pos"),
-        AttrH("refcodon", title="Ref Codon"),
+        AttrH("codons", title = "Codons"),
+        AttrH("codonpos", title = "Codon Pos"),
+        AttrH("refcodon", title = "Ref Codon"),
 
-        AttrH("polyphen2_hdiv_prediction", title="Polyphen HDIV"),
-        AttrH("polyphen2_hvar_prediction", title="Polyphen HVAR"),
-        AttrH("sift_prediction", title="SIFT"),
-        AttrH("sift_4g_prediction", title="SIFT 4G"),
-        AttrH("mutation_assessor_prediction", title="Mutation Assessor"),
-        AttrH("fathmm_prediction", title="FATHMM"),
+        AttrH("polyphen2_hdiv_prediction", title = "Polyphen HDIV"),
+        AttrH("polyphen2_hvar_prediction", title = "Polyphen HVAR"),
+        AttrH("sift_prediction", title = "SIFT"),
+        AttrH("sift_4g_prediction", title = "SIFT 4G"),
+        AttrH("mutation_assessor_prediction", title = "Mutation Assessor"),
+        AttrH("fathmm_prediction", title = "FATHMM"),
 
-        AttrH("polyphen2_hdiv_score", title="Polyphen HDIV Score"),
-        AttrH("polyphen2_hvar_score", title="Polyphen HVAR Score"),
-        AttrH("sift_score", title="SIFT Score"),
-        AttrH("sift_4g_score", title="SIFT 4G Score"),
-        AttrH("mutation_assessor_score", title="Mutation Assessor Score"),
-        AttrH("fathmm_score", title="FATHMM Score"),
-        AttrH("mpc_score", title="MPC Score"),
+        AttrH("polyphen2_hdiv_score", title = "Polyphen HDIV Score"),
+        AttrH("polyphen2_hvar_score", title = "Polyphen HVAR Score"),
+        AttrH("sift_score", title = "SIFT Score"),
+        AttrH("sift_4g_score", title = "SIFT 4G Score"),
+        AttrH("mutation_assessor_score", title = "Mutation Assessor Score"),
+        AttrH("fathmm_score", title = "FATHMM Score"),
+        AttrH("mpc_score", title = "MPC Score"),
 
-        AttrH("ensembl_gene_id", title="Gene Id", kind = "hidden"),
-        AttrH("ensembl_protein_id", title="Protein Id", kind = "hidden"),
-        AttrH("UNIPROT", title="Uniprot", kind="place"),
+        AttrH("ensembl_gene_id", title = "Gene Id", kind = "hidden"),
+        AttrH("ensembl_protein_id", title = "Protein Id", kind = "hidden"),
+        AttrH("uniprot_acc", title = "Uniprot", kind = "place"),
 
     ])
 
@@ -253,7 +254,7 @@ def defineViewSchema(metadata_record = None):
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
             "(always 0)."),
-        AttrH("genotype", title="Sample Genotype")
+        AttrH("genotype", title = "Sample Genotype")
     ])
 
     aspects["view_gnomAD"].setAttributes([
@@ -309,7 +310,7 @@ def defineViewSchema(metadata_record = None):
         # AttrH("pubmed_search", title = "PubMed Search Results",
         #     is_seq = True, kind = "link"),
         AttrH("beacons", title = "Observed at", is_seq = True),
-        AttrH("references", is_seq=True, kind = "place")])
+        AttrH("references", is_seq = True, kind = "place")])
 
     aspects["view_pred"].setAttributes([
         AttrH("lof_score", title = "LoF Score",
@@ -347,23 +348,22 @@ def defineViewSchema(metadata_record = None):
             tooltip = "Bayes Classifier. A: (disease_causing_automatic); "
             "D: (disease_causing); N: (polymorphism [probably harmless]); "
             "P: (polymorphism_automatic[known to be harmless])"),
-        AttrH("mutation_assessor_predictions", title="MutationAssessor",
-              is_seq=True,
-              tooltip='MutationAssessor functional impact of a variant :'
-                ' predicted functional, i.e. high ("H") or medium ("M"), '
-                'or predicted non-functional, i.e. low ("L") or neutral ("N"). '
-                'The MAori score cutoffs between "H" and "M", "M" and "L", and '
-                '"L" and "N", are 3.5, 1.935 and 0.8, respectively. The ' 
-                'rankscore cutoffs between "H" and "M", "M" and "L", and "L" '
-                'and "N", are 0.92922, 0.51944 and 0.19719, respectively.'
-              ),
+        AttrH("mutation_assessor_predictions", title = "MutationAssessor",
+            is_seq = True,
+            tooltip = 'MutationAssessor functional impact of a variant : '
+            'predicted functional, i.e. high ("H") or medium ("M"), '
+            'or predicted non-functional, i.e. low ("L") or neutral ("N"). '
+            'The MAori score cutoffs between "H" and "M", "M" and "L", and '
+            '"L" and "N", are 3.5, 1.935 and 0.8, respectively. The '
+            'rankscore cutoffs between "H" and "M", "M" and "L", and "L" '
+            'and "N", are 0.92922, 0.51944 and 0.19719, respectively.'),
         AttrH("fathmm", title = "FATHMM", is_seq = True,
             tooltip = "Functional analysis through hidden markov model HMM."
             "D: Deleterious; T: Tolerated"),
-        AttrH("primate_ai_pred", title="PrimateAI", is_seq=True,
-              tooltip='Prediction of PrimateAI score based on the authors '
-                      'recommendation, "T(olerated)" or "D(amaging)". '
-                      'The score cutoff between "D" and "T" is 0.803.'),
+        AttrH("primate_ai_pred", title = "PrimateAI", is_seq = True,
+            tooltip = 'Prediction of PrimateAI score based on the authors '
+            'recommendation, "T(olerated)" or "D(amaging)". '
+            'The score cutoff between "D" and "T" is 0.803.'),
         AttrH("cadd_phred", title = "CADD (Phred)",
             is_seq = True,
             tooltip = "CADD Combined annotation dependent depletion"),
@@ -374,22 +374,24 @@ def defineViewSchema(metadata_record = None):
         #     is_seq = True,
         #     tooltip = "Entropy of multiple sequence alighnment.	"
         #     "H: high; M: medium; L: low; N: neutral. H/M means functional "
-        #     "and L/N means non-functional higher values are more deleterious"),
+        #     "and L/N means non-functional higher values "
+        #     "are more deleterious"),
         AttrH("sift_score", title = "SIFT score",
             is_seq = True),
         AttrH("polyphen2_hvar_score", title = "Polyphen 2 HVAR score",
             is_seq = True),
         AttrH("polyphen2_hdiv_score", title = "Polyphen 2 HDIV score",
             is_seq = True),
-        AttrH("mutation_assessor_scores", title="MutationAssessor score (MAori)",
-            tooltip= 'MutationAssessor functional impact combined score (MAori).'
-                     ' Multiple entries are separated by ";", corresponding '
-                     'to Uniprot_entry.',
-            is_seq=True),
-        AttrH("dann_score", title="DANN Functional Prediction score",
-            tooltip='DANN is a functional prediction score retrained based '
-                      'on the training data of CADD using deep neural network',
-            is_seq=True)
+        AttrH("mutation_assessor_scores",
+            title = "MutationAssessor score (MAori)",
+            tooltip = 'MutationAssessor functional impact combined score '
+            '(MAori). Multiple entries are separated by ";", corresponding '
+            'to Uniprot_entry.',
+            is_seq = True),
+        AttrH("dann_score", title = "DANN Functional Prediction score",
+            tooltip = 'DANN is a functional prediction score retrained based '
+            'on the training data of CADD using deep neural network',
+            is_seq = True)
     ])
 
     aspects["view_pharmagkb"].setAttributes([
@@ -425,8 +427,8 @@ def defineViewSchema(metadata_record = None):
         AttrH("splice_ai_dg", title = "Splice AI donor gain", is_seq = True),
         AttrH("splice_ai_dl", title = "Splice AI donor loss", is_seq = True),
         AttrH("splice_ai", kind = "hidden"),
-        AttrH("eqtl_gene", title="EQTL Gene", is_seq=True),
-        AttrH("refcodon", title="Ref Codon(s)", is_seq=True),
+        AttrH("eqtl_gene", title = "EQTL Gene", is_seq = True),
+        AttrH("refcodon", title = "Ref Codon(s)", is_seq = True),
         AttrH("other_genes",
             title = "Gene symbols from other transcripts",
             is_seq = True),
