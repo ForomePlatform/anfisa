@@ -50,7 +50,7 @@ def tuneUnits(ds_h):
         zyg_support.regGeneApprox("transcript",
             "Transcript_id", "shared transcript")
         zyg_support.regGeneApprox("gene",
-            "Transctript_gene_id", "shared gene")
+            "Transctript_Gene", "shared gene")
     zyg_support.regGeneApprox("rough",
         "Symbol", "non-intersecting transcripts")
 

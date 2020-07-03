@@ -142,7 +142,7 @@ def defineFilterSchema(metadata_record):
             compact_mode = True)
         filters.panelsUnit("Panels", genes_unit,
             view_path = "/_view/general/gene_panels")
-        filters.transctiptStatusUnit("EQTL_Gene", "/_filters/eqtl_gene[]",
+        filters.multiStatusUnit("EQTL_Gene", "/_filters/eqtl_gene[]",
             title = "EQTL Gene",
             default_value = "None")
         #filters.multiStatusUnit("Transcripts",
@@ -159,23 +159,45 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Transcripts"):
         filters.transctiptMultisetUnit("Transctipt_consequence",
-            "consequence_terms", variants = sConsequenceVariants,
+            "transcript_annotations", variants = sConsequenceVariants,
             default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_canonical", "canonical",
-            bool_check_value = "1", default_value = "False")
+        filters.transctiptStatusUnit("Transcript_canonical", "is_canonical",
+            bool_check_value = "True", default_value = "False")
+        filters.transctiptStatusUnit("Transcript_GENCODE_Basic", "gencode_basic",
+            bool_check_value = "True", default_value = "False")
         filters.transctiptStatusUnit("Transcript_biotype", "biotype",
             default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
-            bool_check_value = "${Most_Severe_Consequence}",
+        filters.transctiptStatusUnit("Transcript_worst", "is_worst",
+            bool_check_value = "True",
             default_value = "False")
-        filters.transctiptStatusUnit("Transcript_id", "transcript_id",
+        filters.transctiptStatusUnit("Transcript_id", "id",
             default_value = "undefined")
-        filters.transctiptStatusUnit("Transctript_gene_id", "gene_id",
+        filters.transctiptStatusUnit("Transctript_Gene", "gene",
             default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_source", "source",
+        filters.transctiptStatusUnit("Transcript_source", "transcript_source",
             default_value = "undefined")
-        filters.transctiptStatusUnit("Transcript_strand", "strand",
-            default_value = "undefined")
+        # filters.transctiptStatusUnit("Transcript_strand", "strand",
+        #     default_value = "undefined")
+
+    # with filters.viewGroup("Transcripts"):
+    #     filters.transctiptMultisetUnit("Transctipt_consequence",
+    #         "consequence_terms", variants = sConsequenceVariants,
+    #         default_value = "undefined")
+    #     filters.transctiptStatusUnit("Transcript_canonical", "canonical",
+    #         bool_check_value = "1", default_value = "False")
+    #     filters.transctiptStatusUnit("Transcript_biotype", "biotype",
+    #         default_value = "undefined")
+    #     filters.transctiptStatusUnit("Transcript_worst", "consequence_terms",
+    #         bool_check_value = "${Most_Severe_Consequence}",
+    #         default_value = "False")
+    #     filters.transctiptStatusUnit("Transcript_id", "transcript_id",
+    #         default_value = "undefined")
+    #     filters.transctiptStatusUnit("Transctript_gene_id", "gene_id",
+    #         default_value = "undefined")
+    #     filters.transctiptStatusUnit("Transcript_source", "source",
+    #         default_value = "undefined")
+    #     filters.transctiptStatusUnit("Transcript_strand", "strand",
+    #         default_value = "undefined")
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
