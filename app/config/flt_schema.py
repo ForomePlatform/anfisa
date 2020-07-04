@@ -163,8 +163,9 @@ def defineFilterSchema(metadata_record):
             default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_canonical", "is_canonical",
             bool_check_value = "True", default_value = "False")
-        filters.transctiptStatusUnit("Transcript_GENCODE_Basic", "gencode_basic",
-            bool_check_value = "True", default_value = "False")
+        filters.transctiptStatusUnit("Transcript_GENCODE_Basic",
+            "gencode_basic", bool_check_value = "True",
+            default_value = "False")
         filters.transctiptStatusUnit("Transcript_biotype", "biotype",
             default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_worst", "is_worst",
