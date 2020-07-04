@@ -64,9 +64,10 @@ class AnfisaConfig:
             "render": None
         },
 
-#        "transcript.path.base": "/__data/transcript_consequences",
+        #  "transcript.path.base": "/__data/transcript_consequences",
+        #  "transcript.view.setup": ("transcripts", "transcript_consequences"),
         "transcript.path.base": "/_view/transcripts",
-        "transcript.view.setup": ("transcripts", "transcript_consequences"),
+        "transcript.view.setup": ("view_transcripts", "transcripts"),
 
         "view.cohorts.aspect": "view_qsamples",
 

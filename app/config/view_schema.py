@@ -36,7 +36,8 @@ def defineViewSchema(metadata_record = None):
     aspect_list = [
         AspectH("view_gen", "General", "_view", field = "general"),
         AspectH("view_transcripts", "Transcripts", "_view",
-            col_groups = ColGroupsH(attr = "transcripts")),
+            col_groups = ColGroupsH(
+                [("transcripts", "Transcripts")])),
         AspectH("view_qsamples", "Quality", "_view",
             col_groups = ColGroupsH(attr = "quality_samples")),
         AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
