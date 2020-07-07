@@ -33,6 +33,7 @@ def tuneAspects(ds_h, aspects):
     view_gen = aspects["view_gen"]
     view_db = aspects["view_db"]
     view_t = aspects["view_transcripts"]
+    view_pkgb = aspects["view_pharmagkb"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
     _resetupAttr(view_db, GTEx_AttrH(view_gen))
@@ -44,6 +45,10 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_db, PMID_AttrH(view_db))
     _resetupAttr(view_db, HGMD_PMID_AttrH(view_db))
     _resetupAttr(view_t,  UNIPROT_AttrH(view_t))
+    _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "diseases", True))
+    _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "chemicals", True))
+    _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
+    _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "notes", False))
 
     if "meta" not in ds_h.getDataInfo():
         return
@@ -266,17 +271,20 @@ class _PMID_AttrH(AttrH):
         AttrH.__init__(self, name, title = title, tooltip = tooltip)
         self.setAspect(view)
 
+    @classmethod
+    def make_span(cls, pmid):
+        url = cls.makeLink(pmid)
+        return (('<span title="PubMed abstracts for %s">' % escape(pmid))
+                + ('<a href="%s" target="PubMed">%s</a>' % (url, pmid))
+                + '</span>')
+
     def htmlRepr(self, obj, v_context):
         pmids = self.get_pmids(v_context)
         if (not pmids):
             return None
         links = []
         for pmid in pmids:
-            url = self.makeLink(pmid)
-            links.append(
-                ('<span title="PubMed abstracts for %s">' % escape(pmid))
-                + ('<a href="%s" target="PubMed">%s</a>' % (url, pmid))
-                + '</span>')
+            links.append(self.make_span(pmid))
         return (', '.join(links), "norm")
 
 #===============================================
@@ -438,3 +446,71 @@ class UNIPROT_AttrH(AttrH):
             + ('<a href="%s" target="Uniprot">%s</a>' % (url, escape(uniprot)))
             + '</span>')
         return (link, "norm")
+
+
+class PGKB_AttrH(AttrH):
+    def __init__(self, view, key, is_simple):
+        AttrH.__init__(self, key.upper(), title = key.title())
+        self.setAspect(view)
+        self.key = key
+        self.simple = is_simple
+
+    def collect (self, items):
+        result = dict()
+        for item in items:
+            key = item["association"]
+            value = item["value"]
+            if self.key == "pmids":
+                value = _PMID_AttrH.make_span(value)
+            if key in result:
+                result[key].append(value)
+            else:
+                result[key] = [value]
+        return result
+
+    def draw_table(self, items, f):
+        html = "<table>"
+        for key in items:
+            html += "<tr><td>"
+            html += key
+            html += "</td><td>"
+            html += f(key, items)
+            html += "</td></tr>"
+        html += "</table>"
+        return html
+
+    def draw_simple_table(self, items):
+        f = lambda key, entries: ", ".join(entries[key])
+        return self.draw_table(items, f)
+
+    def draw_nested_table(self, items):
+        return self.draw_table(items, self.draw_inner_table)
+
+    def draw_inner_table(self, key, items):
+        html = "<ul>"
+        for item in items[key]:
+            html += "<li>" + item + "</li>"
+        html += "</ul>"
+        return html
+
+    def make_table(self, obj, key):
+        if not obj:
+            return None
+        items = obj.get(key)
+        if not items:
+            return None
+        collection = self.collect(items)
+
+        if self.simple:
+            table = self.draw_simple_table(collection)
+        else:
+            table = self.draw_nested_table(collection)
+
+        return table
+
+    def htmlRepr(self, obj, v_context):
+        table = self.make_table(obj, self.key)
+        if not table:
+            return None
+        html = ('<span title="PKGB_%s"> %s </span>' % (self.key, table))
+        return (html, "norm")
