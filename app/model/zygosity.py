@@ -70,6 +70,9 @@ class ZygositySupport:
             return approx_mode
         return False
 
+    def hasXLinked(self):
+        return self.mFamilyInfo.groupHasMales()
+
     #=========================
     # Scenarios
     #=========================

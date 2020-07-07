@@ -53,9 +53,11 @@ var sUnitsH = {
         this.setup();
     },
     
-    getRqArgs: function() {
+    getRqArgs: function(use_id) {
         ret = this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
+        if (use_id)
+            ret += "&rq_id=" + encodeURIComponent(this.mRqId);
         return ret;
     },
     
@@ -235,7 +237,6 @@ var sUnitsH = {
                 prev_el.className = prev_el.className.replace(" cur", "");
         }
         this.mCurUnit = stat_unit;
-        //this.mCurFuncName = sZygosityH.checkUnitTitle(stat_unit);
         new_unit_el.className = new_unit_el.className + " cur";
         softScroll(new_unit_el, 1);
         sConditionsH.onUnitSelect();
@@ -275,6 +276,12 @@ var sUnitsH = {
                 view_seq.push(this.mUnitsDelay[idx]);
         }
         this.mUnitsDelay = view_seq.concat(hidden_seq);
+    },
+    
+    checkRqId: function(info) {
+        if (info["rq-id"] != this.mRqId) 
+            return false;
+        return true;
     }
 };
 
@@ -436,7 +443,6 @@ var sConditionsH = {
         this.mCurCondIdx = cond_no;
         if (new_cond_el != null) {
             new_cond_el.className = new_cond_el.className + " cur";
-            //sZygosityH.onSelectCondition(this.mList[cond_no]);
             sUnitsH.selectUnit(this.mCondSeq[cond_no]["unit"], true);
         }
     },

@@ -246,7 +246,7 @@ var sOpEnumH = {
         }
     },
     
-    _setupVariants: function(variants) {
+    _setupVariants: function(variants, func_mode) {
         this.mVariants = variants;
         if (this.mVariants == null)
             this.mVariants = [];
@@ -264,8 +264,10 @@ var sOpEnumH = {
         this.mDivVarList.className = "";
         
         document.getElementById("cur-cond-enum-zeros").style.display = 
-            (has_zero)? "block":"none";            
+            (has_zero && !func_mode)? "block":"none";            
         this.careEnumZeros(false);
+        if (func_mode && variants.length == 1)
+            document.getElementById("elcheck--" + 0).disabled = true;
     },
     
     updateCondition: function(cond) {
@@ -277,7 +279,7 @@ var sOpEnumH = {
         }
     },
     
-    _updateState: function(op_mode, var_list) {
+    _updateState: function(op_mode, var_list, func_mode) {
         if (this.mOperationMode != null)
             this.mOperationMode = ["OR", "AND", "NOT"].indexOf(op_mode);
         needs_zeros = false;
@@ -309,13 +311,11 @@ var sOpEnumH = {
                 needs_zeros = true;
             }
         }
-        this.careEnumZeros(needs_zeros);
+        this.careEnumZeros(needs_zeros, func_mode);
         this.checkControls();
     },
     
-    careControls: function(in_check) {
-        if (this.mFuncCtrl != null)
-            this.mFuncCtrl.careControls(in_check);
+    careControls: function() {
         document.getElementById("cur-cond-enum").style.display = 
             (this.mVariants == null)? "none":"grid";
         for (idx = 1; idx < 3; idx++) {
@@ -348,13 +348,18 @@ var sOpEnumH = {
             block_h - this.mArrangeDelta;
     },
 
-    careEnumZeros: function(opt) {
+    careEnumZeros: function(opt, func_mode) {
         var check_enum_z = document.getElementById("cur-enum-zeros");
-        if (opt == undefined) {
-            show_zeros = check_enum_z.checked;
-        } else {
-            show_zeros = opt;
+        if (func_mode) {
+            show_zeros = true;
             check_enum_z.checked = show_zeros;
+        } else {
+            if (opt == undefined) {
+                show_zeros = check_enum_z.checked;
+            } else {
+                show_zeros = opt;
+                check_enum_z.checked = show_zeros;
+            }
         }
         this.mDivVarList.className = (show_zeros)? "":"no-zeros";
     },
@@ -374,7 +379,7 @@ var sOpEnumH = {
     checkControls: function(opt) {
         if (this.mVariants == null) 
             return;
-        this.careControls(true);
+        this.careControls();
         var err_msg = null;
         if (opt != undefined && this.mOperationMode != null) {
             if (this.mOperationMode == opt)
@@ -393,9 +398,9 @@ var sOpEnumH = {
         if (sel_names.length > 0) {
             condition_data = [op_mode, sel_names];
             if (sel_names.length == 1)
-                err_msg = "1 variant selected";
+                err_msg = "1 item selected";
             else
-                err_msg = sel_names.length + " variants selected";
+                err_msg = sel_names.length + " items selected";
         } else
             err_msg = " Out of choice"
         if (this.mUpdateCondStr && !err_msg && condition_data &&
@@ -403,12 +408,18 @@ var sOpEnumH = {
             err_msg = " ";
             condition_data = null;
         }
-        if (this.mFuncCtrl != null) {
-            if (condition_data)
-                condition_data.push(this.mFuncCtrl.getCurParams());
-            err_msg = this.mFuncCtrl.checkError(condition_data, err_msg);
+        if (this.mFuncCtrl != null && condition_data) {
+            var func_err = this.mFuncCtrl.checkCurError();
+            if (func_err) {
+                err_msg = func_err;
+                condition_data = null;
+            } else {
+                var func_params = this.mFuncCtrl.makeFuncParams();
+                if (func_params["request"]) 
+                    console.log("F-rq:" + func_params["request"].length);
+                condition_data.push(func_params);
+            }
         }
-
         sOpCondH.formCondition(condition_data, err_msg, true);
         this.careControls();
     },

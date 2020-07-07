@@ -37,6 +37,10 @@ class InheritanceUnit(FunctionUnit):
             sub_kind = "inheritance-z", parameters = ["problem_group"])
         assert ds_h.testRequirements({"ZYG"})
         self.mZygSupport = ds_h.getZygositySupport()
+        self.mAvailLabels = self.sCaseLabels[:]
+        if not self.mZygSupport.hasXLinked():
+            self.mAvailLabels.remove(
+                AnfisaConfig.configOption("zygosity.cases")["x_linked"])
 
     def iterComplexCriteria(self, context, variants = None):
         if context is None:
@@ -59,12 +63,12 @@ class InheritanceUnit(FunctionUnit):
         ret_handle = self.prepareStat()
         ret_handle["family"] = self.mZygSupport.getIds()
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
-        ret_handle["variants"] = self.sCaseLabels
+        ret_handle["available"] = self.mAvailLabels
         return ret_handle
 
     def makeParamStat(self, condition, parameters, eval_h, point_no):
         ret_handle = self.prepareStat()
-        if parameters is None or "problem_group" not in parameters:
+        if parameters is None or parameters.get("problem_group") is None:
             p_group = self.mZygSupport.getAffectedGroup()
         else:
             p_group = self.mZygSupport.filter(parameters["problem_group"])
@@ -97,7 +101,7 @@ class InheritanceUnit(FunctionUnit):
         return {"p_group": p_group}
 
     def validateArgs(self, func_args):
-        if "problem_group" in func_args:
+        if func_args.get("problem_group"):
             if not isinstance(func_args["problem_group"], list):
                 return "Problem group expected in form of set or list"
         return None
@@ -152,6 +156,6 @@ class CustomInheritanceUnit(FunctionUnit):
         return {"scenario": scenario}
 
     def validateArgs(self, func_args):
-        if "scenario" in func_args:
+        if func_args.get("scenario"):
             return self.mZygSupport.validateScenario(func_args["scenario"])
         return None

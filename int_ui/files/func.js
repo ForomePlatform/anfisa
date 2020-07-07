@@ -32,6 +32,7 @@ var sOpFuncH = {
     mTimeH: null,
     mOpVariants: null,
     mOpMode: null,
+    mCurFState: null,
 
     init: function() {
         this.mFDict = {
@@ -63,35 +64,68 @@ var sOpFuncH = {
         this.mRuntimeErr = null;
         this.mOpVariants = null;
         this.mOpMode = null;
+        this.mCurFState = null;
     },
     
     setup: function(func_unit_stat) {
         this.stop();
         this.mUnitStat = func_unit_stat;
         this.mCurFuncH = this.mFDict[func_unit_stat["sub-kind"]];
-        this.mCurFuncH.setup(func_unit_stat);
+        this.mCurFState = this.mCurFuncH.setupFState(func_unit_stat);
+        sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt(this.mCurFState));
+        var avail_variants = this.mCurFuncH.getVariants();
+        if (avail_variants.length == 1)
+            this.mOpVariants = avail_variants;
+        else
+            this.mOpVariants = [];
+        this.mOpMode = "OR";
+        this.renderVariants();
+        this.reloadStat();
     },
     
-    getCurParams: function() {
-        return this.mCurFuncH.getCurParams();
+    makeFuncParams: function() {
+        if (this.mCurFuncH.checkBad(this.mCurFState))
+            return null;
+        return this.mCurFuncH.makeFParams(this.mCurFState);
+    },
+    
+    getCurFState: function() {
+        return this.mCurFState;
     },
     
     updateCondition: function(cond_data) {
         this.mOpMode = cond_data[2];
         this.mOpVariants = cond_data[3];
-        this.mCurFuncH.updateCondition(cond_data);
+        this.resetFState(this.mCurFuncH.updateFState(cond_data), false);
+        this.renderVariants();
+        this.reloadStat();
     },
     
-    keepSelection: function() {
-        this.mOpVariants = sOpEnumH.getSelected();
+    resetFState: function(state, keep_selection) {
+        if (keep_selection)
+            this.mOpVariants = sOpEnumH.getSelected();
+        this.mCurFState = state;
+        sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt(this.mCurFState));
+        this.reloadStat();
     },
-
+    
+    renderVariants: function(variants_stat) {
+        if (!variants_stat) {
+            var_value = this.mCurFuncH.checkBad(this.mCurFState)? '-':'?';
+            if (this.mRuntimeErr)
+                var_value = '-';
+            variants_stat = [];
+            for(idx = 0; idx < this.mCurFuncH.getVariants().length; idx++)
+                variants_stat.push(
+                    [this.mCurFuncH.getVariants()[idx], var_value]);
+        }
+        sOpEnumH._setupVariants(variants_stat, true);
+        sOpEnumH._updateState(this.mOpMode, this.mOpVariants);
+    },
+    
     reloadStat: function() {
-        zero_variants = this.mCurFuncH.checkBad();
-        if (zero_variants != null) {
-            sOpEnumH._setupVariants(zero_variants);
-            sOpEnumH._updateState(this.mOpMode, this.mOpVariants);
-            sOpEnumH.waitForUpdate();
+        if (this.mCurFuncH.checkBad(this.mCurFState)) {
+            this.renderVariants()
             sOpEnumH.checkControls();
             return;
         }
@@ -103,40 +137,39 @@ var sOpFuncH = {
 
     _reloadStat: function() {
         this.dropDelay();
-        ajaxCall("statfunc", sUnitsH.getRqArgs() + "&unit=" + this.mUnitStat["name"] + 
-            "&param=" + encodeURIComponent(JSON.stringify(this.mCurFuncH.getCurParams())),
+        if (this.mCurFuncH.checkBad(this.mCurFState))
+            return;
+        ajaxCall("statfunc", sUnitsH.getRqArgs(true) + 
+            "&unit=" + this.mUnitStat["name"] + "&param=" +
+            encodeURIComponent(JSON.stringify(this.makeFuncParams())),
             function(info){sOpFuncH._setupStat(info);})
     },
     
     _setupStat: function(info) {
         if (this.mUnitStat == null)
             return;
+        if (!sUnitsH.checkRqId(info))
+            return;
+        var ret_state = this.mCurFuncH.parseFState(info);
         this.mRuntimeErr = info["err"];
-        if (this.mCurFuncH.acceptStat(info, this.mOpCondData) || this.mOpCondData) {
-            sOpEnumH._setupVariants(info["variants"]);
-            sOpEnumH._updateState(this.mOpMode, this.mOpVariants);
-            this.mOpMode = null;
-            sOpEnumH.checkControls();
-        }
+        if (!sameData(ret_state, this.mCurFState))
+            this.renderVariants(info["variants"]);
+        sOpEnumH.checkControls();
     },
     
-    careControls: function(in_check) {
-        this.mCurFuncH.checkControls(in_check);
+    careControls: function() {
+        var state = this.mCurFuncH.checkFControls();
+        if (!sameData(state, this.mCurFState)) {
+            this.resetFState(state, true);
+        }
     },
  
-    checkError: function(pre_cond_data, err_msg) {
+    checkCurError: function() {
         if (this.mRuntimeErr)
             return this.mRuntimeErr;
-        f_err_msg = this.mCurFuncH.checkError(pre_cond_data);
-        if (f_err_msg)
-            return f_err_msg;
-        return err_msg;
-    },
-     
-    renderParams: function(no_care) {
-        sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt());
-        if (!no_care)
-            this.careControls();
+        if (this.mCurFState == null)
+            return null;
+        return this.mCurFuncH.checkError(this.mCurFState);
     }
 }
     
@@ -144,70 +177,62 @@ var sOpFuncH = {
 var sFunc_InheritanceZ = {
     mAffectedGroup: null,
     mFamily: null,
-    mCurPGroup: null,
-    mZeroVariants: null,
+    mAvailVariants: null,
+    mTP: "inheritance",
     
-    setup: function(func_unit_stat) {
+    setupFState: function(func_unit_stat) {
         this.mAffectedGroup = func_unit_stat["affected"];
         this.mFamily = func_unit_stat["family"];
-        this.mCurPGroup = null;
-        this.mZeroVariants = [];
-        for(idx = 0; idx < func_unit_stat["variants"].length; idx++)
-            this.mZeroVariants.push([func_unit_stat["variants"][idx], 0]);
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        this.mAvailVariants = func_unit_stat["available"];
+        return [null];
     },
     
-    updateCondition: function(cond_data) {
-        if (cond_data != null) {
-            p_group = cond_data[4]["problem_group"];
-            this.mCurPGroup = (p_group)? p_group : null;
-            sOpFuncH.renderParams();
-            sOpFuncH.reloadStat();
-        } else {
-            sOpEnumH.renderParams();
-        }
+    normPGroup: function(p_group) {
+        if (!p_group  || sameData(p_group, this.mAffectedGroup))
+            return null;
+        return p_group;
     },
     
-    checkBad: function() {
-        if (this.mCurPGroup == null)
-            return (this.mAffectedGroup.length == 0)? this.mZeroVariants: null;
-        else
-            return (this.mCurPGroup.length == 0)? this.mZeroVariants: null;
+    updateFState: function(cond_data) {
+        return [this.normPGroup(cond_data[4]["problem_group"])];
+    },
+
+    parseFState: function(info) {
+        return [this.normPGroup(info["problem_group"])];
+    },    
+    
+    getVariants: function() {
+        return this.mAvailVariants;
     },
     
-    acceptStat: function(info, cond_data) {
-        var p_group = info["problem_group"];
-        if (!p_group)
-            p_group = null;
-        if (p_group && sameData(p_group, this.mAffectedGroup))
-            p_group = null;
-        return sameData(p_group, this.mCurPGroup);
+    makeFParams: function(state) {
+        return {"problem_group": state[0]};
     },
     
-    getCurParams: function() {
-        if (this.mCurPGroup)
-            return {"problem_group": this.mCurPGroup};
-        return {};
+    checkBad: function(state) {
+        return (!state[0] && this.mAffectedGroup.length == 0);
     },
     
-    checkError: function(pre_cond_data) {
-        if (this.checkBad() != null)
-            return "Empty problem group";
-        return null;
+    checkError: function(state) {
+        var p_group = state[0];
+        if (p_group || (p_group == null && this.mAffectedGroup.length > 0))
+            return null;
+        return "Empty problem group";
     },
      
-    renderIt: function() {
+    renderIt: function(state) {        
         var list_stat_rep = ['<div class="func-parameters">',
             '<div class="comment">Problem group:</div>'];
-        var p_group = (this.mCurPGroup == null)? this.mAffectedGroup : this.mCurPGroup;
+        var p_group = state[0];
+        if (p_group == null)
+            p_group = this.mAffectedGroup;
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             sample_id = this.mFamily[idx];
             q_checked = (p_group.indexOf(sample_id) >= 0)? " checked":"";
             check_id = "inheritance-z-fam-m__" + idx;
             list_stat_rep.push('<div class="inheritance-z-fam-member">' + 
                 '<input type="checkbox" id="' + check_id + '" ' + q_checked + 
-                ' onchange="sFunc_InheritanceZ.checkControls();" /><label for="' +
+                ' onchange="sOpFuncH.careControls();" /><label for="' +
                 check_id + '">&nbsp;' + this.mFamily[idx] + '</div>');
         }
         list_stat_rep.push('</div>');
@@ -218,27 +243,19 @@ var sFunc_InheritanceZ = {
         return list_stat_rep.join('\n');
     },   
 
-    checkControls: function(in_check) {
+    checkFControls: function() {
         var p_group = [];
         for (var idx = 0; idx < this.mFamily.length; idx++) {
             if (document.getElementById("inheritance-z-fam-m__" + idx).checked)
                 p_group.push(this.mFamily[idx]);
         }
-        if (p_group.join('|') == this.mAffectedGroup.join('|'))
-            p_group = null;
+        p_group = this.normPGroup(p_group);
         document.getElementById("inheritance-z-fam-reset").disabled = (!p_group);
-        if (sameData(p_group, this.mCurPGroup))
-            return;
-        this.mCurPGroup = p_group;
-        sOpFuncH.keepSelection();
-        sOpFuncH.reloadStat();
+        return [p_group];
     },
  
     resetGrp: function() {
-        sOpFuncH.keepSelection();
-        this.mCurPGroup = null;
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        sOpFuncH.resetFState([null], true);
     }
 }
     
@@ -263,6 +280,25 @@ sZygSuportH = {
         return true;
     },
     
+    simplifyRequest: function(request) {
+        var is_full = true;
+        for (idx=0; idx < request.length; idx++) {
+            if (request[idx][0] < 1 || this.emptyScenario(request[idx][1])) { 
+                is_full = false;
+                break;
+            }
+        }
+        if (is_full) 
+            return request;
+        var request_norm = [];
+        for (idx=0; idx < request.length; idx++) {
+            if (request[idx][0] < 1 || this.emptyScenario(request[idx][1]))
+                continue;
+            request_norm.push(request[idx]);
+        }        
+        return request_norm;
+    },
+    
     renderScenario: function(
         scenario, family, ctrl_name, scope_option, out_rep) {
         var tab_fam = {};
@@ -278,12 +314,12 @@ sZygSuportH = {
             check_id = "c-inheritance-z-fam-m__" + idx + scope_option;
             out_rep.push('<div class="wrapped">' + sample_id + 
                 '&nbsp;<select id="' + check_id + 
-                '" onchange="' + ctrl_name + '.checkControls();">');
-            out_rep.push('<option value="0" ' + ((q_val == 0)? "selected " : "") +
+                '" onchange="sOpFuncH.careControls();">');
+            out_rep.push('<option value="0" ' + ((q_val == 0)? 'selected ' : '') +
                 '>--</option>');
             for (j=0; j < this.Z_MODES.length; j++) {
                 out_rep.push('<option value="' + (j+1) + '" ' + 
-                    ((q_val == j + 1)? "selected " : "") + '>' + this.Z_MODES[j] + '</option>');
+                    ((q_val == j + 1)? 'selected ' : '') + '>' + this.Z_MODES[j] + '</option>');
             }
             out_rep.push('</select></div>')
         }
@@ -368,79 +404,69 @@ var sFunc_CustomInheritanceZ = {
     mAffectedGroup: null,
     mFamily: null,
     mResetVariants: null,
-    mCurScenario: null,
     
-    setup: function(func_unit_stat) {
+    setupFState: function(func_unit_stat) {
         this.mAffectedGroup = func_unit_stat["affected"];
         this.mFamily = func_unit_stat["family"];
         this.mResetVariants = sZygSuportH.evalResetVariants(
             this.mFamily, this.mAffectedGroup);
-        this.mCurScenario = this.mResetVariants[1];
-        sOpFuncH.mOpVariants = ["True"];
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        return [this.mResetVariants[1]];
+    },
+
+    normScenario: function(p_scenario) {
+        if (!p_scenario)
+            return {};
+        return p_scenario;
     },
     
-    updateCondition: function(cond_data) {
-        if (cond_data != null) {
-            p_scenario = cond_data[4]["scenario"];
-            this.mCurScenario = (p_scenario)? p_scenario : {};
-            sOpFuncH.renderParams();
-            sOpFuncH.reloadStat();
-        } else {
-            sOpEnumH.renderParams();
-        }
+    updateFState: function(cond_data) {
+        return [this.normScenario(cond_data[4]["scenario"])];
+    },
+
+    parseFState: function(info) {
+        return [this.normScenario(info["scenario"])];
+    },
+
+    getVariants: function() {
+        return ["True"];
     },
     
-    checkBad: function() {
-        if (sZygSuportH.emptyScenario(this.mCurScenario)) {
-            return [["True", 0]];
-        }
-        return null;
+    makeFParams: function(state) {
+        return {"scenario": state[0]};
     },
     
-    acceptStat: function(info, cond_data) {
-        return sameData(info["scenario"], this.mCurScenario);
+    checkBad: function(state) {
+        return sZygSuportH.emptyScenario(state[0]);
     },
     
-    getCurParams: function() {
-        return {"scenario": this.mCurScenario};
-    },
-    
-    checkError: function(pre_cond_data) {
-        if (sZygSuportH.emptyScenario(this.mCurScenario))
-            return "Empty scenario";
-        return null;
+    checkError: function(state) {
+        var p_scenario = state[0];
+        if (!sZygSuportH.emptyScenario(p_scenario))
+            return null;
+        return "Empty scenario";
     },
      
-    renderIt: function() {
+    renderIt: function(state) {
         var list_stat_rep = ['<div class="func-parameters">',
             '<div class="comment">Scenario:</div>'];
-        sZygSuportH.renderScenario(this.mCurScenario, 
+        sZygSuportH.renderScenario(state[0], 
             this.mFamily, "sFunc_CustomInheritanceZ", "", list_stat_rep);
         sZygSuportH.renderResetGroup("sFunc_CustomInheritanceZ", list_stat_rep);
         list_stat_rep.push('</div>');
         return list_stat_rep.join('\n');
     },   
 
-    checkControls: function(in_check) {
+    checkFControls: function() {
         var p_scenario = sZygSuportH.scanScenario(this.mFamily, "");
         sZygSuportH.updateResetGroup(p_scenario, this.mResetVariants);
-        if (sameData(p_scenario, this.mCurScenario))
-            return;
-        sOpFuncH.keepSelection();
-        this.mCurScenario = p_scenario;
-        sOpFuncH.reloadStat();
+        return [p_scenario];
     },
 
     resetScenario: function() {
         cur_idx = document.getElementById
             ("inheritance-z-fam-reset-select").selectedIndex;
         if (cur_idx > 0) {
-            sOpFuncH.keepSelection();
-            this.mCurScenario = this.mResetVariants[cur_idx - 1];
-            sOpFuncH.renderParams();
-            sOpFuncH.reloadStat();
+            sOpFuncH.resetFState([this.mResetVariants[cur_idx - 1]], true);
         }
     }
 }
@@ -450,11 +476,9 @@ var sFunc_CompoundHet = {
     mLabels: null,
     mApproxModes: null,
     mApproxTitles: null,
-    mCurApprox: null,
     mTrioVariants: null,
-    mCurState: undefined,
     
-    setup: function(func_unit_stat) {
+    setupFState: function(func_unit_stat) {
         this.mLabels = func_unit_stat["labels"];
         this.mTrioVariants = func_unit_stat["trio-variants"];
         this.mApproxModes = [];
@@ -463,58 +487,48 @@ var sFunc_CompoundHet = {
             this.mApproxModes.push(func_unit_stat["approx-modes"][idx][0]);
             this.mApproxTitles.push(func_unit_stat["approx-modes"][idx][1]);
         }
-        this.mCurApprox = null;
-        this.mCurState = null;
-        sOpFuncH.mOpVariants = [this.mTrioVariants[0]];
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        return [null, null];
     },
     
-    updateCondition: function(cond_data) {
-        if (cond_data != null) {
-            v_approx = cond_data[4]["approx"];
-            v_state = cond_data[4]["state"];
-            if (this.mApproxModes.indexOf(v_approx) < 1)
-                v_approx = null;
-            if (this.mLabels.indexOf(v_state) < 0)
-                v_state = null;
-            if (v_approx != this.mCurApprox || v_state != this.mCurState) {
-                this.mCurApprox = v_approx;
-                this.mCurState = v_state;
-                sOpFuncH.renderParams();
-            }
-            sOpFuncH.reloadStat();
-        }
-    },
-    
-    acceptStat: function(info, cond_data) {
-        v_approx = info["approx"];
-        v_state = info["state"];
+    normApproxMode: function(v_approx) {
         if (this.mApproxModes.indexOf(v_approx) < 1)
-            v_approx = null;
-        if (this.mLabels.indexOf(v_state) < 0)
-            v_state = null;
-        return (v_approx == this.mCurApprox && v_state == this.mCurState);
-    },
-    
-    getCurParams: function() {
-        var ret = {};
-        if (this.mCurApprox)
-            ret["approx"] = this.mCurApprox;
-        if (this.mCurState)
-            ret["state"] = this.mCurState;
-        return ret;
-    },
-    
-    checkBad: function() {
-        return null;
-    },
-    
-    checkError: function(pre_cond_data) {
-        if (pre_cond_data == null)
             return null;
-        v_approx = pre_cond_data[2]["approx"];
-        v_state = pre_cond_data[2]["state"];
+        return v_approx;
+    },
+    
+    normVState: function(v_state) {
+        if (this.mLabels.indexOf(v_state) < 0)
+            return null;
+        return v_state;
+    },
+        
+    updateFState: function(cond_data) {
+        return [
+            this.normApproxMode(cond_data[4]["approx"]),
+            this.normVState(cond_data[4]["state"])];
+    },
+
+    parseFState: function(info) {
+        return [
+            this.normApproxMode(info["approx"]),
+            this.normVState(info["state"])];
+    },
+    
+    getVariants: function() {
+        return this.mTrioVariants;
+    },
+
+    makeFParams: function(state) {
+        return {"approx": state[0], "state": state[1]};
+    },
+    
+    checkBad: function(state) {
+        return false;
+    },
+    
+    checkError: function(state) {
+        var v_approx = state[0];
+        var v_state = state[1];
         if (v_approx && this.mApproxModes.indexOf(v_approx) < 0)
             return "Bad approx mode: " + v_approx;
         if (v_state && this.mLabels.indexOf(v_state) < 0)
@@ -522,28 +536,30 @@ var sFunc_CompoundHet = {
         return null;
     },
      
-    renderIt: function() {
+    renderIt: function(state) {
+        v_approx = state[0];
+        v_state = state[1];
         var list_stat_rep = ['<div class="func-parameters">',
             '<div><span class="comment">Approx:</span>&nbsp;<select ' + 
-            'id="compound-het-approx" onchange="sFunc_CompoundHet.checkControls();"' + 
+            'id="compound-het-approx" onchange="sOpFuncH.careControls();"' + 
             ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
         for (idx = 0; idx < this.mApproxModes.length; idx++) {
             list_stat_rep.push('<option value="' + this.mApproxModes[idx] + '" ' +
-                ((this.mApproxModes[idx] == this.mCurApprox || (idx == 0 && !this.mCurApprox))?
+                ((this.mApproxModes[idx] == v_approx || (idx == 0 && !v_approx))?
                     " selected ": "") +
                 '>' + this.mApproxTitles[idx] + '</option>');
         }
         list_stat_rep.push('</select></div>');
         list_stat_rep.push(
             '<div><span class="comment">State:</span>&nbsp;<select ' + 
-            'id="compound-het-state" onchange="sFunc_CompoundHet.checkControls();"' + 
+            'id="compound-het-state" onchange="sOpFuncH.careControls();"' + 
             ((this.mLabels.length == 0)? " disabled":"") + '>');
         list_stat_rep.push(
             '<option value=""' + ((this.mLabels.length == 0)? " selected":"") + '>' +
             '-current-</option>');
         for (idx = 0; idx < this.mLabels.length; idx++) {
             list_stat_rep.push('<option value="' + this.mLabels[idx] + '" ' +
-                ((this.mLabels[idx] == this.mCurState)? " selected ": "") +
+                ((this.mLabels[idx] == v_state)? " selected ": "") +
                 '>' + this.mLabels[idx] + '</option>');
         }
         list_stat_rep.push('</select></div>');
@@ -551,19 +567,12 @@ var sFunc_CompoundHet = {
         return list_stat_rep.join('\n');
     },   
 
-    checkControls: function(in_check) {
-        v_approx = document.getElementById('compound-het-approx').value;
-        v_state = document.getElementById('compound-het-state').value;
-        if (this.mApproxModes.indexOf(v_approx) < 1)
-            v_approx = null;
-        if (this.mLabels.indexOf(v_state) < 0)
-            v_state = null;
-        if (v_approx != this.mCurApprox || v_state != this.mCurState) {
-            this.mCurApprox = v_approx;
-            this.mCurState = v_state;
-            sOpFuncH.keepSelection();
-            sOpFuncH.reloadStat();
-        }
+    checkFControls: function() {
+        return [
+            this.normApproxMode(
+                document.getElementById('compound-het-approx').value),
+            this.normVState(
+                document.getElementById('compound-het-state').value)];
     }        
 }
     
@@ -574,14 +583,11 @@ var sFunc_CompoundRequest = {
     mApproxTitles: null,
     mAffectedGroup: null,
     mFamily: null,
-    mCurApprox: null,
-    mCurRequest: undefined,
-    mCurState: undefined,
-    mCurRequest: null,
+    mResetVariants: null,
     mCurLine: null,
     mPrevCurLine: null,
     
-    setup: function(func_unit_stat) {
+    setupFState: function(func_unit_stat) {
         this.mLabels = func_unit_stat["labels"];
         this.mApproxModes = [];
         this.mApproxTitles = [];
@@ -593,72 +599,62 @@ var sFunc_CompoundRequest = {
         this.mFamily = func_unit_stat["family"];
         this.mResetVariants = sZygSuportH.evalResetVariants(
             this.mFamily, this.mAffectedGroup);
-        this.mCurApprox = null;
-        this.mCurState = null;
         this.mCurLine = 0;
         this.mPrevCurLine = null;
-        this.mCurRequest = [[1, {}]];
-        sOpFuncH.mOpVariants = ["True"];
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        return [null, null, [[1, {}]]];
     },
     
-    updateCondition: function(cond_data) {
-        if (cond_data != null) {
-            v_approx = cond_data[4]["approx"];
-            v_state = cond_data[4]["state"];
-            v_request = cond_data[4]["request"];
-            if (this.mApproxModes.indexOf(v_approx) < 1)
-                v_approx = null;
-            if (this.mLabels.indexOf(v_state) < 0)
-                v_state = null;
-            if (v_request.length == 0)
-                v_request = [[1, {}]];
-            if (v_approx != this.mCurApprox || v_state != this.mCurState ||
-                    !sameData(v_request, this.mCurRequest)) {
-                this.mCurApprox = v_approx;
-                this.mCurState = v_state;
-                this.mCurRequest = v_request;
-                sOpFuncH.renderParams();
-            }
-            sOpFuncH.reloadStat();
-        }
-    },
-    
-    acceptStat: function(info, cond_data) {
-        v_approx = info["approx"];
-        v_state = info["state"];
-        v_request = info["request"];
+    normApproxMode: function(v_approx) {
         if (this.mApproxModes.indexOf(v_approx) < 1)
-            v_approx = null;
-        if (this.mLabels.indexOf(v_state) < 0)
-            v_state = null;
-        return (v_approx == this.mCurApprox && v_state == this.mCurState &&
-            sameData(v_request, this.mCurRequest));
-    },
-    
-    getCurParams: function() {
-        var ret = {"request": this.mCurRequest};
-        if (this.mCurApprox)
-            ret["approx"] = this.mCurApprox;
-        if (this.mCurState)
-            ret["state"] = this.mCurState;
-        return ret;
-    },
-    
-    checkBad: function() {
-        if (sZygSuportH.emptyRequest(this.mCurRequest)) {
-            return [["True", 0]];
-        }
-        return null;
-    },
-    
-    checkError: function(pre_cond_data) {
-        if (pre_cond_data == null)
             return null;
-        v_approx = pre_cond_data[2]["approx"];
-        v_state = pre_cond_data[2]["state"];
-        v_request = pre_cond_data[2]["request"];
+        return v_approx;
+    },
+    
+    normVState: function(v_state) {
+        if (this.mLabels.indexOf(v_state) < 0)
+            return null;
+        return v_state;
+    },
+
+    normRequest: function(v_request) {
+        if (v_request.length == 0)
+            return [[1, {}]];
+        return v_request;
+    },
+    
+    updateFState: function(cond_data) {
+        return [
+            this.normApproxMode(cond_data[4]["approx"]),
+            this.normVState(cond_data[4]["state"]),
+            this.normRequest(cond_data[4]["request"])];
+    },
+
+    parseFState: function(info) {
+        return [
+            this.normApproxMode(info["approx"]),
+            this.normVState(info["state"]),
+            this.normRequest(info["request"])];
+    },
+    
+    getVariants: function() {
+        return ["True"];
+    },
+    
+    makeFParams: function(state) {
+        var v_request = sZygSuportH.simplifyRequest(state[2]);
+        console.log("rq_len=" + v_request.length);
+        return {"approx": state[0], "state": state[1],
+            "request": v_request};
+    },
+        
+    checkBad: function(state) {
+        return sZygSuportH.emptyRequest(state[2]);
+    },
+    
+    checkError: function(state) {
+        var v_approx = state[0];
+        var v_state = state[1];
+        var v_request = state[2];
         if (sZygSuportH.emptyRequest(v_request))
             return "Empty request";
         if (v_approx && this.mApproxModes.indexOf(v_approx) < 0)
@@ -668,35 +664,38 @@ var sFunc_CompoundRequest = {
         return null;
     },
      
-    renderIt: function() {
+    renderIt: function(state) {
+        v_approx = state[0];
+        v_state = state[1];
+        v_request = state[2];
         this.mPrevCurLine = null;
         var list_stat_rep = [
             '<div class="func-parameters">' +
             '<div><span class="comment">Approx:</span>&nbsp;<select ' + 
-            'id="compound-het-approx" onchange="sFunc_CompoundRequest.checkControls();"' + 
+            'id="compound-het-approx" onchange="sOpFuncH.careControls();"' + 
             ((this.mApproxModes.length == 1)? " disabled":"") + '>'];
         for (idx = 0; idx < this.mApproxModes.length; idx++) {
             list_stat_rep.push('<option value="' + this.mApproxModes[idx] + '" ' +
-                ((this.mApproxModes[idx] == this.mCurApprox || (idx == 0 && !this.mCurApprox))?
+                ((this.mApproxModes[idx] == v_approx || (idx == 0 && !v_approx))?
                     " selected ": "") +
                 '>' + this.mApproxTitles[idx] + '</option>');
         }
         list_stat_rep.push('</select></div>');
         list_stat_rep.push(
             '<div><span class="comment">State:</span>&nbsp;<select ' + 
-            'id="compound-het-state" onchange="sFunc_CompoundRequest.checkControls();"' + 
+            'id="compound-het-state" onchange="sOpFuncH.careControls();"' + 
             ((this.mLabels.length == 0)? " disabled":"") + '>');
         list_stat_rep.push(
             '<option value=""' + ((this.mLabels.length == 0)? " selected":"") + '>' +
             '-current-</option>');
         for (idx = 0; idx < this.mLabels.length; idx++) {
             list_stat_rep.push('<option value="' + this.mLabels[idx] + '" ' +
-                ((this.mLabels[idx] == this.mCurState)? " selected ": "") +
+                ((this.mLabels[idx] == v_state)? " selected ": "") +
                 '>' + this.mLabels[idx] + '</option>');
         }
         list_stat_rep.push('</select></div></div>');
         list_stat_rep.push('<div id="comp-rq-request">');
-        for (idx = 0; idx < this.mCurRequest.length; idx++) {
+        for (idx = 0; idx < v_request.length; idx++) {
             list_stat_rep.push('<div class="comp-rq-item-block"' +
                 ' id="comp-rq-line' + idx + '"' +
                 ' onclick="sFunc_CompoundRequest.setCur(' + idx + ')">');
@@ -704,44 +703,31 @@ var sFunc_CompoundRequest = {
                 '<input type="number" min="0"' +
                 ' title = "minimal count of events" class="w50"' +
                 ' id="comp-rq-item--' + idx + '"' +
-                ' onchange="sFunc_CompoundRequest.checkControls()"' + 
-                ' value="' + this.mCurRequest[idx][0] + '"/></div>');
-            sZygSuportH.renderScenario(this.mCurRequest[idx][1], 
+                ' onchange="sOpFuncH.careControls()"' + 
+                ' value="' + v_request[idx][0] + '"/></div>');
+            sZygSuportH.renderScenario(v_request[idx][1], 
                 this.mFamily, "sFunc_CompoundRequest", "__" + idx, list_stat_rep);
             list_stat_rep.push('</div>');
         }
         list_stat_rep.push('</div>');
         list_stat_rep.push('<div class="func-parameters">');
         list_stat_rep.push('<div class="wrapped"><button ' + 
-            ((this.mCurRequest.length < 5)? "": "disabled ") + 
+            ((v_request.length < 5)? "": "disabled ") + 
             'onclick="sFunc_CompoundRequest.addLine()">Add</button></div>');
         list_stat_rep.push('<div class="wrapped"><button ' + 
-            ((this.mCurRequest.length > 1)? "": "disabled ") + 
+            ((v_request.length > 1)? "": "disabled ") + 
             'onclick="sFunc_CompoundRequest.delLine()">Remove</button></div>');
         sZygSuportH.renderResetGroup("sFunc_CompoundRequest", list_stat_rep);
         list_stat_rep.push('</div>');
         return list_stat_rep.join('\n');
     },   
 
-    checkControls: function(in_check) {
-        v_approx = document.getElementById('compound-het-approx').value;
-        v_state = document.getElementById('compound-het-state').value;
+    checkFControls: function() {
         v_request = [];
-        for (idx = 0; idx < this.mCurRequest.length; idx++) {
-            v_request.push([parseInt(document.getElementById("comp-rq-item--" + idx).value),
+        for (idx = 0; idx < sOpFuncH.getCurFState()[2].length; idx++) {
+            v_request.push([
+                parseInt(document.getElementById("comp-rq-item--" + idx).value),
                 sZygSuportH.scanScenario(this.mFamily, "__" + idx)]);
-        }
-        if (this.mApproxModes.indexOf(v_approx) < 1)
-            v_approx = null;
-        if (this.mLabels.indexOf(v_state) < 0)
-            v_state = null;
-        if (v_approx != this.mCurApprox || v_state != this.mCurState || 
-            !sameData(v_request, this.mCurRequest)) {
-            this.mCurApprox = v_approx;
-            this.mCurState = v_state;
-            this.mCurRequest = v_request;
-            sOpFuncH.keepSelection();
-            sOpFuncH.reloadStat();
         }
         if (this.mPrevCurLine != null) {
             line_el = document.getElementById("comp-rq-line" + this.mPrevCurLine);
@@ -749,117 +735,112 @@ var sFunc_CompoundRequest = {
                 line_el.className = line_el.className.split(' ')[0];
             }
         }
-        this.mCurLine = Math.min(this.mCurLine, this.mCurRequest.length - 1);
+        this.mCurLine = Math.min(this.mCurLine, v_request.length - 1);
         this.mPrevCurLine = this.mCurLine;
         line_el = document.getElementById("comp-rq-line" + this.mPrevCurLine);
         line_el.className = line_el.className.split(' ')[0] + ' cur';
         sZygSuportH.updateResetGroup(
-            this.mCurRequest[this.mCurLine][1], this.mResetVariants);
+            v_request[this.mCurLine][1], this.mResetVariants);
+
+        return [
+            this.normApproxMode(
+                document.getElementById('compound-het-approx').value),
+            this.normVState(
+                document.getElementById('compound-het-state').value),
+            v_request];
     },
     
     setCur: function(line_no) {
         this.mCurLine = line_no;
-        this.checkControls();
+        sOpFuncH.careControls();
     },
     
     addLine: function() {
-        this.mCurLine = this.mCurRequest.length;
-        this.mCurRequest.push([1, {}]);
-        sOpFuncH.keepSelection();
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        var f_state = sOpFuncH.getCurFState();
+        var v_request = f_state[2];
+        this.mCurLine = v_request.length;
+        v_request.push([1, {}]);
+        sOpFuncH.resetFState(f_state, true);
     },
     
     delLine: function() {
-        this.mCurRequest.splice(this.mCurLine, 1);
-        sOpFuncH.keepSelection();
-        sOpFuncH.renderParams();
-        sOpFuncH.reloadStat();
+        var f_state = sOpFuncH.getCurFState();
+        var v_request = f_state[2];
+        v_request.splice(this.mCurLine, 1);
+        if (this.mCurLine >= v_request.length)
+            this.mCurLine = v_request.length - 1;
+        sOpFuncH.resetFState(f_state, true);
     },
     
     resetScenario: function() {
         cur_idx = document.getElementById
             ("inheritance-z-fam-reset-select").selectedIndex;
         if (cur_idx > 0) {
-            sOpFuncH.keepSelection();
-            this.mCurRequest[this.mCurLine][1] = this.mResetVariants[cur_idx - 1];
-            sOpFuncH.renderParams();
-            sOpFuncH.reloadStat();
+            var f_state = sOpFuncH.getCurFState();
+            var v_request = f_state[2];
+            v_request[this.mCurLine][1] = this.mResetVariants[cur_idx - 1];
+            sOpFuncH.resetFState(f_state, true);
         }
     }
 }
 
 /**************************************/
 var sFunc_Region = {
-    mCurLocus: undefined,
-    
-    setup: function(func_unit_stat) {
-        this.mCurLocus = func_unit_stat["locus"];
-        if (!this.mCurLocus)
-            this.mCurLocus = null;
-        sOpFuncH.mOpVariants = ["True"];
-        sOpFuncH.renderParams(true);
-        sOpFuncH.reloadStat();
-    },
-    
-    updateCondition: function(cond_data) {
-        if (cond_data != null) {
-            v_locus = cond_data[4]["locus"];
-            if (v_locus != this.mCurLocus) {
-                this.mCurLocus = v_locus;
-            }
-            sOpFuncH.renderParams();
-            sOpFuncH.reloadStat();
-        } else {
-            sOpEnumH.renderParams();
-        }
-    },
-    
-    acceptStat: function(info, cond_data) {
-        v_locus = info["locus"];
-        return (v_locus == this.mCurLocus);
-    },
-    
-    getCurParams: function() {
-        var ret = {};
-        if (this.mCurLocus)
-            ret["locus"] = this.mCurLocus;
-        return ret;
-    },
-    
-    checkBad: function() {
-        if (!this.mCurLocus) {
-            return [["True", 0]];
-        }
-        return null;
-    },
-    
-    checkError: function(pre_cond_data) {
-        if (pre_cond_data == null)
+
+    normLocus: function(locus) {
+        if (!locus)
             return null;
-        v_locus = pre_cond_data[2]["locus"];
-        if (!v_locus)
-            return "Locus is empty";
-        return null;
+        return locus;
+    },
+    
+    setupFState: function(func_unit_stat) {
+        return [this.normLocus(func_unit_stat["locus"])];
+    },
+    
+    updateFState: function(cond_data) {
+        var locus = this.normLocus(cond_data[4]["locus"]);
+        document.getElementById('region-locus').value = (locus)? locus:'';
+        return [locus];
+    },
+    
+    parseFState: function(info) {
+        return [this.normLocus(info["locus"])];
+    },
+    
+    getVariants: function() {
+        return ["True"];
+    },
+    
+    makeFParams: function(state) {
+        return {"locus": state[0]};
+   },
+    
+    checkBad: function(state) {
+        return !state[0];
+    },
+    
+    checkError: function(state) {
+        var locus = state[0];
+        if (locus) {
+            return null;
+        }
+        return "Locus is empty";
     },
      
-    renderIt: function() {
+    renderIt: function(state) {
+        var locus = state[0];
         var list_stat_rep = ['<div class="func-parameters">',
             '<div><span class="comment">Locus:</span>&nbsp;<input ' + 
-            'id="region-locus" onchange="sFunc_Region.checkControls();" ' +
-            ((this.mCurLocus)? 'value="' + escapeText(this.mCurLocus) + '"' : '') + 
+            'id="region-locus" oninput="sOpFuncH.careControls();" ' +
+            ((locus)? 'value="' + escapeText(locus) + '"' : '') + 
             '>'];
         list_stat_rep.push('</div></div>');
         return list_stat_rep.join('\n');
     },   
 
-    checkControls: function(in_check) {
-        v_locus = document.getElementById('region-locus').value.trim();
-        if (v_locus != this.mCurLocus) {
-            this.mCurLocus = v_locus;
-            sOpFuncH.keepSelection();
-            sOpFuncH.reloadStat();
-        }
+    checkFControls: function() {
+        return [this.normLocus(
+            document.getElementById('region-locus').value.trim())];
     }        
 }
     

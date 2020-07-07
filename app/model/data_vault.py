@@ -39,6 +39,7 @@ class DataVault(SyncronizedObject):
         self.mSolEnvDict = dict()
         self.mScanModeLevel = 0
         self.mIntVersion = 0
+        self.mProblemDataFStats = dict()
         self.scanAll(False)
 
         names = [[], []]
@@ -86,6 +87,10 @@ class DataVault(SyncronizedObject):
             if info_fstat is None:
                 continue
             ds_name = os.path.basename(ds_path)
+            if ds_name in self.mProblemDataFStats:
+                if info_fstat == self.mProblemDataFStats[ds_name]:
+                    continue
+                del self.mProblemDataFStats[ds_name]
             if ds_name in prev_set:
                 prev_set.remove(ds_name)
                 if self.mDataSets[ds_name].isUpToDate(info_fstat):
@@ -98,6 +103,7 @@ class DataVault(SyncronizedObject):
                 self.loadDS(ds_name)
             except Exception:
                 logException("Bad dataset load: " + ds_name)
+                self.mProblemDataFStats[ds_name] = info_fstat
                 continue
         if len(new_set) > 0 and report_it:
             logging.info(("New loaded datasets(%d): " % len(new_set))

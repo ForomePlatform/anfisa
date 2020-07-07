@@ -64,7 +64,7 @@ class RegionFuncUnit(FunctionUnit):
         return {"loc-condition": loc_condition}
 
     def validateArgs(self, func_args):
-        if "locus" in func_args:
+        if func_args.get("locus"):
             _, error_msg = self.parse(func_args["locus"])
             return error_msg
         return None

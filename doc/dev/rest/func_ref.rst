@@ -106,6 +106,7 @@ Inheritance_mode()
     
    |    **“family”**:  ``[`` *list of* id for all samples in case, first is proband ``]``
    |    **“affected”**:  ``[`` *list of* id, default problem group ``]``
+   |    **“available”**:  ``[`` *list of* all available values ``]``
         
     **Values**: 
 

@@ -43,6 +43,8 @@ Format
 |                       **[2]**: *optional* count of transcripts, *int*
 |               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
+|        "**rq-id**:  ID of request series
+|        "**no**": *optional* position on tree, *int as string* 
 |         **...**: function environment
 | ``}``
 
@@ -125,7 +127,15 @@ For functions property status structure is formed in two different contexts:
         
     - request :doc:`statfunc` returns property status 
         with non-optional **variants** or **err** in case of error
-        in evaluation
+        in evaluation; 
+        
+        the client can send multiple requests of such 
+        kind in short period of time, so for purposes of request identification
+        the property status in this case contains also:
+        
+        - functional environment: values of all arguments, 
+        
+        - value **rq_id** (and **no** in context of decision tree)
 
 See :doc:`func_ref` for details and function reference.
 

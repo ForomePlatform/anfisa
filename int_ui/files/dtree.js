@@ -511,8 +511,11 @@ var sUnitsH = {
         this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
     },
     
-    getRqArgs: function() {
-        return sDecisionTree.getTreeRqArgs();
+    getRqArgs: function(use_id) {
+        ret = sDecisionTree.getTreeRqArgs();
+        if (use_id)
+            ret += "&rq_id=" + encodeURIComponent(this.mRqId);
+        return ret;
     },
     
     loadUnits: function() {
@@ -617,7 +620,17 @@ var sUnitsH = {
                 view_seq.push(this.mUnitsDelay[idx]);
         }
         this.mUnitsDelay = view_seq.concat(hidden_seq);
+    },
+
+    checkRqId: function(info) {
+        if (info["rq-id"] != this.mRqId) 
+            return false;
+        point_no = sDecisionTree.getCurPointNo();
+        if (point_no == null)
+            point_no = -1;
+        return info["no"] == ("" + point_no);
     }
+    
 };
     
 /**************************************/

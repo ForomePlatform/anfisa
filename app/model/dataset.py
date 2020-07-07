@@ -424,7 +424,12 @@ class DataSet(SolutionBroker):
 
         unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
         parameters = json.loads(rq_args["param"])
-        return unit_h.makeParamStat(condition, parameters, eval_h, point_no)
+        ret = unit_h.makeParamStat(condition, parameters, eval_h, point_no)
+        if rq_args.get("rq_id"):
+            ret["rq-id"] = rq_args.get("rq_id")
+        if rq_args.get("no"):
+            ret["no"] = rq_args.get("no")
+        return ret
 
     #===============================================
     @RestAPI.ds_request

@@ -14,6 +14,8 @@ Synopsis
 
         **ds**: dataset name
         
+        **rq_id**: ID of request series
+        
         **filter**: *optional* name of applying filter
         
         **conditions**: *optional* list of applying 

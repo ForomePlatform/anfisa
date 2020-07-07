@@ -73,7 +73,7 @@ class CompHetsUnit(FunctionUnit):
         return ret_handle
 
     def _locateContext(self, parameters, eval_h, point_no = None):
-        if "state" in parameters:
+        if parameters.get("state"):
             actual_condition = eval_h.getLabelCondition(
                 parameters["state"], point_no)
             if actual_condition is None:
@@ -108,10 +108,10 @@ class CompHetsUnit(FunctionUnit):
         return context
 
     def validateArgs(self, parameters):
-        if ("state" in parameters
+        if (parameters.get("state")
                 and not isinstance(parameters["state"], str)):
             return "Bad state parameter"
-        if ("approx" in parameters
+        if (parameters.get("approx")
                 and not isinstance(parameters["approx"], str)):
             return "Bad approx parameter"
         return None
@@ -119,11 +119,14 @@ class CompHetsUnit(FunctionUnit):
     def makeParamStat(self, condition, parameters, eval_h, point_no):
         context, err_msg = self._locateContext(parameters, eval_h, point_no)
         ret_handle = self.prepareStat()
-        self.collectComplexStat(ret_handle, condition, context,
-            self.mZygSupport.getGeneUnit(context["approx"]).isDetailed())
         ret_handle.update(parameters)
         if err_msg:
             ret_handle["err"] = err_msg
+        else:
+            self.collectComplexStat(ret_handle, condition, context,
+                self.mZygSupport.getGeneUnit(
+                    context.get("approx")).isDetailed())
+
         return ret_handle
 
 #=====================================
@@ -156,7 +159,7 @@ class CompoundRequestUnit(FunctionUnit):
         return ret_handle
 
     def _locateContext(self, parameters, eval_h, point_no = None):
-        if "state" in parameters:
+        if parameters.get("state"):
             actual_condition = eval_h.getLabelCondition(
                 parameters["state"], point_no)
             if actual_condition is None:
@@ -197,16 +200,18 @@ class CompoundRequestUnit(FunctionUnit):
         return context
 
     def validateArgs(self, parameters):
-        if "request" not in parameters:
+        if not parameters.get("request"):
             return "Argument request is required"
         return self.mZygSupport.validateRequest(parameters["request"])
 
     def makeParamStat(self, condition, parameters, eval_h, point_no):
         context, err_msg = self._locateContext(parameters, eval_h, point_no)
         ret_handle = self.prepareStat()
-        self.collectComplexStat(ret_handle, condition, context,
-            self.mZygSupport.getGeneUnit(context["approx"]).isDetailed())
-        ret_handle.update(parameters)
         if err_msg:
             ret_handle["err"] = err_msg
+        else:
+            self.collectComplexStat(ret_handle, condition, context,
+                self.mZygSupport.getGeneUnit(
+                    context.get("approx")).isDetailed())
+        ret_handle.update(parameters)
         return ret_handle

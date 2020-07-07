@@ -100,7 +100,9 @@ class FamilyInfo:
     def getTrioSeq(self):
         return self.mTrioSeq
 
-    def groupHasMales(self, problem_group):
+    def groupHasMales(self, problem_group = None):
+        if problem_group is None:
+            return len(self.mMaleSet) > 0
         return len(self.mMaleSet & set(problem_group)) > 0
 
     def getCohortList(self):

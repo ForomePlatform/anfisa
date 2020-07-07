@@ -109,6 +109,8 @@ def _reprConditionCode(cond_data, output, group_mode):
         output.write(unit_name + '(')
         q_first = True
         for arg, val in sorted(func_info.items()):
+            if val is None:
+                continue
             if q_first:
                 q_first = False
             else:
