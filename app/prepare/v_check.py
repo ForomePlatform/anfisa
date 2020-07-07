@@ -219,6 +219,8 @@ class ColGroupTypeChecker(DictTypeChecker):
         if self.mSingleColumns:
             DictTypeChecker.regValue(self, rec_no, value)
         else:
+            if value is None:
+                return
             assert isinstance(value, list), (
                 "Not a list " + self.getMasterName() + "/" + self.getName()
                 + "\n" + json.dumps(value))
