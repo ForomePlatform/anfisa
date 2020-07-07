@@ -177,8 +177,23 @@ def defineFilterSchema(metadata_record):
             default_value = "undefined")
         filters.transctiptStatusUnit("Transcript_source", "transcript_source",
             default_value = "undefined")
+        filters.transctiptStatusUnit("Transcript_codon_pos", "codonpos",
+            default_value = "undefined")
         # filters.transctiptStatusUnit("Transcript_strand", "strand",
         #     default_value = "undefined")
+
+    with filters.viewGroup("Transcript_Predictions"):
+        filters.transctiptStatusUnit("Transcript_PolypPhen_HDIV",
+                                     "polyphen2_hdiv_prediction")
+        filters.transctiptStatusUnit("Transcript_PolyPhen_HVAR",
+                                     "polyphen2_hvar_prediction")
+        filters.transctiptStatusUnit("Transcript_SIFT",
+                                     "sift_prediction")
+        filters.transctiptStatusUnit("Transcript_SIFT_4G",
+                                     "sift_4g_prediction")
+        filters.transctiptStatusUnit("Transcript_FATHMM",
+                                     "fathmm_prediction")
+
 
     # with filters.viewGroup("Transcripts"):
     #     filters.transctiptMultisetUnit("Transctipt_consequence",
