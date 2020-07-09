@@ -398,7 +398,7 @@ def defineViewSchema(metadata_record = None):
     ])
 
     aspects["view_pharmagkb"].setAttributes([
-        AttrH("diseases", title = "Diseases", is_seq = True),
+        AttrH("diseases", title = "Diseases", is_seq = True, kind = "place"),
         AttrH("chemicals", title = "Chemicals", is_seq = True),
         AttrH("notes", title = "Notes", is_seq = True),
         AttrH("pmids", title = "PMIDs", is_seq = True)
