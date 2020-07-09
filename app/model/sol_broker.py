@@ -80,25 +80,26 @@ class SolutionBroker(SyncronizedObject):
         return None
 
     #===============================================
-    def getUnitPanelNames(self, unit_name):
+    def getPanelNames(self, panel_type):
         ret = []
         for it in self.iterStdItems("panel"):
-            if it.getData()[0] == unit_name:
+            if it.getData()[0] == panel_type:
                 ret.append(it.getName())
         return ret
 
     def getPanelVariants(self, panel_name,
-            unit_name = None, assert_mode = True):
+            panel_type = None, assert_mode = True):
         for it in self.iterStdItems("panel"):
             if it.getName() == panel_name:
-                if unit_name is None or it.getData()[0] == unit_name:
+                if panel_type is None or it.getData()[0] == panel_type:
                     return it.getData()[1]
-        if not unit_name:
-            unit_name = "?"
+        if not panel_type:
+            panel_type = "?"
         if assert_mode:
-            assert False, "%s: Panel %s not found" % (unit_name, panel_name)
+            assert False, "%s: Panel %s not found" % (panel_type, panel_name)
         else:
-            logging.warning("%s: Panel %s not found" % (unit_name, panel_name))
+            logging.warning("%s: Panel %s not found"
+                % (panel_type, panel_name))
         return None
 
     #===============================================
@@ -137,10 +138,10 @@ class SolutionBroker(SyncronizedObject):
             ret[kind] = [it.getName() for it in self.iterStdItems(kind)]
         p_units = defaultdict(list)
         for it in self.iterStdItems("panel"):
-            unit_name = it.getData()[0]
-            p_units[unit_name].append(it.getName())
-        for unit_name in p_units.keys():
-            ret["panel/" + unit_name] = p_units[unit_name]
+            panel_type = it.getData()[0]
+            p_units[panel_type].append(it.getName())
+        for panel_type in p_units.keys():
+            ret["panel/" + panel_type] = p_units[panel_type]
         return ret
 
 #===============================================

@@ -180,7 +180,8 @@ class DictTypeChecker:
                     continue
                 attr_h = a_check.getBaseAttr()
                 if a_type is None:
-                    if not attr_h.hasKind("place"):
+                    if (not attr_h.hasKind("place")
+                            and not attr_h.hasKind("posted")):
                         self.mBaseAsp.delAttr(attr_h)
                         master.problem("empty", a_check, self)
                     a_check.setStatus("empty")

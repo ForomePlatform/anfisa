@@ -272,6 +272,8 @@ class _PMID_AttrH(AttrH):
             return None
         links = []
         for pmid in pmids:
+            if not pmid:
+                continue
             url = self.makeLink(pmid)
             links.append(
                 ('<span title="PubMed abstracts for %s">' % escape(pmid))

@@ -52,7 +52,7 @@ def defFavorFlt(metadata_record):
             #  "/_filters/genes[]",
             "/_view/general/genes[]",
             compact_mode = True)
-        filters.panelsUnit("Panels", genes_unit,
+        filters.panelsUnit("Panels", genes_unit, "Symbol",
             view_path = "/_view/general/gene_panels")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",

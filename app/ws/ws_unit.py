@@ -211,7 +211,7 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
 class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
-            "enum", "transcript-multiset")
+            "enum", unit_data["sub-kind"])
         variants_info = self.getDescr().get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -270,6 +270,8 @@ def loadWS_Unit(eval_space, unit_data):
     if unit_data["sub-kind"] == "transcript-status":
         return WS_TranscriptStatusUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-multiset":
+        return WS_TranscriptMultisetUnit(eval_space, unit_data)
+    if unit_data["sub-kind"] == "transcript-panels":
         return WS_TranscriptMultisetUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "status":
         return WS_StatusUnit(eval_space, unit_data)

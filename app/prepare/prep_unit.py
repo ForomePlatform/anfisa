@@ -343,13 +343,16 @@ class PresenceConvertor(ValueConvertor):
 #===============================================
 class PanelConvertor(ValueConvertor):
     def __init__(self, sol_h, name, title, unit_no, vgroup,
-            render_mode, tooltip, unit_base, view_path = None):
+            render_mode, tooltip, unit_base, panel_type, view_path = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip)
         self.mBaseUnitName = unit_base.getName()
+        self.mPanelType = panel_type
         self.mPanelSets = {
             pname: set(sol_h.getPanelVariants(pname))
-            for pname in sol_h.getUnitPanelNames(self.mBaseUnitName)}
+            for pname in sol_h.getPanelNames(self.mPanelType)}
+        assert len(self.mPanelSets) > 0, (
+            "No data for panel type " + panel_type)
         self.mCntUndef = 0
         self.mVarCount = Counter()
         self.mViewPath = None
@@ -389,10 +392,9 @@ class PanelConvertor(ValueConvertor):
         return ret
 
 #===============================================
-class TransctiptConvertor(ValueConvertor):
-    def __init__(self, name, title, unit_no, vgroup,
-            render_mode, tooltip,
-            sub_kind, trans_name, variants,
+class TranscriptConvertor(ValueConvertor):
+    def __init__(self, name, title, unit_no, vgroup, render_mode,
+            tooltip, sub_kind, trans_name, variants,
             default_value = None, bool_check_value = None):
         ValueConvertor.__init__(self, name, title, unit_no, vgroup,
             render_mode, tooltip)
@@ -400,9 +402,12 @@ class TransctiptConvertor(ValueConvertor):
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = "enum"
         self.mDescr["sub-kind"] = sub_kind
-        self.mDescr["tr_name"] = trans_name
-        self.mDescr["pre_variants"] = variants
         self.mDescr["bool_check"] = bool_check_value
+        if trans_name is not None:
+            self.mDescr["tr_name"] = trans_name
+            self.mDescr["pre_variants"] = variants
+        else:
+            assert sub_kind == "transcript-panels"
         if default_value is not None:
             self.mDescr["default"] = default_value
 
@@ -414,3 +419,21 @@ class TransctiptConvertor(ValueConvertor):
 
     def getTranscriptDescr(self):
         return self.mDescr
+
+    def getTranscriptName(self):
+        return self.mDescr["tr_name"]
+
+#===============================================
+class TranscriptPanelsConvertor(TranscriptConvertor):
+    def __init__(self, sol_h, name, title, unit_no, vgroup, render_mode,
+            tooltip, unit_base, panel_type, view_name = None):
+        TranscriptConvertor.__init__(self,
+            name, title, unit_no, vgroup, render_mode, tooltip,
+            "transcript-panels", None, None)
+        self.mDescr["name_base"] = unit_base.getTranscriptName()
+        self.mDescr["panel_type"] = panel_type
+        if view_name:
+            self.mDescr["view_name"] = view_name
+        panel_names = list(sol_h.getPanelNames(panel_type))
+        assert len(panel_names) > 0, (
+            "No data for panel type " + panel_type)

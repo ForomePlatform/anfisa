@@ -117,31 +117,39 @@ class FilterPrepareSetH(SolutionBroker):
             accept_other_values = accept_other_values,
             conv_func = conversion))
 
-    def panelsUnit(self, name, unit_base, title = None,
+    def panelsUnit(self, name, unit_base, panel_type, title = None,
             render_mode = None, tooltip = None,
             view_path = None):
         self.checkUnitName(name)
         return self._addUnit(prep_unit.PanelConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
-            render_mode, tooltip, unit_base, view_path))
+            render_mode, tooltip, unit_base, panel_type, view_path))
 
-    def transctiptStatusUnit(self, name, trans_name,
+    def transcriptStatusUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = "False", bool_check_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TransctiptConvertor(
+        return self._addUnit(prep_unit.TranscriptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-status", trans_name,
             variants, default_value, bool_check_value))
 
-    def transctiptMultisetUnit(self, name, trans_name,
+    def transcriptMultisetUnit(self, name, trans_name,
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TransctiptConvertor(
+        return self._addUnit(prep_unit.TranscriptConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-multiset", trans_name,
             variants, default_value))
+
+    def transcriptPanelsUnit(self, name, unit_base, panel_type,
+            title = None, render_mode = None,
+            tooltip = None, view_name = None):
+        self.checkUnitName(name)
+        return self._addUnit(prep_unit.TranscriptPanelsConvertor(self,
+            name, title, len(self.mUnits), self.mCurVGroup,
+            render_mode, tooltip, unit_base, panel_type, view_name))
 
     def process(self, rec_no, rec_data):
         result = dict()

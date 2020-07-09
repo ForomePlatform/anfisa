@@ -25,26 +25,33 @@ from app.config.a_config import AnfisaConfig
 from forome_tools.path_works import AttrFuncPool
 #===============================================
 class TransformPreparator_WS:
-    def __init__(self, flt_schema, hard_check):
+    def __init__(self, flt_schema, sol_h, hard_check):
         self.mHardCheck = hard_check
         self.mConvertors = []
         self.mTotalItemCount = 0
         self.mTransPathBaseF = AttrFuncPool.makeFunc(
             AnfisaConfig.configOption("transcript.path.base"))
         self.mUnitStatSeq = []
+        panels_convertors = []
         for unit_descr in flt_schema:
             kind, sub_kind = unit_descr["kind"], unit_descr["sub-kind"]
             if kind == "numeric":
                 self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
             elif kind == "enum":
                 if sub_kind == "transcript-status":
-                    self.mConvertors.append(TrStatusConvertor(unit_descr))
+                    self.mConvertors.append(
+                        TrStatusConvertor(unit_descr))
                 elif sub_kind == "transcript-multiset":
-                    self.mConvertors.append(TrMultisetConvertor(unit_descr))
+                    self.mConvertors.append(
+                        TrMultisetConvertor(unit_descr))
+                elif sub_kind == "transcript-panels":
+                    panels_convertors.append(
+                        TrPanelsConvertor(sol_h, unit_descr))
                 else:
                     self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
             else:
                 assert False, "Bad kind:" + unit_descr["kind"]
+        self.mConvertors += panels_convertors
 
     def isEmpty(self):
         return len(self.mConvertors) == 0 and len(self.mUnitStatSeq) == 0
@@ -200,6 +207,42 @@ class TrMultisetConvertor(TrConvertor):
                 self.mVarCount[val] += 1
             res.append(res_values)
         f_data[self.mName] = res
+
+#===============================================
+class TrPanelsConvertor:
+    def __init__(self, sol_h, unit_descr):
+        self.mDescr = unit_descr
+        self.mName = unit_descr["name"]
+        self.mBaseName = unit_descr["name_base"]
+        self.mPanelType = unit_descr["panel_type"]
+        self.mViewName = unit_descr.get("view_name")
+        self.mPanelSets = {
+            pname: set(sol_h.getPanelVariants(pname))
+            for pname in sol_h.getPanelNames(self.mPanelType)}
+        self.mVarCount = Counter()
+
+    def doRec(self, tr_seq, f_data):
+        res = []
+        for tr_obj in tr_seq:
+            res_val = []
+            item = tr_obj.get(self.mBaseName)
+            if item:
+                for pname, pset in self.mPanelSets.items():
+                    if item in pset:
+                        res_val.append(pname)
+                        self.mVarCount[pname] += 1
+                res_val.sort()
+            res.append(res_val)
+            if self.mViewName:
+                tr_obj[self.mViewName] = res_val
+        f_data[self.mName] = res
+
+    def finishUp(self, hard_check):
+        variants = []
+        for var in sorted(self.mVarCount.keys()):
+            variants.append([var, self.mVarCount[var]])
+        self.mDescr["variants"] = variants
+        return True
 
 #===============================================
 #===============================================

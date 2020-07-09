@@ -105,7 +105,7 @@ class SecondaryWsCreation(ExecutionTask):
         flt_schema  = deepcopy(self.mDS.getFltSchema())
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
         filter_set = defineFilterSchema(meta_rec)
-        trans_prep = TransformPreparator_WS(flt_schema, False)
+        trans_prep = TransformPreparator_WS(flt_schema, self.mDS, False)
 
         os.mkdir(ws_dir)
         logging.info("Fill workspace %s datafiles..." % self.mWSName)

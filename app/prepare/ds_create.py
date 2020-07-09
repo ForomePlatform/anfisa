@@ -75,7 +75,8 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
 
         if ds_kind == "ws":
             trans_prep = TransformPreparator_WS(
-                filter_set.getTranscriptDescrSeq(), True)
+                filter_set.getTranscriptDescrSeq(),
+                filter_set, True)
         else:
             trans_prep = TransformPreparator_XL(druid_adm)
 

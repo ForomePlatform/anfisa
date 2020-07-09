@@ -79,7 +79,7 @@ LOW_IMPACT_CSQ = [
 ]
 
 def condition_consequence_xBrowse():
-    return ConditionMaker.condEnum("Transctipt_consequence",
+    return ConditionMaker.condEnum("Transcript_consequence",
         MODERATE_IMPACT_CSQ)
 
 def condition_high_quality():
