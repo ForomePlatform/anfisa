@@ -147,12 +147,12 @@ def defineViewSchema(metadata_record = None):
         AttrH("is_canonical", title = "Canonical"),
         AttrH("gencode_basic", title = "GENCODE Basic",
             tooltip =
-            'The transcripts tagged as "basic" form part of a subset '
-            'of representative transcripts for each gene. This subset '
-            'prioritises full-length protein coding transcripts over '
-            'partial or non-protein coding transcripts within the '
-            'same gene, and intends to highlight those transcripts '
-            'that will be useful to the majority of users.'),
+            "The transcripts tagged as “basic” form part of a subset "
+            "of representative transcripts for each gene. This subset "
+            "prioritises full-length protein coding transcripts over "
+            "partial or non-protein coding transcripts within the "
+            "same gene, and intends to highlight those transcripts "
+            "that will be useful to the majority of users."),
         AttrH("is_worst", title = "Worst?"),
         AttrH("transcript_source", title = "Source"),
         AttrH("biotype", title = "Biotype"),
@@ -353,20 +353,20 @@ def defineViewSchema(metadata_record = None):
             "P: (polymorphism_automatic[known to be harmless])"),
         AttrH("mutation_assessor_predictions", title = "MutationAssessor",
             is_seq = True,
-            tooltip = 'MutationAssessor functional impact of a variant : '
-            'predicted functional, i.e. high ("H") or medium ("M"), '
-            'or predicted non-functional, i.e. low ("L") or neutral ("N"). '
-            'The MAori score cutoffs between "H" and "M", "M" and "L", and '
-            '"L" and "N", are 3.5, 1.935 and 0.8, respectively. The '
-            'rankscore cutoffs between "H" and "M", "M" and "L", and "L" '
-            'and "N", are 0.92922, 0.51944 and 0.19719, respectively.'),
+            tooltip = "MutationAssessor functional impact of a variant : "
+            "predicted functional, i.e. high (“H”) or medium (“M”), "
+            "or predicted non-functional, i.e. low (“L”) or neutral (“N”). "
+            "The MAori score cutoffs between “H” and “M”, “M” and “L”, and "
+            "“L” and “N”, are 3.5, 1.935 and 0.8, respectively. The "
+            "rankscore cutoffs between “H” and “M”, “M” and “L”, and “L” "
+            "and “L”, are 0.92922, 0.51944 and 0.19719, respectively."),
         AttrH("fathmm", title = "FATHMM", is_seq = True,
             tooltip = "Functional analysis through hidden markov model HMM."
             "D: Deleterious; T: Tolerated"),
         AttrH("primate_ai_pred", title = "PrimateAI", is_seq = True,
-            tooltip = 'Prediction of PrimateAI score based on the authors '
-            'recommendation, "T(olerated)" or "D(amaging)". '
-            'The score cutoff between "D" and "T" is 0.803.'),
+            tooltip = "Prediction of PrimateAI score based on the authors "
+            "recommendation, “T(olerated)” or “D(amaging)”. "
+            "The score cutoff between “D” and “T” is 0.803."),
         AttrH("cadd_phred", title = "CADD (Phred)",
             is_seq = True,
             tooltip = "CADD Combined annotation dependent depletion"),
@@ -387,13 +387,13 @@ def defineViewSchema(metadata_record = None):
             is_seq = True),
         AttrH("mutation_assessor_scores",
             title = "MutationAssessor score (MAori)",
-            tooltip = 'MutationAssessor functional impact combined score '
-            '(MAori). Multiple entries are separated by ";", corresponding '
-            'to Uniprot_entry.',
+            tooltip = "MutationAssessor functional impact combined score "
+            "(MAori). Multiple entries are separated by “;”, corresponding "
+            "to Uniprot_entry.",
             is_seq = True),
         AttrH("dann_score", title = "DANN Functional Prediction score",
-            tooltip = 'DANN is a functional prediction score retrained based '
-            'on the training data of CADD using deep neural network',
+            tooltip = "DANN is a functional prediction score retrained based "
+            "on the training data of CADD using deep neural network",
             is_seq = True)
     ])
 
