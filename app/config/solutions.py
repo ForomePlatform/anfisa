@@ -216,6 +216,9 @@ def readySolutions_Case(base_pack):
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])])
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])])
+    base_pack.regFilter("SEQaBOO_Hearing_Quick", [
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss Quick")])],
+                        requires={"WS"})
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
@@ -252,6 +255,8 @@ def readySolutions_Case(base_pack):
         cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",
         cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
+    base_pack.regDTree("Hearing Loss Quick",
+        cfgPathSeq(["quality.pyt", "hearing_loss_ws.pyt"]), requires={"WS"})
     base_pack.regDTree("ACMG59 Variants",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
     base_pack.regDTree("Damaging_Predictions",
