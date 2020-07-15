@@ -175,14 +175,14 @@ def defineFilterSchema(metadata_record):
             default_value = "undefined")
         tr_genes_unit = filters.transcriptStatusUnit("Transctript_Gene",
             "gene", default_value = "undefined")
+        filters.transcriptPanelsUnit("Transcript_Gene_Panels",
+            tr_genes_unit, "Symbol", view_name = "tr_gene_panels")
         filters.transcriptStatusUnit("Transcript_source", "transcript_source",
             default_value = "undefined")
         filters.transcriptStatusUnit("Transcript_codon_pos", "codonpos",
             default_value = "undefined")
         # filters.transcriptStatusUnit("Transcript_strand", "strand",
         #     default_value = "undefined")
-        filters.transcriptPanelsUnit("Transcript_Gene_Panels",
-            tr_genes_unit, "Symbol", view_name = "tr_gene_panels")
 
     with filters.viewGroup("Transcript_Predictions"):
         filters.transcriptStatusUnit(
