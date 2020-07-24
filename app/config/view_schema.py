@@ -173,6 +173,8 @@ def defineViewSchema(metadata_record = None):
         AttrH("codons", title = "Codons"),
         AttrH("codonpos", title = "Codon Pos"),
         AttrH("refcodon", title = "Ref Codon"),
+        AttrH("region", title="Gene Region"),
+        AttrH("dist_from_exon", title="Distance from Exon Boundary"),
 
         AttrH("polyphen2_hdiv_prediction", title = "Polyphen HDIV"),
         AttrH("polyphen2_hvar_prediction", title = "Polyphen HVAR"),
@@ -407,8 +409,14 @@ def defineViewSchema(metadata_record = None):
     aspects["view_genetics"].setAttributes([
         AttrH("zygosity", title = "Zygosity"),
         AttrH("inherited_from", title = "Inherited from"),
+        AttrH("region_worst",
+            title = "Dgene Region (Worst)",
+            is_seq = True),
         AttrH("dist_from_exon_worst",
             title = "Distance From Intron/Exon Boundary (Worst)",
+            is_seq = True),
+        AttrH("region_canonical",
+            title = "Gene Region (Canonical)",
             is_seq = True),
         AttrH("dist_from_exon_canonical",
             title = "Distance From Intron/Exon Boundary (Canonical)",

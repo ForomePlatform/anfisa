@@ -181,6 +181,12 @@ def defineFilterSchema(metadata_record):
             default_value = "undefined")
         filters.transcriptStatusUnit("Transcript_codon_pos", "codonpos",
             default_value = "undefined")
+        filters.transcriptStatusUnit("Transcript_region", "region",
+            title= "Gene Region",
+            default_value = "undefined")
+        # filters.transcriptIntUnit("Transcript_dist_from_exon", "dist_from_exon",
+        #     title= "Distance from Exon Boundary",
+        #     default_value = -1)
         # filters.transcriptStatusUnit("Transcript_strand", "strand",
         #     default_value = "undefined")
 
@@ -352,6 +358,9 @@ def defineFilterSchema(metadata_record):
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
+        filters.intValueUnit("QUAL", "/_filters/qual",
+            title="Variant Call Quality",
+            default_value=0)
         filters.floatValueUnit("QD", "/_filters/qd",
             title = "Quality by Depth", render_mode = "linear,>",
             default_value=100000.,
