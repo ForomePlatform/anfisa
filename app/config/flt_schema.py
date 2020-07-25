@@ -23,20 +23,6 @@ import sys
 from app.prepare.prep_filters import FilterPrepareSetH
 from .favor import FavorSchema
 #===============================================
-def _conv_len(arr):
-    if arr:
-        return len(arr)
-    return 0
-
-def _conv_bool(v, s1, s2):
-    if v in [True, "True"]:
-        return s1
-    elif v in [False, "False"]:
-        return s2
-    return v
-
-
-#===============================================
 sConsequenceVariants = [
     "transcript_ablation",
     "splice_acceptor_variant",
@@ -98,7 +84,7 @@ def defineFilterSchema(metadata_record):
             "/_view/bioinformatics/zygosity",
             title = "Proband Zygosity")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
-            title = "Number of Samples", conversion = _conv_len,
+            title = "Number of Samples", conversion = "len",
             default_value = 0,
         tooltip = "Number of samples for which this variant has been called")
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
@@ -131,10 +117,10 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Number_ALTs",
             "/_filters/alts",
             title = "Number of Alternative alleles",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
 
         #filters.intValueUnit("zyg_len", "/__data/zygosity",
-        #   conversion = _conv_len, default_value = 0)
+        #   conversion = "len", default_value = 0)
 
     with filters.viewGroup("Genes"):
         genes_unit = filters.multiStatusUnit("Symbol",
@@ -147,15 +133,14 @@ def defineFilterSchema(metadata_record):
             default_value = "None")
         #filters.multiStatusUnit("Transcripts",
         #    "/__data/transcript_consequences[]", compact_mode = True,
-        #    conversion = lambda arr:
-        #        [el["transcript_id"] for el in arr] if arr else [])
+        #    conversion = "transcript_id")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
         filters.intValueUnit("Num_Transcripts",
             "/__data/transcript_consequences",
             title = "Number of transcripts at the position",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
 
     with filters.viewGroup("Transcripts"):
         filters.transcriptMultisetUnit("Transcript_consequence",
@@ -184,9 +169,9 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit("Transcript_region", "region",
             title= "Gene Region",
             default_value = "undefined")
-        # filters.transcriptIntUnit("Transcript_dist_from_exon", "dist_from_exon",
-        #     title= "Distance from Exon Boundary",
-        #     default_value = -1)
+        filters.transcriptIntValueUnit("Transcript_dist_from_exon",
+            "dist_from_exon",
+            title = "Distance from Exon Boundary", default_value = -1)
         # filters.transcriptStatusUnit("Transcript_strand", "strand",
         #     default_value = "undefined")
 
@@ -327,7 +312,7 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Number_submitters",
             "/_view/databases/clinVar_submitters",
             title = "Number of ClinVar Submitters",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
 
         filters.multiStatusUnit("PMIDs",
             "/_view/databases/references[]",
@@ -335,7 +320,7 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Number_pmid",
             "/_view/databases/references",
             title = "Number of PMIDs",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
 
         # filters.multiStatusUnit("beacons",
         #     "/__data/beacon_names",

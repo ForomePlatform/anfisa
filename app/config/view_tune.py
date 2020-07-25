@@ -456,7 +456,7 @@ class PGKB_AttrH(AttrH):
         self.key = key
         self.simple = is_simple
 
-    def collect (self, items):
+    def collect(self, items):
         result = dict()
         for item in items:
             key = item["association"]
@@ -481,8 +481,8 @@ class PGKB_AttrH(AttrH):
         return html
 
     def draw_simple_table(self, items):
-        f = lambda key, entries: ", ".join(entries[key])
-        return self.draw_table(items, f)
+        return self.draw_table(items,
+            lambda key, entries: ", ".join(entries[key]))
 
     def draw_nested_table(self, items):
         return self.draw_table(items, self.draw_inner_table)

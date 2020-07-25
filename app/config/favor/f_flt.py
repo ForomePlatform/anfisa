@@ -21,14 +21,6 @@ import sys
 
 from app.prepare.prep_filters import FilterPrepareSetH
 
-
-# ===============================================
-def _conv_len(arr):
-    if arr:
-        return len(arr)
-    return 0
-
-
 # ===============================================
 def defFavorFlt(metadata_record):
     assert metadata_record.get("data_schema") == "FAVOR"
@@ -56,7 +48,7 @@ def defFavorFlt(metadata_record):
             view_path = "/_view/general/gene_panels")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",
-            conversion = _conv_len, default_value = 0)
+            conversion = "len", default_value = 0)
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_Total_AF",

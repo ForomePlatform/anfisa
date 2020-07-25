@@ -168,6 +168,34 @@ class WS_MultiCompactUnit(WS_EnumUnit):
         self.mArray.append(idx)
 
 #===============================================
+class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
+    def __init__(self, eval_space, unit_data):
+        WS_Unit.__init__(self, eval_space, unit_data, "numeric")
+        assert self.getSubKind() in {"transcript-float", "transcript-int"}
+        self._setScreened(self.getDescr()["min"] is None)
+        self.mArray = array("d" if self.getSubKind() == "float" else "q")
+
+    def isDetailed(self):
+        return True
+
+    def getItemVal(self, item_idx):
+        return self.mArray[item_idx]
+
+    def makeStat(self, condition, eval_h):
+        ret_handle = self.prepareStat()
+        num_stat = NumDiapStat(True)
+        for group_no, it_idx in condition.iterItemIdx():
+            num_stat.regValue([self.mArray[it_idx]], group_no)
+        num_stat.reportResult(ret_handle)
+        ret_handle["detailed"] = True
+        return ret_handle
+
+    def fillRecord(self, inp_data, rec_no):
+        values = inp_data.get(self.getInternalName())
+        if values:
+            self.mArray.extend(values)
+
+#===============================================
 class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
@@ -265,6 +293,8 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
 def loadWS_Unit(eval_space, unit_data):
     kind = unit_data["kind"]
     if kind == "numeric":
+        if unit_data["sub-kind"].startswith("transcript-"):
+            return WS_TranscriptNumericValueUnit(eval_space, unit_data)
         return WS_NumericValueUnit(eval_space, unit_data)
     assert kind == "enum", "Bad kind: " + kind
     if unit_data["sub-kind"] == "transcript-status":

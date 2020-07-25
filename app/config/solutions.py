@@ -218,7 +218,7 @@ def readySolutions_Case(base_pack):
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])])
     base_pack.regFilter("SEQaBOO_Hearing_Quick", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss Quick")])],
-                        requires={"WS"})
+        requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [

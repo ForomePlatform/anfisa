@@ -36,7 +36,10 @@ class TransformPreparator_WS:
         for unit_descr in flt_schema:
             kind, sub_kind = unit_descr["kind"], unit_descr["sub-kind"]
             if kind == "numeric":
-                self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
+                if sub_kind.startswith("transcript-"):
+                    self.mConvertors.append(TrNumConvertor(unit_descr))
+                else:
+                    self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
             elif kind == "enum":
                 if sub_kind == "transcript-status":
                     self.mConvertors.append(
@@ -80,15 +83,53 @@ class TransformPreparator_WS:
         return self.mTotalItemCount
 
 #===============================================
-class TrConvertor:
+class TrNumConvertor:
     sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
         self.mDescr = unit_descr
         self.mName = unit_descr["name"]
-        self.mTransName = unit_descr["tr_name"]
+        self.mTransName = unit_descr["tr-name"]
+        self.mDefaultValue = unit_descr["default"]
+        self.mMin, self.mMax = None, None
+        self.mCntDef = 0
+
+    def doRec(self, tr_seq, f_data):
+        if len(tr_seq) == 0:
+            return
+        res = []
+        for tr_obj in tr_seq:
+            val = tr_obj.get(self.mTransName)
+            if val is None:
+                val = self.mDefaultValue
+            self.mCntDef += 1
+            if self.mCntDef == 1:
+                self.mMin = self.mMax = val
+            else:
+                if val < self.mMin:
+                    self.mMin = val
+                elif val > self.mMax:
+                    self.mMax = val
+            res.append(val)
+        f_data[self.mName] = res
+
+    def finishUp(self, hard_check):
+        self.mDescr["min"] = self.mMin
+        self.mDescr["max"] = self.mMax
+        self.mDescr["def"] = self.mCntDef
+        self.mDescr["undef"] = 0
+        return True
+
+#===============================================
+class TrEnumConvertor:
+    sPattVar = re.compile(r'^\$\{(\w+)\}$')
+
+    def __init__(self, unit_descr):
+        self.mDescr = unit_descr
+        self.mName = unit_descr["name"]
+        self.mTransName = unit_descr["tr-name"]
         self.mDefaultValue = unit_descr.get("default")
-        self.mPreVariants = unit_descr["pre_variants"]
+        self.mPreVariants = unit_descr["pre-variants"]
         self.mVarCount = Counter()
         self.mBadCount = Counter()
         self.mPreVarSet = None
@@ -127,12 +168,12 @@ class TrConvertor:
         return True
 
 #===============================================
-class TrStatusConvertor(TrConvertor):
+class TrStatusConvertor(TrEnumConvertor):
     sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
-        TrConvertor.__init__(self, unit_descr)
-        self.mBoolCheckValue = unit_descr["bool_check"]
+        TrEnumConvertor.__init__(self, unit_descr)
+        self.mBoolCheckValue = unit_descr["bool-check"]
         self.mBoolVUnit = None
         if self.mBoolCheckValue:
             self._checkBooleanVariants()
@@ -178,11 +219,11 @@ class TrStatusConvertor(TrConvertor):
         f_data[self.mName] = res
 
 #===============================================
-class TrMultisetConvertor(TrConvertor):
+class TrMultisetConvertor(TrEnumConvertor):
     sPattVar = re.compile(r'^\$\{(\w+)\}$')
 
     def __init__(self, unit_descr):
-        TrConvertor.__init__(self, unit_descr)
+        TrEnumConvertor.__init__(self, unit_descr)
 
     def doRec(self, tr_seq, f_data):
         if len(tr_seq) == 0:
@@ -213,9 +254,9 @@ class TrPanelsConvertor:
     def __init__(self, sol_h, unit_descr):
         self.mDescr = unit_descr
         self.mName = unit_descr["name"]
-        self.mBaseName = unit_descr["name_base"]
-        self.mPanelType = unit_descr["panel_type"]
-        self.mViewName = unit_descr.get("view_name")
+        self.mBaseName = unit_descr["panel-base"]
+        self.mPanelType = unit_descr["panel-type"]
+        self.mViewName = unit_descr.get("view-name")
         self.mPanelSets = {
             pname: set(sol_h.getPanelVariants(pname))
             for pname in sol_h.getPanelNames(self.mPanelType)}

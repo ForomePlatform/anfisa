@@ -37,6 +37,16 @@ class FilterPrepareSetH(SolutionBroker):
         self.mZygosityData = None
         self.mCheckIdent = check_identifiers
 
+    def setupFromInfo(self, info_seq,
+            zyg_var_name = "_zyg", zyg_vpath = "/__data/zygosity"):
+        self.setupZygosity(zyg_var_name, zyg_vpath)
+        for info in info_seq:
+            self._setViewGroup(info.get("vgroup"))
+            unit_h = prep_unit.loadConvertorInstance(info,
+                self.mCurVGroup, self)
+            self._addUnit(unit_h)
+        self._setViewGroup(None)
+
     def getFamilyInfo(self):
         return self.mFamilyInfo
 
@@ -64,12 +74,19 @@ class FilterPrepareSetH(SolutionBroker):
         assert self.mCurVGroup is view_group_h
         self.mCurVGroup = None
 
-    def _addUnit(self, unit):
-        self.checkUnitName(unit.getName())
+    def _setViewGroup(self, view_group_title):
+        if view_group_title is None:
+            self.mCurVGroup = None
+        elif (self.mCurVGroup is None
+                or self.mCurVGroup.getTitle() != view_group_title):
+            self.mCurVGroup = self.viewGroup(view_group_title)
+
+    def _addUnit(self, unit_h):
+        self.checkUnitName(unit_h.getName())
         for conv in self.mUnits:
-            assert conv.getName() != unit.getName()
-        self.mUnits.append(unit)
-        return unit
+            assert conv.getName() != unit_h.getName()
+        self.mUnits.append(unit_h)
+        return unit_h
 
     def intValueUnit(self, name, vpath, title = None,
             default_value = None, diap = None, conversion = None,
@@ -115,7 +132,7 @@ class FilterPrepareSetH(SolutionBroker):
             "multi", variants, default_value, value_map,
             separators = separators, compact_mode = compact_mode,
             accept_other_values = accept_other_values,
-            conv_func = conversion))
+            conversion = conversion))
 
     def panelsUnit(self, name, unit_base, panel_type, title = None,
             render_mode = None, tooltip = None,
@@ -129,7 +146,7 @@ class FilterPrepareSetH(SolutionBroker):
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = "False", bool_check_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TranscriptConvertor(
+        return self._addUnit(prep_unit.TranscriptEnumConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-status", trans_name,
             variants, default_value, bool_check_value))
@@ -138,7 +155,7 @@ class FilterPrepareSetH(SolutionBroker):
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TranscriptConvertor(
+        return self._addUnit(prep_unit.TranscriptEnumConvertor(
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-multiset", trans_name,
             variants, default_value))
@@ -150,6 +167,24 @@ class FilterPrepareSetH(SolutionBroker):
         return self._addUnit(prep_unit.TranscriptPanelsConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, unit_base, panel_type, view_name))
+
+    def transcriptIntValueUnit(self, name, trans_name, title = None,
+            default_value = None, render_mode = None, tooltip = None):
+        self.checkUnitName(name)
+        assert default_value is not None, (
+            "Transcript Int unit %s requires default" % name)
+        return self._addUnit(prep_unit.TranscriptNumConvertor(name,
+            title, len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
+            "transcript-int", trans_name, default_value))
+
+    def transcriptFloatValueUnit(self, name, trans_name, title = None,
+            default_value = None, render_mode = None, tooltip = None):
+        self.checkUnitName(name)
+        assert default_value is not None, (
+            "Transcript Float unit %s requires default" % name)
+        return self._addUnit(prep_unit.TranscriptNumConvertor(name,
+            title, len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
+            "transcript-float", trans_name, default_value))
 
     def process(self, rec_no, rec_data):
         result = dict()

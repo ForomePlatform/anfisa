@@ -54,8 +54,7 @@ var sOpNumH = {
             cur_bounds: [null, true, null, true],
             unit_type:  unit_stat["sub-kind"],
             val_min:    unit_stat["min"],
-            val_max:    unit_stat["max"],
-            count:      unit_stat["count"]}
+            val_max:    unit_stat["max"]}
             
         if (this.mInfo.val_min != null) {
             document.getElementById("cond-min").innerHTML = 
@@ -531,8 +530,8 @@ function topUnitStat(unit_name) {
 function fillStatRepNum(unit_stat, list_stat_rep) {
     val_min   = unit_stat["min"];
     val_max   = unit_stat["max"];
-    count     = unit_stat["count"];
-    if (count == 0) {
+    counts    = unit_stat["counts"];
+    if (counts[0] == 0) {
         list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
     } else {
         if (val_min == val_max) {
@@ -542,7 +541,7 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
             list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
                 ' &le;&nbsp;...&nbsp;&le; ' + normFloatLongTail(val_max, true) + ' </span>');
         }
-        list_stat_rep.push(': ' + reportStatCount([null, count], unit_stat));
+        list_stat_rep.push(': ' + reportStatCount(counts, unit_stat, 0));
     }
 }
 
@@ -581,7 +580,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count -= 1;
         list_count--;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(var_list[j], unit_stat) + '</li>');
+            reportStatCount(var_list[j], unit_stat, 1) + '</li>');
     }
     list_stat_rep.push('</ul>');
     if (list_count > 0) {
@@ -590,16 +589,16 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     }
 }
 
-function reportStatCount(count_info, unit_stat) {
+function reportStatCount(count_info, unit_stat, shift) {
     if (unit_stat["detailed"]) {
-        cnt_rep = count_info[2] + '(' + count_info[1] + ')';
+        cnt_rep = count_info[1 + shift] + '(' + count_info[shift] + ')';
         nm = "transcript";
     } else {
-        cnt_rep = count_info[1];
+        cnt_rep = count_info[shift];
         nm = "variant";
     }
     return '<span class="stat-count">' + cnt_rep + ' ' + nm +  
-        ((count_info[1]>1)? 's':'') + '</span>';
+        ((count_info[1 + shift]>1)? 's':'') + '</span>';
 }
 
 /*************************************/

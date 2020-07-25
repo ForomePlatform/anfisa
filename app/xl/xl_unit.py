@@ -76,7 +76,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
     def makeStat(self, condition, eval_h):
         ret_handle = self.prepareStat()
         vmin, vmax, count = self._makeStat(condition)
-        ret_handle["count"] = count
+        ret_handle["counts"] = [count]
         if count > 0:
             ret_handle["min"] = vmin
             ret_handle["max"] = vmax

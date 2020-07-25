@@ -25,7 +25,7 @@ from datetime import datetime
 from forome_tools.job_pool import ExecutionTask
 from app.model.ds_disk import DataDiskStorageWriter
 from app.config.a_config import AnfisaConfig
-from app.config.flt_schema import defineFilterSchema
+from app.prepare.prep_filters import FilterPrepareSetH
 from .trans_prep import TransformPreparator_WS
 from .html_report import reportDS
 
@@ -104,7 +104,8 @@ class SecondaryWsCreation(ExecutionTask):
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
-        filter_set = defineFilterSchema(meta_rec)
+        filter_set = FilterPrepareSetH(meta_rec)
+        filter_set.setupFromInfo(flt_schema)
         trans_prep = TransformPreparator_WS(flt_schema, self.mDS, False)
 
         os.mkdir(ws_dir)

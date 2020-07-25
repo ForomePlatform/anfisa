@@ -22,11 +22,15 @@ from collections import Counter
 
 #===============================================
 class NumDiapStat:
-    def __init__(self):
+    def __init__(self, detailed = False):
         self.mMin, self.mMax = None, None
         self.mCntDef = 0
+        self.mGroupCount = None
+        if detailed:
+            self.mGroupCount = 0
+            self.mCurGroupNo = None
 
-    def regValue(self, val):
+    def regValue(self, val, group_no = None):
         self.mCntDef += 1
         if self.mCntDef == 1:
             self.mMin = self.mMax = val
@@ -35,11 +39,17 @@ class NumDiapStat:
                 self.mMin = val
             elif val > self.mMax:
                 self.mMax = val
+        if self.mGroupCount is not None:
+            if group_no != self.mCurGroupNo:
+                self.mCurGroupNo = group_no
+                self.mGroupCount += 1
 
     def reportResult(self, ret_handle):
         ret_handle["min"] = self.mMin
         ret_handle["max"] = self.mMax
-        ret_handle["count"] = self.mCntDef
+        ret_handle["counts"] = [self.mCntDef]
+        if self.mGroupCount is not None:
+            ret_handle["counts"].insert(0, self.mGroupCount)
 
 #===============================================
 class EnumStat:
