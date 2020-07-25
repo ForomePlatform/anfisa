@@ -23,15 +23,19 @@ Format
 |        ----------------------------------- 
 |        "**min**": *optional* minimum value, *int or float*
 |        "**max**": *optional* maximum value, *int or float*
-|        "**count**": *optional* count of variants, *int*
+|        "**counts**": *optional* 
+|               ``[`` *list*
+|                       **[0]**: count of transcripts (if detailed) or variants, *int*
+|                       **[1]**: *optional* count of variants (if detailed), *int*
+|               ``]``
 |
 |        *in case of* **kind** = ``"enum"`` 
 |        ----------------------------------- 
 |        "**variants**":  *optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of variants, *int*
-|                       **[2]**: *optional* count of transcripts, *int*
+|                       **[1]**: count of transcripts (if detailed) or variants, *int*
+|                       **[2]**: *optional* count of variants (if detailed), *int*
 |               ``]``, ...  ``]``
 |
 |        *in case of* **kind** = ``"func"`` 
@@ -39,8 +43,8 @@ Format
 |        "**variants**":  ``null``*optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of variants, *int*
-|                       **[2]**: *optional* count of transcripts, *int*
+|                       **[1]**: count of transcripts (if detailed) or variants, *int*
+|                       **[2]**: *optional* count of variants (if detailed), *int*
 |               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
 |        "**rq-id**:  ID of request series
@@ -70,16 +74,32 @@ for filtering properties (of numeric or enum type)
 is incomplete, use request :doc:`statunits` to get them in complete
 state. 
 
-Property **sub-kind** can have the following values:
+In **detailed** case (:term:`workspace` context) the main items for 
+counting are :term:`transcripts<transcript>`, so count values form
+pair of values in list, first one is for transcripts, second for :term:`variants<variant>`.
+Otherwise only single variant count is provided in lists. 
+
+Property **sub-kind** can have the following values (transcipt-based subkinds
+are provided only in :term:`workspace` context):
 
   ================   ====================
    **kind**           **sub-kind**
   ================   ====================
-   ``"numeric"``      ``"int"``
+   ``"numeric"``      ``"int"`` 
+   
                       ``"float"``
+                      
+                      ``"transcript-int"`` 
+                      
+                      ``"transcript-float"``
   ----------------   --------------------
-    ``enum``          ``"status"``
-                      ``"multi"`` 
+    ``enum``          ``"status"`` 
+                      
+                      ``"multi"``
+
+                      ``"transcript-status"`` 
+                      
+                      ``"transcript-multi"``
   ----------------   --------------------
     ``func``          *type of function*
   ================   ====================
