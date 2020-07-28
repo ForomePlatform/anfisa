@@ -15,6 +15,9 @@ if gnomAD_AF >= 0.05:
     return False
 
 #Exclude variants farther then 5pb from intronic/exonic border
+if (not Region_Canonical in {"exon"}) and Dist_from_Exon_Canonical >= 6:
+    return False
+# For compatibility with Legacy workspaces
 if (not Region in {"exon"}) and Dist_from_Exon >= 6:
     return False
 

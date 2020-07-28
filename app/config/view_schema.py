@@ -410,7 +410,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("zygosity", title = "Zygosity"),
         AttrH("inherited_from", title = "Inherited from"),
         AttrH("region_worst",
-            title = "Dgene Region (Worst)",
+            title = "Gene Region (Worst)",
             is_seq = True),
         AttrH("dist_from_exon_worst",
             title = "Distance From Intron/Exon Boundary (Worst)",
