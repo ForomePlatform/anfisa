@@ -24,6 +24,11 @@ def _conv_len(arr):
         return len(arr)
     return 0
 
+def _conv_min(arr):
+    if arr:
+        return min(arr)
+    return 0
+
 def _conv_bool_present(val):
     if val in [True, "True"]:
         return "Present"
@@ -37,6 +42,7 @@ def _conv_transcript_id(arr):
 
 sFilterConversions = {
     "len": _conv_len,
+    "min": _conv_min,
     "bool": _conv_bool_present,
     "transcript_id": _conv_transcript_id
 }

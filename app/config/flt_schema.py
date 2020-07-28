@@ -226,13 +226,13 @@ def defineFilterSchema(metadata_record):
             title = "Distance From Intron/Exon Boundary (Canonical)",
             default_value = 0, render_mode = "log,<")
         filters.intValueUnit("Dist_from_Exon_Canonical",
-            "/_filters/dist_from_exon_canonical[]",
+            "/_filters/dist_from_exon_canonical",
             title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<")
+            default_value = 0, render_mode = "log,<", conversion="min")
         filters.intValueUnit("Dist_from_Exon_Worst",
-            "/_filters/dist_from_exon_canonical[]",
+            "/_filters/dist_from_exon_worst",
             title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<")
+            default_value = 0, render_mode = "log,<", conversion="min")
         filters.statusUnit("Region_Canonical", "/__data/region_canonical",
             title = "Region (Canonical)", default_value = "Other")
         filters.statusUnit("Region_Worst", "/__data/region_worst",
