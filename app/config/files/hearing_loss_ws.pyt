@@ -15,7 +15,10 @@ if gnomAD_AF >= 0.05:
     return False
 
 #Exclude variants farther then 5pb from intronic/exonic border
-if (not Region in {"exon"}) and Dist_from_Exon >= 6:
+if Transcript_source not in {"Ensembl"}:
+     return False
+if ((Transcript_region not in {"exon"})
+    and (Transcript_dist_from_exon >= 6 or Transcript_dist_from_exon < 1)):
     return False
 
 #2.a.	Include if present in ClinVar as: Path, Likely Path, VUS

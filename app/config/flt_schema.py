@@ -225,7 +225,17 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
             title = "Distance From Intron/Exon Boundary (Canonical)",
             default_value = 0, render_mode = "log,<")
-        filters.statusUnit("Region", "/__data/region_canonical",
+        filters.intValueUnit("Dist_from_Exon_Canonical",
+            "/_filters/dist_from_exon_canonical",
+            title = "Distance From Intron/Exon Boundary (Canonical)",
+            default_value = 0, render_mode = "log,<", conversion="min")
+        filters.intValueUnit("Dist_from_Exon_Worst",
+            "/_filters/dist_from_exon_worst",
+            title = "Distance From Intron/Exon Boundary (Canonical)",
+            default_value = 0, render_mode = "log,<", conversion="min")
+        filters.multiStatusUnit("Region_Canonical", "/__data/region_canonical[]",
+            title = "Region (Canonical)", default_value = "Other")
+        filters.multiStatusUnit("Region_Worst", "/__data/region_worst[]",
             title = "Region (Canonical)", default_value = "Other")
 
     with filters.viewGroup("gnomAD"):
