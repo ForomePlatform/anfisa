@@ -133,16 +133,20 @@ class _NumericConvertor(PathValueConvertor):
 
     def convert(self, values, rec_no):
         try:
+            if self.mName == "QD":
+                print("values:", values, self.mPath)
             if self.mConvFunc is not None and len(values) == 1:
                 values = [self.mConvFunc(values[0])]
             if len(values) == 0:
-                if self.mDefaultValue is None:
-                    self.mCntUndef += 1
-                else:
-                    self.mCntDef += 1
-                return self.mDefaultValue
+                values = [None]
             if len(values) == 1:
-                val = self.convType(values[0])
+                if values[0] is None:
+                    val = self.mDefaultValue
+                else:
+                    val = self.convType(values[0])
+                if val is None:
+                    self.mCntUndef += 1
+                    return None
                 if (self.mMinBound is None
                         or self.mMinBound <= val <= self.mMaxBound):
                     self.mCntDef += 1

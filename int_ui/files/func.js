@@ -105,7 +105,9 @@ var sOpFuncH = {
         if (keep_selection)
             this.mOpVariants = sOpEnumH.getSelected();
         this.mCurFState = state;
-        sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt(this.mCurFState));
+        if (this.mCurFuncH.onReset(this.mCurFState)) {
+            sOpEnumH.renderFuncDiv(this.mCurFuncH.renderIt(this.mCurFState));
+        }
         this.reloadStat();
     },
     
@@ -152,7 +154,7 @@ var sOpFuncH = {
             return;
         var ret_state = this.mCurFuncH.parseFState(info);
         this.mRuntimeErr = info["err"];
-        if (!sameData(ret_state, this.mCurFState))
+        if (sameData(ret_state, this.mCurFState))
             this.renderVariants(info["variants"]);
         sOpEnumH.checkControls();
     },
@@ -218,6 +220,18 @@ var sFunc_InheritanceZ = {
         if (p_group || (p_group == null && this.mAffectedGroup.length > 0))
             return null;
         return "Empty problem group";
+    },
+    
+    onReset: function(state) {
+        var p_group = state[0];
+        if (p_group == null)
+            p_group = this.mAffectedGroup;
+        for (var idx = 0; idx < this.mFamily.length; idx++) {
+            sample_id = this.mFamily[idx];
+            document.getElementById("inheritance-z-fam-m__" + idx).checked =
+                (p_group.indexOf(sample_id) >= 0);
+        }
+        return false;
     },
      
     renderIt: function(state) {        
@@ -442,10 +456,14 @@ var sFunc_CustomInheritanceZ = {
     checkError: function(state) {
         var p_scenario = state[0];
         if (!sZygSuportH.emptyScenario(p_scenario))
-            return null;
+            return " ";
         return "Empty scenario";
     },
      
+    onReset: function(state) {
+        return true;
+    },
+
     renderIt: function(state) {
         var list_stat_rep = ['<div class="func-parameters">',
             '<div class="comment">Scenario:</div>'];
@@ -533,9 +551,15 @@ var sFunc_CompoundHet = {
             return "Bad approx mode: " + v_approx;
         if (v_state && this.mLabels.indexOf(v_state) < 0)
             return "Label " + v_state + " not found";
+        if (this.mTrioVariants.length == 1)
+            return " ";
         return null;
     },
      
+    onReset: function(state) {
+        return true;
+    },
+
     renderIt: function(state) {
         v_approx = state[0];
         v_state = state[1];
@@ -661,9 +685,13 @@ var sFunc_CompoundRequest = {
             return "Bad approx mode: " + v_approx;
         if (v_state && this.mLabels.indexOf(v_state) < 0)
             return "Label " + v_state + " not found";
-        return null;
+        return " ";
     },
      
+    onReset: function(state) {
+        return true;
+    },
+
     renderIt: function(state) {
         v_approx = state[0];
         v_state = state[1];
@@ -786,7 +814,6 @@ var sFunc_CompoundRequest = {
 
 /**************************************/
 var sFunc_Region = {
-
     normLocus: function(locus) {
         if (!locus)
             return null;
@@ -822,11 +849,18 @@ var sFunc_Region = {
     checkError: function(state) {
         var locus = state[0];
         if (locus) {
-            return null;
+            return " ";
         }
         return "Locus is empty";
     },
      
+    onReset: function(state) {
+        var locus = state[0];
+        if (document.getElementById('region-locus').value.trim() != locus)
+            document.getElementById('region-locus').value = locus;
+        return false;
+    },
+
     renderIt: function(state) {
         var locus = state[0];
         var list_stat_rep = ['<div class="func-parameters">',

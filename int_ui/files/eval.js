@@ -414,8 +414,6 @@ var sOpEnumH = {
                 condition_data = null;
             } else {
                 var func_params = this.mFuncCtrl.makeFuncParams();
-                if (func_params["request"]) 
-                    console.log("F-rq:" + func_params["request"].length);
                 condition_data.push(func_params);
             }
         }
