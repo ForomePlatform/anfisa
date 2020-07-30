@@ -339,7 +339,7 @@ def defineFilterSchema(metadata_record):
     with filters.viewGroup("Call_Quality"):
         filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq",
             title = "Genotype Quality (GQ) for Proband",
-            render_mode = "linear,>", default_value = 1000,
+            render_mode = "linear,>", default_value = -1,
             tooltip = "GQ tells you how confident we are that "
             "the genotype we assigned to a particular sample is correct. "
             "It is simply the second lowest PL, because it is the "
@@ -347,7 +347,7 @@ def defineFilterSchema(metadata_record):
             "(always 0).")
         filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
             title = "Minimum GQ for the family)", render_mode = "linear,>",
-            default_value = 1000,
+            default_value = -1,
             tooltip = "GQ tells you how confident we are that "
             "the genotype we assigned to a particular sample is correct. "
             "It is simply the second lowest PL, because it is the "
@@ -355,10 +355,10 @@ def defineFilterSchema(metadata_record):
             "(always 0).")
         filters.intValueUnit("QUAL", "/_filters/qual",
             title="Variant Call Quality",
-            default_value=0)
+            default_value=-1)
         filters.floatValueUnit("QD", "/_filters/qd",
             title = "Quality by Depth", render_mode = "linear,>",
-            default_value=100000.,
+            default_value=-1.,
             tooltip = "The QUAL score normalized by allele depth (AD) "
             "for a variant. This annotation puts the variant confidence "
             "QUAL score into perspective by normalizing for the amount "
