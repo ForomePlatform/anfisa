@@ -133,8 +133,6 @@ class _NumericConvertor(PathValueConvertor):
 
     def convert(self, values, rec_no):
         try:
-            if self.mName == "QD":
-                print("values:", values, self.mPath)
             if self.mConvFunc is not None and len(values) == 1:
                 values = [self.mConvFunc(values[0])]
             if len(values) == 0:
