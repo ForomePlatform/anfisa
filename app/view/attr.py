@@ -94,6 +94,10 @@ class AttrH:
             if self.mReprFunc:
                 return self.mReprFunc(val_obj, view_context)
             repr_text = None
+            if val_obj is True:
+                return ("True", self.getMainKind())
+            if val_obj is False:
+                return ("False", self.getMainKind())
             if val_obj == 0 and isinstance(val_obj, int):
                 return ("0", self.getMainKind())
             if val_obj:
