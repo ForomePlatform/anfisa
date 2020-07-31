@@ -174,6 +174,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("codonpos", title = "Codon Pos"),
         AttrH("refcodon", title = "Ref Codon"),
         AttrH("region", title="Gene Region"),
+        AttrH("cds", title="CDS?"),
         AttrH("masked_region", title="Masked"),
         AttrH("dist_from_exon", title="Distance from Exon Boundary"),
 

@@ -169,6 +169,9 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit("Transcript_region", "region",
             title= "Gene Region",
             default_value = "undefined")
+        filters.transcriptStatusUnit("Transcript_CDS", "cds",
+            title= "CDS?",
+            default_value = "-")
         filters.transcriptStatusUnit("Transcript_masked", "masked_region",
             title= "Masked",
             default_value = "No")
