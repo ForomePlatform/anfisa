@@ -169,6 +169,9 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit("Transcript_region", "region",
             title= "Gene Region",
             default_value = "undefined")
+        filters.transcriptStatusUnit("Transcript_masked", "masked_region",
+            title= "Masked",
+            default_value = "No")
         filters.transcriptIntValueUnit("Transcript_dist_from_exon",
             "dist_from_exon",
             title = "Distance from Exon Boundary", default_value = -1)
@@ -237,6 +240,8 @@ def defineFilterSchema(metadata_record):
             title = "Region (Canonical)", default_value = "Other")
         filters.multiStatusUnit("Region_Worst", "/__data/region_worst[]",
             title = "Region (Canonical)", default_value = "Other")
+        filters.statusUnit("Region", "/__data/region_canonical",
+            title = "Region (Legacy)", default_value = "Other", )
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_AF",

@@ -174,6 +174,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("codonpos", title = "Codon Pos"),
         AttrH("refcodon", title = "Ref Codon"),
         AttrH("region", title="Gene Region"),
+        AttrH("masked_region", title="Masked"),
         AttrH("dist_from_exon", title="Distance from Exon Boundary"),
 
         AttrH("polyphen2_hdiv_prediction", title = "Polyphen HDIV"),
@@ -421,6 +422,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("dist_from_exon_canonical",
             title = "Distance From Intron/Exon Boundary (Canonical)",
             is_seq = True),
+        AttrH("masked_region", title="Masked"),
         AttrH("gerp_rs", title = "GERP Score", is_seq = False),
         AttrH("conservation", title = "Conservation", kind = "json"),
         AttrH("species_with_variant",

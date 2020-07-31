@@ -20,6 +20,8 @@ if Transcript_source not in {"Ensembl"}:
 if ((Transcript_region not in {"exon"})
     and (Transcript_dist_from_exon >= 6 or Transcript_dist_from_exon < 1)):
     return False
+if Transcript_masked in {"True"}:
+     return False
 
 #2.a.	Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')
