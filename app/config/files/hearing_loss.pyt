@@ -15,13 +15,13 @@ if gnomAD_AF >= 0.05:
     return False
 
 #Exclude variants farther then 5pb from intronic/exonic border
-if (Region_Worst not in {"exon"}) and Dist_from_Exon_Worst >= 6:
+if (Region_Worst not in {"exon"}) and Dist_from_Exon_Worst > 5:
     return False
 if Region_Worst in {"masked_repeats"}:
      return False
 
 # For compatibility with Legacy workspaces
-if (Region not in {"exon"}) and Dist_from_Exon >= 6:
+if (Region not in {"exon"}) and Dist_from_Exon > 5:
     return False
 
 
