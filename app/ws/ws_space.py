@@ -77,6 +77,9 @@ class WS_EvalSpace(EvalSpace):
     def getCondAll(self):
         return WS_All(self)
 
+    def makeEmptyCounts(self):
+        return [0, 0]
+
     def makeNumericCond(self, unit_h, min_val = None, min_eq = True,
             max_val = None, max_eq = True,  zyg_bounds = None):
         if min_val is not None or max_val is not None:

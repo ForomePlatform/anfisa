@@ -715,10 +715,10 @@ var sOpCondH = {
         message_el.innerHTML = (err_msg)? err_msg:"";
         message_el.className = (this.mNewCondition == null && 
             !err_msg.startsWith(' '))? "bad":"message";
+        var no_action = (this.getNewCondition() == null);
         for (idx = 0; idx < this.mCurActions.length; idx++) {
-            if (!this.mCurActions[idx].endsWith('-delete'))
-                this.mButtons[this.mCurActions[idx]].disabled = 
-                    (this.getNewCondition() == null);
+            this.mButtons[this.mCurActions[idx]].disabled = 
+                (this.mCurActions[idx].endsWith('-delete'))? false:no_action;
         }
     },
     

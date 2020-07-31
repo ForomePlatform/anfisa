@@ -235,7 +235,7 @@ class ConditionPoint(CheckPoint):
                     == self.getPrevPoint().getSubStory()[0].getDecision())):
             ret.append("join-and")
             ret.append("join-or")
-        ret += ["duplicate", "negate"]
+        ret += ["duplicate", "negate", "delete"]
         #  , "label", "comment"]
         return ret
 

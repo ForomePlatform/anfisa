@@ -49,6 +49,9 @@ class XL_EvalSpace(EvalSpace):
     def getCondAll(self):
         return XL_All(self)
 
+    def makeEmptyCounts(self):
+        return [0]
+
     def getTotalCounts(self):
         return self.mTotalCounts
 

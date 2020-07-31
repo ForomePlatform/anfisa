@@ -300,7 +300,7 @@ class DataSet(SolutionBroker):
             point_idxs = range(len(dtree_h))
         for idx in point_idxs:
             if dtree_h.pointNotActive(idx):
-                counts[idx] = 0
+                counts[idx] = self.getEvalSpace().makeEmptyCounts()
                 continue
             if (not needs_more and time_end is not None
                     and datetime.now() > time_end):

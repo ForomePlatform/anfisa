@@ -411,6 +411,10 @@ var sOpEnumH = {
             var func_err = this.mFuncCtrl.checkCurError();
             if (func_err) {
                 err_msg = func_err;
+                if (func_err.startsWith(' '))
+                    func_err = null;
+            }
+            if (func_err) {
                 condition_data = null;
             } else {
                 var func_params = this.mFuncCtrl.makeFuncParams();
