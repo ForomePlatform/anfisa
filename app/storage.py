@@ -41,7 +41,7 @@ except Exception:
 
 #========================================
 import forome_tools
-forome_tools.compatible((0, 1, 1))
+forome_tools.compatible((0, 1, 2))
 
 #========================================
 if sys.version_info < (3, 7):
