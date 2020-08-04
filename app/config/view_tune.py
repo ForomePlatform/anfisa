@@ -339,10 +339,12 @@ class IGV_AttrH(AttrH):
             end = int(v_context["data"]["__data"]["end"])
         else:
             assert self.mBase == "hg38"
+            pos = -1
             try:
-                pos = v_context["data"]["view"]["general"]["hg38"]
+                pos = v_context["data"]["_view"]["general"]["hg38"]
                 _, _, coors = pos.partition(':')
-                p0, _, p1 = pos.partition('-')
+                coors = coors.split(' ')[0]
+                p0, _, p1 = coors.partition('-')
                 start = int(p0.strip())
                 end = int(p1.strip()) if p1 else start
             except Exception:
