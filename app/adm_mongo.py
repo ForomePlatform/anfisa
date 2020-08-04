@@ -80,9 +80,11 @@ class NameFilter:
         return False
 
     def filterNames(self, ds_list):
+        ret = []
         for ds_name in ds_list:
             if self.filterName(ds_name):
-                yield ds_name
+                ret.append(ds_name)
+        return ret
 
 def presentation(obj, pretty_mode):
     if pretty_mode:
@@ -124,10 +126,7 @@ for coll_name in mongo_db.list_collection_names():
 if run_args.mode == "list":
     print(presentation(name_flt.filterNames(ds_present_set),
         run_args.pretty))
-    mongo_db.close()
-    sys.exit()
-
-if run_args.mode == "dump":
+elif run_args.mode == "dump":
     for ds_name in name_flt.filterNames(ds_present_set):
         print(presentation({"_tp": "DS", "name": ds_name}, run_args.pretty))
         for it in mongo_db[ds_name].find():
@@ -137,10 +136,7 @@ if run_args.mode == "dump":
                     if name != "_id":
                         rep_it[name] = val
                 print(presentation(rep_it, run_args.pretty))
-    mongo_db.close()
-    sys.exit()
-
-if run_args.mode == "drop":
+elif run_args.mode == "drop":
     for ds_name in name_flt.filterNames(ds_present_set):
         if len(aspects) == len(sAspectMap):
             print("-> Dataset to drop:\t", ds_name)
@@ -158,10 +154,7 @@ if run_args.mode == "drop":
             if not run_args.dry:
                 for asp in aspects:
                     mongo_db[ds_name].delete_many({"_tp": asp})
-    mongo_db.close()
-    sys.exit()
-
-if run_args.mode == "restore":
+elif run_args.mode == "restore":
     ds_name = None
     cnt = None
     for line in sys.stdin:
@@ -192,8 +185,5 @@ if run_args.mode == "restore":
         mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
     if ds_name is not None:
         print("-> Added records:", cnt)
-    mongo_db.close()
-    sys.exit()
-
-mongo_db.close()
-print("Oops: command not supported", file = sys.stderr)
+else:
+    print("Oops: command not supported", file = sys.stderr)

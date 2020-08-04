@@ -13,8 +13,6 @@ Format
 |           **[1]** *optional* count of transcripts, *int*
 |       ``]``
 |   *or*
-|       ``0`` - point not applicable
-|   *or*
 |       ``null`` - status incomplete
 
 Description
@@ -24,7 +22,7 @@ The data represents information for counts of :term:`variants<variant>` (and
 also of :term:`transcripts<transcript>` in case of :term:`ws-dataset`) associated
 with a :term:`decision tree point`.
         
-If point is not applicable for counting, data is  ``0``.
+If point is not applicable for counting, data is sequence of one or two zero values.
 
 If evaluation of counts is incomplete, data is ``null``.
 
