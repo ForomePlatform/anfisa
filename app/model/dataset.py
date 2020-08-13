@@ -241,6 +241,7 @@ class DataSet(SolutionBroker):
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
         else:
             ret["meta"] = self.mDataInfo["meta"]
+            ret["cohorts"] = self.mFamilyInfo.getCohortList()
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []

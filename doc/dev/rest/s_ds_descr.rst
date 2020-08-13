@@ -32,6 +32,8 @@ Format
 |       "**metadata**":  metadata of dataset, *JSON structure*
 |       "**unit-groups**": group names of filtering properties,
 |           ``[`` *list of strings* ``]``
+|       "**cohorts**": *optional* list of cohort names 
+|           ``[`` *list of strings* ``]``
 
 Description
 -----------
