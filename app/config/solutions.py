@@ -243,7 +243,7 @@ def readySolutions_Case(base_pack):
     base_pack.regDTree("BGM xBrowse Alt",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
         requires = {"trio_base"})
-    base_pack.regDTree("BGM_Strict",
+    base_pack.regDTree("BGM_RedButton",
         cfgPathSeq(["bgm_strict.pyt"]),
         requires = {"trio_base"})
     base_pack.regDTree("Trio Candidates",

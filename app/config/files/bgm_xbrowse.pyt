@@ -1,6 +1,8 @@
 #0.     Check sequencing quality
 if Proband_GQ <= 19:
     return False
+if Region_Worst in {"masked_repeats"}:
+     return False
 
 #Always include De-Novo variants
 if (Callers in {"BGM_BAYES_DE_NOVO"}):
