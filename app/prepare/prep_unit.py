@@ -21,7 +21,7 @@
 import abc, re
 from collections import Counter
 
-from app.config.flt_conv import sFilterConversions
+from app.config.flt_conv import makeFilterConversion
 from forome_tools.path_works import AttrFuncPool
 #===============================================
 class ValueConvertor:
@@ -114,7 +114,7 @@ class _NumericConvertor(PathValueConvertor):
         assert default_value is not None
         self.mDefaultValue = default_value
         self.mConversion = conversion
-        self.mConvFunc = sFilterConversions.get(conversion)
+        self.mConvFunc = makeFilterConversion(conversion)
         self.mMinValue, self.mMaxValue = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -234,7 +234,7 @@ class EnumConvertor(PathValueConvertor):
         self.mCompactMode = compact_mode
         self.mCntUndef = 0
         self.mConversion = conversion
-        self.mConvFunc = sFilterConversions.get(conversion)
+        self.mConvFunc = makeFilterConversion(conversion)
         assert sub_kind in {"status", "multi"}
         self.mAcceptOtherValues = accept_other_values
         if self.mAcceptOtherValues:

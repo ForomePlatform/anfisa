@@ -39,10 +39,27 @@ def _conv_bool_present(val):
 def _conv_transcript_id(arr):
     return [el["transcript_id"] for el in arr] if arr else []
 
+def _conv_nullcount(arr, the_field, skip):
+    return sum(el.get(the_field) is None for el in arr[skip:])
 
-sFilterConversions = {
-    "len": _conv_len,
-    "min": _conv_min,
-    "bool": _conv_bool_present,
-    "transcript_id": _conv_transcript_id
-}
+def makeFilterConversion(conversion):
+    if not conversion:
+        return None
+    if conversion == "len":
+        return _conv_len
+    if conversion == "min":
+        return _conv_min
+    if conversion == "bool":
+        return _conv_bool_present
+    if conversion == "transcript_id":
+        return _conv_transcript_id
+    if conversion.startswith("nullcount("):
+        assert conversion.endswith(')')
+        fields = conversion[conversion.find('(') + 1 : -1].split(',')
+        assert 1 <= len(fields) <= 2
+        the_field = fields[0].strip()
+        skip = 0
+        if len(fields) > 1:
+            skip = int(fields[1].strip())
+        return lambda arr: _conv_nullcount(arr, the_field, skip)
+    assert False, "Bad conversion: " + conversion

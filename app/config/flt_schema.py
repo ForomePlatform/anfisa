@@ -234,11 +234,11 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Dist_from_Exon_Canonical",
             "/_filters/dist_from_exon_canonical",
             title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<", conversion="min")
+            default_value = 0, render_mode = "log,<", conversion = "min")
         filters.intValueUnit("Dist_from_Exon_Worst",
             "/_filters/dist_from_exon_worst",
             title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<", conversion="min")
+            default_value = 0, render_mode = "log,<", conversion = "min")
         filters.multiStatusUnit("Region_Canonical",
             "/__data/region_canonical[]",
             title = "Region (Canonical)", default_value = "Other")
@@ -363,11 +363,11 @@ def defineFilterSchema(metadata_record):
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
         filters.intValueUnit("QUAL", "/_filters/qual",
-            title="Variant Call Quality",
-            default_value=-1)
+            title = "Variant Call Quality",
+            default_value = -1)
         filters.floatValueUnit("QD", "/_filters/qd",
             title = "Quality by Depth", render_mode = "linear,>",
-            default_value=-1.,
+            default_value = -1.,
             tooltip = "The QUAL score normalized by allele depth (AD) "
             "for a variant. This annotation puts the variant confidence "
             "QUAL score into perspective by normalizing for the amount "
@@ -387,10 +387,15 @@ def defineFilterSchema(metadata_record):
             "little to no strand bias at the site, the FS value "
             "will be close to 0.")
         filters.multiStatusUnit("FT", "/_filters/filters[]", title = "FILTER",
-        tooltip = "This field contains the name(s) of any filter(s) "
+            tooltip = "This field contains the name(s) of any filter(s) "
             "that the variant fails to pass, or the value PASS if the "
             "variant passed all filters. If the FILTER value is ., "
             "then no filtering has been applied to the records.")
+        filters.intValueUnit("NullGQ", "/_view/quality_samples",
+            title = "Count of samples with undetermined genotype quality (GQ)",
+            render_mode = "linear,<", default_value = 0,
+            conversion = "nullcount(genotype_quality, 1)")
+
 
     with filters.viewGroup("Predictions"):
         # research_only = True
