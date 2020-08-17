@@ -240,10 +240,10 @@ def readySolutions_Case(base_pack):
         condition_high_quality() + impacting_splicing())
 
     # Production Decision Trees
-    base_pack.regDTree("BGM xBrowse Alt",
+    base_pack.regDTree("BGM Research",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
         requires = {"trio_base"})
-    base_pack.regDTree("BGM_RedButton",
+    base_pack.regDTree("BGM Red Button",
         cfgPathSeq(["bgm_strict.pyt"]),
         requires = {"trio_base"})
     base_pack.regDTree("Trio Candidates",
