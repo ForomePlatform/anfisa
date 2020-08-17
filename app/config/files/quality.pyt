@@ -7,3 +7,5 @@ if (0 < QD and QD < 4):
     return False
 if (QD < 0 and 0 < QUAL and QUAL < 40):
     return False
+if Num_NO_CALL > 0:
+    return False

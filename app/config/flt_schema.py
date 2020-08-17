@@ -362,6 +362,11 @@ def defineFilterSchema(metadata_record):
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
+        filters.intValueUnit("Num_NO_CALL", "/_view/quality_samples",
+            title = "Number of NO_CALL samples",
+            tooltip= "Number of samples with NO_CALL in the current site",
+            render_mode = "linear,<", default_value = 0,
+            conversion = "nullcount(genotype_quality, 1)")
         filters.intValueUnit("QUAL", "/_filters/qual",
             title = "Variant Call Quality",
             default_value = -1)
