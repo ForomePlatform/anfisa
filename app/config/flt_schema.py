@@ -401,7 +401,6 @@ def defineFilterSchema(metadata_record):
             render_mode = "linear,<", default_value = 0,
             conversion = "nullcount(genotype_quality, 1)")
 
-
     with filters.viewGroup("Predictions"):
         # research_only = True
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",

@@ -55,7 +55,7 @@ def makeFilterConversion(conversion):
         return _conv_transcript_id
     if conversion.startswith("nullcount("):
         assert conversion.endswith(')')
-        fields = conversion[conversion.find('(') + 1 : -1].split(',')
+        fields = conversion[conversion.find('(') + 1:-1].split(',')
         assert 1 <= len(fields) <= 2
         the_field = fields[0].strip()
         skip = 0
@@ -63,3 +63,4 @@ def makeFilterConversion(conversion):
             skip = int(fields[1].strip())
         return lambda arr: _conv_nullcount(arr, the_field, skip)
     assert False, "Bad conversion: " + conversion
+    return None
