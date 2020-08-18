@@ -25,8 +25,8 @@ services:
     command:
       - coordinator
     environment:
-      - DRUID_XMS=2g 
-      - DRUID_XMX=9g 
+      - DRUID_XMS=256m
+      - DRUID_XMX=2g
     env_file:
       - environment
     restart: always
@@ -46,9 +46,9 @@ services:
     command:
       - broker
     environment:
-      - DRUID_XMS=1g
-      - DRUID_XMX=8g
-      - druid_processing_numMergeBuffers=4
+      - DRUID_XMS=512m
+      - DRUID_XMX=2g
+      - druid_processing_numMergeBuffers=2
       - druid_processing_numThreads=1
     env_file:
       - environment
@@ -70,10 +70,10 @@ services:
     command:
       - historical
     environment:
-      - DRUID_XMS=2g
-      - DRUID_XMX=4g
-      - druid_processing_numMergeBuffers=3
-      - druid_processing_numThreads=6
+      - DRUID_XMS=256m
+      - DRUID_XMX=2g
+      - druid_processing_numMergeBuffers=2
+      - druid_processing_numThreads=2
     env_file:
       - environment
     restart: always
@@ -94,7 +94,7 @@ services:
     command:
       - middleManager
     environment:
-      - DRUID_XMS=256m
+      - DRUID_XMS=64m
       - DRUID_XMX=256m
     env_file:
       - environment
@@ -115,8 +115,8 @@ services:
     command:
       - router
     environment:
-      - DRUID_XMS=512m
-      - DRUID_XMX=512m
+      - DRUID_XMS=128m
+      - DRUID_XMX=256m
     env_file:
       - environment
     restart: always
