@@ -1,7 +1,6 @@
+# BGM Research Rule: creates a workspace for BGM exploration
 #0.     Check sequencing quality
 if Proband_GQ < 20:
-    return False
-if Num_NO_CALL > 0:
     return False
 if Region_Worst in {"masked_repeats"}:
      return False

@@ -87,8 +87,11 @@ def condition_high_quality():
         ConditionMaker.condEnum("FT", ["PASS"]),
         ConditionMaker.condNum("Proband_GQ", min_val = 50),
         ConditionMaker.condNum("Min_GQ", min_val = 40),
-        ConditionMaker.condNum("QD", min_val = 4),
+        #ConditionMaker.condNum("QD", min_val = 4), #Some datasets do not have QD
         ConditionMaker.condNum("FS", max_val = 30)]
+
+def condition_all_genotypes_called():
+    return [ConditionMaker.condNum("Num_NO_CALL", max_val=0)]
 
 def impacting_splicing():
     return [ConditionMaker.condNum("splice_ai_dsmax", min_val = 0.2)]
@@ -152,7 +155,7 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
-        condition_high_quality() + [
+        condition_high_quality() + [condition_all_genotypes_called()] + [
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
