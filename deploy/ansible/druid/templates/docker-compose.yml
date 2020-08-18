@@ -1,0 +1,220 @@
+version: "2.2"
+
+services:
+  zookeeper:
+    container_name: zookeeper
+    image: zookeeper:3.5
+    user: root
+    environment:
+      - ZOO_MY_ID=1
+      - ZK_SERVER_HEAP=128
+    restart: always
+
+  coordinator:
+    image: apache/druid:0.17.1
+    container_name: coordinator
+    user: root
+    volumes:
+      - /var/rsm-data/opt/docker/druid-data/:/opt/data/
+      - /var/rsm-data/opt/docker/coordinator:/opt/druid/var
+      - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    depends_on: 
+      - zookeeper
+    ports:
+      - "8081:8081"
+    command:
+      - coordinator
+    environment:
+      - DRUID_XMS=2g 
+      - DRUID_XMX=9g 
+    env_file:
+      - environment
+    restart: always
+
+  broker:
+    image: apache/druid:0.17.1
+    container_name: broker
+    user: root
+    volumes:
+      - /var/rsm-data/opt/docker/broker:/opt/druid/var
+      - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    depends_on: 
+      - zookeeper
+      - coordinator
+    ports:
+      - "8082:8082"
+    command:
+      - broker
+    environment:
+      - DRUID_XMS=1g
+      - DRUID_XMX=8g
+      - druid_processing_numMergeBuffers=4
+      - druid_processing_numThreads=1
+    env_file:
+      - environment
+    restart: always
+
+  historical:
+    image: apache/druid:0.17.1
+    container_name: historical
+    volumes:
+      - /var/rsm-data/opt/docker/druid-data/:/opt/data/
+      - /var/rsm-data/opt/docker/historical-var/:/opt/druid/var/
+      - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    depends_on: 
+      - zookeeper
+      - coordinator
+    user: root
+    ports:
+      - "8083:8083"
+    command:
+      - historical
+    environment:
+      - DRUID_XMS=2g
+      - DRUID_XMX=4g
+      - druid_processing_numMergeBuffers=3
+      - druid_processing_numThreads=6
+    env_file:
+      - environment
+    restart: always
+
+  middlemanager:
+    image: apache/druid:0.17.1
+    container_name: middlemanager
+    user: root
+    volumes:
+      - /var/rsm-data/opt/docker/druid-data/:/opt/data/
+      - /var/rsm-data/opt/docker/middlemanager/:/opt/druid/var
+      - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    depends_on: 
+      - zookeeper
+      - coordinator
+    ports:
+      - "8091:8091"
+    command:
+      - middleManager
+    environment:
+      - DRUID_XMS=256m
+      - DRUID_XMX=256m
+    env_file:
+      - environment
+    restart: always
+
+  router:
+    image: apache/druid:0.17.1
+    container_name: router
+    user: root
+    volumes:
+      - /var/rsm-data/opt/docker/router/:/opt/druid/var
+      - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    depends_on:
+      - zookeeper
+      - coordinator
+    ports:
+      - "8888:8888"
+    command:
+      - router
+    environment:
+      - DRUID_XMS=512m
+      - DRUID_XMX=512m
+    env_file:
+      - environment
+    restart: always
+
+######################### AIRFLOW ##############################
+  postgres:
+    image: postgres:12
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=a1rfl0w
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+          max-size: 10m
+          max-file: "3"
+    volumes: 
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  airflow:
+    build:
+      dockerfile: Dockerfile.airflow
+      context: .
+    container_name: airflow
+    restart: always
+    depends_on:
+        - postgres
+    hostname: airflow
+    environment:
+      # - AIRFLOW__CORE__HOSTNAME_CALLABLE=airflow
+      - LOAD_EX=n
+      - FERNET_KEY=sPYvT3_CKJWe_HYyHUjidXcjYonB7eFCvM9VlC8spzQ=
+      - EXECUTOR=Local
+      - POSTGRES_PASSWORD=a1rfl0w
+      # - AIRFLOW__CORE__HOSTNAME_CALLABLE='get_static_hostname.get_static_hostname:return_airflow'
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:a1rfl0w@postgres:5432/airflow
+      - PYTHONPATH=/usr/local/lib/python3.7/:/usr/local/airflow/.local/lib/python3.7/site-packages:/usr/local/airflow/dags/pipeline/
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+        - /var/rsm-data/opt/docker/airflow/dags:/usr/local/airflow/dags
+        - /var/rsm-data/opt/docker/airflow/logs:/usr/local/airflow/logs/
+        - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+    ports:
+        - "8080:8080"
+        - "8793:8793"
+    command: webserver
+    healthcheck:
+        test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+    restart: always
+########################## Mongo ###############################
+  mongo:
+    image: mongo
+    container_name: mongo
+    hostname: mongo
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27017:27017"
+    volumes:
+      - /var/lib/mongodb:/var/lib/mongodb:rw
+    restart: always
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express
+    restart: always
+    ports:
+      - 8095:8081
+########################## nginx ###############################
+## Disabled due to using nginx on host
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   ports:
+  #   - "80:80"
+  #   volumes: 
+  #     - /var/rsm-data/opt/docker/nginx/:/etc/nginx/conf.d/
+  #     - /var/rsm-data/opt/docker/htpasswd:/etc/nginx/.htpasswd
+  #   restart: always
+######################## cAdvisor #############################
+  cadvisor:
+    image: google/cadvisor:latest
+    container_name: cadvisor
+    ports:
+    - 8090:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    restart: always

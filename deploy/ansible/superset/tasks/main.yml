@@ -1,0 +1,57 @@
+# - name: install docker and some dependencies
+#   apt:
+#     name: docker.io, python3-pip, docker-compose, postgresql-client-common, postgresql-client-12, python3-psycopg2, python3-lxml
+#     update_cache: yes
+#     state: latest
+
+# - name: Make docker service enabled
+#   service:
+#     name: docker
+#     enabled: yes
+
+# - name: Install docker-py
+#   pip:
+#     name: docker-compose
+#     executable: pip3
+
+- name: Create dir block
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  # tags:
+  #   - update_superset
+  with_items:
+    - /var/rsm-data/opt/docker/superset
+
+- name: Prepare archive with code
+  delegate_to: 127.0.0.1
+  command: tar -czf incubator-superset.tgz -C superset/templates/incubator-superset .
+  # tags:
+  #   - update_superset
+
+- name: Copy src to dir
+  copy:
+    src: incubator-superset.tgz
+    dest: /var/rsm-data/opt/docker/superset
+  # tags:
+  #   - update_superset
+
+- name: Unarchive code
+  command: tar -xzf incubator-superset.tgz
+  args:
+    chdir: /var/rsm-data/opt/docker/superset
+  # tags:
+  #   - update_superset
+
+- name: Run composer build
+  command: docker-compose build
+  args:
+    chdir: /var/rsm-data/opt/docker/superset
+
+- name: Run composer UP
+  command: docker-compose up -d
+  args:
+    chdir: /var/rsm-data/opt/docker/superset
+  # tags:
+  #   - update_superset

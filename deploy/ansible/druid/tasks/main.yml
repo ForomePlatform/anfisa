@@ -1,0 +1,175 @@
+---
+# Set custom /var/lib/path befor installation of docker
+- name: Copy docker config
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: 'daemon.json',dest: '/etc/docker/daemon.json'}
+    
+- name: install docker
+  apt:
+    name: docker.io, python3-pip, docker-compose, postgresql-client-common, postgresql-client-12, python3-psycopg2, openjdk-14-jre-headless, maven, python3-lxml, nginx
+    update_cache: yes
+    state: latest
+
+- name: Make docker service enabled
+  service:
+    name: "{{ item }}"
+    enabled: yes
+  with_items:
+    - docker 
+    - nginx
+
+- name: Install docker-py
+  pip:
+    name: docker-compose
+    executable: pip3
+
+- name: Disable auto-updates
+  template:
+    src: "20auto-upgrades"
+    dest: "/etc/apt/apt.conf.d/20auto-upgrades"
+
+- name: Copy compose files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: 'docker-compose.yml',dest: './docker-compose.yml'}
+    - {src: 'Dockerfile.airflow',dest: './Dockerfile.airflow'}
+    - {src: 'rsm.cfg',           dest: './rsm.cfg'}
+    - {src: 'options.json',      dest: './options.json'}
+    - {src: 'environment',       dest: './environment'}
+  tags:
+    - update_code
+
+- name: Create dir block
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - /var/rsm-data/opt/docker/coordinator
+    - /var/rsm-data/opt/docker/broker
+    - /var/rsm-data/opt/docker/historical-var
+    - /var/rsm-data/opt/docker/airflow/home/data
+    - /var/rsm-data/opt/docker/druid-data/
+    - /var/rsm-data/opt/docker/middlemanager/
+    - /var/rsm-data/opt/docker/router
+    - /var/rsm-data/opt/docker/airflow/logs
+    - /var/rsm-data/opt/docker/airflow/dags/
+    - /var/rsm-data/opt/docker/airflow/home/data/metadata/
+  tags:
+    - update_code
+
+- name: Copy nginx files
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop: "{{ nginx_servers }}"
+  notify: nginx_reload
+  tags:
+    - update_code
+
+- name: Prepare archive with code
+  delegate_to: 127.0.0.1
+  command: tar -czf code.tgz -C ../src .
+  tags:
+    - update_code
+
+- name: Copy src to dir
+  copy:
+    src: code.tgz
+    dest: /var/rsm-data/opt/docker/
+  tags:
+    - update_code
+
+- name: Unarchive code
+  command: tar -xzf code.tgz
+  args:
+    chdir: /var/rsm-data/opt/docker/
+  tags:
+    - update_code
+
+- name: Build java
+  command: mvn clean install
+  args:
+    chdir: /var/rsm-data/opt/docker/java/
+  tags:
+    - update_code
+
+- name: Get mssql jar
+  maven_artifact:
+    group_id: com.microsoft.sqlserver
+    artifact_id: mssql-jdbc
+    version: 8.2.0.jre8
+    dest: /var/rsm-data/opt/docker/airflow/dags/
+    repository_url: https://repo1.maven.org/maven2
+  tags:
+    - update_code
+
+- name: Create dir for builded java artifact
+  file:
+    path: /var/rsm-data/opt/docker/airflow/dags/java/target/
+    state: directory
+    mode: '0755'
+  tags:
+    - update_code
+
+- name: Copy builded java artifact
+  command: cp -r /var/rsm-data/opt/docker/java/target/rsm-1.0-SNAPSHOT-jar-with-dependencies.jar /var/rsm-data/opt/docker/airflow/dags/java/target/rsm-1.0-SNAPSHOT-jar-with-dependencies.jar
+  tags:
+    - update_code
+
+- name: Copy new DAG into airflow DAGs dir
+  command: cp -Rf /var/rsm-data/opt/docker/python/pipeline/ /var/rsm-data/opt/docker/airflow/dags/
+  tags:
+    - update_code
+
+- name: Run docker-compose build
+  command: docker-compose build
+  tags:
+    - update_code
+
+- name: Run docker-compose UP
+  command: docker-compose up -d
+  tags:
+    - update_code
+
+# - name: Restart docker-compose
+#   command: docker-compose restart
+#   when:
+#     - restart_druid
+
+- name: Change druid connections in airflow db
+  postgresql_query:
+    db: airflow
+    login_user: airflow
+    login_password: a1rfl0w
+    login_host: 127.0.0.1
+    query: UPDATE connection 
+      SET conn_id = 'druid_broker_default',
+          conn_type = 'http',
+          host = 'broker',
+          port = 8082,
+          extra = 'gAAAAABe1M9GNTEzSsNPcKwmnmfNjwjpL4B-wcPnFSz5mkajEa6Ri5Sg7-l5DJXzNu8pbbm3-rPd-3UoZFjORsF--GgzsIOv2BU6FuKjF2PpqTtD9cJAyhQ=',
+          is_encrypted = 'f',
+          is_extra_encrypted = 't'
+      WHERE conn_id = 'druid_broker_default'; 
+      UPDATE connection 
+      SET conn_id = 'druid_ingest_default',
+          conn_type = 'http',
+          host = 'coordinator',
+          port = 8081,
+          extra = 'gAAAAABe1M9GXGJiaAvcmFBiQwf9bI4hYFTIMi5sN5JcSk9ZzRKRpfPCimb6M97VafrJnwtiTF4bWh_PzLfCnik864zibBYn8gg8trpOYvJw97s5kxIEsjbWdyAsxNJVbp5UxoSizaCo',
+          is_encrypted = 'f',
+          is_extra_encrypted = 't'
+      WHERE conn_id = 'druid_ingest_default';
+  tags:
+    - update_code
+
+- name: Run java in airflow
+  command: docker exec -ti airflow bash -c "java -cp /usr/local/airflow/dags/java/target/rsm-1.0-SNAPSHOT-jar-with-dependencies.jar:/usr/local/airflow/dags/mssql-jdbc-8.2.0.jre8.jar com.kvitneset.rsm.Loader --dir /usr/local/airflow/data --action druid"
+  tags:
+    - update_code
