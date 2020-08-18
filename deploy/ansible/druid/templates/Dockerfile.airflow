@@ -3,5 +3,4 @@ USER root
 RUN apt update && apt upgrade -y && mkdir -p /usr/share/man/man1 && apt install openjdk-11-jdk-headless maven -y && mkdir -p /usr/local/airflow/data/metadata
 RUN pip install pydruid==0.5 && pip install 'apache-airflow[crypto,postgres,druid]'
 COPY options.json /usr/local/airflow/options.json
-COPY rsm.cfg /usr/local/airflow/rsm.cfg
 # COPY get_static_hostname /usr/local/lib/python3.7/get_static_hostname

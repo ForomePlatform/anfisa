@@ -38,7 +38,6 @@
   with_items:
     - {src: 'docker-compose.yml',dest: './docker-compose.yml'}
     - {src: 'Dockerfile.airflow',dest: './Dockerfile.airflow'}
-    - {src: 'rsm.cfg',           dest: './rsm.cfg'}
     - {src: 'options.json',      dest: './options.json'}
     - {src: 'environment',       dest: './environment'}
   tags:

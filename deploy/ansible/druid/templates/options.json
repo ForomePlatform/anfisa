@@ -7,6 +7,5 @@
     "url": "jdbc:avatica:remote:url=http://%s:%d/druid/v2/sql/avatica/"
   }
 },
-"mongo": {"url": "mongodb://mongo:27017"},
-"oltp": {"url": "jdbc:sqlserver://t320.rds.aws-rsm.com:1433;database=lms;user=qa-admin;password=Misha.Bouzinier;"}
+"mongo": {"url": "mongodb://mongo:27017"}
 }
