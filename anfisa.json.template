@@ -8,7 +8,7 @@
     "mongo-db": "Anfisa",
     "data-vault": "${WORK}/vault",
     "run-options": [],
-    "run-modes: [],
+    "run-modes": [],
     "job-vault-check-period": 30,
     "--http-bam-base": "http:<server>/anfisa/links",
     "export": {

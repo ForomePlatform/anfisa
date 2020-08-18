@@ -38,7 +38,7 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
         for idx in (range(len(dtree_h))
                 if point_idxs is None else point_idxs):
             if dtree_h.pointNotActive(idx):
-                self.mCounts[idx] = 0
+                self.mCounts[idx] = self.mDS.getEvalSpace().makeEmptyCounts()
             else:
                 self.mNextPointIdxs.append(idx)
 

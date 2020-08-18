@@ -365,7 +365,7 @@ def defineFilterSchema(metadata_record):
         filters.intValueUnit("Num_NO_CALL", "/_view/quality_samples",
             title = "Number of NO_CALL samples",
             tooltip= "Number of samples with NO_CALL in the current site",
-            render_mode = "linear,<", default_value = 0,
+            render_mode = "linear,=", default_value = 0,
             conversion = "nullcount(genotype_quality, 1)")
         filters.intValueUnit("QUAL", "/_filters/qual",
             title = "Variant Call Quality",
@@ -400,7 +400,6 @@ def defineFilterSchema(metadata_record):
             title = "Count of samples with undetermined genotype quality (GQ)",
             render_mode = "linear,<", default_value = 0,
             conversion = "nullcount(genotype_quality, 1)")
-
 
     with filters.viewGroup("Predictions"):
         # research_only = True
