@@ -1,8 +1,8 @@
 #Red Button Rule: highly probable damaging variants
 #0.     Check sequencing quality
-if Proband_GQ <= 19:
+if Proband_GQ < 20:
     return False
-if Min_GQ <= 39:
+if Min_GQ < 40:
     return False
 if (0 < QD and QD < 4):
     return False
