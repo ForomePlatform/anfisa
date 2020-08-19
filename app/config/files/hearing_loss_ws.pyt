@@ -64,6 +64,13 @@ if (Transcript_consequence not in {
         }):
     return False
 
+if (Clinvar_Benign in {"Benign"} and Clinvar_stars in {"2", "3", "4"}):
+    return False
+
+if (Clinvar_Trusted_Benign in {"Benign by Trusted submitters"}
+        and Clinvar_stars in {"1"}):
+    return False
+
 #3.	Include: AF < 0.0007 (GnomAD Overall)
 #  And: PopMax < 0.01
 #       (minimum 2000 alleles total in ancestral group)')
