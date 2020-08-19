@@ -396,10 +396,6 @@ def defineFilterSchema(metadata_record):
             "that the variant fails to pass, or the value PASS if the "
             "variant passed all filters. If the FILTER value is ., "
             "then no filtering has been applied to the records.")
-        filters.intValueUnit("NullGQ", "/_view/quality_samples",
-            title = "Count of samples with undetermined genotype quality (GQ)",
-            render_mode = "linear,<", default_value = 0,
-            conversion = "nullcount(genotype_quality, 1)")
 
     with filters.viewGroup("Predictions"):
         # research_only = True
