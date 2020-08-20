@@ -83,13 +83,25 @@ def condition_consequence_xBrowse():
         MODERATE_IMPACT_CSQ)
 
 def condition_high_quality():
+    return condition_high_confidence() + \
+           condition_high_quality_all_samples()
+
+def condition_high_confidence_QD():
+    return condition_good_confidence() + [
+        ConditionMaker.condNum("QD", min_val = 4)]
+
+def condition_high_confidence():
+    return condition_good_confidence() + [
+        ConditionMaker.condNum("QUAL", min_val = 40)]
+
+def condition_good_confidence():
     return [
         ConditionMaker.condEnum("FT", ["PASS"]),
-        ConditionMaker.condNum("Proband_GQ", min_val = 50),
-        ConditionMaker.condNum("Min_GQ", min_val = 40),
-        # Some datasets do not have QD
-        # ConditionMaker.condNum("QD", min_val = 4),
+        ConditionMaker.condNum("Max_GQ", min_val = 50),
         ConditionMaker.condNum("FS", max_val = 30)]
+
+def condition_high_quality_all_samples ():
+    return [ConditionMaker.condNum("Min_GQ", min_val = 40)]
 
 def condition_all_genotypes_called():
     return [ConditionMaker.condNum("Num_NO_CALL", max_val = 0)]
@@ -183,15 +195,15 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Impact_Splicing",
-        condition_high_quality() + impacting_splicing())
+                        condition_high_confidence() + impacting_splicing())
 
     base_pack.regFilter("InSilico_Possibly_Damaging",
-        condition_high_quality() + [
+                        condition_high_confidence() + [
             ConditionMaker.condEnum("Rules",
                 [stdNm("Possibly_Damaging_Predictions")])])
 
     base_pack.regFilter("InSilico_Damaging",
-        condition_high_quality() + [
+                        condition_high_confidence() + [
             ConditionMaker.condEnum("Rules",
                 [stdNm("Damaging_Predictions")])])
 
@@ -264,7 +276,9 @@ def readySolutions_Case(base_pack):
     base_pack.regDTree("ACMG59 Variants",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
     base_pack.regDTree("Damaging_Predictions",
-        cfgPathSeq(["quality.pyt", "damaging.pyt"]))
+        cfgPathSeq(["damaging.pyt"]))
+    base_pack.regDTree("Possibly_Damaging_Predictions",
+        cfgPathSeq(["possibly_damaging.pyt"]))
 
     # Test trees
     # base_pack.regDTree("Q Test",

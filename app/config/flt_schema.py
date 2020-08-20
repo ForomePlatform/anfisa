@@ -355,13 +355,18 @@ def defineFilterSchema(metadata_record):
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
         filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
-            title = "Minimum GQ for the family)", render_mode = "linear,>",
+            title = "Minimum GQ for the family", render_mode = "linear,>",
             default_value = -1,
             tooltip = "GQ tells you how confident we are that "
             "the genotype we assigned to a particular sample is correct. "
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
+        filters.intValueUnit("Max_GQ", "/_view/quality_samples",
+            title = "The highest GQ",
+            tooltip= "Max(GQ) for those samples that have the variant",
+            render_mode = "linear,=", default_value = 0,
+            conversion = "max(genotype_quality, has_variant)")
         filters.intValueUnit("Num_NO_CALL", "/_view/quality_samples",
             title = "Number of NO_CALL samples",
             tooltip= "Number of samples with NO_CALL in the current site",

@@ -42,6 +42,23 @@ def _conv_transcript_id(arr):
 def _conv_nullcount(arr, the_field, skip):
     return sum(el.get(the_field) is None for el in arr[skip:])
 
+def _conv_maxval(arr, the_field, condition):
+    if condition == "has_variant":
+        condition = has_variant
+    a = [e for e in arr if condition(e)]
+    return max(el.get(the_field) for el in a)
+
+def has_variant(sample):
+    genotype = sample.get("genotype")
+    return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
+
+def parse(conversion):
+    assert conversion.endswith(')')
+    fields = conversion[conversion.find('(') + 1:-1].split(',')
+    assert 1 <= len(fields) <= 2
+    return fields
+
+
 def makeFilterConversion(conversion):
     if not conversion:
         return None
@@ -54,13 +71,18 @@ def makeFilterConversion(conversion):
     if conversion == "transcript_id":
         return _conv_transcript_id
     if conversion.startswith("nullcount("):
-        assert conversion.endswith(')')
-        fields = conversion[conversion.find('(') + 1:-1].split(',')
-        assert 1 <= len(fields) <= 2
+        fields = parse(conversion)
         the_field = fields[0].strip()
         skip = 0
         if len(fields) > 1:
             skip = int(fields[1].strip())
         return lambda arr: _conv_nullcount(arr, the_field, skip)
+    if conversion.startswith("max("):
+        fields = parse(conversion)
+        the_field = fields[0].strip()
+        condition = lambda x: True
+        if len(fields) > 1:
+            condition = fields[1].strip()
+        return lambda arr: _conv_maxval(arr, the_field, condition)
     assert False, "Bad conversion: " + conversion
     return None
