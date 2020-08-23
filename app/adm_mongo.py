@@ -139,7 +139,7 @@ elif run_args.mode == "dump":
 elif run_args.mode == "drop":
     for ds_name in name_flt.filterNames(ds_present_set):
         if len(aspects) == len(sAspectMap):
-            print("-> Dataset to drop:\t", ds_name)
+            print("-> Dataset to drop:\t", ds_name, file = sys.stderr)
             if not run_args.dry:
                 mongo_db[ds_name].drop()
         else:
@@ -148,42 +148,65 @@ elif run_args.mode == "drop":
                 if it.get("_tp") in aspects:
                     cnt += 1
             if cnt == 0:
-                print("--> Nothing to drop in:\t", ds_name)
+                print("--> Nothing to drop in:\t", ds_name, file = sys.stderr)
                 continue
-            print("-> Records to drop in\t", ds_name, "count=", cnt)
+            print("-> Records to drop in\t", ds_name, "count=", cnt,
+                file = sys.stderr)
             if not run_args.dry:
                 for asp in aspects:
                     mongo_db[ds_name].delete_many({"_tp": asp})
 elif run_args.mode == "restore":
-    ds_name = None
-    cnt = None
+    if len(run_args.datasets) == 0:
+        print("-> Restore all information to original place", file = sys.stderr)
+        ds_name = None
+        restore_all = True
+    elif len(run_args.datasets) == 1:
+        ds_name = run_args.datasets[0]
+        print("-> Store information into", ds_name, file = sys.stderr)
+        restore_all = False
+    else:
+        print("== Oops: use either no or one datatset in restore command",
+            file = sys.stderr)
+        sys.exit()
+    ds_count = 0
+    rec_count = 0
     for line in sys.stdin:
         line = line.strip()
         if not line or line.startswith('#'):
             continue
         it = json.loads(line)
         if it["_tp"] == "DS":
-            if ds_name is not None:
-                print("-> Added records:", cnt)
-            ds_name = it["name"]
-            if not name_flt.filterName(ds_name):
-                ds_name = None
+            if rec_count > 0:
+                if ds_name is not None:
+                    print("-> Added records:", rec_count, file = sys.stderr)
+                else:
+                    print("->Skipped records:", rec_count, file = sys.stderr)
+            rec_count = 0
+            if restore_all:
+                ds_name = it["name"]
+                if not name_flt.filterName(ds_name):
+                    ds_name = None
             else:
-                cnt = 0
-                print("-> Dataset", ds_name)
-            continue
-        if ds_name is None:
+                if ds_count > 0:
+                    print("-> Ignore next data", file = sys.stderr)
+                    ds_name = None
+            if ds_name:
+                print("-> Dataset", ds_name, file = sys.stderr)
             continue
         if it["_tp"] not in aspects:
             continue
-        cnt += 1
-        if run_args.dry:
+        rec_count += 1
+        if ds_name is None:
             continue
-        key_instr = {"_tp": it["_tp"]}
-        if "name" in it:
-            key_instr["name"] = it["name"]
-        mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
-    if ds_name is not None:
-        print("-> Added records:", cnt)
+        if not run_args.dry:
+            key_instr = {"_tp": it["_tp"]}
+            if "name" in it:
+                key_instr["name"] = it["name"]
+            mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
+    if rec_count > 0:
+        if ds_name is not None:
+            print("-> Added records:", rec_count, file = sys.stderr)
+        else:
+            print("->Skipped records:", rec_count, file = sys.stderr)
 else:
     print("Oops: command not supported", file = sys.stderr)

@@ -25,7 +25,7 @@ from app.config.a_config import AnfisaConfig
 from forome_tools.path_works import AttrFuncPool
 #===============================================
 class TransformPreparator_WS:
-    def __init__(self, flt_schema, sol_h, hard_check):
+    def __init__(self, flt_schema, sol_broker, hard_check):
         self.mHardCheck = hard_check
         self.mConvertors = []
         self.mTotalItemCount = 0
@@ -49,7 +49,7 @@ class TransformPreparator_WS:
                         TrMultisetConvertor(unit_descr))
                 elif sub_kind == "transcript-panels":
                     panels_convertors.append(
-                        TrPanelsConvertor(sol_h, unit_descr))
+                        TrPanelsConvertor(sol_broker, unit_descr))
                 else:
                     self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
             else:
@@ -251,15 +251,15 @@ class TrMultisetConvertor(TrEnumConvertor):
 
 #===============================================
 class TrPanelsConvertor:
-    def __init__(self, sol_h, unit_descr):
+    def __init__(self, sol_broker, unit_descr):
         self.mDescr = unit_descr
         self.mName = unit_descr["name"]
         self.mBaseName = unit_descr["panel-base"]
         self.mPanelType = unit_descr["panel-type"]
         self.mViewName = unit_descr.get("view-name")
         self.mPanelSets = {
-            pname: set(sol_h.getPanelVariants(pname))
-            for pname in sol_h.getPanelNames(self.mPanelType)}
+            pname: set(sol_broker.getPanelVariants(pname))
+            for pname in sol_broker.getPanelNames(self.mPanelType)}
         self.mVarCount = Counter()
 
     def doRec(self, tr_seq, f_data):

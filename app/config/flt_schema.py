@@ -133,7 +133,7 @@ def defineFilterSchema(metadata_record):
             default_value = "None")
         #filters.multiStatusUnit("Transcripts",
         #    "/__data/transcript_consequences[]", compact_mode = True,
-        #    conversion = "transcript_id")
+        #    conversion = "map, property = transcript_id")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             title = "Number of overlapping genes",
             conversion = "len", default_value = 0)
@@ -366,12 +366,13 @@ def defineFilterSchema(metadata_record):
             title = "The highest GQ",
             tooltip= "Max(GQ) for those samples that have the variant",
             render_mode = "linear,=", default_value = 0,
-            conversion = "max(genotype_quality, has_variant)")
+            conversion = "max, property = genotype_quality, filter = has_variant")
+
         filters.intValueUnit("Num_NO_CALL", "/_view/quality_samples",
             title = "Number of NO_CALL samples",
             tooltip= "Number of samples with NO_CALL in the current site",
             render_mode = "linear,=", default_value = 0,
-            conversion = "nullcount(genotype_quality, 1)")
+            conversion = "count, property  = genotype_quality, skip = 1")
         filters.intValueUnit("QUAL", "/_filters/qual",
             title = "Variant Call Quality",
             default_value = -1)

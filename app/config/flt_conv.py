@@ -36,53 +36,84 @@ def _conv_bool_present(val):
         return "Absent"
     return val
 
-def _conv_transcript_id(arr):
-    return [el["transcript_id"] for el in arr] if arr else []
+def _conv_count(arr, property, value, skip = 0):
+    return sum(el.get(property) == value for el in arr[skip:])
 
-def _conv_nullcount(arr, the_field, skip):
-    return sum(el.get(the_field) is None for el in arr[skip:])
+def _conv_maxval(arr, property):
+    return max(el.get(property) for el in arr)
 
-def _conv_maxval(arr, the_field, condition):
-    if condition == "has_variant":
-        condition = has_variant
-    a = [e for e in arr if condition(e)]
-    return max(el.get(the_field) for el in a)
+def _conv_maxval_filter(arr, property, filter_f):
+    seq = []
+    for el in arr:
+        if filter_f(el):
+            seq.append(el.get(property))
+    return max(seq)
 
-def has_variant(sample):
-    genotype = sample.get("genotype")
-    return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
+def _conv_map(arr, property):
+    return [el.get(property) for el in arr]
 
-def parse(conversion):
-    assert conversion.endswith(')')
-    fields = conversion[conversion.find('(') + 1:-1].split(',')
-    assert 1 <= len(fields) <= 2
-    return fields
+#===============================================
+sComplexConversions = {
+    "count": (["property", "skip", "value"], {"skip": 0, "value": None}),
+    "max": (["property", "filter"], {"filter": None}),
+    "select": (["property"], dict())
+}
 
+def parseComplexConv(conversion):
+    global sComplexConversions
+    fields = conversion.split(',')
+    func_name = fields[0].strip()
+    assert func_name in sComplexConversions, (
+        'Improper conversion function "%s"' % conversion)
+    arg_list, arg_default_values = sComplexConversions[func_name]
+    func_args = dict()
+    for field in fields[1:]:
+        if '=' in field:
+            nm, _, val = field.partition('=')
+        else:
+            nm, val = "", field
+        nm = nm.strip()
+        assert nm in arg_list, (
+            'Extra arg "%s" in conversion "%s"' % (nm, conversion))
+        assert nm not in func_args, (
+            'Arg "%s" duplication in conversion "%s"' % (nm, conversion))
+        func_args[nm] = val.strip()
+    for nm in arg_list:
+        if nm in func_args:
+            continue
+        assert nm in arg_default_values, (
+            'Arg "%s" not set in conversion "%s"' % (nm, conversion))
+        func_args[nm] = arg_default_values
+    return func_name, func_args
 
-def makeFilterConversion(conversion):
+#===============================================
+def makeFilterConversion(conversion, sol_broker):
     if not conversion:
         return None
+    if ',' in conversion:
+        func_name, func_args = parseComplexConv(conversion)
+        if func_name == "count":
+            property, value, skip = [func_args[key]
+                for key in ("property", "value", "skip")]
+            skip = int(skip)
+            return lambda arr: _conv_count(arr, property, value, skip)
+        if func_name == "map":
+            property = func_args["property"]
+            return lambda arr: _conv_map(arr, property)
+        if func_name == "max":
+            property, filter_name = [func_args[key]
+                for key in ("property", "filter")]
+            if filter_name:
+                filter_f = sol_broker.pickAnnotationFunction(filter_name)
+                assert filter_f is not None, (
+                    "No annotation function: " + filter_name)
+                return lambda arr: _conv_maxval_filter(arr, property, filter_f)
+            return lambda arr: _conv_maxval(arr, property)
     if conversion == "len":
         return _conv_len
     if conversion == "min":
         return _conv_min
     if conversion == "bool":
         return _conv_bool_present
-    if conversion == "transcript_id":
-        return _conv_transcript_id
-    if conversion.startswith("nullcount("):
-        fields = parse(conversion)
-        the_field = fields[0].strip()
-        skip = 0
-        if len(fields) > 1:
-            skip = int(fields[1].strip())
-        return lambda arr: _conv_nullcount(arr, the_field, skip)
-    if conversion.startswith("max("):
-        fields = parse(conversion)
-        the_field = fields[0].strip()
-        condition = lambda x: True
-        if len(fields) > 1:
-            condition = fields[1].strip()
-        return lambda arr: _conv_maxval(arr, the_field, condition)
     assert False, "Bad conversion: " + conversion
     return None

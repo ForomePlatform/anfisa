@@ -123,6 +123,10 @@ class SolutionPack:
         self.mItems.append(SolutionItem("tab-schema",
             tab_schema.getName(), tab_schema, requires, self.mUsedNames))
 
+    def regAnnotationFunc(self, name, func, requires = None):
+        self.mItems.append(SolutionItem("annotation-func",
+            name, func, requires, self.mUsedNames))
+
     #===============================================
     def iterItems(self, kind, test_f):
         for it in self.mItems:

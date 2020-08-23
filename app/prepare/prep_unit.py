@@ -27,8 +27,9 @@ from forome_tools.path_works import AttrFuncPool
 class ValueConvertor:
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, name, title, unit_no, vgroup,
+    def __init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip):
+        self.mMaster = master
         self.mName   = name
         self.mTitle  = title if title is not None else name
         self.mVGroup = vgroup
@@ -53,6 +54,9 @@ class ValueConvertor:
 
     def getTranscriptDescr(self):
         return None
+
+    def getMaster(self):
+        return self.mMaster
 
     def dump(self):
         result = {
@@ -79,9 +83,9 @@ class ValueConvertor:
 class PathValueConvertor(ValueConvertor):
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, name, vpath, title, unit_no, vgroup,
+    def __init__(self, master, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip):
-        ValueConvertor.__init__(self, name, title, unit_no,
+        ValueConvertor.__init__(self, master, name, title, unit_no,
             vgroup, render_mode, tooltip)
         self.mPath   = vpath
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
@@ -102,10 +106,10 @@ class PathValueConvertor(ValueConvertor):
 
 #===============================================
 class _NumericConvertor(PathValueConvertor):
-    def __init__(self, name, vpath, title, unit_no, vgroup,
+    def __init__(self, master, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conversion = None):
-        PathValueConvertor.__init__(self, name, vpath, title, unit_no,
+        PathValueConvertor.__init__(self, master, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip)
         if diap is not None:
             self.mMinBound, self.mMaxBound = diap
@@ -114,7 +118,7 @@ class _NumericConvertor(PathValueConvertor):
         assert default_value is not None
         self.mDefaultValue = default_value
         self.mConversion = conversion
-        self.mConvFunc = makeFilterConversion(conversion)
+        self.mConvFunc = makeFilterConversion(conversion, self.getMaster())
         self.mMinValue, self.mMaxValue = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -178,10 +182,10 @@ class _NumericConvertor(PathValueConvertor):
 
 #===============================================
 class FloatConvertor(_NumericConvertor):
-    def __init__(self, name, vpath, title, unit_no, vgroup,
+    def __init__(self, master, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conversion = None):
-        _NumericConvertor.__init__(self, name, vpath, title, unit_no,
+        _NumericConvertor.__init__(self, master, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip,
             default_value, diap, conversion)
         self.checkSetup()
@@ -196,10 +200,10 @@ class FloatConvertor(_NumericConvertor):
 
 #===============================================
 class IntConvertor(_NumericConvertor):
-    def __init__(self, name, vpath, title, unit_no, vgroup,
+    def __init__(self, master, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip,
             default_value = None, diap = None, conversion = None):
-        _NumericConvertor.__init__(self, name, vpath, title, unit_no,
+        _NumericConvertor.__init__(self, master, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip,
             default_value, diap, conversion)
         self.checkSetup()
@@ -215,12 +219,12 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 #===============================================
 class EnumConvertor(PathValueConvertor):
-    def __init__(self, name, vpath, title, unit_no, vgroup,
+    def __init__(self, master, name, vpath, title, unit_no, vgroup,
             render_mode, tooltip, sub_kind, variants = None,
             default_value = None, value_map = None,
             separators = None, compact_mode = False,
             accept_other_values = False, conversion = None):
-        PathValueConvertor.__init__(self, name, vpath, title, unit_no,
+        PathValueConvertor.__init__(self, master, name, vpath, title, unit_no,
             vgroup, render_mode, tooltip)
         self.mSubKind = sub_kind
         self.mPreVariants = variants
@@ -234,7 +238,7 @@ class EnumConvertor(PathValueConvertor):
         self.mCompactMode = compact_mode
         self.mCntUndef = 0
         self.mConversion = conversion
-        self.mConvFunc = makeFilterConversion(conversion)
+        self.mConvFunc = makeFilterConversion(conversion, self.getMaster())
         assert sub_kind in {"status", "multi"}
         self.mAcceptOtherValues = accept_other_values
         if self.mAcceptOtherValues:
@@ -327,9 +331,9 @@ class EnumConvertor(PathValueConvertor):
 
 #===============================================
 class PresenceConvertor(ValueConvertor):
-    def __init__(self, name, title, unit_no, vgroup,
+    def __init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip, path_info_seq):
-        ValueConvertor.__init__(self, name, title, unit_no,
+        ValueConvertor.__init__(self, master, name, title, unit_no,
             vgroup, render_mode, tooltip)
         self.mPathInfoSeq = path_info_seq
         self.mPathFunctions = [(it_name, AttrFuncPool.makeFunc(it_path))
@@ -366,15 +370,15 @@ class PresenceConvertor(ValueConvertor):
 
 #===============================================
 class PanelConvertor(ValueConvertor):
-    def __init__(self, sol_h, name, title, unit_no, vgroup,
+    def __init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip, unit_base, panel_type, view_path = None):
-        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
+        ValueConvertor.__init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelType = panel_type
         self.mPanelSets = {
-            pname: set(sol_h.getPanelVariants(pname))
-            for pname in sol_h.getPanelNames(self.mPanelType)}
+            pname: set(self.getMaster().getPanelVariants(pname))
+            for pname in self.getMaster().getPanelNames(self.mPanelType)}
         assert len(self.mPanelSets) > 0, (
             "No data for panel type " + panel_type)
         self.mCntUndef = 0
@@ -422,9 +426,9 @@ class PanelConvertor(ValueConvertor):
 
 #===============================================
 class TranscriptNumConvertor(ValueConvertor):
-    def __init__(self, name, title, unit_no, vgroup, render_mode,
+    def __init__(self, master, name, title, unit_no, vgroup, render_mode,
             tooltip, sub_kind, trans_name, default_value):
-        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
+        ValueConvertor.__init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip)
         prefix, _, postfix = sub_kind.partition('-')
         assert prefix == "transcript" and postfix in ("int", "float")
@@ -445,10 +449,10 @@ class TranscriptNumConvertor(ValueConvertor):
 
 #===============================================
 class TranscriptEnumConvertor(ValueConvertor):
-    def __init__(self, name, title, unit_no, vgroup, render_mode,
+    def __init__(self, master, name, title, unit_no, vgroup, render_mode,
             tooltip, sub_kind, trans_name, variants,
             default_value = None, bool_check_value = None):
-        ValueConvertor.__init__(self, name, title, unit_no, vgroup,
+        ValueConvertor.__init__(self, master, name, title, unit_no, vgroup,
             render_mode, tooltip)
         assert sub_kind.startswith("transcript-")
         self.mDescr = ValueConvertor.dump(self)
@@ -477,16 +481,16 @@ class TranscriptEnumConvertor(ValueConvertor):
 
 #===============================================
 class TranscriptPanelsConvertor(TranscriptEnumConvertor):
-    def __init__(self, sol_h, name, title, unit_no, vgroup, render_mode,
+    def __init__(self, master, name, title, unit_no, vgroup, render_mode,
             tooltip, unit_base, panel_type, view_name = None):
-        TranscriptEnumConvertor.__init__(self,
+        TranscriptEnumConvertor.__init__(self, master,
             name, title, unit_no, vgroup, render_mode, tooltip,
             "transcript-panels", None, None)
         self.mDescr["panel-base"] = unit_base.getTranscriptName()
         self.mDescr["panel-type"] = panel_type
         if view_name:
             self.mDescr["view-name"] = view_name
-        panel_names = list(sol_h.getPanelNames(panel_type))
+        panel_names = list(self.getMaster().getPanelNames(panel_type))
         assert len(panel_names) > 0, (
             "No data for panel type " + panel_type)
 
@@ -503,7 +507,7 @@ class _DummyUnitHandler:
         return self.mName
 
 #===============================================
-def loadConvertorInstance(info, vgroup, sol_h):
+def loadConvertorInstance(info, vgroup, sol_broker):
     if info.get("vgroup") is None:
         assert vgroup is None
     else:
@@ -512,18 +516,18 @@ def loadConvertorInstance(info, vgroup, sol_h):
 
     if kind == "numeric":
         if info["sub-kind"].startswith("transcript-"):
-            return TranscriptNumConvertor(info["name"],
+            return TranscriptNumConvertor(sol_broker, info["name"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 info["sub-kind"], info["tr-name"], info.get("default"))
         if info["sub-kind"] == "float":
-            return FloatConvertor(info["name"], info["path"],
+            return FloatConvertor(sol_broker, info["name"], info["path"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 info.get("default"), None,
                 info.get("conversion"))
         if info["sub-kind"] == "int":
-            return IntConvertor(info["name"], info["path"],
+            return IntConvertor(sol_broker, info["name"], info["path"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 info.get("default"), None,
@@ -533,13 +537,13 @@ def loadConvertorInstance(info, vgroup, sol_h):
 
     if kind == "enum":
         if info["sub-kind"] == "transcript-panels":
-            return TranscriptPanelsConvertor(sol_h, info["name"],
+            return TranscriptPanelsConvertor(sol_broker, info["name"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 _DummyUnitHandler(info["panel-base"]), info["panel-type"],
                 info.get("view-name"))
         if info["sub-kind"].startswith("transcript-"):
-            return TranscriptEnumConvertor(info["name"],
+            return TranscriptEnumConvertor(sol_broker, info["name"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 info["sub-kind"], info["tr-name"], info["pre-variants"],
@@ -547,17 +551,17 @@ def loadConvertorInstance(info, vgroup, sol_h):
         if info.get("mean") == "presence":
             path_info_seq = [(var, it_path)
                 for var, _, it_path in info["variants"]]
-            return PresenceConvertor(info["name"],
+            return PresenceConvertor(sol_broker, info["name"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 path_info_seq)
         if info.get("mean") == "panel":
-            return PanelConvertor(sol_h, info["name"],
+            return PanelConvertor(sol_broker, info["name"],
                 info["title"], info["no"], vgroup,
                 info.get("render"), info.get("tooltip"),
                 _DummyUnitHandler(info["panel-base"]), info["panel-type"],
                 info.get("view-path"))
-        return EnumConvertor(info["name"], info["path"],
+        return EnumConvertor(sol_broker, info["name"], info["path"],
             info["title"], info["no"], vgroup,
             info.get("render"), info.get("tooltip"),
             info["sub-kind"], info.get("pre-variants"),

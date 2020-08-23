@@ -83,8 +83,8 @@ def condition_consequence_xBrowse():
         MODERATE_IMPACT_CSQ)
 
 def condition_high_quality():
-    return condition_high_confidence() + \
-           condition_high_quality_all_samples()
+    return (condition_high_confidence()
+        + condition_high_quality_all_samples())
 
 def condition_high_confidence_QD():
     return condition_good_confidence() + [
@@ -100,7 +100,7 @@ def condition_good_confidence():
         ConditionMaker.condNum("Max_GQ", min_val = 50),
         ConditionMaker.condNum("FS", max_val = 30)]
 
-def condition_high_quality_all_samples ():
+def condition_high_quality_all_samples():
     return [ConditionMaker.condNum("Min_GQ", min_val = 40)]
 
 def condition_all_genotypes_called():
@@ -108,6 +108,11 @@ def condition_all_genotypes_called():
 
 def impacting_splicing():
     return [ConditionMaker.condNum("splice_ai_dsmax", min_val = 0.2)]
+
+#===============================================
+def sample_has_variant(sample):
+    genotype = sample.get("genotype")
+    return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
 
 #===============================================
 def readySolutions():
@@ -127,6 +132,8 @@ def readySolutions():
 
 #===============================================
 def readySolutions_Case(base_pack):
+    base_pack.regAnnotationFunc("has_variant", sample_has_variant)
+
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
     base_pack.regFilter("BGM_De_Novo", [
         condition_consequence_xBrowse(),
@@ -195,17 +202,15 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Impact_Splicing",
-                        condition_high_confidence() + impacting_splicing())
+        condition_high_confidence() + impacting_splicing())
 
     base_pack.regFilter("InSilico_Possibly_Damaging",
-                        condition_high_confidence() + [
-            ConditionMaker.condEnum("Rules",
-                [stdNm("Possibly_Damaging_Predictions")])])
+        condition_high_confidence() + [ConditionMaker.condEnum(
+            "Rules", [stdNm("Possibly_Damaging_Predictions")])])
 
-    base_pack.regFilter("InSilico_Damaging",
-                        condition_high_confidence() + [
-            ConditionMaker.condEnum("Rules",
-                [stdNm("Damaging_Predictions")])])
+    base_pack.regFilter("InSilico_Damaging", condition_high_confidence()
+        + [ConditionMaker.condEnum("Rules",
+            [stdNm("Damaging_Predictions")])])
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [

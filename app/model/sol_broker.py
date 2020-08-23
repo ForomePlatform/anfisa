@@ -103,6 +103,13 @@ class SolutionBroker(SyncronizedObject):
         return None
 
     #===============================================
+    def pickAnnotationFunction(self, func_name):
+        for it in self.iterStdItems("annotation-func"):
+            if it.getName() == func_name:
+                return it.getData()
+        return None
+
+    #===============================================
     def refreshSolEntries(self, kind):
         with self:
             if kind in self.mSolKinds:

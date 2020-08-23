@@ -92,7 +92,7 @@ class FilterPrepareSetH(SolutionBroker):
             default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.IntConvertor(name, vpath, title,
+        return self._addUnit(prep_unit.IntConvertor(self, name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             default_value, diap, conversion))
 
@@ -100,7 +100,7 @@ class FilterPrepareSetH(SolutionBroker):
             default_value = None, diap = None, conversion = None,
             render_mode = None, tooltip = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.FloatConvertor(name, vpath, title,
+        return self._addUnit(prep_unit.FloatConvertor(self, name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             default_value, diap, conversion))
 
@@ -109,7 +109,7 @@ class FilterPrepareSetH(SolutionBroker):
             accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.EnumConvertor(name, vpath, title,
+        return self._addUnit(prep_unit.EnumConvertor(self, name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "status", variants, default_value, value_map,
             accept_other_values = accept_other_values))
@@ -117,7 +117,7 @@ class FilterPrepareSetH(SolutionBroker):
     def presenceUnit(self, name, var_info_seq, title = None,
             render_mode = None, tooltip = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.PresenceConvertor(name, title,
+        return self._addUnit(prep_unit.PresenceConvertor(self, name, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             var_info_seq))
 
@@ -127,7 +127,7 @@ class FilterPrepareSetH(SolutionBroker):
             accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None, conversion = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.EnumConvertor(name, vpath, title,
+        return self._addUnit(prep_unit.EnumConvertor(self, name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "multi", variants, default_value, value_map,
             separators = separators, compact_mode = compact_mode,
@@ -146,7 +146,7 @@ class FilterPrepareSetH(SolutionBroker):
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = "False", bool_check_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TranscriptEnumConvertor(
+        return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-status", trans_name,
             variants, default_value, bool_check_value))
@@ -155,7 +155,7 @@ class FilterPrepareSetH(SolutionBroker):
             title = None, render_mode = None, tooltip = None,
             variants = None, default_value = None):
         self.checkUnitName(name)
-        return self._addUnit(prep_unit.TranscriptEnumConvertor(
+        return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             render_mode, tooltip, "transcript-multiset", trans_name,
             variants, default_value))
@@ -173,7 +173,7 @@ class FilterPrepareSetH(SolutionBroker):
         self.checkUnitName(name)
         assert default_value is not None, (
             "Transcript Int unit %s requires default" % name)
-        return self._addUnit(prep_unit.TranscriptNumConvertor(name,
+        return self._addUnit(prep_unit.TranscriptNumConvertor(self, name,
             title, len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "transcript-int", trans_name, default_value))
 
@@ -182,7 +182,7 @@ class FilterPrepareSetH(SolutionBroker):
         self.checkUnitName(name)
         assert default_value is not None, (
             "Transcript Float unit %s requires default" % name)
-        return self._addUnit(prep_unit.TranscriptNumConvertor(name,
+        return self._addUnit(prep_unit.TranscriptNumConvertor(self, name,
             title, len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "transcript-float", trans_name, default_value))
 
