@@ -135,7 +135,7 @@ function setupDSInfo(info) {
     if (info["doc"] == undefined) {
         document.getElementById("menu-doc").disabled = true;
     }
-    if (info["cohorts"]) {
+    if (info["cohorts"] && info["cohorts"].length > 0) {
         sCohortList = info["cohorts"];
         sCohortViewCheck = [];
         for (idx = 0; idx < sCohortList.length; idx++) {

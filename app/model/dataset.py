@@ -512,7 +512,8 @@ class DataSet(SolutionBroker):
         if note is not None:
             with self:
                 self.getMongoAgent().setNote(note)
-        return self.dumpDSInfo(navigation_mode = False)
+        with self.mDataVault:
+            return self.dumpDSInfo(navigation_mode = False)
 
     #===============================================
     @RestAPI.ds_request
