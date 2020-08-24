@@ -180,7 +180,9 @@ def readySolutions_Case(base_pack):
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
             ConditionMaker.condFunc("Inheritance_Mode", dict(),
-                ["Homozygous Recessive"])],
+                ["Homozygous Recessive"]),
+            ConditionMaker.condEnum("Proband_Zygosity", ["Homozygous"])
+        ],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Compound_Het",

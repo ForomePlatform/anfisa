@@ -43,8 +43,8 @@ if ((Most_Severe_Consequence in
 label("Comp-1")
 
 # Inheritance Mode
-if Inheritance_Mode() in {"Homozygous Recessive"}:
-    return True
+if (Inheritance_Mode() in {"Homozygous Recessive"}
+        and Proband_Zygosity in {Homozygous}):
 
 if Inheritance_Mode() in {"X-linked"}:
     return True
