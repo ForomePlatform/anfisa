@@ -77,7 +77,8 @@ class DataVault(SyncronizedObject):
         return (int(fstat.st_size), int(fstat.st_mtime))
 
     def _scanAll(self, report_it):
-        prev_set = set(self.mDataSets.keys())
+        with self:
+            prev_set = set(self.mDataSets.keys())
         new_path_list = list(glob(self.mVaultDir + "/*/active"))
         new_set, upd_set = set(), set()
         for active_path in new_path_list:
@@ -88,13 +89,15 @@ class DataVault(SyncronizedObject):
                 continue
             ds_name = os.path.basename(ds_path)
             if ds_name in self.mProblemDataFStats:
-                if info_fstat == self.mProblemDataFStats[ds_name]:
-                    continue
-                del self.mProblemDataFStats[ds_name]
+                with self:
+                    if info_fstat == self.mProblemDataFStats[ds_name]:
+                        continue
+                    del self.mProblemDataFStats[ds_name]
             if ds_name in prev_set:
                 prev_set.remove(ds_name)
-                if self.mDataSets[ds_name].isUpToDate(info_fstat):
-                    continue
+                with self:
+                    if self.mDataSets[ds_name].isUpToDate(info_fstat):
+                        continue
                 upd_set.add(ds_name)
                 self.unloadDS(ds_name)
             else:
@@ -185,44 +188,48 @@ class DataVault(SyncronizedObject):
     #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
-        ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
-            for ds_h in self.mDataSets.values()}
-        lost_roots = set()
-        ds_sheet = []
-        for ds_info in list(ds_dict.values()):
-            anc_names = [name for name, _ in ds_info["ancestors"]]
-            ds_sheet.append(anc_names[::-1] + [ds_info["name"]])
-            if len(anc_names) > 0 and anc_names[-1] not in ds_dict:
-                lost_roots.add(anc_names[-1])
-        for root_name in lost_roots:
-            ds_info[root_name] = {
-                "name": root_name, "kind": None, "ancestors": []}
-            ds_sheet.append([root_name])
-        ds_sheet.sort()
-        ds_list = []
-        path_stack = []
-        for idx, ds_path in enumerate(ds_sheet):
-            ds_info = ds_dict[ds_path[-1]]
-            assert ds_info["name"] == ds_path[-1]
-            ds_list.append(ds_info["name"])
-            while (len(path_stack) > 0
-                    and (len(path_stack[-1]) > len(ds_path)
-                    or path_stack[-1] != ds_path[:len(path_stack[-1])])):
-                ds_dict[path_stack.pop()[-1]]["v-idx-to"] = idx
-                continue
-            path_stack.append(ds_path)
-            ds_info["v-level"] = len(path_stack)
-            ds_info["v-idx"] = len(ds_list)
-        for ds_path in path_stack:
-            ds_dict[ds_path[-1]]["v-idx-to"] = len(ds_sheet)
-        for reserved_path in glob(self.mVaultDir + "/*"):
-            name = os.path.basename(reserved_path)
-            if name not in ds_dict:
-                ds_dict[name] = None
-        return {
-            "version": self.mApp.getVersionCode(),
-            "ds-list": ds_list,
-            "ds-dict": ds_dict}
+        with self:
+            ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
+                for ds_h in self.mDataSets.values()}
+            lost_roots = set()
+            ds_sheet = []
+            for ds_name, ds_info in ds_dict.items():
+                assert ds_name == ds_info["name"]
+                anc_names = [name for name, _ in ds_info["ancestors"]]
+                if len(anc_names) > 0:
+                    root_name = anc_names[-1]
+                    if root_name not in ds_dict:
+                        lost_roots.add(root_name)
+                ds_sheet.append(anc_names[::-1] + [ds_name])
+            for root_name in lost_roots:
+                ds_dict[root_name] = {
+                    "name": root_name, "kind": None, "ancestors": []}
+                ds_sheet.append([root_name])
+            ds_sheet.sort()
+            ds_list = []
+            path_stack = []
+            for idx, ds_path in enumerate(ds_sheet):
+                ds_info = ds_dict[ds_path[-1]]
+                assert ds_info["name"] == ds_path[-1]
+                ds_list.append(ds_info["name"])
+                while (len(path_stack) > 0
+                        and (len(path_stack[-1]) > len(ds_path)
+                        or path_stack[-1] != ds_path[:len(path_stack[-1])])):
+                    ds_dict[path_stack.pop()[-1]]["v-idx-to"] = idx
+                    continue
+                path_stack.append(ds_path)
+                ds_info["v-level"] = len(path_stack)
+                ds_info["v-idx"] = len(ds_list)
+            for ds_path in path_stack:
+                ds_dict[ds_path[-1]]["v-idx-to"] = len(ds_sheet)
+            for reserved_path in glob(self.mVaultDir + "/*"):
+                name = os.path.basename(reserved_path)
+                if name not in ds_dict:
+                    ds_dict[name] = None
+            return {
+                "version": self.mApp.getVersionCode(),
+                "ds-list": ds_list,
+                "ds-dict": ds_dict}
 
     #===============================================
     @RestAPI.vault_request

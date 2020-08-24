@@ -84,7 +84,7 @@ def parseComplexConv(conversion):
             continue
         assert nm in arg_default_values, (
             'Arg "%s" not set in conversion "%s"' % (nm, conversion))
-        func_args[nm] = arg_default_values
+        func_args[nm] = arg_default_values[nm]
     return func_name, func_args
 
 #===============================================
