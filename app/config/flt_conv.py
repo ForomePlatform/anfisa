@@ -36,21 +36,22 @@ def _conv_bool_present(val):
         return "Absent"
     return val
 
-def _conv_count(arr, property, value, skip = 0):
-    return sum(el.get(property) == value for el in arr[skip:])
+def _conv_count(arr, prop_name, value, skip = 0):
+    return sum(el.get(prop_name) == value for el in arr[skip:])
 
-def _conv_maxval(arr, property):
-    return max(el.get(property) for el in arr)
+def _conv_maxval(arr, prop_name):
+    return max(el.get(prop_name) for el in arr)
 
-def _conv_maxval_filter(arr, property, filter_f):
+def _conv_maxval_filter(arr, prop_name, filter_f):
     seq = []
     for el in arr:
         if filter_f(el):
-            seq.append(el.get(property))
+            seq.append(el.get(prop_name))
     return max(seq)
 
-def _conv_map(arr, property):
-    return [el.get(property) for el in arr]
+def _conv_map(arr, prop_name):
+    return [el.get(prop_name) for el in arr]
+
 
 #===============================================
 sComplexConversions = {
@@ -93,22 +94,23 @@ def makeFilterConversion(conversion, sol_broker):
     if ',' in conversion:
         func_name, func_args = parseComplexConv(conversion)
         if func_name == "count":
-            property, value, skip = [func_args[key]
+            prop_name, value, skip = [func_args[key]
                 for key in ("property", "value", "skip")]
             skip = int(skip)
-            return lambda arr: _conv_count(arr, property, value, skip)
+            return lambda arr: _conv_count(arr, prop_name, value, skip)
         if func_name == "map":
-            property = func_args["property"]
-            return lambda arr: _conv_map(arr, property)
+            prop_name = func_args["property"]
+            return lambda arr: _conv_map(arr, prop_name)
         if func_name == "max":
-            property, filter_name = [func_args[key]
+            prop_name, filter_name = [func_args[key]
                 for key in ("property", "filter")]
             if filter_name:
                 filter_f = sol_broker.pickAnnotationFunction(filter_name)
                 assert filter_f is not None, (
                     "No annotation function: " + filter_name)
-                return lambda arr: _conv_maxval_filter(arr, property, filter_f)
-            return lambda arr: _conv_maxval(arr, property)
+                return lambda arr: _conv_maxval_filter(
+                    arr, prop_name, filter_f)
+            return lambda arr: _conv_maxval(arr, prop_name)
     if conversion == "len":
         return _conv_len
     if conversion == "min":

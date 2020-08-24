@@ -117,14 +117,14 @@ class ZygositySupport:
     def makeCompoundRequest(self, approx_mode,
             actual_condition, c_rq, unit_name):
         set_genes = None
-        union_cond = self.mEvalSpace.getCondNone()
+        cond_scenario_seq = []
         for min_count, scenario in c_rq:
             cond_scenario = self.conditionScenario(scenario)
             if cond_scenario.getCondType() == "null":
                 continue
-            union_cond = union_cond.addOr(actual_condition)
             if min_count < 1:
                 continue
+            cond_scenario_seq.append(cond_scenario)
             stat_info = self.mGeneUnits[approx_mode].makeStat(
                 actual_condition.addAnd(cond_scenario), None)
             genes = set()
@@ -142,11 +142,14 @@ class ZygositySupport:
             return self.mEvalSpace.getCondNone()
         if len(set_genes) >= self.sMaxGeneCompCount:
             return None
-        assert union_cond.getCondType() != "null"
         logging.info("Eval compound genes for %s: %d" %
             (unit_name,  len(set_genes)))
-        return union_cond.addAnd(self.mEvalSpace.makeEnumCond(
-            self.mGeneUnits[approx_mode], sorted(set_genes)))
+
+        return self.mEvalSpace.joinAnd([
+            actual_condition,
+            self.mEvalSpace.makeEnumCond(
+                self.mGeneUnits[approx_mode], sorted(set_genes)),
+            self.mEvalSpace.joinOr(cond_scenario_seq)])
 
     @classmethod
     def emptyRequest(cls, request):

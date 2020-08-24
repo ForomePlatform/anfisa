@@ -157,7 +157,8 @@ elif run_args.mode == "drop":
                     mongo_db[ds_name].delete_many({"_tp": asp})
 elif run_args.mode == "restore":
     if len(run_args.datasets) == 0:
-        print("-> Restore all information to original place", file = sys.stderr)
+        print("-> Restore all information to original place",
+            file = sys.stderr)
         ds_name = None
         restore_all = True
     elif len(run_args.datasets) == 1:
