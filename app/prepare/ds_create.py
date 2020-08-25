@@ -22,6 +22,7 @@ from datetime import datetime
 from io import StringIO
 
 from forome_tools.read_json import JsonLineReader
+from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
@@ -109,10 +110,16 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             os.path.abspath(ds_dir + "/druid_rq.json"))
 
     if is_ok:
-        ds_doc_dir = ds_dir + "/doc"
+        try:
+            ds_doc_dir = prepareDocDir(ds_dir + "/doc", ds_inv)
+        except Exception:
+            logException("Exception on documentation build\n"
+                "Ignored in create process\n"
+                "Use mode doc-push to repair documentation")
+            ds_doc_dir = []
         ds_info = {
             "date_loaded": date_loaded,
-            "doc": prepareDocDir(ds_doc_dir, ds_inv),
+            "doc": ds_doc_dir,
             "flt_schema": flt_schema_data,
             "kind": ds_kind,
             "meta": metadata_record,

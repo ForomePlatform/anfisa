@@ -25,6 +25,8 @@ var sZoneH = {
     mCurState: null,
     mElCurZState: null,
     mElCurZCheck: null,
+    mElNegateDiv: null,
+    mElNegateCheck: null,
     
     mWorkDescr: null,
     mWorkData: null,
@@ -38,8 +40,11 @@ var sZoneH = {
     init: function() {
         this.mElCurZCheck = document.getElementById("zone-check");
         this.mElCurZState = document.getElementById("zone-descr");
+        this.mElNegateDiv = document.getElementById("work-zone-wrap-negate");
+        this.mElNegateCheck = document.getElementById("work-zone-negate");
         this.updateCur();
         this.setWorkZone("");
+        this.mElNegateCheck.checked = false;
     },
     
     getCurState: function() {
@@ -51,18 +56,21 @@ var sZoneH = {
         prev_zone_data = this.mCurState;
         document.getElementById("zone-cur-title").innerHTML = 
             (this.mWorkTitle)? this.mWorkTitle:"";
+        this.mCurState = null;
         if (cur_zone_status) {
             this.mElCurZState.innerHTML = cur_zone_status;
             this.mElCurZState.className = "status";
             this.mElCurZCheck.disabled = true;
-            this.mCurState = null;
         } else {
             this.mElCurZState.innerHTML = this.mWorkDescr;
             this.mElCurZState.className = "";
             this.mElCurZCheck.disabled = false;
             this.mElCurZCheck.checked = (mode_on)? true:false;
-            this.mCurState = (mode_on && this.mWorkData != null)? 
-                [this.mWorkData]: null;
+            if (mode_on && this.mWorkData != null) {
+                this.mCurState = [this.mWorkData];
+                if (this.mWorkCur == "_tags" && this.mElNegateCheck.checked)
+                    this.mCurState.push(["NOT", true]);
+            }
         }
         if (prev_zone_data != this.mCurState)
             reloadList();
@@ -166,6 +174,7 @@ var sZoneH = {
     },
 
     update: function() {
+        this.mElNegateCheck.disabled = (this.mWorkCur != "_tags");
         if (!this.mWorkCur) {
             rep = ["<i>Define zone</i>"];
             this.mWorkDescr = null;
@@ -178,11 +187,16 @@ var sZoneH = {
                 this.mWorkDescr = null;            
             } else {
                 this.mWorkData = [this.mWorkCur, variants];
+                this.mWorkDescr = "";
+                if (this.mWorkCur == "_tags" && this.mElNegateCheck.checked) {
+                    this.mWorkDescr = "NOT ";
+                    rep.push("<b>NOT</b><br/>");
+                }
                 if (variants.length == 1) {
-                    this.mWorkDescr = variants[0];
+                    this.mWorkDescr += variants[0];
                     rep.push("= <b>" + variants[0] + "</b>");
                 } else {
-                    this.mWorkDescr = variants[0] + 
+                    this.mWorkDescr += variants[0] + 
                         " <i>+" + (variants.length - 1) + " more</i>";
                     rep.push("<i>In:</i><br/>");
                     for (j=0; j<variants.length; j++) {
@@ -240,7 +254,7 @@ var sZoneH = {
                 el_id = 'zn--' + this.mWorkCur + '-check--' + idx;
                 document.getElementById(el_id).checked = false;
             }
-            update();
+            this.update();
         }
     },
 

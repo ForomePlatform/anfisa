@@ -59,7 +59,7 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
                 idx = self.mNextPointIdxs[0]
             try:
                 with self.mCondition:
-                    self.mCondition.notify()
+                    self.mCondition.notify_all()
                 counts = self.mDS.getEvalSpace().evalTotalCounts(
                     self.mDTreeH.getActualCondition(idx))
             except Exception as err:

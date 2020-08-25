@@ -131,8 +131,15 @@ class Workspace(DataSet):
             return None
         zone_info_seq = json.loads(zone_data)
         ret_f = None
+        negation_mode = False
         for zone_name, zone_variants in zone_info_seq:
+            if zone_name == "NOT":
+                assert zone_variants is True
+                negation_mode = True
+                continue
             ret_f = self.getZone(zone_name).getRestrictF(zone_variants, ret_f)
+        if negation_mode:
+            return lambda rec_no: not ret_f(rec_no)
         return ret_f
 
     def getLastAspectID(self):

@@ -189,6 +189,10 @@ def _formZonesDiv(output, zones):
           </div>
           <div id="zone-right">
             <div id="work-zone-wrap-def">
+                <div id="work-zone-wrap-negate">
+                    <input id="work-zone-negate" type="checkbox"
+                    onchange="sZoneH.update();"/>NOT mode
+                </div>
                 <div id="work-zone-def">
                 </div>
             </div>
