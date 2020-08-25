@@ -52,40 +52,42 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
                     > AnfisaConfig.cconfigOption("long.run.passtime"))
 
     def execIt(self):
-        with self.mCondition:
-            while True:
-                with self.mDS:
-                    if len(self.mNextPointIdxs) == 0:
-                        break
-                    idx = self.mNextPointIdxs[0]
-                try:
-                    counts = self.mDS.getEvalSpace().evalTotalCounts(
-                        self.mDTreeH.getActualCondition(idx))
-                except Exception as err:
-                    logException("Long run exception in DS=%s"
-                        % self.mDS.getName())
-                    self.mFailureCount += 1
-                    if self.mFailureCount > AnfisaConfig.configOption(
-                            "long.run.failures"):
-                        raise err
-                    else:
-                        continue
-                with self.mDS:
-                    self.mTimeAccess = datetime.now()
-                    self.mCounts[idx] = counts
-                    if idx in self.mNextPointIdxs:
-                        self.mNextPointIdxs.remove(idx)
-                    if counts[0] == 0 and self.mDTreeH.checkZeroAfter(idx):
-                        for idx1 in range(idx, len(self.mCounts)):
-                            self.mCounts[idx1] = counts[:]
-                            if idx1 in self.mNextPointIdxs:
-                                self.mNextPointIdxs.remove(idx1)
+        while True:
+            with self.mDS:
+                if len(self.mNextPointIdxs) == 0:
+                    break
+                idx = self.mNextPointIdxs[0]
+            try:
+                with self.mCondition:
+                    self.mCondition.notify()
+                counts = self.mDS.getEvalSpace().evalTotalCounts(
+                    self.mDTreeH.getActualCondition(idx))
+            except Exception as err:
+                logException("Long run exception in DS=%s"
+                    % self.mDS.getName())
+                self.mFailureCount += 1
+                if self.mFailureCount > AnfisaConfig.configOption(
+                        "long.run.failures"):
+                    raise err
+                else:
+                    continue
+            with self.mDS:
+                self.mTimeAccess = datetime.now()
+                self.mCounts[idx] = counts
+                if counts[0] == 0 and self.mDTreeH.checkZeroAfter(idx):
+                    for idx1 in range(idx, len(self.mCounts)):
+                        self.mCounts[idx1] = counts[:]
+                for j, pcounts in enumerate(self.mCounts):
+                    if pcounts is not None and j in self.mNextPointIdxs:
+                        self.mNextPointIdxs.remove(j)
 
         with self.mDS:
+            with self.mCondition:
+                self.mCondition.notify_all()
             self.mCondition = None
         return False
 
-    def getEvaluatedCounts(self, next_points = None, timeout = None):
+    def getEvaluatedCounts(self, next_points = None, time_end = None):
         condition = None
         with self.mDS:
             if next_points is not None:
@@ -99,10 +101,15 @@ class XL_LongRunner_DTreeCounts(ExecutionTask):
                             and self.mCounts[idx] is None):
                         next_points_idxs.append(idx)
                 self.mNextPointIdxs = next_points_idxs
-            if timeout is not None and timeout > 0:
-                with self.mDS:
-                    condition = self.mCondition
-        if condition is not None:
+        while time_end is not None:
+            time_now = datetime.now()
+            if time_now >= time_end:
+                break
+            with self.mDS:
+                condition = self.mCondition
+            if condition is None:
+                break
+            timeout = (time_end - time_now).total_seconds()
             with condition:
                 condition.wait(timeout)
         with self.mDS:
