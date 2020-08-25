@@ -463,8 +463,8 @@ def defineFilterSchema(metadata_record):
             "/_filters/clinvar_acmg_guidelines[]",
             default_value = "None")
 
-        trusted_map = {long_name: short_name
-            for short_name, long_name in filters.iterClinvarTrustedSubmitters()}
+        trusted_map = {long_name: short_name for short_name, long_name
+            in filters.iterClinvarTrustedSubmitters()}
         filters.regPreTransform(lambda rec_no, rec_data:
             clinvarPreTransform(rec_data, trusted_map))
 
