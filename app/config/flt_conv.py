@@ -52,12 +52,24 @@ def _conv_maxval_filter(arr, prop_name, filter_f):
 def _conv_map(arr, prop_name):
     return [el.get(prop_name) for el in arr]
 
+def _conv_values(arr):
+    if not arr:
+        return []
+    assert len(arr) == 1
+    dict_data = arr[0]
+    ret = set()
+    for rec in dict_data.values():
+        for val in rec.split(','):
+            val = val.strip()
+            if val:
+                ret.add(val)
+    return sorted(ret)
 
 #===============================================
 sComplexConversions = {
     "count": (["property", "skip", "value"], {"skip": 0, "value": None}),
     "max": (["property", "filter"], {"filter": None}),
-    "select": (["property"], dict())
+    "map": (["property"], dict())
 }
 
 def parseComplexConv(conversion):
@@ -117,5 +129,7 @@ def makeFilterConversion(conversion, sol_broker):
         return _conv_min
     if conversion == "bool":
         return _conv_bool_present
+    if conversion == "values":
+        return _conv_values
     assert False, "Bad conversion: " + conversion
     return None
