@@ -1,5 +1,5 @@
 #0.     Check sequencing quality
-if Min_GQ <= 19:
+if Min_GQ < 20:
     return False
 if FS > 30:
     return False
