@@ -127,6 +127,11 @@ class SolutionPack:
         self.mItems.append(SolutionItem("annotation-func",
             name, func, requires, self.mUsedNames))
 
+    def regClinvarTrustedSubmitter(self,
+            short_name, full_name, requires = None):
+        self.mItems.append(SolutionItem("trusted-clinvar-submitter",
+            short_name, full_name, requires, self.mUsedNames))
+
     #===============================================
     def iterItems(self, kind, test_f):
         for it in self.mItems:

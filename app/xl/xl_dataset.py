@@ -94,12 +94,7 @@ class XLDataset(DataSet):
         if needs_start:
             self.getApp().runTask(runner, 2)
             point_idxs = None
-        timeout = None
-        if time_end is not None:
-            time_now = datetime.now()
-            if time_now < time_end:
-                timeout = (time_end - time_now).total_seconds()
-        return runner.getEvaluatedCounts(point_idxs, timeout)
+        return runner.getEvaluatedCounts(point_idxs, time_end)
 
     #===============================================
     def _cleanUpLongRunners(self):

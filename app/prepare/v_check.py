@@ -189,7 +189,8 @@ class DictTypeChecker:
                     a_seq, a_kind = a_type
                     if (a_check.getErrorCount() > 0
                             or a_seq != attr_h.isSeq()):
-                        print(("Update field %s:" % self.mName),
+                        print("Update field %s.%s:" %
+                            (self.mName, a_check.getName()),
                             attr_h.getMainKind(), "is_seq=", attr_h.isSeq(),
                             "->", a_kind, "is_seq=", a_seq,
                             "errors=", a_check.getErrorCount(),

@@ -36,6 +36,7 @@ class FilterPrepareSetH(SolutionBroker):
         self.mFamilyInfo = FamilyInfo(self.mMeta)
         self.mZygosityData = None
         self.mCheckIdent = check_identifiers
+        self.mPreTransformSeq = []
 
     def setupFromInfo(self, info_seq,
             zyg_var_name = "_zyg", zyg_vpath = "/__data/zygosity"):
@@ -65,6 +66,9 @@ class FilterPrepareSetH(SolutionBroker):
         assert self.mZygosityData is None
         self.mZygosityData = ZygosityDataPreparator(var_name, vpath,
             self.mFamilyInfo)
+
+    def regPreTransform(self, transform_f):
+        self.mPreTransformSeq.append(transform_f)
 
     def _startViewGroup(self, view_group_h):
         assert self.mCurVGroup is None
@@ -105,14 +109,15 @@ class FilterPrepareSetH(SolutionBroker):
             default_value, diap, conversion))
 
     def statusUnit(self, name, vpath, title = None,
-            variants = None, default_value = "False",
+            variants = None, default_value = "False", conversion = None,
             accept_other_values = False, value_map = None,
             render_mode = None, tooltip = None):
         self.checkUnitName(name)
         return self._addUnit(prep_unit.EnumConvertor(self, name, vpath, title,
             len(self.mUnits), self.mCurVGroup, render_mode, tooltip,
             "status", variants, default_value, value_map,
-            accept_other_values = accept_other_values))
+            accept_other_values = accept_other_values,
+            conversion = conversion))
 
     def presenceUnit(self, name, var_info_seq, title = None,
             render_mode = None, tooltip = None):
@@ -187,6 +192,8 @@ class FilterPrepareSetH(SolutionBroker):
             "transcript-float", trans_name, default_value))
 
     def process(self, rec_no, rec_data):
+        for transform_f in self.mPreTransformSeq:
+            transform_f(rec_no, rec_data)
         result = dict()
         for unit in self.mUnits:
             unit.process(rec_no, rec_data, result)

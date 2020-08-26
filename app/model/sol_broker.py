@@ -109,6 +109,10 @@ class SolutionBroker(SyncronizedObject):
                 return it.getData()
         return None
 
+    def iterClinvarTrustedSubmitters(self):
+        for it in self.iterStdItems("trusted-clinvar-submitter"):
+            yield it.getName(), it.getData()
+
     #===============================================
     def refreshSolEntries(self, kind):
         with self:

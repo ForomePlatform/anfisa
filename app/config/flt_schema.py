@@ -62,6 +62,23 @@ sConsequenceVariants = [
     "undefined"]
 
 #===============================================
+def clinvarPreTransform(rec_data, trusted_map):
+    clinvar_submit_data = rec_data["_view"][
+        "databases"].get("clinVar_submitters")
+    if not clinvar_submit_data:
+        return
+    clinvar_trusted = dict()
+    for descr in clinvar_submit_data:
+        submitter, _, status = descr.partition(':')
+        submitter = submitter.strip()
+        if submitter in trusted_map:
+            value = status.strip().lower()
+            if value.startswith('{') and value.endswith('}'):
+                value = value[1:-1]
+            clinvar_trusted[trusted_map[submitter]] = value
+    rec_data["_view"]["databases"]["clinvar_trusted"] = clinvar_trusted
+
+#===============================================
 def defineFilterSchema(metadata_record):
     data_schema = metadata_record.get("data_schema")
     if data_schema == "FAVOR":
@@ -316,13 +333,15 @@ def defineFilterSchema(metadata_record):
             render_mode = "log,>")
 
     with filters.viewGroup("Databases"):
-        filters.presenceUnit("Presence_in_Databases", [
+        presence_in_db = [
             ("ClinVar", "/_view/databases/clinVar"),
-            ("LMM", "/_view/databases/lmm_significance"),
-            ("GeneDx", "/_view/databases/gene_dx_significance"),
             ("GnomAD", "/_filters/gnomad_af_fam"),
             ("HGMD", "/__data/hgmd_pmids[]"),
-            ("OMIM", "/_view/databases/omim")],
+            ("OMIM", "/_view/databases/omim")]
+        for submitter, _ in filters.iterClinvarTrustedSubmitters():
+            presence_in_db.append((submitter,
+                "/_view/databases/clinvar_trusted/%s" % submitter))
+        filters.presenceUnit("Presence_in_Databases", presence_in_db,
             title = "Presence in Databases")
 
         filters.multiStatusUnit("ClinVar_Submitters",
@@ -444,16 +463,29 @@ def defineFilterSchema(metadata_record):
             "/_filters/clinvar_acmg_guidelines[]",
             default_value = "None")
 
-        filters.statusUnit("Clinvar_Trusted_Benign",
-            "/_filters/clinvar_trusted_benign",
-            default_value = "No data",
-            title = "Categorized Benign by Clinvar Trusted Submitters",
-            value_map = {"True": "Benign by Trusted submitters",
-                "False": "Unknown"})
-        filters.multiStatusUnit("LMM_Significance",
-            "/__data/lmm", title = "Clinical Significance by LMM")
-        filters.multiStatusUnit("GeneDx_Significance",
-            "/__data/gene_dx", title = "Clinical Significance by GeneDx")
+        trusted_map = {long_name: short_name for short_name, long_name
+            in filters.iterClinvarTrustedSubmitters()}
+        filters.regPreTransform(lambda rec_no, rec_data:
+            clinvarPreTransform(rec_data, trusted_map))
+
+        filters.multiStatusUnit("Clinvar_Trusted_Significance",
+            "/_view/databases/clinvar_trusted",
+            title = "Clinvar status reviewed by trusted submitters only",
+            conversion = "values")
+
+        for short_name, _ in filters.iterClinvarTrustedSubmitters():
+            filters.statusUnit("%s_Significance" % short_name,
+                "/_view/databases/clinvar_trusted",
+                title = "Clinical Significance by %s" % short_name,
+                conversion = "map, property = %s" % short_name,
+                default_value = "None")
+
+        #filters.statusUnit("Clinvar_Trusted_Benign",
+        #    "/_filters/clinvar_trusted_benign",
+        #    default_value = "No data",
+        #    title = "Categorized Benign by Clinvar Trusted Submitters",
+        #    value_map = {"True": "Benign by Trusted submitters",
+        #        "False": "Unknown"})
 
         filters.statusUnit("splice_altering", "/_filters/splice_altering",
             default_value = "No altering",

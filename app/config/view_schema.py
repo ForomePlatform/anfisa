@@ -201,7 +201,7 @@ def defineViewSchema(metadata_record = None):
 
     aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),
-        AttrH("qd", title = "Quality by Depth",
+        AttrH("qd", title = "Quality by Depth", is_seq = True,
             tooltip = "The QUAL score normalized by allele depth (AD) "
             "for a variant. This annotation puts the variant confidence "
             "QUAL score into perspective by normalizing for the amount "
@@ -212,7 +212,7 @@ def defineViewSchema(metadata_record = None):
             "than it really is. To compensate for this, we normalize "
             "the variant confidence by depth, which gives us a more "
             "objective picture of how well supported the call is."),
-        AttrH("mq", title = "Mapping Quality",
+        AttrH("mq", title = "Mapping Quality", is_seq = True,
             tooltip = "This is the root mean square mapping quality over all "
             "the reads at the site. Instead of the average mapping "
             "quality of the site, this annotation gives the square root "
@@ -224,7 +224,7 @@ def defineViewSchema(metadata_record = None):
             tooltip = "QUAL tells you how confident we are that there is "
             "some kind of variation at a given site. The variation may be "
             "present in one or more samples."),
-        AttrH("strand_odds_ratio", title = "Strand Odds Ratio",
+        AttrH("strand_odds_ratio", title = "Strand Odds Ratio", is_seq = True,
             tooltip = "Another way to estimate strand bias using a "
             "test similar to the symmetric odds ratio test. "
             "SOR was created because FS tends to penalize variants "
@@ -232,14 +232,14 @@ def defineViewSchema(metadata_record = None):
             "exons tend to only be covered by reads in one direction "
             "and FS gives those variants a bad score. SOR will take "
             "into account the ratios of reads that cover both alleles."),
-        AttrH("fs", title = "Fisher Strand Bias",
+        AttrH("fs", title = "Fisher Strand Bias", is_seq = True,
             tooltip = "Phred-scaled probability that there is strand bias at "
             "the site. Strand Bias tells us whether the alternate "
             "allele was seen more or less often on the forward or "
             "reverse strand than the reference allele. When there "
             "little to no strand bias at the site, the FS value "
             "will be close to 0."),
-        AttrH("allelic_depth", title = "Allelic Depth", is_seq = True,
+        AttrH("allelic_depth", title = "Allelic Depth",
             tooltip = "AD is the unfiltered allele depth, i.e. "
             "the number of reads that support each of the reported "
             "alleles. All reads at the position (including reads that "
@@ -250,7 +250,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("read_depth", title = "Read Depth",
             tooltip = "DP - is a number of times that base pair locus "
             "was read"),
-        AttrH("ft", title = "FILTERs",
+        AttrH("ft", title = "FILTERs", is_seq = True,
             tooltip = "This field contains the name(s) of any filter(s) "
             "that the variant fails to pass, or the value PASS if the "
             "variant passed all filters. If the FILTER value is ., "
@@ -272,7 +272,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("genome_af", title = "Genome AF"),
         AttrH("exome_af", title = "Exome AF"),
         AttrH("hom", title = "Number of homozygotes"),
-        AttrH("hem", title = "Number of hemizygotes"),
+        AttrH("hem", title = "Number of hemizygotes", is_seq = True),
         AttrH("genome_an", title = "Genome AN"),
         AttrH("exome_an", title = "Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq = True),
@@ -300,6 +300,8 @@ def defineViewSchema(metadata_record = None):
             title = "ClinVar: Number of submitters", is_seq = False),
         AttrH("clinvar_acmg_guidelines", title = "ClinVar ACMG Guidelines",
             is_seq = True),
+        AttrH("clinvar_trusted", kind = "json",
+            title = "Clinical Significance by Trusted Submitters"),
         AttrH("lmm_significance", title = "Clinical Significance by LMM"),
         AttrH("gene_dx_significance",
             title = "Clinical Significance by GeneDx"),
@@ -457,7 +459,7 @@ def defineViewSchema(metadata_record = None):
     aspects["_main"].setAttributes([
         AttrH("label"),
         AttrH("color_code"),
-        AttrH("id"),
+        AttrH("id", is_seq = True),
         AttrH("assembly_name", title = "Assembly"),
         AttrH("seq_region_name"),
         AttrH("start"),
@@ -466,7 +468,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("allele_string"),
         AttrH("variant_class"),
         AttrH("most_severe_consequence"),
-        AttrH("ClinVar"),
+        AttrH("ClinVar", is_seq = True),
         AttrH("clinvar_variants", is_seq = True),
         AttrH("clinvar_phenotypes", is_seq = True),
         AttrH("clinvar_significance", is_seq = True),
@@ -497,7 +499,7 @@ def defineViewSchema(metadata_record = None):
         AttrH("consequence_terms", is_seq = True),
         AttrH("conservation"),
         AttrH("distance"),
-        AttrH("domains", kind = "json"),
+        AttrH("domains", kind = "json", is_seq = True),
         AttrH("exacpli"),
         AttrH("exon"),
         AttrH("fathmm_pred"),

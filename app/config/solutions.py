@@ -121,12 +121,12 @@ def readySolutions():
         return
     sSolutionsAreSet = True
     favor_pack = SolutionPack("FAVOR")
-    setupSymbolPanels(favor_pack)
+    setupGenericPack(favor_pack)
     FavorSchema.readySolutions(favor_pack)
     SolutionPack.regPack(favor_pack)
 
     base_pack = SolutionPack("CASE")
-    setupSymbolPanels(base_pack)
+    setupGenericPack(base_pack)
     readySolutions_Case(base_pack)
     SolutionPack.regPack(base_pack)
 
@@ -312,7 +312,13 @@ def readySolutions_Case(base_pack):
     base_pack.regTabSchema(demo_tab_schema)
 
 #===============================================
-def setupSymbolPanels(base_pack):
+def setupGenericPack(base_pack):
+    base_pack.regClinvarTrustedSubmitter("LMM",
+        "Laboratory for Molecular Medicine, "
+        + "Partners HealthCare Personalized Medicine")
+    base_pack.regClinvarTrustedSubmitter("GeneDx", "GeneDx")
+    base_pack.regClinvarTrustedSubmitter("Invitae", "Invitae")
+
     base_pack.regPanel("ACMG59", "Symbol",
         cfgPath("acmg59.lst"))
     base_pack.regPanel("All_Hearing_Loss", "Symbol",
