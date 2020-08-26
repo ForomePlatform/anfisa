@@ -205,6 +205,7 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
             [info[0] for info in variants_info])
         self.mDefaultValue = self.mVariantSet.indexOf(
             self.getDescr()["default"])
+        assert self.mDefaultValue is not None
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')

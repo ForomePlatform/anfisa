@@ -437,6 +437,7 @@ class TranscriptNumConvertor(ValueConvertor):
         self.mDescr["sub-kind"] = sub_kind
         self.mDescr["tr-name"] = trans_name
         self.mDescr["default"] = default_value
+        assert default_value is not None
 
     def process(self, rec_no, rec_data, result):
         pass
@@ -459,13 +460,16 @@ class TranscriptEnumConvertor(ValueConvertor):
         self.mDescr["kind"] = "enum"
         self.mDescr["sub-kind"] = sub_kind
         self.mDescr["bool-check"] = bool_check_value
-        if trans_name is not None:
-            self.mDescr["tr-name"] = trans_name
-            self.mDescr["pre-variants"] = variants
-        else:
+        if trans_name is None:
             assert sub_kind == "transcript-panels"
+            assert default_value is None
+            return
+        self.mDescr["tr-name"] = trans_name
+        self.mDescr["pre-variants"] = variants
         if default_value is not None:
             self.mDescr["default"] = default_value
+            if variants is not None:
+                assert default_value in variants
 
     def process(self, rec_no, rec_data, result):
         pass
