@@ -200,7 +200,9 @@ def readySolutions_Case(base_pack):
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
             ConditionMaker.condFunc("Inheritance_Mode", dict(),
-                ["Autosomal Dominant"])],
+                ["Autosomal Dominant"]),
+            ConditionMaker.condEnum("Proband_Zygosity", ["Heterozygous"])
+        ],
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Impact_Splicing",
