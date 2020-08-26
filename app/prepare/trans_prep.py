@@ -157,9 +157,12 @@ class TrEnumConvertor:
                 if var in self.mVarCount:
                     variants.append([var, self.mVarCount[var]])
             used_variants = set(self.mPreVariants)
-        elif self.mDefaultValue in self.mVarCount:
-            default_count = self.mVarCount[self.mDefaultValue]
-            del self.mVarCount[self.mDefaultValue]
+        else:
+            if self.mDefaultValue in self.mVarCount:
+                default_count = self.mVarCount[self.mDefaultValue]
+                del self.mVarCount[self.mDefaultValue]
+            else:
+                default_count = 0
         for var in sorted(set(self.mVarCount.keys()) - used_variants):
             variants.append([var, self.mVarCount[var]])
         if default_count is not None:
