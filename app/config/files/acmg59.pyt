@@ -21,7 +21,8 @@ if (ClinVar_Significance in {
 if (ClinVar_Significance in {
             "Uncertain significance"
         } and
-        Clinvar_Trusted_Benign in {"False", "No data"}):
+        (Clinvar_Trusted_Simplified in {"uncertain", "pathogenic"} or
+            Clinvar_Trusted_Simplified not in {"benign"})):
     return True
 
 #Exclude variants farther then 5pb from intronic/exonic border
@@ -29,7 +30,8 @@ if (Region not in {"exon"}) and Dist_from_Exon >= 26:
     return False
 
 if (Clinvar_Benign in {"False"} and
-        Clinvar_Trusted_Benign in {"False", "No data"}):
+        (Clinvar_Trusted_Simplified in {"uncertain", "pathogenic"} or
+            Clinvar_Trusted_Simplified not in {"benign"})):
     return True
 
 if (Most_Severe_Consequence in {

@@ -26,7 +26,8 @@ if Transcript_masked in {"True"}:
 #2.a.	Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')
 if (Clinvar_Benign in {"VUS or Pathogenic"} and
-        Clinvar_Trusted_Benign not in {"Benign by Trusted submitters"}):
+        (Clinvar_Trusted_Simplified in {"uncertain", "pathogenic"} or
+            Clinvar_Trusted_Simplified not in {"benign"})):
     return True
 
 # 2.b.	Include All de novo variants
@@ -67,8 +68,7 @@ if (Transcript_consequence not in {
 if (Clinvar_Benign in {"Benign"} and Clinvar_stars in {"2", "3", "4"}):
     return False
 
-if (Clinvar_Trusted_Benign in {"Benign by Trusted submitters"}
-        and Clinvar_stars in {"1"}):
+if (Clinvar_Trusted_Simplified in {"benign"} and Clinvar_stars in {"1"}):
     return False
 
 #3.	Include: AF < 0.0007 (GnomAD Overall)

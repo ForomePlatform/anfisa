@@ -59,6 +59,12 @@ if ((Most_Severe_Consequence in
         and (splice_ai_dsmax <= 0.2)):
     return False
 
+if (Clinvar_Benign in {"Benign"} and Clinvar_stars in {"2", "3", "4"}):
+    return False
+
+if (Clinvar_Trusted_Simplified in {"benign"} and Clinvar_stars in {"1"}):
+    return False
+
 label("Comp-1")
 
 # Inheritance Mode

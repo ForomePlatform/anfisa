@@ -109,6 +109,9 @@ def condition_all_genotypes_called():
 def impacting_splicing():
     return [ConditionMaker.condNum("splice_ai_dsmax", min_val = 0.2)]
 
+def clinVar_not_benign():
+    return [ConditionMaker.condEnum("Clinvar_Trusted_Simplified",
+                                    ["benign"], "NOT")]
 #===============================================
 def sample_has_variant(sample):
     genotype = sample.get("genotype")
@@ -175,7 +178,8 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
-        condition_high_quality() + condition_all_genotypes_called() + [
+        condition_high_quality() + condition_all_genotypes_called() +
+        clinVar_not_benign() + [
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
@@ -186,7 +190,7 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Compound_Het",
-        condition_high_quality() + [
+        condition_high_quality() + clinVar_not_benign() + [
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
@@ -195,7 +199,7 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Auto_Dom",
-        condition_high_quality() + [
+        condition_high_quality() + clinVar_not_benign() + [
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
