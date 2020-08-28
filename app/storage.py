@@ -31,23 +31,8 @@ from app.prepare.ds_create import (createDS,
     portionFavorDruidPush, pushDruidDataset)
 from app.config.solutions import readySolutions
 from app.model.mongo_db import MongoConnector
+from app.model.dir_entry import DirDSEntry
 from app.model.ds_favor import FavorStorageAgent
-#=====================================
-try:
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-except Exception:
-    pass
-
-#========================================
-import forome_tools
-forome_tools.compatible((0, 1, 2))
-
-#========================================
-if sys.version_info < (3, 7):
-    from backports.datetime_fromisoformat import MonkeyPatch
-    MonkeyPatch.patch_fromisoformat()
-
 #===============================================
 sID_Pattern = re.compile('^\\S+$', re.U)
 
@@ -305,64 +290,26 @@ def favorBatch(app_config, druid_adm, batch_dir, report_lines):
     while _favorBatch(app_config, druid_adm, batch_dir, report_lines):
         pass
 
-#===============================================
-class DSEntry:
-    def __init__(self,  ds_name,  ds_kind,  source,  ds_inventory = None,
-            entry_data = None):
-        self.mName = ds_name
-        self.mKind = ds_kind
-        self.mSource = source
-        self.mInv  = ds_inventory
-        self.mEntryData = entry_data
-
-    def getName(self):
-        return self.mName
-
-    def getDSKind(self):
-        return self.mKind
-
-    def getSource(self):
-        return self.mSource
-
-    def getInv(self):
-        return self.mInv
-
-    def dump(self):
-        return {
-            "name": self.mName,
-            "kind": self.mKind,
-            "source": self.mSource,
-            "inv": self.mInv,
-            "data": self.mEntryData}
-
-    @classmethod
-    def createByDirConfig(cls, ds_name,  dir_config,  dir_fname):
-        if ds_name not in dir_config["datasets"]:
-            print("Dataset %s not registered in directory file (%s)" %
-                (ds_name, dir_fname), file = sys.stderr)
-            sys.exit()
-        ds_entry_data = dir_config["datasets"][ds_name]
-        if "inv" in ds_entry_data:
-            ds_inventory = loadDatasetInventory(ds_entry_data["inv"])
-            return DSEntry(ds_name,
-                ds_entry_data["kind"], ds_inventory["a-json"], ds_inventory,
-                entry_data = {
-                    "arg-dir": ds_entry_data, "arg-inv": ds_inventory})
-        if "a-json" in ds_entry_data:
-            return DSEntry(ds_name,  ds_entry_data["kind"],
-                ds_entry_data["a-json"],
-                entry_data = {"arg-dir": ds_entry_data})
-        print(("Dataset %s: no correct source or inv registered "
-            "in directory file (%s)") % (ds_name, dir_fname),
-            file = sys.stderr)
-        sys.exit()
-        return None
-
 
 #===============================================
 if __name__ == '__main__':
+    try:
+        sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
+        sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
+    except Exception:
+        pass
     logging.root.setLevel(logging.INFO)
 
+    #========================================
+    import forome_tools
+    forome_tools.compatible((0, 1, 2))
+
+    #========================================
+    if sys.version_info < (3, 7):
+        from backports.datetime_fromisoformat import MonkeyPatch
+        MonkeyPatch.patch_fromisoformat()
+
+    #========================================
     parser = ArgumentParser()
     parser.add_argument("-d", "--dir",
         help = "Storage directory control file")
@@ -453,34 +400,36 @@ if __name__ == '__main__':
                 "(--config, [--source, --inv])")
             sys.exit()
         dir_config = loadCommentedJSon(args.dir)
-        service_config_file = dir_config["anfisa.json"]
+        anfisa_json_file = dir_config["anfisa.json"]
         if len(set(args.names)) != len(args.names):
             dup_names = args.names[:]
             for ds_name in set(args.names):
                 dup_names.remove(ds_name)
             print("Incorrect usage: ds name duplication:", " ".join(dup_names))
             sys.exit()
-        entries = [DSEntry.createByDirConfig(ds_name,  dir_config, args.dir)
+        entries = [DirDSEntry.createByDirConfig(ds_name, dir_config, args.dir)
             for ds_name in args.names]
     else:
         if args.source and args.inv:
             print("Incorrect usage: use either --source or --inv")
-        service_config_file = args.config
-        if not service_config_file:
-            service_config_file = "./anfisa.json"
+        anfisa_json_file = args.config
+        if not anfisa_json_file:
+            anfisa_json_file = "./anfisa.json"
         if len(args.names) != 1 and (args.source or args.inv):
             print("Incorrect usage: --source applies only to one ds")
             sys.exit()
         if args.inv:
             ds_inventory = loadDatasetInventory(args.inv)
-            ds_name = args.names[0]
-            entries = [DSEntry(ds_name, args.kind, ds_inventory["a-json"],
-                ds_inventory, entry_data = {"arg-inv": ds_inventory})]
+            if len(args.names) != 1:
+                print("Only one DS should be set with --inv option")
+                sys.exit(1)
+            entries = [DirDSEntry.createByInventory(
+                args.names[0], args.kind, ds_inventory)]
         else:
-            entries = [DSEntry(ds_name,  args.kind,  args.source)
+            entries = [DirDSEntry(ds_name, args.kind, args.source)
                 for ds_name in args.names]
 
-    app_config = loadJSonConfig(service_config_file,
+    app_config = loadJSonConfig(anfisa_json_file,
         home_base_file = __file__, home_base_level = 1)
 
     assert os.path.isdir(app_config["data-vault"])

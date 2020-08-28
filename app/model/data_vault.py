@@ -76,6 +76,10 @@ class DataVault(SyncronizedObject):
         fstat = os.stat(fpath)
         return (int(fstat.st_size), int(fstat.st_mtime))
 
+    @classmethod
+    def excludeDSDir(cls, dirname):
+        return dirname.endswith('~')
+
     def _scanAll(self, report_it):
         with self:
             prev_set = set(self.mDataSets.keys())
@@ -83,9 +87,14 @@ class DataVault(SyncronizedObject):
         new_set, upd_set = set(), set()
         for active_path in new_path_list:
             ds_path = os.path.dirname(active_path)
+            if self.excludeDSDir(ds_path):
+                continue
             info_path = ds_path + "/dsinfo.json"
             info_fstat = self.checkFileStat(info_path)
             if info_fstat is None:
+                logging.error(
+                    ("Corrupted directory %s, no dsinfo.json" % ds_path)
+                    + "remove or handle it somehow")
                 continue
             ds_name = os.path.basename(ds_path)
             if ds_name in self.mProblemDataFStats:
@@ -224,6 +233,8 @@ class DataVault(SyncronizedObject):
                 ds_dict[ds_path[-1]]["v-idx-to"] = len(ds_sheet)
             for reserved_path in glob(self.mVaultDir + "/*"):
                 name = os.path.basename(reserved_path)
+                if self.excludeDSDir(name):
+                    continue
                 if name not in ds_dict:
                     ds_dict[name] = None
             return {

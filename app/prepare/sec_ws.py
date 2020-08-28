@@ -120,7 +120,6 @@ class SecondaryWsCreation(ExecutionTask):
                     self.setStatus("Extracting records: %d/%d" %
                         (ws_out.getTotal(), len(rec_no_seq)))
 
-        trans_prep.finishUp()
         self.setStatus("Finishing...")
         logging.info("Finalizing workspace %s" % self.mWSName)
 

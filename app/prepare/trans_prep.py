@@ -340,7 +340,9 @@ class EnumUnitStatH:
             name = info[0]
             cnt = self.mCounts[name]
             if cnt > 0:
-                variants.append([name, cnt])
+                rec = info[:]
+                rec[1] = cnt
+                variants.append(rec)
         self.mDescr["variants"] = variants
 
 #===============================================
