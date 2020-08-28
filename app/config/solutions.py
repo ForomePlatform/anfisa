@@ -178,8 +178,8 @@ def readySolutions_Case(base_pack):
         requires = {"trio_base", "WS"})
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
-        condition_high_quality() + condition_all_genotypes_called() +
-        clinVar_not_benign() + [
+        condition_high_quality() + condition_all_genotypes_called()
+        + clinVar_not_benign() + [
             condition_consequence_xBrowse(),
             ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),

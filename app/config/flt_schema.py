@@ -87,8 +87,8 @@ def clinvarPreTransform(rec_data, trusted_map):
                 s_value = "other"
             clinvar_trusted_simplified[trusted_map[submitter]] = s_value
     rec_data["_view"]["databases"]["clinvar_trusted"] = clinvar_trusted
-    rec_data["_view"]["databases"]["clinvar_trusted_simplified"] = \
-        clinvar_trusted_simplified
+    rec_data["_view"]["databases"]["clinvar_trusted_simplified"] = (
+        clinvar_trusted_simplified)
 
 #===============================================
 def defineFilterSchema(metadata_record):
@@ -460,7 +460,8 @@ def defineFilterSchema(metadata_record):
         filters.multiStatusUnit("Clinvar_Trusted_Significance",
             "/_view/databases/clinvar_trusted",
             title = "ClinVar significance by trusted submitters only",
-            tooltip = "Clinical Significance by ClinVar trusted submitters only",
+            tooltip =
+                "Clinical Significance by ClinVar trusted submitters only",
             conversion = "values")
         filters.multiStatusUnit("Clinvar_Trusted_Simplified",
             "/_view/databases/clinvar_trusted_simplified",
