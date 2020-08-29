@@ -30,6 +30,7 @@ class WS_EvalSpace(EvalSpace):
     def __init__(self, ds_h, rec_rand_f):
         EvalSpace.__init__(self, ds_h)
         self.mTotalCounts = [0, 0]
+        self.mMaxOffset = 0
         self.mGroups = []
         self.mZygRUnits = []
 
@@ -52,9 +53,10 @@ class WS_EvalSpace(EvalSpace):
         return iter(self.mZygRUnits)
 
     def addItemGroup(self, grp_size):
-        self.mGroups.append((self.mTotalCounts[1], grp_size))
+        self.mGroups.append((self.mMaxOffset, grp_size))
         self.mTotalCounts[0] += 1
         self.mTotalCounts[1] += max(1, grp_size)
+        self.mMaxOffset += grp_size
 
     def getTotalCounts(self):
         return self.mTotalCounts

@@ -209,7 +209,8 @@ class ConditionPoint(CheckPoint):
                 self.getStory().getMaster().getEvalSpace().getCondNone())
 
     def isActive(self):
-        return self.mCondition.getCondType() != "null"
+        return (self.mCondition is not None
+            and self.mCondition.getCondType() != "null")
 
     def getPointKind(self):
         return "If"
