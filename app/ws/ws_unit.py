@@ -174,6 +174,7 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         assert self.getSubKind() in {"transcript-float", "transcript-int"}
         self._setScreened(self.getDescr()["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
+        self.mDefaultValue = self.getDescr()["default"]
 
     def isDetailed(self):
         return True
@@ -194,6 +195,8 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         values = inp_data.get(self.getInternalName())
         if values:
             self.mArray.extend(values)
+        else:
+            self.mArray.append(self.mDefaultValue)
 
 #===============================================
 class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):

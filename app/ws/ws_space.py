@@ -30,8 +30,8 @@ class WS_EvalSpace(EvalSpace):
     def __init__(self, ds_h, rec_rand_f):
         EvalSpace.__init__(self, ds_h)
         self.mTotalCounts = [0, 0]
-        self.mMaxOffset = 0
         self.mGroups = []
+        self.mTrCounts = []
         self.mZygRUnits = []
 
         self.mRandRUnit = WS_ReservedNumUnit(
@@ -53,10 +53,12 @@ class WS_EvalSpace(EvalSpace):
         return iter(self.mZygRUnits)
 
     def addItemGroup(self, grp_size):
-        self.mGroups.append((self.mMaxOffset, grp_size))
+        self.mTrCounts.append(grp_size)
+        offset_from = self.mTotalCounts[1]
+        offset_to = offset_from + max(1, grp_size)
+        self.mGroups.append((offset_from, offset_to))
         self.mTotalCounts[0] += 1
-        self.mTotalCounts[1] += max(1, grp_size)
-        self.mMaxOffset += grp_size
+        self.mTotalCounts[1] = offset_to
 
     def getTotalCounts(self):
         return self.mTotalCounts
@@ -66,6 +68,9 @@ class WS_EvalSpace(EvalSpace):
 
     def iterGroups(self):
         return iter(self.mGroups)
+
+    def iterTranstriptCounts(self):
+        return iter(self.mTrCounts)
 
     def getGroups(self):
         return self.mGroups
@@ -148,19 +153,22 @@ class WS_Condition(Eval_Condition):
             self.mBitArray = bitarray()
             if fill_items_f is not None:
                 assert fill_groups_f is None and detailed is not False
-                for grp_offset, grp_size in self.getEvalSpace().iterGroups():
-                    if grp_size == 0:
+                groups = self.getEvalSpace().getGroups()
+                for idx, tr_count in enumerate(
+                        self.getEvalSpace().iterTranstriptCounts()):
+                    if tr_count == 0:
                         self.mBitArray.append(False)
                     else:
+                        grp_offset = groups[idx][0]
                         self.mBitArray.extend([fill_items_f(grp_offset + j)
-                            for j in range(grp_size)])
+                            for j in range(tr_count)])
                 self.mDetailed = True
             else:
                 rec_no = 0
-                for _, grp_size in self.getEvalSpace().iterGroups():
+                for tr_count in self.getEvalSpace().iterTranstriptCounts():
                     val = fill_groups_f(rec_no)
                     rec_no += 1
-                    self.mBitArray.extend([val] * (max(1, grp_size)))
+                    self.mBitArray.extend([val] * (max(1, tr_count)))
                 if not self.mDetailed:
                     self.mDetailed = False
 
@@ -187,10 +195,9 @@ class WS_Condition(Eval_Condition):
 
     def iterSelection(self):
         rec_no = -1
-        for grp_offset, grp_size in self.getEvalSpace().iterGroups():
+        for offset_from, offset_to in self.getEvalSpace().iterGroups():
             rec_no += 1
-            group_val = self.mBitArray[grp_offset:
-                grp_offset + max(1, grp_size)]
+            group_val = self.mBitArray[offset_from:offset_to]
             if group_val.any():
                 yield rec_no, group_val
 
@@ -205,8 +212,8 @@ class WS_Condition(Eval_Condition):
         return self.mBitArray.count()
 
     def recInSelection(self, rec_no):
-        grp_offset, grp_size = self.getEvalSpace().getGroupPos(rec_no)
-        return self.mBitArray[grp_offset:grp_offset + max(1, grp_size)].any()
+        offset_from, offset_to = self.getEvalSpace().getGroupPos(rec_no)
+        return self.mBitArray[offset_from:offset_to].any()
 
     sPattTrue = bitarray('1')
 
