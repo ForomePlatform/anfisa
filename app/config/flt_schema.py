@@ -541,6 +541,12 @@ def defineFilterSchema(metadata_record):
             default_value = "N/A",
             tooltip = "Functional analysis through hidden markov model HMM."
             "D: Deleterious; T: Tolerated")
+        filters.multiStatusUnit("PrimateAI",
+            "/_view/predictions/primate_ai_pred[]",
+            default_value = "N/A",
+            tooltip = "Prediction of PrimateAI score based on the authors "
+            "recommendation, “T(olerated)” or “D(amaging)”. "
+            "The score cutoff between “D” and “T” is 0.803.")
         filters.floatValueUnit("GERP_score",
             "/_view/bioinformatics/gerp_rs", render_mode = "linear,>",
             default_value = 0, title = "GERP Score")
