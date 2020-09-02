@@ -133,7 +133,7 @@ function onClick(event_ms) {
 }
 
 function checkCohortCtrl() {
-    if (!window.parent.sCohortList)
+    if (!window.parent.sCohortList || window.parent.sCohortList.length == 0)
         return;
     var cohort_list = window.parent.sCohortList;
     add_rep = ['<br/><p>Cohort visibility:'];
