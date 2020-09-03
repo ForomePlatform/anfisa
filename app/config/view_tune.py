@@ -174,7 +174,7 @@ class MEDGEN_AttrH(AttrH):
 class IGV_AttrH(AttrH):
     def __init__(self, app, view_gen, case, samples, reference):
         bam_base = app.getOption("http-bam-base")
-        if "hg38" in reference:
+        if reference and "hg38" in reference:
             self.ref = "hg38"
         else:
             self.ref = "hg19"
