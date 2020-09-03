@@ -3,7 +3,7 @@ if Proband_GQ <= 19:
     return False
 if Min_GQ <= 39:
     return False
-if QD <= 4:
+if (0.0001 <= QD and QD <= 4):
     return False
 if FS >= 30:
     return False

@@ -283,9 +283,12 @@ def defineFilterSchema(metadata_record):
             "It is simply the second lowest PL, because it is the "
             "difference between the second lowest PL and the lowest PL "
             "(always 0).")
+        filters.intValueUnit("QUAL", "/_filters/qual",
+            title = "Variant Call Quality",
+            default_value = -1)
         filters.floatValueUnit("QD", "/_filters/qd",
             title = "Quality by Depth", render_mode = "linear,>",
-            default_value=100000.,
+            default_value=-1,
             tooltip = "The QUAL score normalized by allele depth (AD) "
             "for a variant. This annotation puts the variant confidence "
             "QUAL score into perspective by normalizing for the amount "
