@@ -30,7 +30,7 @@ from forome_tools.log_err import logException
 from forome_tools.sync_obj import SyncronizedObject
 #===============================================
 class DataVault(SyncronizedObject):
-    def __init__(self, application, vault_dir):
+    def __init__(self, application, vault_dir, auto_mode = True):
         SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
@@ -40,6 +40,8 @@ class DataVault(SyncronizedObject):
         self.mScanModeLevel = 0
         self.mIntVersion = 0
         self.mProblemDataFStats = dict()
+        if not auto_mode:
+            return
         self.scanAll(False)
 
         names = [[], []]

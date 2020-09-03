@@ -44,7 +44,6 @@ def terminateAll(sig, frame):
 class AnfisaApp:
     sConfig = None
     sMongoConn = None
-    sVersionCode = None
     sDataVault = None
     sDruidAgent = None
     sRunOptions = None
@@ -55,8 +54,6 @@ class AnfisaApp:
     @classmethod
     def setup(cls, config, in_container):
         readySolutions()
-
-        cls.sVersionCode = AnfisaConfig.getAnfisaVersion()
 
         cls.sConfig = config
         MirrorUiDirectory.setup(cls.sConfig.get("mirror-ui"))
@@ -137,7 +134,7 @@ class AnfisaApp:
 
     @classmethod
     def getVersionCode(cls):
-        return cls.sVersionCode
+        return AnfisaConfig.getAnfisaVersion()
 
     @classmethod
     def getMongoConnector(cls):

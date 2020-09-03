@@ -34,7 +34,8 @@ from .v_check import ViewDataChecker
 from .trans_prep import TransformPreparator_WS, TransformPreparator_XL
 #=====================================
 def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
-        ds_inv = None, report_lines = False, favor_storage = None):
+        ds_inv = None, report_lines = False,
+        favor_storage = None, no_druid_push = False):
     readySolutions()
     assert (ds_kind == "xl") == (druid_adm is not None)
 
@@ -107,7 +108,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         is_ok &= druid_adm.uploadDataset(ds_name, flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             filter_set.getZygosityNames(),
-            os.path.abspath(ds_dir + "/druid_rq.json"))
+            os.path.abspath(ds_dir + "/druid_rq.json"), no_druid_push)
 
     if is_ok:
         try:
@@ -187,5 +188,10 @@ def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
             print(json.dumps(flt_data, ensure_ascii = False), file = outp)
 
     flt_schema_data = filter_set.dump()
+
+    report_fname = (os.path.abspath(ds_dir + "/druid_rq.json")
+        if portion_no == 0 else None)
+
     druid_adm.uploadDataset("xl_FAVOR", flt_schema_data, fdata_path,
-            filter_set.getZygosityNames(), portion_mode = True)
+            filter_set.getZygosityNames(),
+            report_fname = report_fname, portion_mode = True)

@@ -56,7 +56,8 @@ def checkDSName(name, kind):
         assert False
 
 #===============================================
-def createDataSet(app_config, ds_entry, force_drop, druid_adm, report_lines):
+def createDataSet(app_config, ds_entry, force_drop, druid_adm,
+        report_lines, no_druid_push = False):
     readySolutions()
 
     if not ds_entry.getSource():
@@ -83,7 +84,7 @@ def createDataSet(app_config, ds_entry, force_drop, druid_adm, report_lines):
 
     createDS(ds_dir, mongo_conn, druid_adm,
         ds_entry.getName(), ds_entry.getSource(), ds_entry.getDSKind(),
-        ds_entry.getInv(), report_lines)
+        ds_entry.getInv(), report_lines, no_druid_push)
     mongo_conn.close()
 
 #===============================================
@@ -332,6 +333,8 @@ if __name__ == '__main__':
         help = "Portion for report lines, default = 100")
     parser.add_argument("--delay",  type = int,  default = 0,
         help = "Delay between work with multiple datasets, in seconds")
+    parser.add_argument("--nodruidpush", action = "store_true",
+        help = "No push into Druid, if mode = create")
     parser.add_argument("names", nargs = "+", help = "Dataset name(s)")
     args = parser.parse_args()
 
@@ -443,7 +446,7 @@ if __name__ == '__main__':
             time.sleep(args.delay)
         if args.mode == "create":
             createDataSet(app_config, ds_entry, args.force,
-                druid_adm, args.reportlines)
+                druid_adm, args.reportlines, args.nodruidpush)
         elif args.mode == "drop":
             dropDataSet(app_config, ds_entry, druid_adm, False)
         elif args.mode == "druid-push":

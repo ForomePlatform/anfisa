@@ -230,7 +230,8 @@ function _checkHitTr() {
 /**************************************/
 /**************************************/
 function checkCohortCtrl() {
-    if (sViewPort < 0 || !window.parent.sCohortList)
+    if (sViewPort < 0 || !window.parent.sCohortList 
+            || window.parent.sCohortList.length == 0)
         return;
     var cohort_list = window.parent.sCohortList;
     

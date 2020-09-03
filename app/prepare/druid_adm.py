@@ -20,6 +20,7 @@
 
 import os, sys, subprocess, json, logging
 from datetime import datetime, timedelta
+from time import sleep
 
 from app.xl.druid_agent import DruidAgent
 #===============================================
@@ -49,24 +50,26 @@ class DruidAdmin(DruidAgent):
 
     #===============================================
     def uploadDataset(self, dataset_name, flt_data, fdata_name,
-            zygosity_names, report_fname = None, portion_mode = False):
+            zygosity_names, report_fname = None,
+            no_druid_push = False, portion_mode = False):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
             filter_name = (druid_dataset_name + "__"
                 + os.path.basename(fdata_name))
-            cmd = [self.mScpConfig["exe"]]
-            if not cmd[0]:
+            cmd_copy = [self.mScpConfig["exe"]]
+            if not cmd_copy[0]:
                 print("Undefined parameter scp/exe", file = sys.stderr)
                 assert False
             if self.mScpConfig.get("key"):
-                cmd += ["-i", os.path.expanduser(self.mScpConfig["key"])]
-            cmd.append(fdata_name)
-            cmd.append(self.mScpConfig["host"] + ':' + base_dir + "/"
+                cmd_copy += ["-i", os.path.expanduser(self.mScpConfig["key"])]
+            cmd_copy.append(fdata_name)
+            cmd_copy.append(self.mScpConfig["host"] + ':' + base_dir + "/"
                 + filter_name)
-            print("Remote copying:", ' '.join(cmd), file = sys.stderr)
+            cmd_copy = ''.join(cmd_copy)
+            print("Remote copying:", cmd_copy, file = sys.stderr)
             print("Scp started at", datetime.now(), file = sys.stderr)
-            subprocess.call(' '.join(cmd), shell = True)
+            subprocess.call(cmd_copy, shell = True)
         else:
             base_dir = os.path.dirname(fdata_name)
             filter_name = os.path.basename(fdata_name)
@@ -131,12 +134,36 @@ class DruidAdmin(DruidAgent):
 
         if report_fname is not None:
             with open(report_fname, "w", encoding="utf-8") as outp:
-                outp.write(json.dumps(schema_request, ensure_ascii = False))
+                outp.write(json.dumps(schema_request,
+                    sort_keys = True, indent = 4, ensure_ascii = False))
             print("Report stored:", report_fname, file = sys.stderr)
 
+        if no_druid_push:
+            print("Skipped push to Druid")
+            return True
+
+        dt_start = datetime.now()
         print("Upload to Druid", dataset_name,
-            "started at ", datetime.now(), file = sys.stderr)
-        self.call("index", schema_request)
+            "started at ", dt_start, file = sys.stderr)
+        resp_h = self.call("index", schema_request)
+        task_id = resp_h["task"]
+        while True:
+            resp_h = self.call("index", [task_id], add_path = "Status")
+            if resp_h[task_id]["status"] != "RUNNING":
+                break
+            sys.stderr.write('.')
+            sleep(1)
+            continue
+
+        dt_end = datetime.now()
+        print("\nUpload to Druid", dataset_name,
+            "finished at ", dt_end, "for", dt_end - dt_start,
+            file = sys.stderr)
+        print("Upload status:", resp_h[task_id]["status"], file = sys.stderr)
+        if (resp_h[task_id]["status"] != "SUCCESS"
+                or resp_h[task_id]["errorMsg"]):
+            print("Error: ", resp_h["errorMsg"], file = sys.stderr)
+            return False
         return True
 
     def dropDataset(self, dataset_name):
