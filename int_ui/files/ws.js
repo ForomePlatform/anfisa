@@ -156,6 +156,7 @@ function changeRec(rec_no) {
     }
     sCurRecNo = rec_no;
     sCurRecID = sViewRecNoSeq[sCurRecNo];
+    new_rec_el.className = new_rec_el.className.replace(" press", "");
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName +
@@ -165,6 +166,12 @@ function changeRec(rec_no) {
         "&rec=" + sCurRecID + "&port=2" + 
         "&details=" + sRecList[sCurRecNo]["dt"]);
     sTagSupportH.updateNavigation();
+}
+
+function refreshCurRec() {
+    var rec_no = sCurRecNo;
+    sCurRecNo = null;
+    changeRec(rec_no);
 }
 
 function onKey(event_key) {
@@ -376,6 +383,7 @@ sTagSupportH = {
     checkTagsState: function(tags_state) {
         if (tags_state != this.mTagsState || tags_state == true) {
             this.loadSelection(this.mCurTag);
+            refreshCurRec();
         }
     },
 
@@ -465,6 +473,40 @@ sTagSupportH = {
 
 
 //=====================================
+// Tagging Selection
+//=====================================
+function taggingSelection() {
+    relaxView();
+    res_content = 'Select tag to mark surrent set of variants:<br/>' +
+        '<input id="tagging-selection-tag" type="text" class="popup">' + 
+        '&emsp;Clear all:&nbsp;<input id="tagging-selection-off"' +
+        ' type="checkbox" class="popup"><br/>' +
+        '<button class="popup" onclick="doTaggingSelection();">Make tagging</button>' + 
+        '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
+    res_el = document.getElementById("tagging-select-dialog");
+    res_el.innerHTML = res_content;
+    document.getElementById("tagging-selection-off").checked = false;
+    sViewH.popupOn(res_el);
+}
+
+function doTaggingSelection() {
+    var tag_args = "&tag=" + 
+        document.getElementById("tagging-selection-tag").value;
+    if (document.getElementById("tagging-selection-off").checked)
+        tag_args += "&off=true";
+    ajaxCall("selection_tagging", sConditionsH.getCondRqArgs(
+        sCurFilterName, sZoneH.getCurState(), true) + tag_args,
+        finishTaggingSelection, "Tagging failed");
+    relaxView();
+ }
+
+function finishTaggingSelection(info) {
+    alert("Tagging finished OK");
+    checkTagsState(info["tags-state"]);
+    relaxView();
+}
+
+//=====================================
 function tabReport() {
     if (sCurRecNo == null)
         return;
@@ -497,3 +539,4 @@ function checkTagsState(tags_state) {
 function checkTabNavigation(tag_name) {
     sTagSupportH.checkNavigation(tag_name);
 }
+

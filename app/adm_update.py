@@ -281,10 +281,6 @@ if __name__ == '__main__':
         help = "Force update")
     parser.add_argument("-p", "--plainreceipt", action = "store_true",
         help = "Plain receipt in restore, solution names are ignored")
-    parser.add_argument("--reportlines", type = int, default = 100,
-        help = "Portion for report lines, default = 100")
-    parser.add_argument("--delay",  type = int,  default = 0,
-        help = "Delay between work with multiple datasets, in seconds")
     parser.add_argument("names", nargs = "*", help = "Dataset name(s)")
     args = parser.parse_args()
 

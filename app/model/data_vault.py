@@ -134,8 +134,6 @@ class DataVault(SyncronizedObject):
     def descrContext(self, rq_args, rq_descr):
         if "ds" in rq_args:
             rq_descr.append("ds=" + rq_args["ds"])
-        if "ws" in rq_args:
-            rq_descr.append("ds=" + rq_args["ws"])
 
     def getApp(self):
         return self.mApp
@@ -261,3 +259,10 @@ class DataVault(SyncronizedObject):
     def rq__adm_update(self, rq_args):
         self.scanAll()
         return "Updated"
+
+    @RestAPI.vault_request
+    def rq__adm_reload_ds(self, rq_args):
+        ds_name = rq_args["ds"]
+        self.unloadDS(ds_name)
+        self.loadDS(ds_name)
+        return "Reloaded " + ds_name

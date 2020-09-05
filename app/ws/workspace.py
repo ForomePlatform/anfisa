@@ -243,3 +243,22 @@ class Workspace(DataSet):
     def rq__tag_select(self, rq_args):
         return self.mTagsMan.reportSelectTag(
             rq_args.get("tag"))
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__selection_tagging(self, rq_args):
+        tag_name = rq_args["tag"]
+        off_mode = rq_args.get("off")
+        if off_mode:
+            rec_no_seq = []
+        else:
+            if "dtree" in rq_args or "code" in rq_args:
+                eval_h = self._getArgDTree(rq_args)
+                rec_no_seq, _ = eval_h.collectRecSeq()
+            else:
+                eval_h = self._getArgCondFilter(rq_args)
+                rec_no_seq = self.mEvalSpace.evalRecSeq(
+                    eval_h.getCondition())
+        with self:
+            self.mTagsMan.selectionTagging(tag_name, rec_no_seq)
+        return {"tags-state": self.getSolEnv().getIntVersion("tags")}

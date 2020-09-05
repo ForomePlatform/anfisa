@@ -19,9 +19,9 @@
 #
 
 from collections import defaultdict
+from copy import deepcopy
 
 from .zone import ZoneH
-
 #===============================================
 class TagsManager(ZoneH):
     def __init__(self, ds_h, check_tag_list):
@@ -117,3 +117,29 @@ class TagsManager(ZoneH):
         if tag_name:
             rep["tag-rec-list"] = sorted(self.mTagSets[tag_name])
         return rep
+
+    def selectionTagging(self, tag_name, rec_no_seq):
+        assert tag_name and tag_name not in self.mCheckTags
+        new_tag_keys = {self.getDS().getRecKey(rec_no)
+            for rec_no in rec_no_seq}
+        to_update_seq = []
+        for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
+            rec_key, tags_data = tags_info[:2]
+            if tags_data is None:
+                continue
+            if rec_key in new_tag_keys:
+                new_tag_keys.remove(rec_key)
+                tags_data = deepcopy(tags_data)
+                tags_data[tag_name] = "True"
+                to_update_seq.append((rec_key, tags_data))
+            elif tag_name in tags_data:
+                tags_data = deepcopy(tags_data)
+                del tags_data[tag_name]
+                to_update_seq.append((rec_key, tags_data))
+        simple_tag_data = {tag_name: "True"}
+        for rec_key in new_tag_keys:
+            to_update_seq.append((rec_key, simple_tag_data))
+        for rec_key, tags_data in to_update_seq:
+            self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),
+                "tags", "UPDATE", rec_key, tags_data)
+

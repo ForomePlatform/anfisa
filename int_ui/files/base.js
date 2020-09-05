@@ -35,12 +35,17 @@ var sViewAllTranscripts = [true];
 /*************************************/
 /* Utilities                         */
 /*************************************/
-function ajaxCall(rq_name, args, func_eval) {
+function ajaxCall(rq_name, args, func_eval, error_msg) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
-        if (this.readyState == 4 && this.status == 200) {
-            var info = JSON.parse(this.responseText);
-            func_eval(info);
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var info = JSON.parse(this.responseText);
+                func_eval(info);
+            } else {
+                if (error_msg)
+                    alert(error_msg);
+            }
         }
     };
     xhttp.open("POST", rq_name, true);
