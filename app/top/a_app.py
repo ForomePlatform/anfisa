@@ -173,6 +173,12 @@ class AnfisaApp:
             if agent is not None:
                 agent.descrContext(rq_args, rq_descr)
             report = func(agent, rq_args)
+
+            if isinstance(report, list) and report[0] == '!':
+                mode, content, add_headers = report[1:]
+                return serv_h.makeResponse(mode = mode,
+                    content = content, add_headers = add_headers)
+
             return serv_h.makeResponse(mode = "json",
                 content = json.dumps(report))
 

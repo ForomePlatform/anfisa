@@ -148,7 +148,8 @@ class DruidAdmin(DruidAgent):
         resp_h = self.call("index", schema_request)
         task_id = resp_h["task"]
         while True:
-            resp_h = self.call("index", [task_id], add_path = "Status")
+            resp_h = self.call("index", [task_id],
+                add_path = "Status", calm_mode = True)
             if resp_h[task_id]["status"] != "RUNNING":
                 break
             sys.stderr.write('.')

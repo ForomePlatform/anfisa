@@ -17,6 +17,8 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import csv
+from io import StringIO
 
 from forome_tools.path_works import AttrFuncPool
 #===============================================
@@ -36,11 +38,33 @@ class VariantsTabReportSchema:
         rec_data = ds_h.getRecordData(rec_no)
         ret_handle = {"_no": rec_no}
         if self.mUseTags and ds_h.getDSKind() == "ws":
-            ret_handle["_tags"] = ds_h.getTagsMan().makeRecReport(rec_no)
+            ret_handle["_tags"] = (ds_h.getTagsMan().
+                makeRecReport(rec_no)["rec-tags"])
 
         for field_h in self.mFields:
             field_h.process(rec_data, ret_handle)
         return ret_handle
+
+    def prepareCSV(self, ds_h, rec_no_seq):
+        output = StringIO()
+        writer = csv.writer(output)
+        fld_names = [field_h.getName() for field_h in self.mFields]
+        if self.mUseTags and ds_h.getDSKind() == "ws":
+            fld_names.append("_tags")
+        writer.writerow(fld_names)
+        for rec_no in rec_no_seq:
+            rec_descr = self.reportRecord(ds_h, rec_no)
+            row = []
+            for fld in fld_names:
+                val = rec_descr[fld]
+                if fld == "_tags":
+                    val = sorted(val.keys())
+                if isinstance(val, list):
+                    row.append('|'.join(map(str, val)))
+                else:
+                    row.append(str(val))
+            writer.writerow(row)
+        return output.getvalue()
 
 #===============================================
 class PresentationFieldPath:
@@ -48,6 +72,9 @@ class PresentationFieldPath:
         self.mName = name
         self.mFunc = AttrFuncPool.makeFunc(field_path)
         self.mIsSeq = field_path.endswith('[]')
+
+    def getName(self):
+        return self.mName
 
     def process(self, rec_data, ret_handle):
         res = self.mFunc(rec_data)

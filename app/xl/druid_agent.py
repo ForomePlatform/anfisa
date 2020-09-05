@@ -36,8 +36,10 @@ class DruidAgent:
             for mode, url in self.sDefaultUrls.items()}
         self.mVaultPrefix = druid_cfg["vault-prefix"]
 
-    def call(self, mode, request_data, method = "POST", add_path = ""):
-        return self.mRestAgents[mode].call(request_data, method, add_path)
+    def call(self, mode, request_data, method = "POST",
+            add_path = "", calm_mode = False):
+        return self.mRestAgents[mode].call(request_data, method, add_path,
+            calm_mode = calm_mode)
 
     def normDataSetName(self, ds_name):
         if not self.mVaultPrefix:

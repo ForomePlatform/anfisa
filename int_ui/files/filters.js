@@ -40,6 +40,7 @@ var sUnitsH = {
     mTimeH: null,
     mDelayMode: null,
     mOffline: false,
+    mCount: null,
     
     init: function(call_ds, delay_mode) {
         this.mCallDS = call_ds;
@@ -95,6 +96,7 @@ var sUnitsH = {
         this.mWaiting = false;
         this.mFilteredCounts = info["filtered-counts"];
         this.mTotalCounts = info["total-counts"];
+        this.mCount = this.mFilteredCounts[0];
         this.mRqId  = info["rq-id"];
         var el_rep = document.getElementById("list-report");
         if (el_rep) {
@@ -889,7 +891,8 @@ function showExport() {
     relaxView();
     if (getCurCount() <= 300)
         res_content = 'Export ' + getCurCount() + ' variants?<br>' +
-            '<button class="popup" onclick="doExport();">Export</button>' + 
+            '<button class="popup" onclick="doExport();">To Excel</button>' + 
+            '&emsp;<button class="popup" onclick="doCSVExport();">To CSV</button>' + 
             '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
     else
         res_content = 'Too many variants for export: ' + 

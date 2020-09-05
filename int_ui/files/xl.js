@@ -57,6 +57,13 @@ function doExport() {
     ajaxCall("export", args, setupExport);
 }
 
+function doCSVExport() {
+    sViewH.popupOff();
+    window.open("csv_export?" + "ds=" + sDSName + "&conditions=" + 
+        encodeURIComponent(JSON.stringify(sConditionsH.getConditions())) + 
+        "&schema=demo", "CSV export");
+}
+
 /*************************************/
 /**************************************/
 function arrangeControls() {

@@ -558,6 +558,18 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
+    def rq__csv_export(self, rq_args):
+        eval_h = self._getArgCondFilter(rq_args)
+        rec_count = self.getEvalSpace().evalTotalCounts(eval_h.getCondition())[0]
+        assert rec_count <= AnfisaConfig.configOption("max.export.size")
+        rec_no_seq = self.getEvalSpace().evalRecSeq(
+            eval_h.getCondition(), rec_count)
+        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
+        return ["!", "csv", tab_schema.prepareCSV(self, rec_no_seq),
+            [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]
+
+    #===============================================
+    @RestAPI.ds_request
     def rq__solutions(self, rq_args):
         return self.reportSolutions()
 

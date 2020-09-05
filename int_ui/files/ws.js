@@ -80,7 +80,7 @@ function setupList(info) {
     sRecList = info["records"];
     refreshRecList();
     arrangeControls();
-    sTagSupportH.checkTagsState(true);
+    sTagSupportH.checkTagsState(null);
 }
 
 function arrangeControls() {
@@ -249,6 +249,13 @@ function doExport() {
         sCurFilterName, sZoneH.getCurState(), true), setupExport);
 }
 
+function doCSVExport() {
+    sViewH.popupOff();
+    window.open("csv_export?" + sConditionsH.getCondRqArgs(
+        sCurFilterName, sZoneH.getCurState(), true) + "&schema=demo", 
+        "CSV export");
+}
+
 //=====================================
 // Filters
 //=====================================
@@ -381,9 +388,11 @@ sTagSupportH = {
     },
 
     checkTagsState: function(tags_state) {
-        if (tags_state != this.mTagsState || tags_state == true) {
+        if ((tags_state != this.mTagsState) || tags_state == null) {
+            this.mTagsState = tags_state;
+            if (this.mTagsState != null)
+                refreshCurRec();
             this.loadSelection(this.mCurTag);
-            refreshCurRec();
         }
     },
 

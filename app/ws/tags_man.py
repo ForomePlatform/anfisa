@@ -142,4 +142,3 @@ class TagsManager(ZoneH):
         for rec_key, tags_data in to_update_seq:
             self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),
                 "tags", "UPDATE", rec_key, tags_data)
-
