@@ -101,4 +101,4 @@ Tagging mechanism in the system organized by the following principles
                 
 See also
 --------
-:doc:`tag_select`
+:doc:`tag_select`, :doc:`macro_tagging`

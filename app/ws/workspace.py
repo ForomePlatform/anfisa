@@ -246,9 +246,9 @@ class Workspace(DataSet):
 
     #===============================================
     @RestAPI.ws_request
-    def rq__selection_tagging(self, rq_args):
+    def rq__macro_tagging(self, rq_args):
         tag_name = rq_args["tag"]
-        off_mode = rq_args.get("off")
+        off_mode = (rq_args.get("off") == "true")
         if off_mode:
             rec_no_seq = []
         else:

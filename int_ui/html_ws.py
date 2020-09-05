@@ -64,11 +64,11 @@ def _formPanel(output, workspace_name, ws_pub_url):
                         >Create workspace...</a>
                     <a class="popup" onclick="tabReport();"
                         >Tab report</a>
-                    <a class="popup" onclick="taggingSelection();"
-                        >Tagging selection</a>
+                    <a class="popup" onclick="macroTagging();"
+                        >Macro tagging operation</a>
                 </div>
                 <div id="export-result" class="popup"></div>
-                <div id="tagging-select-dialog" class="popup"></div>
+                <div id="macro-tagging-dialog" class="popup"></div>
             </div> <span id="ds-name" class="bold"></span>
             <div class="nomargins">
                 Variants:&nbsp;<span id="ws-list-report" class="bold"

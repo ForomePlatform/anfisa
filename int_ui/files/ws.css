@@ -251,7 +251,7 @@ a.ext-ref:hover {
     color:yellow;
 }
 /*************************************************/
-div#tagging-select-dialog {
+div#macro-tagging-dialog {
     display: none;
     position: absolute;
     padding: 20px;

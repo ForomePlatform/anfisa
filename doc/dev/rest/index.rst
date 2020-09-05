@@ -4,55 +4,58 @@ Anfisa REST API
 Requests
 --------
 
-  ==================== =============================================================
+  ========================= =============================================================
   \ 
   *Vault level*    
-   :doc:`dirinfo`       Vault information
-   :doc:`single_cnt`    Single variant full JSON data
-   :doc:`job_status`    Job status
-   :doc:`adm_update`    Force vault state update
-  -------------------- ------------------------------------------------------------- 
+   :doc:`dirinfo`           Vault information
+   :doc:`single_cnt`        Single variant full JSON data
+   :doc:`job_status`        Job status
+   :doc:`adm_update`        Force vault state update
+   :doc:`adm_reload_ds`     Force dataset reload
+  ------------------------- ------------------------------------------------------------- 
   \ 
   *Dataset level*
   \ 
-   :doc:`dsinfo`        Dataset information
-   :doc:`ds_list`       List of variants in auxiliary viewing regime
-   :doc:`reccnt`        Aspect-based full view presentation of variant
-   :doc:`recdata`       Variant full JSON data
-   :doc:`tab_report`    Viewing data in tabulated form
-   :doc:`vsetup`        View data schema information
-   :doc:`solutions`     Solution items information
-  -------------------- -------------------------------------------------------------
+   :doc:`dsinfo`            Dataset information
+   :doc:`ds_list`           List of variants in auxiliary viewing regime
+   :doc:`reccnt`            Aspect-based full view presentation of variant
+   :doc:`recdata`           Variant full JSON data
+   :doc:`tab_report`        Viewing data in tabulated form
+   :doc:`vsetup`            View data schema information
+   :doc:`solutions`         Solution items information
+  ------------------------- -------------------------------------------------------------
     \ 
   *Filtering regime*
   \ 
-   :doc:`ds_stat`       Filtering regime support
-   :doc:`statunits`     Delayed evaluations for filtering property status data
-   :doc:`statfunc`      Function filtering support
-  -------------------- -------------------------------------------------------------
+   :doc:`ds_stat`           Filtering regime support
+   :doc:`statunits`         Delayed evaluations for filtering property status data
+   :doc:`statfunc`          Function filtering support
+  ------------------------- -------------------------------------------------------------
     \ 
   *Decision trees*
   \ 
-   :doc:`dtree_set`     Decision tree page setup
-   :doc:`dtree_counts`  Delayed evaluations of item counts for decision tree points
-   :doc:`dtree_stat`    Filtering properties status report for decision tree page
-   :doc:`dtree_check`   Decision tree code check
-   :doc:`dtree_cmp`     Comparison of decision trees
-  -------------------- -------------------------------------------------------------
+   :doc:`dtree_set`         Decision tree page setup
+   :doc:`dtree_counts`      Delayed evaluations of item counts for decision tree points
+   :doc:`dtree_stat`        Filtering properties status report for decision tree page
+   :doc:`dtree_check`       Decision tree code check
+   :doc:`dtree_cmp`         Comparison of decision trees
+  ------------------------- -------------------------------------------------------------
   \ 
   *Operations*
   \ 
-   :doc:`export`        Export operation
-   :doc:`ds2ws`         Creation of secondary workspace
-  -------------------- -------------------------------------------------------------
+   :doc:`export`            Export operation in Excel format
+   :doc:`csv_export`        Export operation in CSV format
+   :doc:`ds2ws`             Creation of secondary workspace
+  ------------------------- -------------------------------------------------------------
   \ 
   *WS-dataset support*
   \ 
-   :doc:`ws_list`       Current list of variants
-   :doc:`zone_list`     Zone support information
-   :doc:`ws_tags`       Tagging variant information retrieval and modifications
-   :doc:`tag_select`    Tag navigation support
-  ==================== =============================================================
+   :doc:`ws_list`           Current list of variants
+   :doc:`zone_list`         Zone support information
+   :doc:`ws_tags`           Tagging variant information retrieval and modifications
+   :doc:`tag_select`        Tag navigation support
+   :doc:`macro_tagging`     Tagging macro operation
+  ========================= =============================================================
 
 
 .. toctree::
@@ -63,6 +66,7 @@ Requests
    single_cnt
    job_status
    adm_update
+   adm_reload_ds
 
    dsinfo 
    ds_list
@@ -83,12 +87,14 @@ Requests
    dtree_cmp
    
    export
+   csv_export
    ds2ws
    
    ws_list
    zone_list
    ws_tags
    tag_select
+   macro_tagging
    
 Structures
 ----------

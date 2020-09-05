@@ -18,6 +18,8 @@ Anfisa Development Documentation
    
    install
    
+   adm/index
+   
    zygocity
    
 Indices and tables

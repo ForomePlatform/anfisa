@@ -1,12 +1,12 @@
-export
-======
-        **Export operation**
+csv_export
+==========
+        **Export to CSV format operation**
 
 Synopsis
 --------
 
 .. index:: 
-    export; request
+    csv_export; request
 
 **export** 
 
@@ -22,18 +22,22 @@ Synopsis
 
         **zone**: *optional* :doc:`zone descriptor<s_zone>`
             *in JSON string representation*
+
+        **schema**: name of data schema
         
-    **Return value**: 
+        .. index:: 
+            schema; argument of csv_export        
+
+    **Returns**: 
     
-    | ``{`` *dictionary*
-    |      "**kind**": ``"excel"``
-    |      "**fname**": URL to excel file to download
-    |  ``}``
+    Page in CSV format for download
     
 Description
 -----------
 
-The request creates exported Excel file for selected variants. Selection should be of limited size: **not more than 300 variants**.
+The request creates preentation of selected variants in CSV format. 
+
+This method is not a proper REST API call: it does not return a JSON object but file in CSV format.
 
 Selection is defined by:
 
@@ -45,6 +49,7 @@ Selection is defined by:
         In this case **zone** option works in reverse context: records satisfying 
         condition on zones are filtered out.)
 
-Resulting file is created on servers side and is ready for download from moment of creation and later.
+In current version of the system schemes are defined in source code of the server, so the list of it is fixed.
 
-(Cleaning of these files are subject of Anfisa administration)
+.. warning:: TODO: add list and descriptions of available schemes
+

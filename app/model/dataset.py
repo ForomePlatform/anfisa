@@ -560,7 +560,8 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__csv_export(self, rq_args):
         eval_h = self._getArgCondFilter(rq_args)
-        rec_count = self.getEvalSpace().evalTotalCounts(eval_h.getCondition())[0]
+        rec_count = self.getEvalSpace().evalTotalCounts(
+            eval_h.getCondition())[0]
         assert rec_count <= AnfisaConfig.configOption("max.export.size")
         rec_no_seq = self.getEvalSpace().evalRecSeq(
             eval_h.getCondition(), rec_count)

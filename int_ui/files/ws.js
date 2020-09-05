@@ -482,35 +482,35 @@ sTagSupportH = {
 
 
 //=====================================
-// Tagging Selection
+// Macro Tagging
 //=====================================
-function taggingSelection() {
+function macroTagging() {
     relaxView();
     res_content = 'Select tag to mark surrent set of variants:<br/>' +
-        '<input id="tagging-selection-tag" type="text" class="popup">' + 
-        '&emsp;Clear all:&nbsp;<input id="tagging-selection-off"' +
+        '<input id="macro-tagging-tag" type="text" class="popup">' + 
+        '&emsp;or clear all marks:&nbsp;<input id="macro-tagging-off-mode"' +
         ' type="checkbox" class="popup"><br/>' +
-        '<button class="popup" onclick="doTaggingSelection();">Make tagging</button>' + 
+        '<button class="popup" onclick="doMacroTagging();">Make tagging</button>' + 
         '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
-    res_el = document.getElementById("tagging-select-dialog");
+    res_el = document.getElementById("macro-tagging-dialog");
     res_el.innerHTML = res_content;
-    document.getElementById("tagging-selection-off").checked = false;
+    document.getElementById("macro-tagging-off-mode").checked = false;
     sViewH.popupOn(res_el);
 }
 
-function doTaggingSelection() {
+function doMacroTagging() {
     var tag_args = "&tag=" + 
-        document.getElementById("tagging-selection-tag").value;
-    if (document.getElementById("tagging-selection-off").checked)
+        document.getElementById("macro-tagging-tag").value;
+    if (document.getElementById("macro-tagging-off-mode").checked)
         tag_args += "&off=true";
-    ajaxCall("selection_tagging", sConditionsH.getCondRqArgs(
+    ajaxCall("macro_tagging", sConditionsH.getCondRqArgs(
         sCurFilterName, sZoneH.getCurState(), true) + tag_args,
-        finishTaggingSelection, "Tagging failed");
+        finishMacroTagging, "Macro tagging operation failed");
     relaxView();
  }
 
-function finishTaggingSelection(info) {
-    alert("Tagging finished OK");
+function finishMacroTagging(info) {
+    alert("Macro tagging operation finished OK");
     checkTagsState(info["tags-state"]);
     relaxView();
 }
