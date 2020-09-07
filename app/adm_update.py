@@ -261,7 +261,7 @@ if __name__ == '__main__':
 
     #========================================
     import forome_tools
-    forome_tools.compatible((0, 1, 2))
+    forome_tools.compatible((0, 1, 3))
 
     #========================================
     if sys.version_info < (3, 7):
