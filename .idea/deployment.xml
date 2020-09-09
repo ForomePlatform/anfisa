@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData">
+    <serverData>
+      <paths name="AWS">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../master/forome_misc_tools" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Copy of project-level server 'Ika'">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../master/forome_misc_tools" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Copy of project-level server 'Tako'">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../master/forome_misc_tools" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Tako">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$/../../master/forome_misc_tools" web="/" />
+            <mapping local="$PROJECT_DIR$" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>

@@ -1,0 +1,17 @@
+--- 
+- hosts: druid
+  become: yes
+  become_user: root
+  roles: 
+    - {role: druid, tags: druid}
+    - {role: superset, tags: superset}
+    - {role: jenkins, tags: jenkins}
+
+  vars:
+    nginx_servers:
+      - {src: 'sites-enabled.j2',dest: '/etc/nginx/sites-enabled/druid.conf', server_name: 'olap.aws-rsm.com druid-ubuntu', proxy_pass: 'http://localhost:8082', forwarded_protocol: 'https'}
+      - {src: 'sites-enabled.j2',dest: '/etc/nginx/sites-enabled/druid-ui.conf', server_name: 'druid-ui.aws-rsm.com druid-ui-ubuntu', proxy_pass: 'http://localhost:8888', forwarded_protocol: 'https'}
+      - {src: 'sites-enabled.j2',dest: '/etc/nginx/sites-enabled/airflow.conf', server_name: 'airflow.aws-rsm.com airflow-ubuntu', proxy_pass: 'http://localhost:8080', forwarded_protocol: 'https'}
+      - {src: 'sites-enabled.j2',dest: '/etc/nginx/sites-enabled/superset.conf', server_name: 'superset.aws-rsm.com superset-ubuntu', proxy_pass: 'http://localhost:8088', forwarded_protocol: 'https'}
+      - {src: 'sites-enabled.j2',dest: '/etc/nginx/sites-enabled/jenkins.conf', server_name: 'jenkins.aws-rsm.com jenkins-ubuntu', proxy_pass: 'http://localhost:8087', forwarded_protocol: 'http'}
+      - {src: 'htpasswd',dest: '/etc/nginx/.htpasswd'}

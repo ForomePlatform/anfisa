@@ -1,0 +1,586 @@
+/*
+ * Copyright (c) 2019. Partners HealthCare and other members of
+ * Forome Association
+ *
+ * Developed by Sergey Trifonov based on contributions by Joel Krier,
+ * Michael Bouzinier, Shamil Sunyaev and other members of Division of
+ * Genetics, Brigham and Women's Hospital
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+/********************Modal Filter*****************************/
+body {
+    display: flex;
+    font-family: sans-serif;
+    flex-direction: column;
+    align-items: stretch;
+    white-space: nowrap;
+    height: 100%;
+    margin: 0px; 
+    padding: 0px;
+}
+
+#dtree-ctrl {
+    width: 100%;
+    background-color: #333455; 
+    color: white;
+    height: 60px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+    
+
+/********************Top controls*****************************/
+div#dtree-top-ctrl, div#dtree-top-info, div#dtree-top-cur {
+    padding: 3px 10px;
+    flex: 1 0 30%;
+}
+
+span#list-report {
+    width: 150px;
+    max-width: 150px;
+}
+
+div.error {
+    width: 100%;
+    background-color: yellow;
+    color: red;
+    font-size: 120%;
+}
+div.error a {
+    text-decoration: underline;
+    cursor: pointer;
+}
+/********************DTree edit controls*****************************/
+div#dtree-edit-ctrl {
+    height: 30px;
+    vertical-align: bottom;
+    margin: 5px 10px 10px 5px;
+    display: flex;
+    font-size: 16px;
+}
+
+select#dtree-name-input {
+    font-size: 16px;
+}
+
+#dtree-name-combo {
+    margin: 0px 5px 0px 10px;
+}
+
+/********************Filter controls*****************************/
+
+div#panel-tree, div#panel-stat  {
+    flex-grow: 1;
+    overflow: hidden;
+    display: grid;
+    border: 1px solid black;
+    white-space: nowrap;
+    width: 50%;
+}
+
+div#condition-change {
+    margin: 0px;
+    padding: 0px;
+    vertical-align: top;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+div#cond-title-wrap {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    color: #8F00E0;
+    font-weight: bold;
+    font-size: 15px;
+    height: 22px;
+    min-height: 17px;
+    flex-grow: 0;
+}
+div#cond-message {
+    padding: 5px 10px 4px 10px;
+    background-color: #f0f0ff;
+    font-style: italic;
+    font-size: 13px;
+    height: 17px;
+    min-height: 17px;
+}
+div#cond-ctrl {
+    padding: 5px 10px 8px 30px;
+    height: 25px;
+    flex-grow: 0;
+}
+
+div#wrap-cond-enum {
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    overflow: hidden;
+    flex-grow: 1;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+}
+
+div#cur-cond-enum-list {
+    padding: 0px;
+    margin: 2px;
+    min-width: 200px;
+    display: grid;
+    overflow: auto;
+    border: 1px grey dotted;
+}
+
+div#cur-cond-loading {
+    flex-grow: 1;
+    min-height: 30px;
+}
+
+div.stat-unit-data {
+    margin: 0px;
+    padding: 0px;
+}
+
+div.loading {
+    margin: 5px 15px;
+    color: #333455;
+    font-style: italic;
+    font-size: 90%;
+    cursor: progress;
+}
+
+span.line-err {
+    border-left: 10px solid red;
+    background-color: #FFD0C0;
+    width: 100%;
+    text-decoration: line-through;
+}
+
+span.note-err{
+    color: red;
+    font-weight: bold;
+}
+
+span.dtree-atom-mark {
+    border: 1px solid grey;
+    cursor: pointer;
+    font-size: 140%;
+    padding: 0px 3px 0px 3px;
+    border-radius: 3px;
+    vertical-align: super;
+}
+
+span.dtree-atom-mark.active {
+    color: red;
+    border: 1px solid red;
+    background-color: yellow;
+}
+
+span.unit-click {
+    border: 1px solid grey;
+    cursor: pointer;
+    font-size: 110%;
+    padding: 0px 3px 0px 3px;
+    border-radius: 3px;
+    vertical-align: super;
+}
+
+span.unit-click:hover {
+    background-color: yellow;
+}
+
+div.enum-exp {
+    position: relative;
+    float: left;
+    background-color: #f0f0f0;
+    border:2px solid #E0E0E0;
+    padding: 3px;
+    cursor: pointer;
+}
+
+/********************Decision tree*****************************/
+td.tree-comment {
+    color: grey;
+    font-style: italic;
+}
+
+table.d-tree {
+    width: 100%;
+    padding-bottom: 80px;
+}
+
+table.d-tree td {
+    border: 1px solid #F0F0F0;
+}
+
+table.d-tree tr.cur {
+    background-color: #FFF080;
+    cursor: default;
+}
+
+table.d-tree tr.active {
+    cursor: pointer;
+}
+
+table.d-tree td.point-no {
+    width: 15px;
+    color: white;
+    text-align: center;
+    font-size: 80%;
+    background-color: #D0D0D0;
+    border-right: 6px solid #A0A0A0;
+    border-bottom: 3px solid #A0A0A0;
+    border-left: 6px solid #C0C0C0;
+    border-top: 3px solid #C0C0C0;
+    padding: 0px;
+}
+
+td.point-cond {
+    text-align: left;
+}
+
+td.point-count {
+    width: 80px;
+    text-align: right;
+    font-style: italic;
+    color: #000080;
+    font-size: 90%;
+}
+
+td.point-count.undef {
+    text-align: center;
+    color: #A0A0A0;
+}
+
+td.point-count.accept {
+    font-weight: bold;
+    text-align: left;
+    color: #006F00;
+}
+
+span.tr-count {
+    font-size: 80%;
+}
+
+table.d-tree td.point-count.reject {
+    font-weight: bold;
+    text-align: left;
+    color: #6F3800;
+}
+
+span.point-instr {
+    font-weight: bold;
+}
+
+div.point-code {
+    display: inline-block;
+    color: #000008;
+    border: 1px solid white;
+}
+
+div.point-code.active {
+    background-color: #FFFF80;
+    border: 1px solid red;
+}
+
+/****************************************/
+/* The container <div> - needed to position the dropdown content */
+.instr-dropdown {
+    position: relative;
+    display: inline-block;
+    overflow: visible !important;
+}
+
+.instr-dropdown span{
+    display: inline-block;
+    padding: 0px 5px 0px 5px;
+}
+/* Dropdown Content (Hidden by Default) */
+.instr-dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 100;
+    overflow: visible !important;
+    border: 1px solid black;
+    text-align: left;
+    white-space: nowrap;
+}
+
+/* Links inside the dropdown */
+.instr-dropdown-content a {
+    color: black;
+    padding: 3px 10px;
+    text-decoration: none;
+    display: block;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.instr-dropdown-content a.disabled {
+    color: grey;
+    cursor: inherit;
+}
+
+/* Change color of dropdown links on hover */
+.instr-dropdown-content a:hover {
+    background-color: #A0B0FF;
+    text-decoration: none;
+}
+
+/* Show the dropdown menu on hover */
+.instr-dropdown:hover .instr-dropdown-content {
+    display: block;
+}
+
+/********************Modal Cur-Cond*****************************/
+#cur-cond-back {
+    display: none;
+    position: fixed;
+    z-index: 70;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+#cur-cond-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 0px;
+    border: 1px solid black;
+    border-radius: 7px;
+    width: 47%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+}
+
+#cur-cond-mod.num {
+    height: 180px;
+    min-height: 180px;
+}
+
+#cur-cond-mod.enum {
+    height: 90%;
+    min-height: 90%;
+}
+
+
+/********************Modal Note*****************************/
+#cmp-code-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 0px;
+    border: 1px solid black;
+    height: 85%; 
+    min-height: 85%;
+    border-radius: 3px;
+    width: 85%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    overflow: hidden;
+    flex-direction: column;
+    display: flex;
+    align-items: stretch;
+}
+
+div#cmp-code-title {
+    font-weight: bold;
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    height: 20px;
+}
+
+div#cmp-code-main {
+    flex: 1 0 80%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;    
+    margin: 0px;
+    padding: 0px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+div#cmp-code-ctrl {
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    height: 30px;   
+    margin-bottom: 10px;
+}
+
+div#cmp-code-list-wrap {
+    flex: 1 0 30%;
+    margin: 0px;
+    padding: 0px;
+    display: grid;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+div#cmp-code-list {
+    height: 100%;
+    width: 100%;
+    min-height: 100%;
+    overflow: scroll;
+    padding: 5px;
+    margin: 5px;
+}
+
+div#cmp-code-cmp-wrap {
+    flex: 1 0 70%;
+    padding: 0px;
+    margin: 0px;
+    border-left: 2px solid black;
+    display: grid;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+div#cmp-code-cmp {
+    padding: 5px;
+    margin: 5px;
+    overflow: auto;
+}
+
+span#cmp-code-ctrl-sep{
+    display: inline-block;
+    width: 150px;
+    min-width: 150px;
+}
+
+table#ver-tab {
+    width: 100%;
+}
+
+table#ver-tab tr.v-base td{
+    background-color: #F0FFF0;
+    color: #006600;
+}
+
+table#ver-tab tr.v-norm td{
+    cursor: pointer;
+}
+
+table#ver-tab tr.v-norm.cur td{
+    cursor: default;
+    background-color: #FFF0F0;
+    color: #660000;
+}
+
+td.v-no {
+    width: 100px;
+    font-weight: bold;
+    text-align: right;
+}
+
+td.v-date {
+    font-style: italic;
+    text-align: right;
+    color: grey;
+    font-size: 80%;
+}
+
+div.cmp {
+    white-space: pre;
+}
+
+div.plus {
+    background-color: #F0FFF0;
+}
+
+div.minus {
+    background-color: #FFF0F0;
+}
+
+div.note {
+    color: grey;
+    background-color: #F0F0F0;
+}
+
+/********************edit code*****************************/
+#code-edit-mod {
+    background-color: #fffefe;
+    margin: 3% 3% 2% 2%; 
+    padding: 10px;
+    border: 1px solid black;
+    border-radius: 7px;
+    height: 85%; 
+    min-height: 85%;
+    width: 85%;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    flex-direction: column;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+div#code-edit-top {
+    width: 100%;
+    height: 20px;
+    min-height: 20px;
+    margin: 0px;
+    padding: 0px;
+}
+
+span#code-edit-title {
+    margin-left: 30px;
+    margin-right: 30px;
+    padding: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    height: 20px;
+}
+
+div#code-edit-ctrl {
+    height: 25px;
+    margin: 5px;
+    padding: 5px;
+}
+
+span#code-edit-error {
+    background-color: yellow;
+    color: red;
+    font-weight: bold;
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+div#code-edit-main {
+    flex-grow: 1;
+    width: 100%;
+    padding-left: 10px;
+    margin-top: 10px;
+}
+
+textarea#code-edit-content {
+    width: 99%;
+    height: 85%;
+    overflow: auto;
+    font-size: 16px;
+}
