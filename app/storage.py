@@ -39,7 +39,7 @@ sID_Pattern = re.compile('^\\S+$', re.U)
 def checkDSName(name, kind):
     global sID_Pattern
     if not sID_Pattern.match(name) or not name[0].isalpha():
-        print("Incorrect dataset name:", name, file=sys.stderr)
+        print("Incorrect dataset name:", name, file = sys.stderr)
         assert False
     if kind == "ws":
         if name.lower().startswith("xl_"):

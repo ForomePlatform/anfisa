@@ -47,7 +47,7 @@ context of two requests:
         details of connection between datasets are required: dataset 
         can be :term:`secondary<secondary workspace>`, so one needs to 
         know base of it. :term:`Root dataset` is defined always, and 
-        for a primary dataset equals to itself.
+        for a :term:`primary dataset` equals to itself.
 
     * :doc:`dsinfo` 
         returns descriptor for one dataset.

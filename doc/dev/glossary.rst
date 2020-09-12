@@ -90,9 +90,12 @@ Anfisa glossary
     Zone
         In :term:`workspace` the user can use zone selection as an additional mechanism of filtration. 
     
+    Primary dataset
+        Dataset that was loaded in :term:`vault` directly. Usually it is :term:`XL-dataset` with wide variety of variants.
+    
     Secondary workspace
-        The user can create :term:`workspace` datasets as result of :term:`filtration` process. The typical scenario in the system is as follows. The user starts with :term:`XL-dataset` with wide variety of variants, then comparatively small subset of variant is selected and put into secondary workspace, 
-        and then this subset is ready for careful detailed manual study
+        The user can create :term:`workspace` datasets as result of :term:`filtration` process. The typical scenario in the system is as follows. The user starts with :term:`primary dataset`, selects comparatively small subset of variants and put into secondary workspace, 
+        and then this subset is ready for careful detailed manual study. The user can repeat selection procedure more than one time. 
         
     Root dataset
         For :term:`secondary workspace` it is original dataset that was loaded in :term:`vault` directly
@@ -175,3 +178,11 @@ Anfisa glossary
         instead of the fresh version of it. The workaround for this problem is to create a mirror directory,
         copy into it all the necessary files but slightly modify their names in such a way that different
         versions of the same file will have different names. See :ref:`mirror-ui configuration setting<mirror_ui>`.
+        
+    Annotation pipeline
+        A process of preparation of :term:`primary dataset` information that thould be evaluated 
+        before creation if dataset in the system. See :doc:`adm/a_adm_formats` for details.
+        
+    Annotated JSON files
+        Result of :term:`annotation pipeline`, usually in the following formats: 
+        ``*.json``, ``*.json.gz``, ``*.json.bz2``
