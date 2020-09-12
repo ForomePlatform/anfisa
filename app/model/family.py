@@ -46,7 +46,7 @@ class FamilyInfo:
             self.mIdMap[it["id"]] = idx
             self.mNameMap[it["name"]] = idx
             if it["affected"]:
-                self.mAffectedGroup.append(it["id"])
+                self.mAffectedGroup.append(it["name"])
             if it["sex"] == 1:
                 self.mMaleSet.add(it["name"])
         self.mTrioSeq = []
