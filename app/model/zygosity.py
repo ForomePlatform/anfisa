@@ -51,8 +51,8 @@ class ZygositySupport:
     def getAffectedGroup(self):
         return self.mFamilyInfo.getAffectedGroup()
 
-    def getIds(self):
-        return self.mFamilyInfo.getIds()
+    def getNames(self):
+        return self.mFamilyInfo.getNames()
 
     def filter(self, p_group):
         return self.mFamilyInfo.filter(p_group)
@@ -79,7 +79,7 @@ class ZygositySupport:
     def conditionScenario(self, scenario):
         seq = []
         for zyg_bounds, seq_samples in scenario.items():
-            for idx in self.mFamilyInfo.ids2idxset(seq_samples):
+            for idx in self.mFamilyInfo.names2idxset(seq_samples):
                 seq.append(self.mEvalSpace.makeNumericCond(
                     self.mEvalSpace.getZygUnit(idx), zyg_bounds = zyg_bounds))
         return self.mEvalSpace.joinAnd(seq)

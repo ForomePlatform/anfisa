@@ -261,7 +261,7 @@ class ZygosityDataPreparator:
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
         assert family_info is not None, "No dataset metadata with samples info"
         self.mMemberIds = [id
-            for id in family_info.iterIds()]
+            for id in family_info.getIds()]
         self.mMemberNames = ["%s_%d" % (var_name, idx)
             for idx in range(len(self.mMemberIds))]
 

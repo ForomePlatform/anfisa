@@ -38,15 +38,17 @@ class FamilyInfo:
 
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
+        self.mNameMap = dict()
         self.mMaleSet = set()
         for idx, it in enumerate(self.mMembers):
             self.mIds.append(it["id"])
             self.mNames.append(it["name"])
             self.mIdMap[it["id"]] = idx
+            self.mNameMap[it["name"]] = idx
             if it["affected"]:
                 self.mAffectedGroup.append(it["id"])
             if it["sex"] == 1:
-                self.mMaleSet.add(it["id"])
+                self.mMaleSet.add(it["name"])
         self.mTrioSeq = []
         for idx, it in enumerate(self.mMembers):
             idx_father = self.mIdMap.get(it.get("father"))
@@ -116,12 +118,12 @@ class FamilyInfo:
             return self.mCohortMap.get(it_id)
         return None
 
-    def ids2idxset(self, ids):
+    def names2idxset(self, ids):
         if not ids:
             return ids
-        return sorted({self.mIdMap[id] for id in ids})
+        return sorted({self.mNameMap[id] for id in ids})
 
-    def idxset2ids(self, idx_set):
+    def idxset2names(self, idx_set):
         if not idx_set:
             return idx_set
-        return sorted({self.mIds[idx] for idx in idx_set})
+        return sorted({self.mNames[idx] for idx in idx_set})
