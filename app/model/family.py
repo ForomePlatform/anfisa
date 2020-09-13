@@ -57,8 +57,8 @@ class FamilyInfo:
             idx_mother = self.mIdMap.get(it.get("mother"))
             if idx_mother is not None:
                 trio_id = "Proband" if idx == 0 else it["id"]
-                self.mTrioSeq.append((trio_id, self.mIds[idx],
-                    self.mIds[idx_father], self.mIds[idx_mother]))
+                self.mTrioSeq.append((trio_id, self.mNames[idx],
+                    self.mNames[idx_father], self.mNames[idx_mother]))
 
         self.mCohortList = None
         self.mCohortMap = None
@@ -81,17 +81,14 @@ class FamilyInfo:
     def __getitem__(self, idx):
         return self.mMembers[idx]
 
-    def iterIds(self):
-        return iter(self.mIds)
-
     def getIds(self):
         return self.mIds
 
     def complement(self, p_group):
-        return set(self.mIds) - set(p_group)
+        return set(self.mNames) - set(p_group)
 
     def filter(self, p_group):
-        return set(self.mIds) & set(p_group)
+        return set(self.mNames) & set(p_group)
 
     def getNames(self):
         return self.mNames
@@ -118,10 +115,10 @@ class FamilyInfo:
             return self.mCohortMap.get(it_id)
         return None
 
-    def names2idxset(self, ids):
-        if not ids:
-            return ids
-        return sorted({self.mNameMap[id] for id in ids})
+    def names2idxset(self, names):
+        if not names:
+            return []
+        return sorted({self.mNameMap[nm] for nm in names})
 
     def idxset2names(self, idx_set):
         if not idx_set:
