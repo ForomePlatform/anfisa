@@ -72,7 +72,7 @@ class InheritanceUnit(FunctionUnit):
             p_group = self.mZygSupport.getAffectedGroup()
         else:
             p_group = self.mZygSupport.filter(parameters["problem_group"])
-        ret_handle["problem_group"] = sorted(p_group)
+        ret_handle["problem_group"] = parameters.get("problem_group")
         if len(p_group) > 0:
             self.collectComplexStat(ret_handle, condition,
                 {"p_group": p_group})
