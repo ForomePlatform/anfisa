@@ -55,7 +55,7 @@ Drop dataset PGP3140::
 Comments
 ********
 
-    * For options: **--dir**, **--config**, **--source**, **-inv** see discussion in :doc:`a_adm_formats`        
+    * For options: **--dir**, **--config**, **--source**, **-inv**, **--kind** see discussion in :doc:`a_adm_formats`        
         
     * **--mode​** option determines one of the following operations:
         
@@ -74,13 +74,23 @@ Comments
         * (The utility provides also mode **favor** as a part of some experimental subproject. 
             Currently this mode is not actual.)
 
-    * **--kind** option is set to ``ws`` by default, use ``xl`` if you need an 
-        xl-dataset (in case of **--dir** is set this information is used from :doc:`a_storage_dir` 
+    * **--force** ​ option, affects only  **create** mode,  is used only if dataset already 
+        exists but needs to be re-created with a fresh version of source
 
-
-    * **--force** ​ option is used if one needs to refill an existing dataset with a fresh 
-        version of source, and is out of use otherwise
-
+    * **--nocoord** experimental option, affects only **drop** mode, in case of xl-dataset does not 
+        initiate removal of dataset data in Druid 
+        
+    * **--nodruidpush** experimental mode, applicable in **create** regime, in case of
+        xl-dataset does not initiate push data to Druid
+        
+    * **--reportlines** not an essential option, affects only  **create** mode,
+        controls interval between notifications
+        during dataset data preparation
+        
+    * **--delay** not an essential mode, affects only  **create** mode, controls pause b
+        etween pushes of data for 
+        multiple datasets into Druid
+    
     * *Name of database*: in case of an xl-database it must begin with the prefix ``xl_`` 
         or ``XL_``. Secondary workspaces created by this xl-dataset will have the same name 
         but with other prefixes, of the form “ws<​number​>_”.

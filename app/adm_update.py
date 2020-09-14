@@ -118,7 +118,7 @@ class DSScanInfo:
         if info_fstat is None:
             return "NO-SOURCE"
         if info_fstat[1] > self.mTimestamp:
-            return "SOURCE-OUT-OF-DATE"
+            return "PRIMARY-OUT-OF-DATE"
         return None
 
     def checkBase(self):
