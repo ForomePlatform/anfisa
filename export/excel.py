@@ -219,6 +219,8 @@ class ExcelExport:
             return None, None
         group_idx = None
         group_name = None
+        if tags is None:
+            tags = dict()
         for check_idx, check_tag in enumerate(self.tags_info['check-tags']):
             if tags.get(check_tag):
                 if group_idx is None:
