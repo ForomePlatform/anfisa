@@ -563,7 +563,7 @@ section of the ​anfisa.json​ configuration:
 
 ..
 
-        Settings define addresses of four different kinds of requests to Driud.
+        Settings define addresses of four different kinds of requests to Druid.
         Settings are configured for Druid version v.0.17.0.
 
 ::
@@ -581,7 +581,7 @@ provide connection between Anfisa and Druid machines.
 The first way is to make mount point for vault directory to Druid machine, 
 make sure path to vault is the same on both machines
 
-The second variant is more compex. The problem is: Anfisa needs to copy data 
+The second variant is more complex. The problem is: Anfisa needs to copy data 
 to the machine with Druid in order to perform data ingestion. This can be done via ​scp​.
 
 In this section we will use:
