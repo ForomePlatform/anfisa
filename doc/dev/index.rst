@@ -12,8 +12,6 @@ Anfisa Development Documentation
    
    rest/index
    
-   utils/index
-   
    adm/index
    
    zygocity
