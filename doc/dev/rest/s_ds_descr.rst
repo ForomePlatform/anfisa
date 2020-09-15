@@ -1,6 +1,9 @@
 Dataset Descriptor structure
 ============================
 
+.. index:: 
+    Dataset descriptor structure; data structure
+
 Format
 ------
 

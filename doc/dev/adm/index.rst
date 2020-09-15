@@ -1,9 +1,12 @@
-Anfisa Administration tools
-===========================
+Anfisa Administration documentation
+===================================
 
 .. toctree::
    :maxdepth: 1
 
+   install
+   admin
+   
    a_adm_formats
    configuration
    

@@ -1,6 +1,10 @@
 Tags descriptor
 ===============
 
+.. index:: 
+    Tags descriptor; data structure
+
+
 Format
 ------
 

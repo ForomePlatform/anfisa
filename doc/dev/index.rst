@@ -14,8 +14,6 @@ Anfisa Development Documentation
    
    utils/index
    
-   install
-   
    adm/index
    
    zygocity
