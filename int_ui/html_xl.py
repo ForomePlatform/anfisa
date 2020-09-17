@@ -57,7 +57,7 @@ def _formPanel(output):
               <a class="popup" onclick="showExport();"
                 >Export...</a>
               <a class="popup" onclick="wsCreate();"
-                >Create workspace...</a>
+                >Derive dataset...</a>
             </div>
           </div>
           <div id="export-result" class="popup"></div>

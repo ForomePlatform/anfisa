@@ -59,7 +59,7 @@ def _formPanel(output):
                 <a class="popup" onclick="openNote();"
                     >Dataset Note...</a>
                 <a class="popup" onclick="wsCreate();"
-                    >Create workspace...</a>
+                    >Derive dataset...</a>
             </div>
           </div>&emsp;
           Dataset: <span id="ds-name" class="bold"></span><br/>
