@@ -14,7 +14,9 @@ Anfisa Development Documentation
    
    adm/index
    
-   zygocity
+   appcfg/index
+   
+   zygosity
    
 Indices and tables
 ==================

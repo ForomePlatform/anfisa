@@ -98,10 +98,8 @@ def defFavorFlt(metadata_record):
             render_mode = "linear,<", default_value = 0.)
 
     with filters.viewGroup("Predictions"):
-        filters.multiStatusUnit("Clinvar",
-            "/_filters/clinvar[]",
-            default_value = "N/A",
-            title = "Clinvar")
+        filters.multiStatusUnit("Clinvar", "/_filters/clinvar[]",
+            default_value = "N/A", title = "Clinvar")
         # filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
         # 	title = "Categorized Benign in HGMD",
         # 	default_value = "Not in HGMD",
@@ -110,26 +108,20 @@ def defFavorFlt(metadata_record):
         # 	default_value = "None")
 
     with filters.viewGroup("Protein Function"):
-        filters.multiStatusUnit("Polyphen_2_HVAR",
-            "/_filters/polyphen2_hvar",
-            default_value = "N/A",
-            title = "Polyphen",
+        filters.multiStatusUnit("Polyphen_2_HVAR", "/_filters/polyphen2_hvar",
+            default_value = "N/A", title = "Polyphen",
             tooltip = "HumVar (HVAR) is PolyPhen-2 classifier "
                 "trained on known human variation (disease mutations vs."
                 " common neutral variants)")
-        filters.multiStatusUnit("Polyphen_2_HDIV",
-            "/_filters/polyphen2_hdiv",
-            default_value = "N/A",
-            title = "Polyphen HDIV (High sensitivity)",
+        filters.multiStatusUnit("Polyphen_2_HDIV", "/_filters/polyphen2_hdiv",
+            default_value = "N/A", title = "Polyphen HDIV (High sensitivity)",
             tooltip = "HumDiv (HDIV) classifier is trained on a smaller "
                 "number of select extreme effect disease mutations vs. "
                 "divergence with close homologs (e.g. primates), which is "
                 "supposed to consist of mostly neutral mutations.")
 
-        filters.multiStatusUnit("PolyPhenCat",
-            "/_filters/polyphen_cat",
-            default_value = "N/A",
-            title = "PolyPhenCat")
+        filters.multiStatusUnit("PolyPhenCat", "/_filters/polyphen_cat",
+            default_value = "N/A", title = "PolyPhenCat")
 
         filters.multiStatusUnit("SIFTcat", "/_filters/sift_cat",
             default_value = "N/A",

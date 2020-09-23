@@ -2,11 +2,11 @@ zone_list
 =========
         **Zone support information**
 
-Synopsis
---------
-
 .. index:: 
     zone_list; request
+
+Synopsis
+--------
 
 **zone_list** 
 
@@ -28,13 +28,11 @@ Synopsis
 
 Description
 -----------
+The request affects only :term:`workspaces<workspace>` and is a joined form of two different requests:
 
-The request affects only :term:`workspaces<workspace>` and is a joined 
-form of two different requests:
+* It returns the complete list of available :term:`zones<zone>` (descriptors are in short forms)
 
-  * It returns the complete list of available :term:`zones<zone>` (descriptors are in short forms)
-  
-  * If zone is defined, it returns the complete information about this :term:`zone`
+* If zone is defined, it returns the complete information about this :term:`zone`
 
 Zones are secondary mechanism for filtering variants in :term:`viewing regime`. Each zone represents list of values (variants) for some property of variant records. The user can select subset of this list, and view only variant records with selected values of properties.
 

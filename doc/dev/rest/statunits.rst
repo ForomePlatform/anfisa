@@ -2,11 +2,11 @@ statunits
 =========
         **Delayed evaluations for filtering property status data**
 
-Synopsis
---------
-
 .. index:: 
     statunits; request
+
+Synopsis
+--------
 
 **statunits** 
 
@@ -20,8 +20,7 @@ Synopsis
         
         **filter**: *optional* name of applying filter
         
-        **conditions**: *optional* list of applying 
-            :doc:`condition descriptors<s_condition>`
+        **conditions**: *optional* list of applying :doc:`condition descriptors<s_condition>`
             *in JSON string representation*
 
         **dtree**: *optional* name of applying decision tree
@@ -43,18 +42,11 @@ Synopsis
 
 Description
 -----------
+Requests of this type initiates :doc:`../concepts/status_report` and form series of requests initiated by request :doc:`ds_stat` or :doc:`dtree_stat`, see details in references.
 
-Requests of this type initiates :doc:`../concepts/status_report`
-and form series of requests initiated by request 
-:doc:`ds_stat` or :doc:`dtree_stat`, see details in references.
+**rq_id** argument should be get from result of initiation request. Arguments **filter**, **conditions** or **dtree**, **code**, **no** should be the same as in initiation request.
 
-**rq_id** argument should be get from result of initiation request.
-Arguments **filter**, **conditions** or **dtree**, **code**, **no**
-should be the same as in initiation request.
-
-Returning data must contain status report for first property (the first 
-entry in **units** as property name), other properties can be not evaluated
-if there is no enough time (see details for argument **tm** in references).
+Returning data must contain status report for first property (the first entry in **units** as property name), other properties can be not evaluated if there is no enough time (see details for argument **tm** in references).
 
 See also
 --------

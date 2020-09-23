@@ -5,13 +5,11 @@ Condition descriptor
     Condition descriptor; data structure
 
 
-:term:`Conditions` are the kernel objects of the system, since they are atomic objects
-that are used in :doc:`../concepts/filtration`. 
+:term:`Conditions` are the kernel objects of the system, since they are atomic objects that are used in :doc:`../concepts/filtration`. 
 
 :term:`Filters<filter>` are just list of conditions, conjunction of them. So it is important functionality for user to define and modify conditions interactively in :doc:`../concepts/filters_reg`. 
     
-In context of :term:`decision tree` conditions have form of :term:`decision tree atomic condition`,
-and the user can modify them in interactive way in :doc:`../concepts/dtree_pg`. 
+In context of :term:`decision tree` conditions have form of :term:`decision tree atomic condition`, and the user can modify them in interactive way in :doc:`../concepts/dtree_pg`. 
 
 Format for numeric property
 ---------------------------
@@ -59,15 +57,14 @@ Format for enumerated property
 
 Comments
 ^^^^^^^^
-    Format of condition allows to define conditions for both :term:`status<status property>` and :term:`multiset properties<multiset property>` with some remarks
+Format of condition allows to define conditions for both :term:`status<status property>` and :term:`multiset properties<multiset property>` with some remarks
     
-    - In case of :term:`status property` join mode ``"AND"`` is out of sense. 
-        Otherwise it selects variants for which all the selected values are set on for the property. 
-    
-    - Join mode ``"NOT"`` is just negation to join mode ``"OR"``
-    
-    - For single value selection (length of array in position **[3]** is 1) there is no difference 
-        between join modes ``"OR"`` and ``"AND"``
+- In case of :term:`status property` join mode ``"AND"`` is out of sense. 
+    Otherwise it selects variants for which all the selected values are set on for the property. 
+
+- Join mode ``"NOT"`` is just negation to join mode ``"OR"``
+
+- For single value selection (length of array in position **[3]** is 1) there is no difference between join modes ``"OR"`` and ``"AND"``
 
 Format for function condition
 -----------------------------
@@ -83,12 +80,11 @@ Format for function condition
 
 Comments
 ^^^^^^^^
-    See :doc:`func_ref` for functions definition and reference.
+See :doc:`func_ref` for functions definition and reference.
 
-    All notes to condition for enumerated property are actual in this case too.
-    
-    Different functions have different format of function arguments (position **[4]**) and 
-    their own specific check if condition is good for this function.
-    
-    Available functions and their arguments are documented in :doc:`func_ref`
+All notes to condition for enumerated property are actual in this case too.
+
+Different functions have different format of function arguments (position **[4]**) and their own specific check if condition is good for this function.
+
+Available functions and their arguments are documented in :doc:`func_ref`
 

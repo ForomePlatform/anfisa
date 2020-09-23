@@ -15,13 +15,13 @@ Format
 
 Description
 -----------
-
-The descriptor contains information about zones state. It is used in 
-request :doc:`zone_list` as return value, either in single or serial form; 
+The descriptor contains information about zones state. It is used in request :doc:`zone_list` as return value, either in single or serial form; 
     
 In serial form **variants** is dropped.
-Property **title** is used for rendering. Property **zone** is hidden for 
-the user, and is base technical identifier of zone.
+
+Property **title** is used for rendering. 
+
+Property **zone** is hidden for the user, and is base technical identifier of zone.
 
 In current version the following zones are provided:
 
@@ -37,4 +37,6 @@ In current version the following zones are provided:
     
 Used in requests
 ----------------
-:doc:`zone_list`  :doc:`ws_list`   
+:doc:`zone_list`  
+
+:doc:`ws_list`   

@@ -22,7 +22,7 @@ import os
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
-from app.model.tab_report import VariantsTabReportSchema
+from app.model.tab_report import ReportTabSchema
 from .favor import FavorSchema
 #===============================================
 sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
@@ -111,12 +111,7 @@ def impacting_splicing():
 
 def clinVar_not_benign():
     return [ConditionMaker.condEnum("Clinvar_Trusted_Simplified",
-                                    ["benign"], "NOT")]
-#===============================================
-def sample_has_variant(sample):
-    genotype = sample.get("genotype")
-    return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
-
+        ["benign"], "NOT")]
 #===============================================
 def readySolutions():
     global sSolutionsAreSet
@@ -135,8 +130,6 @@ def readySolutions():
 
 #===============================================
 def readySolutions_Case(base_pack):
-    base_pack.regAnnotationFunc("has_variant", sample_has_variant)
-
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
     base_pack.regFilter("BGM_De_Novo", [
         condition_consequence_xBrowse(),
@@ -310,18 +303,18 @@ def readySolutions_Case(base_pack):
     base_pack.regZone("Cohort", "Variant_in",  requires = {"cohorts"})
     base_pack.regZone("Tag", "_tags")
 
-    demo_tab_schema = VariantsTabReportSchema("demo", use_tags = True)
+    demo_tab_schema = ReportTabSchema("demo", use_tags = True)
     demo_tab_schema.addField("symbol", "/_view/general/genes[]")
     demo_tab_schema.addField("gnomAD_AF", "/_filters/gnomad_af_fam")
     base_pack.regTabSchema(demo_tab_schema)
 
 #===============================================
 def setupGenericPack(base_pack):
-    base_pack.regClinvarTrustedSubmitter("LMM",
+    base_pack.regItemDict("Clinvar_Trusted_Submitters", {
         "Laboratory for Molecular Medicine, "
-        + "Partners HealthCare Personalized Medicine")
-    base_pack.regClinvarTrustedSubmitter("GeneDx", "GeneDx")
-    base_pack.regClinvarTrustedSubmitter("Invitae", "Invitae")
+        + "Partners HealthCare Personalized Medicine": "LMM",
+        "GeneDx":   "GeneDx",
+        "Invitae":  "Invitae"})
 
     base_pack.regPanel("ACMG59", "Symbol",
         cfgPath("acmg59.lst"))
@@ -359,6 +352,23 @@ def setupGenericPack(base_pack):
     #     cfgPath("ttp3.lst"))
     # base_pack.regPanel("TTP4", "Symbol",
     #     cfgPath("ttp4.lst"))
+
+    base_pack.regPanel("Check-Tags", "_tags", items = [
+        "Previously categorized",
+        "Previously Triaged",
+        "Not categorized",
+        "Benign/Likely benign",
+        "False positives"]
+    )
+
+    csv_tab_schema = ReportTabSchema("csv", use_tags = False)
+    csv_tab_schema.addField("chromosome", "/_filters/chromosome")
+    csv_tab_schema.addMustiStrField("variant", "|", [
+        "/_filters/chromosome",
+        "/_filters/start",
+        "/_filters/ref",
+        "/_filters/alt"])
+    base_pack.regTabSchema(csv_tab_schema)
 
 def completeDsModes(ds_h):
     if ds_h.getDataSchema() == "CASE":

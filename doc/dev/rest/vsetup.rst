@@ -2,11 +2,11 @@ vsetup
 ======
         **View data schema information**
 
-Synopsis
---------
-
 .. index:: 
     vsetup; request
+
+Synopsis
+--------
 
 **vsetup** 
 
@@ -45,9 +45,7 @@ Synopsis
     
 Description
 -----------
-
-The request returns complete description of schema of :term:`aspects<aspect>` and 
-properties available for :term:`dataset` in :term:`viewing regime`.
+The request returns complete description of schema of :term:`aspects<aspect>` and properties available for :term:`dataset` in :term:`viewing regime`.
 
 List of property kinds supported:
 
@@ -62,6 +60,4 @@ List of property kinds supported:
    numeric
    ========== =========
    
-The request might be used for experimental extensions of the system 
-functionality and user interface.
-   
+The request might be used for experimental extensions of the system functionality and user interface.

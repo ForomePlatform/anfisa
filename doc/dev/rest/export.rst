@@ -2,12 +2,11 @@ export
 ======
         **Export operation**
 
-Synopsis
---------
-
 .. index:: 
     export; request
 
+Synopsis
+--------
 **export** 
 
     **Arguments**: 
@@ -32,18 +31,13 @@ Synopsis
     
 Description
 -----------
-
 The request creates exported Excel file for selected variants. Selection should be of limited size: **not more than 300 variants**.
 
 Selection is defined by:
 
-    - :term:`filter` applies if either **filter** or **conditions** is set (see discussion
-        :ref:`here<fiter_conditions>`)
+- :term:`filter` applies if either **filter** or **conditions** is set (see discussion :ref:`here<fiter_conditions>`)
 
-    - :term:`zone` applies if **zone** is set - actual for :term:`workspaces<workspace>` only.
-        (Nonempty **zone** list can contain special pair of strings ``["NOT", true]``. 
-        In this case **zone** option works in reverse context: records satisfying 
-        condition on zones are filtered out.)
+- :term:`zone` applies if **zone** is set - actual for :term:`workspaces<workspace>` only. (Nonempty **zone** list can contain special pair of strings ``["NOT", true]``. In this case **zone** option works in reverse context: records satisfying condition on zones are filtered out.)
 
 Resulting file is created on servers side and is ready for download from moment of creation and later.
 

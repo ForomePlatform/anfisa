@@ -210,15 +210,15 @@ class DictTypeChecker:
 
 #===============================================
 class ColGroupTypeChecker(DictTypeChecker):
-    def __init__(self, name, single_columns, master_name, base_asp):
+    def __init__(self, name, master_name, base_asp, single_group_col):
         DictTypeChecker.__init__(self, name, master_name, base_asp = base_asp)
-        self.mSingleColumns = single_columns
+        self.mSingleGroupCol = single_group_col
 
     def getKind(self):
         return "Columns"
 
     def regValue(self, rec_no, value):
-        if self.mSingleColumns:
+        if self.mSingleGroupCol:
             DictTypeChecker.regValue(self, rec_no, value)
         else:
             if value is None:
@@ -257,16 +257,16 @@ class SourceTypeChecker(DictTypeChecker):
                 mid_checker = DictTypeChecker(
                     asp_h.getField(), self.getName(), base_asp = asp_h)
                 asp_checker = ColGroupTypeChecker(
-                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(),
-                    mid_checker.getName(), None)
+                    asp_h.getTitle(), mid_checker.getName(), None,
+                    asp_h.getColGroups().hasSingleGroupCol())
                 for nm in attr_names:
                     mid_checker.regIt(asp_checker, nm)
                 self.regIt(mid_checker)
                 self.mAspectCheckers.append(mid_checker)
             else:
                 asp_checker = ColGroupTypeChecker(
-                    asp_h.getTitle(), asp_h.getColGroups().getSingleColumns(),
-                    self.getName(), asp_h)
+                    asp_h.getTitle(), self.getName(), asp_h,
+                    asp_h.getColGroups().hasSingleGroupCol())
                 for nm in attr_names:
                     self.regIt(asp_checker, nm)
                 self.mAspectCheckers.append(asp_checker)

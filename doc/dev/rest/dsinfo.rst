@@ -2,12 +2,11 @@ dsinfo
 ======
         **Dataset information**
 
-Synopsis
---------
-
 .. index:: 
     dsinfo; request
 
+Synopsis
+--------
 **dsinfo** 
 
     **Arguments**: 
@@ -23,7 +22,6 @@ Synopsis
 
 Description
 -----------
-
 The request returns information about :term:`dataset` in form of :doc:`s_ds_descr`.
 
 If **note** argument is set, request modifies value of dataset note.

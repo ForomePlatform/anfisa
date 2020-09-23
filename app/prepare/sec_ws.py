@@ -25,10 +25,12 @@ from datetime import datetime
 from forome_tools.job_pool import ExecutionTask
 from app.model.ds_disk import DataDiskStorageWriter
 from app.config.a_config import AnfisaConfig
+from app.config.flt_schema import defineFilterSchema
 from app.prepare.prep_filters import FilterPrepareSetH
 from .trans_prep import TransformPreparator_WS
 from .html_report import reportDS
 
+_make_compiler_happy = defineFilterSchema
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, ds_h, ws_name, eval_h, force_mode = False):

@@ -18,57 +18,45 @@
 #  limitations under the License.
 #
 
-from zlib import crc32
-
 from forome_tools.path_works import AttrFuncPool
 #===============================================
-class PresentationFieldHash:
-    def __init__(self, name, base_name):
-        self.mName = name
-        self.mBaseName = base_name
+class AttrFuncHelper:
+    @staticmethod
+    def singleGetter(vpath):
+        return _attrSingleGetter(vpath)
 
-    def process(self, rec_data, result):
-        result[self.mName] = crc32(
-            bytes(result[self.mBaseName], 'utf-8'))
+    @staticmethod
+    def multiStrGetter(separator, path_seq):
+        return _multiStrAtrGetter(separator, path_seq)
+
+    @staticmethod
+    def getter(vpath):
+        if vpath.endswith('[]'):
+            return AttrFuncPool.makeFunc(vpath)
+        return _attrSingleGetter(vpath)
 
 #===============================================
-class PresentationFieldPath:
-    def __init__(self, name, vpath):
-        self.mName = name
+class _attrSingleGetter:
+    def __init__(self, vpath):
         self.mFunc = AttrFuncPool.makeFunc(vpath)
 
-    def process(self, rec_data, result):
+    def __call__(self, rec_data):
         res = self.mFunc(rec_data)
-        result[self.mName] = res[0] if res else None
+        if res is not None and len(res) > 0:
+            return res[0]
+        return None
 
 #===============================================
-class PresentationFieldPathSeq:
-    def __init__(self, name, separator, path_seq):
-        self.mName = name
+class _multiStrAtrGetter:
+    def __init__(self, separator, path_seq):
         self.mSeparator = separator
         self.mFuncSeq = [AttrFuncPool.makeFunc(vpath)
             for vpath in path_seq]
 
-    def process(self, rec_data, result):
+    def __call__(self, rec_data):
         values = []
         for func in self.mFuncSeq:
             vvv = func(rec_data)
             assert len(vvv) > 0, "Not found data path: " + func.getPathRepr()
             values.append(vvv[0])
-        result[self.mName] = self.mSeparator.join(map(str, values))
-
-#===============================================
-class PresentationData:
-    sFields = [
-        PresentationFieldPath("_color", "/__data/color_code"),
-        PresentationFieldPath("_label", "/__data/label"),
-        PresentationFieldPathSeq("_key", '-', ["/_filters/chromosome",
-            "/_filters/start", "/_filters/ref", "/_filters/alt"]),
-        PresentationFieldHash("_rand", "_key")]
-
-    @classmethod
-    def make(cls, rec_data):
-        result = dict()
-        for fld in cls.sFields:
-            fld.process(rec_data, result)
-        return result
+        return self.mSeparator.join(map(str, values))

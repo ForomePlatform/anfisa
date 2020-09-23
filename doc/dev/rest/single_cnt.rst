@@ -2,11 +2,11 @@ single_cnt
 ==========
         **Single variant full JSON data**
 
-Synopsis
---------
-
 .. index:: 
     single_cnt; request
+
+Synopsis
+--------
 
 **single_cnt** 
 
@@ -21,6 +21,4 @@ Synopsis
 
 Description
 -----------
-
-The request prepares view presentation of variant record by its ready annotated data, 
-outside any dataset. 
+The request prepares view presentation of variant record by its ready annotated data, outside any dataset. 

@@ -3,46 +3,27 @@ Filtering functions
 
 Discussion
 ----------
+Functions are aggregated information items that can be used in :doc:`../concepts/filtration` as well as :term:`filtering properties<filtering property>`. Difference between application of an :term:`enumerated property` and application of a function is in parameters: the function requires proper settings for them. 
 
-Functions are aggregated information items that can be used in :doc:`../concepts/filtration` as well
-as :term:`filtering properties<filtering property>`. Difference between application of an
-:term:`enumerated property` and application of a function is in parameters: the 
-function requires proper settings for them. 
+Up to now all functions behave as :term:`multiset property`: even if result is ``True`` value, there is no reason to keep ``False`` value of rest of items in dataset (variants or transcripts).
 
-Up to now all functions behave as :term:`multiset property`: even if result is ``True`` value, 
-there is no reason to keep ``False`` value of rest of items in dataset (variants or transcripts).
-
-The list and format of function parameters are specific for the function. 
-Each parameter value must be data structure in JSON format.
-So the Front End application needs to handle each function in a specific way. 
+The list and format of function parameters are specific for the function. Each parameter value must be data structure in JSON format. So the Front End application needs to handle each function in a specific way. 
 
 The logic of function usage is as following:
 
-    - API requests :doc:`ds_stat` and :doc:`dtree_stat` deliver on the client 
-        :doc:`s_prop_stat` for all applicable functions. Thus the Front End gets information 
-        of placement of functions in list of filtering properties, and so called 
-        environment information for each function.
-    
-    - The user can select function and set its parameters to build condition; the Front End 
-        needs to support this process with use of environment information
-    
-    - When parameters a set, the request :doc:`statfunc` delivers on the client
-        :doc:`s_prop_stat` for this function, with information about available value
-        variants. Thus the user can make proper selection of variants and complete
-        the condition (see :doc:`s_condition` for details of condition format).
-        
-Since work with functions is a complex one, there might be additional requirements
-for Front End application to provide support of necessary "short cuts":
+- API requests :doc:`ds_stat` and :doc:`dtree_stat` deliver on the client :doc:`s_prop_stat` for all applicable functions. Thus the Front End gets information of placement of functions in list of filtering properties, and so called environment information for each function.
 
-    - function environment should be used to set "standard" configurations of function 
-        parameters;
+- The user can select function and set its parameters to build condition; the Front End needs to support this process with use of environment information
+
+- When parameters a set, the request :doc:`statfunc` delivers on the client :doc:`s_prop_stat` for this function, with information about available value variants. Thus the user can make proper selection of variants and complete the condition (see :doc:`s_condition` for details of condition format).
         
-    - in cases when list of function values is expected (for example if value 
-        is single ``True``), these values should be pre-selected in interface 
-        without extra user click
+Since work with functions is a complex one, there might be additional requirements for Front End application to provide support of necessary "short cuts":
+
+- function environment should be used to set "standard" configurations of function parameters;
+    
+- in cases when list of function values is expected (for example if value is single ``True``), these values should be pre-selected in interface without extra user click
         
-Most part of currently available functions implement functionality dealing with 
-zygocity properties of variants. See :doc:`../zygocity` for explanations
+Most part of currently available functions implement functionality dealing with zygosity properties of variants. See :doc:`../zygosity` for explanations
 
 Examples are given in form of Python dialect used in :doc:`../concepts/dtree_syntax`.
 
@@ -112,8 +93,7 @@ Inheritance_mode()
 
         ``["Homozygous Recessive", "X-linked", "Autosomal Dominant", "Compensational"]``
     
-Function selects variants with :ref:`Standard Zygocity Scenarios<standard-zygocity-scenarios>`
-if problem group is defined. 
+Function selects variants with :ref:`Standard Zygosity Scenarios<standard-zygosity-scenarios>` if problem group is defined. 
 
 **Examples**
 
@@ -134,12 +114,9 @@ Notes:
 
 Facts useful for debug purposes 
     
-    - for fixed problem group variant sets of types ``"Homozygous Recessive"`` and 
-        ``"X-linked"`` never intersect; variants from chromosome X present in the first 
-        set only if there is no a male sample in case
+    - for fixed problem group variant sets of types ``"Homozygous Recessive"`` and ``"X-linked"`` never intersect; variants from chromosome X present in the first set only if there is no a male sample in case
     
-    - for different problem groups variant sets of type ``"Autosomal Dominant"`` never 
-        intersect; the same is true for type ``"Compensational"``
+    - for different problem groups variant sets of type ``"Autosomal Dominant"`` never intersect; the same is true for type ``"Compensational"``
 
 .. _Custom_Inheritance:
 
@@ -152,7 +129,7 @@ Custom_Inheritance()
     
     **Parameters**: 
         
-        **scenario**, :ref:`scenario<zygocity-scenario>` *structure*
+        **scenario**, :ref:`scenario<zygosity-scenario>` *structure*
     
     **Environment properties**:
 
@@ -161,7 +138,7 @@ Custom_Inheritance()
 
     **Values**: ``["True"]``
     
-The function selects variants by a fixed :ref:`Zygocity Scenario<zygocity-scenario>`.
+The function selects variants by a fixed :ref:`Zygosity Scenario<zygosity-scenario>`.
 
 In terms of functionality it is an extension of :ref:`Inheritance_Mode()<Inheritance_Mode>` function.
 
@@ -174,8 +151,7 @@ In terms of functionality it is an extension of :ref:`Inheritance_Mode()<Inherit
     
 **Additional interface requirements**: 
     
-    There should be an easy way to reset **scenario** to one of 
-    :ref:`standard scenarios<standard-zygocity-scenarios>` with default problem group. 
+    There should be an easy way to reset **scenario** to one of :ref:`standard scenarios<standard-zygosity-scenarios>` with default problem group. 
 
     The user interface needs to keep check for ``"True"`` value selection on. 
 
@@ -202,25 +178,17 @@ Compound_Heterozygous()
     **Values**: 
         *list* equals to **trio-variants** environment property
             
-The function detects :ref:`compound heterozygous<compound-heterozygous>` variants for all trio 
-presenting in the :term:`case` of :term:`dataset`. Function is available only if 
-(at least one, usually one) trio is included in case, i.e. environment property **trio-variants** 
-is nonempty.
+The function detects :ref:`compound heterozygous<compound-heterozygous>` variants for all trio presenting in the :term:`case` of :term:`dataset`. Function is available only if (at least one, usually one) trio is included in case, i.e. environment property **trio-variants** is nonempty.
 
-Special notation: if proband is subject of trio, ``"Proband"`` is used as identifier of trio, 
-otherwise trio is identified by id of its subject.
+Special notation: if proband is subject of trio, ``"Proband"`` is used as identifier of trio, otherwise trio is identified by id of its subject.
 
 Default value for **approx** parameter is the first item in **approx-modes** environment property.
 
 The parameter **state** can be either ``null`` or value from **labels** environment property. 
 
-In common context **labels** is empty, and **state** parameter can be only ``null`` or 
-undefined. So the detection procedure is run on the current state of variants filtering 
-process. 
+In common context **labels** is empty, and **state** parameter can be only ``null`` or undefined. So the detection procedure is run on the current state of variants filtering process. 
 
-Different situation can happen only in case of :term:`decision tree`, and only if there is 
-а definition of label in code *before* function evaluation. In this case detection procedure
-is run on labeled state (:term:`decision tree point`) of filtering process. 
+Different situation can happen only in case of :term:`decision tree`, and only if there is а definition of label in code *before* function evaluation. In this case detection procedure is run on labeled state (:term:`decision tree point`) of filtering process. 
 
 **Examples**
 
@@ -260,12 +228,9 @@ Compound_Request()
 
 The function evaluates :ref:`compound request<compound-request>`. 
 
-In terms of functionality it is a wide extension of 
-:ref:`Compound_Heterozygous()<Compound_Heterozygous>` function 
+In terms of functionality it is a wide extension of :ref:`Compound_Heterozygous()<Compound_Heterozygous>` function 
 
-All comments on parameters **approx** and **state**, environment properties 
-**approx-modes** and **labels** from function 
-:ref:`Compound_Heterozygous()<Compound_Heterozygous>` are actual in this context.
+All comments on parameters **approx** and **state**, environment properties **approx-modes** and **labels** from function :ref:`Compound_Heterozygous()<Compound_Heterozygous>` are actual in this context.
 
 **Example** 
 
@@ -275,15 +240,11 @@ All comments on parameters **approx** and **state**, environment properties
             [1, {“2-1”: ["bgm9001a1", "bgm9001u2"], “0”: ["bgm9001u1"]],
             [1, {“2-1”: ["bgm9001a1", "bgm9001u1"], “0”: ["bgm9001u2"]]]) in {True}
 
-The example demonstrates realization of Compound_Heterozygous() functionality 
-for trio ``["bgm9001a1", "bgm9001u1", "bgm9001u2"]``.
+The example demonstrates realization of Compound_Heterozygous() functionality for trio ``["bgm9001a1", "bgm9001u1", "bgm9001u2"]``.
 
 
 **Additional interface requirements**:
 
-    There should be an easy way to setup any scenario in request sequence to 
-    form of any of :ref:`Standard Zygocity Scenarios<standard-zygocity-scenarios>`
-    applied to default problem group of the case. 
-    (See details in discussion of :ref:`Inheritance_mode()<Inheritance_mode>`)
+There should be an easy way to setup any scenario in request sequence to form of any of :ref:`Standard Zygosity Scenarios<standard-zygosity-scenarios>` applied to default problem group of the case. (See details in discussion of :ref:`Inheritance_mode()<Inheritance_mode>`)
 
-    The user interface needs to keep check for ``"True"`` value selection on. 
+The user interface needs to keep check for ``"True"`` value selection on. 

@@ -41,6 +41,7 @@ from .family import FamilyInfo
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
+from .tab_report import reportCSV
 #===============================================
 class DataSet(SolutionBroker):
     sStatRqCount = 0
@@ -566,7 +567,7 @@ class DataSet(SolutionBroker):
         rec_no_seq = self.getEvalSpace().evalRecSeq(
             eval_h.getCondition(), rec_count)
         tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
-        return ["!", "csv", tab_schema.prepareCSV(self, rec_no_seq),
+        return ["!", "csv", reportCSV(self, tab_schema, rec_no_seq),
             [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]
 
     #===============================================

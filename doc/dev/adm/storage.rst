@@ -4,9 +4,7 @@ app.storage - Dataset creation and upload
 .. index:: 
     storage; administration utility
 
-The utility used to create or drop a dataset in the vault of the system. It is recommended to run it
-from ``$ANFISA_HOME`` directory, or use ``PYTHONPATH`` env variable to set this directory as
-python base.
+The utility used to create or drop a dataset in the vault of the system. It is recommended to run it from ``$ANFISA_HOME`` directory, or use ``PYTHONPATH`` env variable to set this directory as python base.
 
 Here are the options of the utility: ::
 
@@ -55,43 +53,39 @@ Drop dataset PGP3140::
 Comments
 ********
 
-    * For options: **--dir**, **--config**, **--source**, **-inv**, **--kind** see discussion in :doc:`a_adm_formats`        
-        
-    * **--mode​** option determines one of the following operations:
-        
-        - **create** ​ dataset
-        
-        - **drop** ​ dataset
-
-        *supplementary commands:*
-
-        * **druid-push** - reinstalls only the Druid part of xl-dataset
-        
-        * **doc-push​** - reinstalls the documentation for dataset
-        
-        * **register** - special mode to register (and to rewrite) 
-        
-        * (The utility provides also mode **favor** as a part of some experimental subproject. 
-            Currently this mode is not actual.)
-
-    * **--force** ​ option, affects only  **create** mode,  is used only if dataset already 
-        exists but needs to be re-created with a fresh version of source
-
-    * **--nocoord** experimental option, affects only **drop** mode, in case of xl-dataset does not 
-        initiate removal of dataset data in Druid 
-        
-    * **--nodruidpush** experimental mode, applicable in **create** regime, in case of
-        xl-dataset does not initiate push data to Druid
-        
-    * **--reportlines** not an essential option, affects only  **create** mode,
-        controls interval between notifications
-        during dataset data preparation
-        
-    * **--delay** not an essential mode, affects only  **create** mode, controls pause b
-        etween pushes of data for 
-        multiple datasets into Druid
+* For options: **--dir**, **--config**, **--source**, **-inv**, **--kind** see discussion in :doc:`a_adm_formats`        
     
-    * *Name of database*: in case of an xl-database it must begin with the prefix ``xl_`` 
-        or ``XL_``. Secondary workspaces created by this xl-dataset will have the same name 
-        but with other prefixes, of the form “ws<​number​>_”.
+* **--mode​** option determines one of the following operations:
+    
+    - **create** ​ dataset
+    
+    - **drop** ​ dataset
 
+    *supplementary commands:*
+
+    * **druid-push** - reinstalls only the Druid part of xl-dataset
+    
+    * **doc-push​** - reinstalls the documentation for dataset
+    
+    * **register** - special mode to register (and to rewrite) 
+    
+    * (The utility provides also mode **favor** as a part of some experimental subproject. Currently this mode is not actual.)
+
+* **--force** ​ option, affects only  **create** mode,  is used only if dataset already exists but needs to be re-created with a fresh version of source
+
+* **--nocoord** experimental option, affects only **drop** mode, in case of xl-dataset does not initiate removal of dataset data in Druid 
+    
+* **--nodruidpush** experimental mode, applicable in **create** regime, in case of xl-dataset does not initiate push data to Druid
+    
+* **--reportlines** not an essential option, affects only  **create** mode, controls interval between notifications during dataset data preparation
+    
+* **--delay** not an essential mode, affects only  **create** mode, controls pause between pushes of data for multiple datasets into Druid
+
+* *Name of database*: in case of an xl-database it must begin with the prefix ``xl_`` or ``XL_``. Secondary workspaces created by this xl-dataset will have the same name but with other prefixes, of the form “ws<​number​>_”.
+
+See also
+--------
+
+:doc:`admin`
+
+:doc:`a_adm_formats`

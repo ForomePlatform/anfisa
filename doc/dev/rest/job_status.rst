@@ -2,11 +2,11 @@ job_status
 ==========
         **Job status**
 
-Synopsis
---------
-
 .. index:: 
     job_status; request
+
+Synopsis
+--------
 
 **job_status** 
 
@@ -27,13 +27,11 @@ Synopsis
 Description
 -----------
 
-The request returns status of evaluation of a :term:`task<background task>` identified by task ID.
-If task is unknown return value is null. Format of task result depends on task type.
+The request returns status of evaluation of a :term:`task<background task>` identified by task ID. If task is unknown return value is null. Format of task result depends on task type.
 
 Comment
 -------
-TRF:
+* In case of :doc:`/ds2ws<ds2ws>` task, the proper result is dictionary: ``{"ws": <name of workspace created>}``
 
-    * In case of /xl2ws task, the proper result is dictionary {"ws": <name of workspace created>}
-    * In case of /ds_list, the proper result is dictionary, see /ds_list
+* In case of :doc:`/ds_list<ds_list>`, the proper result is dictionary, see :doc:`ds_list`
     

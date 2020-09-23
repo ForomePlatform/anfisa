@@ -252,7 +252,7 @@ function doExport() {
 function doCSVExport() {
     sViewH.popupOff();
     window.open("csv_export?" + sConditionsH.getCondRqArgs(
-        sCurFilterName, sZoneH.getCurState(), true) + "&schema=demo", 
+        sCurFilterName, sZoneH.getCurState(), true) + "&schema=csv", 
         "CSV export");
 }
 

@@ -2,12 +2,11 @@ dtree_check
 ===========
         **Decision tree code check**
 
-Synopsis
---------
-
 .. index:: 
     dtree_check; request
 
+Synopsis
+--------
 **dtree_check** 
 
     **Arguments**: 
@@ -27,8 +26,6 @@ Synopsis
     
 Description
 -----------
-
 Request checks if :term:`decision tree code` is correct. 
 
-Returning properties **error**, **line**, **no** are set if error happens
-and correspond to the first error in the code.
+Returning properties **error**, **line**, **no** are set if error happens and correspond to the first error in the code.

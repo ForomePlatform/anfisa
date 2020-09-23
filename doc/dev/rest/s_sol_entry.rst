@@ -4,7 +4,6 @@ Soluton Entry descriptor
 .. index:: 
     Soluton Entry descriptor; data structure
 
-
 Format
 ------
 
@@ -23,14 +22,14 @@ Format
 
 Description
 -----------
+The descriptor contains information about information objects in aspect of :term:`solution items<solution item>`. Used in requests returning information about:
+    
+* :term:`filters<filter>`: :doc:`ds_stat`
 
-The descriptor contains information about information objects in aspect of 
-:term:`solution items<solution item>`. Used in requests returning information about:
-    
-    * :term:`filters<filter>`: :doc:`ds_stat`
-    
-    * :term:`decision trees<decision tree>`: :doc:`dtree_set`
+* :term:`decision trees<decision tree>`: :doc:`dtree_set`
     
 See also
 --------
-:doc:`ds_stat`  :doc:`dtree_set`
+:doc:`ds_stat`  
+
+:doc:`dtree_set`

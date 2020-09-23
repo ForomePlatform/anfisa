@@ -41,30 +41,20 @@ Format
 Description
 -----------
 
-The descriptor represents information about :term:`dataset`. It is used in 
-context of two requests: 
+The descriptor represents information about :term:`dataset`. It is used in context of two requests: 
 
-    * :doc:`dirinfo` 
-        returns collection of  descriptors 
-        of all active datasets in the :term:`vault`. In this context 
-        details of connection between datasets are required: dataset 
-        can be :term:`secondary<secondary workspace>`, so one needs to 
-        know base of it. :term:`Root dataset` is defined always, and 
-        for a :term:`primary dataset` equals to itself.
+* :doc:`dirinfo` 
+    returns collection of  descriptors of all active datasets in the :term:`vault`. In this context details of connection between datasets are required: dataset can be :term:`secondary<secondary workspace>`, so one needs to know base of it. :term:`Root dataset` is defined always, and for a :term:`primary dataset` equals to itself.
 
-    * :doc:`dsinfo` 
-        returns descriptor for one dataset.
-        In this case descriptor contains details about metadata.
-    
-Descriptor provides reference **doc** to :term:`dataset documentation`, and if 
-base dataset exists, reference to documentation for all **ancestors** if they are 
-present in the vault.
+* :doc:`dsinfo` 
+    returns descriptor for one dataset.
+    In this case descriptor contains details about metadata.
+
+Descriptor provides reference **doc** to :term:`dataset documentation`, and if base dataset exists, reference to documentation for all **ancestors** if they are present in the vault.
     
 Comment
 -------
-
-Important part of metadata is list of versions of sources used in dataset 
-annotation. It is located in **metadata** returning property:
+Important part of metadata is list of versions of sources used in dataset annotation. It is located in **metadata** returning property:
 
 |         ``["versions"]: {`` *dictionary*
 |                   source name, *string*: source version, *string* 

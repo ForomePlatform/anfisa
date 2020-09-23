@@ -41,7 +41,7 @@ def defFavorView(metadata_record):
         AspectH("view_conservation", "Conservation", "_view",
             field = "conservation"),
         AspectH("view_epigenetics", "Epigenetics", "_view",
-            col_groups = ColGroupsH(attr = "epigenetics")),
+            col_groups = ColGroupsH([["epigenetics", None]])),
         AspectH("view_transcription_factors", "Transcription Factors", "_view",
             field = "transcription_factors"),
         AspectH("view_chromatin_states", "Chromatin States", "_view",

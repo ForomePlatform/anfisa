@@ -4,19 +4,11 @@ storage.dir file format
 .. index:: 
     storage.dir, file format
     
-The file storage.dir presents some variant of integration solution: the system 
-administrator can form this file in JSON format manually, with use of any text 
-editor, put here all information about maintained datasets, and use path to 
-this file in option **--dir** in administration tools: :doc:`storage` and 
-:doc:`adm_update`. 
+The file storage.dir presents some variant of integration solution: the system administrator can form this file in JSON format manually, with use of any text editor, put here all information about maintained datasets, and use path to this file in option **--dir** in administration tools: :doc:`storage` and :doc:`adm_update`. 
 
-If configuration of datasets changes, the user administrator 
-needs to fix changes in storage.dir manually. On shell level, there is also 
-the regime **register** in :doc:`storage`, it allows to register new dataset 
-in storage.dir automatically. 
+If configuration of datasets changes, the user administrator needs to fix changes in storage.dir manually. On shell level, there is also the regime **register** in :doc:`storage`, it allows to register new dataset in storage.dir automatically. 
 
-There is no strong need in this file in current state of the project, the system 
-administrator can perform all administrative actions without it.
+There is no strong need in this file in current state of the project, the system administrator can perform all administrative actions without it.
     
 The file includes:
     
@@ -54,10 +46,7 @@ Example of file
 Comment
 -------
 
-The discussed solution is intermediate one: in future the project will require  
-a dashboard integration module for control all processes of data preparation and 
-annotation. Up to this moment the project does not include such a dashboard, thus the 
-storage.dir solution in an integration helper tool with minimal level of comfort in usage. 
+The discussed solution is intermediate one: in future the project will require a dashboard integration module for control all processes of data preparation and annotation. Up to this moment the project does not include such a dashboard, thus the storage.dir solution in an integration helper tool with minimal level of comfort in usage. 
     
 See also
 --------

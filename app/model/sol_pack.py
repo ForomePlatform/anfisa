@@ -110,10 +110,18 @@ class SolutionPack:
             tree_code, requires, self.mUsedNames)
         self.mItems.append(it)
 
-    def regPanel(self, panel_name, panel_type, fname, requires = None):
+    def regPanel(self, panel_name, panel_type,
+            fname = None, items = None, requires = None):
+        assert (fname is not None) ^ (items is not None)
+        if fname:
+            items = self.readListFile(fname)
         self.mItems.append(SolutionItem("panel", panel_name,
-            (panel_type, self.readListFile(fname)), requires,
+            (panel_type, items), requires,
             self.mUsedNames))
+
+    def regItemDict(self, name, the_dict, requires = None):
+        self.mItems.append(SolutionItem("item-dict",
+            name, the_dict, requires, self.mUsedNames))
 
     def regZone(self, zone_title, unit_name, requires = None):
         self.mItems.append(SolutionItem("zone",
@@ -122,15 +130,6 @@ class SolutionPack:
     def regTabSchema(self, tab_schema, requires = None):
         self.mItems.append(SolutionItem("tab-schema",
             tab_schema.getName(), tab_schema, requires, self.mUsedNames))
-
-    def regAnnotationFunc(self, name, func, requires = None):
-        self.mItems.append(SolutionItem("annotation-func",
-            name, func, requires, self.mUsedNames))
-
-    def regClinvarTrustedSubmitter(self,
-            short_name, full_name, requires = None):
-        self.mItems.append(SolutionItem("trusted-clinvar-submitter",
-            short_name, full_name, requires, self.mUsedNames))
 
     #===============================================
     def iterItems(self, kind, test_f):
