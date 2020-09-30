@@ -20,8 +20,7 @@
 import csv
 from io import StringIO
 
-#from forome_tools.path_works import AttrFuncPool
-from .attr_f import AttrFuncHelper
+from forome_tools.path_works import AttrFuncHelper
 #===============================================
 class ReportTabSchema:
     def __init__(self, name, use_tags = False):

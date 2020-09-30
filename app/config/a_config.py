@@ -22,7 +22,7 @@ import os
 from datetime import timedelta
 from zlib import crc32
 
-from app.model.attr_f import AttrFuncHelper
+from forome_tools.path_works import AttrFuncHelper
 #===============================================
 class AnfisaConfig:
     sTextMessages = {
