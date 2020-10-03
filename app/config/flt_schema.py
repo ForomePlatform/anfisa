@@ -95,8 +95,8 @@ def sample_has_variant(sample):
     genotype = sample.get("genotype")
     return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
 
-FilterPrepareSetH.regNamedFunction("has_variant", sample_has_variant)
 
+FilterPrepareSetH.regNamedFunction("has_variant", sample_has_variant)
 #===============================================
 def defineFilterSchema(metadata_record):
     data_schema = metadata_record.get("data_schema")

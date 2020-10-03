@@ -62,15 +62,15 @@ class ListConversions:
     @staticmethod
     def values(arr):
         ret = []
-        for dict in arr:
-            ret += sorted(dict.values())
+        for dict_entry in arr:
+            ret += sorted(dict_entry.values())
         return ret
 
     @staticmethod
     def keys(arr):
         ret = []
-        for dict in arr:
-            ret += sorted(dict.keys())
+        for dict_entry in arr:
+            ret += sorted(dict_entry.keys())
         return ret
 
     @staticmethod
@@ -118,10 +118,10 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def property(property, arr):
+    def property(attr_name, arr):
         ret = []
         for val in arr:
-            ret.append(val.get(property)
+            ret.append(val.get(attr_name)
                 if val else None)
         return ret
 
@@ -154,7 +154,8 @@ class ListConversions:
             if func_name == "property":
                 return lambda rec: cls.property(par, rec)
             if func_name == "skip":
-                op_f = lambda rec: rec[par:]
+                def op_f(rec):
+                    return rec[par:]
                 return lambda rec: cls.op_rec(op_f, [], rec)
             if func_name == "split":
                 return lambda rec: cls.split(par, rec)
@@ -171,6 +172,7 @@ class ListConversions:
             if func_name == "max":
                 return lambda rec: cls.op_rec(max, par, rec)
         assert False, "Bad conversion item %s" % repr(conv_item)
+        return None
 
 #===============================================
 # TRF: All the code below is deprecated
