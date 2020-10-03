@@ -82,7 +82,7 @@ class ColGroupsH:
             seq = rec_obj[attr]
             if self.mSingleGroupCol:
                 seq = [seq]
-            elif len(seq) == 0:
+            elif seq is None or len(seq) == 0:
                 continue
             rep_count = "[%d]" % len(seq)
             add_title_class = ""
