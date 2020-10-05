@@ -62,10 +62,10 @@ class SecondaryWsCreation(ExecutionTask):
 
     def execIt(self):
         if not self.correctWSName(self.mWSName):
-            self.setStatus("Incorrect workspace name")
+            self.setStatus("Incorrect derived dataset name")
             return None
-        self.setStatus("Preparing to create workspace")
-        logging.info("Prepare workspace creation: %s" % self.mWSName)
+        self.setStatus("Preparing to create derived dataset")
+        logging.info("Prepare dataset derivation: %s" % self.mWSName)
         receipt = {
             "kind": self.mEval.getSolKind(),
             "base": self.mDS.getName(),
@@ -111,7 +111,7 @@ class SecondaryWsCreation(ExecutionTask):
         trans_prep = TransformPreparator_WS(flt_schema, self.mDS, False)
 
         os.mkdir(ws_dir)
-        logging.info("Fill workspace %s datafiles..." % self.mWSName)
+        logging.info("Fill dataset %s datafiles..." % self.mWSName)
 
         with DataDiskStorageWriter(False,
                 ws_dir, filter_set, trans_prep) as ws_out:
@@ -123,7 +123,7 @@ class SecondaryWsCreation(ExecutionTask):
                         (ws_out.getTotal(), len(rec_no_seq)))
 
         self.setStatus("Finishing...")
-        logging.info("Finalizing workspace %s" % self.mWSName)
+        logging.info("Finalizing derivation %s" % self.mWSName)
 
         total_item_count = trans_prep.finishUp()
 
