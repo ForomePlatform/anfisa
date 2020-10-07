@@ -229,4 +229,4 @@ class _SolutionKindHandler:
 
     def pickByName(self, name):
         with self.mBroker:
-            return self.mEntryDict[name]
+            return self.mEntryDict.get(name)
