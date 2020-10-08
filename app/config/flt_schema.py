@@ -95,8 +95,12 @@ def sample_has_variant(sample):
     genotype = sample.get("genotype")
     return genotype and not ("HOM_REF" in genotype or "NO_CALL" in genotype)
 
+def is_none(value):
+    return value in (None, "None")
+
 
 FilterPrepareSetH.regNamedFunction("has_variant", sample_has_variant)
+FilterPrepareSetH.regNamedFunction("is_none", is_none)
 #===============================================
 def defineFilterSchema(metadata_record):
     data_schema = metadata_record.get("data_schema")
@@ -282,8 +286,8 @@ def defineFilterSchema(metadata_record):
         filters.statusUnit("Region", "/__data/region_canonical",
             title = "Region (Legacy)", default_value = "Other", )
         filters.statusUnit("hg19", "/_view/general/hg19", title = "HG19",
-            conversion = ["positive", "len"],
-            value_map= {0: "Unmapped", 1: "Mapped"})
+            conversion = [["filter", "is_none"], "len"],
+            value_map= {1: "Unmapped", 0: "Mapped"})
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_AF",
