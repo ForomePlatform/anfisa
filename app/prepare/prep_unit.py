@@ -273,8 +273,6 @@ class EnumConvertor(PathValueConvertor):
                 for idx, variant in enumerate(mod_values):
                     if variant in self.mValueMap:
                         mod_values[idx] = self.mValueMap[variant]
-                    elif '*' in self.mValueMap:
-                        mod_values[idx] = self.mValueMap['*']
 
             for val in set(mod_values):
                 if (self.mVariantSet is not None

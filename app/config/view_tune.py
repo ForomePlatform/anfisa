@@ -119,9 +119,9 @@ class GnomAD_AttrH(AttrH):
 
     @staticmethod
     def wrap(url, text = "gnomAD Browser"):
-        link = '<span title="View in gnomAD browser">' \
-               + ('<a href="%s" target="gnomAD">%s</a>' % (url, text)) \
-               + '</span>'
+        link = ('<span title="View in gnomAD browser">'
+               + ('<a href="%s" target="gnomAD">%s</a>' % (url, text))
+               + '</span>')
         return link
 
     @staticmethod
@@ -149,16 +149,16 @@ class GnomAD_AttrH(AttrH):
             return ("No HG19 mapping", "norm")
         try:
             region_name = v_context["data"]["__data"]["seq_region_name"]
-            region = v_context["data"]["_view"]["general"]["hg19"].split(':')[1]\
-                .split('-')
-            start = int (region[0])
+            region = (v_context["data"]["_view"]["general"]["hg19"].
+                split(':')[1].split('-'))
+            start = int(region[0])
             if (len(region) > 1):
-                end = int (region[1])
+                end = int(region[1])
             else:
                 end = start
             url = self.makeLink(region_name, start, end, 3)
             return self.make_attr(url)
-        except:
+        except Exception:
             return ("error", "norm")
 
 #===============================================
