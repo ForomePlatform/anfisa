@@ -150,10 +150,14 @@ def defineFilterSchema(metadata_record):
         filters.multiStatusUnit("Canonical_Annotation",
             "/_view/general/canonical_annotation[]",
             default_value = "undefined")
-        filters.intValueUnit("Number_ALTs",
-            "/_filters/alts",
-            title = "Number of Alternative alleles",
-            conversion = ["len"], default_value = 0)
+        filters.statusUnit("Multiallelic", "/_filters/multiallelic",
+            title="Multi-allelic?")
+        filters.statusUnit("Altered_VCF", "/_filters/altered_vcf",
+            title="Has VCF been normalized?")
+        # filters.intValueUnit("Number_ALTs",
+        #     "/_filters/alts",
+        #     title = "Number of Alternative alleles",
+        #     conversion = ["len"], default_value = 0)
 
         #filters.intValueUnit("zyg_len", "/__data/zygosity",
         #   conversion = ["len"], default_value = 0)

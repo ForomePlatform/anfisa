@@ -304,7 +304,8 @@ def readySolutions_Case(base_pack):
     base_pack.regZone("Tag", "_tags")
 
     demo_tab_schema = ReportTabSchema("demo", use_tags = True)
-    demo_tab_schema.addField("symbol", "/_view/general/genes[]")
+    demo_tab_schema.addField("gene(s)", "/_view/general/genes[]")
+    demo_tab_schema.addField("variant", "/__data/label")
     demo_tab_schema.addField("gnomAD_AF", "/_filters/gnomad_af_fam")
     base_pack.regTabSchema(demo_tab_schema)
 
