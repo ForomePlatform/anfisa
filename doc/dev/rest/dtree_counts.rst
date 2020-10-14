@@ -2,12 +2,11 @@ dtree_counts
 ============
         **Delayed evaluations of item counts for decision tree points**
 
-Synopsis
---------
-
 .. index:: 
     dtree_counts; request
 
+Synopsis
+--------
 **dtree_counts** 
 
     **Arguments**: 
@@ -35,23 +34,15 @@ Synopsis
 
 Description
 -----------
-
-The request supports mechanism of delayed evaluation of :ref:`decision tree point counters<dtree_points_report>` in case when the main request :doc:`dtree_set`
-has returned point counts in incomplete state.
+The request supports mechanism of delayed evaluation of :ref:`decision tree point counters<dtree_points_report>` in case when the main request :doc:`dtree_set` has returned point counts in incomplete state.
 
 **rq_id** argument should be get from result of initiation request.
-Arguments **dtree**, **code**, **no** should be the same as in initiation 
-request :doc:`dtree_set`. 
 
-**points** argument is list of point indexes that are required to be evaluated.
-Ordering of indexes in list are responsible for priorities of evaluation: first 
-entry has highest priority. 
+Arguments **dtree**, **code**, **no** should be the same as in initiation request :doc:`dtree_set`. 
 
-Returning property **point-count** is list of length equal to count of all points 
-in tree, and it might contain entries for points not requested by **points** argument.
-On another side, the request can return no new data at all, if evaluation process
-on server continues too long. However, after numerous requests all count descriptors 
-will be evaluated in a final time. And the same input argument **rq_id** is 
+**points** argument is list of point indexes that are required to be evaluated. Ordering of indexes in list are responsible for priorities of evaluation: first entry has highest priority. 
+
+Returning property **point-count** is list of length equal to count of all points in tree, and it might contain entries for points not requested by **points** argument. On another side, the request can return no new data at all, if evaluation process on server continues too long. However, after numerous requests all count descriptors will be evaluated in a final time. And the same input argument **rq_id** is 
 important for this mechanism. 
 
 See also

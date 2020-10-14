@@ -1,12 +1,12 @@
 statfunc
 ========
         **Function filtering support**
+        
+.. index:: 
+    statfunc; request
 
 Synopsis
 --------
-
-.. index:: 
-    statfunc; request
 
 **statfunc** 
 
@@ -18,8 +18,7 @@ Synopsis
         
         **filter**: *optional* name of applying filter
         
-        **conditions**: *optional* list of applying 
-            :doc:`condition descriptors<s_condition>`
+        **conditions**: *optional* list of applying :doc:`condition descriptors<s_condition>`
             *in JSON string representation*
 
         **dtree**: *optional* name of applying decision tree
@@ -37,20 +36,15 @@ Synopsis
 
 Description
 -----------
+Request returns status report for :term:`function<functions>` applied to selection determined by arguments:
 
-Request returns status report for :term:`function<functions>` applied to 
-selection determined by arguments:
+- filter applies if either **filter** or **conditions** is set (see discussion :ref:`here<fiter_conditions>`)
 
-    - filter applies if either **filter** or **conditions** is set (see discussion
-      :ref:`here<fiter_conditions>`)
-
-    - decision tree applies if either **dtree** or **code** is set (see discussion
-      :ref:`here<dtree_code>`)
-      
-      in this case **no** is necessary, since decision tree
-      defines series of selections
-        
-    - otherwise selection is the full list of variants in dataset
+- decision tree applies if either **dtree** or **code** is set (see discussion :ref:`here<dtree_code>`)
+    
+    in this case **no** is necessary, since decision tree defines series of selections
+    
+- otherwise selection is the full list of variants in dataset
 
 See discussion and functions reference in :doc:`func_ref`.
 

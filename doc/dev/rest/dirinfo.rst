@@ -1,19 +1,17 @@
 dirinfo
 =======
         **Vault information**
-
-Synopsis
---------
-
+        
 .. index:: 
     dirinfo; request
-
+    
+Synopsis
+--------
 **dirinfo** 
 
     **Arguments**: *none*
 
     **Return value**: 
-
         .. index::
             version; property of dirinfo
             ds-list; property of dirinfo
@@ -29,8 +27,6 @@ Synopsis
 
 Description
 -----------
-
-The request returns complete information for rendering directory page in User Interface.
-So it returns information about all :term:`datasets<dataset>` accessible in :term:`vault`.
+The request returns complete information for rendering directory page in User Interface. So it returns information about all :term:`datasets<dataset>` accessible in :term:`vault`.
 
 Sorting order in **ds-list** output value represents hierarchical connections between datasets.

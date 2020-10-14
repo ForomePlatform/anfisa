@@ -20,6 +20,7 @@
 
 import sys, os, shutil, traceback
 from glob import glob
+from xml.sax.saxutils import escape
 
 from .html_report import startHtmlReport
 #===============================================
@@ -245,8 +246,11 @@ class _DocImgH(_DocH):
                 encoding = "utf-8") as output:
             startHtmlReport(output, self.get("title"))
             print(' <body>', file = output)
-            print('  <img src="%s">' % os.path.basename(img_dest_place),
-                file = output)
+            img_params = ['src="%s"' % os.path.basename(img_dest_place)]
+            tooltip = self.get("tooltip")
+            if tooltip:
+                img_params.append('title="%s"' % escape(tooltip))
+            print('  <img %s>' % " ".join(img_params), file = output)
             print(' </body>', file = output)
             print('</html>', file = output)
         print("Doc image-based file created", dest_place, file = sys.stderr)

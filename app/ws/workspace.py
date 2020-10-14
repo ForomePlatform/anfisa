@@ -59,7 +59,7 @@ class Workspace(DataSet):
         self._loadPData()
         self._loadFData()
         self.mTagsMan = TagsManager(self,
-            AnfisaConfig.configOption("check.tags"))
+            self.getPanelVariants("Check-Tags", "_tags"))
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
         self.startService()

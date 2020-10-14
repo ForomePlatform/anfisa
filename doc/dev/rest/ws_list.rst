@@ -2,11 +2,11 @@ ws_list
 =======
         **Current list of variants**
 
-Synopsis
---------
-
 .. index:: 
     ws_list; request
+
+Synopsis
+--------
 
 **ws_list** 
 
@@ -45,32 +45,19 @@ Synopsis
     
 Description
 -----------
+The request is the principal one for organizing :ref:`full<full_viewing_regime>` variant of :doc:`../concepts/view`.
 
-The request is the principal one for organizing :ref:`full<full_viewing_regime>`
-variant of :doc:`../concepts/view`.
+The request affects only :term:`workspaces<workspace>` and return list of :term:variant` record descriptors.
 
-The request affects only :term:`workspaces<workspace>` and return list of 
-:term:variant` record descriptors.
+If arguments **filter**, **conditions**, **zone** are not set, result of request is the complete list of records in dataset returns. Otherwise result is restricted by :term:`filter` and/or condition on :term:`zones<zone>`.
 
-If arguments **filter**, **conditions**, **zone** are not set, 
-result of request is the complete list of records in dataset returns. 
-Otherwise result is restricted by :term:`filter` and/or condition on 
-:term:`zones<zone>`.
+Nonempty **zone** list can contain special pair of strings ``["NOT", true]``. In this case **zone** option works in reverse context: records satisfying condition on zones are filtered out. (It might be helpful for work with :term:`tagging`.)
 
-Nonempty **zone** list can contain special pair of strings ``["NOT", true]``. 
-In this case **zone** option works in reverse context: records satisfying 
-condition on zones are filtered out. (It might be helpful for work with :term:`tagging`.)
-
-To define :term:`filter` use either **filter** or **conditions**. See details 
-:ref:`here<fiter_conditions>`.
+To define :term:`filter` use either **filter** or **conditions**. See details :ref:`here<fiter_conditions>`.
 
 Comment
 -------
-The request format supports applying of multiple zones, butthe current user 
-interface allows to set only one zone at time. Extension of the user interface
-is expected in future development.
-
-
+The request format supports applying of multiple zones, butthe current user interface allows to set only one zone at time. Extension of the user interface is expected in future development.
 
 See also
 --------

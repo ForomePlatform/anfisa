@@ -15,7 +15,6 @@ Requests
   ------------------------- ------------------------------------------------------------- 
   \ 
   *Dataset level*
-  \ 
    :doc:`dsinfo`            Dataset information
    :doc:`ds_list`           List of variants in auxiliary viewing regime
    :doc:`reccnt`            Aspect-based full view presentation of variant
@@ -26,14 +25,12 @@ Requests
   ------------------------- -------------------------------------------------------------
     \ 
   *Filtering regime*
-  \ 
    :doc:`ds_stat`           Filtering regime support
    :doc:`statunits`         Delayed evaluations for filtering property status data
    :doc:`statfunc`          Function filtering support
   ------------------------- -------------------------------------------------------------
     \ 
   *Decision trees*
-  \ 
    :doc:`dtree_set`         Decision tree page setup
    :doc:`dtree_counts`      Delayed evaluations of item counts for decision tree points
    :doc:`dtree_stat`        Filtering properties status report for decision tree page
@@ -42,21 +39,18 @@ Requests
   ------------------------- -------------------------------------------------------------
   \ 
   *Operations*
-  \ 
    :doc:`export`            Export operation in Excel format
    :doc:`csv_export`        Export operation in CSV format
    :doc:`ds2ws`             Creation of secondary workspace
   ------------------------- -------------------------------------------------------------
   \ 
   *WS-dataset support*
-  \ 
    :doc:`ws_list`           Current list of variants
    :doc:`zone_list`         Zone support information
    :doc:`ws_tags`           Tagging variant information retrieval and modifications
    :doc:`tag_select`        Tag navigation support
    :doc:`macro_tagging`     Tagging macro operation
   ========================= =============================================================
-
 
 .. toctree::
    :maxdepth: 1

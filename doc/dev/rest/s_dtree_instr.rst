@@ -34,14 +34,12 @@ Actions:
     
 INSTR modifying actions
 --------------------------
-
 Actions of this type manipulates with logical blocks of decision tree code.
 Blocks are identified by index of first point.
 
 .. _dtree_instr_actions:
 
-For each :term:`point<decision tree point>` list of available actions 
-is prepared in  **actions** property of :doc:`s_dtree_point`.
+For each :term:`point<decision tree point>` list of available actions is prepared in  **actions** property of :doc:`s_dtree_point`.
 
 Format
 ^^^^^^
@@ -79,8 +77,7 @@ Actions:
 POINT modifying actions
 -----------------------
 
-Actions of this type are caused by insertion of new condition over filtering property
-into some :term:`point of decision tree<decision tree point>`.
+Actions of this type are caused by insertion of new condition over filtering property into some :term:`point of decision tree<decision tree point>`.
 
 Format
 ^^^^^^
@@ -98,16 +95,13 @@ Actions:
     
     **REPLACE**: replace the whole condition of If-block by new condition
     
-    **JOIN-AND**, **JOIN-OR**: join new condition with current condition of 
-        If-block by AND or OR operation
+    **JOIN-AND**, **JOIN-OR**: join new condition with current condition of If-block by AND or OR operation
 
 .. _dtree_atom_actions:
                 
 ATOM modifying actions
 ----------------------
-
-Actions of this type are caused by user requests for modification of existing 
-atom conditions in decision tree.
+Actions of this type are caused by user requests for modification of existing atom conditions in decision tree.
 
 Format
 ^^^^^^
@@ -125,14 +119,11 @@ Format
 Actions:
 ^^^^^^^^
 
-    **EDIT**: modify atomic condition, additional argument in place **[3]** is new
-        :doc:`s_condition`
+    **EDIT**: modify atomic condition, additional argument in place **[3]** is new :doc:`s_condition`
     
-    **DELETE**: delete atom from the whole condition and simplify it, no additional
-        argument requires
+    **DELETE**: delete atom from the whole condition and simplify it, no additional argument requires
         
-        *Note*: in case of one atom in point, please use action ``"INSTR"/"DELETE"`` 
-        instead of this one.
+        *Note*: in case of one atom in point, please use action ``"INSTR"/"DELETE"`` instead of this one.
 
 Used in request
 ----------------

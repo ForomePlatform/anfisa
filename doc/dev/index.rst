@@ -12,15 +12,11 @@ Anfisa Development Documentation
    
    rest/index
    
-   utils/index
-   
-   configuration
-   
-   install
-   
    adm/index
    
-   zygocity
+   appcfg/index
+   
+   zygosity
    
 Indices and tables
 ==================

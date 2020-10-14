@@ -118,7 +118,7 @@ class DSScanInfo:
         if info_fstat is None:
             return "NO-SOURCE"
         if info_fstat[1] > self.mTimestamp:
-            return "SOURCE-OUT-OF-DATE"
+            return "PRIMARY-OUT-OF-DATE"
         return None
 
     def checkBase(self):
@@ -261,7 +261,7 @@ if __name__ == '__main__':
 
     #========================================
     import forome_tools
-    forome_tools.compatible((0, 1, 3))
+    forome_tools.compatible((0, 1, 4))
 
     #========================================
     if sys.version_info < (3, 7):

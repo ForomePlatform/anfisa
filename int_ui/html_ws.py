@@ -61,7 +61,7 @@ def _formPanel(output, workspace_name, ws_pub_url):
                     <a class="popup" onclick="showExport();"
                         >Export...</a>
                     <a class="popup" onclick="wsCreate();"
-                        >Create workspace...</a>
+                        >Derive dataset...</a>
                     <a class="popup" onclick="tabReport();"
                         >Tab report</a>
                     <a class="popup" onclick="macroTagging();"

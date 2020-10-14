@@ -61,7 +61,7 @@ class InheritanceUnit(FunctionUnit):
 
     def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["family"] = self.mZygSupport.getIds()
+        ret_handle["family"] = self.mZygSupport.getNames()
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
         ret_handle["available"] = self.mAvailLabels
         return ret_handle
@@ -72,7 +72,7 @@ class InheritanceUnit(FunctionUnit):
             p_group = self.mZygSupport.getAffectedGroup()
         else:
             p_group = self.mZygSupport.filter(parameters["problem_group"])
-        ret_handle["problem_group"] = sorted(p_group)
+        ret_handle["problem_group"] = parameters.get("problem_group")
         if len(p_group) > 0:
             self.collectComplexStat(ret_handle, condition,
                 {"p_group": p_group})
@@ -86,7 +86,7 @@ class InheritanceUnit(FunctionUnit):
         if p_group is None:
             p_group = self.mZygSupport.getAffectedGroup()
         else:
-            extra_names = (set(p_group) - set(self.mZygSupport.getIds()))
+            extra_names = (set(p_group) - set(self.mZygSupport.getNames()))
             if len(extra_names) > 0:
                 eval_h.operationError(cond_data, "No sample(s) registered: "
                     + ' '.join(sorted(extra_names)))
@@ -128,7 +128,7 @@ class CustomInheritanceUnit(FunctionUnit):
 
     def makeInfoStat(self, eval_h, point_no):
         ret_handle = self.prepareStat()
-        ret_handle["family"] = self.mZygSupport.getIds()
+        ret_handle["family"] = self.mZygSupport.getNames()
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
         return ret_handle
 

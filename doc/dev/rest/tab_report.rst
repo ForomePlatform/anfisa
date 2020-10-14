@@ -2,11 +2,11 @@ tab_report
 ==========
         **Viewing data in tabulated form**
 
-Synopsis
---------
-
 .. index:: 
     tab_report; request
+
+Synopsis
+--------
 
 **tab_report** 
 
@@ -28,9 +28,7 @@ Synopsis
 
 Description
 -----------
-
-The request prepares view presentation for series of :term:`variant` records in form defined by 
-schema.
+The request prepares view presentation for series of :term:`variant` records in form defined by schema.
 
 See also :doc:`../concepts/view_pre`
 

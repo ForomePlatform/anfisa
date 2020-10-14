@@ -80,7 +80,7 @@ class TagsManager(ZoneH):
 
     def getRecTags(self, rec_no):
         rec_key = self.getDS().getRecKey(rec_no)
-        return self.getDS().getSolEnv().getEntry("tags", rec_key)[2]
+        return self.getDS().getSolEnv().getEntry("tags", rec_key)[0]
 
     def makeRecReport(self, rec_no):
         ret = self.getTagListInfo()

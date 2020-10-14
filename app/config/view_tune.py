@@ -34,8 +34,10 @@ def tuneAspects(ds_h, aspects):
     view_db = aspects["view_db"]
     view_t = aspects["view_transcripts"]
     view_pkgb = aspects["view_pharmagkb"]
+    view_gnomad = aspects["view_gnomAD"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
+    _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
     _resetupAttr(view_db, GTEx_AttrH(view_gen))
     _resetupAttr(view_db, OMIM_AttrH(view_gen))
     _resetupAttr(view_db, GREV_AttrH(view_gen))
@@ -104,6 +106,60 @@ class UCSC_AttrH(AttrH):
                 + '<span title="Zoom Out, 500bp range">'
                 + ('<a href="%s" target="UCSC">Zoom Out</a>' % link2)
                 + '</span> </td><td></table>', "norm")
+
+#===============================================
+class GnomAD_AttrH(AttrH):
+
+    @staticmethod
+    def makeLink(region_name, start, end, delta):
+        return ("https://gnomad.broadinstitute.org/region/"
+            + ("%s" % region_name)
+            + "%3A" + str(max(0, start - delta))
+            + "%2D" + str(end + delta))
+
+    @staticmethod
+    def wrap(url, text = "gnomAD Browser"):
+        link = ('<span title="View in gnomAD browser">'
+               + ('<a href="%s" target="gnomAD">%s</a>' % (url, text))
+               + '</span>')
+        return link
+
+    @staticmethod
+    def make_attr(url):
+        if isinstance(url, list):
+            if len(url) == 1:
+                url = url[0]
+            else:
+                links = []
+                for u in url:
+                    links.append(GnomAD_AttrH.wrap(u, u))
+                return ('<br>'.join(links), "norm")
+        return (GnomAD_AttrH.wrap(url), "norm")
+
+    def __init__(self, view):
+        AttrH.__init__(self, "URL")
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, v_context):
+        url = v_context["data"]["_view"]["gnomAD"]["url"]
+        if url:
+            return self.make_attr(url)
+        hg19 = v_context["data"]["_view"]["general"]["hg19"]
+        if (not hg19) or hg19.lower() == 'none':
+            return ("No HG19 mapping", "norm")
+        try:
+            region_name = v_context["data"]["__data"]["seq_region_name"]
+            region = (v_context["data"]["_view"]["general"]["hg19"].
+                split(':')[1].split('-'))
+            start = int(region[0])
+            if (len(region) > 1):
+                end = int(region[1])
+            else:
+                end = start
+            url = self.makeLink(region_name, start, end, 3)
+            return self.make_attr(url)
+        except Exception:
+            return ("error", "norm")
 
 #===============================================
 class GTEx_AttrH(AttrH):

@@ -41,6 +41,7 @@ from .family import FamilyInfo
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
+from .tab_report import reportCSV
 #===============================================
 class DataSet(SolutionBroker):
     sStatRqCount = 0
@@ -321,6 +322,7 @@ class DataSet(SolutionBroker):
     def _getArgCondFilter(self, rq_args, activate_it = True):
         if rq_args.get("filter"):
             filter_h = self.pickSolEntry("filter", rq_args["filter"])
+            assert filter_h is not None
         else:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
@@ -337,6 +339,7 @@ class DataSet(SolutionBroker):
         if dtree_h is None:
             if use_dtree and "dtree" in rq_args:
                 dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
+                assert dtree_h is not None
             else:
                 dtree_h = DTreeEval(self.getEvalSpace(), rq_args["code"])
         dtree_h = self.updateSolEntry("dtree", dtree_h)
@@ -491,6 +494,7 @@ class DataSet(SolutionBroker):
     def rq__dtree_cmp(self, rq_args):
         dtree_h = self._getArgDTree(activate_it = False)
         other_dtree_h = self.pickSolEntry("dtree", rq_args["other"])
+        assert other_dtree_h is not None
         return {"cmp": cmpTrees(
             dtree_h.getCode(), other_dtree_h.getCode())}
 
@@ -566,7 +570,7 @@ class DataSet(SolutionBroker):
         rec_no_seq = self.getEvalSpace().evalRecSeq(
             eval_h.getCondition(), rec_count)
         tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
-        return ["!", "csv", tab_schema.prepareCSV(self, rec_no_seq),
+        return ["!", "csv", reportCSV(self, tab_schema, rec_no_seq),
             [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]
 
     #===============================================

@@ -22,7 +22,7 @@ from io import TextIOWrapper
 from subprocess import Popen, PIPE
 
 from forome_tools.ixbz2 import IndexBZ2, FormatterIndexBZ2
-from app.model.pre_fields import PresentationData
+from app.config.a_config import AnfisaConfig
 #===============================================
 class DataDiskStorage:
     def __init__(self, ds_h, dataset_path):
@@ -143,7 +143,7 @@ class DataDiskStorageWriter:
         flt_data = self.mFilterSet.process(rec_no, record)
         if self.mViewChecker is not None:
             self.mViewChecker.regValue(rec_no, record)
-        pre_data = PresentationData.make(record)
+        pre_data = AnfisaConfig.getVariantSystemFields(record)
         self.mTransPrep.doRec(rec_no, record, flt_data, pre_data)
         if self.mVDataProc is not None:
             print(json.dumps(record, ensure_ascii = False),

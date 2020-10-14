@@ -20,64 +20,61 @@
 import csv
 from io import StringIO
 
-from forome_tools.path_works import AttrFuncPool
+from forome_tools.path_works import AttrFuncHelper
 #===============================================
-class VariantsTabReportSchema:
+class ReportTabSchema:
     def __init__(self, name, use_tags = False):
         self.mName = name
         self.mFields = []
         self.mUseTags = use_tags
 
     def addField(self, name, field_path):
-        self.mFields.append(PresentationFieldPath(name, field_path))
+        self.mFields.append((name,
+            AttrFuncHelper.getter(field_path)))
+
+    def addMustiStrField(self, name, separator, field_path_seq):
+        self.mFields.append((name,
+            AttrFuncHelper.multiStrGetter(separator, field_path_seq)))
 
     def getName(self):
         return self.mName
+
+    def getFieldNames(self):
+        ret = [name for name, _ in self.mFields]
+        if self.mUseTags:
+            ret.append("_tags")
+        return ret
 
     def reportRecord(self, ds_h, rec_no):
         rec_data = ds_h.getRecordData(rec_no)
         ret_handle = {"_no": rec_no}
-        if self.mUseTags and ds_h.getDSKind() == "ws":
-            ret_handle["_tags"] = (ds_h.getTagsMan().
-                makeRecReport(rec_no)["rec-tags"])
+        if self.mUseTags:
+            if ds_h.getDSKind() == "ws":
+                ret_handle["_tags"] = (ds_h.getTagsMan().
+                    makeRecReport(rec_no)["rec-tags"])
+            else:
+                ret_handle["_tags"] = None
 
-        for field_h in self.mFields:
-            field_h.process(rec_data, ret_handle)
+        for name, field_f in self.mFields:
+            ret_handle[name] = field_f(rec_data)
         return ret_handle
 
-    def prepareCSV(self, ds_h, rec_no_seq):
-        output = StringIO()
-        writer = csv.writer(output)
-        fld_names = [field_h.getName() for field_h in self.mFields]
-        if self.mUseTags and ds_h.getDSKind() == "ws":
-            fld_names.append("_tags")
-        writer.writerow(fld_names)
-        for rec_no in rec_no_seq:
-            rec_descr = self.reportRecord(ds_h, rec_no)
-            row = []
-            for fld in fld_names:
-                val = rec_descr[fld]
-                if fld == "_tags":
-                    val = sorted(val.keys())
-                if isinstance(val, list):
-                    row.append('|'.join(map(str, val)))
-                else:
-                    row.append(str(val))
-            writer.writerow(row)
-        return output.getvalue()
-
 #===============================================
-class PresentationFieldPath:
-    def __init__(self, name, field_path):
-        self.mName = name
-        self.mFunc = AttrFuncPool.makeFunc(field_path)
-        self.mIsSeq = field_path.endswith('[]')
-
-    def getName(self):
-        return self.mName
-
-    def process(self, rec_data, ret_handle):
-        res = self.mFunc(rec_data)
-        if not self.mIsSeq:
-            res = res[0] if res else None
-        ret_handle[self.mName] = res
+def reportCSV(ds_h, tab_schema, rec_no_seq):
+    output = StringIO()
+    writer = csv.writer(output)
+    fld_names = tab_schema.getFieldNames()
+    writer.writerow(fld_names)
+    for rec_no in rec_no_seq:
+        rec_descr = tab_schema.reportRecord(ds_h, rec_no)
+        row = []
+        for fld in fld_names:
+            val = rec_descr[fld]
+            if fld == "_tags":
+                val = sorted(val.keys())
+            if isinstance(val, list):
+                row.append('|'.join(map(str, val)))
+            else:
+                row.append(str(val))
+        writer.writerow(row)
+    return output.getvalue()

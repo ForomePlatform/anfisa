@@ -36,10 +36,9 @@ def defineViewSchema(metadata_record = None):
     aspect_list = [
         AspectH("view_gen", "General", "_view", field = "general"),
         AspectH("view_transcripts", "Transcripts", "_view",
-            col_groups = ColGroupsH(
-                [("transcripts", "Transcripts")])),
+            col_groups = ColGroupsH([("transcripts", "Transcripts")])),
         AspectH("view_qsamples", "Quality", "_view",
-            col_groups = ColGroupsH(attr = "quality_samples")),
+            col_groups = ColGroupsH([["quality_samples", None]])),
         AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
         AspectH("view_db", "Databases", "_view", field = "databases"),
         AspectH("view_pred", "Predictions", "_view", field = "predictions"),
@@ -56,7 +55,7 @@ def defineViewSchema(metadata_record = None):
         aspect_list.append(AspectH("view_cohorts", "Cohorts", "_view",
             field = "cohorts",
             col_groups = ColGroupsH(attr_title_pairs = cohort_columns,
-            single_columns = True)))
+            single_group_col = True)))
 
     aspect_list += [
         AspectH("view_inheritance", "Inheritance", "_view",
@@ -69,9 +68,8 @@ def defineViewSchema(metadata_record = None):
                 ("motif_feature_consequences", "Motif"),
                 ("intergenic_consequences", "Intergenic")])),
         AspectH("colocated_v", "Colocated Variants", "__data",
-            col_groups = ColGroupsH(attr = "colocated_variants")),
-        AspectH("input", "VCF", "__data", field = "input",
-            mode = "string")]
+            col_groups = ColGroupsH([["colocated_variants", None]])),
+        AspectH("input", "VCF", "__data", field = "input", mode = "string")]
 
     aspects = AspectSetH(aspect_list)
 
@@ -95,7 +93,9 @@ def defineViewSchema(metadata_record = None):
         AttrH("ensembl_transcripts_worst",
             title = "Ensembl Transcripts (Worst)", is_seq = True),
         AttrH("ref", title = "Ref"),
+        AttrH("original_ref", title = "Denormalized Ref in VCF"),
         AttrH("alt", title = "Alt"),
+        AttrH("original_alt", title = "Denormalized Alt in VCF"),
         AttrH("mostly_expressed",
             title = "Mostly expressed in", is_seq = True),
         AttrH("splice_region", title = "Splice Region", is_seq = True),

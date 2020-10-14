@@ -6,7 +6,6 @@ Dataset document descriptor
 
 Format
 ------
-
 * Document descriptor:
 
     |   ``[``
@@ -23,23 +22,19 @@ Format
 
 Description
 -----------
-
 Document descriptor describes additional documents associated with :term:`dataset`.
 
-Document descriptors are used inside :doc:`s_doc_descr`
-in two forms: as property **doc** and inside list property **ancestors**
+Document descriptors are used inside :doc:`s_doc_descr` in two forms: as property **doc** and inside list property **ancestors**
 
 :doc:`s_doc_descr` are used as returning properties of requests :doc:`dsinfo` and :doc:`dirinfo`.
 
 Descriptors represent recursive structure of documents.
 
-In context of JS distinction between two types of descriptors can be made by
-check of ``Array.isArray(doc_entry[1])``.
+In context of JS distinction between two types of descriptors can be made by check of ``Array.isArray(doc_entry[1])``.
 
 Name of folder is null only for top level folder of dataset documentation.
 
-For dataset with name ``<ds name>`` the system provides access to documents by 
-URL of the following form:
+For dataset with name ``<ds name>`` the system provides access to documents by URL of the following form:
 
     ``<URL to application back end>/dsdoc/<ds name>/<path to document>``
 
@@ -52,4 +47,3 @@ See also
 :doc:`dirinfo`
 
 :doc:`../concepts/doc_pg`
-

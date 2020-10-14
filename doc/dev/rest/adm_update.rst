@@ -1,13 +1,12 @@
 adm_update
 ==========
         **Force vault state update**
-
-Synopsis
---------
-
+        
 .. index:: 
     adm_update; request
 
+Synopsis
+--------
 **adm_update** 
 
     **Arguments**: *none*
@@ -16,13 +15,8 @@ Synopsis
 
 Description
 -----------
-
-Initiates checking procedure for all :term:`datasets<dataset>` in the :term:`vault` immediately. 
-Does not wait for end of the procedure.
+Initiates checking procedure for all :term:`datasets<dataset>` in the :term:`vault` immediately. Does not wait for end of the procedure.
 
 Comment
 -------
-
-Standard procedure of the vault check starts on server in background periodically 
-(once per 30 seconds by default :ref:`service configuration<job_vault_check_period>`)
-Using this call, one can initiate the check procedure immediately.
+Standard procedure of the vault check starts on server in background periodically (once per 30 seconds by default :ref:`service configuration<job_vault_check_period>`) Using this call, one can initiate the check procedure immediately.

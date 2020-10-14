@@ -1,8 +1,7 @@
 Configuration service: anfisa.json
 ==================================
 
-Configuration of the service is organized via the file **anfisa.json**
-The file is formed in extended JSON format, extension mean:
+Configuration of the service is organized via the file **anfisa.json** The file is formed in extended JSON format, extension mean:
 
     * full line comments starting with '//' are allowed
     * macro definition mechanism supported
@@ -14,8 +13,7 @@ The following options are supported.
 
 * **file-path-def**, *dictionary*
 
-The directory macro ${HOME} is predefined; here we define more macros, 
-in particular the macro ${WORK}::
+The directory macro ${HOME} is predefined; here we define more macros, in particular the macro ``${WORK}``::
 
     "file-path-def": {"WORK": "${HOME}/../a-setup"},
 
@@ -26,8 +24,7 @@ in particular the macro ${WORK}::
 * **host**, *string*
 * **port**, *int*
 
-Host and port are used in the stand-alone configuration to setup the server on a
-specific port, ignored in the server (UWIGI container) mode::
+Host and port are used in the stand-alone configuration to setup the server on a specific port, ignored in the server (UWIGI container) mode::
 
     "host": "0.0.0.0",
     "port": 8190,
@@ -37,9 +34,7 @@ specific port, ignored in the server (UWIGI container) mode::
 
 * **html-base**, *string*
 
-Used in the internal UI: its HTML pages need to know their location in terms of
-URL addresses, just to make correct reference to REST API or other pages of
-the internal UI, in case of server setup with NextGen UI should end in ‘/​app’::
+Used in the internal UI: its HTML pages need to know their location in terms of URL addresses, just to make correct reference to REST API or other pages of the internal UI, in case of server setup with NextGen UI should end in ‘/​app’::
 
     "html-base": "/anfisa/",
 
@@ -104,9 +99,7 @@ The location of the vault directory::
     
 * **http-bam-base**, *string*
     
-HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this option
-and set it up correctly if the server provides access to BAM-files, otherwise keep it
-commented::
+HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this option and set it up correctly if the server provides access to BAM-files, otherwise keep it commented::
     
     "http-bam-base": “http://<server>/anfisa/links/"`
 
@@ -124,9 +117,9 @@ commented::
 
 * **excel-template**, *string*
     
-    The template used to configure the Excel export styles.
-    During evaluation of the script deploy.sh the file is being downloaded from URL:
-    "​https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx​"
+    The template used to configure the Excel export styles. During evaluation of the script deploy.sh the file is being downloaded by URL:
+
+    `<​https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx​>`_
 
 .. index:: 
     work-dir; service configuration option
@@ -159,24 +152,15 @@ commented::
   
   * ``"/ui/images", "/ui"``:
     
-    Requests for images and other sources, actual in stand-alone case.
-    Should transfer the content of files located in the specific directory in
-    $ANFISA_HOME; used in the internal UI in the stand-alone mode; in the
-    server mode the same task is solved by configuration of the “main
-    server”, Nginx or Apache
+    Requests for images and other sources, actual in stand-alone case. Should transfer the content of files located in the specific directory in $ANFISA_HOME; used in the internal UI in the stand-alone mode; in the server mode the same task is solved by configuration of the “main server”, Nginx or Apache
 
   * ``"--/ui"``:
   
-    Requests for the source files when the anti-cache mechanism is on; in the
-    server mode, to be used in the internal UI instead of the previous
-    instruction; (in server setup drop two leading ‘-’ to make it working, and
-    comment out the previous instruction)
+    Requests for the source files when the anti-cache mechanism is on; in the server mode, to be used in the internal UI instead of the previous instruction; (in server setup drop two leading ‘-’ to make it working, and comment out the previous instruction)
 
   * ``"excel"``:
   
-    This line sets the directory used to place the content of exported Excel
-    files, supposing that they are going to be immediately downloaded by an
-    external client
+    This line sets the directory used to place the content of exported Excel files, supposing that they are going to be immediately downloaded by an external client
 
 .. _mirror_ui: 
 
@@ -185,9 +169,7 @@ commented::
 
 * **mirror-ui**, *list*
 
-    This instruction turns the :term:`anti-cache mechanism` on; it consists of the
-    paths to the source and target directories for mirroring (drop two leading
-    ‘-’ to make it working)::
+    This instruction turns the :term:`anti-cache mechanism` on; it consists of the paths to the source and target directories for mirroring (drop two leading ‘-’ to make it working)::
 
     "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
 
@@ -203,8 +185,7 @@ commented::
 
 * **logging**, *dictionary*
 
-    Some standard Python way to configure the logging of a service. Please pay
-    attention to one specific line of this stuff:    
+    Some standard Python way to configure the logging of a service. Please pay attention to one specific line of this stuff:    
     
     **filename** line contains the configuration of the path to the logging directory::
     

@@ -100,7 +100,7 @@ var sUnitsH = {
         this.mRqId  = info["rq-id"];
         var el_rep = document.getElementById("list-report");
         if (el_rep) {
-            if (this.mFilteredCounts[0] == this.mTotalCounts[0])
+            if (this.mFilteredCounts[0] != this.mTotalCounts[0])
                 el_rep.innerHTML = 
                     this.mFilteredCounts[0] + "/" + this.mTotalCounts[0];
             else

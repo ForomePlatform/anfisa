@@ -1,53 +1,48 @@
 Solution items
 ==============
 
-Solution items are configurable objects that used by the user in work with system. 
-In the current version of the system we support the following kinds of them:
+Solution items are configurable objects that used by the user in work with system. In the current version of the system we support the following kinds of them:
     
-    * items with open control, can be pre-set or dynamical
+* items with open control, can be pre-set or dynamical
         
-        - :term:`filters<filter>`
-        
-        - :term:`decision trees<decision tree>`
+    - :term:`filters<filter>`
+    
+    - :term:`decision trees<decision tree>`
 
-    * preset items with hidden control
+* preset items with hidden control
     
-        - :term:`gene lists<gene list>`
+- :term:`gene lists<gene list>`
+
+- configuration of :term:`zones<zone>` and :term:`tags<tagging>`
+
+- configuration of :ref:`tabular partial view presentation<tabular_view>` and :doc:`cvs export<../rest/csv_export>` regimes
         
-        - configuration of :term:`zones<zone>` and :term:`tags<tagging>`
+    See details in :doc:`../appcfg/solution_py`.
         
-Not all preset items are visible in context of any dataset: there exists internal 
-configuration mechanism that hides preset items if applied dataset does not satisfy
-required modes. 
-        
+Not all preset items are visible in context of any dataset: there exists internal configuration mechanism that hides preset items if applied dataset does not satisfy required modes. 
+
 Items with open control satisfy the following logic:
 
-    - There are preset items: they are set up in the system configuration, the 
-        user can use them and derive operative items starting from them. But the user 
-        can not modify these items. 
+- There are preset items: they are set up in the system configuration, the user can use them and derive operative items starting from them. But the user can not modify these items. 
     
-        Preset item always have name, and its name starts with special symbol ``⏚``,
+Preset item always have name, and its name starts with special symbol ``⏚``,
     
-    - Dynamical items: the user can fix a working item (filter, decision tree) as 
-        solution one by just setting its name. It is possible also to rename or delete 
-        dynamical solution item.
+- Dynamical items: the user can fix a working item (filter, decision tree) as solution one by just setting its name. It is possible also to rename or delete dynamical solution item.
     
-        Dynamical items are supported common for all datasets derived from the 
-        same :term:`root dataset`.   
+Dynamical items are supported common for all datasets derived from the same :term:`root dataset`.   
     
-        Note: not all dynamical items are visible in all datasets in the same root node, 
-        since some of them created for an :term:`XL-dataset` are 
-        not good in context of :term:`workspace`, so they are invisible there.
-    
+*Note*: not all dynamical items are visible in all datasets in the same root node, since some of them created for an :term:`XL-dataset` are not good in context of :term:`workspace`, so they are invisible there.
+
 There are plans to extend this spectrum in the future versions by the following ways:
 
-    - extend spectrum of kinds
+- extend spectrum of kinds
     
-    - extend control level of existing item kinds from hidden to open one
+- extend control level of existing item kinds from hidden to open one
     
-    - form "Solution Pool" as autonomous repository with wide spectrum of different 
-        solution items useful in wide spectrum of contexts
+- form "Solution Pool" as autonomous repository with wide spectrum of different solution items useful in wide spectrum of contexts
 
 See also
 --------
 :doc:`sol_work`
+
+:doc:`../appcfg/solution_py`

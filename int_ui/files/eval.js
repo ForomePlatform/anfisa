@@ -639,7 +639,7 @@ var sCreateWsH = {
         if (info == null) 
             return;
         
-        this.mSpanModTitle.innerHTML = 'Create workspace for ' +
+        this.mSpanModTitle.innerHTML = 'Derive dataset for ' +
             info[0] + ' of ' + info[1];
         var err_msg = "";
         if (info[0] == info[1])

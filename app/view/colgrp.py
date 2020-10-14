@@ -22,17 +22,14 @@ from xml.sax.saxutils import escape
 from bitarray import bitarray
 #===============================================
 class ColGroupsH:
-    def __init__(self, attr_title_pairs = None,
-            attr = None, title = None,  single_columns = False):
+    def __init__(self, attr_title_pairs,
+            single_group_col = False):
         self.mATPairs = attr_title_pairs
         self.mHitGroup = None
-        self.mSingleColumns = single_columns
-        if attr is not None:
-            assert self.mATPairs is None
-            self.mATPairs  = [(attr, title)]
-            assert not self.mSingleColumns
-        else:
-            assert self.mATPairs is not None
+        self.mSingleGroupCol = single_group_col
+
+    def hasSingleGroupCol(self):
+        return self.mSingleGroupCol
 
     def setHitGroup(self, group_attr):
         for idx, pair in enumerate(self.mATPairs):
@@ -47,32 +44,26 @@ class ColGroupsH:
     def getAttr(self, idx):
         return self.mATPairs[idx][0]
 
-    def getTitle(self, idx):
-        return self.mATPairs[idx][1]
-
     def getAttrNames(self):
-        return [attr for attr, title in self.mATPairs]
-
-    def getSingleColumns(self):
-        return self.mSingleColumns
+        ret = [attr for attr, title in self.mATPairs]
+        if self.mSingleGroupCol:
+            ret.append("single_group_col")
+        return ret
 
     #=============================
     def dump(self):
-        ret = [[attr, title] for attr, title in self.mATPairs]
-        if self.mSingleColumns:
-            ret.append("single_columns")
-        return ret
+        return [[attr, title] for attr, title in self.mATPairs]
 
     @classmethod
     def load(cls, data):
         if data is None:
             return None
-        attr_title_pairs,  single_columns  = data,  False
-        if attr_title_pairs[-1] == "single_columns":
+        attr_title_pairs = data
+        if isinstance(attr_title_pairs[-1], str):
+            assert attr_title_pairs[-1].startswith("single_")
             attr_title_pairs = attr_title_pairs[:-1]
-            single_columns = True
-        return cls(attr_title_pairs = attr_title_pairs,
-            single_columns = single_columns)
+
+        return cls(attr_title_pairs = attr_title_pairs)
 
     #=============================
     def formColumns(self, in_objects, details = None):
@@ -89,9 +80,9 @@ class ColGroupsH:
             if attr not in rec_obj:
                 continue
             seq = rec_obj[attr]
-            if self.mSingleColumns:
+            if self.mSingleGroupCol:
                 seq = [seq]
-            elif len(seq) == 0:
+            elif seq is None or len(seq) == 0:
                 continue
             rep_count = "[%d]" % len(seq)
             add_title_class = ""
@@ -110,7 +101,7 @@ class ColGroupsH:
             objects += seq
             if title:
                 title = escape(title)
-            if title and not self.mSingleColumns:
+            if title and not self.mSingleGroupCol:
                 title += rep_count
             prefix_head.append((title, len(seq), add_title_class))
         if len(prefix_head) == 1 and prefix_head[0][0] is None:

@@ -103,17 +103,6 @@ class SolutionBroker(SyncronizedObject):
         return None
 
     #===============================================
-    def pickAnnotationFunction(self, func_name):
-        for it in self.iterStdItems("annotation-func"):
-            if it.getName() == func_name:
-                return it.getData()
-        return None
-
-    def iterClinvarTrustedSubmitters(self):
-        for it in self.iterStdItems("trusted-clinvar-submitter"):
-            yield it.getName(), it.getData()
-
-    #===============================================
     def refreshSolEntries(self, kind):
         with self:
             if kind in self.mSolKinds:
@@ -240,4 +229,4 @@ class _SolutionKindHandler:
 
     def pickByName(self, name):
         with self.mBroker:
-            return self.mEntryDict[name]
+            return self.mEntryDict.get(name)

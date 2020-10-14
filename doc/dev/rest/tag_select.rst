@@ -2,11 +2,11 @@ tag_select
 ==========
         **Tag navigation support**
 
-Synopsis
---------
-
 .. index:: 
     tag_select; request
+
+Synopsis
+--------
 
 **tag_select** 
 
@@ -31,28 +31,19 @@ Synopsis
         
 Description
 -----------
+The request affects only :term:`workspaces<workspace>` and is principal one for: 
 
-The request affects only :term:`workspaces<workspace>` and is principal one 
-for: 
+* marking variant records having tags
 
-    * marking variant records having tags
-    
-    * tag navigation
+* tag navigation
 
-Property **tags-state** is the same as in request :doc:ws_tags, see 
-discussion :ref:`here<tags_state>`.
+Property **tags-state** is the same as in request :doc:ws_tags, see discussion :ref:`here<tags_state>`.
 
-**tags-list** contains all tags available in dataset, both "check-box" and "text" ones 
-(in :term:`root dataset`), see details in description of :doc:`ws_tags`. 
+**tags-list** contains all tags available in dataset, both "check-box" and "text" ones (in :term:`root dataset`), see details in description of :doc:`ws_tags`. 
     
 If **tag** is set, **tag-rec-list** contains ordering numbers for variants having this tag.
 
-**tags-rec-list** contains ordering numbers of all variants having any tag, 
-ant this information is useful for marking these variants. (Note that marking information
-can change outside the client session)
-
-Comment
--------
+**tags-rec-list** contains ordering numbers of all variants having any tag, ant this information is useful for marking these variants. (Note that marking information can change outside the client session)
 
 See also
 --------

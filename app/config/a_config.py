@@ -20,7 +20,9 @@
 
 import os
 from datetime import timedelta
+from zlib import crc32
 
+from forome_tools.path_works import AttrFuncHelper
 #===============================================
 class AnfisaConfig:
     sTextMessages = {
@@ -28,13 +30,7 @@ class AnfisaConfig:
 
     sConfigOptions = {
         "aspect.tags.name": "tags_data",
-        "check.tags":       [
-            "Previously categorized",
-            "Previously Triaged",
-            "Not categorized",
-            "Benign/Likely benign",
-            "False positives"
-        ],
+
         "zygosity.cases": {
             "homo_recess": "Homozygous Recessive",
             "x_linked": "X-linked",
@@ -64,8 +60,8 @@ class AnfisaConfig:
             "render": None
         },
 
-        #  "transcript.path.base": "/__data/transcript_consequences",
-        #  "transcript.view.setup": ("transcripts", "transcript_consequences"),
+        "zygosity.path.base": "/__data/zygosity",
+
         "transcript.path.base": "/_view/transcripts",
         "transcript.view.setup": ("view_transcripts", "transcripts"),
 
@@ -79,7 +75,6 @@ class AnfisaConfig:
         "long.run.failures": 5,
 
         "comp-hets.cache.size": 10,
-
 
         "max.gene.comp.count": 10000}
 
@@ -119,5 +114,21 @@ class AnfisaConfig:
                 + "/../VERSION", "r", encoding = "utf-8") as inp:
             return inp.read().strip()
 
+    sVariantSystemFields = {
+        "_color": AttrFuncHelper.singleGetter(
+            "/__data/color_code"),
+        "_label": AttrFuncHelper.singleGetter(
+            "/__data/label"),
+        "_key":   AttrFuncHelper.multiStrGetter(
+            "-", ["/_filters/chromosome",
+            "/_filters/start", "/_filters/ref", "/_filters/alt"])}
+
+    @classmethod
+    def getVariantSystemFields(cls, rec_data):
+        result = dict()
+        for name, fld_f in cls.sVariantSystemFields.items():
+            result[name] = fld_f(rec_data)
+        result["_rand"] = crc32(bytes(result["_key"], 'utf-8'))
+        return result
 
 #===============================================

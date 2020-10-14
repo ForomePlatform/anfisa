@@ -38,15 +38,17 @@ class FamilyInfo:
 
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
+        self.mNameMap = dict()
         self.mMaleSet = set()
         for idx, it in enumerate(self.mMembers):
             self.mIds.append(it["id"])
             self.mNames.append(it["name"])
             self.mIdMap[it["id"]] = idx
+            self.mNameMap[it["name"]] = idx
             if it["affected"]:
-                self.mAffectedGroup.append(it["id"])
+                self.mAffectedGroup.append(it["name"])
             if it["sex"] == 1:
-                self.mMaleSet.add(it["id"])
+                self.mMaleSet.add(it["name"])
         self.mTrioSeq = []
         for idx, it in enumerate(self.mMembers):
             idx_father = self.mIdMap.get(it.get("father"))
@@ -55,8 +57,8 @@ class FamilyInfo:
             idx_mother = self.mIdMap.get(it.get("mother"))
             if idx_mother is not None:
                 trio_id = "Proband" if idx == 0 else it["id"]
-                self.mTrioSeq.append((trio_id, self.mIds[idx],
-                    self.mIds[idx_father], self.mIds[idx_mother]))
+                self.mTrioSeq.append((trio_id, self.mNames[idx],
+                    self.mNames[idx_father], self.mNames[idx_mother]))
 
         self.mCohortList = None
         self.mCohortMap = None
@@ -79,17 +81,14 @@ class FamilyInfo:
     def __getitem__(self, idx):
         return self.mMembers[idx]
 
-    def iterIds(self):
-        return iter(self.mIds)
-
     def getIds(self):
         return self.mIds
 
     def complement(self, p_group):
-        return set(self.mIds) - set(p_group)
+        return set(self.mNames) - set(p_group)
 
     def filter(self, p_group):
-        return set(self.mIds) & set(p_group)
+        return set(self.mNames) & set(p_group)
 
     def getNames(self):
         return self.mNames
@@ -116,12 +115,12 @@ class FamilyInfo:
             return self.mCohortMap.get(it_id)
         return None
 
-    def ids2idxset(self, ids):
-        if not ids:
-            return ids
-        return sorted({self.mIdMap[id] for id in ids})
+    def names2idxset(self, names):
+        if not names:
+            return []
+        return sorted({self.mNameMap[nm] for nm in names})
 
-    def idxset2ids(self, idx_set):
+    def idxset2names(self, idx_set):
         if not idx_set:
             return idx_set
-        return sorted({self.mIds[idx] for idx in idx_set})
+        return sorted({self.mNames[idx] for idx in idx_set})

@@ -2,11 +2,11 @@ solutions
 =========
         **Solution items information**
 
-Synopsis
---------
-
 .. index:: 
     solutions; request
+
+Synopsis
+--------
 
 **solutions** 
 
@@ -30,8 +30,7 @@ Panel names are split to groups by unit/property names for which these panels ar
 
 ``panel/`` *property*
 
-(In current version all panels are made for ``Symbol``, so return dictionary contains now only 
-``"panel/Symbol"`` entry)
+(In current version all panels are made for ``Symbol``, so return dictionary contains now only ``"panel/Symbol"`` entry)
 
 Types of solution items supported in the current version:
 
@@ -44,8 +43,7 @@ Types of solution items supported in the current version:
   panel/*property*
   =================    ===
 
-The request might be used for experimental extensions of the system 
-functionality and user interface.
+The request might be used for experimental extensions of the system functionality and user interface.
 
 See also
 --------

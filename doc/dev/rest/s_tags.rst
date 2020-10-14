@@ -1,6 +1,9 @@
 Tags descriptor
 ===============
 
+.. index:: 
+    Tags descriptor; data structure
+
 Format
 ------
 
@@ -18,11 +21,9 @@ The structure is just list of :term:`tags<tagging>` set for a variant.
 
 For "text" tags (and special tag ``_note``) the value is **string**.
 
-For "check-box" tags value is *boolean* but if this value is ``false`` just drop
-this descriptor out of list.
+For "check-box" tags value is *boolean* but if this value is ``false`` just drop this descriptor out of list.
 
-The structure is used in request :doc:`ws_tags` as return property. The same structure
-(in string JSON representation) can be used as modifying argument of request.
+The structure is used in request :doc:`ws_tags` as return property. The same structure (in string JSON representation) can be used as modifying argument of request.
 
 See also
 --------

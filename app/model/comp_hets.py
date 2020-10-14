@@ -154,7 +154,7 @@ class CompoundRequestUnit(FunctionUnit):
         ret_handle = self.prepareStat()
         ret_handle["approx-modes"] = self.mZygSupport.getApproxInfo()
         ret_handle["labels"] = eval_h.getLabelPoints(point_no)
-        ret_handle["family"] = self.mZygSupport.getIds()
+        ret_handle["family"] = self.mZygSupport.getNames()
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
         return ret_handle
 

@@ -311,7 +311,7 @@ def formCreateWsDiv(output):
                 onclick="sViewH.modalOff();">&times;</span>
         </div>
         <div id="create-ws-main">
-            <div>Workspace name:
+            <div>Dataset name:
                 <input id="create-ws-name" type="text">
             </div>
             <div id="create-ws-problems"></div>
