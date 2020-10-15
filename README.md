@@ -59,6 +59,7 @@ The port is configurable in your configuration file.
 `./runcompose.sh --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=INTERNAL_IP_ADDRESS_OF_MACHINE`
 
 If any of the folders does not exist, then they will be created automatically.
+Open your browser an go to: http://localhost:9000/anfisa/app/dir/
 
 ## Public Demo 
 
