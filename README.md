@@ -54,6 +54,12 @@ the web interface by the url: http://localhost:8190
 
 The port is configurable in your configuration file.
 
+## Run in Docker container
+
+`./runcompose.sh --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=INTERNAL_IP_ADDRESS_OF_MACHINE`
+
+If any of the folders does not exist, then they will be created automatically.
+
 ## Public Demo 
 
 Also avilable is an Anfisa demo based on potential 
