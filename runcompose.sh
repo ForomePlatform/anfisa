@@ -28,7 +28,13 @@ do
 			DRUID=${flag#*=}
 			if [ ! -d "$DRUID" ]; then
 				mkdir -p $DRUID
-				mkdir -p $DRUID/{airflow, broker, coordinator, data, historical-var, middlemanager, router}
+				mkdir -p $DRUID/airflow 
+				mkdir -p $DRUID/coordinator
+				mkdir -p $DRUID/data
+				mkdir -p $DRUID/historical-var
+				mkdir -p $DRUID/middlemanager
+				mkdir -p $DRUID/router
+				mkdir -p $DRUID/broker
 			fi
 			;;
 		--airflowwork=*)
