@@ -2,6 +2,7 @@ version: "2.2"
 
 services:
   anfisa5:
+    container_name: anfisa5_docker
     image: anfisa_docker_example:latest
     user: root
     volumes:
