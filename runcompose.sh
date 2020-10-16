@@ -21,7 +21,7 @@ do
 				mkdir -p $ASETUP/export
 				mkdir -p $ASETUP/logs
 				mkdir -p $ASETUP/../data
-				sudo chmod -R a+rx $ASETUP
+				chmod -R a+rx $ASETUP
 			fi
 			;;
 		--druidwork=*)
