@@ -57,6 +57,10 @@ The port is configurable in your configuration file.
 ## Run in Docker container
 
 ### Build and start container
+
+Warning!
+You must have permissions to write to folders. No root privileges required!
+
 `./runcompose.sh --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=INTERNAL_IP_ADDRESS_OF_MACHINE`
 
 If any of the folders does not exist, then they will be created automatically.
