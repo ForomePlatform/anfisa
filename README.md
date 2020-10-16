@@ -56,6 +56,11 @@ The port is configurable in your configuration file.
 
 ## Run in Docker container
 
+### Before you begin
+[Installation Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+
+[Run Docker as non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+
 ### Build and start container
 
 Warning!
