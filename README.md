@@ -72,6 +72,10 @@ If any of the folders does not exist, then they will be created automatically.
 
 Open your browser and go to: http://localhost:9000/anfisa/app/dir/
 
+If you run container in VM, go to: http://<VMIP>:9000/anfisa/app/dir/
+
+**Port 9000 must be opened in VM firewall.**
+
 ### Add datasets to Anfisa
 
 !!!Before you begin: put datasets files to /path/to/asetup/data on your host!
