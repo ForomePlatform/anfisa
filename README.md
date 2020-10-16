@@ -73,6 +73,10 @@ or
 
 `docker exec anfisa5_docker "PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k xl -i /anfisa/a-setup/data/path/to/inventory/file.cfg XL_DATASET_NAME"`
 
+and then restart container with Anfisa5:
+
+`docker stop anfisa5_docker && docker start anfisa5_docker`
+
 ## Public Demo 
 
 Also avilable is an Anfisa demo based on potential 
