@@ -88,7 +88,7 @@ or
 
 and then restart container with Anfisa5:
 
-`docker stop anfisa5_docker && docker start anfisa5_docker`
+`docker restart anfisa5_docker`
 
 ## Public Demo 
 
