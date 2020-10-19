@@ -21,7 +21,7 @@ do
 				mkdir -p $ASETUP/export
 				mkdir -p $ASETUP/logs
 				mkdir -p $ASETUP/../data
-				chmod -R a+rx $ASETUP
+				chmod -R a+rwx $ASETUP
 			fi
 			;;
 		--druidwork=*)
@@ -35,6 +35,7 @@ do
 				mkdir -p $DRUID/middlemanager
 				mkdir -p $DRUID/router
 				mkdir -p $DRUID/broker
+				chmod -R a+rwx $DRUID
 			fi
 			;;
 		--airflowwork=*)
@@ -42,6 +43,7 @@ do
 			if [ ! -d "$AIRFLOW" ]; then
 				mkdir -p $AIRFLOW
 				mkdir -p $AIRFLOW/data
+				chmod -R a+rwx $AIRFLOW
 			fi
 			;;
 		--hostip=*) HOSTIP=${flag#*=};;
@@ -51,6 +53,8 @@ do
 			;;
 	esac
 done
+
+if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] && [ ! -z "$HOSTIP" ] ; then
 sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
 
 sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
@@ -58,3 +62,8 @@ sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
 docker-compose build
 docker-compose up -d
 docker ps
+
+else
+echo ERROR! All parameters are required!
+fi
+

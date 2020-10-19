@@ -68,7 +68,7 @@ You must have permissions to write to folders. No root privileges required!
 
 `./runcompose.sh --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=INTERNAL_IP_ADDRESS_OF_MACHINE`
 
-If any of the folders does not exist, then they will be created automatically.
+If any of the folders does not exist, then they will be created automatically. All parameters are required!
 
 Open your browser and go to: http://localhost:9000/anfisa/app/dir/
 
@@ -80,11 +80,11 @@ If you run container in VM, go to: `http://<VMIP>:9000/anfisa/app/dir/`
 
 !!!Before you begin: put datasets files to /path/to/asetup/data on your host!
 
-`docker exec anfisa5_docker "PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k ws -i /anfisa/a-setup/data/path/to/inventory/file.cfg DATASET_NAME"`
+`docker exec -it anfisa5_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k ws -i /anfisa/a-setup/data/path/to/inventory/file.cfg DATASET_NAME'`
 
 or
 
-`docker exec anfisa5_docker "PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k xl -i /anfisa/a-setup/data/path/to/inventory/file.cfg XL_DATASET_NAME"`
+`docker exec -it anfisa5_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k xl -i /anfisa/a-setup/data/path/to/inventory/file.cfg XL_DATASET_NAME'`
 
 and then restart container with Anfisa5:
 
