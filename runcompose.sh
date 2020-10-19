@@ -55,6 +55,13 @@ do
 done
 
 if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] && [ ! -z "$HOSTIP" ] ; then
+
+chmod -R a+rwx $ASETUP
+chmod -R a+rwx $ASETUP/../data
+chmod -R a+rwx $DRUID
+chmod -R a+rwx $AIRFLOW
+
+
 sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
 
 sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
