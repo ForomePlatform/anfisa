@@ -58,6 +58,7 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] && [ ! -z "$HO
 sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
 
 sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
+sed "s#HOST_IP#${HOSTIP}#g" environment.template > environment
 
 docker-compose build
 docker-compose up -d

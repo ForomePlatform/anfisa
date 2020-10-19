@@ -30,6 +30,11 @@ services:
     container_name: zookeeper
     image: zookeeper:3.5
     user: root
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+      - "8080:8080"
     environment:
       - ZOO_MY_ID=1
       - ZK_SERVER_HEAP=128
