@@ -58,11 +58,13 @@ The port is configurable in your configuration file.
 
 ## Public Demo 
 
-Also avilable is an Anfisa demo based on potential 
-hearing loss panel of genes on a genome taken 
-from Personal Genome Project with the consent of
-the family.
+Also available is a demo of Anfisa based on a high 
+confidence small variants callset v 4.2 created by NIST 
+by integrating results of sequencing, alignment and 
+variant calling from different sources; including 
+both short and long read techniques.  
 
-The demo is available at: http://demo.forome.org/anfisa
+
+The demo is available at: http://demo.forome.org
 
  
