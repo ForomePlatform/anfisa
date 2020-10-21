@@ -47,6 +47,7 @@ Sphinx==1.7.4
 sphinxcontrib-websupport==1.0.1
 sshtunnel==0.1.4
 stevedore==1.28.0
+supervisor
 typing==3.6.4
 urllib3
 uWSGI==2.0.17.1

@@ -38,7 +38,7 @@ continues development.
 
 4. Run deploy script:
 
-`. deploy.sh`
+`. deploy_local.sh`
 
 The script will ask for an installation directory. 
 By default it would install in the same directory 
@@ -53,6 +53,42 @@ Once the system is running you can access
 the web interface by the url: http://localhost:8190 
 
 The port is configurable in your configuration file.
+
+## Run in Docker container
+
+### Before you begin
+[Installation Docker](https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository)
+
+[Run Docker as non-root user](https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user)
+
+### Build and start container
+
+Warning!
+You must have permissions to write to folders. No root privileges required!
+
+`./runcompose.sh --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=INTERNAL_IP_ADDRESS_OF_MACHINE`
+
+If any of the folders does not exist, then they will be created automatically. All parameters are required!
+
+Open your browser and go to: http://localhost:9000/anfisa/app/dir/
+
+If you run container in VM, go to: `http://<VMIP>:9000/anfisa/app/dir/`
+
+**Port 9000 must be opened in VM firewall.**
+
+### Add datasets to Anfisa
+
+!!!Before you begin: put datasets files to /path/to/asetup/data on your host!
+
+`docker exec -it anfisa5_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k ws -i /anfisa/a-setup/data/path/to/inventory/file.cfg DATASET_NAME'`
+
+or
+
+`docker exec -it anfisa5_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.storage -c /anfisa/anfisa.json -m create -f -k xl -i /anfisa/a-setup/data/path/to/inventory/file.cfg XL_DATASET_NAME'`
+
+and then restart container with Anfisa5:
+
+`docker restart anfisa5_docker`
 
 ## Public Demo 
 

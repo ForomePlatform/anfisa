@@ -2,3 +2,6 @@
 *.pyo
 *.py~
 .inst_dir
+docker-compose.yml
+anfisa.json
+environment
