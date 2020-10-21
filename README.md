@@ -38,7 +38,7 @@ continues development.
 
 4. Run deploy script:
 
-`. deploy.sh`
+`. deploy_local.sh`
 
 The script will ask for an installation directory. 
 By default it would install in the same directory 
