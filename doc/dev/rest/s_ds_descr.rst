@@ -32,7 +32,7 @@ Format
 |
 |       *in case of* :doc:`dsinfo` *request*:
 |       -------------------------------------
-|       "**metadata**":  metadata of dataset, *JSON structure*
+|       "**meta**":  metadata of dataset, *JSON structure*
 |       "**unit-groups**": group names of filtering properties,
 |           ``[`` *list of strings* ``]``
 |       "**cohorts**": *optional* list of cohort names 
@@ -54,7 +54,7 @@ Descriptor provides reference **doc** to :term:`dataset documentation`, and if b
     
 Comment
 -------
-Important part of metadata is list of versions of sources used in dataset annotation. It is located in **metadata** returning property:
+Important part of metadata is list of versions of sources used in dataset annotation. It is located in **meta** returning property:
 
 |         ``["versions"]: {`` *dictionary*
 |                   source name, *string*: source version, *string* 
