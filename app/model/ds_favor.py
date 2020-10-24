@@ -17,6 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import json
 from datetime import datetime, timedelta
 from zlib import crc32
 
@@ -41,16 +42,16 @@ class FavorStorage(RestAgent):
     def iterRecords(self, rec_no_set):
         rec_no_seq = rec_no_set[:]
         while len(rec_no_seq) > 0:
-            seq_rec = self.call("seq=[%s]"
-                % ','.join(map(str, rec_no_seq[:self.FETCH_SIZE])),
-                "POST", "variants", json_rq_mode = False)
+            seq_rec = self.call(
+                {"seq": json.dumps(rec_no_seq[:self.FETCH_SIZE])},
+                "POST", "variants")
             for idx, rec_data in enumerate(seq_rec):
                 yield rec_no_seq[idx], rec_data
             del rec_no_seq[:self.FETCH_SIZE]
 
     def collectPReports(self, rec_no_seq, notifier = None):
-        seq_rec = self.call("seq=[%s]" % ','.join(map(str, rec_no_seq)),
-            "POST", "titles", json_rq_mode = False)
+        seq_rec = self.call(
+            {"seq": json.dumps(rec_no_seq)}, "POST", "titles")
         return {it_data["no"]: it_data for it_data in seq_rec}
 
     @classmethod
