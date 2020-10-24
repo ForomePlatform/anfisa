@@ -66,7 +66,7 @@ class DruidAdmin(DruidAgent):
             cmd_copy.append(fdata_name)
             cmd_copy.append(self.mScpConfig["host"] + ':' + base_dir + "/"
                 + filter_name)
-            cmd_copy = ''.join(cmd_copy)
+            cmd_copy = ' '.join(cmd_copy)
             print("Remote copying:", cmd_copy, file = sys.stderr)
             print("Scp started at", datetime.now(), file = sys.stderr)
             subprocess.call(cmd_copy, shell = True)
