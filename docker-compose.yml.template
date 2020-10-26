@@ -1,0 +1,265 @@
+version: "2.2"
+
+services:
+  anfisa5:
+    container_name: anfisa5_docker
+    image: anfisa_docker_example:latest
+    user: root
+    volumes:
+      - ASETUP_PATH:/anfisa/a-setup
+    build:
+      context: .
+      dockerfile: Dockerfile
+    network_mode: bridge
+    ports:
+      - "9000:80"
+      
+
+  mongo:
+    container_name: mongodb1
+    user: root
+    image: mongo
+    ports:
+      - "27017:27017"
+    restart: always
+    network_mode: bridge
+    env_file:
+      - environment
+
+  zookeeper:
+    container_name: zookeeper
+    image: zookeeper:3.5
+    user: root
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+      - "8080:8080"
+    environment:
+      - ZOO_MY_ID=1
+      - ZK_SERVER_HEAP=128
+    restart: always
+    network_mode: bridge
+
+  coordinator:
+    image: apache/druid:0.19.0
+    container_name: coordinator
+    user: root
+    volumes:
+      - DRUID_WORK/data/:/opt/data/
+      - DRUID_WORK/coordinator:/opt/druid/var
+      - AIRFLOW_WORK/data:/usr/local/airflow/data
+#      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
+    depends_on: 
+      - zookeeper
+    ports:
+      - "8081:8081"
+    network_mode: bridge
+    command:
+      - coordinator
+    environment:
+      - DRUID_XMS=256m
+      - DRUID_XMX=2g
+    env_file:
+      - environment
+    restart: always
+
+  broker:
+    image: apache/druid:0.19.0
+    container_name: broker
+    user: root
+    network_mode: bridge
+    volumes:
+      - DRUID_WORK/broker:/opt/druid/var
+      - AIRFLOW_WORK/data:/usr/local/airflow/data
+#      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
+    depends_on: 
+      - zookeeper
+      - coordinator
+    ports:
+      - "8082:8082"
+    command:
+      - broker
+    environment:
+      - DRUID_XMS=512m
+      - DRUID_XMX=2g
+      - druid_processing_numMergeBuffers=2
+      - druid_processing_numThreads=1
+    env_file:
+      - environment
+    restart: always
+
+  historical:
+    image: apache/druid:0.19.0
+    container_name: historical
+    volumes:
+      - DRUID_WORK/data/:/opt/data/
+      - DRUID_WORK/historical-var/:/opt/druid/var/
+      - AIRFLOW_WORK/data:/usr/local/airflow/data
+#      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
+    depends_on: 
+      - zookeeper
+      - coordinator
+    user: root
+    network_mode: bridge
+    ports:
+      - "8083:8083"
+    command:
+      - historical
+    environment:
+      - DRUID_XMS=256m
+      - DRUID_XMX=2g
+      - druid_processing_numMergeBuffers=2
+      - druid_processing_numThreads=2
+    env_file:
+      - environment
+    restart: always
+
+  middlemanager:
+    image: apache/druid:0.19.0
+    container_name: middlemanager
+    user: root
+    network_mode: bridge
+    volumes:
+      - DRUID_WORK/data/:/opt/data/
+      - DRUID_WORK/middlemanager/:/opt/druid/var
+      - AIRFLOW_WORK/data:/usr/local/airflow/data
+#      - /opt/projects/anfisa.gnicpm/a-setup/vault:/opt/projects/anfisa.gnicpm/a-setup/vault
+      - ASETUP_PATH/vault:/opt/projects/anfisa/a-setup/vault
+      - ASETUP_PATH/../data:/opt/projects/anfisa.demo/data
+    depends_on: 
+      - zookeeper
+      - coordinator
+    ports:
+      - "8091:8091"
+    command:
+      - middleManager
+    environment:
+      - DRUID_XMS=64m
+      - DRUID_XMX=256m
+      - druid_indexer_fork_property_druid_processing_buffer_sizeBytes=100000000
+      - druid_indexer_fork_property_druid_processing_numThreads=1  
+    env_file:
+      - environment
+    restart: always
+
+  router:
+    image: apache/druid:0.19.0
+    container_name: router
+    user: root
+    network_mode: bridge
+    volumes:
+      - DRUID_WORK/router/:/opt/druid/var
+      - AIRFLOW_WORK/data:/usr/local/airflow/data
+#      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
+    depends_on:
+      - zookeeper
+      - coordinator
+    ports:
+      - "8888:8888"
+    command:
+      - router
+    environment:
+      - DRUID_XMS=128m
+      - DRUID_XMX=256m
+    env_file:
+      - environment
+    restart: always
+
+######################### AIRFLOW ##############################
+#  postgres:
+#    image: postgres:12
+#    container_name: postgres
+#    environment:
+#      - POSTGRES_USER=airflow
+#      - POSTGRES_PASSWORD=a1rfl0w
+#      - POSTGRES_DB=airflow
+#    logging:
+#      options:
+#          max-size: 10m
+#          max-file: "3"
+#    volumes: 
+#      - /var/lib/postgresql/data:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+#    restart: always
+
+#  airflow:
+#    build:
+#      dockerfile: Dockerfile.airflow
+#      context: .
+#    container_name: airflow
+#    restart: always
+#    depends_on:
+#        - postgres
+#    hostname: airflow
+#    environment:
+      # - AIRFLOW__CORE__HOSTNAME_CALLABLE=airflow
+#      - LOAD_EX=n
+#      - FERNET_KEY=sPYvT3_CKJWe_HYyHUjidXcjYonB7eFCvM9VlC8spzQ=
+#      - EXECUTOR=Local
+#      - POSTGRES_PASSWORD=a1rfl0w
+      # - AIRFLOW__CORE__HOSTNAME_CALLABLE='get_static_hostname.get_static_hostname:return_airflow'
+#      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:a1rfl0w@postgres:5432/airflow
+#      - PYTHONPATH=/usr/local/lib/python3.7/:/usr/local/airflow/.local/lib/python3.7/site-packages:/usr/local/airflow/dags/pipeline/
+#    logging:
+#      options:
+#        max-size: 10m
+#        max-file: "3"
+#    volumes:
+#        - /var/rsm-data/opt/docker/airflow/dags:/usr/local/airflow/dags
+#        - /var/rsm-data/opt/docker/airflow/logs:/usr/local/airflow/logs/
+#        - /var/rsm-data/opt/docker/airflow/home/data:/usr/local/airflow/data
+#    ports:
+#        - "8080:8080"
+#        - "8793:8793"
+#    command: webserver
+#    healthcheck:
+#        test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+#        interval: 30s
+#        timeout: 30s
+#        retries: 3
+#    restart: always
+########################## Mongo ###############################
+#  mongo:
+#    image: mongo
+#    container_name: mongo
+#    hostname: mongo
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: root
+    #   MONGO_INITDB_ROOT_PASSWORD: example
+#    ports:
+#      - "27017:27017"
+#    volumes:
+#      - /var/lib/mongodb:/var/lib/mongodb:rw
+#    restart: always
+
+#  mongo-express:
+#    image: mongo-express
+#    container_name: mongo-express
+#    restart: always
+ #   ports:
+ #     - 8095:8081
+########################## nginx ###############################
+## Disabled due to using nginx on host
+  # nginx:
+  #   image: nginx:latest
+  #   container_name: nginx
+  #   ports:
+  #   - "80:80"
+  #   volumes: 
+  #     - /var/rsm-data/opt/docker/nginx/:/etc/nginx/conf.d/
+  #     - /var/rsm-data/opt/docker/htpasswd:/etc/nginx/.htpasswd
+  #   restart: always
+######################## cAdvisor #############################
+#  cadvisor:
+#    image: google/cadvisor:latest
+#    container_name: cadvisor
+#    ports:
+#    - 8090:8080
+#    volumes:
+#    - /:/rootfs:ro
+#    - /var/run:/var/run:rw
+#    - /sys:/sys:ro
+#    - /var/lib/docker/:/var/lib/docker:ro
+#    restart: always
