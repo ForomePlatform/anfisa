@@ -11,6 +11,7 @@ services:
       context: .
       dockerfile: Dockerfile
     network_mode: bridge
+    restart: always
     ports:
       - "9010:80"
       
