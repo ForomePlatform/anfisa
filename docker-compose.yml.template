@@ -1,7 +1,7 @@
 version: "2.2"
 
 services:
-  anfisa5:
+  anfisa:
     container_name: anfisa5_docker
     image: anfisa_docker_example:latest
     user: root
@@ -12,7 +12,7 @@ services:
       dockerfile: Dockerfile
     network_mode: bridge
     ports:
-      - "9000:80"
+      - "9010:80"
       
 
   mongo:

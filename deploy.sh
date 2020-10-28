@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-	Usage: $0 --asetup=/path/to/asetup --druidwork=/path/to/druid/workdir/ --airflowwork=/path/to/airflow/workdir/ --hostip=A.B.C.D 
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.6/ --hostip=A.B.C.D 
 EOF
 }
 
@@ -11,8 +11,13 @@ EOF
 for flag in "$@"
 do
 	case $flag in
-		--asetup=*) 
-			ASETUP=${flag#*=}
+		--workdir=*) 
+			WORKDIR=${flag#*=}
+			if [ ! -d "$WORKDIR" ]; then
+				mkdir -p $WORKDIR
+				chmod a+rwx $WORKDIR
+			fi
+			ASETUP=$WORKDIR/a-setup
 			if [ ! -d "$ASETUP" ]; then
 				mkdir -p $ASETUP
 				mkdir -p $ASETUP/data/examples
@@ -23,29 +28,27 @@ do
 				mkdir -p $ASETUP/../data
 				chmod -R a+rwx $ASETUP
 			fi
-			;;
-		--druidwork=*)
-			DRUID=${flag#*=}
+			if [ ! -d "$ASETUP/../data" ] ; then
+				mkdir -p $ASETUP/../data
+			fi
+			DRUID=$WORKDIR/druid
 			if [ ! -d "$DRUID" ]; then
 				mkdir -p $DRUID
-				mkdir -p $DRUID/airflow 
+				mkdir -p $DRUID/airflow
 				mkdir -p $DRUID/coordinator
 				mkdir -p $DRUID/data
 				mkdir -p $DRUID/historical-var
 				mkdir -p $DRUID/middlemanager
 				mkdir -p $DRUID/router
-				mkdir -p $DRUID/broker
 				chmod -R a+rwx $DRUID
 			fi
-			;;
-		--airflowwork=*)
-			AIRFLOW=${flag#*=}
+			AIRFLOW=$WORKDIR/airflow
 			if [ ! -d "$AIRFLOW" ]; then
 				mkdir -p $AIRFLOW
 				mkdir -p $AIRFLOW/data
 				chmod -R a+rwx $AIRFLOW
 			fi
-			;;
+			;;			
 		--hostip=*) HOSTIP=${flag#*=};;
 		*)
 			usage
