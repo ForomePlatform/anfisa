@@ -36,7 +36,7 @@ fi
 rm vault/*
 cd data
 rm *
-curl -O -L https://anfisa.forome.dev/distrib/datasets/PGP3140.json.gz
+curl -O -L https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel/pgp3140_anfisa.json.gz
 # cd ../tmp/export
 # [ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 

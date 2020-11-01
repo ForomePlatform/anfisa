@@ -14,7 +14,7 @@ A detailed [Setup and Administration Guide](https://github.com/ForomePlatform/an
 
 https://foromeplatform.github.io/anfisa/
 
-## Local Installation
+##  Installation
 
 #### Caution:
 This is a master branch that from time to time can be unstable or untested.
@@ -22,7 +22,7 @@ If you would like to try Anfisa, we strongly recommend installing it from one
 of the released tags 
 
 
-#### Installation instructions
+### Installation instructions
 
 To install Anfisa on a local Linux or MacOS system:
 
@@ -34,13 +34,31 @@ continues development.
 
 `cd anfisa`
 
-3. Install all the requirements by running 
+3. Decide what directory will be a working directory for Anfisa
+
+4. Decide which of the following installation paths you prefer:
+- Use a Docker container
+- Install all components in your local system 
+
+#### Installing via Docker
+
+1. Run 
+
+`deploy.sh --workdir=<Absolute path to the chosen working directory> --hostip=<your local IP address>`
+
+2. Point your browser to http://localhost:9010/anfisa/app/dir 
+
+#### Installing without Docker
+
+1. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html)
+
+2. Install all the requirements by running 
 
 `pip3 install -r requirements.txt`
 
-4. Run deploy script:
+3. Run deploy script:
 
-`. deploy.sh`
+`. deploy_local.sh`
 
 The script will ask for an installation directory. 
 By default it would install in the same directory 
