@@ -42,11 +42,22 @@ continues development.
 
 #### Installing via Docker
 
+**Attention: Docker installation also installs Druid. Druid is required for
+handling whole exome/genome datasets, but it takes a lot of memory. 
+Minimum required memory is 8G and swap should be enabled.** 
+
+**If you have 4G of memory, first adjust Druid parameters in environment.template file.**
+
+**If you have less than 4G, you can install demo version without Druid. 
+Update docker-compose.yml.template**
+
 1. Run 
 
 `deploy.sh --workdir=<Absolute path to the chosen working directory> --hostip=<your local IP address>`
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
+
+3. Download whole genome dataset and ingest it. Will require around 4 hours
 
 #### Installing without Docker
 
