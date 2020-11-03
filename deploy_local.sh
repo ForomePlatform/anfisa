@@ -45,6 +45,16 @@ cd ..
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
 sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
+
+python3 -m venv .anfisa
+source .anfisa/bin/activate
+pip3 install -r requirements.txt
+forome_tools_version=0.1.5
+wheel=forome_tools-${forome_tools_version}-py3-none-any.whl
+curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
+gunzip ${wheel}.gz
+pip3 install ${wheel}
+
 echo "Loading Sample Dataset"
 echo "PYTHONPATH=$repo python3 -m -u app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -i data/PGP3140.json.gz PGP3140"
 PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/pgp3140_wgs_hlpanel.cfg PGP3140
