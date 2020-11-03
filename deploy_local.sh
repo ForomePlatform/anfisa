@@ -44,7 +44,7 @@ unzip pgp3140_wgs_hlpanel.zip
 cd ..
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
-sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json.template | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
+sed  's#${HOME}/../a-setup#WOWOWOWO#' ${repo}/anfisa.json.template | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
 
 python3 -m venv .anfisa
 source .anfisa/bin/activate
