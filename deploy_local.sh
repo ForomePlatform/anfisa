@@ -35,7 +35,7 @@ fi
 
 rm vault/*
 cd data
-rm *
+rm -r *
 curl -O -L https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
 unzip pgp3140_wgs_hlpanel.zip
 # cd ../tmp/export
