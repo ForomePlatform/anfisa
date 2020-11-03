@@ -65,7 +65,8 @@ chmod -R a+rwx $DRUID
 chmod -R a+rwx $AIRFLOW
 
 pushd $ASETUP/data/examples
-curl -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel/pgp3140_anfisa.json.gz
+curl -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
+unzip pgp3140_wgs_hlpanel.zip
 popd
 
 sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
@@ -77,9 +78,9 @@ docker-compose build
 docker-compose up -d
 docker ps
 
-docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -s /anfisa/a-setup/data/examples/pgp3140_anfisa.json.gz PGP3140_HL_GENES'
+docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
 
-docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -s /anfisa/a-setup/data/examples/pgp3140_anfisa.json.gz XL_PGP3140_HL_GENES'
+docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
 
 
 else
