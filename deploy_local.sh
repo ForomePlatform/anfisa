@@ -36,7 +36,8 @@ fi
 rm vault/*
 cd data
 rm *
-curl -O -L https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel/pgp3140_anfisa.json.gz
+curl -O -L https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
+unzip pgp3140_wgs_hlpanel.zip
 # cd ../tmp/export
 # [ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 
@@ -45,8 +46,8 @@ echo "Updating configuration in anfisa.json"
 hostname=`hostname`
 sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
 echo "Loading Sample Dataset"
-echo "PYTHONPATH=$repo python3 -m -u app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140"
-PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140
+echo "PYTHONPATH=$repo python3 -m -u app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -i data/PGP3140.json.gz PGP3140"
+PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/pgp3140_wgs_hlpanel.cfg PGP3140
 
 cd $repo
 echo "Run anfisa: env PYTHONPATH="." python3 app/run.py $target/anfisa_$hostname.json"
