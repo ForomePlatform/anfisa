@@ -44,11 +44,11 @@ unzip pgp3140_wgs_hlpanel.zip
 cd ..
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
-sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
+sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json.template | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
 
 python3 -m venv .anfisa
 source .anfisa/bin/activate
-pip3 install -r requirements.txt
+pip3 install -r ${repo}/requirements.txt
 forome_tools_version=0.1.5
 wheel=forome_tools-${forome_tools_version}-py3-none-any.whl
 curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
