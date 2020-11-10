@@ -6,7 +6,7 @@ services:
     image: anfisa_docker_example:latest
     user: root
     volumes:
-      - ASETUP_PATH:/anfisa/a-setup
+      - /home/ubuntu/work6//a-setup:/anfisa/a-setup
     build:
       context: .
       dockerfile: Dockerfile
@@ -44,9 +44,9 @@ services:
     container_name: coordinator1
     user: root
     volumes:
-      - DRUID_WORK/data/:/opt/data/
-      - DRUID_WORK/coordinator:/opt/druid/var
-      - AIRFLOW_WORK/data:/usr/local/airflow/data
+      - /home/ubuntu/work6//druid/data/:/opt/data/
+      - /home/ubuntu/work6//druid/coordinator:/opt/druid/var
+      - /home/ubuntu/work6//airflow/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
     depends_on: 
       - zookeeper
@@ -66,8 +66,8 @@ services:
     container_name: broker1
     user: root
     volumes:
-      - DRUID_WORK/broker:/opt/druid/var
-      - AIRFLOW_WORK/data:/usr/local/airflow/data
+      - /home/ubuntu/work6//druid/broker:/opt/druid/var
+      - /home/ubuntu/work6//airflow/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
     depends_on: 
       - zookeeper
@@ -89,9 +89,9 @@ services:
     image: apache/druid:0.19.0
     container_name: historical1
     volumes:
-      - DRUID_WORK/data/:/opt/data/
-      - DRUID_WORK/historical-var/:/opt/druid/var/
-      - AIRFLOW_WORK/data:/usr/local/airflow/data
+      - /home/ubuntu/work6//druid/data/:/opt/data/
+      - /home/ubuntu/work6//druid/historical-var/:/opt/druid/var/
+      - /home/ubuntu/work6//airflow/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
     depends_on: 
       - zookeeper
@@ -115,12 +115,12 @@ services:
     container_name: middlemanager1
     user: root
     volumes:
-      - DRUID_WORK/data/:/opt/data/
-      - DRUID_WORK/middlemanager/:/opt/druid/var
-      - AIRFLOW_WORK/data:/usr/local/airflow/data
+      - /home/ubuntu/work6//druid/data/:/opt/data/
+      - /home/ubuntu/work6//druid/middlemanager/:/opt/druid/var
+      - /home/ubuntu/work6//airflow/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa.gnicpm/a-setup/vault:/opt/projects/anfisa.gnicpm/a-setup/vault
-      - ASETUP_PATH/vault:/anfisa/a-setup/vault
-      - ASETUP_PATH/../data/:/anfisa/data/
+      - /home/ubuntu/work6//a-setup/vault:/anfisa/a-setup/vault
+      - /home/ubuntu/work6//a-setup/../data:/anfisa/data
     depends_on: 
       - zookeeper
       - coordinator
@@ -142,8 +142,8 @@ services:
     container_name: router1
     user: root
     volumes:
-      - DRUID_WORK/router/:/opt/druid/var
-      - AIRFLOW_WORK/data:/usr/local/airflow/data
+      - /home/ubuntu/work6//druid/router/:/opt/druid/var
+      - /home/ubuntu/work6//airflow/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa/a-setup/vault:/opt/projects/anfisa/a-setup/vault
     depends_on:
       - zookeeper

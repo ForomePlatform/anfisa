@@ -1,18 +1,17 @@
 {
-    "file-path-def": {"WORK": "${HOME}/../a-setup"},
+    "file-path-def": {"WORK": "/anfisa/a-setup"},
     "host": "0.0.0.0",
-    "port": 8190,
-    "html-base": "/anfisa/",
-    "html-title": "Anfisa",
-    "html-ws-url": "ws",
-    "mongo-db": "Anfisa",
+    "port": 3041,
+    "html-base": "/anfisa/app",
+    "html-title": "Anfisa v6/Docker",
+    "html-ws-url": "/anfisa",
     "data-vault": "${WORK}/vault",
     "run-options": [],
     "run-modes": [],
     "job-vault-check-period": 30,
     "--http-bam-base": "http:<server>/anfisa/links",
     "export": {
-         "--URL_to_load": 
+         "--URL_to_load":
             "https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx",
         "excel-template": "${WORK}/export/SEQaBOO_output_template_20190317.xlsx",
         "work-dir": "${WORK}/export/work"
@@ -23,47 +22,50 @@
     ],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
-        ["/ui", "${HOME}/int_ui/files"],
-        ["--/ui", "${WORK}/ui"],
+        ["/ui", "${WORK}/ui"],
         ["/doc/", "${WORK}/doc/"],
-        ["/excel", "${WORK}/export/work"]], 
-    "--mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
+        ["/excel", "${WORK}/export/work"]],
+    "mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "doc-report-css": "${HOME}/int_ui/files/report.css",
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
-        "vault-prefix": "",
-        "index": "http://localhost:8081/druid/indexer/v1/task",
-        "query": "http://localhost:8888/druid/v2",
-        "sql":   "http://localhost:8888/druid/v2/sql",
-        "coord": "http://localhost:8081/druid/coordinator/v1",
+        "vault-prefix": "demo_v5",
+        "index": "http://coordinator1:8081/druid/indexer/v1/task",
+        "query": "http://router1:8888/druid/v2",
+        "sql":   "http://router1:8888/druid/v2/sql",
+        "coord": "http://coordinator1:8081/druid/coordinator/v1",
         "-scp": {
             "dir": "/data/upload/",
             "key": "---",
             "host": "---",
             "exe": "/usr/bin/scp"}
     },
-    "logging": { 
+     
+    "mongo-host": "mongodb1",
+    "mongo-port": 27017,
+    "mongo-db": "Anfisa1",
+    "logging": {
         "version": 1,
         "disable_existing_loggers": false,
-        "formatters": { 
-                "standard": { 
+        "formatters": {
+                "standard": {
                 "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
             }
         },
-        "handlers": { 
-            "default": { 
+        "handlers": {
+            "default": {
                 "level": "INFO",
                 "formatter": "standard",
                 "class": "logging.FileHandler",
                 "filename": "${WORK}/logs/anfisa.log"
             }
         },
-        "loggers": { 
-            "": { 
+        "loggers": {
+            "": {
                 "handlers": ["default"],
                 "level": "INFO",
                 "propagate": true
             }
-        } 
+        }
     }
 }
