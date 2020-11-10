@@ -30,10 +30,10 @@
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
         "vault-prefix": "demo_v5",
-        "index": "http://coordinator1:8081/druid/indexer/v1/task",
-        "query": "http://router1:8888/druid/v2",
-        "sql":   "http://router1:8888/druid/v2/sql",
-        "coord": "http://coordinator1:8081/druid/coordinator/v1",
+        "index": "http://coordinatoranfisa6:8081/druid/indexer/v1/task",
+        "query": "http://routeranfisa6:8888/druid/v2",
+        "sql":   "http://routeranfisa6:8888/druid/v2/sql",
+        "coord": "http://coordinatoranfisa6:8081/druid/coordinator/v1",
         "-scp": {
             "dir": "/data/upload/",
             "key": "---",

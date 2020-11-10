@@ -16,7 +16,7 @@ services:
       
 
   mongo:
-    container_name: mongodb1
+    container_name: mongodbanfisa6
     user: root
     image: mongo
     ports:
@@ -26,7 +26,7 @@ services:
       - environment
 
   zookeeper:
-    container_name: zookeeper1
+    container_name: zookeeperanfisa6
     image: zookeeper:3.5
     user: root
     ports:
@@ -41,7 +41,7 @@ services:
 
   coordinator:
     image: apache/druid:0.19.0
-    container_name: coordinator1
+    container_name: coordinatoranfisa6
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -63,7 +63,7 @@ services:
 
   broker:
     image: apache/druid:0.19.0
-    container_name: broker1
+    container_name: brokeranfisa6
     user: root
     volumes:
       - DRUID_WORK/broker:/opt/druid/var
@@ -87,7 +87,7 @@ services:
 
   historical:
     image: apache/druid:0.19.0
-    container_name: historical1
+    container_name: historicalanfisa6
     volumes:
       - DRUID_WORK/data/:/opt/data/
       - DRUID_WORK/historical-var/:/opt/druid/var/
@@ -112,7 +112,7 @@ services:
 
   middlemanager:
     image: apache/druid:0.19.0
-    container_name: middlemanager1
+    container_name: middlemanageranfisa6
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -139,7 +139,7 @@ services:
 
   router:
     image: apache/druid:0.19.0
-    container_name: router1
+    container_name: routeranfisa6
     user: root
     volumes:
       - DRUID_WORK/router/:/opt/druid/var
