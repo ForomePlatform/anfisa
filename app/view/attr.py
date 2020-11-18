@@ -89,6 +89,7 @@ class AttrH:
 
     #===============================================
     def htmlRepr(self, obj, view_context):
+        val_obj = "-undef-"
         try:
             val_obj = obj.get(self.mName) if obj else None
             if self.mReprFunc:
@@ -100,6 +101,8 @@ class AttrH:
                 return ("False", self.getMainKind())
             if val_obj == 0 and isinstance(val_obj, int):
                 return ("0", self.getMainKind())
+            if val_obj == 0 and isinstance(val_obj, float):
+                return ("0.0", self.getMainKind())
             if val_obj:
                 if self.mIsSeq:
                     seq = []

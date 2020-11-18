@@ -51,7 +51,7 @@ class DruidAdmin(DruidAgent):
     #===============================================
     def uploadDataset(self, dataset_name, flt_data, fdata_name,
             zygosity_names, report_fname = None,
-            no_druid_push = False, portion_mode = False):
+            no_druid_push = False, portion_mode = False, rep_out = None):
         druid_dataset_name = self.normDataSetName(dataset_name)
         if self.mScpConfig is not None:
             base_dir = self.mScpConfig["dir"]
@@ -66,7 +66,7 @@ class DruidAdmin(DruidAgent):
             cmd_copy.append(fdata_name)
             cmd_copy.append(self.mScpConfig["host"] + ':' + base_dir + "/"
                 + filter_name)
-            cmd_copy = ''.join(cmd_copy)
+            cmd_copy = ' '.join(cmd_copy)
             print("Remote copying:", cmd_copy, file = sys.stderr)
             print("Scp started at", datetime.now(), file = sys.stderr)
             subprocess.call(cmd_copy, shell = True)
@@ -137,6 +137,8 @@ class DruidAdmin(DruidAgent):
                 outp.write(json.dumps(schema_request,
                     sort_keys = True, indent = 4, ensure_ascii = False))
             print("Report stored:", report_fname, file = sys.stderr)
+            if rep_out:
+                print("Report stored:", report_fname, file = rep_out)
 
         if no_druid_push:
             print("Skipped push to Druid")
@@ -161,9 +163,14 @@ class DruidAdmin(DruidAgent):
             "finished at ", dt_end, "for", dt_end - dt_start,
             file = sys.stderr)
         print("Upload status:", resp_h[task_id]["status"], file = sys.stderr)
-        if (resp_h[task_id]["status"] != "SUCCESS"
-                or resp_h[task_id]["errorMsg"]):
-            print("Error: ", resp_h["errorMsg"], file = sys.stderr)
+        if (resp_h[task_id].get("status") != "SUCCESS"
+                or resp_h[task_id].get("errorMsg")):
+            print("Error on upload:",
+                json.dumps(resp_h, indent = 4), file = sys.stderr)
+            if rep_out:
+                print("Error on upload:",
+                    json.dumps(resp_h, indent = 4), file = rep_out)
+
             return False
         return True
 

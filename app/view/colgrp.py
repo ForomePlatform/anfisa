@@ -45,14 +45,14 @@ class ColGroupsH:
         return self.mATPairs[idx][0]
 
     def getAttrNames(self):
-        ret = [attr for attr, title in self.mATPairs]
-        if self.mSingleGroupCol:
-            ret.append("single_group_col")
-        return ret
+        return [attr for attr, title in self.mATPairs]
 
     #=============================
     def dump(self):
-        return [[attr, title] for attr, title in self.mATPairs]
+        ret = [[attr, title] for attr, title in self.mATPairs]
+        if self.mSingleGroupCol:
+            ret.append("single_group_col")
+        return ret
 
     @classmethod
     def load(cls, data):
@@ -80,11 +80,13 @@ class ColGroupsH:
             if attr not in rec_obj:
                 continue
             seq = rec_obj[attr]
-            if self.mSingleGroupCol:
-                seq = [seq]
-            elif seq is None or len(seq) == 0:
+            rep_count = None
+            if seq is None or len(seq) == 0:
                 continue
-            rep_count = "[%d]" % len(seq)
+            if self.mSingleGroupCol or not isinstance(seq, list):
+                seq = [seq]
+            else:
+                rep_count = "[%d]" % len(seq)
             add_title_class = ""
             if hit_columns is not None:
                 if self.mHitGroup == group_idx:
@@ -101,7 +103,7 @@ class ColGroupsH:
             objects += seq
             if title:
                 title = escape(title)
-            if title and not self.mSingleGroupCol:
+            if title and rep_count:
                 title += rep_count
             prefix_head.append((title, len(seq), add_title_class))
         if len(prefix_head) == 1 and prefix_head[0][0] is None:
