@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.6/ --hostip=A.B.C.D 
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.6/ 
 EOF
 }
 
@@ -13,11 +13,13 @@ do
 	case $flag in
 		--workdir=*) 
 			WORKDIR=${flag#*=}
+			echo WORKDIR=$WORKDIR
 			if [ ! -d "$WORKDIR" ]; then
 				mkdir -p $WORKDIR
 				chmod a+rwx $WORKDIR
 			fi
 			ASETUP=$WORKDIR/a-setup
+			echo A-Setup=$ASETUP
 			if [ ! -d "$ASETUP" ]; then
 				mkdir -p $ASETUP
 				mkdir -p $ASETUP/data/examples
@@ -32,6 +34,7 @@ do
 				mkdir -p $ASETUP/../data
 			fi
 			DRUID=$WORKDIR/druid
+			echo DRUID=$DRUID
 			if [ ! -d "$DRUID" ]; then
 				mkdir -p $DRUID
 				mkdir -p $DRUID/airflow
@@ -43,21 +46,17 @@ do
 				chmod -R a+rwx $DRUID
 			fi
 			AIRFLOW=$WORKDIR/airflow
+			echo AIRFLOW=$AIRFLOW
 			if [ ! -d "$AIRFLOW" ]; then
 				mkdir -p $AIRFLOW
 				mkdir -p $AIRFLOW/data
 				chmod -R a+rwx $AIRFLOW
 			fi
-			;;			
-		--hostip=*) HOSTIP=${flag#*=};;
-		*)
-			usage
-			exit
 			;;
 	esac
 done
 
-if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] && [ ! -z "$HOSTIP" ] ; then
+if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] ; then 
 
 chmod -R a+rwx $ASETUP
 #chmod -R a+rwx $ASETUP/../data
@@ -71,8 +70,8 @@ popd
 
 sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
 
-sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
-sed "s#HOST_IP#${HOSTIP}#g" environment.template > environment
+#sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
+#sed "s#HOST_IP#${HOSTIP}#g" environment.template > environment
 
 docker-compose build
 docker-compose up -d
@@ -85,5 +84,6 @@ docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m ap
 
 else
 echo ERROR! All parameters are required!
+usage
 fi
 

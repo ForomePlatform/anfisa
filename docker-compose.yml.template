@@ -2,7 +2,7 @@ version: "2.2"
 
 services:
   anfisa:
-    container_name: anfisa_docker
+    container_name: anfisa6_docker
     image: anfisa_docker_example:latest
     user: root
     volumes:
@@ -10,25 +10,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    network_mode: bridge
     restart: always
     ports:
       - "9010:80"
       
 
   mongo:
-    container_name: mongodb1
+    container_name: mongodbanfisa6
     user: root
     image: mongo
     ports:
       - "27017:27017"
     restart: always
-    network_mode: bridge
     env_file:
       - environment
 
   zookeeper:
-    container_name: zookeeper
+    container_name: zookeeperanfisa6
     image: zookeeper:3.5
     user: root
     ports:
@@ -40,11 +38,10 @@ services:
       - ZOO_MY_ID=1
       - ZK_SERVER_HEAP=128
     restart: always
-    network_mode: bridge
 
   coordinator:
     image: apache/druid:0.19.0
-    container_name: coordinator
+    container_name: coordinatoranfisa6
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -55,7 +52,6 @@ services:
       - zookeeper
     ports:
       - "8081:8081"
-    network_mode: bridge
     command:
       - coordinator
     environment:
@@ -67,9 +63,8 @@ services:
 
   broker:
     image: apache/druid:0.19.0
-    container_name: broker
+    container_name: brokeranfisa6
     user: root
-    network_mode: bridge
     volumes:
       - DRUID_WORK/broker:/opt/druid/var
       - AIRFLOW_WORK/data:/usr/local/airflow/data
@@ -92,7 +87,7 @@ services:
 
   historical:
     image: apache/druid:0.19.0
-    container_name: historical
+    container_name: historicalanfisa6
     volumes:
       - DRUID_WORK/data/:/opt/data/
       - DRUID_WORK/historical-var/:/opt/druid/var/
@@ -102,7 +97,6 @@ services:
       - zookeeper
       - coordinator
     user: root
-    network_mode: bridge
     ports:
       - "8083:8083"
     command:
@@ -118,16 +112,15 @@ services:
 
   middlemanager:
     image: apache/druid:0.19.0
-    container_name: middlemanager
+    container_name: middlemanageranfisa6
     user: root
-    network_mode: bridge
     volumes:
       - DRUID_WORK/data/:/opt/data/
       - DRUID_WORK/middlemanager/:/opt/druid/var
       - AIRFLOW_WORK/data:/usr/local/airflow/data
 #      - /opt/projects/anfisa.gnicpm/a-setup/vault:/opt/projects/anfisa.gnicpm/a-setup/vault
-      - ASETUP_PATH/vault:/opt/projects/anfisa/a-setup/vault
-      - ASETUP_PATH/../data:/opt/projects/anfisa.demo/data
+      - ASETUP_PATH/vault:/anfisa/a-setup/vault
+      - ASETUP_PATH/../data/:/anfisa/data/
     depends_on: 
       - zookeeper
       - coordinator
@@ -146,9 +139,8 @@ services:
 
   router:
     image: apache/druid:0.19.0
-    container_name: router
+    container_name: routeranfisa6
     user: root
-    network_mode: bridge
     volumes:
       - DRUID_WORK/router/:/opt/druid/var
       - AIRFLOW_WORK/data:/usr/local/airflow/data
@@ -166,6 +158,8 @@ services:
     env_file:
       - environment
     restart: always
+
+
 
 ######################### AIRFLOW ##############################
 #  postgres:
