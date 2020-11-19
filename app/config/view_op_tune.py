@@ -22,7 +22,6 @@
 import json
 from xml.sax.saxutils import escape
 from bitarray import bitarray
-from collections import defaultdict
 
 from app.view.attr import AttrH
 #===============================================
@@ -101,46 +100,47 @@ class SamplesColumnsMarkup:
     def __call__(self, info_handle, view_context, aspect):
         if self.mCohortMap is None and "active-samples" not in view_context:
             return
-        col_classes = defaultdict(str)
         par_ctrl = ["", ""]
+        cohort_row = None
+        hit_columns = set()
+        col_map = [""] * len(info_handle["rows"][0][2])
         if self.mCohortMap:
-            prefix_head = [["", 1, ""]]
+            cohort_row = ["_cohort", "", []]
             for idx, td_info in enumerate(info_handle["rows"][0][2]):
                 if idx == 0:
+                    cohort_row[-1].append(["-", "null"])
                     continue
                 sample_name = td_info[0].split()[-1]
                 cohort = self.mCohortMap[sample_name]
-                if prefix_head[-1][0] == cohort:
-                    prefix_head[-1][1] += 1
-                else:
-                    prefix_head.append(
-                        [cohort, 1, " no-smp-hit cohorts_" + cohort])
-                col_classes[idx] = ' cohorts_' + cohort
-            info_handle["colhead"] = prefix_head
+                cohort_row[-1].append([cohort, "string"])
+                col_map[idx] = 'cht-' + cohort
             par_ctrl[1] = '<span id="cohorts-ctrl"></span>'
         act_samples = view_context.get("active-samples")
         if act_samples:
-            cnt_total, cnt_hit = 0, 0
+            cnt_total = 0
             for idx, td_info in enumerate(info_handle["rows"][0][2]):
                 if idx == 0:
                     continue
                 sample_name = td_info[0].split()[-1]
                 smp_idx = self.mFamilyInfo.sampleIdx(sample_name)
                 cnt_total += 1
+                if col_map[idx]:
+                    col_map[idx] += ' '
                 if smp_idx in act_samples:
-                    col_classes[idx] += " hit"
-                    cnt_hit += 1
+                    hit_columns.add(idx)
                 else:
-                    col_classes[idx] += " no-smp-hit"
-            if cnt_hit > 0 and cnt_total > 3:
+                    col_map[idx] += "no-smp-hit"
+            if len(hit_columns) > 0 and cnt_total > 3:
                 par_ctrl[0] = ('<span id="act-samples-ctrl">[%d/%d]</span>'
-                    % (cnt_hit, cnt_total))
-
+                    % (len(hit_columns), cnt_total))
+        info_handle["colgroup"] = [""] + col_map
         info_handle["parcontrol"] = '<div>' + ' '.join(par_ctrl) + '</div>'
-
-        for row in info_handle["rows"]:
-            for idx, td_info in enumerate(row[2]):
-                td_info[1] += col_classes[idx]
+        if cohort_row:
+            info_handle["rows"].insert(0, cohort_row)
+        if len(hit_columns) > 0:
+            for row in info_handle["rows"]:
+                for idx in hit_columns:
+                    row[2][idx][1] += " hit"
 
 #===============================================
 def normSampleId(sample_name):

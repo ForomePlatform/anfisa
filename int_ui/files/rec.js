@@ -266,10 +266,16 @@ function setupQSamplesCtrl() {
 
 /**************************************/
 function refreshQSamples() {
+    if (!sQSamplesState[0] && !sQSamplesState[1])
+        return;
+    
     act_samples_mode = false;
+    hide_classes = {};
     if (sQSamplesState[0]) {
         act_samples_mode = window.parent.sActiveSamplesMode;
-            document.getElementById('__actsamples__check_').checked = act_samples_mode;
+        document.getElementById('__actsamples__check_').checked = act_samples_mode;
+        if (act_samples_mode)
+            hide_classes["no-smp-hit"] = true;
     }
     if (sQSamplesState[1]) {
         document.getElementById('cohorts-ctrl').className = 
@@ -281,17 +287,29 @@ function refreshQSamples() {
                 '__cohort__check_' + cohort_list[idx]);
             check_ctrl.checked = check_it;
             check_ctrl.disabled = act_samples_mode;
-            seq_el = document.getElementsByClassName("cohorts_" + cohort_list[idx]);
-            check_it |= act_samples_mode;
-            for (j = 0; j < seq_el.length; j++)
-                seq_el[j].style.display = (check_it)? "": "none";
+            if (!act_samples_mode && !check_it)
+                hide_classes["cht-" + cohort_list[idx]] = true;
         }
     }
-    if (sQSamplesState[0]) {
-        var no_hit_display = (act_samples_mode)? "none" : "";
-        var seq_el = document.getElementsByClassName("no-smp-hit");
-        for (j = 0; j < seq_el.length; j++) {
-            seq_el[j].style.display = no_hit_display;
+    table_el = document.getElementById("rec-view_qsamples");
+    seq_col = table_el.getElementsByTagName('col');
+    seq_hide = [];
+    for (j = 0; j < seq_col.length; j++) {
+        col_classes = seq_col[j].className.split(' ');
+        hide_it = false;
+        for (k = 0; k < col_classes.length; k++) {
+            if (hide_classes[col_classes[k]]) {
+                hide_it = true;
+                break;
+            }
+        }
+        seq_hide.push(hide_it);
+    }
+    seq_tr = table_el.getElementsByTagName('tr');
+    for (j = 0; j < seq_tr.length; j++) {
+        seq_td = seq_tr[j].getElementsByTagName('td');
+        for (k=0; k < seq_hide.length; k++) {
+            seq_td[k].style.display = (seq_hide[k])? "none":"";
         }
     }
 }
@@ -316,5 +334,8 @@ function _checkQSamplesCtrl() {
             window.parent.sCohortViewModes[cohort_list[0]] = true;
         }
     }
-    window.parent.refreshQSamples();
+    if (window.parent.refreshQSamples)
+        window.parent.refreshQSamples();
+    else
+        refreshQSamples();
 }

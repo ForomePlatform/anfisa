@@ -117,7 +117,6 @@ var sSubVRecH = {
         this.mActiveSamplesInstr = "";
         if (this.mInfo["active-samples"]) {
             this.mActiveSamplesInstr = "&samples=" + this.mInfo["active-samples"];
-            console.log("A:", this.mActiveSamplesInstr);
         }
         this.refillControls(mode);
         this.show();

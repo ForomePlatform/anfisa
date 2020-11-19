@@ -81,13 +81,17 @@ def _reportAspect(output, rep_data):
             print(rep_data["parcontrol"], file = output)
         n_col = rep_data["columns"]
         print('<table id="rec-%s">' % rep_data["name"], file = output)
+        if "colgroup" in rep_data:
+            print('<colgroup>', file = output)
+            for col_class in rep_data["colgroup"]:
+                print('  <col class="%s"/>' % col_class, file = output)
+            print('</colgroup>', file = output)
         if rep_data.get("colhead"):
             print('<tr class="head"><td class="title"></td>', file = output)
             for title, count, add_class in rep_data["colhead"]:
                 print('<td class="title%s" colspan="%d">%s</td>' %
                 (add_class, count, title), file = output)
             print('</tr>', file = output)
-
         for attr_data in rep_data["rows"]:
             if len(attr_data) == 0:
                 print('<tr><td colspan="%d" class="title">&emsp;</td></tr>' %
