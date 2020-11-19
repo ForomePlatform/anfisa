@@ -26,7 +26,8 @@ var sCommonTitle = null;
 var sWsPubURL = null;
 
 var sCohortList = null;
-var sCohortViewCheck = null;
+var sCohortViewModes = null;
+var sActSamplesMode = false;
 
 var sSamplesCtrl = null;
 var sSubViewCurAspect = null;
@@ -142,9 +143,9 @@ function setupDSInfo(info) {
     }
     if (info["cohorts"] && info["cohorts"].length > 0) {
         sCohortList = info["cohorts"];
-        sCohortViewCheck = [];
+        sCohortViewModes = [];
         for (idx = 0; idx < sCohortList.length; idx++) {
-            sCohortViewCheck[sCohortList[idx]] = true;
+            sCohortViewModes[sCohortList[idx]] = true;
         }
     }
 }

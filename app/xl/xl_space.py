@@ -209,6 +209,9 @@ class XL_NumCondition(XL_Condition):
         self.mBounds = bounds
         self.mData = [unit_h.getName()] + list(bounds)
 
+    def getData(self):
+        return self.mData
+
     def getDruidRepr(self):
         ret = {
             "dimension": self.mUnitH.getInternalName(),
@@ -233,6 +236,9 @@ class XL_EnumSingleCondition(XL_Condition):
         self.mVariant = variant
         self.mData = [unit_h.getName(), [variant]]
 
+    def getData(self):
+        return self.mData
+
     def toJSon(self):
         return ConditionMaker.condEnum(*self.mData)
 
@@ -249,6 +255,9 @@ class XL_EnumInCondition(XL_Condition):
         self.mUnitH = unit_h
         self.mVariants = sorted(variants)
         self.mData = [unit_h.getName(), self.mVariants]
+
+    def getData(self):
+        return self.mData
 
     def toJSon(self):
         return ConditionMaker.condEnum(*self.mData)
@@ -271,6 +280,9 @@ class XL_Negation(XL_Condition):
     def negative(self):
         return self.mBaseCond
 
+    def isPositive(self):
+        return False
+
     def getDruidRepr(self):
         return {
             "type": "not",
@@ -289,6 +301,11 @@ class _XL_Joiner(XL_Condition):
         return {
             "type": self.getCondType(),
             "fields": [cond.getDruidRepr() for cond in self.mItems]}
+
+    def visit(self, visitor):
+        if visitor.lookAt(self):
+            for it in self.mItems:
+                it.visit(visitor)
 
 #===============================================
 class XL_And(_XL_Joiner):
@@ -336,6 +353,9 @@ class XL_None(XL_Condition, CondSupport_None):
         XL_Condition.__init__(self, eval_space, "null")
 
     def getDruidRepr(self):
+        return False
+
+    def isPositive(self):
         return False
 
     def negative(self):

@@ -248,6 +248,9 @@ class WS_CondNumeric(WS_Condition):
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
         self.mData = data
 
+    def getData(self):
+        return self.mData
+
     def toJSon(self):
         return ConditionMaker.condNum(*self.mData)
 
@@ -273,6 +276,12 @@ class WS_CondEnum(WS_Condition):
             fill_groups_f = fill_groups_f, fill_items_f = fill_items_f)
         self.mData = data
 
+    def getData(self):
+        return self.mData
+
+    def isPositive(self):
+        return self.mData[2] != "NOT"
+
     def toJSon(self):
         return ConditionMaker.condEnum(*self.mData)
 
@@ -285,6 +294,9 @@ class WS_Negation(WS_Condition):
 
     def toJSon(self):
         return ConditionMaker.condNot(self.mBaseCond.toJSon())
+
+    def isPositive(self):
+        return False
 
     def negative(self):
         return self.mBaseCond
@@ -299,6 +311,12 @@ class _WS_Joiner(WS_Condition):
 
     def getItems(self):
         return self.mItems
+
+    def visit(self, visitor):
+        if visitor.lookAt(self):
+            for it in self.mItems:
+                it.visit(visitor)
+
 
 #===============================================
 class WS_And(_WS_Joiner):
@@ -361,6 +379,9 @@ class WS_None(WS_Condition, CondSupport_None):
 
     def negative(self):
         return WS_All(self.getEvalSpace())
+
+    def isPositive(self):
+        return False
 
     def __call__(self, rec_no):
         return False

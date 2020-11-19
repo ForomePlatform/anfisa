@@ -37,7 +37,7 @@ class AspectH:
         self.mIgnored  = ignored
         self.mColGroups = col_groups
         self.mMode      = mode
-        self.mViewColMode = None
+        self.mColumnMarkupF = None
         assert self.mSource in ("_view", "__data"), (
             "name=" + name + " source=" + self.mSource)
 
@@ -45,9 +45,6 @@ class AspectH:
             self.mAttrs = []
         if attrs is not None:
             self.setAttributes(attrs)
-
-    def _setViewColMode(self, column_mode):
-        self.mViewColMode = column_mode
 
     def __getitem__(self, idx):
         return self.mAttrs[idx]
@@ -72,6 +69,9 @@ class AspectH:
 
     def delAttr(self, attr_h):
         self.mAttrs.remove(attr_h)
+
+    def setColumnMarkup(self, markup_func):
+        self.mColumnMarkupF = markup_func
 
     def getName(self):
         return self.mName
@@ -123,27 +123,22 @@ class AspectH:
 
     #===============================================
     def getViewRepr(self, rec_data, view_context = None):
-        ret = {
+        ret_handle = {
             "name": self.mName,
             "title": self.mTitle,
             "kind": {"_view": "norm", "__data": "tech"}[self.mSource]}
         if self.mName == "input":
-            ret["type"] = "pre"
+            ret_handle["type"] = "pre"
             if "input" in rec_data["__data"]:
-                ret["content"] = vcfRepr(rec_data["__data"]["input"])
-            return ret
-        ret["type"] = "table"
+                ret_handle["content"] = vcfRepr(rec_data["__data"]["input"])
+            return ret_handle
+        ret_handle["type"] = "table"
         objects = [rec_data[self.mSource]]
         if self.mField:
             objects = [objects[0][self.mField]]
-        hit_columns = None
         if self.mColGroups:
-            objects, prefix_head, hit_columns = self.mColGroups.formColumns(
-                objects, view_context.get("details"))
-            if prefix_head:
-                ret["colhead"] = [[title, count, add_class]
-                    for title, count, add_class in prefix_head]
-        ret["columns"] = len(objects)
+            objects = self.mColGroups.formColumns(ret_handle, objects)
+        ret_handle["columns"] = len(objects)
         fld_data = dict()
         for attr in self.mAttrs:
             if (attr.getName() is None
@@ -171,31 +166,7 @@ class AspectH:
                 [[val, class_name] for val, class_name in a_values]])
             if attr.getToolTip():
                 rows[-1].append(attr.getToolTip())
-        if hit_columns is not None:
-            for row in rows:
-                for idx, td_info in enumerate(row[2]):
-                    if idx in hit_columns:
-                        td_info[1] += ' hit'
-                    else:
-                        td_info[1] += ' no-hit'
-        if self.mViewColMode and view_context and rows:
-            assert self.mViewColMode == "cohorts"
-            c_map = view_context.get("cohorts")
-            if c_map:
-                col_class_seq = []
-                for cell_info in rows[0][2]:
-                    col_class = None
-                    names = cell_info[0].split()
-                    if len(names) > 0:
-                        col_class = c_map.get(names[-1])
-                    if col_class:
-                        col_class_seq.append("cohorts_" + col_class)
-                    else:
-                        col_class_seq.append(None)
-                for row in rows:
-                    for idx, cell_info in enumerate(row[2]):
-                        col_class = col_class_seq[idx]
-                        if col_class:
-                            cell_info[1] += " " + col_class
-        ret["rows"] = rows
-        return ret
+        ret_handle["rows"] = rows
+        if self.mColumnMarkupF is not None:
+            self.mColumnMarkupF(ret_handle, view_context, self)
+        return ret_handle

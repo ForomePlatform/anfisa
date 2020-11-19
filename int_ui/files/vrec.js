@@ -40,6 +40,7 @@ var sSubVRecH = {
     mButtonShow: null,
     mTaskId: null,
     mTimeH: null,
+    mActiveSamplesInstr: "",
     
     init: function() {
         sSamplesCtrl = this;
@@ -113,6 +114,11 @@ var sSubVRecH = {
             mode = 0;
         if (!this.mInfo["records"])
             mode = 1;
+        this.mActiveSamplesInstr = "";
+        if (this.mInfo["active-samples"]) {
+            this.mActiveSamplesInstr = "&samples=" + this.mInfo["active-samples"];
+            console.log("A:", this.mActiveSamplesInstr);
+        }
         this.refillControls(mode);
         this.show();
     },
@@ -136,6 +142,7 @@ var sSubVRecH = {
         this.mInpCheckSmp.checked = (mode == 1);
         this.mSpanCheckFull.className = (mode==0)? "":"blocked";
         this.mSpanCheckSmp.className = (mode==1)? "":"blocked";
+        
         this.mMode = mode;
         list_rep = [];
         var records = this.mInfo[["records", "samples"][mode]];
@@ -163,7 +170,8 @@ var sSubVRecH = {
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
         new_rec_el.className = new_rec_el.className + " press";
         rec_info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
-        var args = "rec?ds=" + sDSName + "&rec=" + rec_info["no"] + "&port=0";
+        var args = "rec?ds=" + sDSName + "&rec=" + rec_info["no"] + 
+            "&port=0" + this.mActiveSamplesInstr;
         if (rec_info["dt"])
             args += "&details=" + rec_info["dt"];
         this.mSpanRecTitle.innerHTML = rec_info["lb"];

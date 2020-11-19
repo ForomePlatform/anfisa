@@ -34,8 +34,8 @@ from .ws_space import WS_EvalSpace
 #===============================================
 class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
-        DataSet.__init__(self, data_vault, dataset_info, dataset_path)
-        self.addModes({"WS"})
+        DataSet.__init__(self, data_vault, dataset_info, dataset_path,
+            add_modes = {"WS"})
         assert self.getRecStorage().getKind() == "disk"
         self.mTabRecRand = array('q')
         self.mTabRecKey  = []
@@ -76,10 +76,6 @@ class Workspace(DataSet):
                     continue
                 zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
             self.mZoneHandlers.append(zone_h)
-
-        if self.getDataSchema() == "CASE":
-            self._setAspectHitGroup(
-                *AnfisaConfig.configOption("transcript.view.setup"))
 
         for filter_h in self.iterSolEntries("filter"):
             filter_h.activate()
@@ -203,7 +199,8 @@ class Workspace(DataSet):
         zone_f = self.restrictZoneF(rq_args.get("zone"))
         counts = [0, 0]
         records = []
-        for rec_no, rec_it_map in filter_h.getCondition().iterSelection():
+        condition = filter_h.getCondition()
+        for rec_no, rec_it_map in condition.iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
             records.append(self.reportRecord(rec_no, rec_it_map))
@@ -214,6 +211,7 @@ class Workspace(DataSet):
             "total-counts": self.mEvalSpace.getTotalCounts(),
             "filtered-counts": counts,
             "records": records}
+        self.visitCondition(condition, ret_handle)
         return ret_handle
 
     #===============================================

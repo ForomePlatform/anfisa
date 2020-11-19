@@ -35,6 +35,8 @@ var sCheckFltCurrent = null;
 var sSelectFltNamed  = null;
 var sElFltCurState   = null;
 
+var sActiveSamplesInstr = "";
+
 function initWin(workspace_name, common_title, ws_pub_url) {
     sDSName = workspace_name; 
     sDSKind = "ws";
@@ -78,6 +80,10 @@ function setupList(info) {
         rep += "&nbsp;/&nbsp;" + info["total-counts"][1];
     document.getElementById("ws-transcripts-report").innerHTML = rep;
     sRecList = info["records"];
+    sActiveSamplesInstr = "";
+    if (info["active-samples"]) {
+        sActiveSamplesInstr = "&samples=" + info["active-samples"];
+    }
     refreshRecList();
     arrangeControls();
     sTagSupportH.checkTagsState(null);
@@ -161,10 +167,10 @@ function changeRec(rec_no) {
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName +
         "&rec=" + sCurRecID + "&port=1" + 
-        "&details=" + sRecList[sCurRecNo]["dt"]);
+        "&details=" + sRecList[sCurRecNo]["dt"] + sActiveSamplesInstr);
     window.frames['rec-frame2'].location.replace("rec?ds=" + sDSName + 
         "&rec=" + sCurRecID + "&port=2" + 
-        "&details=" + sRecList[sCurRecNo]["dt"]);
+        "&details=" + sRecList[sCurRecNo]["dt"] + sActiveSamplesInstr);
     sTagSupportH.updateNavigation();
 }
 
@@ -218,11 +224,11 @@ function updateTabCfg() {
 }
 
 //=====================================
-function refreshCohorts() {
+function refreshQSamples() {
     for (idx = 1; idx < 3; idx++) {
         frame = window.frames['rec-frame' + idx];
         if (frame.sStarted) 
-            frame.refreshCohorts();
+            frame.refreshQSamples();
     }
 }
 

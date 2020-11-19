@@ -27,6 +27,7 @@ var sBlockedTabEl = null;
 var sBaseAspect = null;
 var sUseTags = null;
 var sCheckTrHit = null;
+var sQSamplesState = [false, false];
 
 /**************************************/
 function init_r(port, init_aspect, rec_id, use_tags, ws_name) {
@@ -60,8 +61,8 @@ function init_r(port, init_aspect, rec_id, use_tags, ws_name) {
     } else {
         pickAspect(sBaseAspect);
     }
-    checkCohortCtrl();
-    checkHitTransctriptsCtrl();
+    setupQSamplesCtrl();
+    setupHitTransctriptsCtrl();
     window.onclick = onClick;
     window.onresize = arrangeControls;
     arrangeControls();
@@ -186,7 +187,7 @@ function updateCfg(reset_port) {
 
 /**************************************/
 /**************************************/
-function checkHitTransctriptsCtrl() {
+function setupHitTransctriptsCtrl() {
     if (sViewPort < 0)
         return;
     span_el = document.getElementById("tr-hit-span");
@@ -208,7 +209,7 @@ function refreshHitTranscripts() {
     if (sCheckTrHit == null)
         return;
     var no_hit_display = (window.parent.sViewAllTranscripts[0])? "": "none";
-    var seq_el = document.getElementsByClassName("no-hit");
+    var seq_el = document.getElementsByClassName("no-tr-hit");
     for (j = 0; j < seq_el.length; j++) {
         seq_el[j].style.display = no_hit_display;
     }
@@ -229,56 +230,91 @@ function _checkHitTr() {
 
 /**************************************/
 /**************************************/
-function checkCohortCtrl() {
-    if (sViewPort < 0 || !window.parent.sCohortList 
-            || window.parent.sCohortList.length == 0)
-        return;
-    var cohort_list = window.parent.sCohortList;
+function setupQSamplesCtrl() {
+    var cohorts_ctrl = document.getElementById('cohorts-ctrl');
+    var act_samples_ctrl = document.getElementById('act-samples-ctrl');
+    sQSamplesState = [false, false];
     
-    add_rep = ['<p>Cohort visibility:'];
-    for (idx = 0; idx < cohort_list.length; idx++) {
-        c_name = cohort_list[idx];
-        add_rep.push('<input id="__cohort__check_' + c_name + 
-            '" type="checkbox" onchange="_checkCohorts();"/><label ' +
-            'for="__cohort__check_' + c_name + '">&nbsp;' + c_name + '</label>');
+    if (act_samples_ctrl) {
+        var count_rep = act_samples_ctrl.innerHTML;
+        act_samples_ctrl.innerHTML = [
+            'Selected samples:&nbsp;<input ',
+            'id="__actsamples__check_" type="checkbox"',  
+            'onchange="_checkQSamplesCtrl();">',
+            '<label for="__actsamples__check_">', 
+            count_rep, '</label>&emsp;&emsp;'].join(' ');
+        sQSamplesState[0] = true;
     }
-    add_rep.push('</p>');
-    var ctrl_p_el = document.createElement('div');
-    ctrl_p_el.innerHTML = add_rep.join('\n');
-    document.getElementById('a--view_cohorts').appendChild(ctrl_p_el);
-    refreshCohorts();
+    if (cohorts_ctrl && window.parent.sCohortViewModes) {
+        var cohort_list = window.parent.sCohortList;
+        if (cohort_list) {
+            var rep = ['Cohort visibility:'];
+            for (idx = 0; idx < cohort_list.length; idx++) {
+                c_name = cohort_list[idx];
+                rep.push('<input id="__cohort__check_' + c_name + 
+                    '" type="checkbox" onchange="_checkQSamplesCtrl();"/><label ' +
+                    'for="__cohort__check_' + c_name + '">&nbsp;' + 
+                    c_name + '</label>');
+            }
+            cohorts_ctrl.innerHTML = rep.join('\n');
+            sQSamplesState[1] = true;
+        }
+    }
+    
+    refreshQSamples();
 }
 
 /**************************************/
-function refreshCohorts() {
-    if (sViewPort < 0 || !window.parent.sCohortList)
-        return;
-    var cohort_list = window.parent.sCohortList;
-    for (idx = 0; idx < cohort_list.length; idx++) {
-        check_it = window.parent.sCohortViewCheck[cohort_list[idx]];
-        document.getElementById(
-            '__cohort__check_' + cohort_list[idx]).checked = check_it;
-        seq_el = document.getElementsByClassName("cohorts_" + cohort_list[idx]);
-        for (j = 0; j < seq_el.length; j++)
-            seq_el[j].style.display = (check_it)? "": "none";
+function refreshQSamples() {
+    act_samples_mode = false;
+    if (sQSamplesState[0]) {
+        act_samples_mode = window.parent.sActiveSamplesMode;
+            document.getElementById('__actsamples__check_').checked = act_samples_mode;
+    }
+    if (sQSamplesState[1]) {
+        document.getElementById('cohorts-ctrl').className = 
+            (act_samples_mode)? "blocked":"";
+        var cohort_list = window.parent.sCohortList;
+        for (idx = 0; idx < cohort_list.length; idx++) {
+            check_it = window.parent.sCohortViewModes[cohort_list[idx]];
+            check_ctrl = document.getElementById(
+                '__cohort__check_' + cohort_list[idx]);
+            check_ctrl.checked = check_it;
+            check_ctrl.disabled = act_samples_mode;
+            seq_el = document.getElementsByClassName("cohorts_" + cohort_list[idx]);
+            check_it |= act_samples_mode;
+            for (j = 0; j < seq_el.length; j++)
+                seq_el[j].style.display = (check_it)? "": "none";
+        }
+    }
+    if (sQSamplesState[0]) {
+        var no_hit_display = (act_samples_mode)? "none" : "";
+        var seq_el = document.getElementsByClassName("no-smp-hit");
+        for (j = 0; j < seq_el.length; j++) {
+            seq_el[j].style.display = no_hit_display;
+        }
     }
 }
 
 /**************************************/
-function _checkCohorts() {
-    if (sViewPort < 0 || !window.parent.sCohortList)
-        return;
-    var cnt = 0;
-    var cohort_list = window.parent.sCohortList;
-    for (idx = 0; idx < cohort_list.length; idx++) {
-        c_name = cohort_list[idx];
-        check_it = document.getElementById('__cohort__check_' + c_name).checked;
-        window.parent.sCohortViewCheck[c_name] = check_it;
-        if (check_it)
-            cnt += 1;
+function _checkQSamplesCtrl() {
+    if (sQSamplesState[0]) {
+        check_it = document.getElementById('__actsamples__check_').checked;
+        window.parent.sActiveSamplesMode = check_it;
     }
-    if (cnt == 0) {
-        window.parent.sCohortViewCheck[cohort_list[0]] = true;
+    if (sQSamplesState[1]) {
+        var cnt = 0;
+        var cohort_list = window.parent.sCohortList;
+        for (idx = 0; idx < cohort_list.length; idx++) {
+            c_name = cohort_list[idx];
+            check_it = document.getElementById('__cohort__check_' + c_name).checked;
+            window.parent.sCohortViewModes[c_name] = check_it;
+            if (check_it)
+                cnt += 1;
+        }
+        if (cnt == 0) {
+            window.parent.sCohortViewModes[cohort_list[0]] = true;
+        }
     }
-    window.parent.refreshCohorts();
+    window.parent.refreshQSamples();
 }

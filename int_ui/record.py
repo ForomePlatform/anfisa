@@ -22,7 +22,8 @@ from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
-def reportRecord(output, ds_h, rec_no, details = None, port = -1):
+def reportRecord(output, ds_h, rec_no,
+        details = None, active_samples = None, port = -1):
     css_files = ["rec.css", "base.css"]
     js_files = ["rec.js", "base.js"]
     use_tags = "false"
@@ -43,7 +44,7 @@ def reportRecord(output, ds_h, rec_no, details = None, port = -1):
         '<img id="img-tab2" src="ui/images/tab2-exp.png"/></span>',
         file = output)
 
-    asp_data_seq = ds_h.getViewRepr(rec_no, details)
+    asp_data_seq = ds_h.getViewRepr(rec_no, details, active_samples)
     for asp_data in asp_data_seq:
         print('<button class="r-tablnk %s" id="la--%s" '
             'onclick="pickAspect(\'%s\')">%s</button>' %
@@ -76,6 +77,8 @@ def reportRecord(output, ds_h, rec_no, details = None, port = -1):
 #===============================================
 def _reportAspect(output, rep_data):
     if rep_data["type"] == "table":
+        if "parcontrol" in rep_data:
+            print(rep_data["parcontrol"], file = output)
         n_col = rep_data["columns"]
         print('<table id="rec-%s">' % rep_data["name"], file = output)
         if rep_data.get("colhead"):

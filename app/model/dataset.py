@@ -50,11 +50,13 @@ class DataSet(SolutionBroker):
 
     #===============================================
     def __init__(self, data_vault, dataset_info, dataset_path,
-            sol_pack_name = None):
+            sol_pack_name = None, add_modes = None):
         SolutionBroker.__init__(self,
             dataset_info["meta"].get("data_schema", "CASE"),
             dataset_info.get("modes"))
         self.addModes(data_vault.getApp().getRunModes())
+        if add_modes:
+            self.addModes(add_modes)
         self.mDataVault = data_vault
         self.mDataInfo = dataset_info
         self.mName = dataset_info["name"]
@@ -67,6 +69,7 @@ class DataSet(SolutionBroker):
         self.mPath = dataset_path
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
+        self.mCondVisitorTypes = []
 
         if self.getDataSchema() == "FAVOR" and self.mDSKind == "xl":
             self.mRecStorage = FavorStorage(
@@ -83,8 +86,6 @@ class DataSet(SolutionBroker):
         self.mViewContext = dict()
         if self.mFamilyInfo.getCohortList():
             self.mViewContext["cohorts"] = self.mFamilyInfo.getCohortMap()
-            view_aspect = AnfisaConfig.configOption("view.cohorts.aspect")
-            self.mAspects[view_aspect]._setViewColMode("cohorts")
         completeDsModes(self)
 
         tuneAspects(self, self.mAspects)
@@ -97,12 +98,12 @@ class DataSet(SolutionBroker):
     def isUpToDate(self, fstat_info):
         return fstat_info == self.mFInfo
 
-    def _setAspectHitGroup(self, aspect_name, group_attr):
-        self.mAspects.setAspectHitGroup(aspect_name, group_attr)
-
     def descrContext(self, rq_args, rq_descr):
         rq_descr.append("kind=" + self.mDSKind)
         rq_descr.append("dataset=" + self.mName)
+
+    def addConditionVisitorType(self, visitor_type):
+        self.mCondVisitorTypes.append(visitor_type)
 
     @abc.abstractmethod
     def getEvalSpace(self):
@@ -148,11 +149,17 @@ class DataSet(SolutionBroker):
     def getFirstAspectID(self):
         return self.mAspects.getFirstAspectID()
 
-    def getViewRepr(self, rec_no, details = None):
+    def getViewRepr(self, rec_no, details = None, active_samples = None):
         rec_data = self.mRecStorage.getRecordData(rec_no)
         v_context = self.mViewContext.copy()
         if details is not None:
             v_context["details"] = details
+        if active_samples:
+            if active_samples.strip().startswith('['):
+                v_context["active-samples"] = set(json.parse(active_samples))
+            else:
+                v_context["active-samples"] = set(map(int,
+                    active_samples.split(',')))
         v_context["data"] = rec_data
         v_context["rec_no"] = rec_no
         return self.mAspects.getViewRepr(rec_data, v_context)
@@ -317,6 +324,17 @@ class DataSet(SolutionBroker):
                 for idx1 in range(zero_idx, len(dtree_h)):
                     counts[idx1] = counts[idx][:]
         return counts
+
+    #===============================================
+    def visitCondition(self, condition, ret_handle):
+        if condition is None:
+            return
+        for cond_visitor_type in self.mCondVisitorTypes:
+            visitor = cond_visitor_type(self)
+            condition.visit(visitor)
+            ret = visitor.makeResult()
+            if ret:
+                ret_handle[visitor.getName()] = ret
 
     #===============================================
     def _getArgCondFilter(self, rq_args, activate_it = True):
@@ -507,7 +525,8 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__reccnt(self, rq_args):
         return self.getViewRepr(int(rq_args.get("rec")),
-            details = rq_args.get("details"))
+            details = rq_args.get("details"),
+            active_samples = rq_args.get("samples"))
 
     #===============================================
     @RestAPI.ds_request

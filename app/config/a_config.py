@@ -63,9 +63,6 @@ class AnfisaConfig:
         "zygosity.path.base": "/__data/zygosity",
 
         "transcript.path.base": "/_view/transcripts",
-        "transcript.view.setup": ("view_transcripts", "transcripts"),
-
-        "view.cohorts.aspect": "view_qsamples",
 
         "job.pool.size":    50,
         "job.pool.threads": 10,

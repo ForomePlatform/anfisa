@@ -138,7 +138,9 @@ def defineViewSchema(metadata_record = None):
         AttrH("op_filters", title = "Presence in filters", kind = "place",
             tooltip = "Filters positive on variant"),
         AttrH("op_dtrees", title = "Presence in decision trees",
-            kind = "place", tooltip = "Decision trees positive on variant")
+            kind = "place", tooltip = "Decision trees positive on variant"),
+        AttrH("op_has_variant", title = "Has variant", kind = "place",
+            tooltip = "Samples having variant")
     ])
 
     aspects["view_transcripts"].setAttributes([

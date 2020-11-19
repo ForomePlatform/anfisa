@@ -77,7 +77,7 @@ class IntUI:
             rec_no = int(rq_args.get("rec"))
             output = StringIO()
             reportRecord(output, ds_h, rec_no, rq_args.get("details"),
-                int(rq_args.get("port", -1)))
+                rq_args.get("samples"), int(rq_args.get("port", -1)))
             return serv_h.makeResponse(content = output.getvalue())
 
         if rq_path == "/dir":
