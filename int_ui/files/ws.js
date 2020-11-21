@@ -196,7 +196,8 @@ function onClick(event_ms) {
 }
 
 function filterModOn() {
-    clearFilterOpMode();
+    sFiltersH.update();
+    sViewH.popupOff();
     sViewH.modalOn(document.getElementById("filter-back"));
     arrangeControls();
 }
@@ -265,11 +266,6 @@ function doCSVExport() {
 //=====================================
 // Filters
 //=====================================
-function clearFilterOpMode() {
-    sFiltersH.update();
-    sViewH.popupOff();
-}
-
 function onFilterListChange() {
     var all_filters = sFiltersH.getAllList();
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
@@ -283,15 +279,22 @@ function onFilterListChange() {
         sSelectFltNamed.append(option)
     }
     sSelectFltNamed.selectedIndex = all_filters.indexOf(sCurFilterName) + 1;
-    clearFilterOpMode();
+    sFiltersH.update();
+    sViewH.popupOff();
 }
 
 function pickNamedFilter() {
+    if (sOpFilterH.tryLoadFilter(sSelectFltNamed.value))
+        return;
     updateCurFilter(sSelectFltNamed.value);
 }
 
 function checkCurFilters(mode_filter) {
     if (mode_filter == 0) {
+        if (sCheckFltNamed.checked) {
+            if (sOpFilterH.tryLoadFilter(sSelectFltNamed.value))
+                return;
+        }
         updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
     } else {
         updateCurFilter((sCheckFltCurrent.checked)? "":null);

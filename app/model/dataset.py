@@ -337,15 +337,24 @@ class DataSet(SolutionBroker):
                 ret_handle[visitor.getName()] = ret
 
     #===============================================
-    def _getArgCondFilter(self, rq_args, activate_it = True):
+    def _getArgCondFilter(self, rq_args,
+            activate_it = True, join_cond_data = None):
+        filter_h, cond_data = None, None
         if rq_args.get("filter"):
             filter_h = self.pickSolEntry("filter", rq_args["filter"])
             assert filter_h is not None
-        else:
+            if join_cond_data is not None:
+                cond_data = filter_h.getCondDataSeq()
+                filter_h = None
+        if filter_h is None and cond_data is None:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
             else:
                 cond_data = ConditionMaker.condAll()
+        if join_cond_data is not None:
+            assert filter_h is None
+            cond_data = cond_data[:] + join_cond_data[:]
+        if filter_h is None:
             filter_h = FilterEval(self.getEvalSpace(), cond_data)
         filter_h = self.updateSolEntry("filter", filter_h)
         if activate_it:
@@ -379,13 +388,23 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__ds_stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
+        join_cond_data = None
         if "instr" in rq_args:
-            filter_proc_h = self._getArgCondFilter(
-                rq_args, activate_it = False)
-            if not self.modifySolEntry("filter", json.loads(rq_args["instr"]),
-                    filter_proc_h.getCondDataSeq()):
-                assert False
-        filter_h = self._getArgCondFilter(rq_args)
+            instr_info = json.loads(rq_args["instr"])
+            if instr_info[0] == "JOIN":
+                join_cond_data = self.pickSolEntry(
+                    "filter", instr_info[1]).getCondDataSeq()
+            else:
+                if instr_info[0] == "DELETE":
+                    instr_cond_data = None
+                else:
+                    instr_cond_data = self._getArgCondFilter(
+                        rq_args, activate_it = False).getCondDataSeq()
+                if not self.modifySolEntry("filter",
+                        instr_info, instr_cond_data):
+                    assert False
+        filter_h = self._getArgCondFilter(rq_args,
+            join_cond_data = join_cond_data)
         condition = filter_h.getCondition()
         ret_handle = {
             "kind": self.mDSKind,
