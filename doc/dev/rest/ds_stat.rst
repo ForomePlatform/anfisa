@@ -23,7 +23,7 @@ Synopsis
         **instr**: *optional modifier* 
         
     |       ``[``
-    |           **[0]**: option, ``"UPDATE"`` *or* ``"DELETE"``
+    |           **[0]**: option, ``"UPDATE"``, ``"DELETE"`` *or* ``"JOIN"``
     |           **[1]**: filter name, *string*
     |       ``]`` *in JSON string representation*
         
@@ -79,11 +79,13 @@ Returning properties **total-counts** and **filter-counts** have length of 2 in 
 
 Modification of filters
 ^^^^^^^^^^^^^^^^^^^^^^^
-If argument **instr** is set, the request modifies filter on server side:
+If argument **instr** is set, the request modifies filter on server side in the following cases:
 
-   * if **instr** is ``["UPDATE", <filter_name>]`` the value of argument **conditions** are interpreted as new content of filter ``filter_name``, use this option for both create or update filter
+   * ``["UPDATE", <filter_name>]`` the value of argument **conditions** are interpreted as new content of filter ``filter_name``, use this option for both create or update filter
     
-   * if **instr** is ``["DELETE", <filter_name>]`` the filter ``filter_name`` is subject to be deleted.
+   * ``["DELETE", <filter_name>]`` the filter ``filter_name`` is subject to be deleted.
+     
+In case ``["JOIN", <filter_name>]`` the request modifies current condiitons collected from **conditions** or **filter** by joining them with content of named filter ``filter_name``.
      
 See also :doc:`../concepts/sol_work`
 

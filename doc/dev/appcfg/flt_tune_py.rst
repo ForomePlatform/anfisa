@@ -12,7 +12,7 @@ Unfortunately, this part of configuration API is deeply connected with the syste
 
 Here we superficially explain application of tuning API in the source file
 
-``app/config/view_tune.py``
+``app/config/flt_tune.py``
     
 * Main objects of tuning are instances of classes for :term:`filtering functions<filtering function>`. Each of these classes has method ``makeIt()``:  
 

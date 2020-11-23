@@ -133,6 +133,8 @@ class AspectH:
                 ret_handle["content"] = vcfRepr(rec_data["__data"]["input"])
             return ret_handle
         ret_handle["type"] = "table"
+        ret_handle["parcontrol"] = None
+        ret_handle["colgroup"] = None
         objects = [rec_data[self.mSource]]
         if self.mField:
             objects = [objects[0][self.mField]]

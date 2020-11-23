@@ -103,7 +103,7 @@ class SamplesColumnsMarkup:
         par_ctrl = ["", ""]
         cohort_row = None
         hit_columns = set()
-        col_map = [""] * len(info_handle["rows"][0][2])
+        col_seq = [""] * len(info_handle["rows"][0][2])
         if self.mCohortMap:
             cohort_row = ["_cohort", "", []]
             for idx, td_info in enumerate(info_handle["rows"][0][2]):
@@ -113,7 +113,7 @@ class SamplesColumnsMarkup:
                 sample_name = td_info[0].split()[-1]
                 cohort = self.mCohortMap[sample_name]
                 cohort_row[-1].append([cohort, "string"])
-                col_map[idx] = 'cht-' + cohort
+                col_seq[idx] = 'cohort-' + cohort
             par_ctrl[1] = '<span id="cohorts-ctrl"></span>'
         act_samples = view_context.get("active-samples")
         if act_samples:
@@ -124,16 +124,16 @@ class SamplesColumnsMarkup:
                 sample_name = td_info[0].split()[-1]
                 smp_idx = self.mFamilyInfo.sampleIdx(sample_name)
                 cnt_total += 1
-                if col_map[idx]:
-                    col_map[idx] += ' '
+                if col_seq[idx]:
+                    col_seq[idx] += ' '
                 if smp_idx in act_samples:
                     hit_columns.add(idx)
                 else:
-                    col_map[idx] += "no-smp-hit"
+                    col_seq[idx] += "no-smp-hit"
             if len(hit_columns) > 0 and cnt_total > 3:
                 par_ctrl[0] = ('<span id="act-samples-ctrl">[%d/%d]</span>'
                     % (len(hit_columns), cnt_total))
-        info_handle["colgroup"] = [""] + col_map
+        info_handle["colgroup"] = [""] + col_seq
         info_handle["parcontrol"] = '<div>' + ' '.join(par_ctrl) + '</div>'
         if cohort_row:
             info_handle["rows"].insert(0, cohort_row)

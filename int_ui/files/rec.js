@@ -213,7 +213,7 @@ function refreshHitTranscripts() {
     for (j = 0; j < seq_el.length; j++) {
         seq_el[j].style.display = no_hit_display;
     }
-    sCheckTrHit.disabled = (seq_el.length == 0);
+    //sCheckTrHit.disabled = (seq_el.length == 0);
     sCheckTrHit.checked = !window.parent.sViewAllTranscripts[0];
 }
 
@@ -224,7 +224,12 @@ function _checkHitTr() {
     
     tr_view_all = !sCheckTrHit.checked;
     if ((!tr_view_all) != (!window.parent.sViewAllTranscripts[0])) {
-        window.parent.refreshHitTranscripts(tr_view_all);
+        if (window.parent.refreshHitTranscripts) {
+            window.parent.refreshHitTranscripts(tr_view_all);
+        } else {
+            window.parent.sViewAllTranscripts[0] = tr_view_all;
+            refreshHitTranscripts(tr_view_all);
+        }
     }
 }
 
@@ -288,7 +293,7 @@ function refreshQSamples() {
             check_ctrl.checked = check_it;
             check_ctrl.disabled = act_samples_mode;
             if (!act_samples_mode && !check_it)
-                hide_classes["cht-" + cohort_list[idx]] = true;
+                hide_classes["cohort-" + cohort_list[idx]] = true;
         }
     }
     table_el = document.getElementById("rec-view_qsamples");

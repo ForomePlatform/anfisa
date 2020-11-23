@@ -77,11 +77,11 @@ def reportRecord(output, ds_h, rec_no,
 #===============================================
 def _reportAspect(output, rep_data):
     if rep_data["type"] == "table":
-        if "parcontrol" in rep_data:
+        if rep_data.get("parcontrol"):
             print(rep_data["parcontrol"], file = output)
         n_col = rep_data["columns"]
         print('<table id="rec-%s">' % rep_data["name"], file = output)
-        if "colgroup" in rep_data:
+        if rep_data.get("colgroup"):
             print('<colgroup>', file = output)
             for col_class in rep_data["colgroup"]:
                 print('  <col class="%s"/>' % col_class, file = output)
