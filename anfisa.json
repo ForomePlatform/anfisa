@@ -41,7 +41,7 @@
             "exe": "/usr/bin/scp"}
     },
      
-    "mongo-host": "mongodb1",
+    "mongo-host": "mongodbanfisa6",
     "mongo-port": 27017,
     "mongo-db": "Anfisa1",
     "logging": {
