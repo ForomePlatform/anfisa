@@ -64,13 +64,13 @@ Update docker-compose.yml.template**
 3. [Optionally] Adjust setting for your webserver to serve Anfisa. 
 For nginx add the following location block:
 
-``` json
+``` 
 location /anfisa {
 	proxy_pass http://127.0.0.1:9010/anfisa;
 }
 ```
 
-3. Download whole genome dataset from 
+4. Download whole genome dataset from 
 https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2/pgp3140_anfisa.json.gz 
 and ingest it. Will require around 4 hours
 
@@ -85,11 +85,11 @@ make sure you have permission to do it. A sample command is:
 2. Make sure you have MongoDB installed. If its endpoint 
 is not localhost:27017, after the installation you will need to edit anfisa.json
 
-2. Make sure that sphinx is installed. On Ubuntu the instllation command is:
+3. Make sure that sphinx is installed. On Ubuntu the instllation command is:
 
 `sudo apt-get install python3-sphinx`
 
-3. Run deploy script (will use pip to install requirements):
+4. Run deploy script (will use pip to install requirements):
 
 `. deploy_local.sh`
 
