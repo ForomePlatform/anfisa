@@ -38,7 +38,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'Anfisa Development&Installation Documentation'
+project = 'Anfisa User Documentation'
 copyright = 'Copyright (c) 2019, 2020. Partners HealthCare and other members of Forome Association'
 
 # The short X.Y version
@@ -92,7 +92,7 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'bizstyle'
+html_theme = 'pyramid'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -119,7 +119,7 @@ html_static_path = []
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'AnfisaDevDoc'
+htmlhelp_basename = 'AnfisaUserDoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -146,7 +146,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'AnfisaDev.tex', 'Anfisa Development Documentation',
+    (master_doc, 'AnfisaUser.tex', 'Anfisa User Documentation',
      'Tr', 'manual'),
 ]
 
@@ -156,7 +156,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'anfisa_dev', 'Anfisa Development Documentation',
+    (master_doc, 'anfisa_user', 'Anfisa User Documentation',
      [copyright], 1)
 ]
 
@@ -167,8 +167,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AnfisaDev', 'Anfisa Development&Installation Documentation',
-     copyright, 'AnfisaDev', 'One line description of project.',
+    (master_doc, 'AnfisaUser', 'Anfisa User Documentation',
+     copyright, 'AnfisaUser', 'One line description of project for the user purposes.',
      'Miscellaneous'),
 ]
 
