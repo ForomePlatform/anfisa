@@ -27,7 +27,6 @@ do
 				mkdir -p $ASETUP/ui
 				mkdir -p $ASETUP/export
 				mkdir -p $ASETUP/logs
-				#mkdir -p $ASETUP/../data
 				chmod -R a+rwx $ASETUP
 			fi
 			if [ ! -d "$ASETUP/../data" ] ; then
@@ -37,7 +36,6 @@ do
 			echo DRUID=$DRUID
 			if [ ! -d "$DRUID" ]; then
 				mkdir -p $DRUID
-				mkdir -p $DRUID/airflow
 				mkdir -p $DRUID/coordinator
 				mkdir -p $DRUID/data
 				mkdir -p $DRUID/historical-var
@@ -45,45 +43,38 @@ do
 				mkdir -p $DRUID/router
 				chmod -R a+rwx $DRUID
 			fi
-			AIRFLOW=$WORKDIR/airflow
-			echo AIRFLOW=$AIRFLOW
-			if [ ! -d "$AIRFLOW" ]; then
-				mkdir -p $AIRFLOW
-				mkdir -p $AIRFLOW/data
-				chmod -R a+rwx $AIRFLOW
-			fi
 			;;
 	esac
 done
 
-if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] && [ ! -z "$AIRFLOW" ] ; then 
+if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
+  chmod -R a+rwx $ASETUP
+  chmod -R a+rwx $DRUID
 
-chmod -R a+rwx $ASETUP
-#chmod -R a+rwx $ASETUP/../data
-chmod -R a+rwx $DRUID
-chmod -R a+rwx $AIRFLOW
+  cp setup/*  $WORKDIR/
+  cp -R app doc export int_ui requirements.txt LICENSE README.md $WORKDIR/
 
-pushd $ASETUP/data/examples
-curl -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
-unzip pgp3140_wgs_hlpanel.zip
-popd
+  pushd $ASETUP/data/examples || exit
+  if [ ! -d docs ] ; then
+    curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
+    unzip pgp3140_wgs_hlpanel.zip
+  fi
 
-sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
+  cd $WORKDIR || exit
+  sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" -  > docker-compose.yml
 
-#sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
-#sed "s#HOST_IP#${HOSTIP}#g" environment.template > environment
+  docker-compose build
+  docker-compose up -d
+  docker ps
 
-docker-compose build
-docker-compose up -d
-docker ps
+  docker exec -it anfisa6_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
+  docker exec -it anfisa6_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
 
-docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
+  popd || exit
 
-docker exec -it anfisa_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
-
-
+  echo "Open URL http://localhost:9010/anfisa/app/dir"
 else
-echo ERROR! All parameters are required!
-usage
+  echo ERROR! All parameters are required!
+  usage
 fi
 

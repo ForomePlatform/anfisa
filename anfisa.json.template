@@ -1,5 +1,5 @@
 {
-    "file-path-def": {"WORK": "/anfisa/a-setup"},
+    "file-path-def": {"WORK": "/anfisa/a-setup", "SRC": "PATH_TO_SOURCE"},
     "host": "0.0.0.0",
     "port": 3041,
     "html-base": "/anfisa/app",
@@ -18,7 +18,7 @@
     },
     "sphinx-doc-sets": [
         ["Installation and Development Anfisa Documentation",
-            "${HOME}/doc/dev/", "${WORK}/doc/dev/", "doc/dev/"]
+            "${HOME}/doc/dev/", "${WORK}/doc/dev/", "${SRC}/doc/dev/", "doc/dev/"]
     ],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],

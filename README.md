@@ -37,8 +37,12 @@ continues development.
 3. Decide what directory will be a working directory for Anfisa
 
 4. Decide which of the following installation paths you prefer:
-- Use a Docker container
-- Install all components in your local system 
+- Use a Docker container. This method will also install Druid and 
+other dependencies. However, Druid requires at least 8G of memory, 
+if your box does not have this amount of RAM, you should avoid running 
+Druid or adjust its settings. Druid can also be run on a separate box. 
+- Install all components in your local system. This is only recommended 
+if you will contributing to Anfisa development or customizing its code. 
 
 #### Installing via Docker
 
@@ -57,17 +61,26 @@ Update docker-compose.yml.template**
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
-3. Download whole genome dataset and ingest it. Will require around 4 hours
+3. Download whole genome dataset from 
+https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2/pgp3140_anfisa.json.gz 
+and ingest it. Will require around 4 hours
 
 #### Installing without Docker
 
-1. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html)
+1. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html) 
+and activate it. We will be installing a lot of dependent packages, 
+make sure you have permission to do it. A sample command is:
 
-2. Install all the requirements by running 
+`python3 -m venv .anfisa && source .anfisa/bin/activate`
 
-`pip3 install -r requirements.txt`
+2. Make sure you have MongoDB installed. If its endpoint 
+is not localhost:27017, after the installation you will need to edit anfisa.json
 
-3. Run deploy script:
+2. Make sure that sphinx is installed. On Ubuntu the instllation command is:
+
+`sudo apt-get install python3-sphinx`
+
+3. Run deploy script (will use pip to install requirements):
 
 `. deploy_local.sh`
 
