@@ -61,6 +61,15 @@ Update docker-compose.yml.template**
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
+3. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+For nginx add the following location block:
+
+``` json
+location /anfisa {
+	proxy_pass http://127.0.0.1:9010/anfisa;
+}
+```
+
 3. Download whole genome dataset from 
 https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2/pgp3140_anfisa.json.gz 
 and ingest it. Will require around 4 hours
