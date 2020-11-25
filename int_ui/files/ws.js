@@ -31,7 +31,8 @@ var sCurFilterName = null;
 var sFltTimeDict = [];
 
 var sCheckFltNamed   = null;
-var sCheckFltCurrent = null;
+var sCheckFltCurCond = null;
+var sUseCurConditions = null;
 var sSelectFltNamed  = null;
 var sElFltCurState   = null;
 
@@ -51,7 +52,7 @@ function initWin(workspace_name, common_title, ws_pub_url) {
     window.onresize  = arrangeControls;
 
     sCheckFltNamed   = document.getElementById("flt-check-named");
-    sCheckFltCurrent = document.getElementById("flt-check-current");
+    sCheckFltCurCond = document.getElementById("flt-check-current");
     sSelectFltNamed  = document.getElementById("flt-named-select");
     sElFltCurState   = document.getElementById("flt-current-state");
 
@@ -65,7 +66,7 @@ function initWin(workspace_name, common_title, ws_pub_url) {
 function reloadList() {
     sViewH.popupOff();
     ajaxCall("ws_list", sConditionsH.getCondRqArgs(sCurFilterName, 
-        sZoneH.getCurState(), sCheckFltCurrent.checked), setupList);
+        sZoneH.getCurState(), sUseCurConditions), setupList);
 }
 
 function setupList(info) {
@@ -297,7 +298,7 @@ function checkCurFilters(mode_filter) {
         }
         updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
     } else {
-        updateCurFilter((sCheckFltCurrent.checked)? "":null);
+        updateCurFilter((sCheckFltCurCond.checked)? "":null);
     }
 }
 
@@ -306,20 +307,19 @@ function updateCurFilter(filter_name, force_it) {
         return;
     cur_flt_status = sConditionsH.report();
     sCurFilterName = filter_name;
-    sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
+    sUseCurConditions = (!cur_flt_status) && (!sCurFilterName);
+    if (sCurFilterName)
+        sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
     if (cur_flt_status) {
         sElFltCurState.innerHTML = cur_flt_status;
         sElFltCurState.className = "status";
-        sCheckFltCurrent.disabled = true;
-        sCheckFltCurrent.checked = false;
     } else {
         cond_len = sConditionsH.getCondCount();
         sElFltCurState.innerHTML = cond_len + " condition" + ((cond_len>1)? "s":"");
-        sElFltCurState.className = "";
-        sCheckFltCurrent.disabled = false;
-        sCheckFltCurrent.checked = (!sCurFilterName);
-    } 
-    sCheckFltNamed.checked = !!sCurFilterName;
+        sElFltCurState.className = "";        
+    }
+    sCheckFltCurCond.checked = sUseCurConditions && (sCurFilterName != null);
+    sCheckFltNamed.checked = (!sUseCurConditions) && (!!sCurFilterName);
     reloadList();
 }
 
