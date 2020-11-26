@@ -17,8 +17,22 @@
         "work-dir": "${WORK}/export/work"
     },
     "sphinx-doc-sets": [
-        ["Installation and Development Anfisa Documentation",
-            "${HOME}/doc/dev/", "${WORK}/doc/dev/", "doc/dev/"]
+        {
+            "id": "dev",
+            "title": "Anfisa Installation&Administration Documentation",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/",
+            "source": "${HOME}/doc/dev/",
+            "build": "${WORK}/doc/dev/",
+            "path": "doc/dev/"
+        },
+        {
+            "id": "user",
+            "title": "Anfisa User Documentation",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-user.v0.6/",
+            "source": "${HOME}/doc/user/",
+            "build": "${WORK}/doc/user/",
+            "path": "doc/user/"
+        }
     ],
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
