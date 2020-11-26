@@ -12,7 +12,13 @@ A detailed [Setup and Administration Guide](https://github.com/ForomePlatform/an
 
 ## Online Development Documentation
 
-https://foromeplatform.github.io/anfisa/
+- Installation&Administration Documentation
+
+https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/
+
+- User Documentation
+
+https://foromeplatform.github.io/documentation/anfisa-user.v0.6/
 
 ## Local Installation
 
