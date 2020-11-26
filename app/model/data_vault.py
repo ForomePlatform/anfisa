@@ -240,7 +240,9 @@ class DataVault(SyncronizedObject):
             return {
                 "version": self.mApp.getVersionCode(),
                 "ds-list": ds_list,
-                "ds-dict": ds_dict}
+                "ds-dict": ds_dict,
+                "documentation": [doc_set.dump()
+                    for doc_set in self.getApp().getDocSets()]}
 
     #===============================================
     @RestAPI.vault_request

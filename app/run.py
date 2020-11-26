@@ -26,7 +26,7 @@ from forome_tools.hserv import setupHServer, HServHandler
 from app.top.a_app import AnfisaApp
 #========================================
 import forome_tools
-forome_tools.compatible((0, 1, 5))
+forome_tools.compatible((0, 1, 6))
 
 #========================================
 if sys.version_info < (3, 7):

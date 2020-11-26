@@ -156,7 +156,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'anfisa_dev', 'Anfisa Development Documentation',
+    (master_doc, 'anfisa_dev', 'Anfisa Development&Administration Documentation',
      [copyright], 1)
 ]
 
@@ -167,7 +167,7 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'AnfisaDev', 'Anfisa Development&Installation Documentation',
+    (master_doc, 'AnfisaDev', 'Anfisa Development&Administration Documentation',
      copyright, 'AnfisaDev', 'One line description of project.',
      'Miscellaneous'),
 ]

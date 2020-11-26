@@ -145,6 +145,7 @@ HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this o
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
         ["/ui", "${HOME}/int_ui/files"],
+        ["--/doc/", "${WORK}/doc/"],
         ["--/ui", "${WORK}/ui"],
         ["/excel", "${WORK}/export/work"]],
 
@@ -180,9 +181,61 @@ HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this o
 
     See the section about Druid in installation documentation
 
+.. _sphinx-doc-sets:
+
+.. index::
+    sphinx-doc-sets; service configuration option
+    
+* **sphinx-doc-sets**, *list*
+
+    Here is list of documentation sets available for the instance. Each set is defined as *dictionary* with properties:
+    
+    * **id**: short identifier of documentation sets
+    
+    * **title**: title of the sets
+    
+    * **url**: external URL to documentation set
+    
+    By default current documentation sets are already built and available on Intenet, so the option **url** should define correct link to this set. 
+    
+    It is correct to comment this option, and then the documentation set will be built locally on  start of the service. In this case the following additional options are required in the document set descriptor (in case of **url** option set they do not have effect):
+    
+    * **source**: path to source of documentation
+    
+    * **build**: path to building place
+    
+    * **path**: locally defined URL to the documentation set built
+
+    *Note* In case of local building of documentation sets:
+    
+        * uncomment ``"/doc"`` instruction in **dir-files**
+        
+        * make sure if `sphinx <https://www.sphinx-doc.org/>`_ is installed on machine
+    
+    Example::
+    
+     "sphinx-doc-sets": [
+        {
+            "id": "dev",
+            "title": "Anfisa Installation&Administration Documentation",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/",
+            "source": "${HOME}/doc/dev/",
+            "build": "${WORK}/doc/dev/",
+            "path": "doc/dev/"
+        },
+        {
+            "id": "user",
+            "title": "Anfisa User Documentation",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-user.v0.6/",
+            "source": "${HOME}/doc/user/",
+            "build": "${WORK}/doc/user/",
+            "path": "doc/user/"
+        }
+     ]
+
 .. index:: 
     logging; service configuration option
-
+    
 * **logging**, *dictionary*
 
     Some standard Python way to configure the logging of a service. Please pay attention to one specific line of this stuff:    
@@ -199,7 +252,6 @@ HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this o
     doc-pygments-css; service configuration option
 
 .. _docs_cfg: 
-
     
 * **doc-report-css**, *string*
 * **doc-pygments-css**, *string*
