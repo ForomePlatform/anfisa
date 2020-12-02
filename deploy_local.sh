@@ -58,7 +58,7 @@ sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/anfisa.json.template \
 
 pip3 install -r ${repo}/requirements.txt
 forome_tools_version=0.1.6
-wheel=forome_tools-${forome_tools_version}-py3-none-any.whl
+wheel=forome_tools-v.${forome_tools_version}-py3-none-any.whl
 if [ ! -f ${wheel}.gz ] ; then
   echo curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
   curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
