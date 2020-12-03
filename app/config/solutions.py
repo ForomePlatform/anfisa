@@ -202,16 +202,15 @@ def readySolutions_Case(base_pack):
         ],
         requires = {"trio_base", "WS"})
 
-    base_pack.regFilter("Impact_Splicing",
-        condition_high_confidence() + impacting_splicing())
-
     base_pack.regFilter("InSilico_Possibly_Damaging",
         condition_high_confidence() + [ConditionMaker.condEnum(
-            "Rules", [stdNm("Possibly_Damaging_Predictions")])])
+            "Rules", [stdNm("Possibly_Damaging_Predictions")])],
+        requires = {"WS"})
 
     base_pack.regFilter("InSilico_Damaging", condition_high_confidence()
         + [ConditionMaker.condEnum("Rules",
-            [stdNm("Damaging_Predictions")])])
+            [stdNm("Damaging_Predictions")])],
+        requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
@@ -235,20 +234,26 @@ def readySolutions_Case(base_pack):
     #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
     #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
+        requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])],
+        requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Quick", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss Quick")])],
         requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])])
+        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])],
+        requires = {"WS"})
     # base_pack.regFilter("SEQaBOO_ACMG59", [
     #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
     #     requires = {"WS"})
+
+    base_pack.regFilter("Loss_Of_Function", condition_high_quality() + [
+        ConditionMaker.condEnum("Most_Severe_Consequence", LoF_CSQ)])
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
@@ -258,8 +263,27 @@ def readySolutions_Case(base_pack):
         ConditionMaker.condEnum("Most_Severe_Consequence",
             LOW_IMPACT_CSQ, join_mode = "NOT")])
 
-    base_pack.regFilter("Impacting_Splicing",
-        condition_high_quality() + impacting_splicing())
+    base_pack.regFilter("Impact_Splicing",
+        condition_high_confidence() + impacting_splicing())
+
+    base_pack.regFilter("ClinVar_VUS_or_Worse",
+        condition_high_confidence() + [
+            ConditionMaker.condEnum("Clinvar_stars",  ["1", "2", "3", "4"]),
+            ConditionMaker.condEnum("Clinvar_conflicts", ["True"],
+                                    join_mode = "NOT"),
+            ConditionMaker.condEnum("Clinvar_Benign", ["VUS or Pathogenic"])
+        ], requires={"XL"})
+
+    base_pack.regFilter("In_Silico_Damaging",
+        condition_high_confidence() + [
+            ConditionMaker.condEnum("Polyphen_2_HVAR",  ["D"]),
+            ConditionMaker.condEnum("SIFT", ["deleterious"])
+        ], requires={"XL"})
+
+
+
+    # base_pack.regFilter("Impact_Splicing",
+    #     condition_high_quality() + impacting_splicing())
 
     # Production Decision Trees
     base_pack.regDTree("BGM Research",
