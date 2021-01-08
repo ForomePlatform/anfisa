@@ -79,7 +79,7 @@ class DataSet(SolutionBroker):
 
         self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
         if (self.mDataInfo.get("zygosity_var")
-                and 1 < len(self.mFamilyInfo) <= 10):
+                and 1 <= len(self.mFamilyInfo) <= 10):
             self.addModes({"ZYG"})
         self.mZygSupport = None
 

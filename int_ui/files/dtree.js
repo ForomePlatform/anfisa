@@ -202,6 +202,11 @@ var sDecisionTree = {
             seq_el[j].addEventListener("click", editAtom); 
             seq_el[j].innerHTML = "&#x2699;";
         }
+        seq_el = document.getElementsByClassName("dtree-atom-drop");
+        for (j = 0; j < seq_el.length; j++) {
+            seq_el[j].addEventListener("click", dropAtom); 
+            seq_el[j].innerHTML = "&times;";
+        }
     },
     
     _fillNoTree: function() {
@@ -331,6 +336,18 @@ var sDecisionTree = {
         this.mCondAtomLoc = [point_no, atom_idx];
         this.showAtomCond();
         this._highlightCondition(true);
+    },
+    
+    atomDrop: function(point_no, atom_idx) {
+        this.selectPoint(point_no);
+        if (sUnitsH.postAction(
+                'sDecisionTree.atomDrop(' + point_no + ', ' + atom_idx + ');', true))
+            return;
+        if (this.mCondAtoms[point_no].length > 1) {
+            sDecisionTree.setup(true, ["ATOM", "DELETE", [point_no, atom_idx]]);
+        } else {
+            sDecisionTree.setup(true, ["INSTR", "DELETE", point_no]);
+        }
     },
     
     atomRenewEdit: function() {
@@ -1326,6 +1343,12 @@ function editAtom(evt) {
     var atom_id = evt.target.id;
     idxs = atom_id.substring(7).split('-');
     sDecisionTree.atomEdit(parseInt(idxs[0]), parseInt(idxs[1]));
+}
+
+function dropAtom(evt) {
+    var atom_id = evt.target.id;
+    idxs = atom_id.substring(7).split('-');
+    sDecisionTree.atomDrop(parseInt(idxs[0]), parseInt(idxs[1]));
 }
 
 function renderEnum(unit_name, expand_mode) {

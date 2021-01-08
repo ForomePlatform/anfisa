@@ -81,6 +81,10 @@ class Evaluation:
     def getActualCondition(self, point_no):
         assert False
 
+    @abc.abstractmethod
+    def getActiveUnitSet(self):
+        assert False
+
     def operationError(self, cond_data, err_msg):
         if self.mEvalStatus == "ok":
             self.mEvalStatus = "runtime"

@@ -30,7 +30,7 @@ project, so here is a short description covering details important for Anfisa pr
         * this logic allows us to have just the same content of inventory files for all datasets, and vary only names of inventory files 
         
 Example of inventory file
-*************************
+-------------------------
 
 ::
 
@@ -69,6 +69,55 @@ Example of inventory file
         }
     ]    
  }
+
+Documentation block of inventory file
+-------------------------------------
+
+Property **docs** of inventory descriptor is list of objects that represent documentation items. 
+
+Common properties of documentation items:
+
+* **"kind"** - kind of item, see details below
+
+* **"title"** - title of item visible for the user
+
+* **"source"** - path to location of file/files corresponding to the item, can contain template control symbols ``*``, for some item kinds should match only one file
+
+* **"dest"** - destination filename, for some item kinds is optional, in these cases base filename of **source** is used
+
+*Common rule*: if there is no file / directory that is defined by **"source"** property, the documentation item is just ignored. 
+
+Kinds of documentation items
+****************************
+
+* kind = **"group"**
+
+    Represents group (folder) of documentation items located in subdirectory. Descriptor should contain property **"docs"** with recursive list of sub-items of variour kinds. It is not recommended to define **"dest"** property explicitly.
+
+* kind = **"html"**
+
+    Represents document in HTML format. (Use "support" documentation item to use images inside document, see below). 
+    **"source"** should define a single document with ``.html`` extension. 
+    It is not recommended to define **"dest"** property explicitly.
+    
+* kind = **"txt"**, kind = **"png"**, kind = **"jpg"**
+
+    Represents HTML document visible for the user with contents of file of text or image format.
+    **"source"** should define a single document with corresponding extension. 
+    **"dest"** property should be explicitly defined as a filename with ``.html`` extension
+    
+    For image files the additional property **"tooltip"** can be used, with text description of the image
+    
+* kind = **"*.txt"**, kind = **"*.png"**, kind = **"*.jpg"**
+
+    Represents single HTML document with contents of serie of files. 
+    **"source"** should define this serie. 
+    **"dest"** property should be explicitly defined as a filename with ``.html`` extension
+    
+* kind = **"support"**
+
+    Represents subdirectory with supplementaty images. These images can be referenced inside HTML-documents and are invisible for the user on documentation tree. 
+    For this special kind of documentation item only **"kind"** and **"source**" properties should be defined, and **"source"** should be path to a subdirectory
 
 See also
 --------

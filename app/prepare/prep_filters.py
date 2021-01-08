@@ -209,8 +209,7 @@ class FilterPrepareSetH(SolutionBroker):
         result = dict()
         for unit in self.mUnits:
             unit.process(rec_no, rec_data, result)
-        if self.mZygosityData is not None:
-            self.mZygosityData.process(rec_no, rec_data, result)
+        self.mZygosityData.process(rec_no, rec_data, result)
         return result
 
     def reportProblems(self, output):
@@ -224,14 +223,10 @@ class FilterPrepareSetH(SolutionBroker):
         return [unit.dump() for unit in self.mUnits]
 
     def getZygosityNames(self):
-        if self.mZygosityData is not None:
-            return self.mZygosityData.getMemberNames()
-        return None
+        return self.mZygosityData.getMemberNames()
 
     def getZygosityVarName(self):
-        if self.mZygosityData is not None:
-            return self.mZygosityData.getVarName()
-        return None
+        return self.mZygosityData.getVarName()
 
     def getTranscriptDescrSeq(self):
         ret = []

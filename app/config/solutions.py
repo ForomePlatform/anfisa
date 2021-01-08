@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import os
+import os, logging
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
@@ -112,21 +112,38 @@ def impacting_splicing():
 def clinVar_not_benign():
     return [ConditionMaker.condEnum("Clinvar_Trusted_Simplified",
         ["benign"], "NOT")]
+
+#===============================================
+def checkSolutionUnits(sol_kind, sol_name, unit_names, requires):
+    if "Rules" in unit_names:
+        if not requires or "WS" not in requires:
+            logging.error(
+                'Solution %s/%s: "WS" must be set as requirement (uses Rules)'
+                % (sol_kind, sol_name))
+            return False
+    if "Compound_Het" in unit_names:
+        if (not requires
+                or len({"trio", "trio_base", "trio_pure"} & requires) == 0):
+            logging.error(
+                ('Solution %s/%s: "trio"/"trio_base"/"trio_pure" must be set'
+                ' as requirement (uses Compound_Het)')
+                % (sol_kind, sol_name))
+            return False
+    return True
+
 #===============================================
 def readySolutions():
     global sSolutionsAreSet
     if sSolutionsAreSet:
         return
     sSolutionsAreSet = True
-    favor_pack = SolutionPack("FAVOR")
+    favor_pack = SolutionPack("FAVOR", checkSolutionUnits)
     setupGenericPack(favor_pack)
     FavorSchema.readySolutions(favor_pack)
-    SolutionPack.regPack(favor_pack)
 
-    base_pack = SolutionPack("CASE")
+    base_pack = SolutionPack("CASE", checkSolutionUnits)
     setupGenericPack(base_pack)
     readySolutions_Case(base_pack)
-    SolutionPack.regPack(base_pack)
 
 #===============================================
 def readySolutions_Case(base_pack):
@@ -279,8 +296,6 @@ def readySolutions_Case(base_pack):
             ConditionMaker.condEnum("Polyphen_2_HVAR",  ["D"]),
             ConditionMaker.condEnum("SIFT", ["deleterious"])
         ], requires={"XL"})
-
-
 
     # base_pack.regFilter("Impact_Splicing",
     #     condition_high_quality() + impacting_splicing())

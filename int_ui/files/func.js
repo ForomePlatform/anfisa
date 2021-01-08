@@ -666,7 +666,6 @@ var sFunc_CompoundRequest = {
     
     makeFParams: function(state) {
         var v_request = sZygSuportH.simplifyRequest(state[2]);
-        console.log("rq_len=" + v_request.length);
         return {"approx": state[0], "state": state[1],
             "request": v_request};
     },

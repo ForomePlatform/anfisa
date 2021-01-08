@@ -139,6 +139,22 @@ def reduceCondData(cond_data):
 
 
 #===============================================
+def condDataUnits(cond_data):
+    if len(cond_data) == 0 or cond_data[0] is None or cond_data[0] is False:
+        return set()
+    if cond_data[0] in {"numeric", "enum", "func"}:
+        return {cond_data[1]}
+    if cond_data[0] == "not":
+        return condDataUnits(cond_data[1])
+    if cond_data[0] in ("and", "or"):
+        ret = set()
+        for sub_cond in cond_data[1:]:
+            ret |= condDataUnits(sub_cond)
+        return ret
+    assert False, "Bad cond data: " + cond_data[0]
+
+
+#===============================================
 ZYG_BOUNDS_VAL = {
     "0":    [None, True, 0, True],
     "0-1":  [None, True, 1, True],

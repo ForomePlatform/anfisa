@@ -24,6 +24,7 @@ from app.config.a_config import AnfisaConfig
 from .evaluation import Evaluation
 from .dtree_parse import ParsedDTree
 from .code_works import HtmlPresentation
+from .condition import condDataUnits
 #===============================================
 class CaseStory:
     def __init__(self, parent = None, start = None):
@@ -242,9 +243,9 @@ class ConditionPoint(CheckPoint):
 
 #===============================================
 class DTreeEval(Evaluation, CaseStory):
-    def __init__(self, eval_space, code, dtree_name = None,
+    def __init__(self, eval_space, dtree_code, dtree_name = None,
             updated_time = None, updated_from = None):
-        parsed = ParsedDTree(eval_space, code)
+        parsed = ParsedDTree(eval_space, dtree_code)
         Evaluation.__init__(self, eval_space, parsed.getHashCode(),
             updated_time, updated_from)
         CaseStory.__init__(self)
@@ -432,3 +433,10 @@ class DTreeEval(Evaluation, CaseStory):
                     cond_seq.append(point.actualCondition())
             self.mFinalCondition = self.getEvalSpace().joinOr(cond_seq)
         return self.mFinalCondition
+
+    def getActiveUnitSet(self):
+        ret = set()
+        for frag_h in self.mFragments:
+            if frag_h.getInstrType() == "If":
+                ret |= condDataUnits(frag_h.getCondData())
+        return ret

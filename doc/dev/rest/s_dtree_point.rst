@@ -63,6 +63,10 @@ point:
 
     ``<span class="dtree-atom-mark warn" id="__atom_1-1" title="..."></span>``, 
             
+    For inactive atomic condition (if unit name of enumerated field or function is unavailable) the markup is different:
+
+    ``<span class="dtree-atom-drop warn" id="__atom_1-1" title="..."></span>``, 
+    
     The Front End application can use this markup to set up proper access to atomic conditions and as result to support code  modifying actions of type ``"ATOM"``, see details  :ref:`here<dtree_atom_actions>`. 
     
     See also description of property **cond-atoms** in :doc:`dtree_set`.

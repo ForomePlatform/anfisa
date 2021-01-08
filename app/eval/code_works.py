@@ -140,14 +140,16 @@ class HtmlPresentation:
                 j_upd = jj_upd + 2
                 m_cnt2 += 1
                 err_msg = err_msg_dict.get((check_no, instr_no))
+                mark_class = "dtree-atom-mark"
+                title_cnt = ""
                 if err_msg:
-                    insert_code = (
-                        '<span class="dtree-atom-mark warn" title="%s" '
-                        % escape(err_msg))
-                else:
-                    insert_code = '<span class="dtree-atom-mark" '
-                insert_code += ('id="__atom_%d-%d"></span>'
-                    % (check_no, instr_no))
+                    if err_msg.startswith("Inactive"):
+                        mark_class = "dtree-atom-drop warn"
+                    else:
+                        mark_class += " warn"
+                    title_cnt = ' title="%s"' % err_msg
+                insert_code = ('<span class="%s" id="__atom_%d-%d" %s></span>'
+                    % (mark_class, check_no, instr_no, title_cnt))
                 l_upd = (l_upd[:j_upd_start] + insert_code + l_upd[j_upd:])
                 j_upd += len(insert_code) - (j_upd - j_upd_start)
             lines_upd[idx] = l_upd
