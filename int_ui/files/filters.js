@@ -315,6 +315,16 @@ var sOpFilterH = {
         return this.mCurFilter;
     },
     
+    tryLoadFilter: function(filter_name) {
+        if (filter_name == this.mCurFilter)
+            return false;
+        if (sConditionsH.isEmpty() || !!this.mCurFilter) {
+            this._updateConditions(null, filter_name);
+            return true;
+        }
+        return false;
+    },
+    
     availableActions: function() {
         var ret = sOpCondH.availableActions();
         if (sConditionsH.getCurCondNo() != null)
@@ -328,10 +338,14 @@ var sOpFilterH = {
         return ret;
     },
     
-    _updateConditions: function(new_seq, filter_name) {
+    _fixCurConditions: function() {
         this.mHistory.push(
             [this.mCurFilter, sConditionsH.getConditions()]);
         this.mRedoStack = [];
+    },
+        
+    _updateConditions: function(new_seq, filter_name) {
+        this._fixCurConditions();
         sUnitsH.setup(new_seq, filter_name);
     },
 
@@ -707,13 +721,18 @@ var sFiltersH = {
             this.mComboName.style.display = "block";
         }
         this.mInpName.style.visibility = "visible";
+        no_cond = sConditionsH.isEmpty();
+        has_name = !!this.mCurFilterName;
+        no_op_names = (this.mOpList.length == 0);
+        
         document.getElementById("filters-op-create").className = 
-            (sConditionsH.isEmpty() || !!this.mCurFilterName)? "disabled":"";
+            (no_cond || has_name)? "disabled":"";
         document.getElementById("filters-op-modify").className = 
-            (sConditionsH.isEmpty() || !!this.mCurFilterName ||
-                (this.mOpList.length == 0))? "disabled":"";
+            (no_cond || has_name || no_op_names)? "disabled":"";
+        document.getElementById("filters-op-join").className = 
+            (no_cond)? "disabled":"";
         document.getElementById("filters-op-delete").className = 
-            (!!this.mCurFilterName || 
+            (this.mCurFilterName == "" || 
                 this.mOpList.indexOf(this.mCurFilterName) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
     },
@@ -753,7 +772,7 @@ var sFiltersH = {
             this.mBtnOp.disabled = (!q_op) || filter_name == cur_filter;
             return;
         }
-        if (this.mCurOp == "load") {
+        if (this.mCurOp == "load" || this.mCurOp == "join") {
             this.mBtnOp.disabled = (!q_all) || filter_name == cur_filter;
             return;
         }
@@ -787,6 +806,18 @@ var sFiltersH = {
         this.fillSelNames(false, this.mAllList, this.mCurFilterIdx);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
+        this.mBtnOp.style.display = "block";
+        this.select();
+        this.mComboName.style.display = "block";
+    },
+
+    startJoin: function() {
+        this.mCurOp = "join";
+        this.mInpName.value = "";
+        this.mInpName.style.visibility = "hidden";
+        this.fillSelNames(false, this.mAllList, this.mCurFilterIdx);
+        this.mSelName.disabled = false;
+        this.mBtnOp.innerHTML = "Join";
         this.mBtnOp.style.display = "block";
         this.select();
         this.mComboName.style.display = "block";
@@ -847,6 +878,13 @@ var sFiltersH = {
                 if (q_op && filter_name != cur_filter) {
                     sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
                         ["instr", JSON.stringify(["UPDATE", filter_name])]);
+                }
+                break;
+            case "join":
+                if (q_all && filter_name != cur_filter) {
+                    sOpFilterH._fixCurConditions();
+                    sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
+                        ["instr", JSON.stringify(["JOIN", filter_name])]);
                 }
                 break;
             case "load":

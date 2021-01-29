@@ -83,7 +83,7 @@ class AnfisaApp:
         sphinx_docs_seq = cls.sConfig.get("sphinx-doc-sets")
         if sphinx_docs_seq:
             for sphinx_docs_info in sphinx_docs_seq:
-                cls.sDocSets.append(SphinxDocumentationSet(*sphinx_docs_info))
+                cls.sDocSets.append(SphinxDocumentationSet(sphinx_docs_info))
 
         signal.signal(signal.SIGTERM, terminateAll)
         signal.signal(signal.SIGHUP, terminateAll)

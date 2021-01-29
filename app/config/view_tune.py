@@ -19,17 +19,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json, logging
+import logging
 from xml.sax.saxutils import escape
-from bitarray import bitarray
 
 from app.view.attr import AttrH
 from .favor import FavorSchema
+import app.config.view_op_tune as view_op
 #===============================================
 def tuneAspects(ds_h, aspects):
     if ds_h.getDataSchema() == "FAVOR":
         FavorSchema.tuneAspects(ds_h, aspects)
         return
+
+    if ds_h.getDataSchema() == "CASE":
+        if ds_h.testRequirements({"WS"}):
+            aspects.setAspectColumnMarkup("view_transcripts",
+                view_op.markupTranscriptTab)
+        ds_h.addConditionVisitorType(view_op.SamplesConditionVisitor)
+        aspects.setAspectColumnMarkup("view_qsamples",
+                view_op.SamplesColumnsMarkup(ds_h))
+
     view_gen = aspects["view_gen"]
     view_db = aspects["view_db"]
     view_t = aspects["view_transcripts"]
@@ -52,17 +61,17 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "notes", False))
 
-    if "meta" not in ds_h.getDataInfo():
-        return
     meta_info = ds_h.getDataInfo()["meta"]
     _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
         meta_info.get("case"), meta_info.get("samples"),
         meta_info["versions"].get("reference")))
 
-    view_gen[view_gen.find("transcripts")].setReprFunc(reprGenTranscripts)
+    view_gen[view_gen.find("transcripts")].setReprFunc(
+        view_op.reprGenTranscripts)
+    _resetupAttr(view_gen, view_op.OpHasVariant_AttrH(view_gen, ds_h))
     if ds_h.getDSKind() == "ws":
-        _resetupAttr(view_gen, OpFilters_AttrH(view_gen, ds_h))
-        _resetupAttr(view_gen, OpDTreess_AttrH(view_gen, ds_h))
+        _resetupAttr(view_gen, view_op.OpFilters_AttrH(view_gen, ds_h))
+        _resetupAttr(view_gen, view_op.OpDTreess_AttrH(view_gen, ds_h))
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
@@ -418,69 +427,6 @@ class IGV_AttrH(AttrH):
             + 'Download IGV</a></td></tr></table>', "norm")
 
 #===============================================
-def reprGenTranscripts(val, v_context):
-    if not val:
-        return None
-    if "details" in v_context:
-        details = bitarray(v_context["details"])
-    else:
-        details = None
-
-    ret_handle = ['<ul>']
-    for idx, it in enumerate(val):
-        is_canonical = it.get("is_canonical") if it else False
-        if is_canonical:
-            prefix = "[C] "
-        else:
-            prefix = ""
-        if details is not None and details[idx]:
-            if is_canonical:
-                mod = ' class="hit"'
-            else:
-                mod = ' class="no-hit"'
-        else:
-            mod = ''
-        v_id = it.get("id")
-        if not v_id:
-            v_id = "?"
-        v_gene = it.get("gene")
-        if not v_gene:
-            v_gene = "?"
-        t_format = (
-            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>")
-        if not is_canonical:
-            t_format = t_format.replace("<b>", "").replace("</b>", "")
-        ret_handle.append(t_format % (mod,
-            escape(prefix), escape(v_id), escape(v_gene),
-            escape(json.dumps(it.get("transcript_annotations", "?")))))
-    ret_handle.append("</ul>")
-    return ('\n'.join(ret_handle), "norm")
-
-#===============================================
-class OpFilters_AttrH(AttrH):
-    def __init__(self, view, ds_h):
-        AttrH.__init__(self, "OP_filters",
-            title = "Presence in filters",
-            tooltip = "Filters positive on variant")
-        self.mDS = ds_h
-        self.setAspect(view)
-
-    def htmlRepr(self, obj, v_context):
-        return (' '.join(self.mDS.getRecFilters(v_context["rec_no"])), "norm")
-
-#===============================================
-class OpDTreess_AttrH(AttrH):
-    def __init__(self, view, ds_h):
-        AttrH.__init__(self, "OP_dtrees",
-            title = "Presence in decision trees",
-            tooltip = "Decision trees positive on variant")
-        self.mDS = ds_h
-        self.setAspect(view)
-
-    def htmlRepr(self, obj, v_context):
-        return (' '.join(self.mDS.getRecDTrees(v_context["rec_no"])), "norm")
-
-#===============================================
 class UNIPROT_AttrH(AttrH):
     base_url = "https://www.uniprot.org/uniprot/%s"
 
@@ -507,6 +453,7 @@ class UNIPROT_AttrH(AttrH):
         return (link, "norm")
 
 
+#===============================================
 class PGKB_AttrH(AttrH):
     def __init__(self, view, key, is_simple):
         AttrH.__init__(self, key.upper(), title = key.title())

@@ -294,19 +294,19 @@ class ViewDataChecker(DictTypeChecker):
     def getKind(self):
         return "Top"
 
-    def problem(self, code, checker, parent_checker = None):
+    def problem(self, pr_code, checker, parent_checker = None):
         check_name = checker.getName()
         if parent_checker is not None:
             check_name = parent_checker.getName() + '.' + check_name
-        self.mProblems[code].append(check_name)
+        self.mProblems[pr_code].append(check_name)
 
     def finishUp(self, rep_output, no_mode = False):
         self.fixUp(self, rep_output, no_mode = no_mode)
         print("Data check result:", file = rep_output)
         group_name = None
-        for code in sorted(self.mProblems.keys()):
-            names = self.mProblems[code]
-            print("\t", code, len(names), file = rep_output)
+        for pr_code in sorted(self.mProblems.keys()):
+            names = self.mProblems[pr_code]
+            print("\t", pr_code, len(names), file = rep_output)
             for nm in names:
                 grp, q, name = nm.partition('.')
                 if grp != group_name:

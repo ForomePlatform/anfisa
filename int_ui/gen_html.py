@@ -188,6 +188,8 @@ def formFilterPanel(output):
                     onclick="sFiltersH.startCreate();">Create</a>
                 <a class="popup"  id="filters-op-modify"
                     onclick="sFiltersH.startModify();">Modify</a>
+                <a class="popup"  id="filters-op-join"
+                    onclick="sFiltersH.startJoin();">Join</a>
                 <a class="popup"  id="filters-op-delete"
                     onclick="sFiltersH.deleteIt();">Delete</a>
               </div>

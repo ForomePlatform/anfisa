@@ -72,10 +72,10 @@ class TreeFragment:
 
 #===============================================
 class CondAtomInfo:
-    def __init__(self, cond_data, location):
+    def __init__(self, cond_data, location, warn_msg = None):
         self.mCondData = cond_data
         self.mLoc = location
-        self.mErrorMsg = None
+        self.mErrorMsg = warn_msg
 
     def setError(self, error_msg):
         self.mErrorMsg = error_msg
@@ -94,10 +94,10 @@ class CondAtomInfo:
 
 #===============================================
 class ParsedDTree:
-    def __init__(self, eval_space, code):
+    def __init__(self, eval_space, dtree_code):
         self.mEvalSpace = eval_space
         self.mFragments = []
-        self.mCode = normalizeCode(code)
+        self.mCode = normalizeCode(dtree_code)
         self.mDummyLinesReg = set()
         self.mLabels = dict()
         self.mFirstError = None
@@ -203,12 +203,12 @@ class ParsedDTree:
             self.mFirstError = self.mError
         raise RuntimeError()
 
-    def _regCondAtom(self, cond_data, it, it_name):
+    def _regCondAtom(self, cond_data, it, it_name, warn_msg = None):
         self.mCondAtoms.append(
             CondAtomInfo(cond_data,
                 [it.lineno + self.mCurLineDiap[0] - 1,
                 it.col_offset,
-                it.col_offset + len(it_name)]))
+                it.col_offset + len(it_name)], warn_msg))
 
     #===============================================
     def processIf(self, instr_d):
@@ -325,51 +325,69 @@ class ParsedDTree:
 
         if isinstance(it.left, ast.Name):
             field_name = it.left.id
+            warn_msg = None
+            ret = ["enum", field_name, op_mode, variants]
             if self.mEvalSpace is not None:
                 unit_h = self.mEvalSpace.getUnit(field_name)
-                if unit_h and not unit_h.isInDTrees():
-                    self.errorIt(it.left,
-                        "No support for field %s in decision trees"
-                            % field_name)
-                if unit_h and unit_h.getUnitKind() == "func":
-                    self.errorIt(it.left,
-                        "Field %s should be used as function" % field_name)
-                    unit_h = unit_h.getActualUnit()
-                if unit_h is None or unit_h.getUnitKind() != "enum":
-                    self.errorIt(it.left, "Improper enum field name: "
-                        + field_name)
-            ret = ["enum", field_name, op_mode, variants]
-            self._regCondAtom(ret, it.left, it.left.id)
+                if unit_h is None:
+                    warn_msg = "Inactive enum field"
+                    if op_mode == "NOT":
+                        ret = []
+                    else:
+                        ret = [None]
+                else:
+                    if not unit_h.isInDTrees():
+                        self.errorIt(it.left,
+                            "No support for field %s in decision trees"
+                                % field_name)
+                    elif unit_h.getUnitKind() == "func":
+                        self.errorIt(it.left,
+                            "Field %s should be used as function" % field_name)
+                    if unit_h.getUnitKind() != "enum":
+                        self.errorIt(it.left, "Improper enum field name: "
+                            + field_name)
+            self._regCondAtom(ret, it.left, it.left.id, warn_msg)
             return ret
 
         if isinstance(it.left, ast.Call):
             field_name = it.left.func.id
-            assert self.mEvalSpace is not None
-            unit_h = self.mEvalSpace.getUnit(field_name)
-            if unit_h is None or unit_h.getUnitKind() != "func":
-                self.errorIt(it.left, "Improper functional field name: "
-                    + field_name)
-            parameters = unit_h.getParameters()[:]
-            func_args = dict()
-            for it_arg in it.left.args:
-                if len(parameters) == 0:
-                    self.errorIt(it_arg, "Extra argument of function")
-                func_args[parameters.pop(0)] = self.processJSonData(it_arg)
-            for argval_it in it.left.keywords:
-                if argval_it.arg in func_args:
-                    self.errorIt(argval_it.value,
-                        "Argument %s duplicated" % argval_it.arg)
-                if argval_it.arg not in parameters:
-                    self.errorIt(argval_it.value,
-                        "Argument %s not expected" % argval_it.arg)
-                func_args[argval_it.arg] = self.processJSonData(
-                    argval_it.value)
-                parameters.remove(argval_it.arg)
-            err_msg = unit_h.validateArgs(func_args)
-            if err_msg:
-                self.errorIt(it.left, err_msg)
+            func_args, warn_msg = dict(), None
             ret = ["func", field_name, op_mode, variants, func_args]
-            self._regCondAtom(ret, it.left, it.left.func.id)
+            if self.mEvalSpace is None:
+                # No parameters w/o eval space, parse only
+                del ret[2:]
+            else:
+                unit_h = self.mEvalSpace.getUnit(field_name)
+                if unit_h is None:
+                    warn_msg = "Inactive function"
+                    if op_mode == "NOT":
+                        ret = []
+                    else:
+                        ret = [None]
+                elif unit_h.getUnitKind() != "func":
+                    self.errorIt(it.left, "Improper functional field name: "
+                        + field_name)
+                else:
+                    parameters = unit_h.getParameters()[:]
+                    for it_arg in it.left.args:
+                        if len(parameters) == 0:
+                            self.errorIt(it_arg, "Extra argument of function")
+                        func_args[parameters.pop(0)] = self.processJSonData(
+                            it_arg)
+                    for argval_it in it.left.keywords:
+                        if argval_it.arg in func_args:
+                            self.errorIt(argval_it.value,
+                                "Argument %s duplicated" % argval_it.arg)
+                        if argval_it.arg not in parameters:
+                            self.errorIt(argval_it.value,
+                                "Argument %s not expected" % argval_it.arg)
+                        func_args[argval_it.arg] = self.processJSonData(
+                            argval_it.value)
+                        parameters.remove(argval_it.arg)
+                    err_msg = unit_h.validateArgs(func_args)
+                    if err_msg:
+                        self.errorIt(it.left, err_msg)
+            self._regCondAtom(ret, it.left, it.left.func.id, warn_msg)
             return ret
         self.errorIt(it.left, "Name of field is expected")
         return None
@@ -423,15 +441,20 @@ class ParsedDTree:
             self.errorIt(it, "Where is a field fo compare?")
         field_node = operands[idx_fld]
         field_name = field_node.id
+        bounds = [None, True, None, True]
+        ret = ["numeric", field_name, bounds]
+        warn_msg = None
         if self.mEvalSpace is not None:
             unit_h = self.mEvalSpace.getUnit(field_name)
-            if unit_h is None or unit_h.getUnitKind() != "numeric":
+            if unit_h is None:
+                warn_msg = "Inactive numeric field"
+                ret = [None]
+            elif unit_h.getUnitKind() != "numeric":
                 self.errorIt(operands[idx_fld],
                     "Improper numeric field name: " + field_name)
         if len(operands) == 3 and idx_fld != 1:
             self.errorIt(it, "Too complex comparison")
         assert len(values) == len(op_modes)
-        bounds = [None, True, None, True]
         if op_modes[0] == 0:
             assert len(op_modes) == 0 and len(values) == 1
             bounds[0] = values[0]
@@ -455,8 +478,7 @@ class ParsedDTree:
             if ((bounds[0] == bounds[2] and not (bounds[1] and bounds[3]))
                     or bounds[0] > bounds[2]):
                 self.errorIt(it, "Condition never success")
-        ret = ["numeric", field_name, bounds]
-        self._regCondAtom(ret, field_node, field_name)
+        self._regCondAtom(ret, field_node, field_name, warn_msg)
         return ret
 
     #===============================================

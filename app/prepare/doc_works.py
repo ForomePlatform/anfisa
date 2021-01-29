@@ -53,7 +53,7 @@ class _FileRegistry:
         if not os.path.exists(self.mDestRoot + dest_dir):
             os.mkdir(self.mDestRoot + dest_dir)
 
-    def regPlace(self, dir_place, doc_h):
+    def regPlace(self, dir_place):
         if dir_place in self.mFiles:
             print("Fatal: Destination file duplication: " + dir_place,
                 file = sys.stderr)
@@ -78,7 +78,7 @@ class _DocEnv:
         return self.mSrcPath + doc_path[2:]
 
     def regDestPlace(self, dest_place):
-        return self.mFilesReg.regPlace(dest_place, self)
+        return self.mFilesReg.regPlace(dest_place)
 
     def getDestBase(self):
         return self.mDestBase
@@ -93,15 +93,17 @@ class _DocH:
         doc_kind = doc_info["kind"]
         if doc_kind == "group":
             return _GroupH(doc_info, doc_env)
+        if doc_kind == "support":
+            return _SupportH(doc_info, doc_env)
         if doc_kind == "html":
             return _DocHtmlH(doc_info, doc_env)
         if doc_kind == "txt":
             return _DocTxtH(doc_info, doc_env)
-        if doc_kind == "png":
+        if doc_kind in ("png", "jpg"):
             return _DocImgH(doc_info, doc_env)
         if doc_kind == "*.txt":
             return _DocSeqTxtH(doc_info, doc_env)
-        if doc_kind == "*.png":
+        if doc_kind in ("*.png", "*.jpg"):
             return _DocSeqImgH(doc_info, doc_env)
         return None
 
@@ -171,7 +173,6 @@ class _GroupH(_DocH):
         src_path_seq = self.getSrcPathSeq()
         if len(src_path_seq) > 1:
             self.fatalMessage("not a single file")
-            self.fatalMessage("not a single file")
             sys.exit()
         if len(src_path_seq) != 1:
             return
@@ -184,6 +185,26 @@ class _GroupH(_DocH):
             _DocH.create(doc_info, doc_env).makeIt(sub_ret)
         print("Doc directory created", dest_place, file = sys.stderr)
         ret.append([self.get("title"), sub_ret])
+
+#===============================================
+class _SupportH(_DocH):
+    def __init__(self, doc_info, doc_env):
+        _DocH.__init__(self, doc_info, doc_env)
+
+    def _makeIt(self, ret):
+        src_path_seq = self.getSrcPathSeq()
+        if len(src_path_seq) > 1:
+            self.fatalMessage("not a single file")
+            sys.exit()
+        if len(src_path_seq) != 1:
+            return
+        dest_place = self.getDestPlace(src_path_seq)
+        self.getDocEnv().getFilesReg().checkDestDir(dest_place)
+        for fname in glob(src_path_seq[0] + "/*.*"):
+            dest_path = dest_place + "/" + os.path.basename(fname)
+            shutil.copyfile(fname,
+                self.getDocEnv().getFilesReg().regPlace(dest_path))
+        print("Support directory created", dest_place, file = sys.stderr)
 
 #===============================================
 class _DocHtmlH(_DocH):

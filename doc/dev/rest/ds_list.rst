@@ -39,6 +39,7 @@ Synopsis
     |    "**samples**":  *optional* samples list 
     |                if selection is sufficiently large 
     |        ``[`` *list* of :doc:`s_record` ``]``
+    |    "**active-samples**": active samples indexes, *string* 
     | ``}``
     
 Description
@@ -58,6 +59,8 @@ Selection of variants is defined by arguments:
     in this case **no** is neccessary, since decision tree defines serie of selections
     
 - otherwize selection is the full list of variants in dataset
+
+Some samples can be  :ref:`active<active_samples>` in context of current filter or decision tree condition, and this information forms property **active-samples** of descriptor. The string has form of list of integers separated by ','  and can be used as argument of :doc:`reccnt` call.
 
 Comment
 -------

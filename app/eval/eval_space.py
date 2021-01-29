@@ -119,6 +119,9 @@ class Eval_Condition:
     def __or__(self, other):
         assert False
 
+    def isPositive(self):
+        return True
+
     @abc.abstractmethod
     def _makeOr(self, other):
         return None
@@ -176,6 +179,9 @@ class Eval_Condition:
         hash_h = md5(bytes(json.dumps(json_repr, sort_keys = True),
             encoding="utf-8"))
         return hash_h.hexdigest()
+
+    def visit(self, visitor):
+        visitor.lookAt(self)
 
 #===============================================
 class CondSupport_None:

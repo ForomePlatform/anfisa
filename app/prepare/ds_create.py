@@ -108,7 +108,8 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         is_ok &= druid_adm.uploadDataset(ds_name, flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
             filter_set.getZygosityNames(),
-            os.path.abspath(ds_dir + "/druid_rq.json"), no_druid_push)
+            os.path.abspath(ds_dir + "/druid_rq.json"),
+            no_druid_push = no_druid_push, rep_out = rep_out)
 
     if is_ok:
         try:
@@ -158,8 +159,9 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
 
     print(rep_out.getvalue())
     time_done = datetime.now()
-    logging.info("Dataset %s creation finished at %s for %s"
-        % (ds_name, str(time_done), str(time_done - time_start)))
+    ok_status = "finished" if is_ok else "FAILED"
+    logging.info("Dataset %s creation %s at %s for %s"
+        % (ds_name, ok_status, str(time_done), str(time_done - time_start)))
 
 #=====================================
 def pushDruidDataset(ds_dir, druid_adm, ds_name):

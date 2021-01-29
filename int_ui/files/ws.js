@@ -31,9 +31,12 @@ var sCurFilterName = null;
 var sFltTimeDict = [];
 
 var sCheckFltNamed   = null;
-var sCheckFltCurrent = null;
+var sCheckFltCurCond = null;
+var sUseCurConditions = null;
 var sSelectFltNamed  = null;
 var sElFltCurState   = null;
+
+var sActiveSamplesInstr = "";
 
 function initWin(workspace_name, common_title, ws_pub_url) {
     sDSName = workspace_name; 
@@ -49,7 +52,7 @@ function initWin(workspace_name, common_title, ws_pub_url) {
     window.onresize  = arrangeControls;
 
     sCheckFltNamed   = document.getElementById("flt-check-named");
-    sCheckFltCurrent = document.getElementById("flt-check-current");
+    sCheckFltCurCond = document.getElementById("flt-check-current");
     sSelectFltNamed  = document.getElementById("flt-named-select");
     sElFltCurState   = document.getElementById("flt-current-state");
 
@@ -63,7 +66,7 @@ function initWin(workspace_name, common_title, ws_pub_url) {
 function reloadList() {
     sViewH.popupOff();
     ajaxCall("ws_list", sConditionsH.getCondRqArgs(sCurFilterName, 
-        sZoneH.getCurState(), sCheckFltCurrent.checked), setupList);
+        sZoneH.getCurState(), sUseCurConditions), setupList);
 }
 
 function setupList(info) {
@@ -78,6 +81,10 @@ function setupList(info) {
         rep += "&nbsp;/&nbsp;" + info["total-counts"][1];
     document.getElementById("ws-transcripts-report").innerHTML = rep;
     sRecList = info["records"];
+    sActiveSamplesInstr = "";
+    if (info["active-samples"]) {
+        sActiveSamplesInstr = "&samples=" + info["active-samples"];
+    }
     refreshRecList();
     arrangeControls();
     sTagSupportH.checkTagsState(null);
@@ -161,10 +168,10 @@ function changeRec(rec_no) {
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName +
         "&rec=" + sCurRecID + "&port=1" + 
-        "&details=" + sRecList[sCurRecNo]["dt"]);
+        "&details=" + sRecList[sCurRecNo]["dt"] + sActiveSamplesInstr);
     window.frames['rec-frame2'].location.replace("rec?ds=" + sDSName + 
         "&rec=" + sCurRecID + "&port=2" + 
-        "&details=" + sRecList[sCurRecNo]["dt"]);
+        "&details=" + sRecList[sCurRecNo]["dt"] + sActiveSamplesInstr);
     sTagSupportH.updateNavigation();
 }
 
@@ -190,7 +197,8 @@ function onClick(event_ms) {
 }
 
 function filterModOn() {
-    clearFilterOpMode();
+    sFiltersH.update();
+    sViewH.popupOff();
     sViewH.modalOn(document.getElementById("filter-back"));
     arrangeControls();
 }
@@ -218,11 +226,11 @@ function updateTabCfg() {
 }
 
 //=====================================
-function refreshCohorts() {
+function refreshQSamples() {
     for (idx = 1; idx < 3; idx++) {
         frame = window.frames['rec-frame' + idx];
         if (frame.sStarted) 
-            frame.refreshCohorts();
+            frame.refreshQSamples();
     }
 }
 
@@ -259,11 +267,6 @@ function doCSVExport() {
 //=====================================
 // Filters
 //=====================================
-function clearFilterOpMode() {
-    sFiltersH.update();
-    sViewH.popupOff();
-}
-
 function onFilterListChange() {
     var all_filters = sFiltersH.getAllList();
     for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
@@ -277,18 +280,25 @@ function onFilterListChange() {
         sSelectFltNamed.append(option)
     }
     sSelectFltNamed.selectedIndex = all_filters.indexOf(sCurFilterName) + 1;
-    clearFilterOpMode();
+    sFiltersH.update();
+    sViewH.popupOff();
 }
 
 function pickNamedFilter() {
+    if (sOpFilterH.tryLoadFilter(sSelectFltNamed.value))
+        return;
     updateCurFilter(sSelectFltNamed.value);
 }
 
 function checkCurFilters(mode_filter) {
     if (mode_filter == 0) {
+        if (sCheckFltNamed.checked) {
+            if (sOpFilterH.tryLoadFilter(sSelectFltNamed.value))
+                return;
+        }
         updateCurFilter((sCheckFltNamed.checked)?sSelectFltNamed.value:"");
     } else {
-        updateCurFilter((sCheckFltCurrent.checked)? "":null);
+        updateCurFilter((sCheckFltCurCond.checked)? "":null);
     }
 }
 
@@ -297,20 +307,19 @@ function updateCurFilter(filter_name, force_it) {
         return;
     cur_flt_status = sConditionsH.report();
     sCurFilterName = filter_name;
-    sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
+    sUseCurConditions = (!cur_flt_status) && (!sCurFilterName);
+    if (sCurFilterName)
+        sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
     if (cur_flt_status) {
         sElFltCurState.innerHTML = cur_flt_status;
         sElFltCurState.className = "status";
-        sCheckFltCurrent.disabled = true;
-        sCheckFltCurrent.checked = false;
     } else {
         cond_len = sConditionsH.getCondCount();
         sElFltCurState.innerHTML = cond_len + " condition" + ((cond_len>1)? "s":"");
-        sElFltCurState.className = "";
-        sCheckFltCurrent.disabled = false;
-        sCheckFltCurrent.checked = (!sCurFilterName);
-    } 
-    sCheckFltNamed.checked = !!sCurFilterName;
+        sElFltCurState.className = "";        
+    }
+    sCheckFltCurCond.checked = sUseCurConditions && (sCurFilterName != null);
+    sCheckFltNamed.checked = (!sUseCurConditions) && (!!sCurFilterName);
     reloadList();
 }
 

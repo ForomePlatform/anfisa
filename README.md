@@ -20,7 +20,7 @@ https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/
 
 https://foromeplatform.github.io/documentation/anfisa-user.v0.6/
 
-## Local Installation
+##  Installation
 
 #### Caution:
 This is a master branch that from time to time can be unstable or untested.
@@ -28,7 +28,7 @@ If you would like to try Anfisa, we strongly recommend installing it from one
 of the released tags 
 
 
-#### Installation instructions
+### Installation instructions
 
 To install Anfisa on a local Linux or MacOS system:
 
@@ -40,13 +40,64 @@ continues development.
 
 `cd anfisa`
 
-3. Install all the requirements by running 
+3. Decide what directory will be a working directory for Anfisa
 
-`pip3 install -r requirements.txt`
+4. Decide which of the following installation paths you prefer:
+- Use a Docker container. This method will also install Druid and 
+other dependencies. However, Druid requires at least 8G of memory, 
+if your box does not have this amount of RAM, you should avoid running 
+Druid or adjust its settings. Druid can also be run on a separate box. 
+- Install all components in your local system. This is only recommended 
+if you will contributing to Anfisa development or customizing its code. 
 
-4. Run deploy script:
+#### Installing via Docker
 
-`. deploy.sh`
+**Attention: Docker installation also installs Druid. Druid is required for
+handling whole exome/genome datasets, but it takes a lot of memory. 
+Minimum required memory is 8G and swap should be enabled.** 
+
+**If you have 4G of memory, first adjust Druid parameters in environment.template file.**
+
+**If you have less than 4G, you can install demo version without Druid. 
+Update docker-compose.yml.template**
+
+1. Run 
+
+`deploy.sh --workdir=<Absolute path to the chosen working directory> --hostip=<your local IP address>`
+
+2. Point your browser to http://localhost:9010/anfisa/app/dir 
+
+3. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+For nginx add the following location block:
+
+``` 
+location /anfisa {
+	proxy_pass http://127.0.0.1:9010/anfisa;
+}
+```
+
+4. Download whole genome dataset from 
+https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2/pgp3140_anfisa.json.gz 
+and ingest it. Will require around 4 hours
+
+#### Installing without Docker
+
+1. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html) 
+and activate it. We will be installing a lot of dependent packages, 
+make sure you have permission to do it. A sample command is:
+
+`python3 -m venv .anfisa && source .anfisa/bin/activate`
+
+2. Make sure you have MongoDB installed. If its endpoint 
+is not localhost:27017, after the installation you will need to edit anfisa.json
+
+3. Make sure that sphinx is installed. On Ubuntu the instllation command is:
+
+`sudo apt-get install python3-sphinx`
+
+4. Run deploy script (will use pip to install requirements):
+
+`. deploy_local.sh`
 
 The script will ask for an installation directory. 
 By default it would install in the same directory 

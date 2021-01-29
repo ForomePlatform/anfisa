@@ -1,53 +1,80 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-repo=`pwd`
-target=$repo
-if [ -f .inst_dir ] ; then
-    target=`cat .inst_dir`
-fi
+usage()
+{
+cat << EOF
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.6/ 
+EOF
+}
 
-read -p "Installation directory: ${target}? (y/n)" response
-if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
-    read -p "Type directory: " target
-fi
 
-read -p "Install Anfisa into ${target}? (y/n)" response
-if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
-    echo "Installation aborted"
-    return 1 2> /dev/null || exit 1
-fi
+for flag in "$@"
+do
+	case $flag in
+		--workdir=*) 
+			WORKDIR=${flag#*=}
+			echo WORKDIR=$WORKDIR
+			if [ ! -d "$WORKDIR" ]; then
+				mkdir -p $WORKDIR
+				chmod a+rwx $WORKDIR
+			fi
+			ASETUP=$WORKDIR/a-setup
+			echo A-Setup=$ASETUP
+			if [ ! -d "$ASETUP" ]; then
+				mkdir -p $ASETUP
+				mkdir -p $ASETUP/data/examples
+				mkdir -p $ASETUP/vault
+				mkdir -p $ASETUP/ui
+				mkdir -p $ASETUP/export
+				mkdir -p $ASETUP/logs
+				chmod -R a+rwx $ASETUP
+			fi
+			if [ ! -d "$ASETUP/../data" ] ; then
+				mkdir -p $ASETUP/../data
+			fi
+			DRUID=$WORKDIR/druid
+			echo DRUID=$DRUID
+			if [ ! -d "$DRUID" ]; then
+				mkdir -p $DRUID
+				mkdir -p $DRUID/coordinator
+				mkdir -p $DRUID/data
+				mkdir -p $DRUID/historical-var
+				mkdir -p $DRUID/middlemanager
+				mkdir -p $DRUID/router
+				chmod -R a+rwx $DRUID
+			fi
+			;;
+	esac
+done
 
-if [ $repo != $target ] ; then
-    echo Setting up $target
-    mkdir -p $target
-    cp $repo/anfisa.json $target
-    echo $target > .inst_dir
-    cd $target
+if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
+  chmod -R a+rwx $ASETUP
+  chmod -R a+rwx $DRUID
+
+  cp setup/*  $WORKDIR/
+  cp -R app doc export int_ui requirements.txt LICENSE README.md $WORKDIR/
+
+  pushd $ASETUP/data/examples || exit
+  if [ ! -d docs ] ; then
+    curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_hlpanel.zip
+    unzip pgp3140_wgs_hlpanel.zip
+  fi
+
+  cd $WORKDIR || exit
+  sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" -  > docker-compose.yml
+
+  docker-compose build
+  docker-compose up -d
+  docker ps
+
+  docker exec -it anfisa6_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
+  docker exec -it anfisa6_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
+
+  popd || exit
+
+  echo "Open URL http://localhost:9010/anfisa/app/dir"
 else
-    echo "Installing into repository directory"
+  echo ERROR! All parameters are required!
+  usage
 fi
 
-
-[ ! -d "data" ] && mkdir data
-[ ! -d "tmp/export/work" ] && mkdir -p export/work
-[ ! -d "logs" ] && mkdir logs
-[ ! -d "vault" ] && mkdir vault
-
-rm vault/*
-cd data
-rm *
-curl -O -L https://anfisa.forome.dev/distrib/datasets/PGP3140.json.gz
-# cd ../tmp/export
-# [ ! -f SEQaBOO_output_template_20190317.xlsx ] && wget https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
-
-cd ..
-echo "Updating configuration in anfisa.json"
-hostname=`hostname`
-sed  's#${HOME}/../a-setup#WOWOWOWO#' anfisa.json | sed "s#WOWOWOWO#$target#" > anfisa_$hostname.json
-echo "Loading Sample Dataset"
-echo "PYTHONPATH=$repo python3 -m -u app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140"
-PYTHONPATH=$repo python3 -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -s data/PGP3140.json.gz PGP3140
-
-cd $repo
-echo "Run anfisa: env PYTHONPATH="." python3 app/run.py $target/anfisa_$hostname.json"
-echo "Then point your browser to: http://localhost:8190/dir"

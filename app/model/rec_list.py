@@ -88,5 +88,6 @@ class RecListTask(ExecutionTask):
             ret["samples"] = self.mResSamples
         if self.mResFull:
             ret["records"] = self.mResFull
+        self.mDS.visitCondition(self.mCondition, ret)
         self.setStatus("Done")
         return ret

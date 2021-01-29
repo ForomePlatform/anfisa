@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import os
+import os, logging
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
@@ -112,21 +112,38 @@ def impacting_splicing():
 def clinVar_not_benign():
     return [ConditionMaker.condEnum("Clinvar_Trusted_Simplified",
         ["benign"], "NOT")]
+
+#===============================================
+def checkSolutionUnits(sol_kind, sol_name, unit_names, requires):
+    if "Rules" in unit_names:
+        if not requires or "WS" not in requires:
+            logging.error(
+                'Solution %s/%s: "WS" must be set as requirement (uses Rules)'
+                % (sol_kind, sol_name))
+            return False
+    if "Compound_Het" in unit_names:
+        if (not requires
+                or len({"trio", "trio_base", "trio_pure"} & requires) == 0):
+            logging.error(
+                ('Solution %s/%s: "trio"/"trio_base"/"trio_pure" must be set'
+                ' as requirement (uses Compound_Het)')
+                % (sol_kind, sol_name))
+            return False
+    return True
+
 #===============================================
 def readySolutions():
     global sSolutionsAreSet
     if sSolutionsAreSet:
         return
     sSolutionsAreSet = True
-    favor_pack = SolutionPack("FAVOR")
+    favor_pack = SolutionPack("FAVOR", checkSolutionUnits)
     setupGenericPack(favor_pack)
     FavorSchema.readySolutions(favor_pack)
-    SolutionPack.regPack(favor_pack)
 
-    base_pack = SolutionPack("CASE")
+    base_pack = SolutionPack("CASE", checkSolutionUnits)
     setupGenericPack(base_pack)
     readySolutions_Case(base_pack)
-    SolutionPack.regPack(base_pack)
 
 #===============================================
 def readySolutions_Case(base_pack):
@@ -202,16 +219,15 @@ def readySolutions_Case(base_pack):
         ],
         requires = {"trio_base", "WS"})
 
-    base_pack.regFilter("Impact_Splicing",
-        condition_high_confidence() + impacting_splicing())
-
     base_pack.regFilter("InSilico_Possibly_Damaging",
         condition_high_confidence() + [ConditionMaker.condEnum(
-            "Rules", [stdNm("Possibly_Damaging_Predictions")])])
+            "Rules", [stdNm("Possibly_Damaging_Predictions")])],
+        requires = {"WS"})
 
     base_pack.regFilter("InSilico_Damaging", condition_high_confidence()
         + [ConditionMaker.condEnum("Rules",
-            [stdNm("Damaging_Predictions")])])
+            [stdNm("Damaging_Predictions")])],
+        requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
@@ -235,20 +251,26 @@ def readySolutions_Case(base_pack):
     #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
     #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
+        requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])])
+        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])],
+        requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Quick", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss Quick")])],
         requires = {"WS"})
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
-        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])])
+        ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])],
+        requires = {"WS"})
     # base_pack.regFilter("SEQaBOO_ACMG59", [
     #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
     #     requires = {"WS"})
+
+    base_pack.regFilter("Loss_Of_Function", condition_high_quality() + [
+        ConditionMaker.condEnum("Most_Severe_Consequence", LoF_CSQ)])
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
@@ -258,8 +280,25 @@ def readySolutions_Case(base_pack):
         ConditionMaker.condEnum("Most_Severe_Consequence",
             LOW_IMPACT_CSQ, join_mode = "NOT")])
 
-    base_pack.regFilter("Impacting_Splicing",
-        condition_high_quality() + impacting_splicing())
+    base_pack.regFilter("Impact_Splicing",
+        condition_high_confidence() + impacting_splicing())
+
+    base_pack.regFilter("ClinVar_VUS_or_Worse",
+        condition_high_confidence() + [
+            ConditionMaker.condEnum("Clinvar_stars",  ["1", "2", "3", "4"]),
+            ConditionMaker.condEnum("Clinvar_conflicts", ["True"],
+                                    join_mode = "NOT"),
+            ConditionMaker.condEnum("Clinvar_Benign", ["VUS or Pathogenic"])
+        ], requires={"XL"})
+
+    base_pack.regFilter("In_Silico_Damaging",
+        condition_high_confidence() + [
+            ConditionMaker.condEnum("Polyphen_2_HVAR",  ["D"]),
+            ConditionMaker.condEnum("SIFT", ["deleterious"])
+        ], requires={"XL"})
+
+    # base_pack.regFilter("Impact_Splicing",
+    #     condition_high_quality() + impacting_splicing())
 
     # Production Decision Trees
     base_pack.regDTree("BGM Research",

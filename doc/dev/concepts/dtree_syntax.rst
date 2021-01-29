@@ -120,7 +120,7 @@ Notes:
     - in case of **AND** join mode interpretation of **all()** pseudo-function is even more sophisticated: it can be "explained" if result of **all()** redefines" **in** operation in a very specific way from the right.
     
     - in terms of Decision Tree there is no strong need for **NOT** join mode, because operator ``not`` is supported outside atomic conditions
-        
+            
 Atomic function conditions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 Function conditions have similar form to enumerated conditions with a  change of *property id* to
@@ -130,6 +130,12 @@ Function conditions have similar form to enumerated conditions with a  change of
 Syntax for parameters is Python standard. Since all values of the parameters must be JSON objects (however, with a change of JS constants ``true/false/null`` to Python counterparts ``True/False/None``), there should be no problems in setting parameters up. ("Simplifications" are also acceptable for parameters).
     
 See :doc:`../rest/func_ref` for reference of available functions and their parameters.
+
+Property and function identifiers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Each identifier used as property or function (*property_id* or *function_name* above) corresponds to only one property or function available in evaluation space. So each available identifier can be used in only one type of atomic conditions.
+
+However, identifier of an atomic condition can be absent in evaluation space, and the corespondent atomic condition is considered as correct but inactive: it is interpeted as always negative (and positive in **NOT** mode of enumerated and function conditions).
 
 Decision Tree system support
 ----------------------------

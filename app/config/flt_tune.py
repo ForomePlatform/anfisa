@@ -55,25 +55,24 @@ def tuneUnits(ds_h):
         "Symbol", "non-intersecting transcripts")
 
     if ds_h.testRequirements({"ZYG"}):
-        InheritanceUnit.makeIt(ds_h, {
-            "name": "Inheritance_Mode",
-            "title": "Inheritance Mode",
-            "vgroup": "Inheritance"},
-            before = "Proband_Zygosity")
+        if len(ds_h.getFamilyInfo()) > 1:
+            InheritanceUnit.makeIt(ds_h, {
+                "name": "Inheritance_Mode",
+                "title": "Inheritance Mode",
+                "vgroup": "Inheritance"},
+                before = "Proband_Zygosity")
+            CustomInheritanceUnit.makeIt(ds_h, {
+                "name": "Custom_Inheritance_Mode",
+                "title": "Custom Inheritance Mode",
+                "vgroup": "Inheritance"},
+                before = "Proband_Zygosity")
 
-    if (ds_h.testRequirements({"ZYG"})
-            or len(ds_h.getFamilyInfo()) == 1):
-        CustomInheritanceUnit.makeIt(ds_h, {
-            "name": "Custom_Inheritance_Mode",
-            "title": "Custom Inheritance Mode",
-            "vgroup": "Inheritance"},
-            before = "Proband_Zygosity")
+        if ds_h.testRequirements({"trio"}):
+            CompHetsUnit.makeIt(ds_h, {
+                "name":   "Compound_Het",
+                "title":  "Calculated Compound",
+                "vgroup": "Inheritance"})
 
-    if ds_h.testRequirements({"ZYG"}):
-        CompHetsUnit.makeIt(ds_h, {
-            "name":   "Compound_Het",
-            "title":  "Calculated Compound",
-            "vgroup": "Inheritance"})
         CompoundRequestUnit.makeIt(ds_h, {
             "name":   "Compound_Request",
             "title":  "Calculated Compound Request",

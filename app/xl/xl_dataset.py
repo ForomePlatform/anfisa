@@ -30,8 +30,8 @@ class XLDataset(DataSet):
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
 
     def __init__(self, data_vault, dataset_info, dataset_path):
-        DataSet.__init__(self, data_vault, dataset_info, dataset_path)
-        self.addModes({"XL"})
+        DataSet.__init__(self, data_vault, dataset_info, dataset_path,
+            add_modes = {"XL"})
         self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
         self.mLongRunners = dict()
 

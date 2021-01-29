@@ -40,6 +40,7 @@ Synopsis
     |                       **[0]**: filtered count of variants, *int*
     |                       **[1]**: filtered count of transcripts, *int* ``]``
     |       "**records**: ``[`` *list* of :doc:`s_record` ``]``
+    |       "**active-samples**": active samples indexes, *string* 
     | ``}``
     
     
@@ -54,6 +55,8 @@ If arguments **filter**, **conditions**, **zone** are not set, result of request
 Nonempty **zone** list can contain special pair of strings ``["NOT", true]``. In this case **zone** option works in reverse context: records satisfying condition on zones are filtered out. (It might be helpful for work with :term:`tagging`.)
 
 To define :term:`filter` use either **filter** or **conditions**. See details :ref:`here<fiter_conditions>`.
+
+Some samples can be :ref:`active<active_samples>` in context of current filter, and this information forms property **active-samples** of descriptor. The string has form of list of integers separated by ','  and can be used as argument of :doc:`reccnt` call.
 
 Comment
 -------

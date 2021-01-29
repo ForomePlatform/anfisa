@@ -23,7 +23,7 @@ from hashlib import md5
 
 from forome_tools.log_err import logException
 from .evaluation import Evaluation
-from .condition import validateCondition
+from .condition import validateCondition, condDataUnits
 from .code_repr import formatConditionCode
 
 #===============================================
@@ -130,3 +130,9 @@ class FilterEval(Evaluation):
             "cond-seq": cond_seq,
             "eval-status": self.getEvalStatus(),
             "hash": self.mHashCode}
+
+    def getActiveUnitSet(self):
+        ret = set()
+        for cond_data in self.mCondDataSeq:
+            ret |= condDataUnits(cond_data)
+        return ret

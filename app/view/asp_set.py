@@ -54,9 +54,9 @@ class AspectSetH:
     def getFirstAspectID(self):
         return self.mAspects[0].getName()
 
-    def setAspectHitGroup(self, aspect_name, group_attr):
+    def setAspectColumnMarkup(self, aspect_name, markup_func):
         for aspect in self.mAspects:
             if aspect.getName() == aspect_name:
-                aspect.getColGroups().setHitGroup(group_attr)
+                aspect.setColumnMarkup(markup_func)
                 return
-        assert False, "Failed to find aspect for hit group"
+        assert False, "Failed to find aspect for column markup: " + aspect_name

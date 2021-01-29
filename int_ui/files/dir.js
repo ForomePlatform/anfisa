@@ -34,6 +34,7 @@ function setup(common_title, ws_ext_url) {
         window.name = sCommonTitle + ":" + sDSName + ":SUBDIR";
     else
         window.name = sCommonTitle + ":DIR";
+    window.onresize = arrangeControls;
     ajaxCall("dirinfo", "", setupDirData);
 }
 
@@ -152,6 +153,6 @@ function onModalOff() {
 function arrangeControls() {
     var delta = 60;
     if (document.getElementById("dir-docs")) 
-        delta += 40;
+        delta += document.getElementById("dir-docs").clientHeight + 20;
     document.getElementById("dir-main").style.height = window.innerHeight - delta;
 }

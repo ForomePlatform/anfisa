@@ -20,6 +20,9 @@
 
 import logging
 from hashlib import md5
+from app.eval.dtree import DTreeEval
+from app.eval.condition import condDataUnits
+
 
 #===============================================
 def codeHash(tree_code):
@@ -92,20 +95,34 @@ class SolutionPack:
         return cls.sPacks[pack_name]
 
     #===============================================
-    def __init__(self, name):
+    def __init__(self, name, check_units_func = None):
         self.mName = name
         self.mItems = []
+        self.mCheckUnitsFunc = check_units_func
         self.mUsedNames = set()
+        self.regPack(self)
 
     def getName(self):
         return self.mName
 
     def regFilter(self, flt_name, cond_seq, requires = None):
+        if self.mCheckUnitsFunc is not None:
+            unit_names = set()
+            for cond_data in cond_seq:
+                unit_names |= condDataUnits(cond_data)
+            if not self.mCheckUnitsFunc("filter",
+                    flt_name, unit_names, requires):
+                return
         self.mItems.append(SolutionItem("filter", flt_name,
             cond_seq, requires, self.mUsedNames))
 
     def regDTree(self, tree_name, fname_seq, requires = None):
         tree_code = self.readFileSeq(fname_seq)
+        if self.mCheckUnitsFunc is not None:
+            dtree_h = DTreeEval(None, tree_code)
+            if not self.mCheckUnitsFunc("dtree",
+                    tree_name, dtree_h.getActiveUnitSet(), requires):
+                return
         it = SolutionItem("dtree", tree_name,
             tree_code, requires, self.mUsedNames)
         self.mItems.append(it)

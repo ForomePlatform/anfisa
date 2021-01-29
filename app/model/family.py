@@ -115,6 +115,9 @@ class FamilyInfo:
             return self.mCohortMap.get(it_id)
         return None
 
+    def sampleIdx(self, name):
+        return self.mNameMap.get(name)
+
     def names2idxset(self, names):
         if not names:
             return []

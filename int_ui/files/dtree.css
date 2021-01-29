@@ -177,7 +177,7 @@ span.note-err{
     font-weight: bold;
 }
 
-span.dtree-atom-mark {
+span.dtree-atom-mark, span.dtree-atom-drop {
     border: 1px solid grey;
     cursor: pointer;
     font-size: 140%;

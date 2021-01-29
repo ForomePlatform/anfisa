@@ -4,6 +4,9 @@ Tuning viewing schema API
 .. index:: 
     Tuning of viewing schema API
 
+Runtime attributes setup
+------------------------
+    
 There is strong need to pre-process some data attributes that are originally stored in :term:`annotated JSON file` in runtime on stage of :doc:`data presentation<../concepts/view_pre>` in :term:`viewing regime`:
 
 * it is subject of essential storage economy, since some extended technical fragments of a text may duplicate in million times for :term:`XL-datasets<xl-dataset>`
@@ -39,7 +42,12 @@ The mechanism is as follows:
     * on tuning of view schema: to replace placeholder attribute to instance of attribute of the developed sub-class
     
 The main rule of replacement: placeholder attribute name (identifier) must contain CAPITAL letters, and attribute instance to replace it must have name (identifier) as lowercase variant of the same name.
-    
+
+Deep level of tuning
+--------------------
+
+The source file ``app/config/view_op_tune.py`` implements :ref:`dynamic features<dynamic_aspects_features>` in aspects presentation. It is connected with the system kernel in comparatively deep level. However it strongly depends on configuration of pre-processed data, so it is reasonable also to consider this code as a part of tuning area.
+
 See also
 --------
 
