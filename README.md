@@ -76,8 +76,7 @@ location /anfisa {
 }
 ```
 
-4. Download whole genome dataset from 
-https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2/pgp3140_anfisa.json.gz 
+4. Download [sample whole genome dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz) 
 and ingest it. Will require around 4 hours
 
 #### Installing without Docker
