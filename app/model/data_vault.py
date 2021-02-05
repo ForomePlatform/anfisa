@@ -18,8 +18,9 @@
 #  limitations under the License.
 #
 
-import os, json, logging
+import sys, os, json, logging, traceback
 from glob import glob
+from io import StringIO
 from threading import Lock
 
 from .rest_api import RestAPI
@@ -254,6 +255,20 @@ class DataVault(SyncronizedObject):
     @RestAPI.vault_request
     def rq__job_status(self, rq_args):
         return self.mApp.askJobStatus(rq_args["task"])
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__ping(self, rq_args):
+        if "log" in rq_args:
+            rep = StringIO()
+            print("======\nThreads report:", file = rep)
+            for thread_id, frame in sys._current_frames().items():
+                print("\n\n\t---Thread %s:" % str(thread_id), file = rep)
+                traceback.print_stack(frame, file = rep)
+                print('\t---')
+            print("======", file = rep)
+            logging.warning(rep.getvalue())
+        return "OK"
 
     #===============================================
     # Administrator authorization required

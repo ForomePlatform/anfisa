@@ -15,7 +15,7 @@ Solution pack is a named collection of named :term:`solution items<solution item
 
 *Note*: to prevent mistakes in usage of solution items of different types, name of any solution item must be unique between all names of solution items. 
 
-Solution packs should be defined in process before work with any dataset. Creation of dataset is simple:
+Solution packs should be defined in process before work with any dataset. Solution pack object should be created, filled with solutions and then registered:
 
 ::
 
@@ -24,7 +24,7 @@ Solution packs should be defined in process before work with any dataset. Creati
     # ...
     # and later, after configuration:
     SolutionPack.regPack(base_pack)
-
+    
 Instance of class SolutionPack provides the following methods for registering various solution items:
 
 ::
@@ -165,6 +165,17 @@ Instance of class SolutionPack provides the following methods for registering va
             "/_filters/alt"])
         base_pack.regTabSchema(csv_tab_schema)
 
+Second optional argument of SolutionPack creation call is function reference: ::
+
+    base_pack = SolutionPack("CASE", checkSolutionUnits)
+    
+The purpose of the function is to check if requirements are sufficient for usage of specific :term:`units<unit>` inside :term:`decision tree` and :term:`filter` :term:`solution items<solution item>`. The current code uses ``checkSolutionUnits()`` function for two variants of check:
+
+    * the :term:`unit` ``Rules`` is applicable only in context of :term:`WS<workspace>` datasets
+    
+    * the :term:`unit` ``Compound_Het`` is applicable only if dataset contains information for :term:`trio` of :term:`samples<sample>`
+    
+        
 Logic of solution item requirements for dataset
 -----------------------------------------------
 
