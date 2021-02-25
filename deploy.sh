@@ -62,10 +62,10 @@ chmod -R a+rwx $DRUID
 chmod -R a+rwx $AIRFLOW
 
 
-sed "s#ASETUP_PATH#${ASETUP}#g" docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
+sed "s#ASETUP_PATH#${ASETUP}#g" setup/docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" - | sed "s#AIRFLOW_WORK#${AIRFLOW}#g" - > docker-compose.yml
 
 sed "s#HOST_IP#${HOSTIP}#g" anfisa.json.template > anfisa.json
-sed "s#HOST_IP#${HOSTIP}#g" environment.template > environment
+sed "s#HOST_IP#${HOSTIP}#g" setup/environment.template > environment
 
 docker-compose build
 docker-compose up -d
