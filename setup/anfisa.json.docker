@@ -44,10 +44,10 @@
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
         "vault-prefix": "demo_v5",
-        "index": "http://coordinatoranfisa6:8081/druid/indexer/v1/task",
-        "query": "http://routeranfisa6:8888/druid/v2",
-        "sql":   "http://routeranfisa6:8888/druid/v2/sql",
-        "coord": "http://coordinatoranfisa6:8081/druid/coordinator/v1",
+        "index": "http://{{ DRUID_HOST }}:8081/druid/indexer/v1/task",
+        "query": "http://{{ DRUID_HOST }}:8888/druid/v2",
+        "sql":   "http://{{ DRUID_HOST }}:8888/druid/v2/sql",
+        "coord": "http://{{ DRUID_HOST }}:8081/druid/coordinator/v1",
         "-scp": {
             "dir": "/data/upload/",
             "key": "---",
@@ -55,7 +55,7 @@
             "exe": "/usr/bin/scp"}
     },
      
-    "mongo-host": "mongodbanfisa6",
+    "mongo-host": "{{ MONGO_HOST }}",
     "mongo-port": 27017,
     "mongo-db": "Anfisa1",
     "logging": {
