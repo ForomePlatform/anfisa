@@ -534,7 +534,7 @@ function tabReport() {
         if (seq_rec_no.length >= 10)
             break;
     }
-    window.open("tab_report?ds=" + sDSName + "&schema=demo&seq=" + 
+    window.open("tab_report?ds=" + sDSName + "&schema=xbr&seq=" + 
         encodeURIComponent(JSON.stringify(seq_rec_no)));
 }
 

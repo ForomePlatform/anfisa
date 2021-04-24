@@ -87,7 +87,8 @@ function setupDirData(info) {
         }
         rep_seq.push(ds_name);
         if (ds_info["upd-time"])
-            rep_seq.push('<span class="note-date">' + 
+            rep_seq.push('<span class="note-date" ' +
+                'title = "Time of last configuraton update">' + 
                 timeRepr(ds_info["upd-time"]) + '</span>');
         rep_seq.push('</div>');
     }
@@ -121,13 +122,15 @@ function selectDS(ds_idx) {
     if (ds_info["doc"] != undefined) 
         rep_seq.push(reprRef(ds_info["name"], "DOC", "[doc]"));
     rep_seq.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
-    rep_seq.push('<span></div>');
+    rep_seq.push('</span></div>');
+    rep_seq.push('<p class="ds-created">Created: ' + 
+        timeRepr(ds_info["create-time"]) + '</p>');
     if (ds_info["note"]) {
         rep_seq.push('<div class="ds-note">');
         rep_seq.push('<p class="comment">Note:');
         if (ds_info["date-note"] != null)
             rep_seq.push('<span class="note-date">' +  
-                "Modified at " + timeRepr(ds_info["date-note"]) + '</span>');
+                "Updated at " +  timeRepr(ds_info["date-note"]) + '</span>');
         rep_seq.push('</p><p class="the-note">' + 
             ds_info["note"].replace('\n', '<br>') + '</p></div>');
     }

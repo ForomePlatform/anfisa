@@ -22,6 +22,7 @@ import sys, os, json, logging, traceback
 from glob import glob
 from io import StringIO
 from threading import Lock
+from datetime import datetime
 
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
@@ -78,6 +79,10 @@ class DataVault(SyncronizedObject):
             return None
         fstat = os.stat(fpath)
         return (int(fstat.st_size), int(fstat.st_mtime))
+
+    @classmethod
+    def getTimeOfStat(cls, fstat):
+        return datetime.fromtimestamp(fstat[1]).isoformat()
 
     @classmethod
     def excludeDSDir(cls, dirname):

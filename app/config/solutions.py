@@ -410,6 +410,49 @@ def setupGenericPack(base_pack):
         "/_filters/alt"])
     base_pack.regTabSchema(csv_tab_schema)
 
+    xbr_tab_schema = ReportTabSchema("xbr", use_tags = False)
+    xbr_tab_schema.addField("ClinVar", "/__data/clinvar_significance")
+    xbr_tab_schema.addField("HGMD", "/_view/databases/hgmd_tags")
+    xbr_tab_schema.addField("Gene", "/_view/general/genes")
+    xbr_tab_schema.addMustiStrField("Coordinate", ":", [
+        "/_filters/chromosome",
+        "/_filters/start"])
+    xbr_tab_schema.addMustiStrField("Change", ">", [
+        "/_filters/ref",
+        "/_filters/alt"])
+
+    xbr_tab_schema.addField("MSQ", "/_view/general/canonical_annotation")
+    xbr_tab_schema.addField("Protein Change", "/_view/general/ppos_canonical")
+    xbr_tab_schema.addField("Polyphen", "/_view/predictions/polyphen")
+    xbr_tab_schema.addField("SIFT", "/_view/predictions/sift")
+    xbr_tab_schema.addField("MUT TASTER", "/_view/predictions/mutation_taster")
+    xbr_tab_schema.addField("FATHMM", "/_view/predictions/fathmm")
+
+    xbr_tab_schema.addField("gnomAD_Overall_AF", "/_filters/gnomad_af_fam")
+    xbr_tab_schema.addField("gnomAD_Overall_AF_Popmax",
+        "/_filters/gnomad_popmax_af")
+    xbr_tab_schema.addField("gnomAD_Genomes_AF",
+        "/_filters/gnomad_db_genomes_af")
+    xbr_tab_schema.addField("gnomAD_Exomes_AF",
+        "/_filters/gnomad_db_exomes_af")
+    xbr_tab_schema.addField("gnomAD_Overall_Hom", "/_filters/gnomad_hom")
+    xbr_tab_schema.addField("gnomAD_Overall_Hem", "/_filters/gnomad_hem")
+
+    xbr_tab_schema.addField("QD", "/_filters/qd")
+    xbr_tab_schema.addField("FT", "/_filters/filters")
+
+    xbr_tab_schema.addNamedAttr("GTEx")
+    xbr_tab_schema.addNamedAttr("IGV")
+    xbr_tab_schema.addNamedAttr("gnomAD")
+    xbr_tab_schema.addNamedAttr("Samples")
+
+    #+ Sample name / affected status / sex	Metadata
+    #+ Genotype
+
+
+    base_pack.regTabSchema(xbr_tab_schema)
+
+
 def completeDsModes(ds_h):
     if ds_h.getDataSchema() == "CASE":
         family_info = ds_h.getFamilyInfo()

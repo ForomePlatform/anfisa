@@ -96,6 +96,9 @@ class FamilyInfo:
     def getAffectedGroup(self):
         return self.mAffectedGroup
 
+    def getMaleSet(self):
+        return self.mMaleSet
+
     def getTrioSeq(self):
         return self.mTrioSeq
 

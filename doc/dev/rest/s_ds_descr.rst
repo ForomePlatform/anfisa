@@ -10,8 +10,10 @@ Format
 | ``{`` *dictionary*, 
 |       "**name**":         dataset name, *string*
 |       "**kind**":         dataset kind, *either* ``"ws"`` *or* ``"xl"`` 
-|       "**upd-time**:      time of last dataset update, 
-|                               *string, time in ISO format*
+|       "**create-time**:   time of dataset installation,
+|                               *string, time time in ISO format*
+|       "**upd-time**:      time of last dataset configuration update, 
+|                               ``null`` or *string, time in ISO format*
 |       "**note**":         user note to dataset, ``null`` or *string*
 |       "**date-note**:     time of last note update, 
 |                               ``null`` or *string, time in ISO format*

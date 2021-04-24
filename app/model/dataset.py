@@ -222,6 +222,7 @@ class DataSet(SolutionBroker):
         ret = {
             "name": self.mName,
             "upd-time": self.getMongoAgent().getCreationDate(),
+            "create-time": self.mDataVault.getTimeOfStat(self.mFInfo),
             "kind": self.mDSKind,
             "note": note,
             "doc": self.getDocsInfo(),

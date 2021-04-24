@@ -40,6 +40,7 @@ class SolutionBroker(SyncronizedObject):
         self.mFilterCache = None
         self.mSolEnv = None
         self.mSolKinds = None
+        self.mNamedAttrs = dict()
 
     def getSolEnv(self):
         return self.mSolEnv
@@ -78,6 +79,14 @@ class SolutionBroker(SyncronizedObject):
             if it.getName() == item_name:
                 return it
         return None
+
+    #===============================================
+    def regNamedAttr(self, name, attr_h):
+        assert name not in self.mNamedAttrs
+        self.mNamedAttrs[name] = attr_h
+
+    def getNamedAttr(self, name):
+        return self.mNamedAttrs[name]
 
     #===============================================
     def getPanelNames(self, panel_type):

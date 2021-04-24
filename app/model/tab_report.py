@@ -26,15 +26,26 @@ class ReportTabSchema:
     def __init__(self, name, use_tags = False):
         self.mName = name
         self.mFields = []
+        self.mNamedAttrs = []
+        self.mUsedNames = set()
         self.mUseTags = use_tags
 
     def addField(self, name, field_path):
+        assert name not in self.mUsedNames, (
+            "Duplicate name in tab schema %s: %s" % (self.mName, name))
         self.mFields.append((name,
             AttrFuncHelper.getter(field_path)))
 
     def addMustiStrField(self, name, separator, field_path_seq):
+        assert name not in self.mUsedNames, (
+            "Duplicate name in tab schema %s: %s" % (self.mName, name))
         self.mFields.append((name,
             AttrFuncHelper.multiStrGetter(separator, field_path_seq)))
+
+    def addNamedAttr(self, name):
+        assert name not in self.mUsedNames, (
+            "Duplicate name in tab schema %s: %s" % (self.mName, name))
+        self.mNamedAttrs.append(name)
 
     def getName(self):
         return self.mName
@@ -57,6 +68,8 @@ class ReportTabSchema:
 
         for name, field_f in self.mFields:
             ret_handle[name] = field_f(rec_data)
+        for name in self.mNamedAttrs:
+            ret_handle[name] = ds_h.getNamedAttr(name).makeValue(rec_data)
         return ret_handle
 
 #===============================================

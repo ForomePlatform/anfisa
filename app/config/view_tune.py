@@ -46,8 +46,10 @@ def tuneAspects(ds_h, aspects):
     view_gnomad = aspects["view_gnomAD"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
-    _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
-    _resetupAttr(view_db, GTEx_AttrH(view_gen))
+    attr_gnomad = _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
+    ds_h.regNamedAttr("gnomAD", attr_gnomad)
+    attr_gtex = _resetupAttr(view_db, GTEx_AttrH(view_gen))
+    ds_h.regNamedAttr("GTEx", attr_gtex)
     _resetupAttr(view_db, OMIM_AttrH(view_gen))
     _resetupAttr(view_db, GREV_AttrH(view_gen))
     _resetupAttr(view_db, MEDGEN_AttrH(view_gen))
@@ -61,10 +63,13 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "notes", False))
 
+    ds_h.regNamedAttr("Samples", SamplesInfo_AttrH(ds_h))
+
     meta_info = ds_h.getDataInfo()["meta"]
-    _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
+    attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
         meta_info.get("case"), meta_info.get("samples"),
         meta_info["versions"].get("reference")))
+    ds_h.regNamedAttr("IGV", attr_igv)
 
     view_gen[view_gen.find("transcripts")].setReprFunc(
         view_op.reprGenTranscripts)
@@ -86,6 +91,7 @@ def _resetupAttr(aspect_h, attr_h):
         aspect_h.delAttr(aspect_h[idx2])
     aspect_h.addAttr(attr_h, min(idx1, idx2)
         if min(idx1, idx2) >= 0 else max(idx1, idx2))
+    return attr_h
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -149,26 +155,31 @@ class GnomAD_AttrH(AttrH):
         AttrH.__init__(self, "URL")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        url = v_context["data"]["_view"]["gnomAD"]["url"]
+    def makeValue(self, rec_data):
+        url = rec_data["_view"]["gnomAD"]["url"]
         if url:
-            return self.make_attr(url)
-        hg19 = v_context["data"]["_view"]["general"]["hg19"]
+            return url
+        hg19 = rec_data["_view"]["general"]["hg19"]
         if (not hg19) or hg19.lower() == 'none':
-            return ("No HG19 mapping", "norm")
+            return "No HG19 mapping!"
         try:
-            region_name = v_context["data"]["__data"]["seq_region_name"]
-            region = (v_context["data"]["_view"]["general"]["hg19"].
+            region_name = rec_data["__data"]["seq_region_name"]
+            region = (rec_data["_view"]["general"]["hg19"].
                 split(':')[1].split('-'))
             start = int(region[0])
             if (len(region) > 1):
                 end = int(region[1])
             else:
                 end = start
-            url = self.makeLink(region_name, start, end, 3)
-            return self.make_attr(url)
+            return self.makeLink(region_name, start, end, 3)
         except Exception:
-            return ("error", "norm")
+            return "error!"
+
+    def htmlRepr(self, obj, v_context):
+        url = self.makeValue(v_context["data"])
+        if url and isinstance(url, str) and url.endswith('!'):
+            return (url, "norm")
+        return self.make_attr(url)
 
 #===============================================
 class GTEx_AttrH(AttrH):
@@ -182,17 +193,25 @@ class GTEx_AttrH(AttrH):
             tooltip = "View this gene on GTEx portal")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        genes = v_context["data"]["_view"]["general"]["genes"]
+    def makeValue(self, rec_data):
+        genes = rec_data["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
         for gene in genes:
-            url = self.makeLink(gene)
-            links.append('<span title="GTEx">'
+            links.append([gene, self.makeLink(gene)])
+        return links
+
+    def htmlRepr(self, obj, v_context):
+        links = self.makeValue(v_context["data"])
+        if not links:
+            return None
+        ret = []
+        for gene, url in links:
+            ret.append('<span title="GTEx">'
                 + ('<a href="%s" target="GTEx">%s</a>' % (url, gene))
                 + '</span>')
-        return ('<br>'.join(links), "norm")
+        return ('<br>'.join(ret), "norm")
 
 #===============================================
 class OMIM_AttrH(AttrH):
@@ -207,19 +226,26 @@ class OMIM_AttrH(AttrH):
         AttrH.__init__(self, "OMIM")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        genes = v_context["data"]["_view"]["general"]["genes"]
+    def makeValue(self, rec_data):
+        genes = rec_data["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
         for gene in genes:
-            url = self.makeLink(gene)
-            links.append(
+            links.append([gene, self.makeLink(gene)])
+        return links
+
+    def htmlRepr(self, obj, v_context):
+        links = self.makeValue(v_context["data"])
+        if links is None:
+            return None
+        ret = []
+        for gene, url in links:
+            ret.append(
                 ('<span title="Search OMIM Gene Map for %s">' % escape(gene))
                 + ('<a href="%s" target="OMIM">%s</a>' % (url, gene))
                 + '</span>')
-        return ('<br>'.join(links), "norm")
-
+        return ('<br>'.join(ret), "norm")
 #===============================================
 class GREV_AttrH(AttrH):
 
@@ -395,18 +421,18 @@ class IGV_AttrH(AttrH):
             "&genome=%s&merge=false&name=%s") % (
                 file_urls, self.mBase, ",".join(samples_names))
 
-    def htmlRepr(self, obj, v_context):
+    def makeValue(self, rec_data):
         if self.mPreUrl is None:
             return None
 
         if self.mBase == "hg19":
-            start = int(v_context["data"]["__data"]["start"])
-            end = int(v_context["data"]["__data"]["end"])
+            start = int(rec_data["__data"]["start"])
+            end = int(rec_data["__data"]["end"])
         else:
             assert self.mBase == "hg38"
             pos = -1
             try:
-                pos = v_context["data"]["_view"]["general"]["hg38"]
+                pos = rec_data["_view"]["general"]["hg38"]
                 _, _, coors = pos.partition(':')
                 coors = coors.split(' ')[0]
                 p0, _, p1 = coors.partition('-')
@@ -414,10 +440,17 @@ class IGV_AttrH(AttrH):
                 end = int(p1.strip()) if p1 else start
             except Exception:
                 logging.error("Error creating IGV link for " + str(pos))
-                return ("ERROR", "norm")
-        link = self.mPreUrl + "&locus=%s:%d-%d" % (
-            v_context["data"]["__data"]["seq_region_name"],
+                return "Error!"
+        return self.mPreUrl + "&locus=%s:%d-%d" % (
+            rec_data["__data"]["seq_region_name"],
             max(0, start - 250), end + 250)
+
+    def htmlRepr(self, obj, v_context):
+        link = self.makeValue(v_context["data"])
+        if link is None:
+            return None
+        if link.endswith('!'):
+            return (link, "norm")
         return ('<table><tr><td><span title="For this link to work, '
             + 'make sure that IGV is running on your computer">'
             + ('<a href="%s">View Variant in IGV</a>' % link)
@@ -520,3 +553,15 @@ class PGKB_AttrH(AttrH):
             return None
         html = ('<span title="PKGB_%s"> %s </span>' % (self.key, table))
         return (html, "norm")
+
+#===============================================
+class SamplesInfo_AttrH:
+    def __init__(self, ds_h):
+        self.mDS = ds_h
+
+    def makeValue(self, rec_data):
+        return [{
+            "genotype":  smp_info.get("genotype"),
+            "g_quality": smp_info.get("genotype_quality")}
+            for smp_info in
+                rec_data["_view"]["quality_samples"][1:]]
