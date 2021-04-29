@@ -220,7 +220,7 @@ class OpFilters_AttrH(AttrH):
         return (' '.join(self.mDS.getRecFilters(v_context["rec_no"])), "norm")
 
 #===============================================
-class OpDTreess_AttrH(AttrH):
+class OpDTrees_AttrH(AttrH):
     def __init__(self, view, ds_h):
         AttrH.__init__(self, "OP_dtrees",
             title = "Presence in decision trees",

@@ -160,7 +160,7 @@ class FilterPrepareSetH(SolutionBroker):
             default_value = None, render_mode = None, tooltip = None):
         self.checkUnitName(name)
         assert default_value is not None, (
-            "Transcript Int unit %s requires default" % name)
+            f"Transcript Int unit {name} requires default")
         return self._addUnit(prep_unit.TranscriptNumConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             "transcript-int", trans_name, default_value,
@@ -170,7 +170,7 @@ class FilterPrepareSetH(SolutionBroker):
             default_value = None, render_mode = None, tooltip = None):
         self.checkUnitName(name)
         assert default_value is not None, (
-            "Transcript Float unit %s requires default" % name)
+            f"Transcript Float unit {name} requires default")
         return self._addUnit(prep_unit.TranscriptNumConvertor(self,
             name, title, len(self.mUnits), self.mCurVGroup,
             "transcript-float", trans_name, default_value,
@@ -215,8 +215,8 @@ class FilterPrepareSetH(SolutionBroker):
     def reportProblems(self, output):
         for unit in self.mUnits:
             if unit.getErrorCount() > 0:
-                print("Field %s: %d bad conversions" % (
-                    unit.getName(), unit.getErrorCount()), file = output)
+                print(f"Field {unit.getName()}: "
+                    f"{unit.getErrorCount()} bad conversions", file = output)
         return True
 
     def dump(self):
@@ -269,7 +269,7 @@ class ZygosityDataPreparator:
         assert family_info is not None, "No dataset metadata with samples info"
         self.mMemberIds = [id
             for id in family_info.getIds()]
-        self.mMemberNames = ["%s_%d" % (var_name, idx)
+        self.mMemberNames = [f"{var_name}_{idx}"
             for idx in range(len(self.mMemberIds))]
 
     def getVarName(self):

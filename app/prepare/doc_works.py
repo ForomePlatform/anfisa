@@ -262,6 +262,8 @@ class _DocImgH(_DocH):
         img_dest_place = self.makeFileDestPlace(src_path_seq[0])
         shutil.copyfile(src_path_seq[0], self.regDestPlace(img_dest_place))
 
+        desc = {"image": img_dest_place, "type": "img"}
+
         dest_place = self.getDestPlace([])
         with open(self.regDestPlace(dest_place), "w",
                 encoding = "utf-8") as output:
@@ -271,11 +273,12 @@ class _DocImgH(_DocH):
             tooltip = self.get("tooltip")
             if tooltip:
                 img_params.append('title="%s"' % escape(tooltip))
+                desc["tooltip"] = tooltip
             print('  <img %s>' % " ".join(img_params), file = output)
             print(' </body>', file = output)
             print('</html>', file = output)
         print("Doc image-based file created", dest_place, file = sys.stderr)
-        ret.append([self.get("title"), dest_place])
+        ret.append([self.get("title"), dest_place, desc])
 
 #===============================================
 class _DocSeqTxtH(_DocH):
@@ -322,9 +325,15 @@ class _DocSeqImgH(_DocH):
         src_path_seq = self.getSrcPathSeq(item_names)
         if len(src_path_seq) < 1:
             return
+
+        desc = {"images": [], "type": "seq_img"}
+        if item_names:
+            desc["names"] = item_names
+
         dest_img_seq = []
         for img_src in src_path_seq:
             img_dest_place = self.makeFileDestPlace(img_src)
+            desc["images"].append(img_dest_place)
             shutil.copyfile(img_src, self.regDestPlace(img_dest_place))
             dest_img_seq.append(os.path.basename(img_dest_place))
 
@@ -348,4 +357,4 @@ class _DocSeqImgH(_DocH):
             print('</html>', file = output)
         print("Doc image-seq-based file created", dest_place,
             file = sys.stderr)
-        ret.append([self.get("title"), dest_place])
+        ret.append([self.get("title"), dest_place, desc])

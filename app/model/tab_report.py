@@ -30,11 +30,15 @@ class ReportTabSchema:
         self.mUsedNames = set()
         self.mUseTags = use_tags
 
-    def addField(self, name, field_path):
+    def addField(self, name, field_path, transform_func = None):
         assert name not in self.mUsedNames, (
             "Duplicate name in tab schema %s: %s" % (self.mName, name))
-        self.mFields.append((name,
-            AttrFuncHelper.getter(field_path)))
+        getter = AttrFuncHelper.getter(field_path)
+        if transform_func is not None:
+            get_func = lambda data: transform_func(getter(data))
+        else:
+            get_func = getter
+        self.mFields.append((name, get_func))
 
     def addMustiStrField(self, name, separator, field_path_seq):
         assert name not in self.mUsedNames, (
