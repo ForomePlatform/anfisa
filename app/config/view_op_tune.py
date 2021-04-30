@@ -42,12 +42,12 @@ def markupTranscriptTab(info_handle, view_context, aspect):
             hit_col_idxs.add(idx)
     if len(hit_col_idxs) < cnt_total:
         title, _, _ = tr_group_info[0].partition('[')
-        title += "[%d/%d]" % (len(hit_col_idxs), cnt_total)
+        title += f"[{len(hit_col_idxs)}/{cnt_total}]"
     else:
         title = tr_group_info[0]
     tr_group_info[0] = title + '&nbsp;<span id="tr-hit-span"></span>'
     for row in info_handle["rows"]:
-        for idx, td_info in enumerate(row[2]):
+        for idx, td_info in enumerate(row["cells"]):
             if idx in hit_col_idxs:
                 td_info[1] += ' hit'
             else:
@@ -65,27 +65,16 @@ def reprGenTranscripts(val, v_context):
     ret_handle = ['<ul>']
     for idx, it in enumerate(val):
         is_canonical = it.get("is_canonical") if it else False
+        v_id = escape(it.get("id", "?"))
+        v_gene = escape(it.get("gene", "?"))
+        a_content = escape(json.dumps(it.get("transcript_annotations", "?")))
         if is_canonical:
-            prefix = "[C] "
+            mod = ' class="hit"'if details is not None and details[idx] else ''
+            rep = (f'<li{mod}><b>[C] {v_id}</b>, <b>gene=</b>{v_gene}, '
+                f'<b>annotations</b>: {a_content} </li>")')
         else:
-            prefix = ""
-        mod = ""
-        if details is not None and details[idx]:
-            if is_canonical:
-                mod = ' class="hit"'
-        v_id = it.get("id")
-        if not v_id:
-            v_id = "?"
-        v_gene = it.get("gene")
-        if not v_gene:
-            v_gene = "?"
-        t_format = (
-            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>")
-        if not is_canonical:
-            t_format = t_format.replace("<b>", "").replace("</b>", "")
-        ret_handle.append(t_format % (mod,
-            escape(prefix), escape(v_id), escape(v_gene),
-            escape(json.dumps(it.get("transcript_annotations", "?")))))
+            rep = f"<li>{v_id}, gene={v_gene}, annotations: {a_content} </li>"
+        ret_handle.append(rep)
     ret_handle.append("</ul>")
     return ('\n'.join(ret_handle), "norm")
 
@@ -101,46 +90,53 @@ class SamplesColumnsMarkup:
         if self.mCohortMap is None and "active-samples" not in view_context:
             return
         par_ctrl = ["", ""]
+        par_modes = []
         cohort_row = None
-        hit_columns = set()
-        col_seq = [""] * len(info_handle["rows"][0][2])
+        hit_columns = []
+        col_seq = [""] * len(info_handle["rows"][0]["cells"])
         if self.mCohortMap:
-            cohort_row = ["_cohort", "", []]
+            cohort_row = {
+                "name": "_cohort",
+                "title": "Cohorts",
+                "cells": []}
             for idx, td_info in enumerate(info_handle["rows"][0][2]):
                 if idx == 0:
                     cohort_row[-1].append(["-", "null"])
                     continue
-                sample_name = td_info[0].split()[-1]
+                sample_name = td_info["name"].split()[-1]
                 cohort = self.mCohortMap[sample_name]
-                cohort_row[-1].append([cohort, "string"])
+                cohort_row["cells"].append([cohort, "string"])
                 col_seq[idx] = 'cohort-' + cohort
             par_ctrl[1] = '<span id="cohorts-ctrl"></span>'
+            par_modes.append(["cohorts"])
         act_samples = view_context.get("active-samples")
         if act_samples:
             cnt_total = 0
             for idx, td_info in enumerate(info_handle["rows"][0][2]):
                 if idx == 0:
                     continue
-                sample_name = td_info[0].split()[-1]
+                sample_name = td_info["name"].split()[-1]
                 smp_idx = self.mFamilyInfo.sampleIdx(sample_name)
                 cnt_total += 1
                 if col_seq[idx]:
                     col_seq[idx] += ' '
                 if smp_idx in act_samples:
-                    hit_columns.add(idx)
+                    hit_columns.append(idx)
                 else:
                     col_seq[idx] += "no-smp-hit"
             if len(hit_columns) > 0 and cnt_total > 3:
-                par_ctrl[0] = ('<span id="act-samples-ctrl">[%d/%d]</span>'
-                    % (len(hit_columns), cnt_total))
+                par_ctrl[0] = ('<span id="act-samples-ctrl">'
+                    f'[{len(hit_columns)}/{cnt_total}]</span>')
+                par_modes.append(["hit", hit_columns, cnt_total])
         info_handle["colgroup"] = [""] + col_seq
         info_handle["parcontrol"] = '<div>' + ' '.join(par_ctrl) + '</div>'
+        info_handle["parmodes"] = par_modes
         if cohort_row:
             info_handle["rows"].insert(0, cohort_row)
         if len(hit_columns) > 0:
-            for row in info_handle["rows"]:
-                for idx in hit_columns:
-                    row[2][idx][1] += " hit"
+            for idx in hit_columns:
+                for row in info_handle["rows"]:
+                    row["cells"][idx][1] += " hit"
 
 #===============================================
 def normSampleId(sample_name):

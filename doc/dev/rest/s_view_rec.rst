@@ -31,20 +31,24 @@ Format
 
 |       "**rows**":    *empty* or
 |            ``[`` *list* of attribute descriptors, to represent main content of the table
-|               ``[``
-|                    **[0]**: attribute name (out of use), *string*
-|                    **[1]**: attribute title
-|                    **[2]**: 
+|               ``{``
+|                    "**name**": attribute name (technical), *string*
+|                    "**title**": attribute title
+|                    "**cells**": 
 |                      ``[``  *list* of cell descriptors  
 |                           ``[``
 |                               **[0]**: content (html-escaped), *string*
 |                               **[1]**: cell render class name, *string*
 |                           ``]``
 |                      ``]``, ...
-|                    **[3]**: (if present) tooltip. **string** or ``undefined```
+|                    "**tooltip**": tooltip, **string** or ``undefined``
+|                    "**render**": render mode, **string** or ``undefined``
 |                ``]``, ...
 |            ``]``
-        "**parcontrol**":  *optional string*, to represent control <div> before the table
+|       "**parcontrol**":  to represent control <div> before the table, 
+|                               **string** or ``undefined``
+|       "**parmodes**": technical json information on parcontrol modes, 
+|                               **list of JSON objects** or ``undefined``
 |        
 |       *in case of* ``type="pre"``:
 |       ---------------------------------

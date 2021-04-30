@@ -310,7 +310,7 @@ class GENE_CARDS_AttrH(AttrH):
             url = self.makeLink(gene)
             links.append(
                 f'<span title="Read GeneCards for {escape(gene)}">'
-                f'<a href="{ur}" target="GeneCards">{gene}</a></span>')
+                f'<a href="{url}" target="GeneCards">{gene}</a></span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
