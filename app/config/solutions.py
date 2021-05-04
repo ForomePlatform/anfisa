@@ -452,6 +452,7 @@ def setupGenericPack(base_pack):
     xbr_tab_schema.addField("QD", "/_filters/qd")
     xbr_tab_schema.addField("FT", "/_filters/filters")
 
+    xbr_tab_schema.addNamedAttr("ColorCode")
     xbr_tab_schema.addNamedAttr("GTEx")
     xbr_tab_schema.addNamedAttr("IGV")
     xbr_tab_schema.addNamedAttr("gnomAD")

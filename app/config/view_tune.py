@@ -23,6 +23,7 @@ import logging
 from xml.sax.saxutils import escape
 
 from app.view.attr import AttrH
+from app.config.a_config import AnfisaConfig
 from .favor import FavorSchema
 import app.config.view_op_tune as view_op
 #===============================================
@@ -65,6 +66,7 @@ def tuneAspects(ds_h, aspects):
 
     ds_h.regNamedAttr("Samples", SamplesInfo_AttrH(ds_h))
     ds_h.regNamedAttr("GeneColored", GeneColored_AttrH())
+    ds_h.regNamedAttr("ColorCode", ColorCode_AttrH())
 
     meta_info = ds_h.getDataInfo()["meta"]
     attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
@@ -562,6 +564,15 @@ class GeneColored_AttrH:
             (20 if pli_value >= 0.5 else 10))
 
         return [genes, color_code]
+
+#===============================================
+class ColorCode_AttrH:
+    def __init__(self):
+        pass
+
+    def makeValue(self, rec_data):
+        return AnfisaConfig.normalizeColorCode(
+            rec_data["__data"].get("color_code"))
 
 #===============================================
 def Polyphen_ColorCode(value):
