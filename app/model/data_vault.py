@@ -32,10 +32,12 @@ from forome_tools.log_err import logException
 from forome_tools.sync_obj import SyncronizedObject
 #===============================================
 class DataVault(SyncronizedObject):
-    def __init__(self, application, vault_dir, auto_mode = True):
+    def __init__(self, application, vault_dir,
+            var_registry, auto_mode = True):
         SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
+        self.mVarRegistry = var_registry
         self.mLock  = Lock()
         self.mDataSets = dict()
         self.mSolEnvDict = dict()
@@ -199,6 +201,12 @@ class DataVault(SyncronizedObject):
                 self.mSolEnvDict[root_name] = SolutionEnv(
                     self.mApp.getMongoConnector(), root_name)
             return self.mSolEnvDict[root_name]
+
+    def getVariableInfo(self, var_name):
+        return self.mVarRegistry.getVarInfo(var_name)
+
+    def getVarRegistry(self):
+        return self.mVarRegistry
 
     #===============================================
     @RestAPI.vault_request

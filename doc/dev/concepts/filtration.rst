@@ -19,6 +19,8 @@ See also
 --------
 :doc:`filters_reg`
 
+:doc:`restrict_flt`
+
 :doc:`dtree_syntax`
 
 :doc:`../rest/func_ref`

@@ -399,14 +399,14 @@ class IGV_AttrH(AttrH):
 
         # we are not sure what is the key to samples, so have to repackage
         samples = {info["id"]: info["name"] for info in samples.values()}
-        samples_ids = sorted(samples)
-        samples_names = [samples[id] for id in samples_ids]
+        samples_ids = sorted(samples.keys())
+        samples_names = ",".join([samples[id] for id in samples_ids])
 
         file_urls = ','.join([
             f"{bam_base}/{case}/{sample_id}.{self.mBase}.bam"
             for sample_id in samples_ids])
         self.mPreUrl = (f"http://localhost:60151/load?file={file_urls}"
-            f"&genome={self.mBase}&merge=false&name={join(sample_names)}")
+            f"&genome={self.mBase}&merge=false&name={samples_names}")
 
     def makeValue(self, rec_data):
         if self.mPreUrl is None:
@@ -429,8 +429,8 @@ class IGV_AttrH(AttrH):
                 logging.error("Error creating IGV link for " + str(pos))
                 return "Error!"
         locus = rec_data["__data"]["seq_region_name"]
-        return (self.mPreUrl +
-            f'&locus={locus}:{max(0, start - 250)}-{end + 250}')
+        return (self.mPreUrl
+            + f'&locus={locus}:{max(0, start - 250)}-{end + 250}')
 
     def htmlRepr(self, obj, v_context):
         link = self.makeValue(v_context["data"])
@@ -548,7 +548,7 @@ class SamplesInfo_AttrH:
             "genotype":  smp_info.get("genotype"),
             "g_quality": smp_info.get("genotype_quality")}
             for smp_info in
-                rec_data["_view"]["quality_samples"][1:]]
+            rec_data["_view"]["quality_samples"][1:]]
 
 #===============================================
 class GeneColored_AttrH:

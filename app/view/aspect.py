@@ -18,8 +18,6 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
-
 from .attr import AttrH
 from .view_repr import vcfRepr
 from .colgrp import ColGroupsH

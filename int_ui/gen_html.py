@@ -31,19 +31,20 @@ def startHtmlPage(output, title = None, html_base = None,
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">''',
     file = output)
     if title:
-        print('    <title>%s</title>' % escape(title), file = output)
+        print(f'    <title>{escape(title)}</title>', file = output)
     if html_base:
-        print('    <base href="%s" />' % html_base, file = output)
+        print(f'    <base href="{html_base}" />', file = output)
     if css_files:
         for name in css_files:
+            fname = MirrorUiDirectory.transform(name)
             print('    <link rel="stylesheet" '
-                'href="ui/%s" type="text/css" media="all"/>' %
-                MirrorUiDirectory.transform(name), file = output)
+                f'href="ui/{fname}" type="text/css" media="all"/>',
+                file = output)
     if js_files:
         for name in js_files:
+            fname = MirrorUiDirectory.transform(name)
             print('    <script type="text/javascript" '
-                'src="ui/%s"></script>' %
-                MirrorUiDirectory.transform(name), file = output)
+                f'src="ui/{fname}"></script>', file = output)
     print('  </head>', file = output)
 
 #===============================================
@@ -137,10 +138,18 @@ def tagsBlock(output):
 
 #===============================================
 #===============================================
-def formFilterPanel(output):
+def formFilterPanel(output, modal_mode):
     print('''
     <div id="filter-mod" class="panel-space">
-        <div id="filter-stat">
+        <div id="filter-stat">''', file = output)
+    if modal_mode:
+        print('''
+        <div id="flt-unit-classes">
+            <span id="unit-classes-state"></span>
+            <button onclick="sUnitClassesH.show();"
+                title="Select filtration properties in work">&#9745;</button>
+        </div>''', file = output)
+    print('''
           <div id="stat-list" class="list-items">
           </div>
         </div>
@@ -198,8 +207,8 @@ def formFilterPanel(output):
               <select id="filter-name-combo-list"
                   onchange="sFiltersH.select();">
                 <option value=""></option>
-              <input id="filter-name-input" type="text" />
               </select>
+              <input id="filter-name-input" type="text" />
             </div>
             <button id="filter-act-op" class="op-button"
                 onclick="sFiltersH.action();">
@@ -241,7 +250,7 @@ def formCurConditionControls(output):
                 </div>
                 <div id="cur-cond-enum-ctrl">
                   <div id="cur-cond-enum-zeros">
-                    <label for"cur-enum-zeros">Show zeros&nbsp;</label><input
+                    <label for="cur-enum-zeros">Show zeros&nbsp;</label><input
                         id="cur-enum-zeros" type="checkbox"
                         onchange="sOpEnumH.careEnumZeros();"/>
                   </div>
@@ -297,37 +306,66 @@ def formSubViewDiv(output):
                 <iframe id="sub-view-rec-frame"
                     name="rec-frame1" src="norecords">
                 </iframe>
+            </div>
         </div>
       </div>
     </div>
 ''', file = output)
 
 #===============================================
-def formCreateWsDiv(output):
+def formDeriveWsDiv(output):
     print('''
-    <div id="create-ws-back" class="modal-back">
-      <div id="create-ws-mod">
-        <div id="create-ws-top">
-            <span id="create-ws-title"></span>
+    <div id="derive-ws-back" class="modal-back">
+      <div id="derive-ws-mod">
+        <div id="derive-ws-top">
+            <span id="derive-ws-title"></span>
               <span class="close-it"
                 onclick="sViewH.modalOff();">&times;</span>
         </div>
-        <div id="create-ws-main">
+        <div id="derive-ws-main">
             <div>Dataset name:
-                <input id="create-ws-name" type="text">
+                <input id="derive-ws-name" type="text">
             </div>
-            <div id="create-ws-problems"></div>
-            <div id="create-ws-status"></div>
+            <div id="derive-ws-problems"></div>
+            <div id="derive-ws-status"></div>
         </div>
-        <div id="create-ws-ctrl">
-            <button id="create-ws-start" onclick="startWsCreate();">
+        <div id="derive-ws-ctrl">
+            <button id="derive-ws-start" onclick="startWsCreate();">
               Start...
             </button>
-            <button id="create-ws-cancel" onclick="sViewH.modalOff();">
+            <button id="derive-ws-cancel" onclick="sViewH.modalOff();">
               Cancel
             </button>
         </div>
       </div>
     </div>
 ''', file = output)
+
 #===============================================
+def formUnitClassesDiv(output):
+    print('''
+    <div id="unit-classes-back" class="modal-back">
+      <div id="unit-classes-mod">
+        <div id="unit-classes-top">
+            <span id="unit-classes-title">
+                &#9745;&nbsp;Select filtration properties in work
+            </span>
+            <span class="close-it"
+                onclick="sUnitClassesH.hide();">&times;</span>
+        </div>
+        <div id="unit-classes-main">
+        </div>
+        <div id="unit-classes-ctrl">
+            <button id="unit-classes-done" onclick="sUnitClassesH.hide();">
+              Done
+            </button>
+            <button id="unit-classes-reset" onclick="sUnitClassesH.reset();">
+              Show all
+            </button>
+            <span id="unit-classes-int-state"></span>
+        </div>
+      </div>
+    </div>
+''', file = output)
+#===============================================
+

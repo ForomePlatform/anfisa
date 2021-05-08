@@ -24,7 +24,7 @@ Format
 |                   ``[`` *list*
 |                       [**0**]: name of ancestor dataset, *string*
 |                       [**1**]: *optional* dataset documentation, :doc:`s_doc_descr`
-|                   ``]``
+|                   ``]``, ...
 |               ``]``
 |       
 |       *in case of* :doc:`dirinfo` *request*:
@@ -34,7 +34,14 @@ Format
 |
 |       *in case of* :doc:`dsinfo` *request*:
 |       -------------------------------------
-|       "**meta**":  metadata of dataset, *JSON structure*
+|       "**meta**":     metadata of dataset, *JSON structure*
+|       "**classes**":  descriptor of :term:`filtering properties classification`
+|               ``[`` *list* of facet classifications
+|                   ``{``
+|                       **title**: title of facet classification, *string*
+|                       **values**: titles of values, *list of strings*
+|                   ``}``, ...
+|               ``]``
 |       "**unit-groups**": group names of filtering properties,
 |           ``[`` *list of strings* ``]``
 |       "**cohorts**": *optional* list of cohort names 
@@ -72,3 +79,5 @@ Used in requests
 :doc:`s_doc_descr`
 
 :doc:`../concepts/doc_pg`
+
+:doc:`../concepts/restrict_flt`

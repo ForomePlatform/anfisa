@@ -505,12 +505,16 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
+        fillStatList(
+            this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
             1, "sDecisionTree.showUnitCond");
         this.mDivList.className = "";
-        this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
         this.mCurFuncName = null;
+        
+        this.mDivList.innerHTML = list_stat_rep.join('\n');
+        sUnitClassesH.updateItems(this.mItems);
+
         
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0]["name"]);

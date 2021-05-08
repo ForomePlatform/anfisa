@@ -30,10 +30,11 @@ class FilterPrepareSetH(SolutionBroker):
     sZygosityPath = AnfisaConfig.configOption("zygosity.path.base")
     sNamedFunctions = dict()
 
-    def __init__(self, metadata_record,  modes = None,
-            check_identifiers = True):
+    def __init__(self, metadata_record, var_registry,
+            modes = None, check_identifiers = True):
         SolutionBroker.__init__(self,
             metadata_record.get("data_schema", "CASE"), modes)
+        self.mVarRegistry = var_registry
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
@@ -73,9 +74,11 @@ class FilterPrepareSetH(SolutionBroker):
         self.mVGroups[view_group_title] = ret
         return ret
 
-    def checkUnitName(self, name):
+    def _checkVar(self, name, var_type):
         if self.mCheckIdent:
-            assert checkIdentifier(name), "Bad unit name: " + name
+            assert checkIdentifier(name), f"Bad unit name: {name}"
+        var_tp, _ = self.mVarRegistry.getVarInfo(name)
+        assert var_tp == var_type
 
     def regPreTransform(self, transform_f):
         self.mPreTransformSeq.append(transform_f)
@@ -96,112 +99,95 @@ class FilterPrepareSetH(SolutionBroker):
             self.mCurVGroup = self.viewGroup(view_group_title)
 
     def _addUnit(self, unit_h):
-        self.checkUnitName(unit_h.getName())
         for conv in self.mUnits:
             assert conv.getName() != unit_h.getName()
         self.mUnits.append(unit_h)
         return unit_h
 
-    def intValueUnit(self, name, vpath, title = None,
-            default_value = None, diap = None,
-            conversion = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+    def intValueUnit(self, name, vpath,
+            default_value = None, diap = None, conversion = None):
+        self._checkVar(name, "numeric")
         return self._addUnit(prep_unit.IntConvertor(self,
-            name, vpath, title, len(self.mUnits), self.mCurVGroup,
-            default_value, diap, conversion, render_mode, tooltip))
+            name, vpath, len(self.mUnits), self.mCurVGroup,
+            default_value, diap, conversion))
 
-    def floatValueUnit(self, name, vpath, title = None,
-            default_value = None, diap = None,
-            conversion = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+    def floatValueUnit(self, name, vpath,
+            default_value = None, diap = None, conversion = None):
+        self._checkVar(name, "numeric")
         return self._addUnit(prep_unit.FloatConvertor(self,
-            name, vpath, title, len(self.mUnits), self.mCurVGroup,
-            default_value, diap, conversion, render_mode, tooltip))
+            name, vpath, len(self.mUnits), self.mCurVGroup,
+            default_value, diap, conversion))
 
-    def statusUnit(self, name, vpath, title = None,
+    def statusUnit(self, name, vpath,
             variants = None, default_value = "False",
-            accept_other_values = False, value_map = None,
-            conversion = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+            accept_other_values = False,
+            value_map = None, conversion = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, title, len(self.mUnits), self.mCurVGroup,
+            name, vpath, len(self.mUnits), self.mCurVGroup,
             "status", variants, accept_other_values, value_map,
-            conversion, render_mode, tooltip,
-            default_value = default_value))
+            conversion, default_value = default_value))
 
-    def multiStatusUnit(self, name, vpath, title = None,
+    def multiStatusUnit(self, name, vpath,
             variants = None, default_value = None,
-            compact_mode = False,
-            accept_other_values = False, value_map = None,
-            conversion = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+            compact_mode = False, accept_other_values = False,
+            value_map = None, conversion = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, title, len(self.mUnits), self.mCurVGroup,
+            name, vpath, len(self.mUnits), self.mCurVGroup,
             "multi", variants, accept_other_values, value_map,
-            conversion, render_mode, tooltip,
-            compact_mode = compact_mode,
+            conversion, compact_mode = compact_mode,
             default_value = default_value))
 
-    def presenceUnit(self, name, var_info_seq, title = None,
-            render_mode = None, tooltip = None):
-        self.checkUnitName(name)
-        return self._addUnit(prep_unit.PresenceConvertor(self, name, title,
-            len(self.mUnits), self.mCurVGroup, var_info_seq,
-            render_mode, tooltip))
+    def presenceUnit(self, name, var_info_seq):
+        self._checkVar(name, "enum")
+        return self._addUnit(prep_unit.PresenceConvertor(self, name,
+            len(self.mUnits), self.mCurVGroup, var_info_seq))
 
-    def panelsUnit(self, name, unit_base, panel_type, title = None,
-            render_mode = None, tooltip = None, view_path = None):
-        self.checkUnitName(name)
+    def panelsUnit(self, name, unit_base, panel_type, view_path = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.PanelConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
-            unit_base, panel_type, view_path, render_mode, tooltip))
+            name, len(self.mUnits), self.mCurVGroup,
+            unit_base, panel_type, view_path))
 
-    def transcriptIntValueUnit(self, name, trans_name, title = None,
-            default_value = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+    def transcriptIntValueUnit(self, name, trans_name, default_value = None):
+        self._checkVar(name, "numeric")
         assert default_value is not None, (
             f"Transcript Int unit {name} requires default")
         return self._addUnit(prep_unit.TranscriptNumConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
-            "transcript-int", trans_name, default_value,
-            render_mode, tooltip))
+            name, len(self.mUnits), self.mCurVGroup,
+            "transcript-int", trans_name, default_value))
 
-    def transcriptFloatValueUnit(self, name, trans_name, title = None,
-            default_value = None, render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+    def transcriptFloatValueUnit(self, name, trans_name, default_value = None):
+        self._checkVar(name, "numeric")
         assert default_value is not None, (
             f"Transcript Float unit {name} requires default")
         return self._addUnit(prep_unit.TranscriptNumConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
-            "transcript-float", trans_name, default_value,
-            render_mode, tooltip,))
+            name, len(self.mUnits), self.mCurVGroup,
+            "transcript-float", trans_name, default_value))
 
-    def transcriptStatusUnit(self, name, trans_name, title = None,
+    def transcriptStatusUnit(self, name, trans_name,
             variants = None, default_value = "False",
-            render_mode = None, tooltip = None, bool_check_value = None):
-        self.checkUnitName(name)
+            bool_check_value = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup,
             "transcript-status", trans_name, variants, default_value,
-            render_mode, tooltip, bool_check_value))
+            bool_check_value))
 
-    def transcriptMultisetUnit(self, name, trans_name, title = None,
-            variants = None, default_value = None,
-            render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+    def transcriptMultisetUnit(self, name, trans_name,
+            variants = None, default_value = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
-            "transcript-multiset", trans_name, variants, default_value,
-            render_mode, tooltip))
+            name, len(self.mUnits), self.mCurVGroup,
+            "transcript-multiset", trans_name, variants, default_value))
 
     def transcriptPanelsUnit(self, name, unit_base, panel_type,
-            title = None, view_name = None,
-            render_mode = None, tooltip = None):
-        self.checkUnitName(name)
+            view_name = None):
+        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.TranscriptPanelsConvertor(self,
-            name, title, len(self.mUnits), self.mCurVGroup,
-            unit_base, panel_type, view_name,
-            render_mode, tooltip))
+            name, len(self.mUnits), self.mCurVGroup,
+            unit_base, panel_type, view_name))
 
     def process(self, rec_no, rec_data):
         for transform_f in self.mPreTransformSeq:

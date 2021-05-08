@@ -21,6 +21,7 @@
 import sys
 
 from app.prepare.prep_filters import FilterPrepareSetH
+from .variables import anfisaVariables
 from .favor import FavorSchema
 #===============================================
 sConsequenceVariants = [
@@ -109,44 +110,38 @@ def defineFilterSchema(metadata_record):
     assert data_schema is None or data_schema == "CASE", (
         "Bad data schema: " + data_schema)
 
-    filters = FilterPrepareSetH(metadata_record)
+    filters = FilterPrepareSetH(metadata_record, anfisaVariables)
 
     cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):
         if cohorts:
             filters.multiStatusUnit("Variant_in",
                 "/_filters/cohort_has_variant[]")
-        filters.multiStatusUnit("Callers", "/_view/bioinformatics/called_by[]",
-            title = "Called by")
+        filters.multiStatusUnit("Callers",
+            "/_view/bioinformatics/called_by[]")
         filters.statusUnit("Proband_Zygosity",
-            "/_view/bioinformatics/zygosity",
-            title = "Proband Zygosity")
+            "/_view/bioinformatics/zygosity")
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
-            title = "Number of Samples",
-            conversion = ["len"], default_value = 0,
-            tooltip =
-            "Number of samples for which this variant has been called")
+            conversion = ["len"], default_value = 0)
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
 
     if cohorts:
-        all_cohorts = ["ALL"] + [ch["name"] for ch in cohorts]
         with filters.viewGroup("Cohorts"):
-            for ch_name in all_cohorts:
-                filters.floatValueUnit(ch_name + "_AF",
-                    "/_view/cohorts/" + ch_name + "/AF",
+            filters.floatValueUnit("ALL_AF",
+                "/_view/cohorts/ALL", default_value = 0)
+            filters.floatValueUnit("ALL_AF2",
+                "/_view/cohorts/ALL2", default_value = 0)
+            for ch_info in cohorts:
+                ch_name = ch_info["name"]
+                filters.floatValueUnit(f"Cohort_{ch_name}_AF",
+                    f"/_view/cohorts/{ch_name}/AF",
                     default_value = 0)
-                filters.floatValueUnit(ch_name + "_AF2",
-                    "/_view/cohorts/" + ch_name + "/AF2",
-                    default_value = 0, title = "AF_Hom")
+                filters.floatValueUnit(f"Cohort_{ch_name}_AF2",
+                    f"/_view/cohorts/{ch_name}/AF2",
+                    default_value = 0)
 
     with filters.viewGroup("Variant"):
-        filters.statusUnit("Variant_Class", "/__data/variant_class",
-            tooltip = ("Variant class as returned by VEP. "
-                "The class of a variant is based on Sequence "
-                "Ontology and is called according to its component "
-                "alleles and its mapping to the reference genome. "
-                "https://useast.ensembl.org/info/genome/variation/"
-                "prediction/classification.html#classes"))
+        filters.statusUnit("Variant_Class", "/__data/variant_class")
         filters.statusUnit("Most_Severe_Consequence",
                "/__data/most_severe_consequence",
                variants = sConsequenceVariants,
@@ -154,13 +149,10 @@ def defineFilterSchema(metadata_record):
         filters.multiStatusUnit("Canonical_Annotation",
             "/_view/general/canonical_annotation[]",
             default_value = "undefined")
-        filters.statusUnit("Multiallelic", "/_filters/multiallelic",
-            title = "Multi-allelic?")
-        filters.statusUnit("Altered_VCF", "/_filters/altered_vcf",
-            title = "Has VCF been normalized?")
+        filters.statusUnit("Multiallelic", "/_filters/multiallelic")
+        filters.statusUnit("Altered_VCF", "/_filters/altered_vcf")
         # filters.intValueUnit("Number_ALTs",
         #     "/_filters/alts",
-        #     title = "Number of Alternative alleles",
         #     conversion = ["len"], default_value = 0)
 
         #filters.intValueUnit("zyg_len", "/__data/zygosity",
@@ -168,21 +160,15 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Genes"):
         genes_unit = filters.multiStatusUnit("Symbol",
-            "/_view/general/genes[]",
-            compact_mode = True)
+            "/_view/general/genes[]", compact_mode = True)
         filters.panelsUnit("Panels", genes_unit, "Symbol",
             view_path = "/_view/general/gene_panels")
         filters.multiStatusUnit("EQTL_Gene", "/_filters/eqtl_gene[]",
-            title = "EQTL Gene", default_value = "None")
-        #filters.multiStatusUnit("Transcripts",
-        #    "/__data/transcript_consequences[]", compact_mode = True,
-        #    conversion = [["property", transcript_id"]])
+            default_value = "None")
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
-            title = "Number of overlapping genes",
             conversion = ["len"], default_value = 0)
         filters.intValueUnit("Num_Transcripts",
             "/__data/transcript_consequences",
-            title = "Number of transcripts at the position",
             conversion = ["len"], default_value = 0)
 
     with filters.viewGroup("Transcripts"):
@@ -209,14 +195,13 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit("Transcript_codon_pos", "codonpos",
             default_value = "undefined")
         filters.transcriptStatusUnit("Transcript_region", "region",
-            title= "Gene Region", default_value = "undefined")
+            default_value = "undefined")
         filters.transcriptStatusUnit("Transcript_CDS", "cds",
-            title= "CDS?", default_value = "-")
+            default_value = "-")
         filters.transcriptStatusUnit("Transcript_masked", "masked_region",
-            title= "Masked", default_value = "No")
+            default_value = "No")
         filters.transcriptIntValueUnit("Transcript_dist_from_exon",
-            "dist_from_exon",
-            title = "Distance from Exon Boundary", default_value = -1)
+            "dist_from_exon", default_value = -1)
         # filters.transcriptStatusUnit("Transcript_strand", "strand",
         #     default_value = "undefined")
 
@@ -232,26 +217,6 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit(
             "Transcript_FATHMM", "fathmm_prediction")
 
-    # with filters.viewGroup("Transcripts"):
-    #     filters.transcriptMultisetUnit("Transcript_consequence",
-    #         "consequence_terms", variants = sConsequenceVariants,
-    #         default_value = "undefined")
-    #     filters.transcriptStatusUnit("Transcript_canonical", "canonical",
-    #         bool_check_value = "1", default_value = "False")
-    #     filters.transcriptStatusUnit("Transcript_biotype", "biotype",
-    #         default_value = "undefined")
-    #     filters.transcriptStatusUnit("Transcript_worst", "consequence_terms",
-    #         bool_check_value = "${Most_Severe_Consequence}",
-    #         default_value = "False")
-    #     filters.transcriptStatusUnit("Transcript_id", "transcript_id",
-    #         default_value = "undefined")
-    #     filters.transcriptStatusUnit("Transctript_gene_id", "gene_id",
-    #         default_value = "undefined")
-    #     filters.transcriptStatusUnit("Transcript_source", "source",
-    #         default_value = "undefined")
-    #     filters.transcriptStatusUnit("Transcript_strand", "strand",
-    #         default_value = "undefined")
-
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
             variants = ["chr1", "chr2", "chr3", "chr4", "chr5",
@@ -262,97 +227,59 @@ def defineFilterSchema(metadata_record):
             default_value = "undefined")
 
         filters.intValueUnit("Start_Pos", "/__data/start",
-            title = "Start Position",
-            render_mode = "neighborhood", default_value = sys.maxsize)
+            default_value = sys.maxsize)
         filters.intValueUnit("End_Pos", "/__data/end",
-            title = "End Position", default_value = 0,
-            render_mode = "neighborhood")
+            default_value = 0)
         filters.intValueUnit("Dist_from_Exon", "/_filters/dist_from_exon",
-            title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<")
+            default_value = 0)
         filters.intValueUnit("Dist_from_Exon_Canonical",
             "/_filters/dist_from_exon_canonical",
-            title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<", conversion = ["min"])
+            default_value = 0, conversion = ["min"])
         filters.intValueUnit("Dist_from_Exon_Worst",
             "/_filters/dist_from_exon_worst",
-            title = "Distance From Intron/Exon Boundary (Canonical)",
-            default_value = 0, render_mode = "log,<", conversion = ["min"])
+            default_value = 0, conversion = ["min"])
         filters.multiStatusUnit("Region_Canonical",
             "/__data/region_canonical[]",
-            title = "Region (Canonical)", default_value = "Other")
+            default_value = "Other")
         filters.multiStatusUnit("Region_Worst", "/__data/region_worst[]",
-            title = "Region (Canonical)", default_value = "Other")
+            default_value = "Other")
         filters.statusUnit("Region", "/__data/region_canonical",
-            title = "Region (Legacy)", default_value = "Other", )
-        filters.statusUnit("hg19", "/_view/general/hg19", title = "HG19",
+            default_value = "Other", )
+        filters.statusUnit("In_hg19", "/_view/general/hg19",
             conversion = [["filter", "is_none"]],
             value_map= {"None": "Unmapped"}, default_value = "Mapped")
 
     with filters.viewGroup("gnomAD"):
         filters.floatValueUnit("gnomAD_AF",
             "/_filters/gnomad_af_fam",
-            diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (family)",
-            tooltip = "gnomAD Overall Allele Frequency",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.floatValueUnit("gnomAD_AF_Exomes",
             "/_filters/gnomad_db_exomes_af",
-            diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Exome Allele Frequency (family)",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.floatValueUnit("gnomAD_AF_Genomes",
             "/_filters/gnomad_db_genomes_af",
-            diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Genome Allele Frequency (family)",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.floatValueUnit("gnomAD_AF_Proband",
             "/_filters/gnomad_af_pb",
-            diap = (0., 1.), default_value = 0.,
-            title = "gnomAD Allele Frequency (proband)",
-            tooltip = "gnomAD Overall Allele Frequency "
-            "for the allele present in proband",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.floatValueUnit("gnomAD_PopMax_AF",
             "/_filters/gnomad_popmax_af",
-            tooltip = "Maximum allele frequency across outbred populations",
-            diap = (0., 1.), default_value = 0.,
-            title = "PopMax Allele Frequency",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.statusUnit("gnomAD_PopMax",
-            "/_filters/gnomad_popmax", default_value = "None",
-            title = "PopMax Ancestry",
-            tooltip =
-                "Outbred population that has the maximum allele frequency")
+            "/_filters/gnomad_popmax", default_value = "None")
         filters.intValueUnit("gnomAD_PopMax_AN",
-            "/_filters/gnomad_popmax_an",
-            default_value = 0,
-            title = "Number of alleles in outbred PopMax Ancestry",
-            render_mode = "log,>")
+            "/_filters/gnomad_popmax_an", default_value = 0)
         filters.floatValueUnit("gnomAD_PopMax_AF_Inbred",
             "/_filters/gnomad_raw_popmax_af",
-            tooltip = "Maximum allele frequency across all populations "
-                      + "(including inbred)",
-            diap = (0., 1.), default_value = 0.,
-            title = "PopMax Allele Frequency (including inbred)",
-            render_mode = "log,<")
+            diap = (0., 1.), default_value = 0.)
         filters.statusUnit("gnomAD_PopMax_Inbred",
-            "/_filters/gnomad_raw_popmax", default_value = "None",
-            title = "PopMax Ancestry (including inbred)",
-            tooltip = "Population, including inbred, that has the maximum "
-                      + "allele frequency")
+            "/_filters/gnomad_raw_popmax", default_value = "None")
         filters.intValueUnit("gnomAD_PopMax_AN_Inbred",
-            "/_filters/gnomad_raw_popmax_an",
-            default_value = 0, render_mode = "log,>",
-            title = "Number of alleles in (inbred) PopMax Ancestry")
+            "/_filters/gnomad_raw_popmax_an", default_value = 0)
         filters.intValueUnit("gnomAD_Hom",
-            "/_filters/gnomad_hom",
-            default_value = 0, render_mode = "log,>",
-            title = "gnomAD: Number of homozygous")
+            "/_filters/gnomad_hom", default_value = 0)
         filters.intValueUnit("gnomAD_Hem",
-            "/_filters/gnomad_hem",
-            default_value = 0, render_mode = "log,>",
-            title = "gnomAD: Number of hemizygous")
+            "/_filters/gnomad_hem", default_value = 0)
 
     with filters.viewGroup("Databases"):
         presence_in_db = [
@@ -364,98 +291,52 @@ def defineFilterSchema(metadata_record):
                 "item-dict", "Clinvar_Trusted_Submitters").getData().values()):
             presence_in_db.append((submitter,
                 "/_view/databases/clinvar_trusted/%s" % submitter))
-        filters.presenceUnit("Presence_in_Databases", presence_in_db,
-            title = "Presence in Databases")
+        filters.presenceUnit("Presence_in_Databases", presence_in_db)
 
         filters.multiStatusUnit("ClinVar_Submitters",
-            "/_view/databases/clinVar_submitters[]",
-            title = "ClinVar Submitters", compact_mode = True)
+            "/_view/databases/clinVar_submitters[]", compact_mode = True)
         filters.intValueUnit("Number_submitters",
             "/_view/databases/clinVar_submitters",
-            title = "Number of ClinVar Submitters",
             conversion = ["len"], default_value = 0)
 
         filters.multiStatusUnit("PMIDs",
-            "/_view/databases/references[]",
-            title = "PMIDs", compact_mode = True)
+            "/_view/databases/references[]", compact_mode = True)
         filters.intValueUnit("Number_pmid",
             "/_view/databases/references",
-            title = "Number of PMIDs",
             conversion = ["len"], default_value = 0)
 
         # filters.multiStatusUnit("beacons",
-        #     "/__data/beacon_names",
-        #     title = "Observed at")
+        #     "/__data/beacon_names")
 
     with filters.viewGroup("Call_Quality"):
         filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq",
-            title = "Genotype Quality (GQ) for Proband",
-            render_mode = "linear,>", default_value = -1,
-            tooltip = "GQ tells you how confident we are that "
-            "the genotype we assigned to a particular sample is correct. "
-            "It is simply the second lowest PL, because it is the "
-            "difference between the second lowest PL and the lowest PL "
-            "(always 0).")
+            default_value = -1)
         filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
-            title = "Minimum GQ for the family", render_mode = "linear,>",
-            default_value = -1,
-            tooltip = "GQ tells you how confident we are that "
-            "the genotype we assigned to a particular sample is correct. "
-            "It is simply the second lowest PL, because it is the "
-            "difference between the second lowest PL and the lowest PL "
-            "(always 0).")
+            default_value = -1)
         filters.intValueUnit("Max_GQ", "/_view/quality_samples",
-            title = "The highest GQ",
-            tooltip= "Max(GQ) for those samples that have the variant",
-            render_mode = "linear,=", default_value = 0,
+            default_value = 0,
             conversion = [
                 ["filter", "has_variant"],
                 ["property", "genotype_quality"],
                 "max"])
 
         filters.intValueUnit("Num_NO_CALL", "/_view/quality_samples",
-            title = "Number of NO_CALL samples",
-            tooltip= "Number of samples with NO_CALL in the current site",
-            render_mode = "linear,=", default_value = 0,
+            default_value = 0,
             conversion = [
                 ["skip", 1],
                 ["property", "genotype_quality"],
                 "negative", "len"])
         filters.intValueUnit("QUAL", "/_filters/qual",
-            title = "Variant Call Quality",
             default_value = -1)
         filters.floatValueUnit("QD", "/_filters/qd",
-            title = "Quality by Depth",
-            render_mode = "linear,>", default_value = -1.,
-            tooltip = "The QUAL score normalized by allele depth (AD) "
-            "for a variant. This annotation puts the variant confidence "
-            "QUAL score into perspective by normalizing for the amount "
-            "of coverage available. Because each read contributes a little "
-            "to the QUAL score, variants in regions with deep coverage "
-            "can have artificially inflated QUAL scores, giving the "
-            "impression that the call is supported by more evidence "
-            "than it really is. To compensate for this, we normalize "
-            "the variant confidence by depth, which gives us a more "
-            "objective picture of how well supported the call is.")
+            default_value = -1.)
         filters.floatValueUnit("FS", "/_filters/fs",
-            title = "Fisher Strand Bias",
-            render_mode = "linear,<", default_value = 0.,
-            tooltip = "Phred-scaled probability that there is strand bias "
-            "at the site. Strand Bias tells us whether the alternate "
-            "allele was seen more or less often on the forward or "
-            "reverse strand than the reference allele. When there "
-            "little to no strand bias at the site, the FS value "
-            "will be close to 0.")
-        filters.multiStatusUnit("FT", "/_filters/filters[]", title = "FILTER",
-            tooltip = "This field contains the name(s) of any filter(s) "
-            "that the variant fails to pass, or the value PASS if the "
-            "variant passed all filters. If the FILTER value is ., "
-            "then no filtering has been applied to the records.")
+            default_value = 0.)
+        filters.multiStatusUnit("FT", "/_filters/filters[]")
 
     with filters.viewGroup("Predictions"):
         # research_only = True
         filters.statusUnit("HGMD_Benign", "/_filters/hgmd_benign",
-            title = "Categorized Benign in HGMD",
             default_value = "Not in HGMD",
             value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
         filters.multiStatusUnit("HGMD_Tags", "/_view/databases/hgmd_tags[]",
@@ -464,106 +345,74 @@ def defineFilterSchema(metadata_record):
         # research_only = True
         filters.statusUnit("Clinvar_Benign", "/_filters/clinvar_benign",
             default_value = "Not in ClinVar",
-            title = "Categorized Benign in ClinVar by all submitters",
             value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
         filters.multiStatusUnit("ClinVar_Significance",
-            "/__data/clinvar_significance[]",
-            title = "Clinical Significance in ClinVar")
+            "/__data/clinvar_significance[]")
         filters.regPreTransform(lambda rec_no, rec_data:
             clinvarPreTransform(rec_data, filters.getStdItem(
                 "item-dict", "Clinvar_Trusted_Submitters").getData()))
 
         filters.multiStatusUnit("Clinvar_Trusted_Significance",
             "/_view/databases/clinvar_trusted",
-            title = "ClinVar significance by trusted submitters only",
-            tooltip =
-                "Clinical Significance by ClinVar trusted submitters only",
             conversion = ["values", ["split", ','], "clear", "uniq"])
         filters.multiStatusUnit("Clinvar_Trusted_Simplified",
             "/_view/databases/clinvar_trusted_simplified",
-            tooltip =
-                "Simplified Clinical Significance by trusted submitters only",
             conversion = ["values", ["split", ','], "clear", "uniq"])
 
         filters.statusUnit("Clinvar_stars", "/_filters/clinvar_stars",
-            default_value = "No data", title = "ClinVar Stars")
+            default_value = "No data")
         filters.intValueUnit("Number_of_clinvar_submitters",
-            "/_filters/num_clinvar_submitters", render_mode = "log,>",
-            default_value = 0, title = "ClinVar: Number of Submitters")
+            "/_filters/num_clinvar_submitters",
+            default_value = 0)
         filters.statusUnit("Clinvar_review_status",
             "/_filters/clinvar_review_status",
-            default_value = "No data", title = "ClinVar Review Status")
+            default_value = "No data")
         filters.statusUnit("Clinvar_criteria_provided",
             "/_filters/clinvar_criteria_provided",
-            default_value = "Not Provided", title = "ClinVar Criteria")
+            default_value = "Not Provided")
         filters.statusUnit("Clinvar_conflicts",
             "/_filters/clinvar_conflicts",
-            default_value = "Criteria not Provided",
-            title = "ClinVar Conflicts")
+            default_value = "Criteria not Provided")
         filters.multiStatusUnit("Clinvar_acmg_guidelines",
             "/_filters/clinvar_acmg_guidelines[]",
             default_value = "None")
 
         for submitter in sorted(filters.getStdItem(
                 "item-dict", "Clinvar_Trusted_Submitters").getData().values()):
-            filters.statusUnit("%s_Significance" % submitter,
+            filters.statusUnit(f"ClinVar_Significance_{submitter}",
                 "/_view/databases/clinvar_trusted",
-                title = "Clinical Significance by %s" % submitter,
                 conversion = [["property", submitter]],
                 default_value = "None")
 
         #filters.statusUnit("Clinvar_Trusted_Benign",
         #    "/_filters/clinvar_trusted_benign",
         #    default_value = "No data",
-        #    title = "Categorized Benign by Clinvar Trusted Submitters",
         #    value_map = {"True": "Benign by Trusted submitters",
         #        "False": "Unknown"})
 
         filters.statusUnit("splice_altering", "/_filters/splice_altering",
-            title = "Splice AI splice altering",
             default_value = "No altering")
         filters.floatValueUnit("splice_ai_dsmax", "/_filters/splice_ai_dsmax",
-            title = "Splice AI splice altering score",
-            render_mode = "linear,>", default_value = 0)
+            default_value = 0)
 
-        # filters.multiStatusUnit("Polyphen", "/_view/predictions/polyphen[]",
-        # default_value = "N/A")
-        # This is an obsolete filter replaced by Polyphen 2
         filters.multiStatusUnit("Polyphen_2_HVAR",
             "/_view/predictions/polyphen2_hvar[]",
-            title = "Polyphen",
             conversion = [["split_re", r"[\s\,]"], "clear", "uniq"],
-            default_value = "N/A",
-            tooltip = "HumVar (HVAR) is PolyPhen-2 classifier "
-            "trained on known human variation (disease mutations vs."
-            " common neutral variants)")
+            default_value = "N/A")
         filters.multiStatusUnit("Polyphen_2_HDIV",
             "/_view/predictions/polyphen2_hdiv[]",
-            title = "Polyphen HDIV (High sensitivity)",
             conversion = [["split_re", r"[\s\,]"], "clear", "uniq"],
-            default_value = "N/A",
-            tooltip = "HumDiv (HDIV) classifier is trained on a smaller "
-            "number of select extreme effect disease mutations vs. "
-            "divergence with close homologs (e.g. primates), which is "
-            "supposed to consist of mostly neutral mutations.")
+            default_value = "N/A")
 
         filters.multiStatusUnit("SIFT", "/_view/predictions/sift[]",
-            default_value = "N/A",
-            tooltip = "Sort intolerated from tolerated (An amino acid at a "
-            "position is tolerated | The most frequentest amino acid "
-            "being tolerated). D: Deleterious T: tolerated")
+            default_value = "N/A")
         filters.multiStatusUnit("FATHMM", "/_view/predictions/fathmm[]",
-            default_value = "N/A",
-            tooltip = "Functional analysis through hidden markov model HMM."
-            "D: Deleterious; T: Tolerated")
+            default_value = "N/A")
         filters.multiStatusUnit("PrimateAI",
             "/_view/predictions/primate_ai_pred[]",
-            default_value = "N/A",
-            tooltip = "Prediction of PrimateAI score based on the authors "
-            "recommendation, “T(olerated)” or “D(amaging)”. "
-            "The score cutoff between “D” and “T” is 0.803.")
+            default_value = "N/A")
         filters.floatValueUnit("GERP_score", "/_view/bioinformatics/gerp_rs",
-            render_mode = "linear,>", default_value = 0, title = "GERP Score")
+            default_value = 0)
 
     with filters.viewGroup("Pharmacogenomics"):
         filters.multiStatusUnit("Diseases",

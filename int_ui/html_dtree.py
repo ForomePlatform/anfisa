@@ -27,8 +27,8 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
             "vrec.css", "base.css"],
         js_files = ["dtree.js", "eval.js", "func.js", "vrec.js", "base.js"])
 
-    print('  <body onload="setupDTree(\'%s\', \'%s\',  \'%s\', \'%s\');">' %
-        (ds_h.getName(), ds_h.getDSKind(), common_title, ws_pub_url),
+    print(f'  <body onload="setupDTree(\'{ds_h.getName()}\', '
+        f'\'{ds_h.getDSKind()}\',  \'{common_title}\', \'{ws_pub_url}\');">',
         file = output)
 
     _formPanel(output)
@@ -37,8 +37,9 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
     _formEditCodeDiv(output)
 
     gen_html.formNoteDiv(output)
-    gen_html.formCreateWsDiv(output)
+    gen_html.formDeriveWsDiv(output)
     gen_html.formSubViewDiv(output)
+    gen_html.formUnitClassesDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
@@ -81,8 +82,8 @@ def _formPanel(output):
                 <select id="dtree-name-combo-list"
                         onchange="sDTreesH.select();">
                     <option value=""></option>
-                    <input id="dtree-name-input" type="text">
                 </select>
+                <input id="dtree-name-input" type="text">
               </div>
               <button id="dtree-act-op" class="op-button"
                 onclick="sDTreesH.action();">...</button>
@@ -111,6 +112,11 @@ def _formPanel(output):
                 <span id="list-report" class="bold"></span><br/>
             <button id="open-sub-view-rec"
                 onclick="sSubVRecH.show()">View variants</button>
+        </div>
+        <div id="dtree-unit-classes">
+            <span id="unit-classes-state"></span>
+            <button onclick="sUnitClassesH.show();"
+                title="Select filtration properties in work">&#9745;</button>
         </div>
       </div>
       <div id="dtree-main" class="panel-space">
@@ -183,7 +189,6 @@ def _formCurCondDiv(output):
                 <button onclick="sViewH.modalOff();">
                     Cancel
                 </button>
-              </div>
             </div>
         </div>
       </div>

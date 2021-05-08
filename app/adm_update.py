@@ -27,6 +27,7 @@ from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
 from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import readySolutions
+from app.config.variables import anfisaVariables
 from app.model.dir_entry import DirDSEntry
 from app.model.data_vault import DataVault
 from app.model.mongo_db import MongoConnector
@@ -147,7 +148,8 @@ class UpdateApp:
         self.mMongoConn = MongoConnector(self.mConfig["mongo-db"],
             self.mConfig.get("mongo-host"), self.mConfig.get("mongo-port"))
         self.mDruidAgent = DruidAgent(self.mConfig)
-        self.mDataVault = DataVault(self, self.mVaultDir, auto_mode = False)
+        self.mDataVault = DataVault(self, self.mVaultDir,
+            anfisaVariables, auto_mode = False)
         self.mPlainReceiptMode = plain_receipt_mode
 
     def getMongoConnector(self):

@@ -49,7 +49,6 @@
 div#filter-stat, div#filter-conditions {
     flex-grow: 1;
     overflow: hidden;
-    display: grid;
     border: 1px solid black;
     white-space: nowrap;
 }
@@ -131,6 +130,15 @@ select#filter-name-input {
     margin: 0px 5px 0px 10px;
 }
 
+#flt-unit-classes {
+    padding: 1px 0px;
+    width: 97%;
+    text-align: right;
+    font-style: italic;
+    font-size: 75%;
+    max-height: 20px;
+    height: 20px;
+}
 /********************Unit stat support*****************************/
 div.stat-unit {
     cursor: pointer;

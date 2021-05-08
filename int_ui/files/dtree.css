@@ -47,7 +47,7 @@ body {
 /********************Top controls*****************************/
 div#dtree-top-ctrl, div#dtree-top-info, div#dtree-top-cur {
     padding: 3px 10px;
-    flex: 1 0 30%;
+    flex: 1 0 25%;
 }
 
 span#list-report {
@@ -65,6 +65,16 @@ div.error a {
     text-decoration: underline;
     cursor: pointer;
 }
+
+#dtree-unit-classes {
+    padding: 20px 5px 3px 0px;
+    flex: 1 0 15%;
+    text-align: right;
+    font-style: italic;
+    font-size: 75%;
+    vertical-align: bottom;
+}
+
 /********************DTree edit controls*****************************/
 div#dtree-edit-ctrl {
     height: 30px;

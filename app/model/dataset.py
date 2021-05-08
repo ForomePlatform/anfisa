@@ -93,6 +93,7 @@ class DataSet(SolutionBroker):
     def startService(self):
         self.mZygSupport = ZygositySupport(self)
         tuneUnits(self)
+        self.mDataVault.getVarRegistry().relax(self.mName)
         self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
 
     def isUpToDate(self, fstat_info):
@@ -251,6 +252,8 @@ class DataSet(SolutionBroker):
         else:
             ret["meta"] = self.mDataInfo["meta"]
             ret["cohorts"] = self.mFamilyInfo.getCohortList()
+            ret["unit-classes"] = (
+                self.mDataVault.getVarRegistry().getClassificationDescr())
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []

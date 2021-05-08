@@ -19,6 +19,7 @@
 #
 
 import abc
+from copy import deepcopy
 
 #===============================================
 class VarUnit:
@@ -29,21 +30,31 @@ class VarUnit:
         self.mUnitKind  = descr.get("kind", unit_kind)
         self.mSubKind = descr.get("sub-kind", sub_kind)
         self.mInternalName = descr["name"]
-        self.mTitle = descr["title"]
-        self.mNo    = descr.get("no", -1)
         self.mVGroup = descr.get("vgroup")
-        self.mRenderMode = descr.get("render")
-        self.mToolTip = descr.get("tooltip")
+        self.mNo    = descr.get("no", -1)
         self.mScreened = False
         if unit_kind is not None:
             assert self.mUnitKind == unit_kind, (
-                "Kind conflict: %s/%s" % (self.mUnitKind, unit_kind))
+                f"Kind conflict: {self.mUnitKind}/{unit_kind} "
+                f"for {self.mInternalName}")
         if sub_kind is not None:
             assert self.mSubKind == sub_kind, (
-                "Sub-kind conflict: %s/%s" % (self.mSubKind, sub_kind))
-        self.mName  = descr["name"]
-        if ' ' in self.mName:
-            self.mName = self.mName.replace(' ', '_')
+                f"Sub-kind conflict: {self.mSubKind}/{sub_kind}"
+                f"for {self.mInternalName}")
+
+        var_kind, var_descr = (self.mEvalSpace.getDS().
+            getDataVault().getVariableInfo(self.mInternalName))
+
+        assert self.mUnitKind == var_kind, (
+            f"Variable kind conflict: {self.mUnitKind}/{var_kind} "
+                f"for {self.mInternalName}")
+
+        self.mInfo = deepcopy(var_descr)
+        self.mName = self.mInfo["name"].replace(' ', '_')
+        self.mInfo["vgroup"] = self.mVGroup
+        self.mInfo["kind"] = self.mUnitKind
+        if self.mSubKind:
+            self.mInfo["sub-kind"] = self.mSubKind
 
     def getEvalSpace(self):
         return self.mEvalSpace
@@ -60,14 +71,8 @@ class VarUnit:
     def getDescr(self):
         return self.mDescr
 
-    def getTitle(self):
-        return self.mTitle
-
     def getVGroup(self):
         return self.mVGroup
-
-    def getToolTip(self):
-        return self.mToolTip
 
     def getSubKind(self):
         return self.mSubKind
@@ -88,18 +93,7 @@ class VarUnit:
         self.mScreened = value
 
     def prepareStat(self, incomplete_mode = False):
-        ret_handle = {
-            "kind": self.mUnitKind,
-            "name": self.mName,
-            "vgroup": self.mVGroup}
-        if self.mSubKind:
-            ret_handle["sub-kind"] = self.mSubKind
-        if self.mTitle and self.mTitle != self.mName:
-            ret_handle["title"] = self.mTitle
-        if self.mRenderMode:
-            ret_handle["render"] = self.mRenderMode
-        if self.mToolTip:
-            ret_handle["tooltip"] = self.mToolTip
+        ret_handle = deepcopy(self.mInfo)
         if incomplete_mode:
             ret_handle["incomplete"] = True
         return ret_handle
@@ -118,7 +112,7 @@ class EnumUnitSupport:
         filter_mode, variants = cond_data[2:]
         if len(variants) == 0:
             eval_h.operationError(cond_data,
-                "Enum %s: empty set of variants" % self.getName())
+                f"Enum {self.getName}: empty set of variants")
             return self.getEvalSpace().getCondNone()
         return self.getEvalSpace().makeEnumCond(
             self, variants, filter_mode)

@@ -18,6 +18,12 @@ Format
 |        "**tooltip**": *optional* tooltip, *string*
 |        "**incomplete**": *optional* status is incomplete, ``true``
 |        "**detailed**": *optional* transcript are in counts, ``true``
+|        "**classes**: facet classification of the property, 
+|           ``[`` *list* of facet descriptors
+|               ``[`` indexes of items in facet classification list 
+|                       (usually with one element) *list of integers*
+|               ``]``, ...
+|           ``]``
 |
 |        *in case of* **kind** = ``"numeric"``
 |        ----------------------------------- 
@@ -65,6 +71,8 @@ In complete state details of status are always set. If status reports for filter
 
 In **detailed** case (:term:`workspace` context) the main items for counting are :term:`transcripts<transcript>`, so count values form pair of values in list, first one is for transcripts, second for :term:`variants<variant>`.
 Otherwise only single variant count is provided in lists. 
+
+The field **classes** provides property classification information, see :doc:`../concepts/restrict_flt`.
 
 Property **sub-kind** can have the following values (transcipt-based subkinds are provided only in :term:`workspace` context):
 
@@ -129,3 +137,5 @@ See also
 :doc:`statunits` 
 
 :doc:`statfunc`
+
+:doc:`../concepts/restrict_flt`

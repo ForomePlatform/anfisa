@@ -29,15 +29,16 @@ def formWsPage(output, common_title, html_base, ds_h, ws_pub_url):
         js_files = ["ws.js", "filters.js", "eval.js", "func.js",
             "zones.js", "base.js"])
 
-    print('  <body onload="initWin(\'%s\', \'%s\', \'%s\');">' %
-        (ds_h.getName(), common_title, ws_pub_url), file = output)
+    print(f'  <body onload="initWin(\'{ds_h.getName()}\', '
+        f'\'{common_title}\', \'{ws_pub_url}\');">', file = output)
     _formPanel(output, ds_h.getName(), ws_pub_url)
     print('    <div id="filter-back">', file = output)
-    gen_html.formFilterPanel(output)
+    gen_html.formFilterPanel(output, True)
     print('    </div>', file = output)
     _formZonesDiv(output, ds_h.iterZones())
     gen_html.formNoteDiv(output)
-    gen_html.formCreateWsDiv(output)
+    gen_html.formDeriveWsDiv(output)
+    gen_html.formUnitClassesDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
@@ -160,15 +161,17 @@ def _formPanel(output, workspace_name, ws_pub_url):
 def _formZonesDiv(output, zones):
     rep_check_zones, rep_div_zones = [], []
     for zone_h in zones:
-        zone_check_id = "zn-check--%s" % zone_h.getName()
-        rep_check_zones.append(('<span id="zn--%s">'
-            '<input id="%s" class="zone-checkbox" type="checkbox" '
-            'onchange="sZoneH.setWorkZone(\'%s\');"/>'
-            '<label for="%s">%s</label></span>') %
-            (zone_h.getName(), zone_check_id, zone_h.getName(),
-            zone_check_id, escape(zone_h.getTitle())))
+        zone_name = zone_h.getName()
+        zone_check_id = f"zn-check--{zone_name}"
+        zone_title = escape(zone_h.getTitle())
+        rep_check_zones.append((
+            f'<span id="zn--{zone_name}">'
+            f'<input id="{zone_check_id}" type="checkbox" '
+            f'class="zone-checkbox" '
+            f'onchange="sZoneH.setWorkZone(\'{zone_name}\');"/>'
+            f'<label for="{zone_check_id}">{zone_title}</label></span>'))
         rep_div_zones.append('<div class="work-zone-list" '
-            'id="zn-div--%s"></div>' % zone_h.getName())
+            f'id="zn-div--{zone_name}"></div>')
     params = {
         "check_zones": "\n".join(rep_check_zones),
         "div_zones": "\n".join(rep_div_zones)}
