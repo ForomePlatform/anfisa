@@ -40,7 +40,7 @@ anfisaVariables.setupClassificationFacet(2, "Scale", [
     ["position", "Position"],
     ["window", "Window"],
     ["gene", "Gene"],
-    ["na2", "N/A"]
+    #["na2", "N/A"]
 ])
 
 anfisaVariables.setupClassificationFacet(3, "Method", [
@@ -60,7 +60,7 @@ anfisaVariables.regVar("Rules", "enum",
 #======================================
 # viewGroup("Inheritance")
 #======================================
-anfisaVariables.predeclareClassification("phenotype", "na2", "na3")
+anfisaVariables.predeclareClassification("phenotype", "variant", "na3")
 
 anfisaVariables.regVar("Variant_in", "enum",
     title = "Variant presence in cohorts")
@@ -75,10 +75,10 @@ anfisaVariables.regVar("Custom_Inheritance_Mode", "func",
     title = "Custom Inheritance Mode")
 
 anfisaVariables.regVar("Compound_Het", "func",
-    title = "Calculated Compound")  # Misha:check it
+    title = "Calculated Compound", facet2="gene")  # Misha:check it
 
 anfisaVariables.regVar("Compound_Request", "func",
-    title = "Calculated Compound Request")
+    title = "Calculated Compound Request", facet2="gene")
 
 anfisaVariables.regVar("Proband_Zygosity", "enum",
     title = "Proband Zygosity")
