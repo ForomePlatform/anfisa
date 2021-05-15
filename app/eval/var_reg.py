@@ -113,6 +113,8 @@ class VarRegistry:
         descr = {
             "name": var_name,
             "classes": self._prepareFacets([facet1, facet2, facet3])}
+        assert all(info is not None for info in descr["classes"]), (
+            f"Facet classes are not correcly defined for {var_name}")
         if title:
             descr["title"] = title
         if render_mode:

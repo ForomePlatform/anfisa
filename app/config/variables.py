@@ -40,7 +40,7 @@ anfisaVariables.setupClassificationFacet(2, "Scale", [
     ["position", "Position"],
     ["window", "Window"],
     ["gene", "Gene"],
-    #["na2", "N/A"]
+    ["na2", "N/A"]
 ])
 
 anfisaVariables.setupClassificationFacet(3, "Method", [
@@ -55,7 +55,7 @@ anfisaVariables.setupClassificationFacet(3, "Method", [
 ])
 
 anfisaVariables.regVar("Rules", "enum",
-    facet1 = "rules")
+    facet1 = "rules", facet2 = "na2", facet3 = "na3")
 
 #======================================
 # viewGroup("Inheritance")
