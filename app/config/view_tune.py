@@ -544,11 +544,13 @@ class SamplesInfo_AttrH:
         self.mDS = ds_h
 
     def makeValue(self, rec_data):
-        return [{
-            "genotype":  smp_info.get("genotype"),
-            "g_quality": smp_info.get("genotype_quality")}
-            for smp_info in
-            rec_data["_view"]["quality_samples"][1:]]
+        ret = dict()
+        for smp_info in rec_data["_view"]["quality_samples"][1:]:
+            smp_id = smp_info["title"].split(':')[-1].strip()
+            ret[smp_id] = {
+                "genotype":  smp_info.get("genotype"),
+                "g_quality": smp_info.get("genotype_quality")}
+        return ret
 
 #===============================================
 class GeneColored_AttrH:
