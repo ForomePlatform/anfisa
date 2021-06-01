@@ -50,7 +50,8 @@ class WS_Unit(VarUnit):
 class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
-        assert self.getSubKind() in {"float", "int"}
+        assert self.getSubKind() in {"float", "int"}, (
+            "Bad sub-kind for "  + self.getName())
         self._setScreened(self.getDescr()["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
@@ -66,7 +67,8 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
         return ret_handle
 
     def fillRecord(self, inp_data, rec_no):
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName())
         self.mArray.append(inp_data.get(self.getInternalName()))
 
 #===============================================
@@ -107,7 +109,8 @@ class WS_StatusUnit(WS_EnumUnit):
         return {self.mArray[rec_no]}
 
     def fillRecord(self, inp_data, rec_no):
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName())
         value = inp_data[self.getInternalName()]
         self.mArray.append(self.mVariantSet.indexOf(value))
 
@@ -164,14 +167,16 @@ class WS_MultiCompactUnit(WS_EnumUnit):
                 self.mPackSetSeq.append(set(idx_set))
         else:
             idx = 0
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName())
         self.mArray.append(idx)
 
 #===============================================
 class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
-        assert self.getSubKind() in {"transcript-float", "transcript-int"}
+        assert self.getSubKind() in {"transcript-float", "transcript-int"}, (
+            "Bad sub-kind for "  + self.getName())
         self._setScreened(self.getDescr()["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
         self.mDefaultValue = self.getDescr()["default"]
@@ -208,7 +213,8 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
             [info[0] for info in variants_info])
         self.mDefaultValue = self.mVariantSet.indexOf(
             self.getDescr()["default"])
-        assert self.mDefaultValue is not None
+        assert self.mDefaultValue is not None, (
+            "No default falue for "  + self.getName())
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
@@ -300,7 +306,7 @@ def loadWS_Unit(eval_space, unit_data):
         if unit_data["sub-kind"].startswith("transcript-"):
             return WS_TranscriptNumericValueUnit(eval_space, unit_data)
         return WS_NumericValueUnit(eval_space, unit_data)
-    assert kind == "enum", "Bad kind: " + kind
+    assert kind == "enum", "Bad kind: " + kind + " for " + unit_data["name"]
     if unit_data["sub-kind"] == "transcript-status":
         return WS_TranscriptStatusUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-multiset":
