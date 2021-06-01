@@ -99,11 +99,11 @@ class SamplesColumnsMarkup:
                 "name": "_cohort",
                 "title": "Cohorts",
                 "cells": []}
-            for idx, td_info in enumerate(info_handle["rows"][0][2]):
+            for idx, td_info in enumerate(info_handle["rows"][0]["cells"]):
                 if idx == 0:
-                    cohort_row[-1].append(["-", "null"])
+                    cohort_row["cells"].append(["-", "null"])
                     continue
-                sample_name = td_info["name"].split()[-1]
+                sample_name = td_info[0].split()[-1]
                 cohort = self.mCohortMap[sample_name]
                 cohort_row["cells"].append([cohort, "string"])
                 col_seq[idx] = 'cohort-' + cohort
@@ -112,10 +112,10 @@ class SamplesColumnsMarkup:
         act_samples = view_context.get("active-samples")
         if act_samples:
             cnt_total = 0
-            for idx, td_info in enumerate(info_handle["rows"][0][2]):
+            for idx, td_info in enumerate(info_handle["rows"][0]["cells"]):
                 if idx == 0:
                     continue
-                sample_name = td_info["name"].split()[-1]
+                sample_name = td_info[0].split()[-1]
                 smp_idx = self.mFamilyInfo.sampleIdx(sample_name)
                 cnt_total += 1
                 if col_seq[idx]:
