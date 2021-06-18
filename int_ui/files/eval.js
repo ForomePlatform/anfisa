@@ -30,6 +30,7 @@ var sOpNumH = {
     mInputMin: null,
     mInputMax: null,
     mSpanSigns: null,
+    mDivHistogramm: null,
     mUpdateCondStr: null,
 
     init: function() {
@@ -37,6 +38,7 @@ var sOpNumH = {
         this.mInputMax   = document.getElementById("cond-max-inp");
         this.mSpanSigns = [document.getElementById("cond-min-sign"),
             document.getElementById("cond-max-sign")];
+        this.mDivHistogramm = document.getElementById("cur-cond-num-histogramm");
     },
     
     getCondType: function() {
@@ -54,7 +56,9 @@ var sOpNumH = {
             cur_bounds: [null, true, null, true],
             unit_type:  unit_stat["sub-kind"],
             val_min:    unit_stat["min"],
-            val_max:    unit_stat["max"]}
+            val_max:    unit_stat["max"],
+            histogramm: unit_stat["histogramm"]
+        }
             
         if (this.mInfo.val_min != null) {
             document.getElementById("cond-min").innerHTML = 
@@ -97,6 +101,8 @@ var sOpNumH = {
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
+        if (this.mInfo != null)
+            this.drawHistogramm();
     },
 
     checkControls: function(opt) {
@@ -179,6 +185,43 @@ var sOpNumH = {
         }
         sOpCondH.formCondition(condition_data, err_msg, false);
         this.careControls();
+    },
+    
+    drawHistogramm: function() {
+        h_info = this.mInfo["histogramm"];
+        h_content = [];
+        if (h_info) {
+            if(h_info[0] == "LOG") {
+                if (h_info[1] < -15 || this.mInfo.val_min == 0) {
+                    val = "0";
+                } else {
+                    if (h_info[1] == 0)
+                        val = "1";
+                    else
+                        val = "10<sup>" + h_info[1] + "</sup>";
+                }
+            } else {
+                val = "" + h_info[1];
+            }
+            h_content.push('<span class="hist-diap">' + val + '</span>'); 
+            var factor = 30. / Math.max(...h_info[3]);
+            for (var j = 0; j < h_info[3].length; j++) {
+                hh = h_info[3][j] * factor;
+                h_content.push(
+                    '<span class="hist-cell" style="height:' + 
+                        hh + 'px;"> </span>');
+            }
+            if(h_info[0] == "LOG") {
+                if (h_info[2] == 0)
+                    val = "1";
+                else
+                    val = "10<sup>" + h_info[2] + "</sup>";
+            } else {
+                val = "" + h_info[2];
+            }
+            h_content.push('<span class="hist-diap">' + val + '</span>'); 
+        }
+        this.mDivHistogramm.innerHTML = h_content.join("");
     }
 };
 

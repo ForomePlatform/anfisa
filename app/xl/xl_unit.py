@@ -20,7 +20,9 @@
 
 import logging
 from forome_tools.variants import VariantSet
+from forome_tools.log_err import logException
 from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
+from app.ws.val_stat import NumHistogrammBuilder
 #===============================================
 class XL_Unit(VarUnit):
     def __init__(self, eval_space, descr, unit_kind = None):
@@ -36,16 +38,16 @@ class XL_Unit(VarUnit):
         return ret
 
 #===============================================
+
 class XL_NumUnit(XL_Unit, NumUnitSupport):
+
+    HISTOGRAMM_BLOCKED = False
+
     def __init__(self, eval_space, descr):
         XL_Unit.__init__(self, eval_space, descr, "numeric")
         self.mDruidKind = "float" if self.getSubKind() == "float" else "long"
 
-    def _makeStat(self, condition):
-        name_cnt = "_cnt_%d" % self.getNo()
-        name_min = "_min_%d" % self.getNo()
-        name_max = "_max_%d" % self.getNo()
-        druid_agent = self.getEvalSpace().getDruidAgent()
+    def _makeQuery(self, druid_agent, condition):
         query = {
             "queryType": "timeseries",
             "dataSource": druid_agent.normDataSetName(
@@ -53,13 +55,16 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
             "granularity": druid_agent.GRANULARITY,
             "descending": "true",
             "aggregations": [
-                {"type": "count", "name": name_cnt,
+                {
+                    "type": "count", "name": "__count",
                     "fieldName": self.getInternalName()},
-                {"type": "%sMin" % self.mDruidKind,
-                    "name": name_min,
+                {
+                    "type": "%sMin" % self.mDruidKind,
+                    "name": "__min",
                     "fieldName": self.getInternalName()},
-                {"type": "%sMax" % self.mDruidKind,
-                    "name": name_max,
+                {
+                    "type": "%sMax" % self.mDruidKind,
+                    "name": "__max",
                     "fieldName": self.getInternalName()}],
             "intervals": [druid_agent.INTERVAL]}
         if condition is not None:
@@ -68,18 +73,62 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
                 return [None, None, 0]
             if cond_repr is not None:
                 query["filter"] = cond_repr
-        rq = druid_agent.call("query", query)
-        assert len(rq) == 1
-        return [rq[0]["result"][nm] for nm in
-            (name_min, name_max, name_cnt)]
+        return query
+
+    def _prepareHistogramm(self, druid_agent, query, v_min, v_max, count):
+        if self.HISTOGRAMM_BLOCKED:
+            return None
+        h_builder = NumHistogrammBuilder(v_min, v_max, count, self)
+        h_info = h_builder.getInfo()
+        if h_info is None:
+            return None
+        query["aggregations"] = [{
+            "type": "quantilesDoublesSketch",
+            "name": "__sketch__",
+            "fieldName":self.getInternalName(),
+            "k": 128}]
+        query["postAggregations"] = [
+            {
+                "type"  : "quantilesDoublesSketchToHistogram",
+                "name": "__hist",
+                "field": {
+                    "type" : "fieldAccess",
+                    "name": "__sketch",
+                    "splitPoints": h_builder.getIntervals(),
+                    "numBins": len(h_builder.getIntervals()) + 1,
+                    "fieldName" : "__sketch__"},
+            }]
+        if h_builder.getIntMode():
+            (query["postAggregations"][0]
+                ["numBins"]) = len(h_builder.getIntervals()) + 1
+        else:
+            (query["postAggregations"][0]
+                ["splitPoints"]) = h_builder.getIntervals()
+        try:
+            rq = druid_agent.call("query", query)
+        except Exception:
+            logException("Seems like Druid does not provide histogramms. "
+                "Block histogramms in XL")
+            self.HISTOGRAMM_BLOCKED = True
+            raise
+        h_info[3] = rq[0]["result"]["__hist"]
+        return h_info
 
     def makeStat(self, condition, eval_h):
+        druid_agent = self.getEvalSpace().getDruidAgent()
+        query = self._makeQuery(druid_agent, condition)
+        rq = druid_agent.call("query", query)
+        v_min, v_max, count = [rq[0]["result"][nm] for nm in
+            ("__min", "__max", "__count")]
+        h_info = self._prepareHistogramm(druid_agent, query, v_min, v_max, count)
         ret_handle = self.prepareStat()
-        vmin, vmax, count = self._makeStat(condition)
         ret_handle["counts"] = [count]
+        if h_info is not None:
+            ret_handle["histogramm"] = h_info
         if count > 0:
-            ret_handle["min"] = vmin
-            ret_handle["max"] = vmax
+            ret_handle["min"] = v_min
+            ret_handle["max"] = v_max
+
         return ret_handle
 
 #===============================================

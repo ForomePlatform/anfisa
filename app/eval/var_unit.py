@@ -71,6 +71,9 @@ class VarUnit:
     def getDescr(self):
         return self.mDescr
 
+    def getInfo(self):
+        return self.mInfo
+
     def getVGroup(self):
         return self.mVGroup
 

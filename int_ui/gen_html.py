@@ -228,18 +228,22 @@ def formFilterPanel(output, modal_mode):
 def formCurConditionControls(output):
     print('''
            <div id="cur-cond-numeric">
-              <span id="cond-min" class="num-set"></span>
-              <input id="cond-min-inp" class="num-inp"
-                type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-min-sign" class="num-sign"
-                    onclick="sOpNumH.switchSign(0);"></span>
-              <span id="cond-num-value">...</span>
-              <span id="cond-max-sign" class="num-sign"
-                    onclick="sOpNumH.switchSign(1);"></span>
-              <input id="cond-max-inp" class="num-inp"
-                type="text" onchange="sOpNumH.checkControls();"/>
-              <span id="cond-max" class="num-set"></span>
-              <span id="num-count" class="num-count"></span>
+              <div id="cur-cond-num-set">
+                  <span id="cond-min" class="num-set"></span>
+                  <input id="cond-min-inp" class="num-inp"
+                    type="text" onchange="sOpNumH.checkControls();"/>
+                  <span id="cond-min-sign" class="num-sign"
+                        onclick="sOpNumH.switchSign(0);"></span>
+                  <span id="cond-num-value">...</span>
+                  <span id="cond-max-sign" class="num-sign"
+                        onclick="sOpNumH.switchSign(1);"></span>
+                  <input id="cond-max-inp" class="num-inp"
+                    type="text" onchange="sOpNumH.checkControls();"/>
+                  <span id="cond-max" class="num-set"></span>
+                  <span id="num-count" class="num-count"></span>
+              </div>
+              <div id="cur-cond-num-histogramm">
+              </div>
             </div>
             <div id="cur-cond-enum">
               <div id="cur-cond-func-param"></div>

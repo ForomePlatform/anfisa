@@ -63,7 +63,11 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
             num_stat.regValue(self.mArray[rec_no])
-        num_stat.reportResult(ret_handle)
+        builder_h = num_stat.prepareHistogramm(self)
+        if builder_h.isOK():
+            for rec_no, _ in condition.iterSelection():
+                builder_h.regValue(self.mArray[rec_no])
+        num_stat.reportResult(ret_handle, builder_h)
         return ret_handle
 
     def fillRecord(self, inp_data, rec_no):
@@ -192,7 +196,11 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat(True)
         for group_no, it_idx in condition.iterItemIdx():
             num_stat.regValue([self.mArray[it_idx]], group_no)
-        num_stat.reportResult(ret_handle)
+        builder_h = num_stat.prepareHistogramm(self)
+        if builder_h.isOK():
+            for _, it_idx in condition.iterItemIdx():
+                builder_h.regValue([self.mArray[it_idx]])
+        num_stat.reportResult(ret_handle, builder_h)
         ret_handle["detailed"] = True
         return ret_handle
 
