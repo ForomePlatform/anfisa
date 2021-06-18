@@ -63,7 +63,7 @@ class NumDiapStat:
 class NumHistogrammBuilder:
     def __init__(self, v_min, v_max, count, unit_h,
             too_low_power = -15, num_bins = 10):
-        self.mIntMode = unit_h.getSubKind() == "int",
+        self.mIntMode = (unit_h.getSubKind() == "int")
         self.mLogMode = "log" in unit_h.getInfo().get("render_mode", "")
 
         self.mInfo = None
@@ -75,15 +75,15 @@ class NumHistogrammBuilder:
             v_min, v_max = int(v_min), int(v_max)
         if self.mLogMode:
             self.mInfo = ["LOG"]
-            p = 0 if self.mIntMode else too_low_power
-            while (pow(1E1, p) < v_min):
-                p += 1
-            self.mInfo.append(p - 1)
-            self.mIntervals = [pow(1E1, p - 1)]
+            pp = 0 if self.mIntMode else too_low_power
+            while (pow(1E1, pp) < v_min):
+                pp += 1
+            self.mInfo.append(pp - 1)
+            self.mIntervals = [pow(1E1, pp - 1)]
             while (v_max > self.mIntervals[-1]):
-                self.mIntervals.append(pow(1E1, p))
-                p += 1
-            self.mInfo.append(p)
+                self.mIntervals.append(pow(1E1, pp))
+                pp += 1
+            self.mInfo.append(pp)
         else:
             self.mInfo = ["LIN", v_min, v_max]
             if self.mIntMode and v_max - v_min <= num_bins:
