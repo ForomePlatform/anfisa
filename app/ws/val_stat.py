@@ -94,7 +94,6 @@ class NumHistogrammBuilder:
             self.mIntervals = [v_max - (step * idx) + half_step
                 for idx in range(num_bins - 1, 0, -1)]
         self.mInfo.append([0] * (len(self.mIntervals) + 1))
-        print("Unit", unit_h.getName(), self.mIntervals)
 
     def isOK(self):
         return self.mInfo is not None

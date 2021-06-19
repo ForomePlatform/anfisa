@@ -20,7 +20,6 @@
 
 import logging
 from forome_tools.variants import VariantSet
-from forome_tools.log_err import logException
 from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
 from app.ws.val_stat import NumHistogrammBuilder
 #===============================================
@@ -40,9 +39,6 @@ class XL_Unit(VarUnit):
 #===============================================
 
 class XL_NumUnit(XL_Unit, NumUnitSupport):
-
-    HISTOGRAMM_BLOCKED = False
-
     def __init__(self, eval_space, descr):
         XL_Unit.__init__(self, eval_space, descr, "numeric")
         self.mDruidKind = "float" if self.getSubKind() == "float" else "long"
@@ -76,7 +72,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         return query
 
     def _prepareHistogramm(self, druid_agent, query, v_min, v_max, count):
-        if self.HISTOGRAMM_BLOCKED:
+        if self.getEvalSpace().noHistogram():
             return None
         h_builder = NumHistogrammBuilder(v_min, v_max, count, self)
         h_info = h_builder.getInfo()
@@ -104,13 +100,8 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         else:
             (query["postAggregations"][0]
                 ["splitPoints"]) = h_builder.getIntervals()
-        try:
-            rq = druid_agent.call("query", query)
-        except Exception:
-            logException("Seems like Druid does not provide histogramms. "
-                "Block histogramms in XL")
-            self.HISTOGRAMM_BLOCKED = True
-            raise
+
+        rq = druid_agent.call("query", query)
         h_info[3] = rq[0]["result"]["__hist"]
         return h_info
 
