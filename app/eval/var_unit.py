@@ -26,7 +26,6 @@ class VarUnit:
     def __init__(self, eval_space, descr, unit_kind = None,
             sub_kind = None):
         self.mEvalSpace = eval_space
-        self.mDescr = descr
         self.mUnitKind  = descr.get("kind", unit_kind)
         self.mSubKind = descr.get("sub-kind", sub_kind)
         self.mInternalName = descr["name"]
@@ -67,9 +66,6 @@ class VarUnit:
 
     def getInternalName(self):
         return self.mInternalName
-
-    def getDescr(self):
-        return self.mDescr
 
     def getInfo(self):
         return self.mInfo

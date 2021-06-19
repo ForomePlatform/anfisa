@@ -563,16 +563,6 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__export(self, rq_args):
-        filter_h = self._getArgCondFilter(rq_args)
-        rec_no_seq = self.fiterRecords(filter_h.getCondition(),
-            zone_data = rq_args.get("zone"))
-        fname = self.getApp().makeExcelExport(
-            self.getName(), self, rec_no_seq, self.getTagsMan())
-        return {"kind": "excel", "fname": fname}
-
-    #===============================================
-    @RestAPI.ds_request
     def rq__ds2ws(self, rq_args):
         if "dtree" in rq_args or "code" in rq_args:
             eval_h = self._getArgDTree(rq_args)
@@ -604,13 +594,20 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
+    def rq__export(self, rq_args):
+        filter_h = self._getArgCondFilter(rq_args)
+        rec_no_seq = self.fiterRecords(filter_h.getCondition(),
+            zone_data = rq_args.get("zone"))
+        fname = self.getApp().makeExcelExport(
+            self.getName(), self, rec_no_seq, self.getTagsMan())
+        return {"kind": "excel", "fname": fname}
+
+    #===============================================
+    @RestAPI.ds_request
     def rq__csv_export(self, rq_args):
-        eval_h = self._getArgCondFilter(rq_args)
-        rec_count = self.getEvalSpace().evalTotalCounts(
-            eval_h.getCondition())[0]
-        assert rec_count <= AnfisaConfig.configOption("max.export.size")
-        rec_no_seq = self.getEvalSpace().evalRecSeq(
-            eval_h.getCondition(), rec_count)
+        filter_h = self._getArgCondFilter(rq_args)
+        rec_no_seq = self.fiterRecords(filter_h.getCondition(),
+            zone_data = rq_args.get("zone"))
         tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
         return ["!", "csv", reportCSV(self, tab_schema, rec_no_seq),
             [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]

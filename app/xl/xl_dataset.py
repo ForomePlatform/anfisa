@@ -71,10 +71,13 @@ class XLDataset(DataSet):
         return self.mEvalSpace
 
     #===============================================
+    sMaxRecords = max(AnfisaConfig.configOption(key)
+        for key in ("xl.view.count.full", "xl.view.count.samples"))
+
     def fiterRecords(self, condition, zone_data = None):
         assert zone_data is None
         rec_count = self.mEvalSpace.evalTotalCounts(condition)[0]
-        assert rec_count <= AnfisaConfig.configOption("xl.view.count.full")
+        assert rec_count <= self.sMaxRecords
         return self.mEvalSpace.evalRecSeq(condition, rec_count)
 
     #===============================================

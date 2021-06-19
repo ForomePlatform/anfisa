@@ -52,7 +52,7 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
         assert self.getSubKind() in {"float", "int"}, (
             "Bad sub-kind for "  + self.getName())
-        self._setScreened(self.getDescr()["min"] is None)
+        self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
     def getRecVal(self, rec_no):
@@ -79,7 +79,7 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
 class WS_EnumUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data, sub_kind = None):
         WS_Unit.__init__(self, eval_space, unit_data, "enum", sub_kind)
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         if variants_info is None:
             self._setScreened()
             self.mVariantSet = None
@@ -181,9 +181,9 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
         assert self.getSubKind() in {"transcript-float", "transcript-int"}, (
             "Bad sub-kind for "  + self.getName())
-        self._setScreened(self.getDescr()["min"] is None)
+        self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
-        self.mDefaultValue = self.getDescr()["default"]
+        self.mDefaultValue = unit_data["default"]
 
     def isDetailed(self):
         return True
@@ -216,11 +216,11 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
             "enum", "transcript-status")
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self.mDefaultValue = self.mVariantSet.indexOf(
-            self.getDescr()["default"])
+            unit_data["default"])
         assert self.mDefaultValue is not None, (
             "No default falue for "  + self.getName())
         self._setScreened(
@@ -258,7 +258,7 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
             "enum", unit_data["sub-kind"])
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self._setScreened(

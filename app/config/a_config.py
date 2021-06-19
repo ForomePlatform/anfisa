@@ -42,7 +42,6 @@ class AnfisaConfig:
 
         "max.ws.size":  9000,
         "report.lines": 100,
-        "max.export.size": 300,
 
         "xl.view.count.full": 300,
         "xl.view.count.samples": 25,
