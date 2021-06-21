@@ -28,7 +28,8 @@ class XL_EvalSpace(EvalSpace):
         EvalSpace.__init__(self, ds_h)
         self.mDruidAgent = druid_agent
         self.mTotalCounts = [ds_h.getTotal()]
-        self.mNoHistogram = (ds_h.getApp().getOption("druid.no.histogram") is True)
+        self.mNoHistogram = (
+            ds_h.getApp().getOption("druid.no.histogram") is True)
 
         self.mRandRUnit = ReservedNumUnit(self, "_rand")
         self._addReservedUnit(self.mRandRUnit)

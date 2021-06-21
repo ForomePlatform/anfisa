@@ -43,13 +43,15 @@ class FilterPrepareSetH(SolutionBroker):
         self.mCheckIdent = check_identifiers
         self.mPreTransformSeq = []
 
-        assert self.sZygosityPath is not None
+        assert self.sZygosityPath is not None, (
+            "Missing configuration zygosity.path.base setting")
         self.mZygosityData = ZygosityDataPreparator(
             "_zyg", self.sZygosityPath, self.mFamilyInfo)
 
     @classmethod
     def regNamedFunction(cls, name, func):
-        assert name not in cls.sNamedFunctions
+        assert name not in cls.sNamedFunctions, (
+            "Function name duplication: " + name)
         cls.sNamedFunctions[name] = func
 
     @classmethod
@@ -76,19 +78,20 @@ class FilterPrepareSetH(SolutionBroker):
 
     def _checkVar(self, name, var_type):
         if self.mCheckIdent:
-            assert checkIdentifier(name), f"Bad unit name: {name}"
+            assert checkIdentifier(name), "Bad unit name: " + name
         var_tp, _ = self.mVarRegistry.getVarInfo(name)
-        assert var_tp == var_type
+        assert var_tp == var_type, (
+            f"Bad check type for {name}: {var_tp} vs. {var_type}")
 
     def regPreTransform(self, transform_f):
         self.mPreTransformSeq.append(transform_f)
 
     def _startViewGroup(self, view_group_h):
-        assert self.mCurVGroup is None
+        assert self.mCurVGroup is None, "View group is currently pushed"
         self.mCurVGroup = view_group_h
 
     def _endViewGroup(self, view_group_h):
-        assert self.mCurVGroup is view_group_h
+        assert self.mCurVGroup is view_group_h, "View group conflict"
         self.mCurVGroup = None
 
     def _setViewGroup(self, view_group_title):
@@ -99,8 +102,9 @@ class FilterPrepareSetH(SolutionBroker):
             self.mCurVGroup = self.viewGroup(view_group_title)
 
     def _addUnit(self, unit_h):
-        for conv in self.mUnits:
-            assert conv.getName() != unit_h.getName()
+        for u_h in self.mUnits:
+            assert u_h.getName() != unit_h.getName(), (
+                "Unit name collision" + u_h.getName())
         self.mUnits.append(unit_h)
         return unit_h
 

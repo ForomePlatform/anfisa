@@ -139,7 +139,10 @@ class _DocH:
                 postfix = src_path.rpartition('*')[2]
                 i1, i2 = len(prefix), len(postfix)
                 for fname in ret:
-                    assert fname.startswith(prefix) and fname.endswith(postfix)
+                    assert (fname.startswith(prefix)
+                        and fname.endswith(postfix)), (
+                        "Unexpected file name: "
+                        + fname + " in path = " + src_path)
                     item_names.append(fname[i1:-i2])
             return ret
         if os.path.exists(src_path):

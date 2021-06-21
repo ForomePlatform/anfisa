@@ -39,8 +39,8 @@ Requests
   ------------------------- -------------------------------------------------------------
   \ 
   *Operations*
-   :doc:`export`            Export operation in Excel format
    :doc:`csv_export`        Export operation in CSV format
+   :doc:`export`            Export operation in Excel format
    :doc:`ds2ws`             Creation of secondary workspace
   ------------------------- -------------------------------------------------------------
   \ 
@@ -88,6 +88,7 @@ Requests
    zone_list
    ws_tags
    tag_select
+   
    macro_tagging
    
 Structures
@@ -107,6 +108,7 @@ Structures
    s_sol_entry
    s_zone
    s_tags
+   s_histogram
 
 References
 ----------

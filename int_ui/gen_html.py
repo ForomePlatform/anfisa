@@ -242,7 +242,7 @@ def formCurConditionControls(output):
                   <span id="cond-max" class="num-set"></span>
                   <span id="num-count" class="num-count"></span>
               </div>
-              <div id="cur-cond-num-histogramm">
+              <div id="cur-cond-num-histogram">
               </div>
             </div>
             <div id="cur-cond-enum">
@@ -372,4 +372,3 @@ def formUnitClassesDiv(output):
     </div>
 ''', file = output)
 #===============================================
-

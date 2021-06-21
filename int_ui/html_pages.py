@@ -32,7 +32,8 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
         doc_sets_repr.append(f'<li><a href="{doc_url}" '
             f'target="{common_title}-DOC">{doc_title}</a>')
 
-    print(f'<body onload="setup(\'{common_title}\', \'{ws_pub_url}\');">', file = output)
+    print(f'<body onload="setup(\'{common_title}\', \'{ws_pub_url}\');">',
+        file = output)
     print('''
         <h2>%(common_title)s home directory</h2>
         <div id="dir-main">
@@ -51,8 +52,8 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
         </div>
       </body>
     </html>''' % {
-    "common_title": common_title,
-    "doc_sets_repr": doc_sets_repr}, file = output)
+        "common_title": common_title,
+        "doc_sets_repr": doc_sets_repr}, file = output)
 
 #===============================================
 def subdirPage(output, common_title, html_base, ws_url, ds_h):

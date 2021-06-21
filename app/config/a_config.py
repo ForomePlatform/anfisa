@@ -46,6 +46,7 @@ class AnfisaConfig:
         "xl.view.count.full": 300,
         "xl.view.count.samples": 25,
         "xl.view.min.samples": 50,
+        "export.max.count": 9000,
 
         "max.tab.rq.size": 50,
 

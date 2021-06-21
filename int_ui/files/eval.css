@@ -391,7 +391,7 @@ div.unit-class-val {
     padding: 0px;
 }
 
-/********************histogramms*****************************/
+/********************histograms*****************************/
 span.hist-diap {
     margin: 5px;
     padding: 0px;
@@ -409,7 +409,7 @@ span.hist-cell {
     display: inline-block;
 }
 
-div#cur-cond-num-histogramm {
+div#cur-cond-num-histogram {
     padding: 0px 10px;
     margin: 4px 20px;
     height: 40px;

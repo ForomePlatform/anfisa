@@ -129,7 +129,7 @@ class DictTypeChecker:
     def regIt(self, reg, name = None):
         if name is None:
             name = reg.getName()
-        assert name not in self.mReg
+        assert name not in self.mReg, "Name duplication: " + name
         self.mReg[name] = reg
         if len(self.mChildren) == 0 or self.mChildren[-1] is not reg:
             self.mChildren.append(reg)

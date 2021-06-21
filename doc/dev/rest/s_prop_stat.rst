@@ -34,6 +34,7 @@ Format
 |                       **[0]**: count of transcripts (if detailed) or variants, *int*
 |                       **[1]**: *optional* count of variants (if detailed), *int*
 |               ``]``
+|        "**histogram**: *optional*, :doc:`s_histogram`
 |
 |        *in case of* **kind** = ``"enum"`` 
 |        ----------------------------------- 

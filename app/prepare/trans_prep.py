@@ -53,7 +53,7 @@ class TransformPreparator_WS:
                 else:
                     self.mUnitStatSeq.append(EnumUnitStatH(unit_descr))
             else:
-                assert False, "Bad kind:" + unit_descr["kind"]
+                assert False, "Bad unit kind:" + unit_descr["kind"]
         self.mConvertors += panels_convertors
 
     def isEmpty(self):
@@ -204,8 +204,8 @@ class TrStatusConvertor(TrEnumConvertor):
                 if bool_check_value is not None:
                     val = "True" if bool_check_value in val else "False"
                 else:
-                    assert len(val) == 1, "Tr-Unit %s val=%r" % (
-                        self.mName, val)
+                    assert len(val) == 1, (
+                        "Tr-Unit " + self.mName + " val= " + repr(val))
                     val = val[0]
             else:
                 val = str(val)

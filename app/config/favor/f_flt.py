@@ -24,7 +24,9 @@ from app.config.variables import anfisaVariables
 
 # ===============================================
 def defFavorFlt(metadata_record):
-    assert metadata_record.get("data_schema") == "FAVOR"
+    assert metadata_record.get("data_schema") == "FAVOR", (
+        "FAVOR data schema expected: "
+        + metadata_record.get("data_schema"))
 
     filters = FilterPrepareSetH(metadata_record, anfisaVariables,
         check_identifiers = False)

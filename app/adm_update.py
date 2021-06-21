@@ -209,12 +209,13 @@ class UpdateApp:
                     eval_h = FilterEval(base_ds.getEvalSpace(),
                         receipt["conditions"])
             else:
-                assert receipt["kind"] == "dtree"
+                receipt["kind"] == "dtree", (
+                    "Bad receipt kind: " + receipt["kind"])
                 if not self.mPlainReceiptMode and receipt.get("dtree-name"):
                     dtree_name = receipt.get("dtree-name")
                     eval_h = base_ds.pickSolEntry("dtree", dtree_name)
                     if eval_h is None:
-                        logging.error("No named dtree %s" % dtree_name)
+                        logging.error("No named dtree: " + dtree_name)
                         return ("NO-NAMED")
                 else:
                     eval_h = DTreeEval(base_ds.getEvalSpace(),
@@ -245,7 +246,8 @@ def reportDS(ds_info, anc_path):
                 rep += ["name:", receipt.get("filter-name")]
             rep += ["c-count:", str(len(receipt["conditions"]))]
         else:
-            assert receipt["kind"] == "dtree", receipt["kind"]
+            assert receipt["kind"] == "dtree", (
+                "Bad receipt kind: " + receipt["kind"])
             if receipt.get("dtree-name"):
                 rep += ["name:", receipt.get("dtree-name")]
             rep += ["d-count:", str(len(receipt["p-presentation"]))]
@@ -263,7 +265,7 @@ if __name__ == '__main__':
 
     #========================================
     import forome_tools
-    forome_tools.compatible((0, 1, 6))
+    forome_tools.compatible((0, 1, 7))
 
     #========================================
     if sys.version_info < (3, 7):
@@ -347,9 +349,11 @@ if __name__ == '__main__':
 
     for anc_path, ds_info in sheet_ds:
         if not ds_info.isOK():
-            assert ds_info.getStatus() is not None
+            assert ds_info.getStatus() is not None, (
+                "Dataset: " + ds_info.getName() + " has improper status")
             continue
-        assert ds_info.getStatus() is None
+        assert ds_info.getStatus() is None, (
+            "Dataset: " + ds_info.getName() + " has empty status")
         if "?" in anc_path:
             ds_info.setStatus("BLOCKED")
             continue

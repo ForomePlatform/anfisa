@@ -171,7 +171,7 @@ class ListConversions:
                 return lambda rec: cls.op_rec(min, par, rec)
             if func_name == "max":
                 return lambda rec: cls.op_rec(max, par, rec)
-        assert False, "Bad conversion item %s" % repr(conv_item)
+        assert False, "Bad conversion item: " + repr(conv_item)
         return None
 
 #===============================================
@@ -246,15 +246,15 @@ def parseComplexConv(conversion):
             nm, val = "", field
         nm = nm.strip()
         assert nm in arg_list, (
-            'Extra arg "%s" in conversion "%s"' % (nm, conversion))
+            f'Extra arg "{nm}" in conversion "{conversion}"')
         assert nm not in func_args, (
-            'Arg "%s" duplication in conversion "%s"' % (nm, conversion))
+            f'Arg "{nm}" duplication in conversion "{conversion}"')
         func_args[nm] = val.strip()
     for nm in arg_list:
         if nm in func_args:
             continue
         assert nm in arg_default_values, (
-            'Arg "%s" not set in conversion "%s"' % (nm, conversion))
+            f'Arg "{nm}" not set in conversion "{conversion}"')
         func_args[nm] = arg_default_values[nm]
     return func_name, func_args
 

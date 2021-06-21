@@ -36,7 +36,8 @@ class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault, dataset_info, dataset_path,
             add_modes = {"WS"})
-        assert self.getRecStorage().getKind() == "disk"
+        assert self.getRecStorage().getKind() == "disk", (
+            "Missing storage kind: " + self.getRecStorage().getKind())
         self.mTabRecRand = array('q')
         self.mTabRecKey  = []
         self.mTabRecColor  = []
@@ -217,7 +218,8 @@ class Workspace(DataSet):
     #===============================================
     @RestAPI.ws_request
     def rq__ws_tags(self, rq_args):
-        rec_no = int(rq_args.get("rec"))
+        assert "rec" in rq_args, 'Missing request argument "rec"'
+        rec_no = int(rq_args["rec"])
         if rq_args.get("tags") is not None:
             tags_data = json.loads(rq_args.get("tags"))
             with self:

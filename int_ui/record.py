@@ -32,7 +32,7 @@ def fullRecordView(output, ds_h, rec_no,
         js_files.append("tags.js")
         use_tags = "true"
     else:
-        assert port < 1
+        assert port < 1, f"Missing port: {port}, for XL must be < 1"
     startHtmlPage(output, css_files = css_files, js_files = js_files)
 
     aspect_id = (ds_h.getLastAspectID()

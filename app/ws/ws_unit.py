@@ -51,7 +51,8 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
         assert self.getSubKind() in {"float", "int"}, (
-            "Bad sub-kind for "  + self.getName())
+            "For unit"  + self.getName()
+            + " bad sub-kind: " + self.getSubKind())
         self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
@@ -63,7 +64,7 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
             num_stat.regValue(self.mArray[rec_no])
-        builder_h = num_stat.prepareHistogramm(self)
+        builder_h = num_stat.prepareHistogram(self)
         if builder_h.isOK():
             for rec_no, _ in condition.iterSelection():
                 builder_h.regValue(self.mArray[rec_no])
@@ -72,7 +73,8 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
 
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no, (
-            "Bad record length for "  + self.getName())
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         self.mArray.append(inp_data.get(self.getInternalName()))
 
 #===============================================
@@ -114,7 +116,8 @@ class WS_StatusUnit(WS_EnumUnit):
 
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no, (
-            "Bad record length for "  + self.getName())
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         value = inp_data[self.getInternalName()]
         self.mArray.append(self.mVariantSet.indexOf(value))
 
@@ -172,7 +175,8 @@ class WS_MultiCompactUnit(WS_EnumUnit):
         else:
             idx = 0
         assert len(self.mArray) == rec_no, (
-            "Bad record length for "  + self.getName())
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         self.mArray.append(idx)
 
 #===============================================
@@ -180,7 +184,7 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
         assert self.getSubKind() in {"transcript-float", "transcript-int"}, (
-            "Bad sub-kind for "  + self.getName())
+            "For "  + self.getName() + " bad sub-kind:" + self.getSubKind())
         self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
         self.mDefaultValue = unit_data["default"]
@@ -196,7 +200,7 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat(True)
         for group_no, it_idx in condition.iterItemIdx():
             num_stat.regValue([self.mArray[it_idx]], group_no)
-        builder_h = num_stat.prepareHistogramm(self)
+        builder_h = num_stat.prepareHistogram(self)
         if builder_h.isOK():
             for _, it_idx in condition.iterItemIdx():
                 builder_h.regValue([self.mArray[it_idx]])

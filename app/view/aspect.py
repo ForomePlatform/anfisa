@@ -37,7 +37,7 @@ class AspectH:
         self.mMode      = mode
         self.mColumnMarkupF = None
         assert self.mSource in ("_view", "__data"), (
-            "name=" + name + " source=" + self.mSource)
+            "For aspect " + name + "missing source: " + self.mSource)
 
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []

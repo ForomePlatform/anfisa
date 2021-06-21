@@ -83,7 +83,8 @@ class FavorStorageAgent(FavorStorage):
 
     def getPortionDiap(self, portion_no):
         start = self.mPortionSize * portion_no
-        assert start < self.mTotal
+        assert start < self.mTotal, (
+            f"start={start} conflicts total={self.mTotal}")
         return (start, min(self.mTotal, start + self.mPortionSize))
 
     def loadRecords(self, portion_no, portion_fetch = None):

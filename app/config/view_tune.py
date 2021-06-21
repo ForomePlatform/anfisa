@@ -84,8 +84,8 @@ def tuneAspects(ds_h, aspects):
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
     assert attr_h.getName().lower() != attr_h.getName(), (
-        f"Attribute {attr_h.getName()}: "
-        "attributes for tuning resetup must contain uppercase letters")
+        "Attribute " + attr_h.getName()
+        + ": attributes for tuning resetup must contain uppercase letters")
     idx1 = aspect_h.find(attr_h.getName().lower())
     idx2 = aspect_h.find(attr_h.getName())
     if idx1 >= 0:
@@ -416,7 +416,8 @@ class IGV_AttrH(AttrH):
             start = int(rec_data["__data"]["start"])
             end = int(rec_data["__data"]["end"])
         else:
-            assert self.mBase == "hg38"
+            assert self.mBase == "hg38", (
+                "Position base not supported: " + self.mBase)
             pos = -1
             try:
                 pos = rec_data["_view"]["general"]["hg38"]

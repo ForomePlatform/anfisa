@@ -30,7 +30,7 @@ var sOpNumH = {
     mInputMin: null,
     mInputMax: null,
     mSpanSigns: null,
-    mDivHistogramm: null,
+    mDivHistogram: null,
     mUpdateCondStr: null,
 
     init: function() {
@@ -38,7 +38,7 @@ var sOpNumH = {
         this.mInputMax   = document.getElementById("cond-max-inp");
         this.mSpanSigns = [document.getElementById("cond-min-sign"),
             document.getElementById("cond-max-sign")];
-        this.mDivHistogramm = document.getElementById("cur-cond-num-histogramm");
+        this.mDivHistogram = document.getElementById("cur-cond-num-histogram");
     },
     
     getCondType: function() {
@@ -57,7 +57,7 @@ var sOpNumH = {
             unit_type:  unit_stat["sub-kind"],
             val_min:    unit_stat["min"],
             val_max:    unit_stat["max"],
-            histogramm: unit_stat["histogramm"]
+            histogram:  unit_stat["histogram"]
         }
             
         if (this.mInfo.val_min != null) {
@@ -102,7 +102,7 @@ var sOpNumH = {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
         if (this.mInfo != null)
-            this.drawHistogramm();
+            this.drawHistogram();
     },
 
     checkControls: function(opt) {
@@ -187,8 +187,8 @@ var sOpNumH = {
         this.careControls();
     },
     
-    drawHistogramm: function() {
-        h_info = this.mInfo["histogramm"];
+    drawHistogram: function() {
+        h_info = this.mInfo["histogram"];
         h_content = [];
         if (h_info) {
             if(h_info[0] == "LOG") {
@@ -221,7 +221,7 @@ var sOpNumH = {
             }
             h_content.push('<span class="hist-diap">' + val + '</span>'); 
         }
-        this.mDivHistogramm.innerHTML = h_content.join("");
+        this.mDivHistogram.innerHTML = h_content.join("");
     }
 };
 

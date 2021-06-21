@@ -44,5 +44,6 @@ class DruidAgent:
     def normDataSetName(self, ds_name):
         if not self.mVaultPrefix:
             return ds_name
-        assert not ds_name.startswith(self.mVaultPrefix)
+        assert not ds_name.startswith(self.mVaultPrefix), (
+            "Extra vault prefix for ds: " + ds_name)
         return self.mVaultPrefix + '.' + ds_name

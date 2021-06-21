@@ -19,7 +19,7 @@ The page supports the following functionality issues:
     
     - creation of :term:`secondary workspace`
     
-    - :term:`Export` operation: form and provide access to download Excel document with properties of filtered variants, in case if count of variants is limited (up to 300 variants). 
+    - :term:`Export` operation: form and provide access to download Excel document with properties of filtered variants, in case if count of variants is limited (see :doc:`../rest/csv_export` for details of limitation). 
         
 REST API requests 
 -----------------

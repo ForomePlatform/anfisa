@@ -71,13 +71,12 @@ class XLDataset(DataSet):
         return self.mEvalSpace
 
     #===============================================
-    sMaxRecords = max(AnfisaConfig.configOption(key)
-        for key in ("xl.view.count.full", "xl.view.count.samples"))
-
     def fiterRecords(self, condition, zone_data = None):
-        assert zone_data is None
+        assert zone_data is None, "No zone support in XL"
         rec_count = self.mEvalSpace.evalTotalCounts(condition)[0]
-        assert rec_count <= self.sMaxRecords
+        assert rec_count <= self.getMaxExportSize(), (
+            f"Too many records for export: {rec_count}, "
+            f"limit is {self.getMaxExportSize()}")
         return self.mEvalSpace.evalRecSeq(condition, rec_count)
 
     #===============================================

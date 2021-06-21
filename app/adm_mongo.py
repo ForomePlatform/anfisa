@@ -67,7 +67,7 @@ class NameFilter:
                     self.mNameSet.add(ds_nm)
 
     def _addRegex(self, ds_nm_patt):
-        assert '*' in ds_nm_patt
+        assert '*' in ds_nm_patt, "Regex w/o star pattern: " + ds_nm_patt
         chunks = [re.escape(chunk) for chunk in ds_nm_patt.split('*')]
         self.mRegExps.append(re.compile(r'\b' + '.*'.join(chunks) + r'\b'))
 
@@ -108,8 +108,8 @@ for asp_code in run_args.aspects:
     elif asp_code.upper() in sAspectMap:
         aspects.add(sAspectMap[asp_code.upper()])
     else:
-        assert False, (
-            "Bad aspect code: %s (All/Info/Filter/Dtree/Tags)" % asp_code)
+        assert False, ("Bad aspect code: " + asp_code
+            + " (All/Info/Filter/Dtree/Tags)")
 
 assert len(aspects) > 0, "Aspect (All/Info/Filter/Dtree/Tags) not defined"
 

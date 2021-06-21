@@ -37,7 +37,7 @@ class SolutionItem:
         self.mRequires = requires
         self.mData = data
         use_name = ext_name if ext_name else self.mName
-        assert use_name not in used_names
+        assert use_name not in used_names, "Name duplication" + use_name
         used_names.add(use_name)
 
     def testIt(self, kind, test_f):
@@ -79,12 +79,13 @@ class SolutionPack:
 
     @classmethod
     def regPack(cls, solution_pack):
-        assert solution_pack.getName() not in cls.sPacks
+        assert solution_pack.getName() not in cls.sPacks, (
+            "Soluton pack is already registered: " + solution_pack.getName())
         cls.sPacks[solution_pack.getName()] = solution_pack
 
     @classmethod
     def regDefaultPack(cls, solution_pack):
-        assert None not in cls.sPacks
+        assert None not in cls.sPacks, "Default pack is already set"
         cls.sPacks[None] = solution_pack
 
     @classmethod
@@ -129,7 +130,8 @@ class SolutionPack:
 
     def regPanel(self, panel_name, panel_type,
             fname = None, items = None, requires = None):
-        assert (fname is not None) ^ (items is not None)
+        assert (fname is not None) ^ (items is not None), (
+            f"Collision: fname={fname} / items={items is not None}")
         if fname:
             items = self.readListFile(fname)
         self.mItems.append(SolutionItem("panel", panel_name,

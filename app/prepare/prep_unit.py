@@ -67,7 +67,8 @@ class ValueConvertor:
     @classmethod
     def registerConvertorType(cls, kind, sub_kind, conv_class):
         key = (kind, sub_kind)
-        assert key not in cls.sConvertors
+        assert key not in cls.sConvertors, (
+            "Convertor type duplication: " + key)
         cls.sConvertors[key] = conv_class
 
 #===============================================
@@ -102,7 +103,8 @@ class _NumericConvertor(PathValueConvertor):
             self.mMinBound, self.mMaxBound = diap
         else:
             self.mMinBound = None
-        assert default_value is not None
+        assert default_value is not None, (
+            f"For {name} numeric unit: no default value")
         self.mDefaultValue = default_value
         self.mConversion = conversion
         self.mConvFunc = makeFilterConversion(conversion, self.getMaster())
@@ -114,13 +116,22 @@ class _NumericConvertor(PathValueConvertor):
     def convType(self, val):
         return None
 
+    def _checkConvVal(self, msg, val):
+        assert val == self.convType(val), (
+            f"Missing value for {self.getName()}/{msg}: "
+            f"{val}/{self.convType(val)}")
+
     def checkSetup(self):
-        assert self.mDefaultValue == self.convType(self.mDefaultValue)
+        self._checkConvVal("default", self.mDefaultValue)
         if self.mMinBound is not None:
-            assert self.mMinBound == self.convType(self.mMinBound)
-            assert self.mMaxBound == self.convType(self.mMaxBound)
+            self._checkConvVal("min", self.mMinBound)
+            self._checkConvVal("max", self.mMaxBound)
             if self.mDefaultValue is not None:
-                assert self.mMinBound <= self.mDefaultValue <= self.mMaxBound
+                assert (self.mMinBound <= self.mDefaultValue
+                        <= self.mMaxBound), (
+                    f"Default/bound conflict for {self.getName()}: "
+                    f"{self.mMinBound} <= {self.mDefaultValue} "
+                    f"<= {self.mMaxBound}")
 
     def convert(self, values, rec_no):
         try:
@@ -221,24 +232,29 @@ class EnumConvertor(PathValueConvertor):
         self.mCntUndef = 0
         self.mConversion = conversion
         self.mConvFunc = makeFilterConversion(conversion, self.getMaster())
-        assert sub_kind in {"status", "multi"}
+        assert sub_kind in {"status", "multi"}, "Missed sub_kind:" + sub_kind
         self.mAcceptOtherValues = accept_other_values
         if self.mAcceptOtherValues:
-            assert self.mPreVariants is not None
+            assert self.mPreVariants is not None, (
+                "Use either preset variants or accept_other_values")
         elif self.mPreVariants is not None:
             self.mVariantSet = set(self.mPreVariants)
             if self.mDefaultValue is not None:
-                assert self.mDefaultValue in self.mVariantSet
+                assert self.mDefaultValue in self.mVariantSet, (
+                    "Default is not in preset variants: "
+                    + str(self.mDefaultValue))
         self.mVarCount = Counter()
         if self.mDefaultValue is not None:
-            assert isinstance(self.mDefaultValue, str)
+            assert isinstance(self.mDefaultValue, str), (
+                "Default value is not str: " + repr(self.mDefaultValue))
             if self.mSubKind == "status":
                 self.mDefaultRet = self.mDefaultValue
             else:
                 self.mDefaultRet = [self.mDefaultValue]
         if self.mPreVariants is not None:
             for var in self.mPreVariants:
-                assert isinstance(var, str)
+                assert isinstance(var, str), (
+                    "Variant value is not str: " + repr(var))
 
     def convert(self, values, rec_no):
         ret = []
@@ -308,7 +324,8 @@ class EnumConvertor(PathValueConvertor):
             used_variants = set(self.mPreVariants)
         for var in sorted(set(self.mVarCount.keys()) - used_variants):
             variants.append([var, self.mVarCount[var]])
-        assert all(info[1] > 0 for info in variants)
+        for var, cnt in variants:
+            assert cnt > 0, "Empty variant: " + var
         ret["variants"] = variants
         return ret
 
@@ -366,7 +383,8 @@ class PanelConvertor(ValueConvertor):
         self.mViewPath = view_path
         self.mViewPathSeq = None
         if self.mViewPath is not None:
-            assert self.mViewPath.startswith('/')
+            assert self.mViewPath.startswith('/'), (
+                "No leading / in view path: " + self.mViewPath)
             self.mViewPathSeq = self.mViewPath.split('/')[1:]
 
     def process(self, rec_no, rec_data, result):
@@ -410,13 +428,14 @@ class TranscriptNumConvertor(ValueConvertor):
             sub_kind, trans_name, default_value):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
         prefix, _, postfix = sub_kind.partition('-')
-        assert prefix == "transcript" and postfix in ("int", "float")
+        assert prefix == "transcript" and postfix in ("int", "float"), (
+            f"Unexpected prefix/postfix: {prefix}/{postfix}")
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = "numeric"
         self.mDescr["sub-kind"] = sub_kind
         self.mDescr["tr-name"] = trans_name
         self.mDescr["default"] = default_value
-        assert default_value is not None
+        assert default_value is not None, "No default value set for " + name
 
     def process(self, rec_no, rec_data, result):
         pass
@@ -433,21 +452,25 @@ class TranscriptEnumConvertor(ValueConvertor):
             sub_kind, trans_name, variants, default_value,
             bool_check_value = False):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
-        assert sub_kind.startswith("transcript-")
+        assert sub_kind.startswith("transcript-"), (
+            "Expected leading transcript- in sub_kind: " + sub_kind)
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = "enum"
         self.mDescr["sub-kind"] = sub_kind
         self.mDescr["bool-check"] = bool_check_value
         if trans_name is None:
-            assert sub_kind == "transcript-panels"
-            assert default_value is None
+            assert sub_kind == "transcript-panels", (
+                "Unexpected sub_kind: " + sub_kind)
+            assert default_value is None, (
+                "Default value is set: " + repr(default_value))
             return
         self.mDescr["tr-name"] = trans_name
         self.mDescr["pre-variants"] = variants
         if default_value is not None:
             self.mDescr["default"] = default_value
             if variants is not None:
-                assert default_value in variants
+                assert default_value in variants, (
+                    "No default value in variants: " + default_value)
 
     def process(self, rec_no, rec_data, result):
         pass
@@ -491,9 +514,11 @@ class _DummyUnitHandler:
 #===============================================
 def loadConvertorInstance(info, vgroup, filter_set):
     if info.get("vgroup") is None:
-        assert vgroup is None
+        assert vgroup is None, "!No vgroup here: " + vgroup.getTitle()
     else:
-        assert vgroup.getTitle() == info["vgroup"]
+        assert vgroup.getTitle() == info["vgroup"], (
+            "Title vgroup conflict: " + vgroup.getTitle() + " vs. "
+            + info["vgroup"])
     kind = info["kind"]
 
     if kind == "numeric":
@@ -544,5 +569,5 @@ def loadConvertorInstance(info, vgroup, filter_set):
             compact_mode = info["compact"],
             separators = info.get("separators"))
 
-    assert False, f'Bad unit {info["name"]} kind {info["kind"]}'
+    assert False, f'Bad unit={info["name"]} kind={info["kind"]}'
     return None

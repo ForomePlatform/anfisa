@@ -34,7 +34,8 @@ class DataDiskStorage:
         return "disk"
 
     def getRecordData(self, rec_no):
-        assert 0 <= rec_no < self.mDS.getTotal()
+        assert 0 <= rec_no < self.mDS.getTotal(), (
+            f"Record no {rec_no} is out of bounds: {self.mDS.getTotal()}")
         return json.loads(self.mVData[rec_no])
 
     def iterRecords(self, rec_no_seq):

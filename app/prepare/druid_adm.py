@@ -60,7 +60,7 @@ class DruidAdmin(DruidAgent):
             cmd_copy = [self.mScpConfig["exe"]]
             if not cmd_copy[0]:
                 print("Undefined parameter scp/exe", file = sys.stderr)
-                assert False
+                assert False, "Undefined parameter scp/exe"
             if self.mScpConfig.get("key"):
                 cmd_copy += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd_copy.append(fdata_name)
@@ -233,7 +233,7 @@ class DruidAdmin(DruidAgent):
             "filter": None,
             "intervals": [self.INTERVAL]}
         ret = self.call("query", query)
-        assert len(ret) == 1
+        assert len(ret) == 1, f"Unexpected response len: {len(ret)}"
         return int(ret[0]["result"]["count"])
 
 

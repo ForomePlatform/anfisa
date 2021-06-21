@@ -23,17 +23,20 @@ class ConditionMaker:
     @staticmethod
     def condNum(unit_name,
             min_val = None, min_eq = True, max_val = None, max_eq = True):
-        assert min_val is not None or max_val is not None
+        assert min_val is not None or max_val is not None, (
+            "!Improper numeric condition")
         return ["numeric", unit_name, [min_val, min_eq, max_val, max_eq]]
 
     @staticmethod
     def condEnum(unit_name, variants, join_mode = "OR"):
-        assert join_mode in {"AND", "OR", "NOT"}
+        assert join_mode in {"AND", "OR", "NOT"}, (
+            "!Improper join-mode in enum condition: " + str(join_mode))
         return ["enum", unit_name, join_mode, variants]
 
     @staticmethod
     def condFunc(unit_name, func_args, variants, join_mode = "OR"):
-        assert join_mode in {"AND", "OR", "NOT"}
+        assert join_mode in {"AND", "OR", "NOT"}, (
+            "!Improper join-mode in func condition: " + str(join_mode))
         return ["func", unit_name, join_mode, variants, func_args]
 
     @staticmethod
@@ -111,7 +114,7 @@ def reduceCondData(cond_data):
     if len(cond_data) == 0 or cond_data[0] is None:
         return cond_data
     if cond_data[0] is False:
-        assert len(cond_data) == 1
+        assert len(cond_data) == 1, "!Improper (None) condition data"
         return None
     if cond_data[0] == "not":
         sub_cond = reduceCondData[cond_data[1]]
@@ -151,7 +154,7 @@ def condDataUnits(cond_data):
         for sub_cond in cond_data[1:]:
             ret |= condDataUnits(sub_cond)
         return ret
-    assert False, "Bad cond data: " + cond_data[0]
+    assert False, "!Bad cond data: " + cond_data[0]
 
 
 #===============================================

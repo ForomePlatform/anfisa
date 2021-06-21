@@ -109,12 +109,12 @@ class VarRegistry:
             title = None, render_mode = None, tooltip = None,
             facet1 = None, facet2 = None, facet3 = None):
         assert var_name not in self.mVariables, (
-            f"Variable name duplication: {var_name}")
+            "Variable name duplication: " + var_name)
         descr = {
             "name": var_name,
             "classes": self._prepareFacets([facet1, facet2, facet3])}
         assert all(info is not None for info in descr["classes"]), (
-            f"Facet classes are not correcly defined for {var_name}")
+            "Facet classes are not correcly defined for: " + var_name)
         if title:
             descr["title"] = title
         if render_mode:
@@ -126,7 +126,8 @@ class VarRegistry:
     def regVarTemplate(self, var_type, prefix, postfix = None,
             title = None, render_mode = None, tooltip = None,
             facet1 = None, facet2 = None, facet3 = None):
-        assert title is None or '%' in title
+        assert title is None or '%' in title, (
+            "Improper template: " + str(title))
         self.mTemplates.append([var_type, prefix, postfix,
             title, render_mode, tooltip,
             self._prepareFacets([facet1, facet2, facet3])])
@@ -135,7 +136,7 @@ class VarRegistry:
         if var_name in self.mVariables:
             return self.mVariables[var_name]
         for (var_type, prefix, postfix, title,
-                render_mode, tooltip, facets) in self.mTemplates:
+                render_mode, _tooltip, facets) in self.mTemplates:
             if not var_name.startswith(prefix):
                 continue
             nm = var_name[len(prefix):]
@@ -156,7 +157,7 @@ class VarRegistry:
             if fix_var_name:
                 self.mFixedNames.add(var_name)
                 return self.getVarInfo(fix_var_name, 1)
-        assert False, (f"No variable registered: {var_name}")
+        assert False, "No variable registered: " + str(var_name)
         return None
 
 

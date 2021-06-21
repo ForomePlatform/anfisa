@@ -50,7 +50,7 @@ class SolutionBroker(SyncronizedObject):
 
     #===============================================
     def setSolEnv(self, sol_space):
-        assert self.mSolEnv is None
+        assert self.mSolEnv is None, "solEnv is already set"
         with self:
             self.mSolEnv = sol_space
             self.mSolKinds = {kind: _SolutionKindHandler(self, kind)
@@ -82,7 +82,7 @@ class SolutionBroker(SyncronizedObject):
 
     #===============================================
     def regNamedAttr(self, name, attr_h):
-        assert name not in self.mNamedAttrs
+        assert name not in self.mNamedAttrs, "Attribute duplication: " + name
         self.mNamedAttrs[name] = attr_h
 
     def getNamedAttr(self, name):
@@ -105,10 +105,9 @@ class SolutionBroker(SyncronizedObject):
         if not panel_type:
             panel_type = "?"
         if assert_mode:
-            assert False, "%s: Panel %s not found" % (panel_type, panel_name)
+            assert False, f"{panel_type}: Panel {panel_name} not found"
         else:
-            logging.warning("%s: Panel %s not found"
-                % (panel_type, panel_name))
+            logging.warning(f"{panel_type}: Panel {panel_name} not found")
         return None
 
     #===============================================
@@ -221,7 +220,8 @@ class _SolutionKindHandler:
     def modifySolEntry(self, instr, entry_data):
         option, name = instr
         assert (name and not name.startswith(self.sStdFMark)
-            and name[0].isalpha() and ' ' not in name)
+            and name[0].isalpha() and ' ' not in name), (
+            "Improper name for solution entry: " + name)
         return self.mBroker.getSolEnv().modifyEntry(
             self.mBroker.getName(), self.mSolKind, option, name, entry_data)
 

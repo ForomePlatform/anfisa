@@ -35,7 +35,8 @@ class InheritanceUnit(FunctionUnit):
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
             sub_kind = "inheritance-z", parameters = ["problem_group"])
-        assert ds_h.testRequirements({"ZYG"})
+        assert ds_h.testRequirements({"ZYG"}), (
+            "No zygosity support for this DS")
         self.mZygSupport = ds_h.getZygositySupport()
         self.mAvailLabels = self.sCaseLabels[:]
         if not self.mZygSupport.hasXLinked():

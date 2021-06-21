@@ -30,7 +30,7 @@ class AttrH:
     def __init__(self, name, kind = None, title = None,
             is_seq = False, tooltip = None, render_mode = None):
         assert kind != "place" or name.lower() == name, (
-            "Placement attribute %s: must be lowercase" % name)
+            f"Placement attribute {name}: must be lowercase")
         self.mAspect = None
         self.mName = name
         self.mTitle = (title if title is not None else name)

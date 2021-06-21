@@ -46,8 +46,8 @@ class NumDiapStat:
                 self.mCurGroupNo = group_no
                 self.mGroupCount += 1
 
-    def prepareHistogramm(self, unit_h):
-        return NumHistogrammBuilder(self.mMin, self.mMax,
+    def prepareHistogram(self, unit_h):
+        return NumHistogramBuilder(self.mMin, self.mMax,
             self.mCntDef, unit_h)
 
     def reportResult(self, ret_handle, h_builder):
@@ -57,10 +57,10 @@ class NumDiapStat:
         if self.mGroupCount is not None:
             ret_handle["counts"].insert(0, self.mGroupCount)
         if h_builder is not None and h_builder.isOK():
-            ret_handle["histogramm"] = h_builder.getInfo()
+            ret_handle["histogram"] = h_builder.getInfo()
 
 #===============================================
-class NumHistogrammBuilder:
+class NumHistogramBuilder:
     def __init__(self, v_min, v_max, count, unit_h,
             too_low_power = -15, num_bins = 10):
         self.mIntMode = (unit_h.getSubKind() == "int")
@@ -68,7 +68,7 @@ class NumHistogrammBuilder:
 
         self.mInfo = None
         self.mIntervals = None
-        if count < 2 or v_min == v_max:
+        if count < 2 or v_min >= v_max - 1E-15:
             return
 
         if self.mIntMode:
@@ -83,16 +83,22 @@ class NumHistogrammBuilder:
             while (v_max > self.mIntervals[-1]):
                 self.mIntervals.append(pow(1E1, pp))
                 pp += 1
+            if len(self.mIntervals) == 1:
+                self.mInfo = None
+                self.mIntervals = None
+                return
             self.mInfo.append(pp)
         else:
             self.mInfo = ["LIN", v_min, v_max]
             if self.mIntMode and v_max - v_min <= num_bins:
-                step, num_bins = 1., v_max - v_min + 1
+                step = 1.
             else:
-                step =  float(v_max - v_min) / num_bins
-            half_step = step / 2
-            self.mIntervals = [v_max - (step * idx) + half_step
-                for idx in range(num_bins - 1, 0, -1)]
+                step = float(v_max - v_min) / num_bins
+            vv = v_min + (step * .5)
+            self.mIntervals = []
+            while vv < v_max:
+                self.mIntervals.append(vv)
+                vv += step
         self.mInfo.append([0] * (len(self.mIntervals) + 1))
 
     def isOK(self):

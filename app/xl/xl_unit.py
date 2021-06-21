@@ -21,7 +21,7 @@
 import logging
 from forome_tools.variants import VariantSet
 from app.eval.var_unit import VarUnit, NumUnitSupport, EnumUnitSupport
-from app.ws.val_stat import NumHistogrammBuilder
+from app.ws.val_stat import NumHistogramBuilder
 #===============================================
 class XL_Unit(VarUnit):
     def __init__(self, eval_space, descr, unit_kind = None):
@@ -71,28 +71,28 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
                 query["filter"] = cond_repr
         return query
 
-    def _prepareHistogramm(self, druid_agent, query, v_min, v_max, count):
+    def _prepareHistogram(self, druid_agent, query, v_min, v_max, count):
         if self.getEvalSpace().noHistogram():
             return None
-        h_builder = NumHistogrammBuilder(v_min, v_max, count, self)
+        h_builder = NumHistogramBuilder(v_min, v_max, count, self)
         h_info = h_builder.getInfo()
         if h_info is None:
             return None
         query["aggregations"] = [{
             "type": "quantilesDoublesSketch",
             "name": "__sketch__",
-            "fieldName":self.getInternalName(),
+            "fieldName": self.getInternalName(),
             "k": 128}]
         query["postAggregations"] = [
             {
-                "type"  : "quantilesDoublesSketchToHistogram",
+                "type": "quantilesDoublesSketchToHistogram",
                 "name": "__hist",
                 "field": {
-                    "type" : "fieldAccess",
+                    "type": "fieldAccess",
                     "name": "__sketch",
                     "splitPoints": h_builder.getIntervals(),
                     "numBins": len(h_builder.getIntervals()) + 1,
-                    "fieldName" : "__sketch__"},
+                    "fieldName": "__sketch__"},
             }]
         if h_builder.getIntMode():
             (query["postAggregations"][0]
@@ -111,11 +111,12 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         rq = druid_agent.call("query", query)
         v_min, v_max, count = [rq[0]["result"][nm] for nm in
             ("__min", "__max", "__count")]
-        h_info = self._prepareHistogramm(druid_agent, query, v_min, v_max, count)
+        h_info = self._prepareHistogram(
+            druid_agent, query, v_min, v_max, count)
         ret_handle = self.prepareStat()
         ret_handle["counts"] = [count]
         if h_info is not None:
-            ret_handle["histogramm"] = h_info
+            ret_handle["histogram"] = h_info
         if count > 0:
             ret_handle["min"] = v_min
             ret_handle["max"] = v_max

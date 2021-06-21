@@ -594,4 +594,5 @@ def _fixVarName(var_name):
         return "ClinVar_Significance_" + var_name[:-13]
     return None
 
+
 anfisaVariables.setFixFunc(_fixVarName)

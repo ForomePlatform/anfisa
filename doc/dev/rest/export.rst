@@ -31,7 +31,9 @@ Synopsis
     
 Description
 -----------
-The request creates exported Excel file for selected variants. Selection should be of limited size: **not more than 300 variants**.
+The request creates exported Excel file for selected variants. 
+
+The count of records in the reports is limited. See :doc:`csv_export` for details of this limitation.
 
 Selection is defined by:
 
@@ -42,3 +44,7 @@ Selection is defined by:
 Resulting file is created on servers side and is ready for download from moment of creation and later.
 
 (Cleaning of these files are subject of Anfisa administration)
+
+See also
+--------
+:doc:`csv_export`     

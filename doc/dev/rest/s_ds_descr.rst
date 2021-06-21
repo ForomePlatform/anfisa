@@ -8,18 +8,18 @@ Format
 ------
 
 | ``{`` *dictionary*, 
-|       "**name**":         dataset name, *string*
-|       "**kind**":         dataset kind, *either* ``"ws"`` *or* ``"xl"`` 
-|       "**create-time**:   time of dataset installation,
-|                               *string, time time in ISO format*
-|       "**upd-time**:      time of last dataset configuration update, 
-|                               ``null`` or *string, time in ISO format*
-|       "**note**":         user note to dataset, ``null`` or *string*
-|       "**date-note**:     time of last note update, 
-|                               ``null`` or *string, time in ISO format*
-|       "**total**":        total number of variants, *int*
-|       "**doc**":          dataset documentation, :doc:`s_doc_descr` 
-|       "**ancestors**":    information on base datasets
+|       "**name**":             dataset name, *string*
+|       "**kind**":             dataset kind, *either* ``"ws"`` *or* ``"xl"`` 
+|       "**create-time**:       time of dataset installation,
+|                                  *string, time time in ISO format*
+|       "**upd-time**:          time of last dataset configuration update, 
+|                                   ``null`` or *string, time in ISO format*
+|       "**note**":             user note to dataset, ``null`` or *string*
+|       "**date-note**:         time of last note update, 
+|                                   ``null`` or *string, time in ISO format*
+|       "**total**":            total number of variants, *int*
+|       "**doc**":              dataset documentation, :doc:`s_doc_descr` 
+|       "**ancestors**":        information on base datasets
 |               ``[`` *list of* base datasets, root is the last
 |                   ``[`` *list*
 |                       [**0**]: name of ancestor dataset, *string*
@@ -46,6 +46,8 @@ Format
 |           ``[`` *list of strings* ``]``
 |       "**cohorts**": *optional* list of cohort names 
 |           ``[`` *list of strings* ``]``
+|       "**export-max-count**:  maximum record count available for 
+|                       export operations (:doc:`csv_export`, :doc:`export`), *int*
 
 Description
 -----------

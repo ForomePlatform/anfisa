@@ -46,7 +46,7 @@ class VarUnit:
 
         assert self.mUnitKind == var_kind, (
             f"Variable kind conflict: {self.mUnitKind}/{var_kind} "
-                f"for {self.mInternalName}")
+            f"for {self.mInternalName}")
 
         self.mInfo = deepcopy(var_descr)
         self.mName = self.mInfo["name"].replace(' ', '_')
@@ -176,7 +176,7 @@ class FunctionUnit(ComplexEnumUnit):
 
     @abc.abstractmethod
     def validateArgs(self, func_args):
-        assert False
+        assert False, "Abstract func validaton?"
 
     def buildCondition(self, cond_data, eval_h):
         context = self.locateContext(cond_data, eval_h)

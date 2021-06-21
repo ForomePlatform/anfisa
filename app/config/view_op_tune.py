@@ -31,7 +31,8 @@ def markupTranscriptTab(info_handle, view_context, aspect):
     if "details" not in view_context:
         return
     it_map = bitarray(view_context["details"])
-    assert aspect.getColGroups().getAttr(0) == "transcripts"
+    assert aspect.getColGroups().getAttr(0) == "transcripts", (
+        "For aspect " + aspect.getName() + " does not support trancripts")
     for grp_info in info_handle["colhead"][1:]:
         grp_info[2] = " no-hit"
     tr_group_info = info_handle["colhead"][0]
