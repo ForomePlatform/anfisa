@@ -217,6 +217,7 @@ span#tr-hit-span {
 /********************Gen/Transcripts*****************************/
 table#gen-transcripts {
     table-layout: auto;
+    width: 100%;
 }
 
 table#gen-transcripts .tr-head td{
