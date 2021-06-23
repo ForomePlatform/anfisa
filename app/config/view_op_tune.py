@@ -19,7 +19,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
 from xml.sax.saxutils import escape
 from bitarray import bitarray
 
@@ -56,27 +55,36 @@ def markupTranscriptTab(info_handle, view_context, aspect):
 
 #===============================================
 def reprGenTranscripts(val, v_context):
-    if not val:
-        return None
+    if not val or len(val) == 0:
+        return (None, None)
     if "details" in v_context:
         details = bitarray(v_context["details"])
     else:
         details = None
 
-    ret_handle = ['<ul>']
+    ret_handle = ['<table id="gen-transcripts">',
+        '<tr class="tr-head">'
+        '<td>canonical?</td><td>id</td><td>gene</td><td>annotations</td>'
+        '</tr>']
     for idx, it in enumerate(val):
-        is_canonical = it.get("is_canonical") if it else False
-        v_id = escape(it.get("id", "?"))
-        v_gene = escape(it.get("gene", "?"))
-        a_content = escape(json.dumps(it.get("transcript_annotations", "?")))
-        if is_canonical:
-            mod = ' class="hit"'if details is not None and details[idx] else ''
-            rep = (f'<li{mod}><b>[C] {v_id}</b>, <b>gene=</b>{v_gene}, '
-                f'<b>annotations</b>: {a_content} </li>")')
-        else:
-            rep = f"<li>{v_id}, gene={v_gene}, annotations: {a_content} </li>"
-        ret_handle.append(rep)
-    ret_handle.append("</ul>")
+        is_canonical = it.get("is_canonical")
+        is_hit = (details is not None and details[idx])
+        v_id = it.get("id", "?")
+        v_gene = it.get("gene", "?")
+        v_annotation = " ".join(it.get("transcript_annotations", []))
+
+        v_tr = ' class="tr-canonical"' if is_canonical else ""
+        v_td = ' checked' if is_canonical else ""
+
+        ret_handle.append(
+            f'<tr{v_tr}><td class="tr-canonical">'
+            f'<input type="checkbox" disabled{v_td}></input></td>')
+        id_class = "hit tr-id" if is_hit else "tr-id"
+        ret_handle.append(
+            f'<td class="{id_class}">{escape(v_id)}</td>'
+            f'<td class="tr-gene">{escape(v_gene)}</td>'
+            f'<td class="tr-annot">{escape(v_annotation)}</td></tr>')
+    ret_handle.append("</table>")
     return ('\n'.join(ret_handle), "norm")
 
 #===============================================
