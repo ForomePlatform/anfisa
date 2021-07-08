@@ -78,7 +78,7 @@ Markup details
 
 * Most part of aspects represent data by ``<table>`` with two columns with title and value of property. Only **columns** and **rows** in aspect descriptor properties are sufficient to support this kind of aspects. 
 
-* Some aspect (currently VEP Transcripts, Quality,Colocated Variants and Cohorts) represent data in a multi-column form, so the following additional properties are supported (see more details about concrete aspects below):
+* Some aspect (currently Transcripts, Quality,Colocated Variants, Cohorts and VEP Transcripts) represent data in a multi-column form, so the following additional properties are supported (see more details about concrete aspects below):
 
     - **colhead** is used when columns are logically grouped; the property represents header row with joined cells, each cell corresponds to a group of columns. Content of cell consists of title of group, column counter and possibly additional blocks (<span>) for UI controls placement
     
@@ -119,8 +119,8 @@ Contents of aspect can be changed as a result of user activity :
 
 - Row "Has_Variant" reports list of samples containing current variant. If some samples are active in context of current filter or decision tree condition, presence of these samples is highlighted and grouped on top of report list. 
 
-Aspect VEP Transcripts
-^^^^^^^^^^^^^^^^^^^^^^
+Aspect Transcripts
+^^^^^^^^^^^^^^^^^^
 The aspect visualizes :term:`transcripts<transcript>` data, and transcripts are subjects of filtering, so rendering of this aspect actively interacts with the user interface in  context of :term:`WS-dataset`.
 
 Transcript columns are grouped, so **colhead** property is used in the aspect descriptor. Only transcripts of the first group can be selected in context of :term:`WS-dataset`.

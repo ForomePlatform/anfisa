@@ -233,7 +233,8 @@ class DataVault(SyncronizedObject):
                 ds_sheet.append(anc_names[::-1] + [ds_name])
             for root_name in lost_roots:
                 ds_dict[root_name] = {
-                    "name": root_name, "kind": None, "ancestors": []}
+                    "name": root_name, "kind": None,
+                    "ancestors": [], "secondary": False}
                 ds_sheet.append([root_name])
             ds_sheet.sort()
             ds_list = []
