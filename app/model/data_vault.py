@@ -23,6 +23,7 @@ from glob import glob
 from io import StringIO
 from threading import Lock
 from datetime import datetime
+from collections import defaultdict
 
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
@@ -219,7 +220,7 @@ class DataVault(SyncronizedObject):
         with self:
             ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
                 for ds_h in self.mDataSets.values()}
-            lost_roots = set()
+            lost_roots = defaultdict(list)
             ds_sheet = []
             for ds_name, ds_info in ds_dict.items():
                 assert ds_name == ds_info["name"], (
@@ -229,12 +230,12 @@ class DataVault(SyncronizedObject):
                 if len(anc_names) > 0:
                     root_name = anc_names[-1]
                     if root_name not in ds_dict:
-                        lost_roots.add(root_name)
+                        lost_roots[root_name].append(ds_name)
                 ds_sheet.append(anc_names[::-1] + [ds_name])
-            for root_name in lost_roots:
+            for root_name, sec_seq in lost_roots.items():
                 ds_dict[root_name] = {
                     "name": root_name, "kind": None,
-                    "ancestors": [], "secondary": False}
+                    "ancestors": [], "secondary": sorted(sec_seq)}
                 ds_sheet.append([root_name])
             ds_sheet.sort()
             ds_list = []
