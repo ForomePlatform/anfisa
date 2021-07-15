@@ -3,9 +3,9 @@ WORKDIR /anfisa
 RUN bash -c 'mkdir -p /anfisa/anfisa && mkdir -p /anfisa/a-setup/ && mkdir -p /anfisa/a-setup/{data,logs,vault,export/work,ui} && mkdir -p /data/'
 
 COPY . /anfisa/anfisa/
-RUN cd /anfisa/anfisa/ && pip3 install -r requirements.txt && pip3 install supervisor && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
+RUN cd /anfisa/anfisa/ && pip3 install -r requirements.txt && pip3 install supervisor && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools 
 #RUN cd /anfisa/a-setup/data/ && curl -O -L https://anfisa.forome.dev/distrib/datasets/PGP3140.json.gz
-RUN cd /anfisa/anfisa/setup/ && mv anfisa.json.docker /anfisa/anfisa.json
+RUN cd /anfisa/anfisa/setup/ && mv anfisa.json.docker /anfisa/anfisa.json && mv entrypoint /usr/bin/entrypoint && chmod +x /usr/bin/entrypoint
 ENV ANFISA_HOME=/anfisa/anfisa
 ENV ANFISA_WORK=/anfisa/a-setup
 ENV ANFISA_ROOT=/anfisa
@@ -17,5 +17,4 @@ RUN mv /anfisa/anfisa/setup/default /etc/nginx/sites-available/default && mv /an
 #COPY --from=buildstage /repo/dist /var/www/html/anfisa/
 
 EXPOSE 80
-CMD ["/usr/local/bin/supervisord"]
-
+ENTRYPOINT [ "entrypoint" ]
