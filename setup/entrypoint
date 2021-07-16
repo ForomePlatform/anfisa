@@ -1,0 +1,7 @@
+#!/bin/bash
+COUNT_FILES=`ls -A /anfisa/a-setup/ | wc -l`
+if [ "$COUNT_FILES" eq 0 ] ; then
+    mkdir -p /anfisa/a-setup/{data,logs,vault,export/work,ui}
+fi
+
+exec "$@"
