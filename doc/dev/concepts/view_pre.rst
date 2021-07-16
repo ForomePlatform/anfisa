@@ -11,7 +11,7 @@ REST API supports two ways for rendering data concerning :term:`variants<variant
     
     The request does not have serial form of call, since information on a single variant might be wide enough.
     
-    HTML representation for some aspects contain active elements that might be used in the Front End application for user needs. As a result, the user can hide and restore columns in wide tables for transcripts and cohorts.
+    HTML representation for some aspects contain active elements that might be used in the Front End application for user needs. As a result, the user can hide and restore columns in wide tables for :term:`transcripts<transcript>` and :term:`cohorts<cohort>`.
 
 .. _accurate_vs_technical:
                 

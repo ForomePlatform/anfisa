@@ -86,10 +86,10 @@ function setupDirData(info) {
                     '\')" title="To sub-directory dataset page">&#x1f5c0;</span>&emsp;');
         }
         rep_seq.push(ds_name);
-        if (ds_info["upd-time"])
-            rep_seq.push('<span class="note-date" ' +
-                'title = "Time of last configuraton update">' + 
-                timeRepr(ds_info["upd-time"]) + '</span>');
+        if (ds_info["create-time"]) 
+            rep_seq.push('<span class="note-date" title = "Time of dataset creation">' + 
+                timeRepr(ds_info["create-time"]) + '</span>');
+        
         rep_seq.push('</div>');
     }
     arrangeControls();

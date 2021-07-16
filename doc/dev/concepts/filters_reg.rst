@@ -18,7 +18,7 @@ The principal feature of the regime is as follows:
     
 This feature is complex one and rather heavy to support, however it is very important part of functionality, since it essentially helps the user in understanding what is happening in current selection and in keeping control over the filtering procedure. 
 
-In simple scenario the user adds conditions to filter one by one in an interactive way, and the user interface can guarantee that the resulting filter is built is consistent, i.e. it select nonempty set of :term:`variants<variant>` (:term:`transcripts<transcript>`).
+In simple scenario the user adds conditions to filter one by one in an interactive way, and the user interface can guarantee that the resulting filter is built is consistent, i.e. it select nonempty set of :term:`variants<variant>`.
 
 Also the user can modify (update) conditions in sequence, and under these circumstances there can not be a guaranty in keeping filter consistent. So the user needs to do this updates more responsively.
 

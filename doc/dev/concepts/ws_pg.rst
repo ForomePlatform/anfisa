@@ -13,7 +13,7 @@ The page supports the following functionality issues:
     
     - support :term:`filters<filter>` as :doc:`sol_work`
 
-    - the logic of regime requires top detailization of information, so  :term:`transcripts<transcript>` are used as :term:`filtration` items instead of :term:`variants<variant>`
+    - the logic of regime requires top detailization of information, so :term:`transcript variantss<transcript variant>` are used as :term:`filtration` items instead of :term:`DNA ones<DNA variant>`
 
 - manual user work with :term:`tagging` tools to associate variants with tags and notes
 

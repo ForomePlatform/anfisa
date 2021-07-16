@@ -17,7 +17,7 @@ Format
 |               comma-separated render options, *string* 
 |        "**tooltip**": *optional* tooltip, *string*
 |        "**incomplete**": *optional* status is incomplete, ``true``
-|        "**detailed**": *optional* transcript are in counts, ``true``
+|        "**detailed**": *optional* transcript data is in counts, ``true``
 |        "**classes**: facet classification of the property, 
 |           ``[`` *list* of facet descriptors
 |               ``[`` indexes of items in facet classification list 
@@ -31,8 +31,9 @@ Format
 |        "**max**": *optional* maximum value, *int or float*
 |        "**counts**": *optional* 
 |               ``[`` *list*
-|                       **[0]**: count of transcripts (if detailed) or variants, *int*
-|                       **[1]**: *optional* count of variants (if detailed), *int*
+|                       **[0]**: count of transcript variants (if detailed) or DNA variants, *int*
+|                       **[1]**: *optional* count of transcipt variants (if detailed), *int*
+|                       **[2]**: *optional* count of transcripts (if detailed), *int*
 |               ``]``
 |        "**histogram**: *optional*, :doc:`s_histogram`
 |
@@ -41,8 +42,9 @@ Format
 |        "**variants**":  *optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of transcripts (if detailed) or variants, *int*
-|                       **[2]**: *optional* count of variants (if detailed), *int*
+|                       **[1]**: count of transcript variants (if detailed) or DNA variants, *int*
+|                       **[2]**: *optional* count of transcipt variants (if detailed), *int*
+|                       **[3]**: *optional* count of transcripts (if detailed), *int*
 |               ``]``, ...  ``]``
 |
 |        *in case of* **kind** = ``"func"`` 
@@ -50,8 +52,9 @@ Format
 |        "**variants**":  ``null``*optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of transcripts (if detailed) or variants, *int*
-|                       **[2]**: *optional* count of variants (if detailed), *int*
+|                       **[1]**: count of transcript variants (if detailed) or DNA variants, *int*
+|                       **[2]**: *optional* count of transcipt variants (if detailed), *int*
+|                       **[3]**: *optional* count of transcripts (if detailed), *int*
 |               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
 |        "**rq-id**:  ID of request series
@@ -62,7 +65,7 @@ Format
 Description
 -----------
 
-The data structure is used in return values of requests :doc:`ds_stat`, :doc:`dtree_stat`, :doc:`statunits` and :doc:`statfunc`. It represents status report for a :term:`filtering property` applied to selected set of variants. In case of :term:`workspace` selection also applies to :term:`transcripts<transcript>`. 
+The data structure is used in return values of requests :doc:`ds_stat`, :doc:`dtree_stat`, :doc:`statunits` and :doc:`statfunc`. It represents status report for a :term:`filtering property` applied to selected set of variants. In case of :term:`workspace` selection also applies to :term:`transcript variants<transcript variant>`. 
 
 See discussion on :doc:`../concepts/status_report` for understanding general principle and details.
 
@@ -70,8 +73,8 @@ In context of requests :doc:`ds_stat`, :doc:`dtree_stat` status report can be in
 
 In complete state details of status are always set. If status reports for filtering properties (of numeric or enum type) is incomplete, use request :doc:`statunits` to get them in complete state. 
 
-In **detailed** case (:term:`workspace` context) the main items for counting are :term:`transcripts<transcript>`, so count values form pair of values in list, first one is for transcripts, second for :term:`variants<variant>`.
-Otherwise only single variant count is provided in lists. 
+In **detailed** case (:term:`workspace` context) the main items for counting are :term:`transcript variants<transcript variant>`, so count values form triplet of values in list, first one is for transcript variants, second for :term:`DNA ones<DNA variant>`, and last for :term:`transcripts<transcript>`.
+Otherwise only single DNA variant count is provided in lists. 
 
 The field **classes** provides property classification information, see :doc:`../concepts/restrict_flt`.
 

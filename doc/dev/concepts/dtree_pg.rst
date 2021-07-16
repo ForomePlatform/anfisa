@@ -29,7 +29,7 @@ The page provides the following functionality issues for work with with all :ter
     
     - creation of :term:`secondary workspace`
         
-In case of :term:`ws-dataset` the page uses :term:`transcripts<transcript>` as :term:`filtration` items, otherwise in case of :term:`xl-dataset` :term:`variants<variant>` are used.
+In case of :term:`ws-dataset` the page uses :term:`transcript variants<transcript variant>` as :term:`filtration` items, otherwise in case of :term:`xl-dataset` :term:`DNA variants<DNA variant>` are used.
 
 Decision trees are powerful tool of :doc:`filtration`, they are integrated with other parts of the system by two ways:
 

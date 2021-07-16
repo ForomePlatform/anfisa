@@ -33,13 +33,15 @@ Synopsis
     |      "**kind**": kind of dataset, ``"ws"`` *or* ``"xl"``
     |      "**total-counts**": count of items in dataset
     |           ``[`` *list**
-    |               **[0]** count of variants, *int*
-    |               **[1]** *optional* count of transcripts, *int*
+    |               **[0]** count of DNA variants, *int*
+    |               **[1]** *optional* count of transcript variants, *int*
+    |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**filtered-counts**": count of items filtered
     |           ``[`` *list**
     |               **[0]** count of variants, *int*
-    |               **[1]** *optional* count of transcripts, *int*
+    |               **[1]** *optional* count of transcript variants, *int*
+    |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**stat-list**": ``[`` *list of* :doc:`s_prop_stat` ``]``
     |      "**cur-filter**: *optional* name of current filter, *string*
@@ -75,7 +77,7 @@ Returning property **cur-filter** is not null if current conditions are stored o
 
 Returning property **conditions** contains conditions in operational format(:doc:`s_condition`). But for rendering needs the request returns additionally the list **cond-seq** and status **eval-status**. In most common scenario conditions are correct and can be evaluated property, however there might be errors, and information about these errors should be used by the client. Please pay attention at property **unit** in **cond-seq** list: usually it is equal to  value of second element ([1]) of correspondent condition from **conditions**. But existence of **unit** property guarantees that condition has no errors.
 
-Returning properties **total-counts** and **filter-counts** have length of 2 in case of :term:`workspaces<workspace>` and length of 1 otherwise. Second position in lists correspond to count of :term:`transcripts<transcript>`
+Returning properties **total-counts** and **filter-counts** have length of 3 in case of :term:`workspaces<workspace>` and length of 1 otherwise. Second position in lists correspond to counts of :term:`transcript variants<transcript variant>` and :term:`transcripts<transcript>`.
 
 Modification of filters
 ^^^^^^^^^^^^^^^^^^^^^^^

@@ -5,7 +5,7 @@ Discussion
 ----------
 Functions are aggregated information items that can be used in filtration as well as filtering property. Difference between application of an enumerated property and application of a function is in parameters: the function requires proper settings for them. 
 
-Up to now all functions behave as multiset property: even if result is ``True`` value, there is no reason to keep ``False`` value of rest of items in dataset (variants or transcripts).
+Up to now all functions behave as multiset property: even if result is ``True`` value, there is no reason to keep ``False`` value of rest of variants in dataset.
 
 The list and format of function parameters are specific for the function. Each parameter value must be data structure in JSON format, usually it means *string* or *int* value, but some complex functions require complex structures as parameters. The Front End application helps the user to fill it up in forms, however the formal definition of function call requires JSON-formatted parameters.
 

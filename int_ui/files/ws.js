@@ -72,14 +72,27 @@ function reloadList() {
 function setupList(info) {
     if (info["ds"] != sDSName)
         return;
-    var rep = '<b>' + info["filtered-counts"][0] + '</b>';
-    if (info["total-counts"][0] != info["filtered-counts"][0]) 
-        rep += "&nbsp;/&nbsp;" + info["total-counts"][0];
-    document.getElementById("ws-list-report").innerHTML = rep;
-    rep = '<b>' + info["filtered-counts"][1] + '</b>';
-    if (info["total-counts"][1] != info["filtered-counts"][1]) 
-        rep += "&nbsp;/&nbsp;" + info["total-counts"][1];
-    document.getElementById("ws-transcripts-report").innerHTML = rep;
+    document.getElementById("ws-stat-total-var").innerHTML = 
+        "" + info["total-counts"][0];
+    document.getElementById("ws-stat-total-tr").innerHTML = 
+        "" + info["total-counts"][2];
+    document.getElementById("ws-stat-total-trv").innerHTML = 
+        "" + info["total-counts"][1];
+    
+    if (info["total-counts"][0] == info["filtered-counts"][0]) {
+        document.getElementById("ws-stat-cur").className = "hide";
+        document.getElementById("ws-stat-total").className = "";
+    } else {
+        document.getElementById("ws-stat-cur").className = "";
+        document.getElementById("ws-stat-total").className = "dark";
+        document.getElementById("ws-stat-cur-var").innerHTML = 
+            "" + info["filtered-counts"][0];
+        document.getElementById("ws-stat-cur-tr").innerHTML = 
+            "" + info["filtered-counts"][2];
+        document.getElementById("ws-stat-cur-trv").innerHTML = 
+            "" + info["filtered-counts"][1];
+    }
+    
     sRecList = info["records"];
     sActiveSamplesInstr = "";
     if (info["active-samples"]) {

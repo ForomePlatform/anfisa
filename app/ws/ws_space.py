@@ -29,10 +29,11 @@ from .ws_unit import WS_ReservedNumUnit
 class WS_EvalSpace(EvalSpace):
     def __init__(self, ds_h, rec_rand_f):
         EvalSpace.__init__(self, ds_h)
-        self.mTotalCounts = [0, 0]
+        self.mTotalCounts = [0, 0, 0]
         self.mGroups = []
         self.mTrCounts = []
         self.mZygRUnits = []
+        self.mTrIdUnit = None
 
         self.mRandRUnit = WS_ReservedNumUnit(
             self, "_rand", rec_rand_f)
@@ -42,6 +43,10 @@ class WS_EvalSpace(EvalSpace):
         r_unit_h = WS_ReservedNumUnit(self, zyg_name, zyg_func)
         self.mZygRUnits.append(r_unit_h)
         self._addReservedUnit(r_unit_h)
+
+    def _setupTrIdUnit(self, unit_name):
+        self.mTrIdUnit = self.getUnit(unit_name)
+        self.mTotalCounts[2] = len(self.mTrIdUnit.getVariantSet())
 
     def getCondKind(self):
         return "ws"
@@ -84,8 +89,11 @@ class WS_EvalSpace(EvalSpace):
     def getCondAll(self):
         return WS_All(self)
 
+    def mapTranscriptID(self, pos_idx):
+        return self.mTrIdUnit.getItValIdx(pos_idx)
+
     def makeEmptyCounts(self):
-        return [0, 0]
+        return [0, 0, 0]
 
     def makeNumericCond(self, unit_h, min_val = None, min_eq = True,
             max_val = None, max_eq = True,  zyg_bounds = None):
@@ -201,12 +209,21 @@ class WS_Condition(Eval_Condition):
             if group_val.any():
                 yield rec_no, group_val
 
-    def getCounts(self):
+    sPattTrue = bitarray('1')
+
+    def getCounts(self, zone_f = None):
         count_grp, count_items = 0, 0
-        for _, rec_it_map in self.iterSelection():
+        eval_space = self.getEvalSpace()
+        tr_set = set()
+        for rec_no, rec_it_map in self.iterSelection():
+            if zone_f is not None and not zone_f(rec_no):
+                continue
             count_grp += 1
             count_items += rec_it_map.count()
-        return [count_grp, count_items]
+            idx_start, _ = eval_space.getGroupPos(rec_no)
+            for idx_pos in rec_it_map.itersearch(self.sPattTrue):
+                tr_set.add(eval_space.mapTranscriptID(idx_start + idx_pos))
+        return [count_grp, count_items, len(tr_set)]
 
     def getItemCount(self):
         return self.mBitArray.count()
@@ -214,8 +231,6 @@ class WS_Condition(Eval_Condition):
     def recInSelection(self, rec_no):
         offset_from, offset_to = self.getEvalSpace().getGroupPos(rec_no)
         return self.mBitArray[offset_from:offset_to].any()
-
-    sPattTrue = bitarray('1')
 
     def iterItemIdx(self):
         grp_idx = 0

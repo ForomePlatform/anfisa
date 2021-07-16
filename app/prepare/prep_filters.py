@@ -42,6 +42,7 @@ class FilterPrepareSetH(SolutionBroker):
         self.mFamilyInfo = FamilyInfo(self.mMeta)
         self.mCheckIdent = check_identifiers
         self.mPreTransformSeq = []
+        self.mTranscriptIdName = None
 
         assert self.sZygosityPath is not None, (
             "Missing configuration zygosity.path.base setting")
@@ -64,10 +65,18 @@ class FilterPrepareSetH(SolutionBroker):
             unit_h = prep_unit.loadConvertorInstance(info,
                 self.mCurVGroup, self)
             self._addUnit(unit_h)
+            if unit_h.isTranscriptID():
+                assert self.mTranscriptIdName is None, (
+                    "Transcript ID unit duplication: " + unit_h.getName()
+                    + " | " + self.mTranscriptIdName)
+                self.mTranscriptIdName = unit_h.getName()
         self._setViewGroup(None)
 
     def getFamilyInfo(self):
         return self.mFamilyInfo
+
+    def getTranscriptIdUnitName(self):
+        return self.mTranscriptIdName
 
     def viewGroup(self, view_group_title):
         assert view_group_title not in self.mVGroups, (
@@ -172,12 +181,17 @@ class FilterPrepareSetH(SolutionBroker):
 
     def transcriptStatusUnit(self, name, trans_name,
             variants = None, default_value = "False",
-            bool_check_value = None):
+            bool_check_value = None, transcript_id_mode = False):
         self._checkVar(name, "enum")
+        if transcript_id_mode:
+            assert self.mTranscriptIdName is None, (
+                "Transcript ID unit set twice: " + self.mTranscriptIdName +
+                " | " + name)
+            self.mTranscriptIdName = name
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
             name, len(self.mUnits), self.mCurVGroup,
             "transcript-status", trans_name, variants, default_value,
-            bool_check_value))
+            bool_check_value, transcript_id_mode))
 
     def transcriptMultisetUnit(self, name, trans_name,
             variants = None, default_value = None):

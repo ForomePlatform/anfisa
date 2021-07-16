@@ -53,16 +53,22 @@ class Workspace(DataSet):
             self.mEvalSpace._addZygUnit(zyg_name,
                 self._makeRecArrayFunc(var_array))
 
+        transcript_id_unit = None
         for unit_data in self.getFltSchema():
             unit_h = loadWS_Unit(self.mEvalSpace, unit_data)
             if unit_h is not None:
                 self.mEvalSpace._addUnit(unit_h)
+                if unit_h.isTranscriptID() and transcript_id_unit is None:
+                    transcript_id_unit = unit_h.getName()
         self._loadPData()
         self._loadFData()
         self.mTagsMan = TagsManager(self,
             self.getPanelVariants("Check-Tags", "_tags"))
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
+        if not transcript_id_unit:
+            transcript_id_unit = AnfisaConfig.configOption("ws.transcript.id")
+        self.mEvalSpace._setupTrIdUnit(transcript_id_unit)
         self.startService()
 
         self.mZoneHandlers  = []
@@ -198,19 +204,16 @@ class Workspace(DataSet):
     def rq__ws_list(self, rq_args):
         filter_h = self._getArgCondFilter(rq_args)
         zone_f = self.restrictZoneF(rq_args.get("zone"))
-        counts = [0, 0]
         records = []
         condition = filter_h.getCondition()
         for rec_no, rec_it_map in condition.iterSelection():
             if zone_f is not None and not zone_f(rec_no):
                 continue
             records.append(self.reportRecord(rec_no, rec_it_map))
-            counts[0] += 1
-            counts[1] += rec_it_map.count()
         ret_handle = {
             "ds": self.getName(),
             "total-counts": self.mEvalSpace.getTotalCounts(),
-            "filtered-counts": counts,
+            "filtered-counts": condition.getCounts(zone_f),
             "records": records}
         self.visitCondition(condition, ret_handle)
         return ret_handle

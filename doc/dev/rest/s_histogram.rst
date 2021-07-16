@@ -23,7 +23,7 @@ The meaning of histogram: diapason of values is split onto series of intervals, 
 
 In a generic case, histogram splits interval of values onto 10 intervals (count of "bins"): 8 intermediate are of "equal length", and two sided are "infinite" . 
 
-By definition, sum of counts in list equals (in case of :term:`XL-datasets<XL-dataset>` approximately) to count of records in selected set of :term:`variants<variant>` (or :term:`transcripts<transcript>`, see :doc:`../concepts/ws_pg` for details). 
+By definition, sum of counts in list equals (in case of :term:`XL-datasets<XL-dataset>` approximately) to count of records in selected set of :term:`variants<variant>`, see :doc:`../concepts/ws_pg` for details). 
 
 Features of histogram for a :term:`numeric property` depends on settings for this property: 
 

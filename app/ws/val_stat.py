@@ -132,6 +132,7 @@ class EnumStat:
             self.mGroupStat = Counter()
             self.mCurGroupNo = None
             self.mGroupSet = set()
+            self.mVarTrSet = [set() for _ in self.mVariantSet]
 
     def isDefined(self):
         for cnt in self.mStat.values():
@@ -144,7 +145,8 @@ class EnumStat:
             self.mGroupStat[val] += 1
         self.mGroupSet = set()
 
-    def regValues(self, values, count = 1, group_no = None):
+    def regValues(self, values, count = 1,
+            group_no = None, transcript_id = None):
         if not values:
             return
         if group_no is not None and group_no != self.mCurGroupNo:
@@ -158,6 +160,8 @@ class EnumStat:
             self.mStat[val] += count
             if self.mGroupStat is not None:
                 self.mGroupSet.add(val)
+            if transcript_id is not None:
+                self.mVarTrSet[val].add(transcript_id)
 
     def reportResult(self, ret_handle):
         if self.mGroupStat is not None:
@@ -167,5 +171,6 @@ class EnumStat:
             info = [variant, self.mStat.get(idx, 0)]
             if self.mGroupStat is not None:
                 info.insert(1, self.mGroupStat.get(idx, 0))
+                info.append(len(self.mVarTrSet[idx]))
             rep_list.append(info)
         ret_handle["variants"] = rep_list

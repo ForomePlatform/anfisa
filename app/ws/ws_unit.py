@@ -230,15 +230,22 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
+        self.mIdMode = unit_data.get("tr-id-mode")
 
     def isDetailed(self):
         return True
+
+    def isTranscriptID(self):
+        return self.mIdMode
 
     def getVariantSet(self):
         return self.mVariantSet
 
     def getItemVal(self, item_idx):
         return {self.mArray[item_idx]}
+
+    def getItValIdx(self, item_idx):
+        return self.mArray[item_idx]
 
     def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getInternalName())
@@ -252,7 +259,8 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         ret_handle = self.prepareStat()
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
-            enum_stat.regValues([self.mArray[it_idx]], group_no = group_no)
+            enum_stat.regValues([self.mArray[it_idx]], group_no = group_no,
+            transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
         enum_stat.reportResult(ret_handle)
         ret_handle["detailed"] = True
         return ret_handle
@@ -306,7 +314,8 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
             enum_stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],
-                group_no = group_no)
+                group_no = group_no,
+                transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
         enum_stat.reportResult(ret_handle)
         ret_handle["detailed"] = True
         return ret_handle

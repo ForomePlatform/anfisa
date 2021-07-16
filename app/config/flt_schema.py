@@ -185,7 +185,7 @@ def defineFilterSchema(metadata_record):
         filters.transcriptStatusUnit("Transcript_worst", "is_worst",
             bool_check_value = "True", default_value = "False")
         filters.transcriptStatusUnit("Transcript_id", "id",
-            default_value = "undefined")
+            default_value = "undefined", transcript_id_mode = True)
         tr_genes_unit = filters.transcriptStatusUnit("Transctript_Gene",
             "gene", default_value = "undefined")
         filters.transcriptPanelsUnit("Transcript_Gene_Panels",
@@ -428,5 +428,8 @@ def defineFilterSchema(metadata_record):
     with filters.viewGroup("Debug_Info"):
         filters.intValueUnit("Severity", "/_filters/severity",
             default_value = -1)
+
+    assert filters.getTranscriptIdUnitName() is not None, (
+        "Transcript ID unit is not set")
 
     return filters

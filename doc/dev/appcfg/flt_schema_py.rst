@@ -166,7 +166,7 @@ Constrained unit types
 Transcript unit types
 ---------------------
 
-Transcript units are units with information for :term:`transcripts<transcript>` but not :term:`variants<variant>`, see :doc:`../concepts/filters_reg` for details. So these units are hidden and inactive for :term:`XL-datasets<xl-dataset>`, and active only for :term:`workspaces<workspace>`. 
+Transcript units are units with information for :term:`transcript variants<transcript variant>` but not for :term:`DNA ones<DNA variant>`, see :doc:`../concepts/filters_reg` for details. So these units are hidden and inactive for :term:`XL-datasets<xl-dataset>`, and active only for :term:`workspaces<workspace>`. 
 
 Activation of these units is a part of logic for :doc:`dataset derivation<../rest/ds2ws>` procedure, so it might happen essentially later than the :term:`primary dataset` was created, and there is no a good way for careful check of values of these datasets. Thus API for their definition is simpler: there is no options **conversion** and **diap** (for numeric units). 
 

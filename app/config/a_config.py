@@ -64,6 +64,8 @@ class AnfisaConfig:
 
         "transcript.path.base": "/_view/transcripts",
 
+        "ws.transcript.id": "Transcript_id",
+
         "job.pool.size":    50,
         "job.pool.threads": 10,
         "job.pool.memlen":  100,

@@ -72,14 +72,27 @@ def _formPanel(output, workspace_name, ws_pub_url):
                 <div id="macro-tagging-dialog" class="popup"></div>
             </div> <span id="ds-name" class="bold"></span>
             <div class="nomargins">
-                Variants:&nbsp;<span id="ws-list-report" class="bold"
-                ></span>
+              <table id="ws-top-stat">
+                <tr id="ws-stat-cur">
+                    <td class="ws-stat-pre">In work:</td>
+                    <td id="ws-stat-cur-var" title="variants in work"></td>
+                    <td class="ws-stat-op">&#x00D7;</td>
+                    <td id="ws-stat-cur-tr" title="transcripts in work"></td>
+                    <td class="ws-stat-op">&#x21C9;</td>
+                    <td id="ws-stat-cur-trv"
+                        title="transcript variants in work"></td>
+                </tr>
+                <tr id="ws-stat-total">
+                    <td class="ws-stat-pre">Total:</td>
+                    <td id="ws-stat-total-var" title="variants in dataset"></td>
+                    <td class="ws-stat-op">&#x00D7;</td>
+                    <td id="ws-stat-total-tr" title="transcripts in dataset"></td>
+                    <td class="ws-stat-op">&#x21C9;</td>
+                    <td id="ws-stat-total-trv"
+                        title="transcript variants in dataset"></td>
+                </tr>
+              </table>
             </div>
-            <div class="nomargins">
-                <small>
-                  Transcripts:&nbsp;<span id="ws-transcripts-report"></span>
-                </small>
-              </div>
         </div>
         <div  id="top-filters">
           Filters:

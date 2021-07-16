@@ -450,13 +450,16 @@ class TranscriptNumConvertor(ValueConvertor):
 class TranscriptEnumConvertor(ValueConvertor):
     def __init__(self, master, name, unit_no, vgroup,
             sub_kind, trans_name, variants, default_value,
-            bool_check_value = False):
+            bool_check_value = False, transcript_id_mode = False):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
         assert sub_kind.startswith("transcript-"), (
             "Expected leading transcript- in sub_kind: " + sub_kind)
+        assert not transcript_id_mode or sub_kind == "status", (
+            "Transcript ID unit has not status subtype:" + name)
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = "enum"
         self.mDescr["sub-kind"] = sub_kind
+        self.mDescr["tr-id-mode"] = transcript_id_mode
         self.mDescr["bool-check"] = bool_check_value
         if trans_name is None:
             assert sub_kind == "transcript-panels", (
@@ -549,7 +552,8 @@ def loadConvertorInstance(info, vgroup, filter_set):
             return TranscriptEnumConvertor(filter_set, info["name"],
                 info["no"], vgroup,
                 info["sub-kind"], info["tr-name"], info["pre-variants"],
-                info.get("default"), info["bool-check"])
+                info.get("default"), info["bool-check"],
+                info.get(["tr-id-mode"]))
         if info.get("mean") == "presence":
             path_info_seq = [(var, it_path)
                 for var, _, it_path in info["variants"]]

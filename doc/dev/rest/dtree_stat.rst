@@ -28,12 +28,14 @@ Synopsis
     |      "**total-counts**": count of items in dataset
     |           ``[`` *list*
     |               **[0]** count of variants, *int*
-    |               **[1]** *optional* count of transcripts, *int*
+    |               **[1]** *optional* count of transcript variants, *int*
+    |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**filtered-counts**": count of items filtered
     |           ``[`` *list*
     |               **[0]** count of variants, *int*
-    |               **[1]** *optional* count of transcripts, *int*
+    |               **[1]** *optional* count of transcript variants, *int*
+    |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**stat-list**": ``[`` *list of* :doc:`s_prop_stat` ``]``
     |      **rq_id**": unique request id, for use in secondary requests, *string*

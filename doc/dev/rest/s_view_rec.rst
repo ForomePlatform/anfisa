@@ -114,7 +114,7 @@ Contents of aspect can be changed as a result of user activity :
         operative information what :term:`filters<filter>` and 
         :term:`decision trees<decision tree>` are positive on the variant in view
 
-    - Row "Transcripts" contain transcript short descriptions, and the variants
+    - Row "Transcripts" contain :term:`transcript` short descriptions, and the variants
         selected by current filter are marked by ``hit`` CSS class.
 
 - Row "Has_Variant" reports list of samples containing current variant. If some samples are active in context of current filter or decision tree condition, presence of these samples is highlighted and grouped on top of report list. 

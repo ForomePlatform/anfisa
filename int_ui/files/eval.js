@@ -298,7 +298,9 @@ var sOpEnumH = {
             var_name = this.mVariants[j][0];
             var_count = this.mVariants[j][1];
             if (unit_stat["detailed"] && var_count > 0)
-                var_count = var_count + "/" + this.mVariants[j][2];
+                var_count = var_count + '&nbsp;&#x00D7;&nbsp;' + 
+                    this.mVariants[j][3] + '&nbsp;&#x21C9;&nbsp;' +
+                    this.mVariants[j][2];
             has_zero |= (var_count == 0);
             list_val_rep.push(this.reprVariant(var_name, var_count, j));
         }
@@ -639,15 +641,17 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 }
 
 function reportStatCount(count_info, unit_stat, shift) {
-    if (unit_stat["detailed"]) {
-        cnt_rep = count_info[1 + shift] + '(' + count_info[shift] + ')';
-        nm = "transcript";
-    } else {
-        cnt_rep = count_info[shift];
-        nm = "variant";
-    }
-    return '<span class="stat-count">' + cnt_rep + ' ' + nm +  
-        ((count_info[1 + shift]>1)? 's':'') + '</span>';
+    if (unit_stat["detailed"] && count_info[1 + shift] > 0) {
+        cnt = count_info[1 + shift];
+        s_mult = (cnt > 1)? "s":"";
+        return '<span class="stat-count">' + cnt + 
+            ' transcript variant' + s_mult +  
+            '(' + count_info[2 + shift] + 
+            '&nbsp;&#x00D7;&nbsp;' + count_info[shift] + ')';
+    } 
+    cnt = count_info[shift];
+    s_mult = (cnt > 1)? "s":"";
+    return '<span class="stat-count">' + cnt + ' variant' + s_mult + '</span>';
 }
 
 /*************************************/

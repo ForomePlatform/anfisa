@@ -97,6 +97,9 @@ class VarUnit:
             ret_handle["incomplete"] = True
         return ret_handle
 
+    def isTranscriptID(self):
+        return False
+
 #===============================================
 #===============================================
 class NumUnitSupport:
