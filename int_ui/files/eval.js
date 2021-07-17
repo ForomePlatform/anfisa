@@ -298,8 +298,8 @@ var sOpEnumH = {
             var_name = this.mVariants[j][0];
             var_count = this.mVariants[j][1];
             if (unit_stat["detailed"] && var_count > 0)
-                var_count = var_count + '&nbsp;&#x00D7;&nbsp;' + 
-                    this.mVariants[j][3] + '&nbsp;&#x21C9;&nbsp;' +
+                var_count = var_count + '&thinsp;&#x00D7;&thinsp;' + 
+                    this.mVariants[j][3] + '&thinsp;&#x21C9;&thinsp;' +
                     this.mVariants[j][2];
             has_zero |= (var_count == 0);
             list_val_rep.push(this.reprVariant(var_name, var_count, j));
@@ -647,7 +647,7 @@ function reportStatCount(count_info, unit_stat, shift) {
         return '<span class="stat-count">' + cnt + 
             ' transcript variant' + s_mult +  
             '(' + count_info[2 + shift] + 
-            '&nbsp;&#x00D7;&nbsp;' + count_info[shift] + ')';
+            '&thinsp;&#x00D7;&thinsp;' + count_info[shift] + ')';
     } 
     cnt = count_info[shift];
     s_mult = (cnt > 1)? "s":"";

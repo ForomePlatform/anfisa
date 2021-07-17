@@ -270,7 +270,8 @@ td.point-cond {
 }
 
 td.point-count {
-    width: 80px;
+    width: 100px;
+    min-width: 100px;
     text-align: right;
     font-style: italic;
     color: #000080;
@@ -288,8 +289,12 @@ td.point-count.accept {
     color: #006F00;
 }
 
-span.tr-count {
+.tr-count {
     font-size: 80%;
+}
+
+div.tr-count {
+    text-align: right;
 }
 
 table.d-tree td.point-count.reject {
