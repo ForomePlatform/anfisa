@@ -31,9 +31,9 @@ Format
 |        "**max**": *optional* maximum value, *int or float*
 |        "**counts**": *optional* 
 |               ``[`` *list*
-|                       **[0]**: count of transcript variants (if detailed) or DNA variants, *int*
-|                       **[1]**: *optional* count of transcipt variants (if detailed), *int*
-|                       **[2]**: *optional* count of transcripts (if detailed), *int*
+|                       **[0]**: count of variants (transcipt if detailed, DNA otherwise), *int*
+|                       **[1]**: *optional* (if detailed) count of DNA variants, *int*
+|                       **[2]**: *optional* (if detailed) count of transcripts, *int*
 |               ``]``
 |        "**histogram**: *optional*, :doc:`s_histogram`
 |
@@ -42,9 +42,9 @@ Format
 |        "**variants**":  *optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of transcript variants (if detailed) or DNA variants, *int*
-|                       **[2]**: *optional* count of transcipt variants (if detailed), *int*
-|                       **[3]**: *optional* count of transcripts (if detailed), *int*
+|                       **[1]**: count of variants (transcipt if detailed, DNA otherwise), *int*
+|                       **[2]**: *optional* (if detailed) count of DNA variants, *int*
+|                       **[3]**: *optional* (if detailed) count of transcripts, *int*
 |               ``]``, ...  ``]``
 |
 |        *in case of* **kind** = ``"func"`` 
@@ -52,9 +52,9 @@ Format
 |        "**variants**":  ``null``*optional* ``[`` values status *list*  
 |               ``[`` *list*
 |                       **[0]**: value, *string*
-|                       **[1]**: count of transcript variants (if detailed) or DNA variants, *int*
-|                       **[2]**: *optional* count of transcipt variants (if detailed), *int*
-|                       **[3]**: *optional* count of transcripts (if detailed), *int*
+|                       **[1]**: count of variants (transcipt if detailed, DNA otherwise), *int*
+|                       **[2]**: *optional* (if detailed) count of DNA variants, *int*
+|                       **[3]**: *optional* (if detailed) count of transcripts, *int*
 |               ``]``, ... ``]``
 |        "**err**": *optional*, error message, *string*
 |        "**rq-id**:  ID of request series

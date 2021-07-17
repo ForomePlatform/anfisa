@@ -38,7 +38,7 @@ Synopsis
     |                       **[1]**: total count of transcript variants, *int* ``]``
     |                       **[2]**: total count of transcripts, *int* ``]``
     |       "**filtered-counts**": ``[`` *list*
-    |                       **[0]**: filtered count of DNS variants, *int*
+    |                       **[0]**: filtered count of DNA variants, *int*
     |                       **[1]**: filtered count of transcript variants, *int* ``]``
     |                       **[1]**: total count of transcripts, *int* ``]``
     |       "**records**: ``[`` *list* of :doc:`s_record` ``]``
