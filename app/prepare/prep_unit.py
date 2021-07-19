@@ -54,6 +54,9 @@ class ValueConvertor:
     def getMaster(self):
         return self.mMaster
 
+    def isTranscriptID(self):
+        return False
+
     def dump(self):
         result = {
             "name": self.mName,
@@ -553,7 +556,7 @@ def loadConvertorInstance(info, vgroup, filter_set):
                 info["no"], vgroup,
                 info["sub-kind"], info["tr-name"], info["pre-variants"],
                 info.get("default"), info["bool-check"],
-                info.get(["tr-id-mode"]))
+                info.get("tr-id-mode"))
         if info.get("mean") == "presence":
             path_info_seq = [(var, it_path)
                 for var, _, it_path in info["variants"]]

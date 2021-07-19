@@ -113,6 +113,9 @@ class TrNumConvertor:
             res.append(val)
         f_data[self.mName] = res
 
+    def isTranscriptID(self):
+        return False
+
     def finishUp(self, hard_check):
         self.mDescr["min"] = self.mMin
         self.mDescr["max"] = self.mMax
@@ -140,6 +143,9 @@ class TrEnumConvertor:
         if self.mPreVariants is None:
             self.mPreVariants = ["True", "False"]
             self.mPreVarSet = set(self.mPreVariants)
+
+    def isTranscriptID(self):
+        return False
 
     def finishUp(self, hard_check):
         if len(self.mBadCount) > 0:
@@ -186,6 +192,10 @@ class TrStatusConvertor(TrEnumConvertor):
             assert q is not None, (
                 "Bad transcript instruction " + self.mBoolCheckValue)
             self.mBoolVUnit = q.group(1)
+        self.mIdMode = unit_descr.get("tr-id-mode")
+
+    def isTranscriptID(self):
+        return self.mIdMode
 
     def doRec(self, tr_seq, f_data):
         if len(tr_seq) == 0:
@@ -264,6 +274,9 @@ class TrPanelsConvertor:
             pname: set(sol_broker.getPanelVariants(pname))
             for pname in sol_broker.getPanelNames(self.mPanelType)}
         self.mVarCount = Counter()
+
+    def isTranscriptID(self):
+        return False
 
     def doRec(self, tr_seq, f_data):
         res = []
