@@ -454,7 +454,7 @@ class TranscriptEnumConvertor(ValueConvertor):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
         assert sub_kind.startswith("transcript-"), (
             "Expected leading transcript- in sub_kind: " + sub_kind)
-        assert not transcript_id_mode or sub_kind == "status", (
+        assert not transcript_id_mode or sub_kind == "transcript-status", (
             "Transcript ID unit has not status subtype:" + name)
         self.mDescr = ValueConvertor.dump(self)
         self.mDescr["kind"] = "enum"
