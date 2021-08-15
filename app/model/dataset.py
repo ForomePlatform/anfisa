@@ -609,7 +609,7 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition = eval_h.getCondition()
         return {"task_id": self.getApp().runTask(
-            RecListTask(self, condition))}
+            RecListTask(self, condition, rq_args.get("smpcnt")))}
 
     #===============================================
     @RestAPI.ds_request

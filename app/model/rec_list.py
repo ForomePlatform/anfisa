@@ -23,15 +23,25 @@ from app.config.a_config import AnfisaConfig
 #===============================================
 class RecListTask(ExecutionTask):
     sViewCountFull = AnfisaConfig.configOption("xl.view.count.full")
-    sViewCountSamples = AnfisaConfig.configOption("xl.view.count.samples")
-    sViewMinSamples = AnfisaConfig.configOption("xl.view.min.samples")
+    sViewCountSamplesDefault = AnfisaConfig.configOption(
+        "xl.view.count.samples.default")
+    sViewCountSamplesMax = AnfisaConfig.configOption(
+        "xl.view.count.samples.max")
+    sViewCountSamplesMin = AnfisaConfig.configOption(
+        "xl.view.count.samples.min")
 
-    def __init__(self, ds_h, condition):
+    def __init__(self, ds_h, condition, smp_count):
         ExecutionTask.__init__(self, "Prepare variants...")
         self.mDS = ds_h
         self.mCondition = condition
         self.mResSamples = None
         self.mResFull = None
+        if not smp_count:
+            self.mSmpCount = self.sViewCountSamplesDefault
+        else:
+            self.mSmpCount = min(
+                max(int(smp_count), self.sViewCountSamplesMin),
+                self.sViewCountSamplesMax)
 
     def getTaskType(self):
         return "rec-list"
@@ -39,7 +49,7 @@ class RecListTask(ExecutionTask):
     def _detectModes(self, rec_count):
         if rec_count > self.sViewCountFull:
             self.mResSamples = []
-        elif rec_count <= self.sViewMinSamples:
+        elif rec_count < self.mSmpCount * 2:
             self.mResFull = []
         else:
             self.mResSamples = []
@@ -61,7 +71,7 @@ class RecListTask(ExecutionTask):
         self.setStatus("Finishing")
         if self.mResSamples is not None:
             self.mResSamples = [rec_dict[rec_no]
-                for rec_no in rec_no_seq[:self.sViewCountSamples]]
+                for rec_no in rec_no_seq[:self.mSmpCount]]
         if self.mResFull is not None:
             self.mResFull = [rec_dict[rec_no]
                 for rec_no in sorted(rec_no_seq)]
@@ -76,7 +86,7 @@ class RecListTask(ExecutionTask):
         self.mResFull = req_rep_seq
         if self.mResSamples is not None:
             self.mResSamples = [req_rep_seq[idx]
-                for _, idx in sorted(rand_sheet)[:self.sViewCountSamples]]
+                for _, idx in sorted(rand_sheet)[:self.mSmpCount]]
 
     def execIt(self):
         if self.mDS.getDSKind() == "ws":

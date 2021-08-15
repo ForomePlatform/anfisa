@@ -23,6 +23,8 @@ Synopsis
         **code**: *optional* code of applying decision tree
         
         **no**: *optional* position on tree, *int as string*
+
+        **smpcnt**: *optional* count of samples *int as string*
         
     **Return value**: 
     
@@ -61,6 +63,8 @@ Selection of variants is defined by arguments:
 - otherwize selection is the full list of variants in dataset
 
 Some samples can be  :ref:`active<active_samples>` in context of current filter or decision tree condition, and this information forms property **active-samples** of descriptor. The string has form of list of integers separated by ','  and can be used as argument of :doc:`reccnt` call.
+
+Default value for **smpcnt**, length of sample list, is 25. Possible values are between 10 and 150, values out of bounds are interpeted as bound values 10 or 150.
 
 Comment
 -------

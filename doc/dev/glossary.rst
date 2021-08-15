@@ -136,7 +136,7 @@ Anfisa glossary
         List of genes registered in the system as :term:`solution item`
         
     Export
-        Operation of creation (external) Excel document for selected variants. Selection should be limited (up to 300 entries). Document is stored on server side, see :ref:`configuration settings<export_cfg>`.
+        Operation of creation (external) Excel document for selected variants. Document is stored on server side, see :ref:`configuration settings<export_cfg>`.
         
     Delayed request    
         A request that needs to be complete only if the main request has returned incomplete information. Forms series. See details in :doc:`concepts/status_report`
