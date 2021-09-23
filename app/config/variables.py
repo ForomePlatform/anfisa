@@ -22,6 +22,14 @@ from app.eval.var_reg import VarRegistry
 #===============================================
 anfisaVariables = VarRegistry()
 
+consequences_help = '''
+ The set of consequence terms is 
+ defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+ See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+ for details.
+'''
+
+
 anfisaVariables.setupClassificationFacet(1, "Knowledge Domain", [
     ["call", "Call Annotations"],
     ["phenotype", "Phenotypic Data"],
@@ -123,9 +131,13 @@ anfisaVariables.regVar("Variant_Class", "enum",
     facet1="function", facet2="transcript", facet3="bioinf")
 
 anfisaVariables.regVar("Most_Severe_Consequence", "enum",
+    tooltip= "Most Severe Consequences from the transcript"
+             + " with the worst annotation." + consequences_help,
     facet1="function", facet2="variant", facet3="bioinf")
 
 anfisaVariables.regVar("Canonical_Annotation", "enum",
+    tooltip= "Most Severe Consequences from canonical transcripts. "
+            + consequences_help,
     facet1="function", facet2="variant", facet3="bioinf")
 
 anfisaVariables.regVar("Multiallelic", "enum",
@@ -171,6 +183,7 @@ anfisaVariables.predeclareClassification(
     "na1", "transcript", "na3")
 
 anfisaVariables.regVar("Transcript_consequence", "enum",
+                       tooltip=consequences_help,
                        facet1="function", facet3="bioinf")
 
 anfisaVariables.regVar("Transcript_canonical", "enum")
