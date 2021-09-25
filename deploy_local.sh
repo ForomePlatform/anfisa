@@ -50,21 +50,14 @@ fi
 
 echo "Updating configuration in anfisa.json"
 hostname=`hostname`
-sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/anfisa.json.template \
+sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/setup/anfisa.json.template \
   | sed "s#WOWOWOWO#$target#" \
   | sed "s#PATH_TO_SOURCE#$repo#" \
   | sed "s/HOST_IP/127.0.0.1/" \
   |  sed "s/3041/8190/" > anfisa_$hostname.json
 
 pip3 install -r ${repo}/requirements.txt
-forome_tools_version=0.1.6
-wheel=forome_tools-v.${forome_tools_version}-py3-none-any.whl
-if [ ! -f ${wheel}.gz ] ; then
-  echo curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
-  curl -O -L https://github.com/ForomePlatform/forome_misc_tools/releases/download/v.${forome_tools_version}-py3/${wheel}.gz
-  gunzip ${wheel}.gz
-  pip3 install ${wheel}
-fi
+pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
 
 echo "Loading Sample Dataset"
 echo "PYTHONPATH=$repo python3 -u -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -i data/pgp3140_wgs_hlpanel.cfg PGP3140"
