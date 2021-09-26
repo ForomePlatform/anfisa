@@ -56,6 +56,7 @@ sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/setup/anfisa.json.template \
   | sed "s/HOST_IP/127.0.0.1/" \
   |  sed "s/3041/8190/" > anfisa_$hostname.json
 
+pip3 install wheel # apparently we need this before other requirements
 pip3 install -r ${repo}/requirements.txt
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
 
