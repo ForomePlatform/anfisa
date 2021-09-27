@@ -9,7 +9,7 @@ services:
       - ASETUP_PATH:/anfisa/a-setup
     build:
       context: .
-      dockerfile: setup/Dockerfile
+      dockerfile: Dockerfile
     restart: always
     ports:
       - "9010:80"
