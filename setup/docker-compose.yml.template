@@ -13,6 +13,8 @@ services:
     restart: always
     ports:
       - "9010:80"
+    command:
+      - /usr/local/bin/supervisord
       
 
   mongo:
