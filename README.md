@@ -133,7 +133,7 @@ The port is configurable in your configuration file.
   under your work directory)
 * Run anfisa ingestion process
                                      
-Here is sample commands that can be executed:
+Here are sample commands that can be executed:
 
         curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz
         docker cp pgp3140_wgs_nist-v4.2.tgz anfisa6_docker:/anfisa/a-setup/data/examples/
