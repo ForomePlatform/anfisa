@@ -111,16 +111,17 @@ is not localhost:27017, after the installation you will need to edit anfisa.json
 
 `. deploy_local.sh`
 
-The script will ask for an installation directory. 
+First, the script will ask for an installation directory. 
 By default it would install in the same directory 
 where you have cloned the code, but you can 
-change to any other directory. 
-Then it will configure Anfisa for your local system
+change it to any other directory. 
+Once installation directory is confirmed, the script 
+will configure Anfisa for your local system.
 
 When the script has finished, it will display 
-the command to run the system. 
+the command to start Anfisa server. 
 
-Once the system is running you can access 
+When the system is running you can access 
 the web interface by the url: http://localhost:8190 
 
 The port is configurable in your configuration file.
@@ -131,7 +132,7 @@ The port is configurable in your configuration file.
   [prepared dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz)
 * Unpack the content into some directory (e.g. directory `data` 
   under your work directory)
-* Run anfisa ingestion process
+* Run Anfisa ingestion process
                                      
 Here are sample commands that can be executed:
 
