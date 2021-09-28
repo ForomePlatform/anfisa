@@ -1,5 +1,18 @@
 # Anfisa
 
+<!-- toc -->
+
+- [Overview](#overview)
+- [Online Development Documentation](#online-development-documentation)
+- [Installation](#installation)
+    + [Caution:](#caution)
+  * [Installation instructions](#installation-instructions)
+    + [Installing via Docker](#installing-via-docker)
+    + [Installing without Docker](#installing-without-docker)
+- [Public Demo](#public-demo)
+
+<!-- tocstop -->
+
 ## Overview
 
 Anfisa is a Variant Analysis and Curation Tool. Its purpose is to 
@@ -22,7 +35,7 @@ https://foromeplatform.github.io/documentation/anfisa-user.v0.6/
 
 ##  Installation
 
-#### Caution:
+### Select branch or release:
 This is a master branch that from time to time can be unstable or untested.
 If you would like to try Anfisa, we strongly recommend installing it from one 
 of the released tags 
@@ -77,7 +90,7 @@ location /anfisa {
 ```
 
 4. Download [sample whole genome dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz) 
-and ingest it. Will require around 4 hours
+and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 #### Installing without Docker
 
@@ -111,6 +124,21 @@ Once the system is running you can access
 the web interface by the url: http://localhost:8190 
 
 The port is configurable in your configuration file.
+                                                            
+
+###  Ingesting demo whole genome
+* First, download 
+  [prepared dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz)
+* Unpack the content into some directory (e.g. directory `data` 
+  under your work directory)
+* Run anfisa ingestion process
+                                     
+Here is sample commands that can be executed:
+
+        curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz
+        docker cp pgp3140_wgs_nist-v4.2.tgz anfisa6_docker:/anfisa/a-setup/data/examples/
+        docker exec -it anfisa6_docker sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tgz'
+        docker exec -it anfisa6_docker sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
 
 ## Public Demo 
 
@@ -122,5 +150,3 @@ both short and long read techniques.
 
 
 The demo is available at: http://demo.forome.org
-
- 
