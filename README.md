@@ -63,7 +63,7 @@ Update docker-compose.yml.template**
 
 1. Run 
 
-`deploy.sh --workdir=<Absolute path to the chosen working directory> --hostip=<your local IP address>`
+`deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
