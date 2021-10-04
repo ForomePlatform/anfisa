@@ -2,6 +2,7 @@
 FROM python:3.7
 WORKDIR /anfisa
 RUN bash -c 'mkdir -p /anfisa/anfisa && mkdir -p /anfisa/a-setup/ && mkdir -p /anfisa/a-setup/{data,logs,vault,export/work,ui} && mkdir -p /data/'
+RUN cd /anfisa/a-setup/export && curl -L -O https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 
 COPY . /anfisa/anfisa/
 RUN cd /anfisa/anfisa/ && pip3 install -r requirements.txt && pip3 install supervisor && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools 
