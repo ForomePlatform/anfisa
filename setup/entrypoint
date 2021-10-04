@@ -2,6 +2,7 @@
 export COUNT_FILES=$(ls -A /anfisa/a-setup/ | wc -l)
 if [ ${COUNT_FILES} -le 2 ] ; then
     mkdir -p /anfisa/a-setup/{data,logs,vault,export/work,ui}
+    cd /anfisa/a-setup/export && curl -L -O https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
 fi
 
 exec "$@"
