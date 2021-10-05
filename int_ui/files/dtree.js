@@ -280,11 +280,11 @@ var sDecisionTree = {
         var accepted = this.getAcceptedCounts();
         if (accepted != null) {
             rep_accepted = '' + accepted[0];
-            if (accepted[0] > 0)
+            if (accepted[0] > 0 && accepted.length > 1) 
                 rep_accepted += ' <span class="tr-count">&#x21C9;&thinsp;' + 
                     accepted[1] + '</span>';
             rep_rejected = (this.mTotalCounts[0] - accepted[0]);
-            if (accepted[0] < this.mTotalCounts[0])
+            if (accepted[0] < this.mTotalCounts[0] && accepted.length > 1)
                 rep_rejected += ' <span class="tr-count">&#x21C9;&thinsp;' + 
                     (this.mTotalCounts[1] - accepted[1]) + '</span>';
         } else {
