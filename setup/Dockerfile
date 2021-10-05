@@ -1,7 +1,6 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
 FROM python:3.7
 WORKDIR /anfisa
-RUN bash -c 'mkdir -p /anfisa/anfisa && mkdir -p /anfisa/a-setup/ && mkdir -p /anfisa/a-setup/{data,logs,vault,export/work,ui} && mkdir -p /data/'
 
 COPY . /anfisa/anfisa/
 RUN cd /anfisa/anfisa/ && pip3 install -r requirements.txt && pip3 install supervisor && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools 
