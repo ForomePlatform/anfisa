@@ -4,7 +4,7 @@
     "port": 3041,
     "html-base": "/anfisa/app",
     "html-title": "Anfisa",
-    "html-ws-url": "/anfisa",
+    "html-ws-url": "/anfisa/app",
     "data-vault": "${WORK}/vault",
     "run-options": [],
     "run-modes": [],
