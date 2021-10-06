@@ -37,7 +37,7 @@ class IntUI:
     @classmethod
     def setup(cls, config, in_container):
         cls.sHtmlTitle = config["html-title"]
-        cls.sWsPubURL = config.get("html-ws-url", "ws")
+        cls.sWsPubURL = "ws"
         cls.sHtmlBase = (config["html-base"]
             if in_container else None)
         if cls.sHtmlBase and not cls.sHtmlBase.endswith('/'):
