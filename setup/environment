@@ -10,7 +10,7 @@ druid_emitter_logging_logLevel=info
 druid_extensions_loadList=["druid-hdfs-storage", "druid-kafka-indexing-service", "druid-datasketches"]
 #druid_extensions_loadList=["druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage"]
 
-druid_zk_service_host=zookeeperanfisa6
+druid_zk_service_host=anfisa6-zookeeper
 
 druid_sql_enable=true
 #druid_metadata_storage_host=
