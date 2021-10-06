@@ -71,6 +71,8 @@ def reprGenTranscripts(val, v_context):
         is_hit = (details is not None and details[idx])
         v_id = it.get("id", "?")
         v_gene = it.get("gene", "?")
+        if v_gene is None:
+            v_gene = "?"
         v_annotation = " ".join(it.get("transcript_annotations", []))
 
         v_tr = ' class="tr-canonical"' if is_canonical else ""

@@ -522,15 +522,6 @@ var sConditionsH = {
         return this.mCondSeq.length;
     },
     
-    report: function() { 
-        if (this.mCondSeq.length == 0)
-            return "no conditions";
-        cur_filter = sOpFilterH.getCurFilterName();
-        if (cur_filter)
-            return cur_filter + " in work";
-        return null;
-    },
-
     preSelectCond: function(idx) {
         this.mCurCondIdx = idx;
     },

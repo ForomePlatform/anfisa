@@ -318,16 +318,16 @@ function checkCurFilters(mode_filter) {
 function updateCurFilter(filter_name, force_it) {
     if (!force_it && filter_name == sCurFilterName)
         return;
-    cur_flt_status = sConditionsH.report();
     sCurFilterName = filter_name;
-    sUseCurConditions = (!cur_flt_status) && (!sCurFilterName);
     if (sCurFilterName)
         sSelectFltNamed.selectedIndex = sFiltersH.getAllList().indexOf(sCurFilterName) + 1;
-    if (cur_flt_status) {
-        sElFltCurState.innerHTML = cur_flt_status;
+
+    cond_len = sConditionsH.getCondCount();
+    sUseCurConditions = (cond_len > 0) && (!sCurFilterName);
+    if (cond_len == 0) {
+        sElFltCurState.innerHTML = "no conditions";
         sElFltCurState.className = "status";
     } else {
-        cond_len = sConditionsH.getCondCount();
         sElFltCurState.innerHTML = cond_len + " condition" + ((cond_len>1)? "s":"");
         sElFltCurState.className = "";        
     }
