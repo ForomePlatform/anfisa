@@ -4,7 +4,6 @@
     "port": 3041,
     "html-base": "/anfisa/app",
     "html-title": "Anfisa v6 in Docker",
-    "html-ws-url": "/anfisa/app",
     "data-vault": "${WORK}/vault",
     "run-options": [],
     "run-modes": [],
