@@ -129,21 +129,22 @@ class Workspace(DataSet):
                 return zone_h
         return None
 
+    @staticmethod
+    def makeNegation(func_f):
+        return lambda rec_no: not func_f(rec_no)
+
     def restrictZoneF(self, zone_data):
+        ret_seq = []
         if zone_data is None:
-            return None
-        zone_info_seq = json.loads(zone_data)
-        ret_f = None
-        negation_mode = False
-        for zone_name, zone_variants in zone_info_seq:
-            if zone_name == "NOT":
-                assert zone_variants is True
-                negation_mode = True
-                continue
-            ret_f = self.getZone(zone_name).getRestrictF(zone_variants, ret_f)
-        if negation_mode:
-            return lambda rec_no: not ret_f(rec_no)
-        return ret_f
+            return ret_seq
+        for zone_info in json.loads(zone_data):
+            zone_name, zone_variants = zone_info[:2]
+            func_f = self.getZone(zone_name).getRestrictF(zone_variants)
+            if len(zone_info) > 2:
+                assert zone_info[2] is False
+                func_f = self.makeNegation(func_f)
+            ret_seq.append(func_f)
+        return ret_seq
 
     def getLastAspectID(self):
         return AnfisaConfig.configOption("aspect.tags.name")
@@ -171,12 +172,11 @@ class Workspace(DataSet):
         return enumerate(self.mTabRecKey)
 
     def fiterRecords(self, condition, zone_data = None):
-        zone_f = self.restrictZoneF(zone_data)
+        zone_fseq = self.restrictZoneF(zone_data)
         rec_no_seq = []
         for rec_no, _ in condition.iterSelection():
-            if zone_f is not None and not zone_f(rec_no):
-                continue
-            rec_no_seq.append(rec_no)
+            if all(zone_f(rec_no) for zone_f in zone_fseq):
+                rec_no_seq.append(rec_no)
         return rec_no_seq
 
     def getRecFilters(self, rec_no):
@@ -203,17 +203,16 @@ class Workspace(DataSet):
     @RestAPI.ws_request
     def rq__ws_list(self, rq_args):
         filter_h = self._getArgCondFilter(rq_args)
-        zone_f = self.restrictZoneF(rq_args.get("zone"))
         records = []
         condition = filter_h.getCondition()
+        zone_fseq = self.restrictZoneF(rq_args.get("zone"))
         for rec_no, rec_it_map in condition.iterSelection():
-            if zone_f is not None and not zone_f(rec_no):
-                continue
-            records.append(self.reportRecord(rec_no, rec_it_map))
+            if all(zone_f(rec_no) for zone_f in zone_fseq):
+                records.append(self.reportRecord(rec_no, rec_it_map))
         ret_handle = {
             "ds": self.getName(),
             "total-counts": self.mEvalSpace.getTotalCounts(),
-            "filtered-counts": condition.getCounts(zone_f),
+            "filtered-counts": condition.getCounts(zone_fseq),
             "records": records}
         self.visitCondition(condition, ret_handle)
         return ret_handle

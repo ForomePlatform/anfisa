@@ -213,12 +213,13 @@ class WS_Condition(Eval_Condition):
 
     sPattTrue = bitarray('1')
 
-    def getCounts(self, zone_f = None):
+    def getCounts(self, zone_fseq = None):
         count_grp, count_items = 0, 0
         eval_space = self.getEvalSpace()
         tr_set = set()
         for rec_no, rec_it_map in self.iterSelection():
-            if zone_f is not None and not zone_f(rec_no):
+            if (zone_fseq is not None
+                    and not all(zone_f(rec_no) for zone_f in zone_fseq)):
                 continue
             count_grp += 1
             count_items += rec_it_map.count()

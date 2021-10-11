@@ -69,7 +69,7 @@ var sZoneH = {
             if (mode_on && this.mWorkData != null) {
                 this.mCurState = [this.mWorkData];
                 if (this.mWorkCur == "_tags" && this.mElNegateCheck.checked)
-                    this.mCurState.push(["NOT", true]);
+                    this.mCurState = [[this.mWorkData[0], this.mWorkData[1], false]];
             }
         }
         if (prev_zone_data != this.mCurState)
