@@ -30,8 +30,8 @@ class XLDataset(DataSet):
     sStdFMark = AnfisaConfig.configOption("filter.std.mark")
 
     def __init__(self, data_vault, dataset_info, dataset_path):
-        DataSet.__init__(self, data_vault, dataset_info, dataset_path,
-            add_modes = {"XL"})
+        DataSet.__init__(self, data_vault,
+            dataset_info, dataset_path, add_modes = {"XL"})
         self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
         self.mLongRunners = dict()
 
@@ -72,9 +72,11 @@ class XLDataset(DataSet):
 
     #===============================================
     def fiterRecords(self, condition, zone_data = None):
-        assert zone_data is None
+        assert zone_data is None, "No zone support in XL"
         rec_count = self.mEvalSpace.evalTotalCounts(condition)[0]
-        assert rec_count <= AnfisaConfig.configOption("max.export.size")
+        assert rec_count <= self.getMaxExportSize(), (
+            f"Too many records for export: {rec_count}, "
+            f"limit is {self.getMaxExportSize()}")
         return self.mEvalSpace.evalRecSeq(condition, rec_count)
 
     #===============================================

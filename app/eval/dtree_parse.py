@@ -455,8 +455,8 @@ class ParsedDTree:
         if len(operands) == 3 and idx_fld != 1:
             self.errorIt(it, "Too complex comparison")
         assert len(values) == len(op_modes)
-        if op_modes[0] == 0:
-            assert len(op_modes) == 0 and len(values) == 1
+        if op_modes[0][0] == 0:
+            assert len(op_modes) == 1 and len(values) == 1
             bounds[0] = values[0]
             bounds[2] = values[0]
         else:

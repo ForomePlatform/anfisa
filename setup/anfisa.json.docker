@@ -3,8 +3,7 @@
     "host": "0.0.0.0",
     "port": 3041,
     "html-base": "/anfisa/app",
-    "html-title": "Anfisa v6/Docker",
-    "html-ws-url": "/anfisa",
+    "html-title": "Anfisa v6 in Docker",
     "data-vault": "${WORK}/vault",
     "run-options": [],
     "run-modes": [],
@@ -43,11 +42,11 @@
     "doc-report-css": "${HOME}/int_ui/files/report.css",
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
-        "vault-prefix": "demo_v5",
-        "index": "http://coordinatoranfisa6:8081/druid/indexer/v1/task",
-        "query": "http://routeranfisa6:8888/druid/v2",
-        "sql":   "http://routeranfisa6:8888/druid/v2/sql",
-        "coord": "http://coordinatoranfisa6:8081/druid/coordinator/v1",
+        "vault-prefix": "demo_v6",
+        "index": "http://anfisa6-coordinator:8081/druid/indexer/v1/task",
+        "query": "http://anfisa6-router:8888/druid/v2",
+        "sql":   "http://anfisa6-router:8888/druid/v2/sql",
+        "coord": "http://anfisa6-coordinator:8081/druid/coordinator/v1",
         "-scp": {
             "dir": "/data/upload/",
             "key": "---",
@@ -55,7 +54,7 @@
             "exe": "/usr/bin/scp"}
     },
      
-    "mongo-host": "mongodbanfisa6",
+    "mongo-host": "anfisa6-mongo",
     "mongo-port": 27017,
     "mongo-db": "Anfisa1",
     "logging": {

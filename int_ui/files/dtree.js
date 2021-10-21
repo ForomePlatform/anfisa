@@ -103,11 +103,14 @@ var sDecisionTree = {
         this.loadDelayed();
     },
 
-    _renderTr: function(tr_count) {
-        if (tr_count)
-            return '&thinsp;<span class="tr-count">/' + tr_count + '</span>';
-        return "";
-    },
+    _renderCounts: function(counts) {
+        c_repr = "" + counts[0];
+        if (counts.length > 1 && counts[0] > 0) {
+            c_repr += '<div class="tr-count">&#x00D7;&thinsp;' + 
+                counts[2] + ' &#x21C9;&thinsp;' + counts[1] + '</div>';
+        }
+        return c_repr;
+    },                
     
     _renderInstrMenu: function(p_no, point) {
         var menu_rep = ['<div class="instr-dropdown"><span>' + 
@@ -166,9 +169,7 @@ var sDecisionTree = {
                 this.mPointDelay.push(p_no);
                 count_repr = '<span id="p_count__' + p_no + '">...</span>';
             } else {
-                count_repr = "" + p_count[0];
-                if (p_count.length > 1)
-                    count_repr += this._renderTr(p_count[1]);
+                count_repr = this._renderCounts(p_count);
                 if (point["decision"]) {
                     this.mAcceptedCounts[0] += p_count[0];
                     if (p_count.length > 1)
@@ -260,9 +261,7 @@ var sDecisionTree = {
                 if (p_count.length > 1)
                     this.mAcceptedCounts[1] += p_count[1];
             }
-            count_repr = "" + p_count[0];
-            if (p_count.length > 1)
-                count_repr += this._renderTr(p_count[1]);
+            count_repr = this._renderCounts(p_count);
             document.getElementById("p_count__" + p_no).innerHTML = count_repr;
         }
         this.careControls();
@@ -280,12 +279,14 @@ var sDecisionTree = {
     careControls: function() {
         var accepted = this.getAcceptedCounts();
         if (accepted != null) {
-            rep_accepted = "" + accepted[0];
-            rep_rejected = this.mTotalCounts[0] - accepted[0];
-            if (accepted.length > 0) {
-                rep_accepted += this._renderTr(accepted[1]);
-                rep_rejected += this._renderTr(this.mTotalCounts[1] - accepted[1]);
-            }
+            rep_accepted = '' + accepted[0];
+            if (accepted[0] > 0 && accepted.length > 1) 
+                rep_accepted += ' <span class="tr-count">&#x21C9;&thinsp;' + 
+                    accepted[1] + '</span>';
+            rep_rejected = (this.mTotalCounts[0] - accepted[0]);
+            if (accepted[0] < this.mTotalCounts[0] && accepted.length > 1)
+                rep_rejected += ' <span class="tr-count">&#x21C9;&thinsp;' + 
+                    (this.mTotalCounts[1] - accepted[1]) + '</span>';
         } else {
             rep_accepted = "?";
             rep_rejected = "?";
@@ -505,12 +506,16 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         var list_stat_rep = [];
-        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
+        fillStatList(
+            this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
             1, "sDecisionTree.showUnitCond");
         this.mDivList.className = "";
-        this.mDivList.innerHTML = list_stat_rep.join('\n');
         this.mCurUnit = null;        
         this.mCurFuncName = null;
+        
+        this.mDivList.innerHTML = list_stat_rep.join('\n');
+        sUnitClassesH.updateItems(this.mItems);
+
         
         if (this.mCurUnit == null)
             this.selectUnit(this.mItems[0]["name"]);

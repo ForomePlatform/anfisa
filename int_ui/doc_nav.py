@@ -28,8 +28,8 @@ def formDocNavigationPage(output, common_title, html_base, ds_h):
         css_files = ["doc_nav.css", "base.css"],
         js_files = ["doc_nav.js", "base.js"])
 
-    print('  <body onload="initReportPage(\'%s\', \'%s\', \'%s\');">' %
-        (ds_h.getName(), ds_h.getDSKind(), common_title), file = output)
+    print(f'  <body onload="initReportPage(\'{ds_h.getName()}\', '
+        f'\'{ds_h.getDSKind()}\', \'{common_title}\');">', file = output)
     print('''
     <div id="all">
       <div id="left">

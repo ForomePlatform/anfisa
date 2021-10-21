@@ -17,7 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import abc
+import abc, json
 
 #===============================================
 class Evaluation:
@@ -111,17 +111,20 @@ class Evaluation:
         if p_no is None:
             self.mPointNo += 1
         else:
-            assert p_no >= self.mPointNo
+            assert p_no >= self.mPointNo, (
+                f"Point order collision: {p_no} < {self.mPointNo}")
             self.mPointNo = p_no
         if label is not None:
-            assert label not in self.mLabels
+            assert label not in self.mLabels, (
+                "Label duplication: " + label)
             self.mLabels[label] = self.mPointNo
 
     def buildCondition(self, cond_data):
         if len(cond_data) == 0:
             return self.mEvalSpace.getCondAll()
         if cond_data[0] is None:
-            assert len(cond_data) == 1
+            assert len(cond_data) == 1, (
+                "Bad None condition: " + json.dumps(cond_data))
             return self.mEvalSpace.getCondNone()
         if cond_data[0] in {"and", "or"}:
             seq = []
@@ -135,7 +138,8 @@ class Evaluation:
             else:
                 return self.mEvalSpace.joinOr(seq)
         if cond_data[0] == "not":
-            assert len(cond_data) == 2
+            assert len(cond_data) == 2, (
+                "Bad NOT condition: " + json.dumps(cond_data))
             cond = self.buildCondition(cond_data[1])
             if cond is None:
                 return None

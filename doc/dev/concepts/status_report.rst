@@ -1,9 +1,9 @@
 Status report mechanism with delays
 ===================================
 
-If a set of :term:`variants<variant>` (or :term:`transcripts<transcript>`) is selected in process of  :doc:`filtration`, it is actual to prepare and render a report for all filtering properties status applied to this set.
+If a set of :term:`variants<variant>` is selected in process of  :doc:`filtration`, it is actual to prepare and render a report for all filtering properties status applied to this set.
 
-Status report for a filtering property is information about distribution of values of this property on selected :term:`variants<variant>` (:term:`transcripts<transcript>`). 
+Status report for a filtering property is information about distribution of values of this property on selected :term:`variants<variant>`. 
 
 For numeric property it is diapason of values, for enumerated one it is list of actual values with counts of variants having it.
 
@@ -42,7 +42,7 @@ Decision tree points report with delays
 
 .. _dtree_points_report:
 
-If decision tree is set, it is important to evaluate number of variants (and transcripts) that correspond to each :term:`point<decision tree point>` in decision tree. This evaluation might be heavy, so it is organized in analogy with mechanism for status reports, using :term:`delayed requests<delayed request>`:
+If decision tree is set, it is important to evaluate number of variants that correspond to each :term:`point<decision tree point>` in decision tree. This evaluation might be heavy, so it is organized in analogy with mechanism for status reports, using :term:`delayed requests<delayed request>`:
     
 - evaluation starts by request :doc:`../rest/dtree_set`
     

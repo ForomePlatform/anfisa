@@ -30,6 +30,7 @@ var sOpNumH = {
     mInputMin: null,
     mInputMax: null,
     mSpanSigns: null,
+    mDivHistogram: null,
     mUpdateCondStr: null,
 
     init: function() {
@@ -37,6 +38,7 @@ var sOpNumH = {
         this.mInputMax   = document.getElementById("cond-max-inp");
         this.mSpanSigns = [document.getElementById("cond-min-sign"),
             document.getElementById("cond-max-sign")];
+        this.mDivHistogram = document.getElementById("cur-cond-num-histogram");
     },
     
     getCondType: function() {
@@ -54,7 +56,9 @@ var sOpNumH = {
             cur_bounds: [null, true, null, true],
             unit_type:  unit_stat["sub-kind"],
             val_min:    unit_stat["min"],
-            val_max:    unit_stat["max"]}
+            val_max:    unit_stat["max"],
+            histogram:  unit_stat["histogram"]
+        }
             
         if (this.mInfo.val_min != null) {
             document.getElementById("cond-min").innerHTML = 
@@ -97,6 +101,8 @@ var sOpNumH = {
     careControls: function() {
         document.getElementById("cur-cond-numeric").style.display = 
             (this.mInfo == null)? "none":"block";
+        if (this.mInfo != null)
+            this.drawHistogram();
     },
 
     checkControls: function(opt) {
@@ -179,6 +185,43 @@ var sOpNumH = {
         }
         sOpCondH.formCondition(condition_data, err_msg, false);
         this.careControls();
+    },
+    
+    drawHistogram: function() {
+        h_info = this.mInfo["histogram"];
+        h_content = [];
+        if (h_info) {
+            if(h_info[0] == "LOG") {
+                if (h_info[1] < -15 || this.mInfo.val_min == 0) {
+                    val = "0";
+                } else {
+                    if (h_info[1] == 0)
+                        val = "1";
+                    else
+                        val = "10<sup>" + h_info[1] + "</sup>";
+                }
+            } else {
+                val = "" + h_info[1];
+            }
+            h_content.push('<span class="hist-diap">' + val + '</span>'); 
+            var factor = 30. / Math.max(...h_info[3]);
+            for (var j = 0; j < h_info[3].length; j++) {
+                hh = h_info[3][j] * factor;
+                h_content.push(
+                    '<span class="hist-cell" style="height:' + 
+                        hh + 'px;"> </span>');
+            }
+            if(h_info[0] == "LOG") {
+                if (h_info[2] == 0)
+                    val = "1";
+                else
+                    val = "10<sup>" + h_info[2] + "</sup>";
+            } else {
+                val = "" + h_info[2];
+            }
+            h_content.push('<span class="hist-diap">' + val + '</span>'); 
+        }
+        this.mDivHistogram.innerHTML = h_content.join("");
     }
 };
 
@@ -255,7 +298,9 @@ var sOpEnumH = {
             var_name = this.mVariants[j][0];
             var_count = this.mVariants[j][1];
             if (unit_stat["detailed"] && var_count > 0)
-                var_count = var_count + "/" + this.mVariants[j][2];
+                var_count = var_count + '&thinsp;&#x00D7;&thinsp;' + 
+                    this.mVariants[j][3] + '&thinsp;&#x21C9;&thinsp;' +
+                    this.mVariants[j][2];
             has_zero |= (var_count == 0);
             list_val_rep.push(this.reprVariant(var_name, var_count, j));
         }
@@ -435,6 +480,7 @@ var sOpEnumH = {
 function fillStatList(items, unit_map, list_stat_rep, 
         unit_names_to_load, expand_mode, click_func) {
     var group_title = false;
+    var group_seq = []
     for (idx = 0; idx < items.length; idx++) {
         unit_stat = items[idx];
         unit_name   = unit_stat["name"];
@@ -444,7 +490,9 @@ function fillStatList(items, unit_map, list_stat_rep,
                 list_stat_rep.push('</div>');
             }
             group_title = unit_stat["vgroup"];
-            list_stat_rep.push('<div class="stat-group">');
+            list_stat_rep.push('<div class="stat-group" id="stat-vgroup--' + 
+                    group_seq.length + '">');
+            group_seq.push(idx);
             if (group_title != null) {
                 list_stat_rep.push('<div class="stat-group-title">' + 
                     group_title);
@@ -499,6 +547,7 @@ function fillStatList(items, unit_map, list_stat_rep,
     if (group_title != false) {
         list_stat_rep.push('</div>')
     }
+    sUnitClassesH.setVGroups(group_seq);
 }
 
 function refillUnitStat(unit_stat, expand_mode) {
@@ -592,15 +641,17 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
 }
 
 function reportStatCount(count_info, unit_stat, shift) {
-    if (unit_stat["detailed"]) {
-        cnt_rep = count_info[1 + shift] + '(' + count_info[shift] + ')';
-        nm = "transcript";
-    } else {
-        cnt_rep = count_info[shift];
-        nm = "variant";
-    }
-    return '<span class="stat-count">' + cnt_rep + ' ' + nm +  
-        ((count_info[1 + shift]>1)? 's':'') + '</span>';
+    if (unit_stat["detailed"] && count_info[1 + shift] > 0) {
+        cnt = count_info[1 + shift];
+        s_mult = (cnt > 1)? "s":"";
+        return '<span class="stat-count">' + cnt + 
+            ' transcript variant' + s_mult +  
+            '(' + count_info[2 + shift] + 
+            '&thinsp;&#x00D7;&thinsp;' + count_info[shift] + ')';
+    } 
+    cnt = count_info[shift];
+    s_mult = (cnt > 1)? "s":"";
+    return '<span class="stat-count">' + cnt + ' variant' + s_mult + '</span>';
 }
 
 /*************************************/
@@ -619,12 +670,12 @@ var sCreateWsH = {
     mTimeH: null,
     
     init: function() {
-        this.mSpanModTitle = document.getElementById("create-ws-title");
-        this.mInputModName = document.getElementById("create-ws-name");
-        this.mDivModProblems = document.getElementById("create-ws-problems");
-        this.mDivModStatus = document.getElementById("create-ws-status");
-        this.mButtonModStart = document.getElementById("create-ws-start");
-        this.mButtonModCancel = document.getElementById("create-ws-cancel");
+        this.mSpanModTitle = document.getElementById("derive-ws-title");
+        this.mInputModName = document.getElementById("derive-ws-name");
+        this.mDivModProblems = document.getElementById("derive-ws-problems");
+        this.mDivModStatus = document.getElementById("derive-ws-status");
+        this.mButtonModStart = document.getElementById("derive-ws-start");
+        this.mButtonModCancel = document.getElementById("derive-ws-cancel");
     },
     
     show: function() {
@@ -652,7 +703,7 @@ var sCreateWsH = {
         if (err_msg) {
             this.mStage = "BAD";
             this.checkControls();
-            sViewH.modalOn(document.getElementById("create-ws-back"));
+            sViewH.modalOn(document.getElementById("derive-ws-back"));
             return;
         }
         this.mStage = "NAMES";
@@ -686,7 +737,7 @@ var sCreateWsH = {
         this.mInputModName.value = ws_name;
         this.mStage = "READY";
         this.checkControls();
-        sViewH.modalOn(document.getElementById("create-ws-back"));
+        sViewH.modalOn(document.getElementById("derive-ws-back"));
     },
     
     checkControls: function() {
@@ -775,3 +826,208 @@ function startWsCreate() {
     sCreateWsH.startIt();
 }
 
+/*************************************/
+/* Unit classes for show/hide        */
+/*************************************/
+var sUnitClassesH = {
+    mUnitClasses: null,
+    mUnitItems: null,
+    mVGroupsSeq: null,
+    mDivTopBack: null,
+    mDivMain: null,
+    mSpanState: null,
+    mSpanIntState: null,
+    mBtnReset: null,
+    mBtnDone: null,
+    mCurCriterium: null,
+    
+    init: function() {
+        this.mDivTopBack = document.getElementById("unit-classes-back");
+        this.mDivMain = document.getElementById("unit-classes-main");
+        this.mSpanState = document.getElementById("unit-classes-state");
+        this.mSpanIntState = document.getElementById("unit-classes-int-state");
+        this.mBtnReset = document.getElementById("unit-classes-reset");
+        this.mBtnDone = document.getElementById("unit-classes-done");
+    },
+    
+    setup: function(unit_classes) {
+        this.mUnitClasses = unit_classes;
+        var list_rep = [];
+        var j, k;
+        for (j = 0; j < this.mUnitClasses.length; j++) {
+            unit_cls = this.mUnitClasses[j];
+            list_rep.push('<div class="unit-classes-class">\n' +
+                '  <div class="unit-class-title">' + 
+                '<input id="ucl--' + j + '-all" type="checkbox" checked ' +
+                'onclick="sUnitClassesH.update();">&nbsp;' + 
+                unit_cls["title"] + '</div>');
+            list_rep.push('<div class="unit-class-group" id="ucl-group--' + j + '">');
+            for(k=0; k < unit_cls["values"].length; k++) {
+                it_code = '--' + j + '-' + k;
+                list_rep.push(
+                    '    <div class="unit-class-val" id="div-ucl' + it_code + '">' +
+                    '<input id="ucl' + it_code + '" type="checkbox" checked ' +
+                    'onclick="sUnitClassesH.update();">&nbsp;' + 
+                    unit_cls["values"][k] + '</div>');
+            }
+            list_rep.push('</div></div>');
+        }
+        this.mDivMain.innerHTML = list_rep.join("\n");
+        this.showStatus();
+        if (this.mUnitItems != null) {
+            this.updateItems(this.mUnitItems);
+        }
+    },
+
+    itInWork: function(it_classes, except_cls) {
+        var j, k, in_w;
+        if (this.mCurCriterium != null) {
+            for (var j=0; j < this.mCurCriterium.length; j++) {
+                if ((this.mCurCriterium[j] != null) 
+                        && (j != except_cls)) {
+                    in_w = false;
+                    for (var k=0; k < it_classes[j].length; k++) {
+                        if(this.mCurCriterium[j].
+                            indexOf(it_classes[j][k]) >= 0) {
+                            in_w = true;
+                            break;
+                        }
+                    }
+                    if (!in_w) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;        
+    },
+    
+    setVGroups: function(group_seq) {
+        this.mVGroupsSeq = group_seq;
+    },
+    
+    updateItems: function(unit_items, no_reset) {
+        this.mUnitItems = unit_items;
+        if (this.mUnitClasses == null) {
+            return;
+        }
+        var cls_counts = [];
+        var j, idx, k;
+        for (j = 0; j < this.mUnitClasses.length; j++) {
+            cls_counts.push(Array(this.mUnitClasses[j]["values"].length).fill(0));
+        }
+        for (idx=0; idx < this.mUnitItems.length; idx++) {
+            it_classes = this.mUnitItems[idx]["classes"];
+            for (j=0; j < this.mUnitClasses.length; j++) {
+                if (!this.itInWork(it_classes, j))
+                    continue;
+                facet_idxs = it_classes[j];
+                for (k=0; k < facet_idxs.length; k++) {
+                    cls_counts[j][facet_idxs[k]]++;
+                }
+            }
+        }
+        for (j = 0; j < this.mUnitClasses.length; j++) {
+            cls_total = cls_counts[j].reduce(function(acc, val) { return acc + val; }, 0)
+            for (k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+                it_code = '--' + j + '-' + k;
+                it_div = document.getElementById('div-ucl' + it_code);
+                it_check = document.getElementById('ucl' + it_code);
+                if (cls_counts[j][k] > 0) {
+                    it_div.class = "unit-class-val";
+                    it_check.disabled = (cls_total == cls_counts[j][k]);
+                } else {
+                    it_div.class = "unit-class-val blocked";
+                    it_check.disabled = true;
+                    it_check.checked = false;
+                }
+            }
+        }
+        this.update(no_reset);
+    },
+    
+    update: function(no_reset) {
+        this.mCurCriterium = [];
+        var j, k, idx;
+        for (j = 0; j < this.mUnitClasses.length; j++) {
+            cls_div = document.getElementById("ucl-group--" + j);
+            cls_check = document.getElementById("ucl--" + j + "-all");
+            cls_div.style.display = (cls_check.checked)? "none":"block";
+            var j_cr = null;
+            if (!cls_check.checked) {
+                j_cr = [];
+                for(k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+                    it_code = '--' + j + '-' + k;
+                    if (document.getElementById("ucl" + it_code).checked)
+                        j_cr.push(k);
+                }
+            }
+            this.mCurCriterium.push(j_cr);
+        }
+        var cnt_shown = 0;
+        var groups_shown = [];
+        for (idx=0; idx < this.mUnitItems.length; idx++) {
+            it = this.mUnitItems[idx];
+            var in_w = this.itInWork(it["classes"]);
+            if (groups_shown.length < this.mVGroupsSeq.length &&
+                    idx == this.mVGroupsSeq[groups_shown.length]) {
+                groups_shown.push(false);
+            }
+            if (in_w) {
+                cnt_shown++;
+                groups_shown[groups_shown.length - 1] = true;
+            }
+            document.getElementById("stat--" + it["name"]).style.display = 
+                (in_w)? "block": "none";
+        }
+        for(idx=0; idx < groups_shown.length; idx++) {
+            grp_el = document.getElementById("stat-vgroup--" + idx);
+            if (grp_el)
+                grp_el.style.display = (groups_shown[idx])? "block": "none";
+        }
+        if (cnt_shown == 0 && this.mUnitItems.length > 0 && !no_reset) {
+            this.reset(true);
+            return;
+        }
+        this.showStatus(cnt_shown, this.mUnitItems.length);
+    },
+    
+    showStatus: function(cnt_shown, cnt_all) {
+        if (cnt_shown == cnt_all) {
+            state_msg = "all properties";
+        } else {
+            state_msg = "properties: <b>" + cnt_shown + "</b>/" + cnt_all;
+        }
+        this.mSpanState.innerHTML = state_msg;
+        this.mSpanIntState.innerHTML = state_msg;
+    },
+    
+    show: function() {
+        this.mDivTopBack.style.display = "block";
+    },
+
+    hide: function() {
+        this.mDivTopBack.style.display = "none";
+    },
+    
+    reset: function(heavy_mode) {
+        var j;
+        for (j = 0; j < this.mUnitClasses.length; j++) {
+            document.getElementById("ucl--" + j + "-all").checked = true;
+            if (heavy_mode) {
+                for(k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+                    it_code = '--' + j + '-' + k;
+                    document.getElementById("ucl" + it_code).checked = true;
+                }
+            }
+        }
+        this.update();
+        if (heavy_mode) {
+            this.updateItems(this.mUnitItems, true);
+        } else {
+            this.hide();
+        }
+    }
+};
+
+/*************************************/

@@ -345,3 +345,11 @@ div#work-note-ctrl {
 div.wrapped {
     padding: 10px;
 }
+
+.hide {
+    display: none;
+}
+
+.dark {
+    color: grey;
+}

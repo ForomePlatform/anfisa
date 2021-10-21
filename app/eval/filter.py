@@ -84,7 +84,7 @@ class FilterEval(Evaluation):
         for idx, cond_data in enumerate(self.mCondDataSeq):
             if the_cond_data is cond_data:
                 return idx, self.mOperationErrors.get(idx)
-        assert False, "Not found: " + json.dumps(the_cond_data,
+        assert False, "Condition not found: " + json.dumps(the_cond_data,
             sort_keys = True)
         return None
 
@@ -106,7 +106,8 @@ class FilterEval(Evaluation):
     def getActualCondition(self, point_no):
         if point_no is None:
             point_no = len(self.mConditions)
-        assert point_no <= len(self.mConditions)
+        assert point_no <= len(self.mConditions), (
+            f"Improper point no: {point_no}, pcount={len(self.mConditions)}")
         return self.getEvalSpace().joinAnd(self.mConditions[:point_no])
 
     def getPresentation(self):

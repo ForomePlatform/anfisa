@@ -50,8 +50,10 @@ class WS_Unit(VarUnit):
 class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
-        assert self.getSubKind() in {"float", "int"}
-        self._setScreened(self.getDescr()["min"] is None)
+        assert self.getSubKind() in {"float", "int"}, (
+            "For unit"  + self.getName()
+            + " bad sub-kind: " + self.getSubKind())
+        self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
 
     def getRecVal(self, rec_no):
@@ -62,18 +64,24 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
             num_stat.regValue(self.mArray[rec_no])
-        num_stat.reportResult(ret_handle)
+        builder_h = num_stat.prepareHistogram(self)
+        if builder_h.isOK():
+            for rec_no, _ in condition.iterSelection():
+                builder_h.regValue(self.mArray[rec_no])
+        num_stat.reportResult(ret_handle, builder_h)
         return ret_handle
 
     def fillRecord(self, inp_data, rec_no):
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         self.mArray.append(inp_data.get(self.getInternalName()))
 
 #===============================================
 class WS_EnumUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data, sub_kind = None):
         WS_Unit.__init__(self, eval_space, unit_data, "enum", sub_kind)
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         if variants_info is None:
             self._setScreened()
             self.mVariantSet = None
@@ -107,7 +115,9 @@ class WS_StatusUnit(WS_EnumUnit):
         return {self.mArray[rec_no]}
 
     def fillRecord(self, inp_data, rec_no):
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         value = inp_data[self.getInternalName()]
         self.mArray.append(self.mVariantSet.indexOf(value))
 
@@ -164,17 +174,20 @@ class WS_MultiCompactUnit(WS_EnumUnit):
                 self.mPackSetSeq.append(set(idx_set))
         else:
             idx = 0
-        assert len(self.mArray) == rec_no
+        assert len(self.mArray) == rec_no, (
+            "Bad record length for "  + self.getName()
+            + " rec_no = " + str(rec_no))
         self.mArray.append(idx)
 
 #===============================================
 class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data, "numeric")
-        assert self.getSubKind() in {"transcript-float", "transcript-int"}
-        self._setScreened(self.getDescr()["min"] is None)
+        assert self.getSubKind() in {"transcript-float", "transcript-int"}, (
+            "For "  + self.getName() + " bad sub-kind:" + self.getSubKind())
+        self._setScreened(unit_data["min"] is None)
         self.mArray = array("d" if self.getSubKind() == "float" else "q")
-        self.mDefaultValue = self.getDescr()["default"]
+        self.mDefaultValue = unit_data["default"]
 
     def isDetailed(self):
         return True
@@ -187,7 +200,11 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
         num_stat = NumDiapStat(True)
         for group_no, it_idx in condition.iterItemIdx():
             num_stat.regValue([self.mArray[it_idx]], group_no)
-        num_stat.reportResult(ret_handle)
+        builder_h = num_stat.prepareHistogram(self)
+        if builder_h.isOK():
+            for _, it_idx in condition.iterItemIdx():
+                builder_h.regValue([self.mArray[it_idx]])
+        num_stat.reportResult(ret_handle, builder_h)
         ret_handle["detailed"] = True
         return ret_handle
 
@@ -203,24 +220,32 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
             "enum", "transcript-status")
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self.mDefaultValue = self.mVariantSet.indexOf(
-            self.getDescr()["default"])
-        assert self.mDefaultValue is not None
+            unit_data["default"])
+        assert self.mDefaultValue is not None, (
+            "No default falue for "  + self.getName())
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
+        self.mIdMode = unit_data.get("tr-id-mode")
 
     def isDetailed(self):
         return True
+
+    def isTranscriptID(self):
+        return self.mIdMode
 
     def getVariantSet(self):
         return self.mVariantSet
 
     def getItemVal(self, item_idx):
         return {self.mArray[item_idx]}
+
+    def getItValIdx(self, item_idx):
+        return self.mArray[item_idx]
 
     def fillRecord(self, inp_data, rec_no):
         values = inp_data.get(self.getInternalName())
@@ -234,7 +259,8 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         ret_handle = self.prepareStat()
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
-            enum_stat.regValues([self.mArray[it_idx]], group_no = group_no)
+            enum_stat.regValues([self.mArray[it_idx]], group_no = group_no,
+            transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
         enum_stat.reportResult(ret_handle)
         ret_handle["detailed"] = True
         return ret_handle
@@ -244,7 +270,7 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
     def __init__(self, eval_space, unit_data):
         WS_Unit.__init__(self, eval_space, unit_data,
             "enum", unit_data["sub-kind"])
-        variants_info = self.getDescr().get("variants")
+        variants_info = unit_data.get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
         self._setScreened(
@@ -288,7 +314,8 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
             enum_stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],
-                group_no = group_no)
+                group_no = group_no,
+                transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
         enum_stat.reportResult(ret_handle)
         ret_handle["detailed"] = True
         return ret_handle
@@ -300,7 +327,7 @@ def loadWS_Unit(eval_space, unit_data):
         if unit_data["sub-kind"].startswith("transcript-"):
             return WS_TranscriptNumericValueUnit(eval_space, unit_data)
         return WS_NumericValueUnit(eval_space, unit_data)
-    assert kind == "enum", "Bad kind: " + kind
+    assert kind == "enum", "Bad kind: " + kind + " for " + unit_data["name"]
     if unit_data["sub-kind"] == "transcript-status":
         return WS_TranscriptStatusUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-multiset":

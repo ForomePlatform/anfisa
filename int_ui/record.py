@@ -22,7 +22,7 @@ from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================
-def reportRecord(output, ds_h, rec_no,
+def fullRecordView(output, ds_h, rec_no,
         details = None, active_samples = None, port = -1):
     css_files = ["rec.css", "base.css"]
     js_files = ["rec.js", "base.js"]
@@ -32,12 +32,14 @@ def reportRecord(output, ds_h, rec_no,
         js_files.append("tags.js")
         use_tags = "true"
     else:
-        assert port < 1
+        assert port < 1, f"Missing port: {port}, for XL must be < 1"
     startHtmlPage(output, css_files = css_files, js_files = js_files)
 
-    print('<body onload="init_r(%d, \'%s\', %d, %s, \'%s\');">' % (port,
-        ds_h.getLastAspectID() if port == 1 else ds_h.getFirstAspectID(),
-        rec_no, use_tags, ds_h.getName()), file = output)
+    aspect_id = (ds_h.getLastAspectID()
+        if port == 1 else ds_h.getFirstAspectID())
+
+    print(f'<body onload="init_r({port}, \'{aspect_id}\', {rec_no}, '
+        f'{use_tags}, \'{ds_h.getName()}\');">', file = output)
 
     print('<div id="r-tab">', file = output)
     print('<span id="img-wrap" onclick="tabCfgChange();">'
@@ -46,26 +48,27 @@ def reportRecord(output, ds_h, rec_no,
 
     asp_data_seq = ds_h.getViewRepr(rec_no, details, active_samples)
     for asp_data in asp_data_seq:
-        print('<button class="r-tablnk %s" id="la--%s" '
-            'onclick="pickAspect(\'%s\')">%s</button>' %
-            (asp_data["kind"], asp_data["name"], asp_data["name"],
-            AnfisaConfig.decorText(asp_data["title"])), file = output)
+        asp_ref_title = AnfisaConfig.decorText(asp_data["title"])
+        print(f'<button class="r-tablnk {asp_data["kind"]}" '
+            f'id="la--{asp_data["name"]}" '
+            f'onclick="pickAspect(\'{asp_data["name"]}\')">'
+            f'{asp_ref_title}</button>', file = output)
     if use_tags == "true":
         tags_asp_name = AnfisaConfig.configOption("aspect.tags.name")
-        print('<button class="r-tablnk %s" id="la--%s" '
-            'onclick="pickAspect(\'%s\')">%s</button>' %
-            ("tech",  tags_asp_name, tags_asp_name,
-            AnfisaConfig.textMessage("aspect.tags.title")), file = output)
+        asp_title = AnfisaConfig.textMessage("aspect.tags.title")
+        print(f'<button class="r-tablnk tech" id="la--{tags_asp_name}" '
+            f'onclick="pickAspect(\'{tags_asp_name}\')">{asp_title}</button>',
+            file = output)
     print('</div>', file = output)
 
     print('<div id="r-cnt-container">', file = output)
     for asp_data in asp_data_seq:
-        print('<div id="a--%s" class="r-tabcnt">' %
-            asp_data["name"], file = output)
+        print(f'<div id="a--{asp_data["name"]}" class="r-tabcnt">',
+            file = output)
         _reportAspect(output, asp_data)
         print('</div>', file = output)
     if use_tags == "true":
-        print(('<div id="a--%s" class="r-tabcnt">' % tags_asp_name),
+        print(f'<div id="a--{tags_asp_name}" class="r-tabcnt">',
             file = output)
         tagsBlock(output)
         print('</div>', file = output)
@@ -80,34 +83,30 @@ def _reportAspect(output, rep_data):
         if rep_data.get("parcontrol"):
             print(rep_data["parcontrol"], file = output)
         n_col = rep_data["columns"]
-        print('<table id="rec-%s">' % rep_data["name"], file = output)
+        print(f'<table id="rec-{rep_data["name"]}">', file = output)
         if rep_data.get("colgroup"):
             print('<colgroup>', file = output)
             for col_class in rep_data["colgroup"]:
-                print('  <col class="%s"/>' % col_class, file = output)
+                print(f'  <col class="{col_class}"/>', file = output)
             print('</colgroup>', file = output)
         if rep_data.get("colhead"):
             print('<tr class="head"><td class="title"></td>', file = output)
             for title, count, add_class in rep_data["colhead"]:
-                print('<td class="title%s" colspan="%d">%s</td>' %
-                (add_class, count, title), file = output)
+                print(f'<td class="title {add_class}" '
+                    f'colspan="{count}">{title}</td>', file = output)
             print('</tr>', file = output)
-        for attr_data in rep_data["rows"]:
-            if len(attr_data) == 0:
-                print('<tr><td colspan="%d" class="title">&emsp;</td></tr>' %
-                    (n_col + 1), file = output)
+        for row_data in rep_data["rows"]:
+            if row_data is None:
+                print(f'<tr><td colspan="{n_col + 1}" '
+                    'class="title">&emsp;</td></tr>', file = output)
                 continue
             print('<tr>', file = output)
-            if len(attr_data) > 3:
-                tooltip = escape(attr_data[3]).replace("'", '"')
-                print('<td class="title" title=\'%s\'>%s</td>' % (
-                    tooltip, attr_data[1]), file = output)
-            else:
-                print('<td class="title">%s</td>' % attr_data[1],
-                    file = output)
-            for val, class_name in attr_data[2]:
-                print('<td class="%s">%s</td>' % (class_name, val),
-                    file = output)
+            op_tooltip = (f' title="{escape(row_data["tooltip"])}"'
+                if "tooltip " in row_data else '')
+            print(f'<td class="title"{op_tooltip}>'
+                f'{escape(row_data["title"])}</td>', file = output)
+            for val, class_name in row_data["cells"]:
+                print(f'<td class="{class_name}">{val}</td>', file = output)
             print('</tr>', file = output)
         print('</table>', file = output)
     else:

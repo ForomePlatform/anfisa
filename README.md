@@ -1,5 +1,19 @@
 # Anfisa
 
+<!-- toc -->
+
+- [Overview](#overview)
+- [Online Development Documentation](#online-development-documentation)
+- [Installation](#installation)
+  * [Select branch or release:](#select-branch-or-release)
+  * [Installation instructions](#installation-instructions)
+    + [Installing via Docker](#installing-via-docker)
+    + [Installing without Docker](#installing-without-docker)
+  * [Ingesting demo whole genome](#ingesting-demo-whole-genome)
+- [Public Demo](#public-demo)
+
+<!-- tocstop -->
+
 ## Overview
 
 Anfisa is a Variant Analysis and Curation Tool. Its purpose is to 
@@ -22,7 +36,7 @@ https://foromeplatform.github.io/documentation/anfisa-user.v0.6/
 
 ##  Installation
 
-#### Caution:
+### Select branch or release:
 This is a master branch that from time to time can be unstable or untested.
 If you would like to try Anfisa, we strongly recommend installing it from one 
 of the released tags 
@@ -63,7 +77,7 @@ Update docker-compose.yml.template**
 
 1. Run 
 
-`deploy.sh --workdir=<Absolute path to the chosen working directory> --hostip=<your local IP address>`
+`deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
@@ -77,7 +91,7 @@ location /anfisa {
 ```
 
 4. Download [sample whole genome dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz) 
-and ingest it. Will require around 4 hours
+and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 #### Installing without Docker
 
@@ -98,19 +112,39 @@ is not localhost:27017, after the installation you will need to edit anfisa.json
 
 `. deploy_local.sh`
 
-The script will ask for an installation directory. 
+First, the script will ask for an installation directory. 
 By default it would install in the same directory 
 where you have cloned the code, but you can 
-change to any other directory. 
-Then it will configure Anfisa for your local system
+change it to any other directory. 
+Once installation directory is confirmed, the script 
+will configure Anfisa for your local system.
 
 When the script has finished, it will display 
-the command to run the system. 
+the command to start Anfisa server. 
 
-Once the system is running you can access 
+When the system is running you can access 
 the web interface by the url: http://localhost:8190 
 
 The port is configurable in your configuration file.
+                                                            
+
+###  Ingesting demo whole genome
+> You will need approximately 25G of space available to 
+> experiment with a whole genome 
+
+* First, download 
+  [prepared dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz)
+* Unpack the content into some directory (e.g. directory `data` 
+  under your work directory)
+* Run Anfisa ingestion process
+                                     
+Here are sample commands that can be executed:
+
+    curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz
+    docker cp pgp3140_wgs_nist-v4.2.tgz anfisa6:/anfisa/a-setup/data/examples/
+    docker exec -it anfisa6 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tgz'
+    docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
+            
 
 ## Public Demo 
 
@@ -122,5 +156,3 @@ both short and long read techniques.
 
 
 The demo is available at: http://demo.forome.org
-
- 

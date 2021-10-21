@@ -4,7 +4,10 @@ Anfisa glossary
 .. glossary::
 
     Variant
-        Variant is the base object of the system. It corresponds to a difference (mutation) in genome code between of some fixed person and "standard" genomics sequence. 
+        This documentation uses term "variant" in two contexts: :term:`DNA variant` and :term:`transcript variant`. Prior meaning in generic context is :term:`DNA variant`, the meaning :term:`transcript variant` is some kind of detailization.
+    
+    DNA Variant
+        DNA Variant is the base object of the system. It corresponds to a difference (mutation) in genome code between of some fixed person and "standard" genomics sequence. 
     
     Dataset
         is a collection of variants; the system supports two kinds of datasets: XL-datasets and workspaces, or WS-datasets
@@ -31,41 +34,40 @@ Anfisa glossary
     WS-dataset
         comparatively small dataset (less than 9000 variants); object of :doc:`concepts/ws_pg`
         
-        :term:`Filtration` in this case applies to :term:`transcripts<transcript>`
+        :term:`Filtration` in this case applies to :term:`transcript variants<transcript variant>`
         
         :term:`Tagging` and :term:`zone` selection mechanisms are available for workspaces.
         
     Transcript
-        there are two meanings for this term in context of the system:
+        gene transcription scenario. Transcripts of the most important type describe protein coding process with known fixed protein result. 
         
-        * transcript is a variant of gene transcription scenario; there are protein coding transcript as well as transcripts of other types
-        
-        * for filtering variants in :term:`workspace` datasets, the system makes distinction between applications of a variant to different affected protein coding transcripts, so a pair (variant, transcript) we call as "transcript"
+    Transcript variant
+        Particular :term:`DNA variant` can affect some gene coding :term:`transcripts<transcript>`, zero, one, or  many times. So a single DNA variant can be considered as list of transcript variants. Transcript variants are determined as (actual) logical pairs (:term:`DNA variant`, :term:`transcript`) and are used in :term:`WS-datasets<WS-dataset>` as base information objects of low level.  
         
     Viewing regime
         The user can view and study all properties of selected variants in this regime. 
         See :doc:`concepts/view` for details.
         
     Filtration
-        is the main analytic mechanism providing by the system; the user determines rules of selection variants (and their transcripts) satisfying conditions for variety of properties. The subset of variants (transcripts) can be used for detailed study in :term:`viewing regime`. The user also can create :term:`secondary workspace` and continue studies of data inside it.
+        is the main analytic mechanism providing by the system; the user determines rules of selection variants (:term:`DNA<DNA variant>` or :term:`transcript ones<transcript variant>`) satisfying conditions for variety of properties. The subset of variants can be used for detailed study in :term:`viewing regime`. The user also can create :term:`secondary workspace` and continue studies of data inside it.
         
         Two filtration mechanisms are supported in the system: using :term:`filters<filter>` or :term:`decision tree`
         
     Filter
-        implementation of :term:`filtration` mechanism where sequence of :term:`conditions` are applied to  :term:`variants<variant>` (:term:`transcripts<transcript>`) one by one, in conjunctional way. Filters are :term:`solution items<solution item>`
+        implementation of :term:`filtration` mechanism where sequence of :term:`conditions` are applied to  :term:`variants<variant>` one by one, in conjunctional way. Filters are :term:`solution items<solution item>`
         
     Filtering regime
         Regime for work with :term:`filters<filter>`, see :doc:`concepts/filters_reg`
         
     Decision tree
-        implementation of :term:`filtration` where :term:`conditions` are applied to :term:`variants<variant>` (:term:`transcripts<transcript>`) in form of decision tree. See :doc:`concepts/dtree_syntax` for definitions.
+        implementation of :term:`filtration` where :term:`conditions` are applied to :term:`variants<variant>` in form of decision tree. See :doc:`concepts/dtree_syntax` for definitions.
         Decision trees are :term:`solution items<solution item>`
         
     Decision tree code
         Internal representation of decision tree is portion of code in Python dialect. See :doc:`concepts/dtree_syntax`
         
     Decision tree point
-        Single instruction of decision tree. Points of main types have state: set of items (variants and transcripts) that correspond to this point. See :doc:`concepts/dtree_syntax`
+        Single instruction of decision tree. Points of main types have state: set of :term:`variants<variant>` that correspond to this point. See :doc:`concepts/dtree_syntax`
 
     Decision tree state label
         Name of state for a :term:`decision tree point`. See :doc:`concepts/dtree_syntax`. The purpose of labels is setting proper parameters to some of complex :term:`functions`
@@ -115,6 +117,9 @@ Anfisa glossary
     Filtering function
         Aggregated information items that can be used in :doc:`concepts/filtration` as well as :term:`filtering properties<filtering property>`, in case if parameter data is defined. See :doc:`rest/func_ref`.
         
+    Filtering properties classification
+        Classification of :term:`filtering properties<filtering property>` using to :doc:`restrict properties<concepts/restrict_flt>` in filtering regime.
+        
     Dataset documentation
         Collection of documents in various formats attached to dataset or produced by the system on dataset loading or creation. Documentation on :term:`secondary workspace` includes references to documentation on base one.
         
@@ -131,7 +136,7 @@ Anfisa glossary
         List of genes registered in the system as :term:`solution item`
         
     Export
-        Operation of creation (external) Excel document for selected variants. Selection should be limited (up to 300 entries). Document is stored on server side, see :ref:`configuration settings<export_cfg>`.
+        Operation of creation (external) Excel document for selected variants. Document is stored on server side, see :ref:`configuration settings<export_cfg>`.
         
     Delayed request    
         A request that needs to be complete only if the main request has returned incomplete information. Forms series. See details in :doc:`concepts/status_report`
@@ -146,8 +151,8 @@ Anfisa glossary
         The internal UI uses some files (with extensions ``*.js`` and ``*.css``), and these files are checked out from the repository. So after a push from the repository these files can change. If these files were used by the UI directly, there would be a possibility that the user’s browser will ignore changes in such a file and use some outdated cached copy of its previous version instead of the fresh version of it. The workaround for this problem is to create a mirror directory, copy into it all the necessary files but slightly modify their names in such a way that different versions of the same file will have different names. See :ref:`mirror-ui configuration setting<mirror_ui>`.
         
     Annotation pipeline
-        A process of preparation of :term:`primary dataset` information that thould be evaluated before creation if dataset in the system. See :doc:`adm/a_adm_formats` for details.
+        A process of preparation of :term:`primary dataset` information that should be evaluated before creation if dataset in the system. See :doc:`adm/a_adm_formats` for details.
         
     Annotated JSON file
-        Result of :term:`annotation pipeline`, usually in the following formats: ``*.json``, ``*.json.gz``, ``*.json.bz2``.            
+        Result of :term:`annotation pipeline`, usually in the following formats: ``*.json``, ``*.json.gz``, ``*.json.bz2``.            S
         See details in :doc:`appcfg/ajson`

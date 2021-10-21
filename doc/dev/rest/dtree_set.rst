@@ -30,7 +30,8 @@ Synopsis
     |      "**total-counts**": count of items in dataset
     |           ``[`` *list*
     |               **[0]** count of variants, *int*
-    |               **[1]** *optional* count of transcripts, *int*
+    |               **[1]** *optional* count of transcript variants, *int*
+    |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**point-counts**": point counts of items
     |           ``[`` *list of* :doc:`s_point_count` ``]``

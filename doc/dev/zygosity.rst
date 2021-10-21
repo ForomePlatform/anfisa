@@ -10,7 +10,7 @@ Definitions: case, samples
 
 Examples of id: ``"bgm9001a1"``, ``"bgm9001u1"``
 
-Sample id starts with case id, then letter ``a`` (affected) or ``u`` (unaffected), and a number from 1 to upper. Id of proband always ends up with ``"a1"`` (in medical cases we proband is always "affected") . 
+Sample id starts with case id, then letter ``a`` (affected) or ``u`` (unaffected), and a number from 1 to upper. Id of proband always ends up with ``"a1"`` (in medical cases we proband is always "affected"). 
 
 The typical case is **trio**: samples are proband and two parents. Note that some tasks in below are formulated only in context of this scope. 
 
@@ -85,7 +85,7 @@ Comments:
 * for a dataset the **default problem group** is preset by different letters ``a`` and ``u`` in id of samples; however it is good if the user can define problem group directly
 
 .. _compound-request:
-        
+
 Zygosity events and compound requests
 -------------------------------------
 
@@ -129,15 +129,15 @@ Approximations to gene locations
 
 The system supports 3 variants of gene approximation:
 
-* ``"transcript"``: shared transcript
+* ``"transcript"``: shared :term:`transcript`
 
 * ``"gene"``: shared gene
 
 * ``"rough"``: non-intersecting transcripts
     
-The first two variants use :term:`transcripts<transcript>` as a base filtering item, so they are applicable only in :term:`WS-datasets<WS-dataset>`. 
+The first two variants use :term:`transcript variants<transcript variant>` as a base filtering item, so they are applicable only in :term:`WS-datasets<WS-dataset>`. 
 
-In practice the first variant is most good for precision purposes. But it might be not so good in recall: not all transcripts are well studied and registered up to now. For recall purposes use ``"rough"`` approximation: it causes many false positive effects however it filters out variants that can not be found with first two approximation variants.
+In practice the first variant is most good for precision purposes. But it might be not so good in recall: not all :term:`transcripts<transcript>` are well studied and registered up to now. For recall purposes use ``"rough"`` approximation: it causes many false positive effects however it filters out variants that can not be found with first two approximation variants.
 
 Conclusion
 ----------

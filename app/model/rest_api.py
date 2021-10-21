@@ -26,9 +26,10 @@ class RestAPI:
     @classmethod
     def _regRequest(cls, func, kind):
         rq_name = func.__name__
-        assert rq_name.startswith("rq__")
+        assert rq_name.startswith("rq__"), "Bad request name: " + rq_name
         rq_name = rq_name[4:]
-        assert rq_name not in cls.sRQ_Methods
+        assert rq_name not in cls.sRQ_Methods, (
+            "No request registered: " + rq_name)
         cls.sRQ_Methods[rq_name] = (func, kind)
         return func
 
@@ -57,10 +58,11 @@ class RestAPI:
                 if rq_kind == "vault":
                     return (rq_func, data_vault)
                 elif rq_kind in {"ds", "ws", "xl"}:
+                    assert "ds" in rq_args, 'Missing request argument "ds"'
                     ds_h = data_vault.getDS(rq_args["ds"],
                         None if rq_kind == "ds" else rq_kind)
-                    if ds_h is not None:
-                        return (rq_func, ds_h)
+                    assert ds_h is not None, "No dataset: " + rq_args["ds"]
+                    return (rq_func, ds_h)
                 else:
-                    assert False
+                    assert False, "Bad request kind: " + rq_kind
         return None, None

@@ -5,7 +5,7 @@ Discussion
 ----------
 Functions are aggregated information items that can be used in :doc:`../concepts/filtration` as well as :term:`filtering properties<filtering property>`. Difference between application of an :term:`enumerated property` and application of a function is in parameters: the function requires proper settings for them. 
 
-Up to now all functions behave as :term:`multiset property`: even if result is ``True`` value, there is no reason to keep ``False`` value of rest of items in dataset (variants or transcripts).
+Up to now all functions behave as :term:`multiset property`: even if result is ``True`` value, there is no reason to keep ``False`` value of rest of :term:`variants<variant>` in dataset.
 
 The list and format of function parameters are specific for the function. Each parameter value must be data structure in JSON format. So the Front End application needs to handle each function in a specific way. 
 

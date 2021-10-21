@@ -23,6 +23,7 @@ import logging
 from xml.sax.saxutils import escape
 
 from app.view.attr import AttrH
+from app.config.a_config import AnfisaConfig
 from .favor import FavorSchema
 import app.config.view_op_tune as view_op
 #===============================================
@@ -46,8 +47,10 @@ def tuneAspects(ds_h, aspects):
     view_gnomad = aspects["view_gnomAD"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
-    _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
-    _resetupAttr(view_db, GTEx_AttrH(view_gen))
+    attr_gnomad = _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
+    ds_h.regNamedAttr("gnomAD", attr_gnomad)
+    attr_gtex = _resetupAttr(view_db, GTEx_AttrH(view_gen))
+    ds_h.regNamedAttr("GTEx", attr_gtex)
     _resetupAttr(view_db, OMIM_AttrH(view_gen))
     _resetupAttr(view_db, GREV_AttrH(view_gen))
     _resetupAttr(view_db, MEDGEN_AttrH(view_gen))
@@ -61,17 +64,22 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "notes", False))
 
+    ds_h.regNamedAttr("Samples", SamplesInfo_AttrH(ds_h))
+    ds_h.regNamedAttr("GeneColored", GeneColored_AttrH())
+    ds_h.regNamedAttr("ColorCode", ColorCode_AttrH())
+
     meta_info = ds_h.getDataInfo()["meta"]
-    _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
+    attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
         meta_info.get("case"), meta_info.get("samples"),
         meta_info["versions"].get("reference")))
+    ds_h.regNamedAttr("IGV", attr_igv)
 
     view_gen[view_gen.find("transcripts")].setReprFunc(
         view_op.reprGenTranscripts)
     _resetupAttr(view_gen, view_op.OpHasVariant_AttrH(view_gen, ds_h))
     if ds_h.getDSKind() == "ws":
         _resetupAttr(view_gen, view_op.OpFilters_AttrH(view_gen, ds_h))
-        _resetupAttr(view_gen, view_op.OpDTreess_AttrH(view_gen, ds_h))
+        _resetupAttr(view_gen, view_op.OpDTrees_AttrH(view_gen, ds_h))
 
 #===============================================
 def _resetupAttr(aspect_h, attr_h):
@@ -86,6 +94,7 @@ def _resetupAttr(aspect_h, attr_h):
         aspect_h.delAttr(aspect_h[idx2])
     aspect_h.addAttr(attr_h, min(idx1, idx2)
         if min(idx1, idx2) >= 0 else max(idx1, idx2))
+    return attr_h
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -93,10 +102,8 @@ class UCSC_AttrH(AttrH):
     @staticmethod
     def makeLink(region_name, start, end, delta, assembly = "hg19"):
         return ("https://genome.ucsc.edu/cgi-bin/hgTracks?"
-            + ("db=%s" % assembly)
-            + ("&position=%s" % region_name)
-            + "%3A" + str(max(0, start - delta))
-            + "%2D" + str(end + delta))
+            f"db={assembly}&position={region_name}"
+            f"%3A{max(0, start - delta)}%2D{end + delta}")
 
     def __init__(self, view_gen):
         AttrH.__init__(self, "UCSC")
@@ -109,12 +116,12 @@ class UCSC_AttrH(AttrH):
         link1 = self.makeLink(region_name, start, end, 10)
         link2 = self.makeLink(region_name, start, end, 250)
         return ('<table cellpadding="50"><tr><td>'
-                + '<span title="Max Zoom In, 20bp range">'
-                + ('<a href="%s" target="UCSC">Close Up</a>' % link1)
-                + '</span> </td><td>'
-                + '<span title="Zoom Out, 500bp range">'
-                + ('<a href="%s" target="UCSC">Zoom Out</a>' % link2)
-                + '</span> </td><td></table>', "norm")
+                '<span title="Max Zoom In, 20bp range">'
+                f'<a href="{link1}" target="UCSC">Close Up</a>'
+                '</span> </td><td>'
+                '<span title="Zoom Out, 500bp range">'
+                f'<a href="{link2}" target="UCSC">Zoom Out</a>'
+                '</span> </td><td></table>', "norm")
 
 #===============================================
 class GnomAD_AttrH(AttrH):
@@ -122,15 +129,12 @@ class GnomAD_AttrH(AttrH):
     @staticmethod
     def makeLink(region_name, start, end, delta):
         return ("https://gnomad.broadinstitute.org/region/"
-            + ("%s" % region_name)
-            + "%3A" + str(max(0, start - delta))
-            + "%2D" + str(end + delta))
+            f"{region_name}%3A{max(0, start - delta)}%2D{end + delta}")
 
     @staticmethod
     def wrap(url, text = "gnomAD Browser"):
         link = ('<span title="View in gnomAD browser">'
-               + ('<a href="%s" target="gnomAD">%s</a>' % (url, text))
-               + '</span>')
+                f'<a href="{url}" target="gnomAD">{text}</a></span>')
         return link
 
     @staticmethod
@@ -149,26 +153,31 @@ class GnomAD_AttrH(AttrH):
         AttrH.__init__(self, "URL")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        url = v_context["data"]["_view"]["gnomAD"]["url"]
+    def makeValue(self, rec_data):
+        url = rec_data["_view"]["gnomAD"]["url"]
         if url:
-            return self.make_attr(url)
-        hg19 = v_context["data"]["_view"]["general"]["hg19"]
+            return url
+        hg19 = rec_data["_view"]["general"]["hg19"]
         if (not hg19) or hg19.lower() == 'none':
-            return ("No HG19 mapping", "norm")
+            return "No HG19 mapping!"
         try:
-            region_name = v_context["data"]["__data"]["seq_region_name"]
-            region = (v_context["data"]["_view"]["general"]["hg19"].
+            region_name = rec_data["__data"]["seq_region_name"]
+            region = (rec_data["_view"]["general"]["hg19"].
                 split(':')[1].split('-'))
             start = int(region[0])
             if (len(region) > 1):
                 end = int(region[1])
             else:
                 end = start
-            url = self.makeLink(region_name, start, end, 3)
-            return self.make_attr(url)
+            return self.makeLink(region_name, start, end, 3)
         except Exception:
-            return ("error", "norm")
+            return "error!"
+
+    def htmlRepr(self, obj, v_context):
+        url = self.makeValue(v_context["data"])
+        if url and isinstance(url, str) and url.endswith('!'):
+            return (url, "norm")
+        return self.make_attr(url)
 
 #===============================================
 class GTEx_AttrH(AttrH):
@@ -182,17 +191,24 @@ class GTEx_AttrH(AttrH):
             tooltip = "View this gene on GTEx portal")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        genes = v_context["data"]["_view"]["general"]["genes"]
+    def makeValue(self, rec_data):
+        genes = rec_data["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
         for gene in genes:
-            url = self.makeLink(gene)
-            links.append('<span title="GTEx">'
-                + ('<a href="%s" target="GTEx">%s</a>' % (url, gene))
-                + '</span>')
-        return ('<br>'.join(links), "norm")
+            links.append([gene, self.makeLink(gene)])
+        return links
+
+    def htmlRepr(self, obj, v_context):
+        links = self.makeValue(v_context["data"])
+        if not links:
+            return None
+        ret = []
+        for gene, url in links:
+            ret.append('<span title="GTEx">'
+                f'<a href="{url}" target="GTEx">{gene}</a></span>')
+        return ('<br>'.join(ret), "norm")
 
 #===============================================
 class OMIM_AttrH(AttrH):
@@ -200,32 +216,38 @@ class OMIM_AttrH(AttrH):
     @staticmethod
     def makeLink(gene):
         return ("https://omim.org/search/?"
-            + "index=geneMap&feild=approved_gene_symbol"
-            + "&search=" + str(gene))
+            "index=geneMap&feild=approved_gene_symbol"
+            f"&search={gene}")
 
     def __init__(self, view):
         AttrH.__init__(self, "OMIM")
         self.setAspect(view)
 
-    def htmlRepr(self, obj, v_context):
-        genes = v_context["data"]["_view"]["general"]["genes"]
+    def makeValue(self, rec_data):
+        genes = rec_data["_view"]["general"]["genes"]
         if (not genes):
             return None
         links = []
         for gene in genes:
-            url = self.makeLink(gene)
-            links.append(
-                ('<span title="Search OMIM Gene Map for %s">' % escape(gene))
-                + ('<a href="%s" target="OMIM">%s</a>' % (url, gene))
-                + '</span>')
-        return ('<br>'.join(links), "norm")
+            links.append([gene, self.makeLink(gene)])
+        return links
 
+    def htmlRepr(self, obj, v_context):
+        links = self.makeValue(v_context["data"])
+        if links is None:
+            return None
+        ret = []
+        for gene, url in links:
+            ret.append(
+                f'<span title="Search OMIM Gene Map for {escape(gene)}">'
+                f'<a href="{url}" target="OMIM">{gene}</a></span>')
+        return ('<br>'.join(ret), "norm")
 #===============================================
 class GREV_AttrH(AttrH):
 
     @staticmethod
     def makeLink(gene):
-        return "https://www.ncbi.nlm.nih.gov/books/NBK1116/?term=" + gene
+        return f"https://www.ncbi.nlm.nih.gov/books/NBK1116/?term={gene}"
 
     def __init__(self, view):
         AttrH.__init__(self, "GREV", title = "GeneReviews®",
@@ -240,10 +262,8 @@ class GREV_AttrH(AttrH):
         for gene in genes:
             url = self.makeLink(gene)
             links.append(
-                ('<span title="Search GeneReviews&reg; for %s">'
-                    % escape(gene))
-                + ('<a href="%s" target="GREV">%s</a>' % (url, gene))
-                + '</span>')
+                f'<span title="Search GeneReviews&reg; for {escape(gene)}">'
+                f'<a href="{url}" target="GREV">{gene}</a></span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
@@ -266,9 +286,9 @@ class MEDGEN_AttrH(AttrH):
         links = []
         for gene in genes:
             url = self.makeLink(gene)
-            links.append(('<span title="Search MedGen for %s">' % escape(gene))
-                + ('<a href="%s" target="MEDGEN">%s</a>' % (url, gene))
-                + '</span>')
+            links.append(
+                f'<span title="Search MedGen for {escape(gene)}'
+                f'<a href="{url}" target="MEDGEN">{gene}</a></span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
@@ -291,20 +311,16 @@ class GENE_CARDS_AttrH(AttrH):
         for gene in genes:
             url = self.makeLink(gene)
             links.append(
-                ('<span title="Read GeneCards for %s">' % escape(gene))
-                + ('<a href="%s" target="GeneCards">%s</a>' % (url, gene))
-                + '</span>')
+                f'<span title="Read GeneCards for {escape(gene)}">'
+                f'<a href="{url}" target="GeneCards">{gene}</a></span>')
         return ('<br>'.join(links), "norm")
 
 #===============================================
 class BEACONS_AttrH(AttrH):
-    sBase = "https://beacon-network.org/#/search?"
-    sArgs = "pos={pos}&chrom={chrom}&allele={alt}&ref={ref}&rs=GRCh37"
-
     @classmethod
     def makeLink(cls, chrom, pos, ref, alt):
-        return cls.sBase + (cls.sArgs.format(
-            chrom = chrom, pos = pos, ref = ref, alt = alt))
+        return ("https://beacon-network.org/#/search?"
+            f"pos={pos}&chrom={chrom}&allele={alt}&ref={ref}&rs=GRCh37")
 
     def __init__(self, view):
         AttrH.__init__(self, "BEACONS",
@@ -320,9 +336,8 @@ class BEACONS_AttrH(AttrH):
         alt = v_context["data"]["_filters"]["alt"]
 
         url = self.makeLink(chrom, pos, ref, alt)
-        link = (('<span title="Search Beacons">')
-            + ('<a href="%s" target="Beacons">Search Beacons</a>' % (url))
-            + '</span>')
+        link = ('<span title="Search Beacons">'
+            f'<a href="{url}" target="Beacons">Search Beacons</a></span>')
         return (link, "norm")
 
 #===============================================
@@ -330,7 +345,7 @@ class _PMID_AttrH(AttrH):
 
     @staticmethod
     def makeLink(pmid):
-        return ("https://www.ncbi.nlm.nih.gov/pubmed/%s" % pmid)
+        return f"https://www.ncbi.nlm.nih.gov/pubmed/{pmid}"
 
     def __init__(self, view, name, title, tooltip):
         AttrH.__init__(self, name, title = title, tooltip = tooltip)
@@ -339,9 +354,8 @@ class _PMID_AttrH(AttrH):
     @classmethod
     def make_span(cls, pmid):
         url = cls.makeLink(pmid)
-        return (('<span title="PubMed abstracts for %s">' % escape(pmid))
-                + ('<a href="%s" target="PubMed">%s</a>' % (url, pmid))
-                + '</span>')
+        return (f'<span title="PubMed abstracts for {escape(pmid)}">'
+            f'<a href="{url}" target="PubMed">{pmid}</a></span>')
 
     def htmlRepr(self, obj, v_context):
         pmids = self.get_pmids(v_context)
@@ -385,28 +399,28 @@ class IGV_AttrH(AttrH):
 
         # we are not sure what is the key to samples, so have to repackage
         samples = {info["id"]: info["name"] for info in samples.values()}
-        samples_ids = sorted(samples)
-        samples_names = [samples[id] for id in samples_ids]
+        samples_ids = sorted(samples.keys())
+        samples_names = ",".join([samples[id] for id in samples_ids])
 
         file_urls = ','.join([
-            "%s/%s/%s.%s.bam" % (bam_base, case, sample_id, self.mBase)
+            f"{bam_base}/{case}/{sample_id}.{self.mBase}.bam"
             for sample_id in samples_ids])
-        self.mPreUrl = ("http://localhost:60151/load?file=%s"
-            "&genome=%s&merge=false&name=%s") % (
-                file_urls, self.mBase, ",".join(samples_names))
+        self.mPreUrl = (f"http://localhost:60151/load?file={file_urls}"
+            f"&genome={self.mBase}&merge=false&name={samples_names}")
 
-    def htmlRepr(self, obj, v_context):
+    def makeValue(self, rec_data):
         if self.mPreUrl is None:
             return None
 
         if self.mBase == "hg19":
-            start = int(v_context["data"]["__data"]["start"])
-            end = int(v_context["data"]["__data"]["end"])
+            start = int(rec_data["__data"]["start"])
+            end = int(rec_data["__data"]["end"])
         else:
-            assert self.mBase == "hg38"
+            assert self.mBase == "hg38", (
+                "Position base not supported: " + self.mBase)
             pos = -1
             try:
-                pos = v_context["data"]["_view"]["general"]["hg38"]
+                pos = rec_data["_view"]["general"]["hg38"]
                 _, _, coors = pos.partition(':')
                 coors = coors.split(' ')[0]
                 p0, _, p1 = coors.partition('-')
@@ -414,17 +428,24 @@ class IGV_AttrH(AttrH):
                 end = int(p1.strip()) if p1 else start
             except Exception:
                 logging.error("Error creating IGV link for " + str(pos))
-                return ("ERROR", "norm")
-        link = self.mPreUrl + "&locus=%s:%d-%d" % (
-            v_context["data"]["__data"]["seq_region_name"],
-            max(0, start - 250), end + 250)
+                return "Error!"
+        locus = rec_data["__data"]["seq_region_name"]
+        return (self.mPreUrl
+            + f'&locus={locus}:{max(0, start - 250)}-{end + 250}')
+
+    def htmlRepr(self, obj, v_context):
+        link = self.makeValue(v_context["data"])
+        if link is None:
+            return None
+        if link.endswith('!'):
+            return (link, "norm")
         return ('<table><tr><td><span title="For this link to work, '
-            + 'make sure that IGV is running on your computer">'
-            + ('<a href="%s">View Variant in IGV</a>' % link)
-            + ' </span></td><td><a href='
-            + '"https://software.broadinstitute.org/software/igv/download"'
-            + ' target="_blank">'
-            + 'Download IGV</a></td></tr></table>', "norm")
+            'make sure that IGV is running on your computer">'
+            f'<a href="{link}">View Variant in IGV</a>'
+            ' </span></td><td><a href='
+            '"https://software.broadinstitute.org/software/igv/download"'
+            ' target="_blank">'
+            'Download IGV</a></td></tr></table>', "norm")
 
 #===============================================
 class UNIPROT_AttrH(AttrH):
@@ -448,8 +469,7 @@ class UNIPROT_AttrH(AttrH):
             return ('-', "none")
         url = self.makeLink(uniprot)
         link = ('<span title="Uniprot">'
-            + ('<a href="%s" target="Uniprot">%s</a>' % (url, escape(uniprot)))
-            + '</span>')
+            f'<a href="{url}" target="Uniprot">{escape(uniprot)}</a></span>')
         return (link, "norm")
 
 
@@ -475,15 +495,13 @@ class PGKB_AttrH(AttrH):
         return result
 
     def draw_table(self, items, f):
-        html = "<table>"
+        content = ["<table>"]
         for key in items:
-            html += "<tr><td>"
-            html += key
-            html += "</td><td>"
-            html += f(key, items)
-            html += "</td></tr>"
-        html += "</table>"
-        return html
+            value = f(key, items)
+            content.append(
+                "<tr><td>" + key + "</td><td>" + value + "</td></tr>")
+        content.append("</table>")
+        return "\n".join(content)
 
     def draw_simple_table(self, items):
         return self.draw_table(items,
@@ -493,11 +511,11 @@ class PGKB_AttrH(AttrH):
         return self.draw_table(items, self.draw_inner_table)
 
     def draw_inner_table(self, key, items):
-        html = "<ul>"
+        content = ["ul"]
         for item in items[key]:
-            html += "<li>" + item + "</li>"
-        html += "</ul>"
-        return html
+            content.append("<li>" + item + "</li>")
+        content.append("</ul>")
+        return "\n".join(content)
 
     def make_table(self, obj, key):
         if not obj:
@@ -518,5 +536,87 @@ class PGKB_AttrH(AttrH):
         table = self.make_table(obj, self.key)
         if not table:
             return None
-        html = ('<span title="PKGB_%s"> %s </span>' % (self.key, table))
+        html = f'<span title="PKGB_{self.key}">' + table + '</span>'
         return (html, "norm")
+
+#===============================================
+class SamplesInfo_AttrH:
+    def __init__(self, ds_h):
+        self.mDS = ds_h
+
+    def makeValue(self, rec_data):
+        ret = dict()
+        for smp_info in rec_data["_view"]["quality_samples"][1:]:
+            smp_id = smp_info["title"].split(':')[-1].strip()
+            ret[smp_id] = {
+                "genotype":  smp_info.get("genotype"),
+                "g_quality": smp_info.get("genotype_quality")}
+        return ret
+
+#===============================================
+class GeneColored_AttrH:
+    def __init__(self):
+        pass
+
+    def makeValue(self, rec_data):
+        genes = rec_data["_view"]["general"]["genes"]
+        pli = rec_data["_view"]["gnomAD"].get("pLI")
+
+        pli_value = pli[0] if (pli and len(pli) == 1 and pli[0]) else 0
+        color_code = (30 if pli_value >= 0.9 else
+            (20 if pli_value >= 0.5 else 10))
+
+        return [genes, color_code]
+
+#===============================================
+class ColorCode_AttrH:
+    def __init__(self):
+        pass
+
+    def makeValue(self, rec_data):
+        return AnfisaConfig.normalizeColorCode(
+            rec_data["__data"].get("color_code"))
+
+#===============================================
+def Polyphen_ColorCode(value):
+    return {
+        "benign": 10,
+        "possibly_damaging": 20,
+        "probably_damaging": 20,
+        "damaging": 30,
+        "B": 10,
+        "P": 20,
+        "D": 30}.get(value, -1)
+
+def SIFT_ColorCode(value):
+    return {
+        "tolerated": 10,
+        "deleterious": 30,
+        "T": 10,
+        "D": 30}.get(value, -1)
+
+def MutationTaster_ColorCode(value):
+    return {
+        "P": 10,
+        "N": 10,
+        "D": 30,
+        "A": 30}.get(value, -1)
+
+def MutationAssessor_ColorCode(value):
+    return {
+        "L": 10,
+        "N": 10,
+        "M": 30,
+        "H": 30}.get(value, -1)
+
+def FATHMM_ColorCode(value):
+    return {
+        "T": 10,
+        "D": 30}.get(value, -1)
+
+def makeSeqColorTransform(color_func):
+    def transform_func(seq_data):
+        if not seq_data:
+            return seq_data
+        return [[value, color_func(value)] for value in seq_data]
+    return transform_func

@@ -27,6 +27,7 @@ from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
 from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import readySolutions
+from app.config.variables import anfisaVariables
 from app.model.dir_entry import DirDSEntry
 from app.model.data_vault import DataVault
 from app.model.mongo_db import MongoConnector
@@ -147,7 +148,8 @@ class UpdateApp:
         self.mMongoConn = MongoConnector(self.mConfig["mongo-db"],
             self.mConfig.get("mongo-host"), self.mConfig.get("mongo-port"))
         self.mDruidAgent = DruidAgent(self.mConfig)
-        self.mDataVault = DataVault(self, self.mVaultDir, auto_mode = False)
+        self.mDataVault = DataVault(self, self.mVaultDir,
+            anfisaVariables, auto_mode = False)
         self.mPlainReceiptMode = plain_receipt_mode
 
     def getMongoConnector(self):
@@ -207,12 +209,13 @@ class UpdateApp:
                     eval_h = FilterEval(base_ds.getEvalSpace(),
                         receipt["conditions"])
             else:
-                assert receipt["kind"] == "dtree"
+                receipt["kind"] == "dtree", (
+                    "Bad receipt kind: " + receipt["kind"])
                 if not self.mPlainReceiptMode and receipt.get("dtree-name"):
                     dtree_name = receipt.get("dtree-name")
                     eval_h = base_ds.pickSolEntry("dtree", dtree_name)
                     if eval_h is None:
-                        logging.error("No named dtree %s" % dtree_name)
+                        logging.error("No named dtree: " + dtree_name)
                         return ("NO-NAMED")
                 else:
                     eval_h = DTreeEval(base_ds.getEvalSpace(),
@@ -243,7 +246,8 @@ def reportDS(ds_info, anc_path):
                 rep += ["name:", receipt.get("filter-name")]
             rep += ["c-count:", str(len(receipt["conditions"]))]
         else:
-            assert receipt["kind"] == "dtree", receipt["kind"]
+            assert receipt["kind"] == "dtree", (
+                "Bad receipt kind: " + receipt["kind"])
             if receipt.get("dtree-name"):
                 rep += ["name:", receipt.get("dtree-name")]
             rep += ["d-count:", str(len(receipt["p-presentation"]))]
@@ -261,7 +265,7 @@ if __name__ == '__main__':
 
     #========================================
     import forome_tools
-    forome_tools.compatible((0, 1, 6))
+    forome_tools.compatible((0, 1, 7))
 
     #========================================
     if sys.version_info < (3, 7):
@@ -345,9 +349,11 @@ if __name__ == '__main__':
 
     for anc_path, ds_info in sheet_ds:
         if not ds_info.isOK():
-            assert ds_info.getStatus() is not None
+            assert ds_info.getStatus() is not None, (
+                "Dataset: " + ds_info.getName() + " has improper status")
             continue
-        assert ds_info.getStatus() is None
+        assert ds_info.getStatus() is None, (
+            "Dataset: " + ds_info.getName() + " has empty status")
         if "?" in anc_path:
             ds_info.setStatus("BLOCKED")
             continue

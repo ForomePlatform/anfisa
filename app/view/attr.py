@@ -28,15 +28,16 @@ class AttrH:
 
     #===============================================
     def __init__(self, name, kind = None, title = None,
-            is_seq = False, tooltip = None):
+            is_seq = False, tooltip = None, render_mode = None):
         assert kind != "place" or name.lower() == name, (
-            "Placement attribute %s: must be lowercase" % name)
+            f"Placement attribute {name}: must be lowercase")
         self.mAspect = None
         self.mName = name
         self.mTitle = (title if title is not None else name)
         self.mKinds = kind.split() if kind else ["norm"]
         self.mToolTip = tooltip
         self.mIsSeq = is_seq
+        self.mRenderMode = render_mode
         self.mReprFunc = None
 
     def setAspect(self, asp):
@@ -57,6 +58,9 @@ class AttrH:
 
     def getToolTip(self):
         return self.mToolTip
+
+    def getRenderMode(self):
+        return self.mRenderMode
 
     def hasKind(self, kind):
         return kind in self.mKinds

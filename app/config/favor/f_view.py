@@ -26,7 +26,9 @@ from app.view.colgrp import ColGroupsH
 
 # ===============================================
 def defFavorView(metadata_record):
-    assert metadata_record.get("data_schema") == "FAVOR"
+    assert metadata_record.get("data_schema") == "FAVOR", (
+        "FAVOR data schema expected: "
+        + metadata_record.get("data_schema"))
 
     aspect_list = [
         AspectH("view_bas", "Basic", "_view", field = "general"),

@@ -28,13 +28,14 @@ def formXLPage(output, common_title, html_base, xl_ds, ws_pub_url):
         js_files = ["xl.js", "filters.js", "eval.js", "func.js",
             "vrec.js", "base.js"])
 
-    print('  <body onload="setupXLFilters(\'%s\', \'%s\', \'%s\');">' %
-        (xl_ds.getName(), common_title, ws_pub_url), file = output)
+    print(f'  <body onload="setupXLFilters(\'{xl_ds.getName()}\', '
+        f'\'{common_title}\', \'{ws_pub_url}\');">', file = output)
     _formPanel(output)
-    gen_html.formFilterPanel(output)
+    gen_html.formFilterPanel(output, False)
     gen_html.formNoteDiv(output)
-    gen_html.formCreateWsDiv(output)
+    gen_html.formDeriveWsDiv(output)
     gen_html.formSubViewDiv(output)
+    gen_html.formUnitClassesDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
@@ -68,6 +69,11 @@ def _formPanel(output):
         <div id="xl-top-ctrl-right">
             <button id="open-sub-view-rec"
                 onclick="sSubVRecH.show()">View variants</button>
+        </div>
+        <div id="xl-unit-classes">
+            <span id="unit-classes-state"></span>
+            <button onclick="sUnitClassesH.show();"
+                title="Select filtration properties in work">&#9745;</button>
         </div>
       </div>''', file = output)
 #===============================================

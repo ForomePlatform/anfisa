@@ -115,6 +115,11 @@ p.the-note {
     border: 1px solid grey;
 }
 
+p.ds-created {
+    font-size: 90%;
+    text-align: right;
+}
+
 span.note-date {
     float: right;
     font-size: 75%;

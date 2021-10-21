@@ -51,7 +51,8 @@ class ColGroupsH:
             return None
         attr_title_pairs = data
         if isinstance(attr_title_pairs[-1], str):
-            assert attr_title_pairs[-1].startswith("single_")
+            assert attr_title_pairs[-1].startswith("single_"), (
+                "Missing attr title pair: " + repr(attr_title_pairs))
             attr_title_pairs = attr_title_pairs[:-1]
 
         return cls(attr_title_pairs = attr_title_pairs)

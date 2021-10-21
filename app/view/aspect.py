@@ -18,8 +18,6 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
-
 from .attr import AttrH
 from .view_repr import vcfRepr
 from .colgrp import ColGroupsH
@@ -39,7 +37,7 @@ class AspectH:
         self.mMode      = mode
         self.mColumnMarkupF = None
         assert self.mSource in ("_view", "__data"), (
-            "name=" + name + " source=" + self.mSource)
+            "For aspect " + name + "missing source: " + self.mSource)
 
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []
@@ -159,15 +157,19 @@ class AspectH:
         for attr in self.getAttrs():
             a_name = attr.getName()
             if a_name is None:
-                rows.append([])
+                rows.append(None)
                 continue
             a_values = fld_data.get(a_name)
             if not a_values:
                 continue
-            rows.append([a_name, escape(attr.getTitle()),
-                [[val, class_name] for val, class_name in a_values]])
+            row = {"name": a_name,
+                "title": attr.getTitle(),
+                "cells": [[val, class_name] for val, class_name in a_values]}
             if attr.getToolTip():
-                rows[-1].append(attr.getToolTip())
+                row["tooltip"] = attr.getToolTip().replace("'", '"')
+            if attr.getRenderMode():
+                row["render"] = attr.getRenderMode()
+            rows.append(row)
         ret_handle["rows"] = rows
         if self.mColumnMarkupF is not None:
             self.mColumnMarkupF(ret_handle, view_context, self)

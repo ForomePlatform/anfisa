@@ -137,7 +137,7 @@ The system supports 3 variants of gene approximation:
 
 * ``"rough"``: non-intersecting transcripts
     
-The first two variants use transcripts as a base filtering item, so they are applicable only in WS-datasets. 
+The first two variants use transcript variants as a base filtering item, so they are applicable only in WS-datasets. 
 
 In practice the first variant is most good for precision purposes. But it might be not so good in recall: not all transcripts are well studied and registered up to now. For recall purposes use ``"rough"`` approximation: it causes many false positive effects however it filters out variants that can not be found with first two approximation variants.
 

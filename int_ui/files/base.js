@@ -148,6 +148,7 @@ function setupDSInfo(info) {
             sCohortViewModes[sCohortList[idx]] = true;
         }
     }
+    sUnitClassesH.setup(info["unit-classes"]);
 }
 
 /*************************************/
@@ -294,6 +295,7 @@ function setupDSControls() {
     sOpEnumH.init();
     sCreateWsH.init();
     sSubVRecH.init();
+    sUnitClassesH.init();
     ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
 }
 

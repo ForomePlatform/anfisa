@@ -55,7 +55,7 @@ def modifyDTreeCode(parsed, instr):
             new_cond_data = None
             _, line_to = parsed.getFragments()[frag_no + 1].getLineDiap()
     elif mode == "EDIT":
-        assert atom_no is not None
+        assert atom_no is not None, "No atom no for EDIT mode"
         new_point_cond = instr[3]
         frag_h.getCondAtoms()[atom_no].resetCondData(new_point_cond)
         new_cond_data = frag_h.getCondData()
@@ -78,7 +78,7 @@ def modifyDTreeCode(parsed, instr):
         else:
             assert False, "Bad dtree POINT edit mode: " + mode
     else:
-        assert target == "INSTR"
+        assert target == "INSTR", "Improper target: " + str(target)
         if mode == "JOIN-AND":
             prev_frag_h = parsed.getFragments()[frag_no - 2]
             line_from, _ = prev_frag_h.getLineDiap()
@@ -96,7 +96,8 @@ def modifyDTreeCode(parsed, instr):
             _, line_to = sub_frag_h.getLineDiap()
             c_line_to = line_to
             add_line = makeReturnStr(sub_frag_h.getDecision())
-            assert frag_h.getCondData()[0] in ("and", "or")
+            assert frag_h.getCondData()[0] in ("and", "or"), (
+                "Bad SPLIT operation: " + frag_h.getCondData()[0])
             new_cond_data = frag_h.getCondData()[1]
             for more_cond in frag_h.getCondData()[2:]:
                 more_lines += formatIfCode(more_cond).splitlines()

@@ -24,6 +24,7 @@ from io import StringIO
 from app.config.view_schema import defineViewSchema
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import readySolutions
+from app.config.variables import anfisaVariables
 from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
@@ -69,7 +70,8 @@ class AnfisaApp:
 
         cls.sDruidAgent = DruidAgent(cls.sConfig)
 
-        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"])
+        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"],
+            anfisaVariables)
 
         cls.sJobPool = JobPool(
             AnfisaConfig.configOption("job.pool.threads"),

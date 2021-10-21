@@ -47,6 +47,7 @@ class DataSet(SolutionBroker):
     sStatRqCount = 0
     sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
     sMaxTabRqSize = AnfisaConfig.configOption("max.tab.rq.size")
+    sMaxExportSize = AnfisaConfig.configOption("export.max.count")
 
     #===============================================
     def __init__(self, data_vault, dataset_info, dataset_path,
@@ -93,6 +94,7 @@ class DataSet(SolutionBroker):
     def startService(self):
         self.mZygSupport = ZygositySupport(self)
         tuneUnits(self)
+        self.mDataVault.getVarRegistry().relax(self.mName)
         self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
 
     def isUpToDate(self, fstat_info):
@@ -107,7 +109,7 @@ class DataSet(SolutionBroker):
 
     @abc.abstractmethod
     def getEvalSpace(self):
-        assert False
+        assert False, "Abstract eval space"
 
     def getApp(self):
         return self.mDataVault.getApp()
@@ -198,7 +200,7 @@ class DataSet(SolutionBroker):
         if key == "dtree":
             return DTreeEval(self.getEvalSpace(), entry_data,
                 name, updated_time, updated_from)
-        assert False
+        assert False, "Bad solution entry kind: " + key
         return None
 
     def getDocsInfo(self):
@@ -206,6 +208,9 @@ class DataSet(SolutionBroker):
         if self.mDataInfo.get("doc"):
             ret[-1] += self.mDataInfo["doc"]
         return ret
+
+    def getMaxExportSize(self):
+        return self.sMaxExportSize
 
     #===============================================
     @classmethod
@@ -222,6 +227,7 @@ class DataSet(SolutionBroker):
         ret = {
             "name": self.mName,
             "upd-time": self.getMongoAgent().getCreationDate(),
+            "create-time": self.mDataVault.getTimeOfStat(self.mFInfo),
             "kind": self.mDSKind,
             "note": note,
             "doc": self.getDocsInfo(),
@@ -250,6 +256,9 @@ class DataSet(SolutionBroker):
         else:
             ret["meta"] = self.mDataInfo["meta"]
             ret["cohorts"] = self.mFamilyInfo.getCohortList()
+            ret["unit-classes"] = (
+                self.mDataVault.getVarRegistry().getClassificationDescr())
+            ret["export-max-count"] = self.sMaxExportSize
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []
@@ -292,8 +301,10 @@ class DataSet(SolutionBroker):
         ret = []
         for unit_name in unit_names:
             unit_h = self.getEvalSpace().getUnit(unit_name)
-            assert not unit_h.isScreened() and unit_h.getUnitKind != "func"
-            assert point_no is None or unit_h.isInDTrees()
+            assert not unit_h.isScreened() and unit_h.getUnitKind != "func", (
+                "No function provided in DS: " + unit_name)
+            assert point_no is None or unit_h.isInDTrees(), (
+                "Unit is inaccessible in Decision Trees: " + unit_name)
             ret.append(unit_h.makeStat(condition, eval_h))
             if time_end is not None and datetime.now() > time_end:
                 break
@@ -342,7 +353,7 @@ class DataSet(SolutionBroker):
         filter_h, cond_data = None, None
         if rq_args.get("filter"):
             filter_h = self.pickSolEntry("filter", rq_args["filter"])
-            assert filter_h is not None
+            assert filter_h is not None, "No filter for: " + rq_args["filter"]
             if join_cond_data is not None:
                 cond_data = filter_h.getCondDataSeq()
                 filter_h = None
@@ -352,7 +363,7 @@ class DataSet(SolutionBroker):
             else:
                 cond_data = ConditionMaker.condAll()
         if join_cond_data is not None:
-            assert filter_h is None
+            assert filter_h is None, "Filter&join collision"
             cond_data = cond_data[:] + join_cond_data[:]
         if filter_h is None:
             filter_h = FilterEval(self.getEvalSpace(), cond_data)
@@ -366,8 +377,11 @@ class DataSet(SolutionBroker):
         if dtree_h is None:
             if use_dtree and "dtree" in rq_args:
                 dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
-                assert dtree_h is not None
+                assert dtree_h is not None, (
+                    "No decision tree: " + rq_args["dtree"])
             else:
+                assert "code" in rq_args, (
+                    'Missing request argument: "dtree" or "code"')
                 dtree_h = DTreeEval(self.getEvalSpace(), rq_args["code"])
         dtree_h = self.updateSolEntry("dtree", dtree_h)
         if activate_it:
@@ -402,7 +416,8 @@ class DataSet(SolutionBroker):
                         rq_args, activate_it = False).getCondDataSeq()
                 if not self.modifySolEntry("filter",
                         instr_info, instr_cond_data):
-                    assert False
+                    assert False, ("Bad instruction kind: "
+                        + json.dumps(instr_info))
         filter_h = self._getArgCondFilter(rq_args,
             join_cond_data = join_cond_data)
         condition = filter_h.getCondition()
@@ -423,6 +438,7 @@ class DataSet(SolutionBroker):
     def rq__dtree_stat(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
         dtree_h = self._getArgDTree(rq_args)
+        assert "no" in rq_args, 'Missing request argument "no"'
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
         ret_handle = {
@@ -439,11 +455,13 @@ class DataSet(SolutionBroker):
         time_end = self. _getArgTimeEnd(rq_args)
         if "dtree" in rq_args or "code" in rq_args:
             eval_h = self._getArgDTree(rq_args)
+            assert "no" in rq_args, 'Missing request argument "no"'
             point_no = int(rq_args["no"])
             condition = eval_h.getActualCondition(point_no)
         else:
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
+        assert "units" in rq_args, 'Missing request argument "units"'
         ret_handle = {
             "rq-id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
@@ -457,13 +475,16 @@ class DataSet(SolutionBroker):
         if "dtree" in rq_args or "code" in rq_args:
             eval_h = self._getArgDTree(rq_args)
             point_no = int(rq_args["no"])
+            assert "no" in rq_args, 'Missing request argument "no"'
             condition = eval_h.getActualCondition(point_no)
         else:
             eval_h = self._getArgCondFilter(rq_args)
             condition = eval_h.getCondition()
             point_no = int(rq_args["no"]) if "no" in rq_args else None
 
+        assert "unit" in rq_args, 'Missing request argument "unit"'
         unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
+        assert "param" in rq_args, 'Missing request argument "param"'
         parameters = json.loads(rq_args["param"])
         ret = unit_h.makeParamStat(condition, parameters, eval_h, point_no)
         if rq_args.get("rq_id"):
@@ -485,10 +506,12 @@ class DataSet(SolutionBroker):
                 rq_args, activate_it = False)
             if not self.modifySolEntry("dtree", instr[1:],
                     dtree_proc_h.getCode()):
-                assert False
+                assert False, (
+                    "Failed to modify DTREE: " + json.dumps(instr[1:]))
             instr = None
         dtree_h = None
         if instr:
+            assert "code" in rq_args, 'Missing request argument "code"'
             parsed = ParsedDTree(self.getEvalSpace(), rq_args["code"])
             dtree_code = modifyDTreeCode(parsed, instr)
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
@@ -510,6 +533,8 @@ class DataSet(SolutionBroker):
     def rq__dtree_counts(self, rq_args):
         time_end = self. _getArgTimeEnd(rq_args)
         dtree_h = self._getArgDTree(rq_args)
+        assert "rq_id" in rq_args, 'Missing request argument "rq_id"'
+        assert "points" in rq_args, 'Missing request argument "points"'
         rq_id = rq_args["rq_id"]
         return {
             "point-counts": self.prepareDTreePointCounts(dtree_h,
@@ -530,20 +555,24 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__dtree_cmp(self, rq_args):
         dtree_h = self._getArgDTree(activate_it = False)
+        assert "other" in rq_args, 'Missing request argument "other"'
         other_dtree_h = self.pickSolEntry("dtree", rq_args["other"])
-        assert other_dtree_h is not None
+        assert other_dtree_h is not None, (
+            "Not found decision tree :" + rq_args["other"])
         return {"cmp": cmpTrees(
             dtree_h.getCode(), other_dtree_h.getCode())}
 
     #===============================================
     @RestAPI.ds_request
     def rq__recdata(self, rq_args):
+        assert "rec" in rq_args, 'Missing request argument "rec"'
         return self.mRecStorage.getRecordData(int(rq_args.get("rec")))
 
     #===============================================
     @RestAPI.ds_request
     def rq__reccnt(self, rq_args):
-        return self.getViewRepr(int(rq_args.get("rec")),
+        assert "rec" in rq_args, 'Missing request argument "rec"'
+        return self.getViewRepr(int(rq_args["rec"]),
             details = rq_args.get("details"),
             active_samples = rq_args.get("samples"))
 
@@ -559,6 +588,41 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
+    def rq__ds2ws(self, rq_args):
+        assert "ws" in rq_args, 'Missing request argument "ws"'
+        if "dtree" in rq_args or "code" in rq_args:
+            eval_h = self._getArgDTree(rq_args)
+        else:
+            eval_h = self._getArgCondFilter(rq_args)
+        task = SecondaryWsCreation(self, rq_args["ws"], eval_h,
+            force_mode = rq_args.get("force"))
+        return {"task_id": self.getApp().runTask(task)}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__ds_list(self, rq_args):
+        if "dtree" in rq_args or "code" in rq_args:
+            eval_h = self._getArgDTree(rq_args)
+            assert "no" in rq_args, 'Missing request argument "no"'
+            condition = eval_h.getActualCondition(int(rq_args["no"]))
+        else:
+            eval_h = self._getArgCondFilter(rq_args)
+            condition = eval_h.getCondition()
+        return {"task_id": self.getApp().runTask(
+            RecListTask(self, condition, rq_args.get("smpcnt")))}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__tab_report(self, rq_args):
+        assert "seq" in rq_args, 'Missing request argument "seq"'
+        assert "schema" in rq_args, 'Missing request argument "schema"'
+        seq_rec_no = json.loads(rq_args["seq"])
+        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
+        return [tab_schema.reportRecord(self, rec_no)
+            for rec_no in seq_rec_no[:self.sMaxTabRqSize]]
+
+    #===============================================
+    @RestAPI.ds_request
     def rq__export(self, rq_args):
         filter_h = self._getArgCondFilter(rq_args)
         rec_no_seq = self.fiterRecords(filter_h.getCondition(),
@@ -569,44 +633,11 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__ds2ws(self, rq_args):
-        if "dtree" in rq_args or "code" in rq_args:
-            eval_h = self._getArgDTree(rq_args)
-        else:
-            eval_h = self._getArgCondFilter(rq_args)
-        task = SecondaryWsCreation(self, rq_args["ws"], eval_h,
-            force_mode = "force" in rq_args)
-        return {"task_id": self.getApp().runTask(task)}
-
-    #===============================================
-    @RestAPI.ds_request
-    def rq__ds_list(self, rq_args):
-        if "dtree" in rq_args or "code" in rq_args:
-            eval_h = self._getArgDTree(rq_args)
-            condition = eval_h.getActualCondition(int(rq_args["no"]))
-        else:
-            eval_h = self._getArgCondFilter(rq_args)
-            condition = eval_h.getCondition()
-        return {"task_id": self.getApp().runTask(
-            RecListTask(self, condition))}
-
-    #===============================================
-    @RestAPI.ds_request
-    def rq__tab_report(self, rq_args):
-        seq_rec_no = json.loads(rq_args["seq"])
-        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
-        return [tab_schema.reportRecord(self, rec_no)
-            for rec_no in seq_rec_no[:self.sMaxTabRqSize]]
-
-    #===============================================
-    @RestAPI.ds_request
     def rq__csv_export(self, rq_args):
-        eval_h = self._getArgCondFilter(rq_args)
-        rec_count = self.getEvalSpace().evalTotalCounts(
-            eval_h.getCondition())[0]
-        assert rec_count <= AnfisaConfig.configOption("max.export.size")
-        rec_no_seq = self.getEvalSpace().evalRecSeq(
-            eval_h.getCondition(), rec_count)
+        filter_h = self._getArgCondFilter(rq_args)
+        rec_no_seq = self.fiterRecords(filter_h.getCondition(),
+            zone_data = rq_args.get("zone"))
+        assert "schema" in rq_args, 'Missing request argument "schema"'
         tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
         return ["!", "csv", reportCSV(self, tab_schema, rec_no_seq),
             [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]

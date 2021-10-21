@@ -24,6 +24,7 @@ from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
 from app.model.tab_report import ReportTabSchema
 from .favor import FavorSchema
+import app.config.view_tune as view_tune
 #===============================================
 sCfgFilePath = os.path.dirname(os.path.abspath(__file__)) + "/files/"
 
@@ -409,6 +410,57 @@ def setupGenericPack(base_pack):
         "/_filters/ref",
         "/_filters/alt"])
     base_pack.regTabSchema(csv_tab_schema)
+
+    xbr_tab_schema = ReportTabSchema("xbr", use_tags = True)
+    xbr_tab_schema.addField("ClinVar", "/__data/clinvar_significance")
+    xbr_tab_schema.addField("HGMD", "/_view/databases/hgmd_tags")
+    # xbr_tab_schema.addField("Gene", "/_view/general/genes")
+    xbr_tab_schema.addMustiStrField("Coordinate", ":", [
+        "/_filters/chromosome",
+        "/_filters/start"])
+    xbr_tab_schema.addMustiStrField("Change", ">", [
+        "/_filters/ref",
+        "/_filters/alt"])
+
+    xbr_tab_schema.addField("MSQ", "/_view/general/canonical_annotation")
+    xbr_tab_schema.addField("Protein Change", "/_view/general/ppos_canonical")
+    xbr_tab_schema.addField("Polyphen2_HVAR",
+        "/_view/predictions/polyphen2_hvar",
+        view_tune.makeSeqColorTransform(view_tune.Polyphen_ColorCode))
+    xbr_tab_schema.addField("Polyphen2_HDIV",
+        "/_view/predictions/polyphen2_hdiv",
+        view_tune.makeSeqColorTransform(view_tune.Polyphen_ColorCode))
+    xbr_tab_schema.addField("SIFT",
+        "/_view/predictions/sift",
+        view_tune.makeSeqColorTransform(view_tune.SIFT_ColorCode))
+    xbr_tab_schema.addField("MUT TASTER",
+        "/_view/predictions/mutation_taster",
+        view_tune.makeSeqColorTransform(view_tune.MutationTaster_ColorCode))
+    xbr_tab_schema.addField("FATHMM", "/_view/predictions/fathmm",
+        view_tune.makeSeqColorTransform(view_tune.FATHMM_ColorCode))
+
+    xbr_tab_schema.addField("gnomAD_Overall_AF", "/_filters/gnomad_af_fam")
+    xbr_tab_schema.addField("gnomAD_Overall_AF_Popmax",
+        "/_filters/gnomad_popmax_af")
+    xbr_tab_schema.addField("gnomAD_Genomes_AF",
+        "/_filters/gnomad_db_genomes_af")
+    xbr_tab_schema.addField("gnomAD_Exomes_AF",
+        "/_filters/gnomad_db_exomes_af")
+    xbr_tab_schema.addField("gnomAD_Overall_Hom", "/_filters/gnomad_hom")
+    xbr_tab_schema.addField("gnomAD_Overall_Hem", "/_filters/gnomad_hem")
+
+    xbr_tab_schema.addField("QD", "/_filters/qd")
+    xbr_tab_schema.addField("FT", "/_filters/filters")
+
+    xbr_tab_schema.addNamedAttr("ColorCode")
+    xbr_tab_schema.addNamedAttr("GTEx")
+    xbr_tab_schema.addNamedAttr("IGV")
+    xbr_tab_schema.addNamedAttr("gnomAD")
+    xbr_tab_schema.addNamedAttr("Samples")
+    xbr_tab_schema.addNamedAttr("GeneColored")
+
+    base_pack.regTabSchema(xbr_tab_schema)
+
 
 def completeDsModes(ds_h):
     if ds_h.getDataSchema() == "CASE":

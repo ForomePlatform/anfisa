@@ -28,6 +28,8 @@ class XL_EvalSpace(EvalSpace):
         EvalSpace.__init__(self, ds_h)
         self.mDruidAgent = druid_agent
         self.mTotalCounts = [ds_h.getTotal()]
+        self.mNoHistogram = (
+            ds_h.getApp().getOption("druid.no.histogram") is True)
 
         self.mRandRUnit = ReservedNumUnit(self, "_rand")
         self._addReservedUnit(self.mRandRUnit)
@@ -69,6 +71,9 @@ class XL_EvalSpace(EvalSpace):
 
     def iterZygUnits(self):
         return iter(self.mZygRUnits)
+
+    def noHistogram(self):
+        return self.mNoHistogram
 
     def makeNumericCond(self, unit_h, min_val = None, min_eq = True,
             max_val = None, max_eq = True,  zyg_bounds = None):

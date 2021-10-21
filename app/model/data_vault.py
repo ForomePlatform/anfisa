@@ -18,9 +18,12 @@
 #  limitations under the License.
 #
 
-import os, json, logging
+import sys, os, json, logging, traceback
 from glob import glob
+from io import StringIO
 from threading import Lock
+from datetime import datetime
+from collections import defaultdict
 
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
@@ -30,10 +33,12 @@ from forome_tools.log_err import logException
 from forome_tools.sync_obj import SyncronizedObject
 #===============================================
 class DataVault(SyncronizedObject):
-    def __init__(self, application, vault_dir, auto_mode = True):
+    def __init__(self, application, vault_dir,
+            var_registry, auto_mode = True):
         SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
+        self.mVarRegistry = var_registry
         self.mLock  = Lock()
         self.mDataSets = dict()
         self.mSolEnvDict = dict()
@@ -77,6 +82,10 @@ class DataVault(SyncronizedObject):
             return None
         fstat = os.stat(fpath)
         return (int(fstat.st_size), int(fstat.st_mtime))
+
+    @classmethod
+    def getTimeOfStat(cls, fstat):
+        return datetime.fromtimestamp(fstat[1]).isoformat()
 
     @classmethod
     def excludeDSDir(cls, dirname):
@@ -144,8 +153,8 @@ class DataVault(SyncronizedObject):
     def getDS(self, ds_name, ds_kind = None):
         ds_h = self.mDataSets.get(ds_name)
         if ds_h and ds_kind is not None and ds_h.getDSKind() != ds_kind:
-            assert False, "DS kinds conflicts: %s/%s" % (
-                ds_h.getDSKind(), ds_kind)
+            assert False, (
+                f"DS kinds conflicts: {ds_h.getDSKind()} vs. {ds_kind}")
         return ds_h
 
     def checkNewDataSet(self, ds_name):
@@ -154,17 +163,20 @@ class DataVault(SyncronizedObject):
 
     def loadDS(self, ds_name, ds_kind = None):
         with self:
-            assert ds_name not in self.mDataSets
+            assert ds_name not in self.mDataSets, (
+                "Failed to load dataset, already loaded: " + ds_name)
         ds_path = self.mVaultDir + '/' + ds_name
         info_path = ds_path + "/dsinfo.json"
         with open(info_path, "r", encoding = "utf-8") as inp:
             ds_info = json.loads(inp.read())
-        assert ds_info["name"] == ds_name
-        assert not ds_kind or ds_info["kind"] == ds_kind
+        assert ds_info["name"] == ds_name, (
+            "Dataset name collision: " + ds_info["name"] + " vs. " + ds_name)
+        assert not ds_kind or ds_info["kind"] == ds_kind, (
+            "Dataset kind collision: " + ds_info["kind"] + " vs. " + ds_kind)
         if ds_info["kind"] == "xl":
             ds_h = XLDataset(self, ds_info, ds_path)
         else:
-            assert ds_info["kind"] == "ws"
+            assert ds_info["kind"] == "ws", "Bad ds kind: " + ds_info["kind"]
             ds_h = Workspace(self, ds_info, ds_path)
         with self:
             self.mDataSets[ds_info["name"]] = ds_h
@@ -174,7 +186,9 @@ class DataVault(SyncronizedObject):
     def unloadDS(self, ds_name, ds_kind = None):
         with self:
             ds_h = self.mDataSets[ds_name]
-            assert not ds_kind or ds_kind == ds_h.getDSKind()
+            assert not ds_kind or ds_kind == ds_h.getDSKind(), (
+                "Dataset kind collision: "
+                + ds_h.getDSKind() + " vs. " + ds_kind)
             del self.mDataSets[ds_name]
             self.mIntVersion += 1
 
@@ -187,12 +201,18 @@ class DataVault(SyncronizedObject):
 
     def makeSolutionEnv(self, ds_h):
         root_name = ds_h.getRootDSName()
-        assert root_name
+        assert root_name, "No root DS?"
         with self:
             if root_name not in self.mSolEnvDict:
                 self.mSolEnvDict[root_name] = SolutionEnv(
                     self.mApp.getMongoConnector(), root_name)
             return self.mSolEnvDict[root_name]
+
+    def getVariableInfo(self, var_name):
+        return self.mVarRegistry.getVarInfo(var_name)
+
+    def getVarRegistry(self):
+        return self.mVarRegistry
 
     #===============================================
     @RestAPI.vault_request
@@ -200,26 +220,31 @@ class DataVault(SyncronizedObject):
         with self:
             ds_dict = {ds_h.getName(): ds_h.dumpDSInfo(navigation_mode = True)
                 for ds_h in self.mDataSets.values()}
-            lost_roots = set()
+            lost_roots = defaultdict(list)
             ds_sheet = []
             for ds_name, ds_info in ds_dict.items():
-                assert ds_name == ds_info["name"]
+                assert ds_name == ds_info["name"], (
+                    "Dataset name collision: "
+                    + ds_info["name"] + " vs. " + ds_name)
                 anc_names = [name for name, _ in ds_info["ancestors"]]
                 if len(anc_names) > 0:
                     root_name = anc_names[-1]
                     if root_name not in ds_dict:
-                        lost_roots.add(root_name)
+                        lost_roots[root_name].append(ds_name)
                 ds_sheet.append(anc_names[::-1] + [ds_name])
-            for root_name in lost_roots:
+            for root_name, sec_seq in lost_roots.items():
                 ds_dict[root_name] = {
-                    "name": root_name, "kind": None, "ancestors": []}
+                    "name": root_name, "kind": None,
+                    "ancestors": [], "secondary": sorted(sec_seq)}
                 ds_sheet.append([root_name])
             ds_sheet.sort()
             ds_list = []
             path_stack = []
             for idx, ds_path in enumerate(ds_sheet):
                 ds_info = ds_dict[ds_path[-1]]
-                assert ds_info["name"] == ds_path[-1]
+                assert ds_info["name"] == ds_path[-1], (
+                    "Dataset path collision: "
+                    + ds_info["name"] + " vs. " + ds_path[-1])
                 ds_list.append(ds_info["name"])
                 while (len(path_stack) > 0
                         and (len(path_stack[-1]) > len(ds_path)
@@ -247,13 +272,29 @@ class DataVault(SyncronizedObject):
     #===============================================
     @RestAPI.vault_request
     def rq__single_cnt(self, rq_args):
+        assert "record" in rq_args, 'Missing request argument "record"'
         record = json.loads(rq_args["record"])
         return self.mApp.viewSingleRecord(record)
 
     #===============================================
     @RestAPI.vault_request
     def rq__job_status(self, rq_args):
+        assert "task" in rq_args, 'Missing request argument "task"'
         return self.mApp.askJobStatus(rq_args["task"])
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__ping(self, rq_args):
+        if "log" in rq_args:
+            rep = StringIO()
+            print("======\nThreads report:", file = rep)
+            for thread_id, frame in sys._current_frames().items():
+                print("\n\n\t---Thread %s:" % str(thread_id), file = rep)
+                traceback.print_stack(frame, file = rep)
+                print('\t---')
+            print("======", file = rep)
+            logging.warning(rep.getvalue())
+        return "OK"
 
     #===============================================
     # Administrator authorization required
@@ -264,6 +305,7 @@ class DataVault(SyncronizedObject):
 
     @RestAPI.vault_request
     def rq__adm_reload_ds(self, rq_args):
+        assert "ds" in rq_args, 'Missing request argument "ds"'
         ds_name = rq_args["ds"]
         self.unloadDS(ds_name)
         self.loadDS(ds_name)

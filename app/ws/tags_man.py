@@ -92,10 +92,7 @@ class TagsManager(ZoneH):
         ret["upd-from"] = upd_from
         return ret
 
-    def getRestrictF(self, variants, restrict_f = None):
-        if restrict_f is not None:
-            return lambda rec_no: (
-                restrict_f(rec_no) and self.checkVariants(rec_no, variants))
+    def getRestrictF(self, variants):
         return lambda rec_no: self.checkVariants(rec_no, variants)
 
     def checkVariants(self, rec_no, variants):
@@ -119,7 +116,8 @@ class TagsManager(ZoneH):
         return rep
 
     def selectionTagging(self, tag_name, rec_no_seq):
-        assert tag_name and tag_name not in self.mCheckTags
+        assert tag_name and tag_name not in self.mCheckTags, (
+            "Missing tag: " + tag_name)
         new_tag_keys = {self.getDS().getRecKey(rec_no)
             for rec_no in rec_no_seq}
         to_update_seq = []

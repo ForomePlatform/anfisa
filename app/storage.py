@@ -125,7 +125,8 @@ def _dropDruidDataset(druid_adm, ds_name, calm_mode = False):
 
 #===============================================
 def dropDataSet(app_config, ds_entry, druid_adm, calm_mode):
-    assert ds_entry.getDSKind() in ("ws", "xl")
+    assert ds_entry.getDSKind() in ("ws", "xl"), (
+        f"Missing ds kind: {ds_entry.getDSKind()}")
     vault_dir = app_config["data-vault"]
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
 
@@ -303,7 +304,7 @@ if __name__ == '__main__':
 
     #========================================
     import forome_tools
-    forome_tools.compatible((0, 1, 6))
+    forome_tools.compatible((0, 1, 7))
 
     #========================================
     if sys.version_info < (3, 7):
@@ -435,7 +436,8 @@ if __name__ == '__main__':
     app_config = loadJSonConfig(anfisa_json_file,
         home_base_file = __file__, home_base_level = 1)
 
-    assert os.path.isdir(app_config["data-vault"])
+    assert os.path.isdir(app_config["data-vault"]), (
+        "Not a directory: " + app_config["data-vault"])
 
     druid_adm = None
     if any(ds_entry.getDSKind() == "xl" for ds_entry in entries):

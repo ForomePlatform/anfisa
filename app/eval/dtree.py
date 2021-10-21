@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import logging
+import logging, json
 
 from app.config.a_config import AnfisaConfig
 from .evaluation import Evaluation
@@ -311,7 +311,7 @@ class DTreeEval(Evaluation, CaseStory):
         for atom_info in self.mFragments[self.getCurPointNo()].getCondAtoms():
             if cond_data is atom_info.getCondData():
                 return self.getCurPointNo(), atom_info.getErrorMsg()
-        assert False, "Not found: " + str(cond_data)
+        assert False, "Condition not found: " + json.dumps(cond_data)
         return None
 
     def __len__(self):
@@ -424,7 +424,9 @@ class DTreeEval(Evaluation, CaseStory):
         return sorted(ret), info_seq
 
     def getFinalCondition(self):
-        assert self.getEvalSpace().getCondKind() == "ws"
+        assert self.getEvalSpace().getCondKind() == "ws", (
+            "Expected ws context only, got: "
+            + self.getEvalSpace().getCondKind())
         if self.mFinalCondition is None:
             cond_seq = []
             for point in self.mPointList:

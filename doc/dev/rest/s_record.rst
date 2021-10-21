@@ -18,7 +18,7 @@ Description
 -----------
 The descriptor contains the short information about variant sufficient to render variant in variant list presentation.
 
-Property **dt** returns in case of request :doc:`ws_list` and represents bitmap of selected :term:`transcripts<transcript>`. Map contains of symbols ``0``, ``1`` and is used in request  :doc:`reccnt` as argument **details** for proper highlight of selected transcripts.
+Property **dt** returns in case of request :doc:`ws_list` and represents bitmap of selected :term:`transcript variants<transcript variant>`. Map contains of symbols ``0``, ``1`` and is used in request  :doc:`reccnt` as argument **details** for proper highlight of selected transcript variants.
 
 Current list of color codes:
 

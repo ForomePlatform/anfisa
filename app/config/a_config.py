@@ -42,11 +42,12 @@ class AnfisaConfig:
 
         "max.ws.size":  9000,
         "report.lines": 100,
-        "max.export.size": 300,
 
         "xl.view.count.full": 300,
-        "xl.view.count.samples": 25,
-        "xl.view.min.samples": 50,
+        "xl.view.count.samples.default": 25,
+        "xl.view.count.samples.min": 10,
+        "xl.view.count.samples.max": 150,
+        "export.max.count": 9000,
 
         "max.tab.rq.size": 50,
 
@@ -63,6 +64,8 @@ class AnfisaConfig:
         "zygosity.path.base": "/__data/zygosity",
 
         "transcript.path.base": "/_view/transcripts",
+
+        "ws.transcript.id": "Transcript_id",
 
         "job.pool.size":    50,
         "job.pool.threads": 10,

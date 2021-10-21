@@ -129,6 +129,34 @@ span#ds-name {
     border: none;
     text-align: center;
 }
+
+
+#ws-top-stat {
+    color: white;
+    font-size: 90%;
+}
+
+#ws-top-stat tr td{
+    margin-top: 0px;
+    margin-bottom: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+}
+
+td.ws-stat-pre {
+    font-weight: bold;
+    font-size: 80%;
+}
+
+td#ws-stat-cur-var, td#ws-stat-total-var {
+    font-weight: bold;
+}
+
+td#ws-stat-cur-tr, td#ws-stat-cur-trv, 
+td#ws-stat-total-tr, td#ws-stat-total-trv {
+    font-size: 80%;
+}
+
 /********************Left area*****************************/
 div#wrap-rec-list {
     overflow: hidden;

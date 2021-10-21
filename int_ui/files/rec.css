@@ -214,3 +214,26 @@ span#tr-hit-span {
     font-size: 12px;
 }
 
+/********************Gen/Transcripts*****************************/
+table#gen-transcripts {
+    table-layout: auto;
+    width: 100%;
+}
+
+table#gen-transcripts .tr-head td{
+    font-size: 90%;
+    font-style: italic;
+    background-color: #FFFFF9;
+}
+
+table#gen-transcripts td{
+    background-color: white;
+}
+
+table#gen-transcripts .tr-canonical td{
+    background-color: #FFFFF0;
+}
+
+table#gen-transcripts td.tr-annot {
+    font-size: 90%;
+}

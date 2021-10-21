@@ -32,7 +32,7 @@ Description
 -----------
 The request prepares view presentation of :term:`variant` record by its order number in :term:`dataset`.
 
-In context of :term:`workspace` filtering :term:`transcripts<transcript>` rendering logic can highlight selected transcripts if **details** argument is set. Value of **details** argument the client receives in :doc:`ws_list` response in structure :doc:`s_record`.
+In context of :term:`workspace` filtering :term:`transcript variants<transcript variant>` rendering logic can highlight selected transcript variants if **details** argument is set. Value of **details** argument the client receives in :doc:`ws_list` response in structure :doc:`s_record`.
 
 .. _active_samples:
 

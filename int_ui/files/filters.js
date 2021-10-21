@@ -51,6 +51,7 @@ var sUnitsH = {
         sOpNumH.init();
         sOpEnumH.init("filter-cur-cond", 10);
         sCreateWsH.init();
+        sUnitClassesH.init();
         this.setup();
     },
     
@@ -120,9 +121,11 @@ var sUnitsH = {
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
-        fillStatList(this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
+        fillStatList(
+            this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
         this.mDivList.className = "";
         this.mDivList.innerHTML = list_stat_rep.join('\n');
+        sUnitClassesH.updateItems(this.mItems);
         
         var unit_name = this.mCurUnit;
         if (unit_name) {
@@ -519,15 +522,6 @@ var sConditionsH = {
         return this.mCondSeq.length;
     },
     
-    report: function() { 
-        if (this.mCondSeq.length == 0)
-            return "no conditions";
-        cur_filter = sOpFilterH.getCurFilterName();
-        if (cur_filter)
-            return cur_filter + " in work";
-        return null;
-    },
-
     preSelectCond: function(idx) {
         this.mCurCondIdx = idx;
     },

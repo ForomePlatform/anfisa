@@ -11,23 +11,23 @@ The system works with :term:`datasets<dataset>` that are available in :term:`vau
 
 :term:Primary datasets are loaded externally by administrators of the system, :term:`secondary workspaces<secondary workspace>` can be created by the user from existing datasets.
 
-Variants and transcripts, kinds of datasets
--------------------------------------------
+Kinds of datasets, DNA and transcript variants
+-----------------------------------------------
 
-Main informational unit of the system is :term:`variant` that presents in genome in a determined location (chromosome/position) and changes referenced sequence of genomics letters ("ref") to an alternative subsequence ("alt"). In regime of `XL-datasets<xl-dataset>` (eXtra Large) Anfisa system provides work with millions and more variants. 
+Main informational unit of the system is :term:`DNA variant` that presents in genome in a determined location (chromosome/position) and changes referenced sequence of genomics letters ("ref") to an alternative subsequence ("alt"). In regime of `XL-datasets<xl-dataset>` (eXtra Large) Anfisa system provides work with millions and more variants. 
 
-For small datasets, :term:`workspaces, WS-datasets<ws-dataset>` Anfisa provides more intensive and ways for work. In particular, in this regime it uses :term:`transcripts<transcript>` as atomic informational units, which are application of known transcription scenario to a variant. Also, Anfisa supports :term:`tagging` manual functionality and additional :term:`zone` filtration tool to provide access of the user to the short and exact required information portion.
+For small datasets, :term:`workspaces, WS-datasets<ws-dataset>` Anfisa provides more intensive and ways for work. In particular, in this regime it uses :term:`transcript variants<transcript variant>` as atomic informational units, which are application of known :term:`transcription scenario<transcript>` to a variant. Also, Anfisa supports :term:`tagging` manual functionality and additional :term:`zone` filtration tool to provide access of the user to the short and exact required information portion.
 
 Since it is a huge amount of information, the system supports various mechanism for the user to effectively restrict his attention onto the most required information. The most powerful mechanism here is :doc:`concepts/filtration`. They are :term:`filtering regime` and :term:`decision trees<decision tree>`. These tools can be used to search for the most important variants inside datasets, as well as produce :term:`secondary datasets<secondary workspace>` for more accurate work with reduced amount of variants.
 
-Variants and transcripts properties
------------------------------------
+Variant properties
+------------------
 
-Properties of :term:`variants<variant>` and :term:`trancripts<transcript>` are used in the system for two main purposes:
+Properties of :term:`variants<variant>` are used in the system for two main purposes:
 
-* :term:`viewing properties<viewing property>` represent information on variants/transcripts in form understandable by the user, they are the main atomic items for :term:`viewing regimes<viewing regime>`
+* :term:`viewing properties<viewing property>` represent information on variants in form understandable by the user, they are the main atomic items for :term:`viewing regimes<viewing regime>`
     
-* :term:`filtering properties<filtering property>` of variants/trancripts form the low data level for :term:`filtration` processes, as objects for definition of :term:`conditions`
+* :term:`filtering properties<filtering property>` of variants form the low data level for :term:`filtration` processes, as objects for definition of :term:`conditions`
 
 .. _work_pages:
         

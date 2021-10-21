@@ -47,7 +47,7 @@ body {
 /********************Top controls*****************************/
 div#dtree-top-ctrl, div#dtree-top-info, div#dtree-top-cur {
     padding: 3px 10px;
-    flex: 1 0 30%;
+    flex: 1 0 25%;
 }
 
 span#list-report {
@@ -65,6 +65,16 @@ div.error a {
     text-decoration: underline;
     cursor: pointer;
 }
+
+#dtree-unit-classes {
+    padding: 20px 5px 3px 0px;
+    flex: 1 0 15%;
+    text-align: right;
+    font-style: italic;
+    font-size: 75%;
+    vertical-align: bottom;
+}
+
 /********************DTree edit controls*****************************/
 div#dtree-edit-ctrl {
     height: 30px;
@@ -76,6 +86,10 @@ div#dtree-edit-ctrl {
 
 select#dtree-name-input {
     font-size: 16px;
+}
+
+#dtree-name-input:disabled {
+    opacity: 0;
 }
 
 #dtree-name-combo {
@@ -256,7 +270,8 @@ td.point-cond {
 }
 
 td.point-count {
-    width: 80px;
+    width: 100px;
+    min-width: 100px;
     text-align: right;
     font-style: italic;
     color: #000080;
@@ -274,8 +289,12 @@ td.point-count.accept {
     color: #006F00;
 }
 
-span.tr-count {
+.tr-count {
     font-size: 80%;
+}
+
+div.tr-count {
+    text-align: right;
 }
 
 table.d-tree td.point-count.reject {

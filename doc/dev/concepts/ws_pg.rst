@@ -13,7 +13,7 @@ The page supports the following functionality issues:
     
     - support :term:`filters<filter>` as :doc:`sol_work`
 
-    - the logic of regime requires top detailization of information, so  :term:`transcripts<transcript>` are used as :term:`filtration` items instead of :term:`variants<variant>`
+    - the logic of regime requires top detailization of information, so :term:`transcript variantss<transcript variant>` are used as :term:`filtration` items instead of :term:`DNA ones<DNA variant>`
 
 - manual user work with :term:`tagging` tools to associate variants with tags and notes
 
@@ -25,7 +25,7 @@ The page supports the following functionality issues:
     
     - creation of :term:`secondary workspace`
     
-    - :term:`Export` operation: form and provide access to download Excel document with properties of filtered variants, in case if count of variants is limited (up to 300 variants). 
+    - :term:`Export` operation: form and provide access to download Excel document with properties of filtered variants, in case if count of variants is limited (see :doc:`../rest/csv_export` for details of limitation). 
 
 - Special feature of Workspace page: Rules are available in :doc:`filters_reg`. Rules is special aggregated :term:`multiset property` that detects what :term:`decision trees<decision tree>` are positive on the variant. 
 

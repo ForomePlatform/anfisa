@@ -21,11 +21,13 @@ On different pages the system provides two variants of viewing regime
 
     REST API request: :doc:`../rest/ds_list`
 
-    In contexts of :term:`XL-dataset` or :term:`decision tree` viewing regime looks simpler - no integration with tagging and zones. But in these contexts there is no guarantee that selection is small enough, so the system makes special preparations to restrict list of visible variants:
+    In contexts of :term:`XL-dataset` or :term:`decision tree` viewing regime looks simpler - no integration with tagging and zones. But in these contexts there is no guarantee that selection is small enough, so the system makes special preparations to restrict list of visible variants. 
 
     * If list is comparatively small (less than 300 variants), visible list if full one (property **records** is used in request :doc:`../rest/ds_list`)
         
-    * If list is comparatively large (more than 50 variants), only 25 randomly selected samples are visible (property **samples** is used in request :doc:`../rest/ds_list`)
+    * If list is comparatively large (more than ``2*SMP_COUNT`` variants), only ``SMP_COUNT`` randomly selected samples are visible (property **samples** is used in request :doc:`../rest/ds_list`)
+    
+    ``SMP_COUNT`` is a parameter defined by Front End. By default it is set to 25, possible values are between 10 and 150. 
 
 See also
 --------

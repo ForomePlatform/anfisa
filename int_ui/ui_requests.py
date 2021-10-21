@@ -26,7 +26,7 @@ from .html_pages import noRecords, dirPage, subdirPage, notFound
 from .html_ws import formWsPage
 from .html_xl import formXLPage
 from .html_dtree import formDTreePage
-from .record import reportRecord
+from .record import fullRecordView
 from .doc_nav import formDocNavigationPage
 #===============================================
 class IntUI:
@@ -37,7 +37,7 @@ class IntUI:
     @classmethod
     def setup(cls, config, in_container):
         cls.sHtmlTitle = config["html-title"]
-        cls.sWsPubURL = config.get("html-ws-url", "ws")
+        cls.sWsPubURL = "ws"
         cls.sHtmlBase = (config["html-base"]
             if in_container else None)
         if cls.sHtmlBase and not cls.sHtmlBase.endswith('/'):
@@ -76,7 +76,7 @@ class IntUI:
                 return cls.notFoundResponse(serv_h)
             rec_no = int(rq_args.get("rec"))
             output = StringIO()
-            reportRecord(output, ds_h, rec_no, rq_args.get("details"),
+            fullRecordView(output, ds_h, rec_no, rq_args.get("details"),
                 rq_args.get("samples"), int(rq_args.get("port", -1)))
             return serv_h.makeResponse(content = output.getvalue())
 

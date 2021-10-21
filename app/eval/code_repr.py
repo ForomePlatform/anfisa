@@ -132,7 +132,7 @@ def _reprEnumCase(unit_operand, op_mode, values, output):
         output.write('%s not in {' % unit_operand)
         op_close = '}'
     else:
-        assert op_mode == "AND"
+        assert op_mode == "AND", "Improper op-mode: " + str(op_mode)
         output.write('%s in all({' % unit_operand)
         op_close = '})'
     _reprValues(output, values)

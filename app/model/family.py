@@ -34,7 +34,10 @@ class FamilyInfo:
                     del self.mMembers[idx]
                     self.mMembers.insert(0, it)
                 break
-        assert len(self.mMembers) == 0 or self.mMembers[0]["id"] == proband_id
+        assert (len(self.mMembers) == 0
+            or self.mMembers[0]["id"] == proband_id), (
+            "Family setup: first member" + self.mMembers[0]["id"]
+            + "should be proband: " + proband_id)
 
         self.mIds, self.mNames, self.mAffectedGroup = [], [], []
         self.mIdMap = dict()
@@ -69,10 +72,10 @@ class FamilyInfo:
                 self.mCohortList.append(item["name"])
                 for it_id in item["members"]:
                     assert it_id not in self.mCohortMap, (
-                        "Item in two cohorts: %s, %s" %
+                        "Sample in two cohorts: %s, %s" %
                         (self.mCohortMap[it_id], item["name"]))
                     assert it_id in self.mIdMap, (
-                        "Cohort item is not registered: %s" % it_id)
+                        "Cohort sample is not registered: " + it_id)
                     self.mCohortMap[it_id] = item["name"]
 
     def __len__(self):
@@ -95,6 +98,9 @@ class FamilyInfo:
 
     def getAffectedGroup(self):
         return self.mAffectedGroup
+
+    def getMaleSet(self):
+        return self.mMaleSet
 
     def getTrioSeq(self):
         return self.mTrioSeq

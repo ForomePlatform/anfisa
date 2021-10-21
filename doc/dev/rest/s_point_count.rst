@@ -10,7 +10,8 @@ Format
 |   *either*
 |   `   `[`` *list**
 |           **[0]** count of variants, *int*
-|           **[1]** *optional* count of transcripts, *int*
+|           **[1]** *optional* count of transcript variants, *int*
+|           **[2]** *optional* count of transcripts, *int*
 |       ``]``
 |   *or*
 |       ``null`` - status incomplete
@@ -18,7 +19,7 @@ Format
 Description
 -----------
 
-The data represents information for counts of :term:`variants<variant>` (and also of :term:`transcripts<transcript>` in case of :term:`ws-dataset`) associated with a :term:`decision tree point`.
+The data represents information for counts of :term:`DNA variants<DNA variant>` (and also of :term:`transcript variants<transcript variant>` and :term:`transcripts<transcript>` in case of :term:`ws-dataset`) associated with a :term:`decision tree point`.
         
 If point is not applicable for counting, data is sequence of one or two zero values.
 

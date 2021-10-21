@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import os, sys, subprocess, json, logging
+import os, sys, subprocess, json, logging, shutil
 from datetime import datetime, timedelta
 from time import sleep
 
@@ -31,9 +31,12 @@ class DruidAdmin(DruidAgent):
     def __init__(self, config, no_coord = False):
         DruidAgent.__init__(self, config)
         self.mScpConfig = None
+        self.mCopyDir = None
         self.mNoCoord = no_coord
         if "druid" in config:
             self.mScpConfig = config["druid"].get("scp")
+            if self.mScpConfig is None:
+                self.mCopyDir = config["druid"].get("copydir")
         self.mStartTime = self.str2dt(self.TIME_START)
 
     @staticmethod
@@ -60,7 +63,7 @@ class DruidAdmin(DruidAgent):
             cmd_copy = [self.mScpConfig["exe"]]
             if not cmd_copy[0]:
                 print("Undefined parameter scp/exe", file = sys.stderr)
-                assert False
+                assert False, "Undefined parameter scp/exe"
             if self.mScpConfig.get("key"):
                 cmd_copy += ["-i", os.path.expanduser(self.mScpConfig["key"])]
             cmd_copy.append(fdata_name)
@@ -70,6 +73,13 @@ class DruidAdmin(DruidAgent):
             print("Remote copying:", cmd_copy, file = sys.stderr)
             print("Scp started at", datetime.now(), file = sys.stderr)
             subprocess.call(cmd_copy, shell = True)
+        elif self.mCopyDir:
+            base_dir = self.mCopyDir
+            filter_name = (druid_dataset_name + "__"
+                + os.path.basename(fdata_name))
+            dest_name = base_dir + "/" + filter_name
+            print("Copying:", fdata_name, dest_name, file = sys.stderr)
+            shutil.copy(fdata_name, dest_name)
         else:
             base_dir = os.path.dirname(fdata_name)
             filter_name = os.path.basename(fdata_name)
@@ -233,7 +243,7 @@ class DruidAdmin(DruidAgent):
             "filter": None,
             "intervals": [self.INTERVAL]}
         ret = self.call("query", query)
-        assert len(ret) == 1
+        assert len(ret) == 1, f"Unexpected response len: {len(ret)}"
         return int(ret[0]["result"]["count"])
 
 

@@ -2,31 +2,33 @@ version: "2.2"
 
 services:
   anfisa:
-    container_name: anfisa6_docker
+    container_name: anfisa6
     image: anfisa_docker_example:latest
     user: root
     volumes:
       - ASETUP_PATH:/anfisa/a-setup
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: setup/Dockerfile
     restart: always
     ports:
       - "9010:80"
+    command:
+      - "/usr/local/bin/supervisord"
       
 
   mongo:
-    container_name: mongodbanfisa6
+    container_name: anfisa6-mongo
     user: root
     image: mongo
     ports:
       - "27017:27017"
     restart: always
     env_file:
-      - environment
+      - setup/environment
 
   zookeeper:
-    container_name: zookeeperanfisa6
+    container_name: anfisa6-zookeeper
     image: zookeeper:3.5
     user: root
     ports:
@@ -41,7 +43,7 @@ services:
 
   coordinator:
     image: apache/druid:0.19.0
-    container_name: coordinatoranfisa6
+    container_name: anfisa6-coordinator
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -56,12 +58,12 @@ services:
       - DRUID_XMS=256m
       - DRUID_XMX=2g
     env_file:
-      - environment
+      - setup/environment
     restart: always
 
   broker:
     image: apache/druid:0.19.0
-    container_name: brokeranfisa6
+    container_name: anfisa6-broker
     user: root
     volumes:
       - DRUID_WORK/broker:/opt/druid/var
@@ -78,12 +80,12 @@ services:
       - druid_processing_numMergeBuffers=2
       - druid_processing_numThreads=1
     env_file:
-      - environment
+      - setup/environment
     restart: always
 
   historical:
     image: apache/druid:0.19.0
-    container_name: historicalanfisa6
+    container_name: anfisa6-historical
     volumes:
       - DRUID_WORK/data/:/opt/data/
       - DRUID_WORK/historical-var/:/opt/druid/var/
@@ -101,12 +103,12 @@ services:
       - druid_processing_numMergeBuffers=2
       - druid_processing_numThreads=2
     env_file:
-      - environment
+      - setup/environment
     restart: always
 
   middlemanager:
     image: apache/druid:0.19.0
-    container_name: middlemanageranfisa6
+    container_name: anfisa6-middlemanager
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -126,12 +128,12 @@ services:
       - druid_indexer_fork_property_druid_processing_buffer_sizeBytes=100000000
       - druid_indexer_fork_property_druid_processing_numThreads=1  
     env_file:
-      - environment
+      - setup/environment
     restart: always
 
   router:
     image: apache/druid:0.19.0
-    container_name: routeranfisa6
+    container_name: anfisa6-router
     user: root
     volumes:
       - DRUID_WORK/router/:/opt/druid/var
@@ -146,8 +148,5 @@ services:
       - DRUID_XMS=128m
       - DRUID_XMX=256m
     env_file:
-      - environment
+      - setup/environment
     restart: always
-
-
-

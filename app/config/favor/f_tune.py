@@ -23,7 +23,8 @@ from app.model.region_func import RegionFuncUnit
 
 # ===============================================
 def tuneFavorAspects(ds_h, aspects):
-    assert ds_h.getDataSchema() == "FAVOR"
+    assert ds_h.getDataSchema() == "FAVOR", (
+        "FAVOR fata schema expected: " + ds_h.getDataSchema())
 
     #  view_bas = aspects["view_bas"]
     # _resetupAttr(view_bas, HGMD_PMID_AttrH(view_bas))
@@ -32,7 +33,8 @@ def tuneFavorAspects(ds_h, aspects):
 
 # ===============================================
 def tuneFavorUnits(ds_h):
-    assert ds_h.getDataSchema() == "FAVOR"
+    assert ds_h.getDataSchema() == "FAVOR", (
+        "FAVOR fata schema expected: " + ds_h.getDataSchema())
 
     RegionFuncUnit.makeIt(ds_h,
         {

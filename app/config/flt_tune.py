@@ -34,7 +34,6 @@ def tuneUnits(ds_h):
     RegionFuncUnit.makeIt(ds_h,
         {
             "name":     "GeneRegion",
-            "title":    "Gene Region",
             "vgroup":   "Coordinates"},
         {
             "chrom":    "Chromosome",
@@ -58,19 +57,16 @@ def tuneUnits(ds_h):
         if len(ds_h.getFamilyInfo()) > 1:
             InheritanceUnit.makeIt(ds_h, {
                 "name": "Inheritance_Mode",
-                "title": "Inheritance Mode",
                 "vgroup": "Inheritance"},
                 before = "Proband_Zygosity")
             CustomInheritanceUnit.makeIt(ds_h, {
                 "name": "Custom_Inheritance_Mode",
-                "title": "Custom Inheritance Mode",
                 "vgroup": "Inheritance"},
                 before = "Proband_Zygosity")
 
         if ds_h.testRequirements({"trio"}):
             CompHetsUnit.makeIt(ds_h, {
                 "name":   "Compound_Het",
-                "title":  "Calculated Compound",
                 "vgroup": "Inheritance"})
 
         CompoundRequestUnit.makeIt(ds_h, {

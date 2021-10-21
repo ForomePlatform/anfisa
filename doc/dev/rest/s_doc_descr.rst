@@ -10,13 +10,14 @@ Format
 
     |   ``[``
     |       **[0]**: document name
-    |       **[1]**: *path to document, **string**
+    |       **[1]**: path to document, **string**
+    |       **[2]**: *optional* content information, **dictionary**    
     |   ``]``
 
 * Folder descriptor:
 
     |   ``[``
-    |       **[0]**: *optional* folder name name
+    |       **[0]**: *optional* folder name
     |       **[1]**: ``[`` * list of* document or folder descriptors ``]``
     |   ``]``
 
@@ -38,6 +39,21 @@ For dataset with name ``<ds name>`` the system provides access to documents by U
 
     ``<URL to application back end>/dsdoc/<ds name>/<path to document>``
 
+Content information in document desciptor is available only if document was automatically created on dataset setup, and actually it is just a wrapper around image or images. So the Front-End application can reformat it in an appropriate way. The following cases are currently supported:
+
+    |   ``{``
+    |       **type**: "img"
+    |       **image**: image URL, **string**
+    |       **tooltip**: *optional* image tooltip, **string** 
+    |   ``}``
+    
+    |   ``{``
+    |       **type**: "seq_img"
+    |       **images**: image URLs, **list of strings**
+    |       **names**: *optional* short names of images, **list of string** 
+    |   ``}``
+ 
+    
 See also
 --------
 :doc:`s_ds_descr`

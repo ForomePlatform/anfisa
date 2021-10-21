@@ -39,15 +39,6 @@ Used in the internal UI: its HTML pages need to know their location in terms of 
     "html-base": "/anfisa/",
 
 .. index:: 
-    html-ws-url; service configuration option
-    
-* **html-ws-url**, *string*
-    
-Address of the NextGen UI base page if the NextGen UI is set up, else keep the default value ​"ws"::
-
-    "html-ws-url": "ws",
-
-.. index:: 
     html-title; service configuration option
 
 * **html-title**, *string*

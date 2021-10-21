@@ -27,50 +27,55 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
 
     doc_sets_repr = []
     for doc_set in doc_sets:
-        doc_sets_repr.append('<li><a href="%s" target="%s-DOC">%s</a>'
-            % (doc_set.getUrl(), common_title, escape(doc_set.getTitle())))
+        doc_url = doc_set.getUrl()
+        doc_title = escape(doc_set.getTitle())
+        doc_sets_repr.append(f'<li><a href="{doc_url}" '
+            f'target="{common_title}-DOC">{doc_title}</a>')
 
+    print(f'<body onload="setup(\'{common_title}\', \'{ws_pub_url}\');">',
+        file = output)
     print('''
-  <body onload="setup(\'%s\', \'%s\');">
-    <h2>%s home directory</h2>
-    <div id="dir-main">
-       <div id="dir-list"></div>
-       <div id="dir-info">
-            <div id="div-version">
-                System version:&nbsp;<span id="app-version"</span>
-            </div>
-            <div id="ds-info"></div>
-       </div>
-    </div>
-    <div id="dir-docs">
-      <ul>
-         %s
-      </ul>
-    </div>
-  </body>
-</html>''' % (common_title, ws_pub_url, common_title,
-        "\n".join(doc_sets_repr)), file = output)
+        <h2>%(common_title)s home directory</h2>
+        <div id="dir-main">
+           <div id="dir-list"></div>
+           <div id="dir-info">
+                <div id="div-version">
+                    System version:&nbsp;<span id="app-version"</span>
+                </div>
+                <div id="ds-info"></div>
+           </div>
+        </div>
+        <div id="dir-docs">
+          <ul>
+            %(doc_sets_repr)s
+          </ul>
+        </div>
+      </body>
+    </html>''' % {
+        "common_title": common_title,
+        "doc_sets_repr": doc_sets_repr}, file = output)
 
 #===============================================
 def subdirPage(output, common_title, html_base, ws_url, ds_h):
     startHtmlPage(output,
         common_title + " " + ds_h.getName() + " subdirectory", html_base,
         css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
+
+    print(f'<body onload="setupSubDir(\'{common_title}\', \'{ws_url}\', '
+        f'\'{ds_h.getName()}\');">', file = output)
+    print(f'<h2>Dataset {ds_h.getName()} directory</h2>', file = output)
     print('''
-  <body onload="setupSubDir(\'%s\', \'%s\', \'%s\');">
-    <h2>Dataset %s directory</h2>
-    <div id="dir-main">
-       <div id="dir-list"></div>
-       <div id="dir-info">
-            <div id="div-version">
-                System version:&nbsp;<span id="app-version"</span>
+            <div id="dir-main">
+               <div id="dir-list"></div>
+               <div id="dir-info">
+                    <div id="div-version">
+                        System version:&nbsp;<span id="app-version"</span>
+                    </div>
+                    <div id="ds-info"></div>
+               </div>
             </div>
-            <div id="ds-info"></div>
-       </div>
-    </div>
-  </body>
-</html>''' % (common_title, ws_url, ds_h.getName(), ds_h.getName()),
-    file = output)
+          </body>
+        </html>''', file = output)
 
 #===============================================
 def notFound(output, common_title, html_base):

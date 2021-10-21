@@ -19,7 +19,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
 from xml.sax.saxutils import escape
 from bitarray import bitarray
 
@@ -31,7 +30,8 @@ def markupTranscriptTab(info_handle, view_context, aspect):
     if "details" not in view_context:
         return
     it_map = bitarray(view_context["details"])
-    assert aspect.getColGroups().getAttr(0) == "transcripts"
+    assert aspect.getColGroups().getAttr(0) == "transcripts", (
+        "For aspect " + aspect.getName() + " does not support trancripts")
     for grp_info in info_handle["colhead"][1:]:
         grp_info[2] = " no-hit"
     tr_group_info = info_handle["colhead"][0]
@@ -42,12 +42,12 @@ def markupTranscriptTab(info_handle, view_context, aspect):
             hit_col_idxs.add(idx)
     if len(hit_col_idxs) < cnt_total:
         title, _, _ = tr_group_info[0].partition('[')
-        title += "[%d/%d]" % (len(hit_col_idxs), cnt_total)
+        title += f"[{len(hit_col_idxs)}/{cnt_total}]"
     else:
         title = tr_group_info[0]
     tr_group_info[0] = title + '&nbsp;<span id="tr-hit-span"></span>'
     for row in info_handle["rows"]:
-        for idx, td_info in enumerate(row[2]):
+        for idx, td_info in enumerate(row["cells"]):
             if idx in hit_col_idxs:
                 td_info[1] += ' hit'
             else:
@@ -55,38 +55,38 @@ def markupTranscriptTab(info_handle, view_context, aspect):
 
 #===============================================
 def reprGenTranscripts(val, v_context):
-    if not val:
-        return None
+    if not val or len(val) == 0:
+        return (None, None)
     if "details" in v_context:
         details = bitarray(v_context["details"])
     else:
         details = None
 
-    ret_handle = ['<ul>']
+    ret_handle = ['<table id="gen-transcripts">',
+        '<tr class="tr-head">'
+        '<td>canonical?</td><td>id</td><td>gene</td><td>annotations</td>'
+        '</tr>']
     for idx, it in enumerate(val):
-        is_canonical = it.get("is_canonical") if it else False
-        if is_canonical:
-            prefix = "[C] "
-        else:
-            prefix = ""
-        mod = ""
-        if details is not None and details[idx]:
-            if is_canonical:
-                mod = ' class="hit"'
-        v_id = it.get("id")
-        if not v_id:
-            v_id = "?"
-        v_gene = it.get("gene")
-        if not v_gene:
+        is_canonical = it.get("is_canonical")
+        is_hit = (details is not None and details[idx])
+        v_id = it.get("id", "?")
+        v_gene = it.get("gene", "?")
+        if v_gene is None:
             v_gene = "?"
-        t_format = (
-            "<li%s><b>%s%s</b>, <b>gene=</b>%s, <b>annotations</b>: %s </li>")
-        if not is_canonical:
-            t_format = t_format.replace("<b>", "").replace("</b>", "")
-        ret_handle.append(t_format % (mod,
-            escape(prefix), escape(v_id), escape(v_gene),
-            escape(json.dumps(it.get("transcript_annotations", "?")))))
-    ret_handle.append("</ul>")
+        v_annotation = " ".join(it.get("transcript_annotations", []))
+
+        v_tr = ' class="tr-canonical"' if is_canonical else ""
+        v_td = ' checked' if is_canonical else ""
+
+        ret_handle.append(
+            f'<tr{v_tr}><td class="tr-canonical">'
+            f'<input type="checkbox" disabled{v_td}></input></td>')
+        id_class = "hit tr-id" if is_hit else "tr-id"
+        ret_handle.append(
+            f'<td class="{id_class}">{escape(v_id)}</td>'
+            f'<td class="tr-gene">{escape(v_gene)}</td>'
+            f'<td class="tr-annot">{escape(v_annotation)}</td></tr>')
+    ret_handle.append("</table>")
     return ('\n'.join(ret_handle), "norm")
 
 #===============================================
@@ -101,24 +101,29 @@ class SamplesColumnsMarkup:
         if self.mCohortMap is None and "active-samples" not in view_context:
             return
         par_ctrl = ["", ""]
+        par_modes = []
         cohort_row = None
-        hit_columns = set()
-        col_seq = [""] * len(info_handle["rows"][0][2])
+        hit_columns = []
+        col_seq = [""] * len(info_handle["rows"][0]["cells"])
         if self.mCohortMap:
-            cohort_row = ["_cohort", "", []]
-            for idx, td_info in enumerate(info_handle["rows"][0][2]):
+            cohort_row = {
+                "name": "_cohort",
+                "title": "Cohorts",
+                "cells": []}
+            for idx, td_info in enumerate(info_handle["rows"][0]["cells"]):
                 if idx == 0:
-                    cohort_row[-1].append(["-", "null"])
+                    cohort_row["cells"].append(["-", "null"])
                     continue
                 sample_name = td_info[0].split()[-1]
                 cohort = self.mCohortMap[sample_name]
-                cohort_row[-1].append([cohort, "string"])
+                cohort_row["cells"].append([cohort, "string"])
                 col_seq[idx] = 'cohort-' + cohort
             par_ctrl[1] = '<span id="cohorts-ctrl"></span>'
+            par_modes.append(["cohorts"])
         act_samples = view_context.get("active-samples")
         if act_samples:
             cnt_total = 0
-            for idx, td_info in enumerate(info_handle["rows"][0][2]):
+            for idx, td_info in enumerate(info_handle["rows"][0]["cells"]):
                 if idx == 0:
                     continue
                 sample_name = td_info[0].split()[-1]
@@ -127,20 +132,22 @@ class SamplesColumnsMarkup:
                 if col_seq[idx]:
                     col_seq[idx] += ' '
                 if smp_idx in act_samples:
-                    hit_columns.add(idx)
+                    hit_columns.append(idx)
                 else:
                     col_seq[idx] += "no-smp-hit"
             if len(hit_columns) > 0 and cnt_total > 3:
-                par_ctrl[0] = ('<span id="act-samples-ctrl">[%d/%d]</span>'
-                    % (len(hit_columns), cnt_total))
+                par_ctrl[0] = ('<span id="act-samples-ctrl">'
+                    f'[{len(hit_columns)}/{cnt_total}]</span>')
+                par_modes.append(["hit", hit_columns, cnt_total])
         info_handle["colgroup"] = [""] + col_seq
         info_handle["parcontrol"] = '<div>' + ' '.join(par_ctrl) + '</div>'
+        info_handle["parmodes"] = par_modes
         if cohort_row:
             info_handle["rows"].insert(0, cohort_row)
         if len(hit_columns) > 0:
-            for row in info_handle["rows"]:
-                for idx in hit_columns:
-                    row[2][idx][1] += " hit"
+            for idx in hit_columns:
+                for row in info_handle["rows"]:
+                    row["cells"][idx][1] += " hit"
 
 #===============================================
 def normSampleId(sample_name):
@@ -220,7 +227,7 @@ class OpFilters_AttrH(AttrH):
         return (' '.join(self.mDS.getRecFilters(v_context["rec_no"])), "norm")
 
 #===============================================
-class OpDTreess_AttrH(AttrH):
+class OpDTrees_AttrH(AttrH):
     def __init__(self, view, ds_h):
         AttrH.__init__(self, "OP_dtrees",
             title = "Presence in decision trees",
