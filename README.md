@@ -129,6 +129,9 @@ The port is configurable in your configuration file.
                                                             
 
 ###  Ingesting demo whole genome
+> You will need approximately 25G of space available to 
+> experiment with a whole genome 
+
 * First, download 
   [prepared dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz)
 * Unpack the content into some directory (e.g. directory `data` 
@@ -141,6 +144,7 @@ Here are sample commands that can be executed:
     docker cp pgp3140_wgs_nist-v4.2.tgz anfisa6:/anfisa/a-setup/data/examples/
     docker exec -it anfisa6 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tgz'
     docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
+            
 
 ## Public Demo 
 
