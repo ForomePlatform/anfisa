@@ -178,7 +178,7 @@ class CompoundRequestUnit(FunctionUnit):
 
         build_id = md5(bytes(json.dumps(c_rq, sort_keys = True)
             + approx_mode + '|' + actual_condition.hashCode(),
-            encoding="utf-8"))
+            encoding="utf-8")).hexdigest()
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
         if context is None:
