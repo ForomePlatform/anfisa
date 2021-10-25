@@ -200,6 +200,7 @@ class _SolutionKindHandler:
                         entry_data, name, upd_time, upd_from)
                     update = True
                 dyn_entries.append(entry_obj)
+            update |= len(dyn_names) + len(self.mStdNames) != len(self.mNames)
             if update:
                 self._setup(dyn_names, dyn_entries)
         return update
