@@ -159,14 +159,24 @@ class _SolutionKindHandler:
     def __init__(self, broker, sol_kind):
         self.mBroker = broker
         self.mSolKind = sol_kind
-        self.mNames = []
-        self.mEntryDict = dict()
+        self.mNames = None
+        self.mEntryDict = None
+        self.mHashDict = None
+        self.mStdNames = []
+        self.mStdEntries = []
         for it in self.mBroker.iterStdItems(self.mSolKind):
             std_name = self.sStdFMark + it.getName()
-            self.mNames.append(std_name)
-            self.mEntryDict[std_name] = self.mBroker.makeSolEntry(
-                self.mSolKind, it.getData(), std_name)
-        self.mStdCount = len(self.mNames)
+            self.mStdEntries.append(self.mBroker.makeSolEntry(
+                self.mSolKind, it.getData(), std_name))
+            self.mStdNames.append(std_name)
+        self._setup([], [])
+
+    def _setup(self, dyn_names, dyn_entries):
+        self.mNames = self.mStdNames[:] + dyn_names[:]
+        self.mEntryDict = {name: entry_h
+            for name, entry_h in zip(self.mStdNames, self.mStdEntries)}
+        for name, entry_h in zip(dyn_names, dyn_entries):
+            self.mEntryDict[name] = entry_h
         self.mHashDict = {entry_obj.getHashCode(): entry_obj
             for entry_obj in self.mEntryDict.values()}
 
@@ -174,31 +184,25 @@ class _SolutionKindHandler:
         return len(self.mNames) == 0
 
     def refreshSolEntries(self):
-        _names = []
-        updated = False
+        update = False
         with self.mBroker:
+            dyn_names = []
+            dyn_entries = []
             for info in self.mBroker.getSolEnv().iterEntries(self.mSolKind):
                 name, entry_data, upd_time, upd_from = info
-                _names.append(name)
+                dyn_names.append(name)
                 entry_obj = self.mEntryDict.get(name)
                 if (entry_obj is not None
                         and [upd_time, upd_from] != entry_obj.getUpdateInfo()):
-                    del self.mHashDict[entry_obj.getHashCode()]
                     entry_obj = None
                 if entry_obj is None:
                     entry_obj = self.mBroker.makeSolEntry(self.mSolKind,
                         entry_data, name, upd_time, upd_from)
-                    self.mEntryDict[name] = entry_obj
-                    self.mHashDict[entry_obj.getHashCode()] = entry_obj
-                    updated = True
-            for name in (set(self.mNames[self.mStdCount:]) - set(_names)):
-                entry_obj = self.mEntryDict[name]
-                del self.mHashDict[entry_obj.getHashCode()]
-                del self.mEntryDict[name]
-                updated = True
-            if updated:
-                self.mNames = self.mNames[:self.mStdCount] + _names
-        return updated
+                    update = True
+                dyn_entries.append(entry_obj)
+            if update:
+                self._setup(dyn_names, dyn_entries)
+        return update
 
     def getList(self):
         ret_handle = []
@@ -208,7 +212,7 @@ class _SolutionKindHandler:
                 upd_time, upd_from = entry_obj.getUpdateInfo()
                 ret_handle.append({
                     "name": name,
-                    "standard": idx < self.mStdCount,
+                    "standard": idx < len(self.mStdNames),
                     "upd-time": upd_time,
                     "upd-from": upd_from,
                     "eval-status": entry_obj.getEvalStatus(),
