@@ -17,18 +17,10 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys, codecs, json, re
+import sys, json, re
 from argparse import ArgumentParser
 from pymongo import MongoClient
 #=====================================
-try:
-    sys.stdin  = codecs.getreader('utf8')(sys.stdin.detach())
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-except Exception:
-    pass
-
-#===============================================
 parser = ArgumentParser()
 parser.add_argument("-c", "--config", default = "./anfisa.json",
     help = "Anfisa config file")

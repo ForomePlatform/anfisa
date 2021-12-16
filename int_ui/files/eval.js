@@ -432,11 +432,11 @@ var sOpEnumH = {
                 this.mOperationMode = opt;
         }
         sel_names = this.getSelected();
-        op_mode = "";
-        if (this.mOperationMode != null)
-            op_mode = ["", "AND", "NOT"][this.mOperationMode];
-        if (!op_mode)
-            op_mode = "";
+        
+        if (this.mOperationMode == null)
+            op_mode = "OR";
+        else
+            op_mode = ["OR", "AND", "NOT"][this.mOperationMode];
         
         condition_data = null;
         if (sel_names.length > 0) {

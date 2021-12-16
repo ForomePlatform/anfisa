@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, codecs, json, os, shutil, re, time, logging
+import sys, json, os, shutil, re, time, logging
 from argparse import ArgumentParser
 from datetime import datetime
 
@@ -295,11 +295,6 @@ def favorBatch(app_config, druid_adm, batch_dir, report_lines):
 
 #===============================================
 if __name__ == '__main__':
-    try:
-        sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-        sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-    except Exception:
-        pass
     logging.root.setLevel(logging.INFO)
 
     #========================================
