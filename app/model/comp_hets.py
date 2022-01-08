@@ -97,7 +97,7 @@ class CompHetsUnit(FunctionUnit):
             with self.getEvalSpace().getDS():
                 self.mOpCache[build_id] = context
         if None in context["trio-dict"].values():
-            context, "Too heavy condition"
+            return context, "Too heavy condition"
         return context, None
 
     def locateContext(self, cond_data, eval_h):
@@ -178,7 +178,7 @@ class CompoundRequestUnit(FunctionUnit):
 
         build_id = md5(bytes(json.dumps(c_rq, sort_keys = True)
             + approx_mode + '|' + actual_condition.hashCode(),
-            encoding="utf-8"))
+            encoding="utf-8")).hexdigest()
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
         if context is None:
@@ -189,7 +189,7 @@ class CompoundRequestUnit(FunctionUnit):
             with self.getEvalSpace().getDS():
                 self.mOpCache[build_id] = context
         if context["crit"] is None:
-            context, "Too heavy condition"
+            return context, "Too heavy condition"
         return context, None
 
     def locateContext(self, cond_data, eval_h):

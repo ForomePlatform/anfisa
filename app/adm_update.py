@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, codecs, json, os, logging, shutil
+import sys, json, os, logging, shutil
 from argparse import ArgumentParser
 from glob import glob
 from datetime import datetime
@@ -256,11 +256,6 @@ def reportDS(ds_info, anc_path):
 
 #===============================================
 if __name__ == '__main__':
-    try:
-        sys.stderr = codecs.getwriter('utf8')(sys.stderr.detach())
-        sys.stdout = codecs.getwriter('utf8')(sys.stdout.detach())
-    except Exception:
-        pass
     logging.root.setLevel(logging.INFO)
 
     #========================================
