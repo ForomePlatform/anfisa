@@ -26,7 +26,7 @@ from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.view_schema import defineViewSchema
-from app.config.solutions import readySolutions
+from app.config.solutions import solutionsAreReady
 from app.model.ds_disk import DataDiskStorageWriter
 from .html_report import reportDS
 from .doc_works import prepareDocDir
@@ -36,7 +36,7 @@ from .trans_prep import TransformPreparator_WS, TransformPreparator_XL
 def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         ds_inv = None, report_lines = False,
         favor_storage = None, no_druid_push = False):
-    readySolutions()
+    assert solutionsAreReady()
     assert (ds_kind == "xl") == (druid_adm is not None)
 
     time_start = datetime.now()
@@ -165,7 +165,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
 
 #=====================================
 def pushDruidDataset(ds_dir, druid_adm, ds_name):
-    readySolutions()
+    assert solutionsAreReady()
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
@@ -179,7 +179,7 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
 
 #=====================================
 def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
-    readySolutions()
+    assert solutionsAreReady()
     filter_set = defineFilterSchema(favor_storage.getMetaData())
     fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
 

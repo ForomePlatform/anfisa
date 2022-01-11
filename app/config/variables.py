@@ -23,7 +23,7 @@ from app.eval.var_reg import VarRegistry
 anfisaVariables = VarRegistry()
 
 consequences_help = '''
- The set of consequence terms is 
+ The set of consequence terms is
  defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
  See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
  for details.

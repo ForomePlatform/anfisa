@@ -19,6 +19,7 @@
 #
 
 import os, logging
+from glob import glob
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
@@ -44,7 +45,7 @@ def stdNm(name):
 
 
 #===============================================
-sSolutionsAreSet = False
+sSolutionsAreReady = False
 
 LoF_CSQ = [
     "CNV: deletion",
@@ -133,21 +134,25 @@ def checkSolutionUnits(sol_kind, sol_name, unit_names, requires):
     return True
 
 #===============================================
-def readySolutions():
-    global sSolutionsAreSet
-    if sSolutionsAreSet:
+def solutionsAreReady():
+    global sSolutionsAreReady
+    return sSolutionsAreReady
+
+def setupSolutions(app_config):
+    global sSolutionsAreReady
+    if sSolutionsAreReady:
         return
-    sSolutionsAreSet = True
+    sSolutionsAreReady = True
     favor_pack = SolutionPack("FAVOR", checkSolutionUnits)
-    setupGenericPack(favor_pack)
-    FavorSchema.readySolutions(favor_pack)
+    setupGenericPack(app_config, favor_pack)
+    FavorSchema.setupSolutions(app_config, favor_pack)
 
     base_pack = SolutionPack("CASE", checkSolutionUnits)
-    setupGenericPack(base_pack)
-    readySolutions_Case(base_pack)
+    setupGenericPack(app_config, base_pack)
+    setupSolutions_Case(app_config, base_pack)
 
 #===============================================
-def readySolutions_Case(base_pack):
+def setupSolutions_Case(app_config, base_pack):
     # BGM Filters, should belong to "Undiagnosed Patients Solution Pack"
     base_pack.regFilter("BGM_De_Novo", [
         condition_consequence_xBrowse(),
@@ -350,7 +355,9 @@ def readySolutions_Case(base_pack):
     base_pack.regTabSchema(demo_tab_schema)
 
 #===============================================
-def setupGenericPack(base_pack):
+def setupGenericPack(app_config, base_pack):
+    setupInstanceSolutions(app_config, base_pack)
+
     base_pack.regItemDict("Clinvar_Trusted_Submitters", {
         "Laboratory for Molecular Medicine, "
         + "Partners HealthCare Personalized Medicine": "LMM",
@@ -385,14 +392,6 @@ def setupGenericPack(base_pack):
         cfgPath("ssh.lst"))
     base_pack.regPanel("Wnt1_Interactors", "Symbol",
         cfgPath("wnt.lst"))
-    # base_pack.regPanel("TTP1", "Symbol",
-    #     cfgPath("ttp1.lst"))
-    # base_pack.regPanel("TTP2", "Symbol",
-    #     cfgPath("ttp2.lst"))
-    # base_pack.regPanel("TTP3", "Symbol",
-    #     cfgPath("ttp3.lst"))
-    # base_pack.regPanel("TTP4", "Symbol",
-    #     cfgPath("ttp4.lst"))
 
     base_pack.regPanel("Check-Tags", "_tags", items = [
         "Previously categorized",
@@ -461,7 +460,26 @@ def setupGenericPack(base_pack):
 
     base_pack.regTabSchema(xbr_tab_schema)
 
+#===============================================
+def setupInstanceSolutions(app_config, base_pack):
+    solutions_info = app_config.get("solutions")
+    if solutions_info is None:
+        return
+    panels_info = solutions_info.get("panels")
+    if panels_info is None:
+        return
+    for panel_type, panel_info in panels_info.items():
+        dir = panel_info["dir"]
+        if not os.path.exists(dir):
+            logging.error("Panel directory %s for type %s does not exists"
+                % (dir, panel_type))
+            continue
+        for file_name in glob(dir + "/*.lst"):
+            panel_name = file_name.rpartition('/')[2].rpartition('.')[0]
+            base_pack.regPanel(panel_name, panel_type, file_name)
 
+
+#===============================================
 def completeDsModes(ds_h):
     if ds_h.getDataSchema() == "CASE":
         family_info = ds_h.getFamilyInfo()

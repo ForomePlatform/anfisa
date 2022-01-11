@@ -9,6 +9,13 @@
     "run-modes": [],
     "job-vault-check-period": 30,
     "--http-bam-base": "http:<server>/anfisa/links",
+    "--solutions": {
+        "panels": {
+            "Symbol": {
+                "dir": "${WORK}/panels/Symbol"
+            }
+        }
+    },
     "export": {
          "--URL_to_load":
             "https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx",

@@ -26,7 +26,7 @@ from datetime import datetime
 from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
 from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import readySolutions
+from app.config.solutions import setupSolutions
 from app.config.variables import anfisaVariables
 from app.model.dir_entry import DirDSEntry
 from app.model.data_vault import DataVault
@@ -141,7 +141,7 @@ class DSScanInfo:
 #===============================================
 class UpdateApp:
     def __init__(self, config, vault_info, plain_receipt_mode = False):
-        readySolutions()
+        setupSolutions(config)
         self.mConfig = config
         self.mVaultDict = vault_info
         self.mVaultDir = os.path.abspath(self.mConfig["data-vault"])
