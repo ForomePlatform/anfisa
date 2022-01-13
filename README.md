@@ -95,22 +95,33 @@ and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 #### Installing without Docker
 
-1. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html) 
+1. Ensure that the following packages are installed on your system:
+    * zip 
+    * unzip 
+    * python3-dev 
+    * python3-pip 
+    * python3-venv
+   
+   For example, on Ubuntu, the following command can be used:
+   
+       sudo apt update && sudo apt install zip unzip python3-dev python3-pip python3-venv
+
+2. [Optionally] Create virtual environment (See https://docs.python.org/3/library/venv.html) 
 and activate it. We will be installing a lot of dependent packages, 
 make sure you have permission to do it. A sample command is:
 
-`python3 -m venv .anfisa && source .anfisa/bin/activate`
+       python3 -m venv .anfisa && source .anfisa/bin/activate
 
-2. Make sure you have MongoDB installed. If its endpoint 
+4. Make sure you have MongoDB installed. If its endpoint 
 is not localhost:27017, after the installation you will need to edit anfisa.json
 
-3. Make sure that sphinx is installed. On Ubuntu the instllation command is:
+5. Make sure that sphinx is installed. On Ubuntu the installation command is:
 
-`sudo apt-get install python3-sphinx`
+       sudo apt-get install python3-sphinx
 
 4. Run deploy script (will use pip to install requirements):
 
-`. deploy_local.sh`
+       . deploy_local.sh
 
 First, the script will ask for an installation directory. 
 By default it would install in the same directory 
@@ -148,11 +159,15 @@ Here are sample commands that can be executed:
 
 ## Public Demo 
 
-Also available is a demo of Anfisa based on a high 
+For a quick introduction, look at a demo of Anfisa based on a high 
 confidence small variants callset v 4.2 created by NIST 
 by integrating results of sequencing, alignment and 
 variant calling from different sources; including 
 both short and long read techniques.  
 
 
-The demo is available at: http://demo.forome.org
+The demo server with REST API and a stable built-in UI 
+is available at: https://api.demo.forome.org/
+
+A novel [React](https://reactjs.org/) Front End is under development
+and a beta version can be previewed at: https://app.demo.forome.org/ 
