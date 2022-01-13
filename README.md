@@ -101,6 +101,7 @@ and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
     * python3-dev 
     * python3-pip 
     * python3-venv
+    * [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
    
    For example, on Ubuntu, the following command can be used:
    
