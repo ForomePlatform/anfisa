@@ -23,7 +23,7 @@ from io import StringIO
 
 from app.config.view_schema import defineViewSchema
 from app.config.a_config import AnfisaConfig
-from app.config.solutions import readySolutions
+from app.config.solutions import setupSolutions
 from app.config.variables import anfisaVariables
 from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
@@ -54,7 +54,7 @@ class AnfisaApp:
 
     @classmethod
     def setup(cls, config, in_container):
-        readySolutions()
+        setupSolutions(config)
 
         cls.sConfig = config
         MirrorUiDirectory.setup(cls.sConfig.get("mirror-ui"))

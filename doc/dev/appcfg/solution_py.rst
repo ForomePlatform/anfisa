@@ -130,11 +130,15 @@ Instance of class SolutionPack provides the following methods for registering va
         base_pack.regPanel("ACMG59", "Symbol",
             cfgPath("acmg59.lst"))
 
-    In the current version of system the following types of panels are used:
+    In the current version of the system the following types of panels are used:
         
         * ``"Symbol"`` panel type is used define sets of gene identifiers
         
         * ``"_tags"`` panel type is used for panel ``"Check-Tags"`` to define set of checked :term:`tags<tagging>` (see :doc:`../rest/ws_tags` for details)
+
+.. _panels_in_instance_context:
+        
+    In the current version of the system additional gene/Symbol pannels can be added in context of instance of the application. Use :ref:`solutions<solutions>` option in :doc:`../adm/configuration` to open usage of directory from where the system loads additional panels. Panels are expexted to be represented as files in ``.lst`` format, and names of these files are interpreted as names of gene/Symbol panels. These panels work only in context of the instance of the application.
          
 * **regItemDict** (self, name, the_dict, requires = None)
 
@@ -207,3 +211,5 @@ See also
 :doc:`code_config`
 
 :doc:`../concepts/sol_pack`
+
+:doc:`../adm/configuration`

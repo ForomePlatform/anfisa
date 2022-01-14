@@ -29,7 +29,7 @@ from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
 from app.prepare.ds_create import (createDS,
     portionFavorDruidPush, pushDruidDataset)
-from app.config.solutions import readySolutions
+from app.config.solutions import setupSolutions
 from app.model.mongo_db import MongoConnector
 from app.model.dir_entry import DirDSEntry
 from app.model.ds_favor import FavorStorageAgent
@@ -58,7 +58,7 @@ def checkDSName(name, kind):
 #===============================================
 def createDataSet(app_config, ds_entry, force_drop, druid_adm,
         report_lines, no_druid_push = False):
-    readySolutions()
+    setupSolutions(app_config)
 
     if not ds_entry.getSource():
         print("Improper creation datset",  ds_entry.getName(),  ": no source")
@@ -104,6 +104,7 @@ def pushDruid(app_config, ds_entry, druid_adm):
     if ds_entry.getName() in druid_datasets:
         druid_adm.dropDataset(ds_entry.getName())
 
+    setupSolutions(app_config)
     ds_dir = os.path.abspath(vault_dir + "/" + ds_entry.getName())
     is_ok = pushDruidDataset(ds_dir, druid_adm, ds_entry.getName())
     if is_ok:
@@ -166,14 +167,13 @@ def pushDoc(app_config, ds_entry):
 
 #===============================================
 def prepareFavorStorage(app_config):
+    setupSolutions(app_config)
     portion_size, portion_fetch = app_config["favor-portions"]
     return FavorStorageAgent(app_config["favor-url"],
         portion_size, portion_fetch)
 
 #===============================================
 def initFavor(app_config, druid_adm, report_lines):
-    readySolutions()
-
     vault_dir = app_config["data-vault"]
     if not os.path.isdir(vault_dir):
         os.mkdir(vault_dir)
@@ -185,12 +185,14 @@ def initFavor(app_config, druid_adm, report_lines):
         assert False
     os.mkdir(ds_dir)
 
+    favor_storage = prepareFavorStorage(app_config)
+
     mongo_conn = MongoConnector(app_config["mongo-db"],
         app_config.get("mongo-host"), app_config.get("mongo-port"))
 
     createDS(ds_dir, mongo_conn, druid_adm,
         "xl_FAVOR", None, "xl", report_lines = report_lines,
-        favor_storage = prepareFavorStorage(app_config))
+        favor_storage = favor_storage)
     mongo_conn.close()
 
 #===============================================

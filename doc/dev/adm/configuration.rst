@@ -95,6 +95,23 @@ HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this o
     "http-bam-base": “http://<server>/anfisa/links/"`
 
 .. index:: 
+    solutions; service configuration option
+
+.. _solutions: 
+
+* **solutions**, *string*
+    
+Additional solutions configuration, only gene panels (based on Symbol) are supported in the current version. Uncomment this configuration block to set additional :ref:`panels in the instance of the application<panels_in_instance_context>`::
+
+    "--solutions": {
+        "panels": {
+            "Symbol": {
+                "dir": "${WORK}/panels/Symbol"
+            }
+        }
+    }
+
+.. index:: 
     export; service configuration option
 
 .. _export_cfg: 

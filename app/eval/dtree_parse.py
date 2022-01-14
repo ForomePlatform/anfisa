@@ -279,10 +279,14 @@ class ParsedDTree:
                 self.errorIt(it, "Logic operation not supported")
             for val in it.values:
                 rep_el = self._processCondition(val)
+                if len(rep_el) == 0:
+                    continue
                 if rep_el[0] == seq[0]:
                     seq += rep_el[1:]
                 else:
                     seq.append(rep_el)
+            if len(seq) == 0:
+                return []
             return seq
         if isinstance(it, ast.UnaryOp):
             if not isinstance(it.op, ast.Not):

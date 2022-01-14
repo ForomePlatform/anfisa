@@ -26,7 +26,7 @@ from .f_tune import tuneFavorAspects, tuneFavorUnits, completeFavorDS
 class FavorSchema:
 
     @classmethod
-    def readySolutions(cls, sol_pack):
+    def setupSolutions(cls, app_config, sol_pack):
         solutionsFavor(sol_pack)
 
     @classmethod
