@@ -243,8 +243,8 @@ def defineFilterSchema(metadata_record):
             default_value = "Other")
         filters.multiStatusUnit("Region_Worst", "/__data/region_worst[]",
             default_value = "Other")
-        filters.statusUnit("Region", "/__data/region_canonical",
-            default_value = "Other", )
+        filters.transcriptStatusUnit("Region", "region",
+                                     default_value = "undefined")
         filters.statusUnit("In_hg19", "/_view/general/hg19",
             conversion = [["filter", "is_none"]],
             value_map= {"None": "Unmapped"}, default_value = "Mapped")

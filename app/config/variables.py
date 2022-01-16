@@ -269,7 +269,7 @@ anfisaVariables.regVar("Region_Worst", "enum",
     title = "Region (Worst)")
 
 anfisaVariables.regVar("Region", "enum",
-    title = "Region (Legacy)")
+    title = "Region (All)")
 
 anfisaVariables.regVar("In_hg19", "enum")
 
