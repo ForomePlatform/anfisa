@@ -21,6 +21,7 @@
 from collections import defaultdict
 from copy import deepcopy
 
+from app.config.a_config import AnfisaConfig
 from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):
@@ -135,7 +136,10 @@ class TagsManager(ZoneH):
                 del tags_data[tag_name]
                 to_update_seq.append((rec_key, tags_data))
         simple_tag_data = {tag_name: "True"}
+        max_tag_name_length = AnfisaConfig.configOption("tag.name.max.length")
         for rec_key in new_tag_keys:
+            assert len(rec_key) <= max_tag_name_length, (
+                "Too long tag name (%d+): %s" % (max_tag_name_length, rec_key))
             to_update_seq.append((rec_key, simple_tag_data))
         for rec_key, tags_data in to_update_seq:
             self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),

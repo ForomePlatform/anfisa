@@ -42,6 +42,8 @@ class AnfisaConfig:
 
         "max.ws.size":  9000,
         "report.lines": 100,
+        "ds.name.max.length": 255,
+        "tag.name.max.length": 255,
 
         "xl.view.count.full": 300,
         "xl.view.count.samples.default": 25,

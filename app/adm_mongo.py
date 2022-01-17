@@ -195,11 +195,12 @@ elif run_args.mode == "restore":
             key_instr = {"_tp": it["_tp"]}
             if "name" in it:
                 key_instr["name"] = it["name"]
-            mongo_db[ds_name].update(key_instr, {"$set": it}, upsert = True)
+            mongo_db[ds_name].update_one(
+                key_instr, {"$set": it}, upsert = True)
     if rec_count > 0:
         if ds_name is not None:
             print("-> Added records:", rec_count, file = sys.stderr)
         else:
-            print("->Skipped records:", rec_count, file = sys.stderr)
+            print("-> Skipped records:", rec_count, file = sys.stderr)
 else:
     print("Oops: command not supported", file = sys.stderr)

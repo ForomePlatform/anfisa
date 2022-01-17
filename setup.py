@@ -36,7 +36,7 @@ setuptools.setup(
         'openpyxl',
         'pipreqs',
         'Pygments',
-        'pymongo==3.11.2',
+        'pymongo>=4.0.1',
         'wheel'
     ],
     classifiers = [

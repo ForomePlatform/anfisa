@@ -106,7 +106,7 @@ class _SolKindMongoHandler:
     def modifyData(self, option, name, value, upd_from):
         if option == "UPDATE":
             time_label = datetime.now().isoformat()
-            self.mMongoAgent.update({"_tp": self.mSolKind, "name": name},
+            self.mMongoAgent.update_one({"_tp": self.mSolKind, "name": name},
                 {"$set": {self.mSolKind: value, "_tp": self.mSolKind,
                     "time": time_label, "from": upd_from}},
                 upsert = True)
