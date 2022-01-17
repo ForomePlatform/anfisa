@@ -49,9 +49,9 @@ class AnfisaConfig:
         "xl.view.count.samples.default": 25,
         "xl.view.count.samples.min": 10,
         "xl.view.count.samples.max": 150,
-        "export.max.count": 9000,
 
-        "max.tab.rq.size": 50,
+        "export.max.count": 9000,
+        "max.tab.rq.size": 9000,  # 50,
 
         "filter.std.mark": u"\u23da",
         "code.error.mark": u"\u26a0",

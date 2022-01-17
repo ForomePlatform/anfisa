@@ -469,12 +469,12 @@ def setupInstanceSolutions(app_config, base_pack):
     if panels_info is None:
         return
     for panel_type, panel_info in panels_info.items():
-        dir = panel_info["dir"]
-        if not os.path.exists(dir):
+        dir_pass = panel_info["dir"]
+        if not os.path.exists(dir_pass):
             logging.error("Panel directory %s for type %s does not exists"
-                % (dir, panel_type))
+                % (dir_pass, panel_type))
             continue
-        for file_name in glob(dir + "/*.lst"):
+        for file_name in glob(dir_pass + "/*.lst"):
             panel_name = file_name.rpartition('/')[2].rpartition('.')[0]
             base_pack.regPanel(panel_name, panel_type, file_name)
 

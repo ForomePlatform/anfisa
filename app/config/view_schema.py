@@ -81,16 +81,20 @@ def defineViewSchema(metadata_record = None):
         AttrH("worst_annotation", title = "Worst Annotation",
             tooltip = "Most Severe Consequences from the transcript"
             + " with the worst annotation. The set of consequence terms is "
-            + " defined by the Sequence Ontology (SO) http://www.sequenceontology.org/."
-            + " See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html"
+            + " defined by the Sequence Ontology (SO)"
+            + " http://www.sequenceontology.org/."
+            + " See https://m.ensembl.org/info/"
+            + "genome/variation/prediction/predicted_data.html"
             + " for details"),
         AttrH("canonical_annotation", title = "Canonical Annotations",
             is_seq = True,
             tooltip = "Most Severe Consequences from canonical transcripts."
-                      + " The set of consequence terms is "
-                      + " defined by the Sequence Ontology (SO) http://www.sequenceontology.org/."
-                      + " See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html"
-                      + " for details"),
+            + " The set of consequence terms is "
+            + " defined by the Sequence Ontology (SO)"
+            + " http://www.sequenceontology.org/."
+            + " See https://m.ensembl.org/info/"
+            + "genome/variation/prediction/predicted_data.html"
+            + " for details"),
         AttrH("refseq_transcript_canonical",
             title = "RefSeq Transcript (Canonical)", is_seq = True),
         AttrH("refseq_transcript_worst",
