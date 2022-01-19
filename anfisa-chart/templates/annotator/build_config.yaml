@@ -1,0 +1,25 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+    name: {{ .Values.annotator.name }}
+spec:
+  runPolicy: Serial
+  source:
+    type: Git
+    git:
+      uri: {{ .Values.annotator.git_uri }}
+      ref: {{ .Values.annotator.git_branch }}
+  strategy:
+    type: Docker
+    dockerStrategy:
+      noCache: false
+      dockerfilePath: Dockerfile
+  triggers:
+    - type: GitHub
+      github:
+        secretReference:
+          name: githubsecret
+  output:
+    to:
+      kind: ImageStreamTag
+      name: "{{ .Values.annotator.name }}:latest"

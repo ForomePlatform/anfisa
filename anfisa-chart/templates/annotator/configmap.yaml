@@ -1,0 +1,180 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.annotator.name }}
+data:
+  astorage.cfg: |
+    {
+      "file-path-def": {
+        "LOAD": "/db/download",
+        "WORK": "/data/project/AStorage"
+      },
+
+      "stderr": "${WORK}/logs/err.log",
+      "db-dir": "${WORK}/rdbs",
+      "schema-dir": "${WORK}/schema",
+
+      "db-options": {
+        "create_if_missing": true,
+        "error_if_exists": false,
+        "max_open_files": 20000,
+        "write_buffer_size": 67108864,
+        "max_write_buffer_number": 3,
+        "target_file_size_base": 67108864,
+        "max_total_wal_size": 104857600
+      },
+      "samples-count": 1000,
+      "load-keep-schema-sec": 300,
+
+      "create": {
+        "Gerp": {
+            "file_list": "${LOAD}/Gerp/chr*.maf.rates"
+        },
+        "SpliceAI": {
+            "indel_file_list": "--/project/AStorage/prep/spliceAI/indel.spliceai.chr*.vcf.gz",
+            "snv_file_list": "--/project/AStorage/prep/spliceAI/snv.spliceai.chr*.vcf.gz"
+        },
+        "dbNSFP": {
+            "file_list": "${LOAD}/dbNSFP4/dbNSFP4.0a_variant.chr*.gz"
+        },
+        "dbSNP": {
+            "file_list": "${LOAD}/dbSNP/00-All.vcf.gz"
+        },
+        "gnomAD": {
+            //"genome_file_list": "${LOAD}/gnomad.2.1/gnomad.genomes.r2.1.1.sites.*.vcf.bgz",
+            //"exome_file_list": "${LOAD}/gnomad.2.1/gnomad.exomes.r2.1.1.sites.*.vcf.bgz"
+            "direct_file_list": "${WORK}/prep/gnomad/gnomad_dir_*.js.gz"
+        },
+        "gtf": {
+            "file_list": "${LOAD}/Homo_sapiens.GRCh38.99.chr.gtf.gz"
+         },
+         "fasta": {
+             "fasta_hg19": "${WORK}/prep/fasta/hg19.fasta.gz",
+             "fasta_hg38": "${WORK}/prep/fasta/hg38.fasta.gz"
+        }
+      },
+
+      "service": {
+        "arrays": {
+            "hg38": [
+                {"schema": "SpliceAI"},
+                {"schema": "dbNSFP"},
+                {"schema": "dbSNP"}
+            ],
+            "hg19": [
+                {"schema": "Gerp"},
+                {"schema": "gnomAD"}
+            ],
+            "gtf": [
+               {"schema": "gtf"}
+             ],
+             "fasta": [
+                 {"schema": "fasta"}
+             ]
+        },
+        "meta": {
+            "dbNSFP": {
+                "version": "4.0a",
+                "date": "2019-12-05"
+            },
+            "dbSNP": {
+                "version": "151",
+                "date": "2018-04-18"
+            },
+            "gnomAD": {
+                "version": "2.1.1",
+                "date": "2019-03-06"
+            },
+            "GERP": {
+                "version": "hg19.GERP_scores"
+            },
+            "SpliceAI": {
+                "version": "GRCh38",
+                "date": ""
+            },
+            "GTF": {
+                "version": "GRCh38.99",
+                "date": "2019-11-22"
+            },
+            "SpliceAI": {
+                "version": "1.3",
+                "date": "2019-10-12"
+            }
+        }
+      },
+
+      "host": "0.0.0.0",
+      "port": 3142,
+      "html-base": "/",
+      "dir-files": [],
+      "logging": {
+        "version": 1,
+        "disable_existing_loggers": false,
+        "formatters": {
+                "standard": {
+                "format": "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+            }
+        },
+        "handlers": {
+            "default": {
+                "level": "INFO",
+                "formatter": "standard",
+                "class": "logging.FileHandler",
+                "filename": "${WORK}/logs/astorage.log"
+            }
+        },
+        "loggers": {
+            "": {
+                "handlers": ["default"],
+                "level": "INFO",
+                "propagate": true
+            }
+        }
+      }
+    }
+  
+  config.json: |
+    {
+        "frontend": {
+            "apikey": "3dc904aa9c434e9cae4b28c2b5021101"
+        },
+        "database": {
+            "hg38": "/data/annotations/database/1.0.0/annotation-hg38",
+            "hg37": "/data/annotations/database/1.0.0/annotation-hg37",
+            "pastorage": "/project/AStorage/"
+        },
+        "source": {
+            "external": {
+                "url": "http://localhost:8290"
+            }
+        },
+
+        "connectors": {
+            "forome": {
+                "mysql": {
+                    "host": "mysql",
+                    "port": 3306,
+                    "database": "forome",
+                    "user": "user",
+                    "password": "user"
+                }
+            },
+            "astorage": {
+                "astorage": {
+                    "host": "localhost",
+                    "port": 8290
+                }
+            }
+        },
+        "ensembl-vep": {
+            "app": {
+                "exec": "/opt/vep/src/ensembl-vep/vep"
+            }
+        },
+        "notification": {
+            "slack": {
+                "webhook_url": "https://hooks.slack.com/services/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",
+                "channel": "Evgeniy Abrosin"
+            }
+        }
+    }

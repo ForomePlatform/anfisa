@@ -1,0 +1,56 @@
+# Default values
+
+# ------------------------------------------------------------------------------
+# S3PVC-CLAIM:
+#persistenceVolumeClaim for anfisa and druid-components
+# ------------------------------------------------------------------------------
+
+volumeclaim :
+  bucket: anfisa-druid
+  secret: cos-write-access
+  # claim: s3pvc ----> #hardcode in PVC
+  # access_mode: ReadWriteOnce ----> #hardcode in PVC
+  # size: "1000Gi" #hardcode
+  # storageclass: ibmc-s3fs-standard-regional ----> #hardcode in PVC
+
+# ------------------------------------------------------------------------------
+# Anfisa-ingress:
+# ------------------------------------------------------------------------------
+ingress:
+  name: anfisa-ingress
+  host: qa.asset-forome-dev-162fa491ef10b14d22843708d94ef0ba-0000.us-south.containers.appdomain.cloud
+  certificate: asset-forome-dev-162fa491ef10b14d22843708d94ef0ba-0000 
+  #oc get secrets -n openshift-ingress - view secrets with TLC-certificates
+
+# ------------------------------------------------------------------------------
+# Anfisa-back:
+# ------------------------------------------------------------------------------
+
+anfisa:
+  project: anfisa-qa
+  name: anfisa-back-qa
+  git_uri: https://github.com/ForomePlatform/anfisa-openshift.git
+  git_branch: master
+  output_registry: image-registry.openshift-image-registry.svc:5000
+  anfisa_volumes:
+    workdir_volume: anfisa-workdir
+    workdir_claim_name: anfisa-workdir-claim
+
+# ------------------------------------------------------------------------------
+# anfisa_front:
+# 
+anfisa_front:
+  name: anfisa-front
+  git_uri: https://github.com/evgeniyabrosin/Anfisa-React-Client.git
+  git_branch: main
+  
+# ------------------------------------------------------------------------------
+# Annotator:
+# ------------------------------------------------------------------------------
+
+annotator:
+  project: anfisa
+  name: anfisa-annotation
+  git_uri: https://github.com/evgeniyabrosin/Anfisa-Annotations.git
+  git_branch: docker-support
+  output_registry: image-registry.openshift-image-registry.svc:5000

@@ -1,0 +1,39 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: {{ .Values.annotator.name }}
+  labels:
+    app: {{ .Values.annotator.name }}
+    deploymentconfig: {{ .Values.annotator.name }}
+spec:
+  replicas: 1
+  selector:
+    app: {{ .Values.annotator.name }}
+    deploymentconfig: {{ .Values.annotator.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.annotator.name }}
+        deploymentconfig: {{ .Values.annotator.name }}
+    spec:
+      containers:
+        - name: {{ .Values.annotator.name }}
+          image: "{{ .Values.annotator.output_registry }}/{{ .Values.annotator.project }}/{{ .Values.annotator.name }}"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          tty: true
+          stdin: true
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - {{ .Values.annotator.name }}
+      from:
+        kind: ImageStreamTag
+        name: "{{ .Values.annotator.output_registry }}/{{ .Values.annotator.project }}/{{ .Values.annotator.name }}:latest"
+    type: ImageChange
+  strategy:
+    type: Recreate

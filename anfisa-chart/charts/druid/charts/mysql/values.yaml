@@ -1,0 +1,51 @@
+# Default values for mysql.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+hostNetwork: false
+revisionHistoryLimit: 5
+
+image:
+  repository: mysql
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "8.0.26"
+
+mysql:
+#  rootPassword: dG9vcg==
+#  Password: dG9vcg==
+  rootPassword: dXNlcg==
+  Password: dXNlcg==
+
+#storage:
+#  data:
+#    claimName: internal-media-pvc
+#    subPath: mysql
+
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 3306
+
+
+resources: {}
+#  requests:
+#    cpu: "1"
+#    memory: "2048Mi"
+
+
+environment:
+  first_env: MYSQL_ROOT_PASSWORD
+  secret_name: mysql-secret
+  secret_key1: mysql-root-password
+
+  second_env: MYSQL_USER
+  user: user
+
+  third_env: MYSQL_PASSWORD
+  secret_key2: mysql-password
+
+  fourth_env: MYSQL_DATABASE
+  database: forome
