@@ -318,14 +318,14 @@ def setupSolutions_Case(app_config, base_pack):
         requires = {"trio_base"})
     base_pack.regDTree("All Rare Variants",
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
-    base_pack.regDTree("Hearing Loss, v.4",
-        cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]), requires={"WS"})
+    # base_pack.regDTree("Hearing Loss, v.4",
+    #    cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",
-        cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]), requires={"WS"})
+        cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
     base_pack.regDTree("Hearing Loss Quick",
         cfgPathSeq(["quality.pyt", "hearing_loss_ws.pyt"]), requires={"WS"})
     base_pack.regDTree("ACMG59 Variants",
-        cfgPathSeq(["quality.pyt", "acmg59.pyt"]), requires={"WS"})
+        cfgPathSeq(["quality.pyt", "acmg59.pyt"]))
     base_pack.regDTree("Damaging_Predictions",
         cfgPathSeq(["damaging.pyt"]))
     base_pack.regDTree("Possibly_Damaging_Predictions",
