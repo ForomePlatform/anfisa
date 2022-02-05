@@ -256,9 +256,9 @@ def setupSolutions_Case(app_config, base_pack):
     #        [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
     #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
     #     requires = {"WS"})
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
-        requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
+    #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])],
         requires = {"WS"})
