@@ -121,12 +121,12 @@ var sUnitsH = {
         this.mUnitMap = {}
         var list_stat_rep = [];
         this.mUnitsDelay = [];
-        fillStatList(
-            this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay);
-        this.mDivList.className = "";
-        this.mDivList.innerHTML = list_stat_rep.join('\n');
-        sUnitClassesH.updateItems(this.mItems);
         
+        this.mDivList.className = "";
+        this.mDivList.innerHTML = sUnitClassesH.setupItems(
+            this.mItems, this.mTotalCounts, 
+            this.mUnitMap, this.mUnitsDelay);
+                
         var unit_name = this.mCurUnit;
         if (unit_name) {
             var unit_idx = null;
@@ -182,15 +182,16 @@ var sUnitsH = {
         if (cur_el)
             var prev_top = cur_el.getBoundingClientRect().top;
         var prev_unit = this.mCurUnit;
-        var prev_h =  (this.mCurUnit)? topUnitStat(this.mCurUnit):null;
+        var prev_h =  sUnitClassesH.topUnitStat(this.mCurUnit);
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
-            refillUnitStat(unit_stat);
+            unit_idx = this.mUnitMap[unit_name];
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             unit_name = unit_stat["name"];
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
-            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
+            this.mItems[unit_idx] = unit_stat;
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (cur_el) {
@@ -198,6 +199,7 @@ var sUnitsH = {
                 this.mDivList.scrollTop += cur_top - prev_top;
             }
         }
+        sUnitClassesH.update();
         this.checkDelayed();
     },
     

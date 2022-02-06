@@ -417,3 +417,9 @@ div#cur-cond-num-histogram {
     display: block;
 }
 
+span.entropy-info {
+    color: grey;
+    font-weight: bold;
+    font-size: 90%;
+    vertical-align: bottom;
+}

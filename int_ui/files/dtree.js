@@ -505,21 +505,15 @@ var sUnitsH = {
         }
         this.mUnitMap = {};
         this.mUnitsDelay = [];
-        var list_stat_rep = [];
-        fillStatList(
-            this.mItems, this.mUnitMap, list_stat_rep, this.mUnitsDelay, 
-            1, "sDecisionTree.showUnitCond");
-        this.mDivList.className = "";
         this.mCurUnit = null;        
         this.mCurFuncName = null;
-        
-        this.mDivList.innerHTML = list_stat_rep.join('\n');
-        sUnitClassesH.updateItems(this.mItems);
 
+        this.mDivList.className = "";
+        this.mDivList.innerHTML = sUnitClassesH.setupItems(
+            this.mItems, this.mTotalCounts, this.mUnitMap, 
+            this.mUnitsDelay, 1, "sDecisionTree.showUnitCond");
         
-        if (this.mCurUnit == null)
-            this.selectUnit(this.mItems[0]["name"]);
-        
+        this.selectUnit(this.mItems[0]["name"]);
         this.checkDelayed();
     },
 
@@ -566,15 +560,16 @@ var sUnitsH = {
         if (cur_el)
             var prev_top = cur_el.getBoundingClientRect().top;
         var prev_unit = this.mCurUnit;
-        var prev_h =  (this.mCurUnit)? topUnitStat(this.mCurUnit):null;
+        var prev_h =  sUnitClassesH.topUnitStat(this.mCurUnit);
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
-            refillUnitStat(unit_stat, 1);
             unit_name = unit_stat["name"];
+            unit_idx = this.mUnitMap[unit_name];
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
-            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
+            this.mItems[unit_idx] = unit_stat;
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (cur_el) {
@@ -583,6 +578,7 @@ var sUnitsH = {
             }
             sOpCondH.checkDelay(unit_name);
         }
+        sUnitClassesH.update();
         this.checkDelayed();
     },
     
@@ -1354,8 +1350,4 @@ function dropAtom(evt) {
     var atom_id = evt.target.id;
     idxs = atom_id.substring(7).split('-');
     sDecisionTree.atomDrop(parseInt(idxs[0]), parseInt(idxs[1]));
-}
-
-function renderEnum(unit_name, expand_mode) {
-    renderEnumUnitStat(sUnitsH.getUnitStat(unit_name), expand_mode);
 }

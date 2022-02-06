@@ -41,14 +41,8 @@ class VarUnit:
                 f"Sub-kind conflict: {self.mSubKind}/{sub_kind}"
                 f"for {self.mInternalName}")
 
-        var_kind, var_descr = (self.mEvalSpace.getDS().
-            getDataVault().getVariableInfo(self.mInternalName))
-
-        assert self.mUnitKind == var_kind, (
-            f"Variable kind conflict: {self.mUnitKind}/{var_kind} "
-            f"for {self.mInternalName}")
-
-        self.mInfo = deepcopy(var_descr)
+        self.mInfo = self.mEvalSpace.getDS().getDataVault().getVariableInfo(
+            self.mInternalName, self.mUnitKind, self.mSubKind)
         self.mName = self.mInfo["name"].replace(' ', '_')
         self.mInfo["vgroup"] = self.mVGroup
         self.mInfo["kind"] = self.mUnitKind

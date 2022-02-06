@@ -72,6 +72,11 @@ class DataSet(SolutionBroker):
             self.mPath + "/dsinfo.json")
         self.mCondVisitorTypes = []
 
+        if self.getBaseDSName():
+            self.addModes({"DERIVED"})
+        else:
+            self.addModes({"SECONDARY"})
+
         if self.getDataSchema() == "FAVOR" and self.mDSKind == "xl":
             self.mRecStorage = FavorStorage(
                 self.getApp().getOption("favor-url"))

@@ -21,6 +21,7 @@
 import sys, os, json, logging, traceback
 from glob import glob
 from io import StringIO
+from copy import deepcopy
 from threading import Lock
 from datetime import datetime
 from collections import defaultdict
@@ -208,8 +209,21 @@ class DataVault(SyncronizedObject):
                     self.mApp.getMongoConnector(), root_name)
             return self.mSolEnvDict[root_name]
 
-    def getVariableInfo(self, var_name):
-        return self.mVarRegistry.getVarInfo(var_name)
+    def getVariableInfo(self, var_name, unit_kind, sub_kind):
+        var_kind, var_descr = self.mVarRegistry.getVarInfo(var_name)
+        assert unit_kind == var_kind, (
+            f"Variable kind conflict: {unit_kind}/{var_kind} for {var_name}")
+        var_info = deepcopy(var_descr)
+        if unit_kind == "enum" and var_info.get("render-mode") is None:
+            if sub_kind in {"status", "transcript-status"}:
+                var_info["render-mode"] = "pie"
+            else:
+                assert sub_kind in {"multi",
+                    "transcript-multiset", "transcript-panels"}, (
+                    "Wrong subkind: " + sub_kind)
+                var_info["render-mode"] = "bar"
+        return var_info
+
 
     def getVarRegistry(self):
         return self.mVarRegistry

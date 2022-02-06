@@ -477,104 +477,8 @@ var sOpEnumH = {
 
 /*************************************/
 /*************************************/
-function fillStatList(items, unit_map, list_stat_rep, 
-        unit_names_to_load, expand_mode, click_func) {
-    var group_title = false;
-    var group_seq = []
-    for (idx = 0; idx < items.length; idx++) {
-        unit_stat = items[idx];
-        unit_name   = unit_stat["name"];
-        unit_map[unit_name] = idx;
-        if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
-            if (group_title != false) {
-                list_stat_rep.push('</div>');
-            }
-            group_title = unit_stat["vgroup"];
-            list_stat_rep.push('<div class="stat-group" id="stat-vgroup--' + 
-                    group_seq.length + '">');
-            group_seq.push(idx);
-            if (group_title != null) {
-                list_stat_rep.push('<div class="stat-group-title">' + 
-                    group_title);
-                if (unit_name == "Rules") {
-                    list_stat_rep.push(
-                        '<span id="flt-go-dtree" ' +
-                            'title="Configure decision trees as rules..." ' +
-                        'onclick="goToPage(\'DTREE\');"">&#x2699;</span>')
-                }
-                list_stat_rep.push('</div>');
-            }
-        }
-        func_decor = (unit_stat["kind"] == "func" || 
-            unit_stat["sub-kind"] == "func")? "(...)":"";
-        click_support = '';
-        if (click_func)
-            click_support = '<span class="unit-click" onclick="' +
-                click_func + '(\'' + unit_name + '\')">&#x25c0;</span>&nbsp;';
-        list_stat_rep.push('<div id="stat--' + 
-            unit_name + '" class="stat-unit" ');
-        if (unit_stat["tooltip"]) 
-            list_stat_rep.push('title="' + 
-                escapeText(unit_stat["tooltip"]) + '" ');
-
-        list_stat_rep.push(
-            'onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
-        list_stat_rep.push('<div class="wide"><span class="stat-unit-name">' +
-            click_support + unit_name + func_decor + '</span>');
-        if (unit_stat["title"]) 
-            list_stat_rep.push('<span class="stat-unit-title">' + 
-                unit_stat["title"] + '</span>');
-        list_stat_rep.push('</div>')
-        list_stat_rep.push('<div id="stat-data--' + 
-            unit_name + '" class="stat-unit-data">');
-        if (unit_stat["incomplete"]) {
-            unit_names_to_load.push(unit_name);
-            list_stat_rep.push('<div class="comment">Loading data...</div>');
-        } else {
-            switch (unit_stat["kind"]) {
-                case "numeric":
-                    fillStatRepNum(unit_stat, list_stat_rep);
-                    break;
-                case "enum":
-                    fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
-                    break;
-                case "func":
-                    break;
-            }
-        }
-        list_stat_rep.push('</div></div>')
-    }
-    if (group_title != false) {
-        list_stat_rep.push('</div>')
-    }
-    sUnitClassesH.setVGroups(group_seq);
-}
-
-function refillUnitStat(unit_stat, expand_mode) {
-    div_el = document.getElementById("stat-data--" + unit_stat["name"]);
-    list_stat_rep = [];
-    if (unit_stat["kind"] == "func") 
-        sOpFuncH.setup(unit_stat, list_stat_rep);
-    else {
-        if (unit_stat["kind"] == "numeric") 
-            fillStatRepNum(unit_stat, list_stat_rep);
-        else
-            fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
-    }
-    div_el.innerHTML = list_stat_rep.join('\n');
-    div_el.className = "";
-}
-
-function renderEnumUnitStat(unit_stat, expand_mode) {
-    list_stat_rep = [];
-    fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
-    div_el = document.getElementById("stat-data--" + unit_stat["name"]);
-    div_el.innerHTML = list_stat_rep.join('\n');
-}
-
-function topUnitStat(unit_name) {
-    return document.getElementById(
-        "stat--" + unit_name).getBoundingClientRect().top;
+function renderEnumStat(unit_name, expand_mode) {
+    sUnitClassesH.renderEnumStat(unit_name, expand_mode);
 }
 
 /*************************************/
@@ -617,7 +521,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count = (list_count > 6)? 3: list_count; 
         
     if (list_count > 6 && expand_mode) {
-        list_stat_rep.push('<div onclick="renderEnum(\'' + 
+        list_stat_rep.push('<div onclick="renderEnumStat(\'' + 
             unit_stat["name"] +  '\',' + (3 - expand_mode) + 
             ');" class="enum-exp">' + 
             ((expand_mode==1)?'+':'-') + '</div>');
@@ -826,9 +730,9 @@ function startWsCreate() {
     sCreateWsH.startIt();
 }
 
-/*************************************/
-/* Unit classes for show/hide        */
-/*************************************/
+/**********************************************/
+/* Visual control for units and visual groups */
+/**********************************************/
 var sUnitClassesH = {
     mUnitClasses: null,
     mUnitItems: null,
@@ -840,6 +744,8 @@ var sUnitClassesH = {
     mBtnReset: null,
     mBtnDone: null,
     mCurCriterium: null,
+    mCurTotalCounts: null,
+    mCurEntropyRep: null,
     
     init: function() {
         this.mDivTopBack = document.getElementById("unit-classes-back");
@@ -902,10 +808,6 @@ var sUnitClassesH = {
         return true;        
     },
     
-    setVGroups: function(group_seq) {
-        this.mVGroupsSeq = group_seq;
-    },
-    
     updateItems: function(unit_items, no_reset) {
         this.mUnitItems = unit_items;
         if (this.mUnitClasses == null) {
@@ -966,12 +868,16 @@ var sUnitClassesH = {
         }
         var cnt_shown = 0;
         var groups_shown = [];
-        for (idx=0; idx < this.mUnitItems.length; idx++) {
+        var group_e_val = -1;
+        for (idx = 0; idx < this.mUnitItems.length; idx++) {
             it = this.mUnitItems[idx];
             var in_w = this.itInWork(it["classes"]);
             if (groups_shown.length < this.mVGroupsSeq.length &&
                     idx == this.mVGroupsSeq[groups_shown.length]) {
+                if (groups_shown.length > 0)
+                    this.renderVGroupEntropy(groups_shown.length - 1, group_e_val);
                 groups_shown.push(false);
+                group_e_val = -1;
             }
             if (in_w) {
                 cnt_shown++;
@@ -979,7 +885,12 @@ var sUnitClassesH = {
             }
             document.getElementById("stat--" + it["name"]).style.display = 
                 (in_w)? "block": "none";
+            e_val = this.renderEntopyReport(idx);
+            if (in_w && e_val > group_e_val)
+                group_e_val = e_val;
         }
+        if (groups_shown.length > 0)
+            this.renderVGroupEntropy(groups_shown.length - 1, group_e_val);
         for(idx=0; idx < groups_shown.length; idx++) {
             grp_el = document.getElementById("stat-vgroup--" + idx);
             if (grp_el)
@@ -1027,7 +938,187 @@ var sUnitClassesH = {
         } else {
             this.hide();
         }
+    },
+    
+    topUnitStat: function(unit_name) {
+        if (!unit_name)
+            return null;
+        return document.getElementById(
+            "stat--" + unit_name).getBoundingClientRect().top;
+    },
+
+    setupItems: function(items, total_counts, unit_map,  
+            unit_names_to_load, expand_mode, click_func) {
+        var list_stat_rep = [];
+        var group_title = false;
+        this.mCurTotalCounts = total_counts;
+        this.mCurEntropyRep = [];
+        this.mVGroupsSeq = [];
+        for (idx = 0; idx < items.length; idx++) {
+            unit_stat = items[idx];
+            unit_name   = unit_stat["name"];
+            unit_map[unit_name] = idx;
+            if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
+                if (group_title != false) {
+                    list_stat_rep.push('</div>');
+                }
+                group_title = unit_stat["vgroup"];
+                list_stat_rep.push('<div class="stat-group" id="stat-vgroup--' + 
+                        this.mVGroupsSeq.length + '">');
+                list_stat_rep.push('<div class="stat-group-title">' + 
+                    ((group_title != null)? group_title:"") + 
+                    '<span class="entropy-info" id="vgroup-entropy--' + 
+                    this.mVGroupsSeq.length + '"></span>');
+                this.mVGroupsSeq.push(idx);
+                if (unit_name == "Rules") {
+                    list_stat_rep.push(
+                        '<span id="flt-go-dtree" ' +
+                            'title="Configure decision trees as rules..." ' +
+                        'onclick="goToPage(\'DTREE\');"">&#x2699;</span>')
+                }
+                list_stat_rep.push('</div>');
+            }
+            name_decor = (unit_stat["kind"] == "func" || 
+                unit_stat["sub-kind"] == "func")? "(...)":"";
+            click_support = '';
+            if (click_func)
+                click_support = '<span class="unit-click" onclick="' +
+                    click_func + '(\'' + unit_name + '\')">&#x25c0;</span>&nbsp;';
+            list_stat_rep.push('<div id="stat--' + 
+                unit_name + '" class="stat-unit" ');
+            if (unit_stat["tooltip"]) 
+                list_stat_rep.push('title="' + 
+                    escapeText(unit_stat["tooltip"]) + '" ');
+
+            list_stat_rep.push(
+                'onclick="sUnitsH.selectUnit(\'' + unit_name + '\');">');
+            list_stat_rep.push('<div class="wide">' +
+                '<span class="stat-unit-name">' +
+                click_support + unit_name + name_decor + '</span>' +
+                '<span class="entropy-info" id="unit-entropy--' + idx + '"></span>');
+            if (unit_stat["title"]) 
+                list_stat_rep.push('<span class="stat-unit-title">' + 
+                    unit_stat["title"] + '</span>');
+            list_stat_rep.push('</div>')
+            list_stat_rep.push('<div id="stat-data--' + 
+                unit_name + '" class="stat-unit-data">');
+            if (unit_stat["incomplete"]) {
+                unit_names_to_load.push(unit_name);
+                list_stat_rep.push('<div class="comment">Loading data...</div>');
+            } else {
+                switch (unit_stat["kind"]) {
+                    case "numeric":
+                        fillStatRepNum(unit_stat, list_stat_rep);
+                        break;
+                    case "enum":
+                        fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
+                        break;
+                    case "func":
+                        break;
+                }
+            }
+            this.mCurEntropyRep.push(this.unitEntropyReport(unit_stat));
+            list_stat_rep.push('</div></div>')
+        }
+        if (group_title != false) {
+            list_stat_rep.push('</div>')
+        }
+        this.updateItems(items);
+        return list_stat_rep.join('\n');
+    },
+    
+    renderEnumStat: function(unit_name, expand_mode) {
+        unit_stat = sUnitsH.getUnitStat(unit_name);
+        list_stat_rep = [];
+        fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
+        div_el = document.getElementById("stat-data--" + unit_stat["name"]);
+        div_el.innerHTML = list_stat_rep.join('\n');
+    },
+    
+    refillUnitStat: function(unit_stat, unit_idx, expand_mode) {
+        div_el = document.getElementById("stat-data--" + unit_stat["name"]);
+        list_stat_rep = [];
+        if (unit_stat["kind"] == "func") 
+            sOpFuncH.setup(unit_stat, list_stat_rep);
+        else {
+            if (unit_stat["kind"] == "numeric") 
+                fillStatRepNum(unit_stat, list_stat_rep);
+            else
+                fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
+        }
+        div_el.innerHTML = list_stat_rep.join('\n');
+        div_el.className = "";
+        e_rep = this.unitEntropyReport(unit_stat);
+        if (e_rep[0] >= 0)
+            this.mCurEntropyRep[unit_idx] = e_rep;
+    },
+    
+    renderEntopyReport: function(unit_idx) {
+        e_el = document.getElementById("unit-entropy--" + unit_idx);
+        e_rep = this.mCurEntropyRep[unit_idx];
+        e_el.innerHTML = '['+ e_rep[0].toFixed(3) + ']';
+        e_el.title = e_rep[1];
+        return e_rep[0];
+    },
+    
+    renderVGroupEntropy: function(group_idx, e_val) {
+        e_el = document.getElementById("vgroup-entropy--" + group_idx);
+        e_el.innerHTML = '['+ e_val.toFixed(3) + ']';
+    },
+    
+    unitEntropyReport: function(unit_stat) {
+        if (unit_stat == null || unit_stat["incomplete"])
+            return [-1, "loading"];
+        var total = this.mCurTotalCounts[(unit_stat["detailed"])?1:0];
+        var var_counts = [];
+        if (unit_stat["kind"] == "numeric") {
+            if (unit_stat["histogram"]) {
+                hist_seq = unit_stat["histogram"][3];
+                for (var j = 0; j < hist_seq.length; j++) {
+                    var_counts.push(hist_seq[j]);
+                    total -= hist_seq[j];
+                }
+                if (total > 0)
+                    var_counts.push(total);
+            }
+        } else if (unit_stat["kind"] == "enum") {
+            var c_idx = (unit_stat["detailed"]? 2:1);
+            for (var j = 0; j < unit_stat["variants"].length; j++) {
+                cnt = unit_stat["variants"][j][c_idx];
+                var_counts.push(cnt);
+                total -= cnt;
+            }
+            // No special work for multiset
+            if (total > 0)
+                var_counts.push(total);
+        }
+        
+        return entropyReport(var_counts);
     }
+    
 };
 
 /*************************************/
+
+/*************************************/
+function entropyReport(counts) {
+    var total = 0.;
+    for (j = 0; j < counts.length; j++) {
+        total += counts[j];
+    }
+    if (total < 3) 
+        return [-1, "E=0! T=" + total];
+    var sum_e = 0.;
+    var cnt = 0;
+    for (j = 0; j < counts.length; j++) {
+        if (counts[j] == 0)
+            continue;
+        cnt++;
+        quote = counts[j] / total;
+        sum_e -= quote * Math.log2(quote);
+    }
+    l_tot = Math.log2(total);
+    norm_e = sum_e / l_tot;
+    return [norm_e, "E=" + norm_e.toFixed(3) + " S=" + l_tot.toFixed(3) + 
+        " T=" + total + " N=" + cnt];
+}

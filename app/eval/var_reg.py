@@ -118,7 +118,7 @@ class VarRegistry:
         if title:
             descr["title"] = title
         if render_mode:
-            descr["render_mode"] = render_mode
+            descr["render-mode"] = render_mode
         if tooltip:
             descr["tooltip"] = tooltip
         self.mVariables[var_name] = [var_type, descr]
