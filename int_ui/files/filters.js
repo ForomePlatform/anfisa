@@ -123,9 +123,9 @@ var sUnitsH = {
         this.mUnitsDelay = [];
         
         this.mDivList.className = "";
-        this.mDivList.innerHTML = sUnitClassesH.setupItems(
+        sUnitClassesH.setupItems(
             this.mItems, this.mTotalCounts, 
-            this.mUnitMap, this.mUnitsDelay);
+            this.mUnitMap, this.mUnitsDelay, this.mDivList);
                 
         var unit_name = this.mCurUnit;
         if (unit_name) {

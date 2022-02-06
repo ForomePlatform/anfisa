@@ -509,9 +509,10 @@ var sUnitsH = {
         this.mCurFuncName = null;
 
         this.mDivList.className = "";
-        this.mDivList.innerHTML = sUnitClassesH.setupItems(
+        sUnitClassesH.setupItems(
             this.mItems, this.mTotalCounts, this.mUnitMap, 
-            this.mUnitsDelay, 1, "sDecisionTree.showUnitCond");
+            this.mUnitsDelay, this.mDivList,
+            1, "sDecisionTree.showUnitCond");
         
         this.selectUnit(this.mItems[0]["name"]);
         this.checkDelayed();

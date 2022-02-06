@@ -948,7 +948,7 @@ var sUnitClassesH = {
     },
 
     setupItems: function(items, total_counts, unit_map,  
-            unit_names_to_load, expand_mode, click_func) {
+            unit_names_to_load, div_el, expand_mode, click_func) {
         var list_stat_rep = [];
         var group_title = false;
         this.mCurTotalCounts = total_counts;
@@ -1023,8 +1023,8 @@ var sUnitClassesH = {
         if (group_title != false) {
             list_stat_rep.push('</div>')
         }
+        div_el.innerHTML = list_stat_rep.join('\n');
         this.updateItems(items);
-        return list_stat_rep.join('\n');
     },
     
     renderEnumStat: function(unit_name, expand_mode) {
