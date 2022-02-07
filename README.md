@@ -106,8 +106,11 @@ and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
    For example, on Ubuntu, the following command can be used:
    
        sudo apt update && sudo apt install zip unzip python3-dev python3-pip python3-venv
+    
+   > You might need to restart your shell or source .bashrc (or similar) file after the 
+   > installation
 
-2. [Optionally] Create [virtual environment](https://docs.python.org/3/library/venv.html) 
+3. [Optionally] Create [virtual environment](https://docs.python.org/3/library/venv.html) 
 and activate it. We will be installing a lot of dependent packages, 
 make sure you have permission to do it. A sample command is:
 
@@ -120,7 +123,7 @@ is not localhost:27017, after the installation you will need to edit anfisa.json
 
        sudo apt-get install python3-sphinx
 
-4. Run deploy script (will use pip to install requirements):
+6. Run deploy script (will use pip to install requirements):
 
        . deploy_local.sh
 
