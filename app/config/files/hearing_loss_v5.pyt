@@ -21,8 +21,8 @@ if Region_Worst in {"masked_repeats"}:
      return False
 
 # For compatibility with Legacy workspaces
-if (Region not in {"exon"}) and Dist_from_Exon > 5:
-    return False
+# if (Region not in {"exon"}) and Dist_from_Exon > 5:
+#    return False
 
 #2.a.	Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')

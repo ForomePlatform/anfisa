@@ -256,9 +256,9 @@ def setupSolutions_Case(app_config, base_pack):
     #        [stdNm("SEQaBOO_Hearing_Loss_v_03")]),
     #     ConditionMaker.condEnum("Panels", ["All_Hearing_Loss"])],
     #     requires = {"WS"})
-    base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
-        ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
-        requires = {"WS"})
+    # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_4", [
+    #     ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.4")])],
+    #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])],
         requires = {"WS"})
@@ -318,8 +318,8 @@ def setupSolutions_Case(app_config, base_pack):
         requires = {"trio_base"})
     base_pack.regDTree("All Rare Variants",
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
-    base_pack.regDTree("Hearing Loss, v.4",
-        cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
+    # base_pack.regDTree("Hearing Loss, v.4",
+    #    cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",
         cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]))
     base_pack.regDTree("Hearing Loss Quick",
@@ -469,12 +469,12 @@ def setupInstanceSolutions(app_config, base_pack):
     if panels_info is None:
         return
     for panel_type, panel_info in panels_info.items():
-        dir = panel_info["dir"]
-        if not os.path.exists(dir):
+        dir_pass = panel_info["dir"]
+        if not os.path.exists(dir_pass):
             logging.error("Panel directory %s for type %s does not exists"
-                % (dir, panel_type))
+                % (dir_pass, panel_type))
             continue
-        for file_name in glob(dir + "/*.lst"):
+        for file_name in glob(dir_pass + "/*.lst"):
             panel_name = file_name.rpartition('/')[2].rpartition('.')[0]
             base_pack.regPanel(panel_name, panel_type, file_name)
 

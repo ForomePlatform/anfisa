@@ -37,7 +37,7 @@ class SolutionItem:
         self.mRequires = requires
         self.mData = data
         use_name = ext_name if ext_name else self.mName
-        assert use_name not in used_names, "Name duplication" + use_name
+        assert use_name not in used_names, "Name duplication " + use_name
         used_names.add(use_name)
 
     def testIt(self, kind, test_f):

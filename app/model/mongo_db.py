@@ -79,7 +79,7 @@ class MongoDSAgent:
                 int(ajson_stat.st_size), int(ajson_stat.st_mtime)]
         else:
             to_update["ajson-fstat"] = None
-        self.mAgent.update({"_tp": "dsinfo"}, {"$set": to_update},
+        self.mAgent.update_one({"_tp": "dsinfo"}, {"$set": to_update},
             upsert = True)
 
     #===== Note
@@ -92,6 +92,6 @@ class MongoDSAgent:
 
     def setNote(self, note):
         time_label = datetime.now().isoformat()
-        self.mAgent.update({"_tp": "dsinfo"},
+        self.mAgent.update_one({"_tp": "dsinfo"},
             {"$set": {"note": note.strip(), "note-time": time_label}},
             upsert = True)

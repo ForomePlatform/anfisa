@@ -25,9 +25,11 @@ if (ClinVar_Significance in {
             Clinvar_Trusted_Simplified not in {"benign"})):
     return True
 
-#Exclude variants farther then 5pb from intronic/exonic border
-if (Region not in {"exon"}) and Dist_from_Exon >= 26:
+#Exclude variants farther then 25pb from intronic/exonic border
+if (Region_Worst not in {"exon"}) and Dist_from_Exon_Worst > 25:
     return False
+if Region_Worst in {"masked_repeats"}:
+     return False
 
 if (Clinvar_Benign in {"False"} and
         (Clinvar_Trusted_Simplified in {"uncertain", "pathogenic"} or

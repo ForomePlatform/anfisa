@@ -49,6 +49,8 @@ class SecondaryWsCreation(ExecutionTask):
 
     @classmethod
     def correctWSName(cls, name):
+        if len(name) > AnfisaConfig.configOption("ds.name.max.length"):
+            return False
         if not cls.sID_Pattern.match(name):
             return False
         return name[0].isalpha and not name.lower().startswith("xl_")
