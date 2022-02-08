@@ -57,8 +57,8 @@ sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/setup/anfisa.json.template \
   |  sed "s/3041/8190/" > anfisa_$hostname.json
 
 pip3 install wheel # apparently we need this before other requirements
-pip3 install -r ${repo}/requirements.txt
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
+pip3 install -r ${repo}/requirements.txt
 
 echo "Loading Sample Dataset"
 echo "PYTHONPATH=$repo python3 -u -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -i data/pgp3140_wgs_hlpanel.cfg PGP3140"
