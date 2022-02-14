@@ -66,7 +66,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         if condition is not None:
             cond_repr = condition.getDruidRepr()
             if cond_repr is False:
-                return [None, None, 0]
+                return None
             if cond_repr is not None:
                 query["filter"] = cond_repr
         return query
@@ -108,9 +108,12 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
     def makeStat(self, condition, eval_h):
         druid_agent = self.getEvalSpace().getDruidAgent()
         query = self._makeQuery(druid_agent, condition)
-        rq = druid_agent.call("query", query)
-        v_min, v_max, count = [rq[0]["result"][nm] for nm in
-            ("__min", "__max", "__count")]
+        if query is not None:
+            rq = druid_agent.call("query", query)
+            v_min, v_max, count = [rq[0]["result"][nm] for nm in
+                ("__min", "__max", "__count")]
+        else:
+            v_min, v_max, count = None, None, 0
         h_info = self._prepareHistogram(
             druid_agent, query, v_min, v_max, count)
         ret_handle = self.prepareStat()
