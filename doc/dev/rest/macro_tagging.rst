@@ -48,6 +48,8 @@ If option **off** is ``true``, the operation clears **tag** from all records of 
 
 If option **of** is not set to ``true``, the operation marks all filtered records in current dataset with **tag** and text value of tag as "True", and also clears **tag** from all other records of root dataset.
 
+Property **tags-state** is the same as in request :doc:ws_tags, see discussion :ref:`here<tags_state>`.
+
 For details of arguments **fiter**, **conditions**, **zone** see :doc:`ws_list`
 
 See also
