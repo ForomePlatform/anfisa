@@ -24,7 +24,7 @@ Synopsis
         | ``{`` *dictionary*
         |       "**tag-list**": all tags available, ``[`` *list of string* ``]``
         |       "**tag**": value of **tag** argument , *optional string*
-        |       "**tags-state**": indicator of tags update state
+        |       "**tags-state**": indicator of tags update :ref:`state<tags_state>`
         |       "**tag-rec-list**": *optional* affected variants, ``[`` *list of int* ``]``
         |       "**tags-rec-list**": all tagged variants, ``[`` *list of int* ``]``
         | ``}``

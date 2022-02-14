@@ -37,7 +37,7 @@ Synopsis
     |                        *string, time in ISO format*
     |       "**upd-from**: *optional* dataset name of last tags update, 
     |                        *string*
-    |       "**tags-state**": indicator of tags update state
+    |       "**tags-state**": indicator of tags update :ref:`state<tags_state>`
     | ``}``
 
 Description

@@ -29,7 +29,7 @@ Synopsis
     **Return value**: 
     
     | ``{`` *dictionary*
-    |       "**task_id**":  task ID, *int* 
+    |       "**task_id**":  task ID, *string* 
     | ``}``
 
     **Return value for task**:    
