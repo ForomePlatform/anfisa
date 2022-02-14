@@ -185,9 +185,9 @@ var sUnitsH = {
         var prev_h =  sUnitClassesH.topUnitStat(this.mCurUnit);
         for (var idx = 0; idx < info["units"].length; idx++) {
             unit_stat = info["units"][idx];
+            unit_name = unit_stat["name"];
             unit_idx = this.mUnitMap[unit_name];
             sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
-            unit_name = unit_stat["name"];
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
