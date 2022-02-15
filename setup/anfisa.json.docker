@@ -1,7 +1,7 @@
 {
     "file-path-def": {"WORK": "/anfisa/a-setup"},
     "host": "0.0.0.0",
-    "port": 3041,
+    "port": 8190,
     "html-base": "/anfisa/app",
     "html-title": "Anfisa v6 in Docker",
     "data-vault": "${WORK}/vault",
@@ -60,7 +60,7 @@
             "host": "---",
             "exe": "/usr/bin/scp"}
     },
-     
+
     "mongo-host": "anfisa6-mongo",
     "mongo-port": 27017,
     "mongo-db": "Anfisa1",
