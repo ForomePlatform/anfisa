@@ -37,6 +37,7 @@ setuptools.setup(
         'pipreqs',
         'Pygments',
         'pymongo>=4.0.1',
+        'uWSGI==2.0.17.1',
         'wheel'
     ],
     classifiers = [
