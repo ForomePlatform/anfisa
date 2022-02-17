@@ -185,8 +185,8 @@ class FilterPrepareSetH(SolutionBroker):
         self._checkVar(name, "enum")
         if transcript_id_mode:
             assert self.mTranscriptIdName is None, (
-                "Transcript ID unit set twice: " + self.mTranscriptIdName +
-                " | " + name)
+                "Transcript ID unit set twice: " + self.mTranscriptIdName
+                + " | " + name)
             self.mTranscriptIdName = name
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
             name, len(self.mUnits), self.mCurVGroup,

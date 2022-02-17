@@ -46,8 +46,8 @@ class WS_EvalSpace(EvalSpace):
 
     def _setupTrIdUnit(self, unit_name):
         self.mTrIdUnit = self.getUnit(unit_name)
-        tr_idx_set = set(self.mapTranscriptID(idx)
-            for idx in range(self.mTotalCounts[1]))
+        tr_idx_set = {self.mapTranscriptID(idx)
+            for idx in range(self.mTotalCounts[1])}
         self.mTotalCounts[2] = len(tr_idx_set)
 
     def getCondKind(self):

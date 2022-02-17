@@ -132,7 +132,7 @@ class _DocH:
     def getSrcPathSeq(self, item_names = None):
         src_path = self.getDocEnv().getSourcePath(self.get("source"))
         if '*' in src_path:
-            ret = sorted(list(glob(src_path)))
+            ret = sorted(glob(src_path))
             print("Pattern:", src_path, "Found:", len(ret), file = sys.stderr)
             if item_names is not None:
                 prefix = src_path.partition('*')[0]
