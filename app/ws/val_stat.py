@@ -64,7 +64,7 @@ class NumHistogramBuilder:
     def __init__(self, v_min, v_max, count, unit_h,
             too_low_power = -15, num_bins = 10):
         self.mIntMode = (unit_h.getSubKind() == "int")
-        self.mLogMode = "log" in unit_h.getInfo().get("render_mode", "")
+        self.mLogMode = "log" in unit_h.getInfo().get("render-mode", "")
 
         self.mInfo = None
         self.mIntervals = None

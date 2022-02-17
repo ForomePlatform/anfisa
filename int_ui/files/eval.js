@@ -205,10 +205,11 @@ var sOpNumH = {
             }
             h_content.push('<span class="hist-diap">' + val + '</span>'); 
             var factor = 30. / Math.max(...h_info[3]);
+            var cell_class = (h_info[0] == "LOG")? "hist-cell-log": "hist-cell";
             for (var j = 0; j < h_info[3].length; j++) {
                 hh = h_info[3][j] * factor;
                 h_content.push(
-                    '<span class="hist-cell" style="height:' + 
+                    '<span class="' + cell_class + '" style="height:' + 
                         hh + 'px;"> </span>');
             }
             if(h_info[0] == "LOG") {

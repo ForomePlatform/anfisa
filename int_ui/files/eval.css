@@ -400,13 +400,20 @@ span.hist-diap {
     display: inline-block;
 }
 
-span.hist-cell {
-    background-color: #8F2F0F;
+span.hist-cell, span.hist-cell-log {
     width: 15px;
     padding: 1px;
     margin: 0px;
     border: 0px;
     display: inline-block;
+}
+
+span.hist-cell {
+    background-color: #8080BF;
+}
+
+span.hist-cell-log {
+    background-color: #80BF80;
 }
 
 div#cur-cond-num-histogram {
