@@ -107,8 +107,9 @@ class ParsedDTree:
         for parsed_d, err_info, line_diap in parseCodeByPortions(
                 code_lines, self.mDummyLinesReg):
             fragments = []
+            if parsed_d is None or len(parsed_d.body) != 1:
+                err_info = ("Improper instruction", line_diap[0], 0)
             if err_info is None:
-                assert len(parsed_d.body) == 1
                 self.mError = None
                 self.mCurLineDiap = line_diap
                 try:

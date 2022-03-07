@@ -65,6 +65,8 @@ def _formPanel(output, workspace_name, ws_pub_url):
                         >Derive dataset...</a>
                     <a class="popup" onclick="tabReport();"
                         >Tab report</a>
+                    <a class="popup" onclick="showArchivation();"
+                        >Archivation...</a>
                     <a class="popup" onclick="macroTagging();"
                         >Macro tagging operation</a>
                 </div>

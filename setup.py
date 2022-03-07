@@ -31,7 +31,7 @@ setuptools.setup(
         'cachetools',
         'enum34',
         'export',
-        'forome_tools>=0.1.7',
+        'forome_tools>=0.1.8',
         'jsonpath_rw',
         'openpyxl',
         'pipreqs',

@@ -695,7 +695,7 @@ var sOpCondH = {
         document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
             ((unit_stat["kind"] == "func")? "()" : "");
         mode = "num";
-        if (unit_stat == undefined || unit_stat["incomplete"]) {
+        if (unit_stat === undefined || unit_stat["incomplete"]) {
             this.mCurTpHandler = null;
         } else {
             if (unit_stat["kind"] == "numeric") 

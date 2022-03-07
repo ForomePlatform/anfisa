@@ -571,3 +571,37 @@ function checkTabNavigation(tag_name) {
     sTagSupportH.checkNavigation(tag_name);
 }
 
+/*************************************/
+function showArchivation() {
+    relaxView();
+    res_content = 'Archivate dataset?<br>' +
+        '<input id="ws-archive-support" type="checkbox" checked/>with support' +
+        '&emsp;' +
+        '<input id="ws-archive-doc" type="checkbox" checked/>with documentation' +
+        '<br><button class="popup" onclick="doArchivation();">Prepare</button>';
+    res_el = document.getElementById("export-result");
+    res_el.innerHTML = res_content;
+    sViewH.popupOn(res_el);
+}
+
+function doArchivation() {
+    sViewH.popupOff();
+    var args = "ds=" + sDSName+ "&support=" + 
+        ((document.getElementById("ws-archive-support").checked)? "yes":"no") +
+        "&doc=" + 
+        ((document.getElementById("ws-archive-doc").checked)? "yes":"no");
+    ajaxCall("export_ws", args, setupArchivation);
+}
+
+function setupArchivation(info) {
+    res_el = document.getElementById("export-result");
+    if (info["fname"]) {
+        res_el.className = "popup";
+        res_el.innerHTML = '<a href="' + info["url"] + 
+            '" target="blank" ' + 'download>Download archive</a>';
+    } else {
+        res_el.className = "popup problems";
+        res_el.innerHTML = 'Bad configuration';
+    }
+    sViewH.popupOn(res_el);
+}

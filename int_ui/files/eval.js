@@ -399,7 +399,7 @@ var sOpEnumH = {
             show_zeros = true;
             check_enum_z.checked = show_zeros;
         } else {
-            if (opt == undefined) {
+            if (opt === undefined) {
                 show_zeros = check_enum_z.checked;
             } else {
                 show_zeros = opt;
@@ -426,7 +426,7 @@ var sOpEnumH = {
             return;
         this.careControls();
         var err_msg = null;
-        if (opt != undefined && this.mOperationMode != null) {
+        if (opt !== undefined && this.mOperationMode != null) {
             if (this.mOperationMode == opt)
                 this.mOperationMode = 0;
             else
@@ -714,10 +714,6 @@ var sCreateWsH = {
             if (info[0] == null) {
                 this.mDivModStatus.innerHTML = info[1];
             } else {
-                target_ref = (sWsPubURL != "ws")? '': (' target="' + 
-                    sCommonTitle + ':' + info[0]["ws"] + '"'); 
-                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsPubURL + 
-                    '?ds=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
             }
         }
     }

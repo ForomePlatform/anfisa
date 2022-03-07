@@ -86,14 +86,14 @@ The location of the vault directory::
         "job-vault-check-period": 30,
         
 .. index:: 
-    http-bam-base; service configuration option
+    igv-dir; service configuration option
     
-* **http-bam-base**, *string*
+* **igv-dir**, *string*
     
-HTTP base directory for access to BAM-files, used in IGV-links. Uncomment this option and set it up correctly if the server provides access to BAM-files, otherwise keep it commented::
+Location of file with configuration of access to BAM-files, used in IGV-links. See discussion here: :ref:`IGV direct support<IGV_direct_support>`. ::
     
-    "http-bam-base": “http://<server>/anfisa/links/"`
-
+    "igv-dir": "${HOME}/igv.dir",
+        
 .. index:: 
     solutions; service configuration option
 

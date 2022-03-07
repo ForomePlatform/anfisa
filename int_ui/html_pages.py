@@ -25,17 +25,28 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
     startHtmlPage(output, common_title + " home", html_base,
         css_files = ["dir.css", "base.css"], js_files = ["dir.js", "base.js"])
 
-    doc_sets_repr = []
+    doc_repr_seq = []
+    target = common_title + "-DOC"
     for doc_set in doc_sets:
         doc_url = doc_set.getUrl()
         doc_title = escape(doc_set.getTitle())
-        doc_sets_repr.append(f'<li><a href="{doc_url}" '
-            f'target="{common_title}-DOC">{doc_title}</a>')
+        doc_repr_seq.append(
+            f'<li><a href="{doc_url}" target="{target}">{doc_title}</a>')
+    doc_sets_repr = "\n".join(doc_repr_seq)
 
-    print(f'<body onload="setup(\'{common_title}\', \'{ws_pub_url}\');">',
-        file = output)
-    print('''
-        <h2>%(common_title)s home directory</h2>
+    print(f'''
+        <body onload='setup("{common_title}", "{ws_pub_url}");'>
+        <div id="top-dir">
+            <div class="dropdown">
+                <span id="control-open">&#8285;</span>
+                <div id="control-menu" class="dropdown-content">
+                    <a class="popup" onclick="showUploadArchive();"
+                        >Upload archive</a>
+                </div>
+                <div id="upload-works" class="popup"></div>
+            </div> &emsp;
+            {common_title} home directory
+        </div>
         <div id="dir-main">
            <div id="dir-list"></div>
            <div id="dir-info">
@@ -47,13 +58,11 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
         </div>
         <div id="dir-docs">
           <ul>
-            %(doc_sets_repr)s
+            {doc_sets_repr}
           </ul>
         </div>
       </body>
-    </html>''' % {
-        "common_title": common_title,
-        "doc_sets_repr": doc_sets_repr}, file = output)
+    </html>''', file = output)
 
 #===============================================
 def subdirPage(output, common_title, html_base, ws_url, ds_h):
@@ -61,10 +70,10 @@ def subdirPage(output, common_title, html_base, ws_url, ds_h):
         common_title + " " + ds_h.getName() + " subdirectory", html_base,
         css_files = ["dir.css"], js_files = ["dir.js", "base.js"])
 
-    print(f'<body onload="setupSubDir(\'{common_title}\', \'{ws_url}\', '
-        f'\'{ds_h.getName()}\');">', file = output)
-    print(f'<h2>Dataset {ds_h.getName()} directory</h2>', file = output)
-    print('''
+    ds_name = ds_h.getName()
+    print(f'''
+        <body onload='setupSubDir("{common_title}", "{ws_url}", "{ds_name}");">
+            <h2>Dataset {ds_name} directory</h2>
             <div id="dir-main">
                <div id="dir-list"></div>
                <div id="dir-info">
@@ -81,25 +90,25 @@ def subdirPage(output, common_title, html_base, ws_url, ds_h):
 def notFound(output, common_title, html_base):
     startHtmlPage(output, common_title + ": Page not found",
         html_base, css_files = ["base.css"])
-    print('''
-  <body>
-    <h2>Page not found</h2>
-    <p><a href="dir" target="%s">Anfisa home</a></p>
-  </body>
-</html>''' % (common_title + "/dir"), file = output)
+    home_ref = common_title + "/dir"
+    print(f'''<body>
+        <h2>Page not found</h2>
+        <p><a href="dir" target="{home_ref}">Anfisa home</a></p>
+        </body>
+        </html>''', file = output)
 
 #===============================================
 def noRecords(output):
     startHtmlPage(output, css_files = ["base.css"])
     print('''
-  <body>
-    <h3>No variants available</h3>
-    <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
+        <body>
+            <h3>No variants available</h3>
+            <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
             >zone</button>
-        or
-        <button onclick='parent.window.updateCurFilter("");'
+            or
+            <button onclick='parent.window.updateCurFilter("");'
             >filter</button>.</p>
-  </body>
-</html>''', file = output)
+        </body>
+        </html>''', file = output)
 
 #===============================================

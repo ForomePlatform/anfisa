@@ -68,10 +68,7 @@ def tuneAspects(ds_h, aspects):
     ds_h.regNamedAttr("GeneColored", GeneColored_AttrH())
     ds_h.regNamedAttr("ColorCode", ColorCode_AttrH())
 
-    meta_info = ds_h.getDataInfo()["meta"]
-    attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h.getApp(), view_gen,
-        meta_info.get("case"), meta_info.get("samples"),
-        meta_info["versions"].get("reference")))
+    attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h, view_gen))
     ds_h.regNamedAttr("IGV", attr_igv)
 
     view_gen[view_gen.find("transcripts")].setReprFunc(
@@ -387,29 +384,46 @@ class HGMD_PMID_AttrH(_PMID_AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, app, view_gen, case, samples, reference):
-        bam_base = app.getOption("http-bam-base")
-        AttrH.__init__(self, "IGV",
-            kind = "hidden" if bam_base is None else None)
-        self.mBase = "hg38" if reference and "38" in reference else "hg19"
+    def __init__(self, ds_h, view_gen):
+        AttrH.__init__(self, "IGV")
+        self.mDataVault = ds_h.getDataVault()
+        self.mDsRootName = ds_h.getRootDSName()
         self.setAspect(view_gen)
-        if bam_base is None:
-            self.mPreUrl = None
-            return
+
+        meta_info = ds_h.getDataInfo()["meta"]
+        self.mCase = meta_info.get("case")
 
         # we are not sure what is the key to samples, so have to repackage
-        samples = {info["id"]: info["name"] for info in samples.values()}
-        samples_ids = sorted(samples.keys())
-        samples_names = ",".join([samples[id] for id in samples_ids])
+        samples_data = meta_info.get("samples")
+        samples = {info["id"]: info["name"] for info in samples_data.values()}
+        self.mSamplesIds = sorted(samples.keys())
+        self.mSamplesNames = ",".join([samples[id] for id in self.mSamplesIds])
 
+        reference = meta_info["versions"].get("reference")
+        self.mBase = "hg38" if reference and "38" in reference else "hg19"
+        self.mIGV_Url = False
+        self.mPreUrl = None
+        self._checkPreUrl()
+
+    def _checkPreUrl(self):
+        igv_url = self.mDataVault.getIGVUrl(self.mDsRootName)
+        if igv_url == self.mIGV_Url:
+            return self.mPreUrl is not None
+        self.mIGV_Url = igv_url
+        if not self.mIGV_Url:
+            self.reset("hidden", False)
+            self.mPreUrl = None
+            return False
+        self.reset(None, False)
         file_urls = ','.join([
-            f"{bam_base}/{case}/{sample_id}.{self.mBase}.bam"
-            for sample_id in samples_ids])
+            f"{igv_url}/{self.mCase}/{sample_id}.{self.mBase}.bam"
+                for sample_id in self.mSamplesIds])
         self.mPreUrl = (f"http://localhost:60151/load?file={file_urls}"
-            f"&genome={self.mBase}&merge=false&name={samples_names}")
+            f"&genome={self.mBase}&merge=false&name={self.mSamplesNames}")
+        return True
 
     def makeValue(self, rec_data):
-        if self.mPreUrl is None:
+        if not self._checkPreUrl():
             return None
 
         if self.mBase == "hg19":

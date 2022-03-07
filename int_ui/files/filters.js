@@ -356,7 +356,7 @@ var sOpFilterH = {
 
     addCondition: function(new_cond, idx) {
         new_seq = sConditionsH.getConditions().slice();
-        if (idx == undefined)
+        if (idx === undefined)
             new_seq.push(new_cond);
         else
             new_seq.splice(idx, 0, new_cond);
@@ -923,14 +923,14 @@ var sFiltersH = {
 /*************************************/
 function showExport() {
     relaxView();
-    if (getCurCount() <= 300)
+    if (getCurCount() <= 9000)
         res_content = 'Export ' + getCurCount() + ' variants?<br>' +
             '<button class="popup" onclick="doExport();">To Excel</button>' + 
             '&emsp;<button class="popup" onclick="doCSVExport();">To CSV</button>' + 
             '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
     else
         res_content = 'Too many variants for export: ' + 
-            getCurCount() + ' > 300.<br>' +
+            getCurCount() + ' > 9000.<br>' +
             '<button class="popup" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("export-result");
     res_el.innerHTML = res_content;

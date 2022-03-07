@@ -85,7 +85,7 @@ function setupTags(info) {
     rep = [];
     for (j = 0; j < op_tags.length; j++) {
         var tag_name = op_tags[j];
-        if (sRecTags[tag_name] == undefined)
+        if (sRecTags[tag_name] === undefined)
             continue
         if (tag_name == "_note") 
             tag_title = "_note...";
@@ -143,7 +143,7 @@ function updateTagsState() {
         tag_name = sTagOrder[sCurTagIdx];
         sInpTagName.value = tag_name;
         tag_val = sRecTags[tag_name];
-        sInpTagValue.value = ((tag_val != undefined)? "" + tag_val:"").trim();
+        sInpTagValue.value = ((tag_val !== undefined)? "" + tag_val:"").trim();
     }
     checkTagInputs();
 }

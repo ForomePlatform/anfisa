@@ -1,6 +1,6 @@
 ds2ws
 =====
-        **Creation of secondary workspace**
+        **Creation of derived workspace**
 
 .. index:: 
     ds2ws; request
@@ -51,4 +51,6 @@ Selection of variants is defined by arguments:
 
     - decision tree applies if either **dtree** or **code** is set (see discussion :ref:`here<dtree_code>`)
 
-Secondary workspace should be of limited size: **not more than 9000 variants**.
+Derived workspace should be of limited size: **not more than 9000 variants**.
+
+The name of derived dataset **ws** should be new one, it can not be name of existing dataset or :ref:`reserved<ReservedDSNames>` one. 

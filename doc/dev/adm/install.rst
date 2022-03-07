@@ -271,9 +271,9 @@ You can change this value to put the vault to any other place on the computer. T
 
 ::
 
-    "http-bam-base": “http://<server>/anfisa/links/”,
+    "igv-dir": "${HOME}/igv.dir",
 
-HTTP base directory for access to BAM-files, for :ref:`IGV direct support<IGV_direct_support>`. Uncomment this option and set it up correctly if the server provides access to BAM-files, otherwise keep it commented.
+The file is used to control access to BAM-files, for :ref:`IGV direct support<IGV_direct_support>`. Create and fill  this file to set up correct access to BAM-files, otherwise do not create it. 
 
 ::
 
@@ -469,9 +469,19 @@ NGINX configuration in turn contains the following: ::
         root <BAM_FILES_LOCATION>;
     }
 
-Finally, Anfisa configuration (anfisa.json) contains the following line: ::
+Anfisa configuration (anfisa.json) contains the following line: ::
 
-    "http-bam-base": "https://<site>/bams"
+    "igv-dir": "${HOME}/igv.dir",
+
+Create this file (igv.dir by default configuration) to provide access from datasets to BAM-files. 
+If the file exists, it should be a file in JSON format with list of instructions. Each instruction has two fields: ``"name"`` as name of dataset, and ``"url"`` as reference to location of BAM-files: 
+
+    | ``[``
+    |       ``{`` ``"name":`` "*dataset name*", ``url``: "*reference to BAM-files*" ``}``,
+    |         ...
+    | ``]``
+
+The file controls references to base datasets, IGV-links in derived datasets are evaluated in automatic way.    
 
 .. _Druid_setup:
 

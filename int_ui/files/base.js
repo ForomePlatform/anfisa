@@ -36,7 +36,7 @@ var sViewAllTranscripts = [true];
 /*************************************/
 /* Utilities                         */
 /*************************************/
-function ajaxCall(rq_name, args, func_eval, error_msg) {
+function ajaxCall(rq_name, args, func_eval, error_msg, multipart_mode) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -50,7 +50,10 @@ function ajaxCall(rq_name, args, func_eval, error_msg) {
         }
     };
     xhttp.open("POST", rq_name, true);
-    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    if (multipart_mode)
+        xhttp.setRequestHeader("Accept", "multipart/form-data");
+    else
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send(args); 
 }
 
@@ -138,7 +141,7 @@ function softScroll(nd, upper_level) {
 
 /*************************************/
 function setupDSInfo(info) {
-    if (info["doc"] == undefined) {
+    if (info["doc"] === undefined) {
         document.getElementById("menu-doc").disabled = true;
     }
     if (info["cohorts"] && info["cohorts"].length > 0) {

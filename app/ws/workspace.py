@@ -25,11 +25,13 @@ from xml.sax.saxutils import escape
 from app.config.a_config import AnfisaConfig
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
+
 from .rules import RulesUnit
 from .tags_man import TagsManager
 from .zone import FilterZoneH
 from .ws_unit import loadWS_Unit
 from .ws_space import WS_EvalSpace
+from .ws_io import exportWS
 
 #===============================================
 class Workspace(DataSet):
@@ -264,3 +266,12 @@ class Workspace(DataSet):
         with self:
             self.mTagsMan.selectionTagging(tag_name, rec_no_seq)
         return {"tags-state": self.getSolEnv().getIntVersion("tags")}
+
+    #===============================================
+    @RestAPI.ws_request
+    def rq__export_ws(self, rq_args):
+        use_support = rq_args.get("support") not in ("no", "off", "0")
+        use_root_doc = rq_args.get("doc") not in ("no", "off", "0")
+        return exportWS(self, use_support, use_root_doc)
+
+

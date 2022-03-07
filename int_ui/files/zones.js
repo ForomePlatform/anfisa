@@ -146,7 +146,7 @@ var sZoneH = {
         this.mCacheList[zone_name] = [variants, info["title"]];
         this.mCacheDict[zone_name] = {};
         var sel_variants = this.mCacheSet[this.mWorkCur];
-        if (sel_variants == undefined)
+        if (sel_variants === undefined)
             sel_variants = [];
         var new_sel = [];
         
@@ -250,7 +250,7 @@ var sZoneH = {
                     delete this.mCacheSet[this.mWorkCur];
             }
             idx = this.mCacheDict[this.mWorkCur][val_name];
-            if (idx != undefined) {
+            if (idx !== undefined) {
                 el_id = 'zn--' + this.mWorkCur + '-check--' + idx;
                 document.getElementById(el_id).checked = false;
             }

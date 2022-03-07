@@ -42,6 +42,8 @@ Requests
    :doc:`csv_export`        Export operation in CSV format
    :doc:`export`            Export operation in Excel format
    :doc:`ds2ws`             Creation of secondary workspace
+   :doc:`export_ws`         Export workspace as archive
+   :doc:`import_ws`         Create workspace by archive file
   ------------------------- -------------------------------------------------------------
   \ 
   *WS-dataset support*
@@ -83,6 +85,8 @@ Requests
    export
    csv_export
    ds2ws
+   import_ws
+   export_ws
    
    ws_list
    zone_list

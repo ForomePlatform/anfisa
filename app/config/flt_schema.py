@@ -120,7 +120,7 @@ def defineFilterSchema(metadata_record):
         filters.multiStatusUnit("Callers",
             "/_view/bioinformatics/called_by[]")
         filters.statusUnit("Proband_Zygosity",
-            "/_view/bioinformatics/zygosity")
+            "/_view/bioinformatics/zygosity", required = {"PROBAND"})
         filters.intValueUnit("Num_Samples", "/_filters/has_variant",
             conversion = ["len"], default_value = 0)
         filters.multiStatusUnit("Has_Variant", "/_filters/has_variant[]")
@@ -261,7 +261,7 @@ def defineFilterSchema(metadata_record):
             diap = (0., 1.), default_value = 0.)
         filters.floatValueUnit("gnomAD_AF_Proband",
             "/_filters/gnomad_af_pb",
-            diap = (0., 1.), default_value = 0.)
+            diap = (0., 1.), default_value = 0., required = {"PROBAND"})
         filters.floatValueUnit("gnomAD_PopMax_AF",
             "/_filters/gnomad_popmax_af",
             diap = (0., 1.), default_value = 0.)
@@ -310,7 +310,7 @@ def defineFilterSchema(metadata_record):
 
     with filters.viewGroup("Call_Quality"):
         filters.floatValueUnit("Proband_GQ", "/_filters/proband_gq",
-            default_value = -1)
+            default_value = -1, required = {"PROBAND"})
         filters.floatValueUnit("Min_GQ", "/_filters/min_gq",
             default_value = -1)
         filters.intValueUnit("Max_GQ", "/_view/quality_samples",

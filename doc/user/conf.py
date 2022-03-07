@@ -39,12 +39,12 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Anfisa User Documentation'
-copyright = 'Copyright (c) 2019, 2020. Partners HealthCare and other members of Forome Association'
+copyright = 'Copyright (c) 2019-2022. Partners HealthCare and other members of Forome Association'
 
 # The short X.Y version
-version = '0.6'
+version = '0.7'
 # The full version, including alpha/beta/rc tags
-release = 'v.0.6'
+release = 'v.0.7'
 
 
 # -- General configuration ---------------------------------------------------

@@ -136,7 +136,8 @@ def defineViewSchema(metadata_record = None):
             tooltip = "Intron # according to canonical transcript"),
         AttrH("gene_panels", title = "Gene panels", is_seq = True),
         AttrH(None),
-        AttrH("proband_genotype", title = "Proband Genotype"),
+        AttrH("proband_genotype", title = "Proband Genotype",
+            required = {"PROBAND"}),
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
         AttrH("igv", title = "IGV", kind = "place",
@@ -279,7 +280,7 @@ def defineViewSchema(metadata_record = None):
 
     aspects["view_gnomAD"].setAttributes([
         AttrH("allele", title = "Allele"),
-        AttrH("proband", title = "Proband"),
+        AttrH("proband", title = "Proband", required = {"PROBAND"}),
         AttrH("pli", title = "pLI", is_seq = True),
         AttrH("af", title = "Overall AF"),
         AttrH("genome_af", title = "Genome AF"),

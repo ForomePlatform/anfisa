@@ -21,7 +21,7 @@ Synopsis
         |       "**version**": version of the system, *string*
         |       "**ds-list**": dataset names, *list of strings*
         |       "**ds-dict**": dataset descriptors, *dictionary*
-        |             <dataset name> : :doc:`s_ds_descr`
+        |             <dataset name> : *optional* :doc:`s_ds_descr`
         |       "**documentation**": ``[`` *list of* documentation sets
         |                    ``{`` *dict*
         |                         "**id**":    identifier of set, *string*
@@ -39,3 +39,7 @@ The request returns complete information for rendering directory page in User In
 Sorting order in **ds-list** output value represents hierarchical connections between datasets.
 
 Details of **documentation** properties see description of :ref:`sphinx-doc-sets<sphinx-doc-sets>` option in service configuration.
+
+.. _ReservedDSNames:
+
+The dictionary **ds-dict** contains all names of datasets as well as all names reserved by the system. Name is reserved if it presents in the dictionary but its value is null. Do not try to use such names as a name of new dataset: the action will be blocked.

@@ -74,6 +74,20 @@ div#ds-info {
     padding: 0px;
 }
 
+#top-dir {
+   width: 100%;
+   margin: 5px;
+   padding: 5px;
+   border: none;
+   text-align: left;
+   display: block;
+   font-weight: bold;
+   background-color: #333455; 
+   color: white;
+   font-size: 150%;
+}
+
+
 div.list-ds-entry {
     background-color: #333455;
     cursor: pointer;
@@ -149,4 +163,22 @@ a.ext-ref {
 
 a.ext-ref:hover {
     color:yellow;
+}
+
+/*************************************************/
+div#upload-works {
+    display: none;
+    position: absolute;
+    padding: 20px;
+    top: 70px;
+    left: 50px;
+    width: 400px;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+    z-index: 110;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+    font-size: 100%;
+    font-weight: normal;
 }

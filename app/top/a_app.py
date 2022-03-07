@@ -99,7 +99,7 @@ class AnfisaApp:
         sys.exit(0)
 
     @classmethod
-    def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):
+    def prepareExportDir(cls):
         export_setup = cls.sConfig["export"]
         dir_name = export_setup["work-dir"]
         if not os.path.dirname(dir_name):
@@ -107,7 +107,11 @@ class AnfisaApp:
             os.mkdir(dir_name)
         if dir_name.endswith('/'):
             dir_name = dir_name[:-1]
-        dir_name += '/'
+        return dir_name + '/'
+
+    @classmethod
+    def makeExcelExport(cls, prefix, ds_h, rec_no_seq, tags_man = None):
+        dir_name = cls.prepareExportDir()
         for no in range(10000):
             fname = "%s_%04d.xlsx" % (prefix, no)
             #debug_file_name = "%s_%04d.json" % (prefix, no)
@@ -116,12 +120,13 @@ class AnfisaApp:
             else:
                 break
         if fname is None:
+            logging.warning(f"Export directory {dir_name} is FULL! Clear it")
             return None
         source_versions = [["version", ds_h.getDataVault().
             getApp().getVersionCode()]] + ds_h.getSourceVersions()
         tags_info = tags_man.getTagListInfo() if tags_man is not None else None
 
-        export_h = ExcelExport(export_setup["excel-template"],
+        export_h = ExcelExport(cls.sConfig["export"]["excel-template"],
             source_versions = source_versions, tags_info = tags_info)
         #exp_rep = _ExportReport(dir_name + debug_file_name,
         #    source_versions, tags_info)

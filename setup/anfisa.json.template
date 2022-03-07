@@ -8,7 +8,7 @@
     "run-options": [],
     "run-modes": [],
     "job-vault-check-period": 30,
-    "--http-bam-base": "http:<server>/anfisa/links",
+    "igv-dir": "${HOME}/igv.dir",
     "--solutions": {
         "panels": {
             "Symbol": {

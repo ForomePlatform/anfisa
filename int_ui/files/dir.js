@@ -119,7 +119,7 @@ function selectDS(ds_idx) {
         rep_seq.push(reprRef(ds_info["name"], "XL"));
     }
     rep_seq.push('<span class="ref-zone">');
-    if (ds_info["doc"] != undefined) 
+    if (ds_info["doc"] !== undefined) 
         rep_seq.push(reprRef(ds_info["name"], "DOC", "[doc]"));
     rep_seq.push(reprRef(ds_info["name"], "DTREE", "[tree]"));
     rep_seq.push('</span></div>');
@@ -158,4 +158,73 @@ function arrangeControls() {
     if (document.getElementById("dir-docs")) 
         delta += document.getElementById("dir-docs").clientHeight + 20;
     document.getElementById("dir-main").style.height = window.innerHeight - delta;
+}
+
+/*************************************/
+function showUploadArchive() {
+    relaxView();
+    res_content = 'Upload dataset archive:<br>' +
+        'Archive: <input id="up-archive-file" type="file" accept=".tgz" onchange="checkUploadPar()"/><br/>' +
+        'Dataset name: <input id="up-archive-name" type="input" onchange="checkUploadPar()"/><br/>' +
+        '<button id="up-archive-do" class="popup" onclick="doUploadArchive();"' +
+        ' disabled>Upload</button>';
+    res_el = document.getElementById("upload-works");
+    res_el.innerHTML = res_content;
+    sViewH.popupOn(res_el);
+}
+
+function checkUploadPar() {
+    inp_file = document.getElementById("up-archive-file");
+    inp_name = document.getElementById("up-archive-name");
+    q_ok = false;
+    if (inp_file.files.length > 0 && inp_file.files[0].name) {
+        q_ok = true;
+        if (inp_name.value) {
+            q_ok = (sDSDict[inp_name.value] === undefined);
+            inp_name.className = (q_ok)? "":"bad";
+        } else {
+            base_ds_name = inp_file.files[0].name.
+                split('\\').pop().split('/').pop().split('.')[0];
+            if (sDSDict[base_ds_name] === undefined) {
+                ds_name = base_ds_name;
+            }
+            else {
+                for (jj=0; jj<10000; jj++) {
+                    ds_name = base_ds_name + '_' + jj;
+                    if (sDSDict[ds_name] === undefined) {
+                        break;
+                    }
+                }
+            }
+            inp_name.value = ds_name;
+        }
+    }
+    document.getElementById("up-archive-do").disabled = (!q_ok);
+}
+
+function doUploadArchive() {
+    sViewH.popupOff();
+    inp_file = document.getElementById("up-archive-file");
+    inp_name = document.getElementById("up-archive-name");
+
+    var formData = new FormData();
+    formData.append("file", inp_file.files[0]);
+    formData.append("name", inp_name.value);
+    ajaxCall("import_ws", formData, setupUploadArchive, "", true);
+}
+
+function setupUploadArchive(info) {
+    res_el = document.getElementById("upload-works");
+    if (info["error"]) {
+        res_el.className = "popup problems";
+        res_el.innerHTML = 'Upload failed: ' + info["error"];
+    } else {
+        res_el.className = "popup";
+        target_ref = (sWsPubURL != "ws")? '': (' target="' + 
+            sCommonTitle + ':' + info[0]["ws"] + '"'); 
+        res_el.innerHTML = 'Upload finished:' + 
+            '<span class="ds-ref" onclick="goToPage(\'WS\', \'' + 
+            info["created"] + '\'); window.location.reload();">Open it</span>';
+    }
+    sViewH.popupOn(res_el);
 }

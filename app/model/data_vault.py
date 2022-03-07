@@ -29,13 +29,13 @@ from collections import defaultdict
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
 from app.ws.workspace import Workspace
+from app.ws.ws_io import importWS
 from app.xl.xl_dataset import XLDataset
 from forome_tools.log_err import logException
 from forome_tools.sync_obj import SyncronizedObject
 #===============================================
 class DataVault(SyncronizedObject):
-    def __init__(self, application, vault_dir,
-            var_registry, auto_mode = True):
+    def __init__(self, application, vault_dir, var_registry, auto_mode = True):
         SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
@@ -45,7 +45,10 @@ class DataVault(SyncronizedObject):
         self.mSolEnvDict = dict()
         self.mScanModeLevel = 0
         self.mIntVersion = 0
+        self.mIGVInfo = None
         self.mProblemDataFStats = dict()
+        self.mIGV_FStat = None
+
         if not auto_mode:
             return
         self.scanAll(False)
@@ -62,6 +65,8 @@ class DataVault(SyncronizedObject):
             logging.info("XL-datasets: " + " ".join(sorted(names[0])))
         if len(names[1]) > 0:
             logging.info("WS-datasets: " + " ".join(sorted(names[1])))
+        if self.mIGV_FStat is None:
+            logging.info("igv-dir is not set up")
 
     def scanAll(self, report_it = True):
         with self:
@@ -95,6 +100,7 @@ class DataVault(SyncronizedObject):
     def _scanAll(self, report_it):
         with self:
             prev_set = set(self.mDataSets.keys())
+        self.checkIGVSetup()
         new_path_list = list(glob(self.mVaultDir + "/*/active"))
         new_set, upd_set = set(), set()
         for active_path in new_path_list:
@@ -224,9 +230,44 @@ class DataVault(SyncronizedObject):
                 var_info["render-mode"] = "bar"
         return var_info
 
-
     def getVarRegistry(self):
         return self.mVarRegistry
+
+    def checkIGVSetup(self):
+        igv_dir_fname = self.mApp.getOption("igv-dir")
+        if not igv_dir_fname:
+            assert self.mIGVInfo is None
+            return
+        igv_fstat = self.checkFileStat(igv_dir_fname)
+        if igv_fstat is None:
+            if self.mIGV_FStat is not None:
+                self.mIGVInfo = None
+                logging.warning(f"IGV-dir file {igv_dir_fname} "
+                    + "existed before but dropped")
+            return
+        if self.mIGV_FStat == igv_fstat:
+            return
+        self.mIGV_FStat = igv_fstat
+        igv_info = dict()
+        try:
+            with open(igv_dir_fname, "r", encoding = "utf-8") as inp:
+                records = json.loads(inp.read())
+            for idx, rec in enumerate(records):
+                ds_name, url = rec["dataset"], rec["url"]
+                assert ds_name not in igv_info, (
+                    f"Dataset {ds_name} duplication in record no {idx + 1}")
+                igv_info[ds_name] = url
+        except Exception:
+            logException(f"Exception on load igv-dir {igv_dir_fname}")
+        with self:
+            self.mIGVInfo = igv_info
+        logging.info(f"IGV-dir is set up with {len(self.mIGVInfo)} records")
+
+    def getIGVUrl(self, ds_name):
+        with self:
+            if self.mIGVInfo is None:
+                return None
+            return self.mIGVInfo.get(ds_name)
 
     #===============================================
     @RestAPI.vault_request
@@ -309,6 +350,17 @@ class DataVault(SyncronizedObject):
             print("======", file = rep)
             logging.warning(rep.getvalue())
         return "OK"
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__import_ws(self, rq_args):
+        assert "name" in rq_args, 'Missing argument "name"'
+        assert "file" in rq_args, 'Missing argument "file"'
+        ds_name = rq_args["name"]
+        content = rq_args["file"]
+        ret = importWS(self, ds_name, content)
+        self.scanAll()
+        return ret
 
     #===============================================
     # Administrator authorization required
