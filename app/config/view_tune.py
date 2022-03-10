@@ -391,7 +391,6 @@ class IGV_AttrH(AttrH):
         self.setAspect(view_gen)
 
         meta_info = ds_h.getDataInfo()["meta"]
-        self.mCase = meta_info.get("case")
 
         # we are not sure what is the key to samples, so have to repackage
         samples_data = meta_info.get("samples")
@@ -416,7 +415,7 @@ class IGV_AttrH(AttrH):
             return False
         self.reset(None, False)
         file_urls = ','.join([
-            f"{igv_url}/{self.mCase}/{sample_id}.{self.mBase}.bam"
+            f"{igv_url}/{sample_id}.{self.mBase}.bam"
                 for sample_id in self.mSamplesIds])
         self.mPreUrl = (f"http://localhost:60151/load?file={file_urls}"
             f"&genome={self.mBase}&merge=false&name={self.mSamplesNames}")
