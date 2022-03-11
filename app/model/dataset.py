@@ -71,6 +71,8 @@ class DataSet(SolutionBroker):
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
         self.mCondVisitorTypes = []
+        reference = dataset_info["meta"]["versions"].get("reference")
+        self.mFastaBase = "hg38" if reference and "38" in reference else "hg19"
 
         if self.getBaseDSName():
             self.addModes({"DERIVED"})
@@ -285,6 +287,11 @@ class DataSet(SolutionBroker):
                         unit_groups.append([cur_v_group, []])
                 unit_groups[-1][1].append(unit_h.getName())
             ret["unit-groups"] = unit_groups
+            igv_url = self.mDataVault.getIGVUrl(self.getRootDSName())
+            if igv_url is not None:
+                ret["igv-urls"] = [
+                    f"{igv_url}/{sample_id}.{self.mFastaBase}.bam"
+                    for sample_id in self.mFamilyInfo.getIds()]
         return ret
 
     #===============================================
