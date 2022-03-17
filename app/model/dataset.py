@@ -290,8 +290,8 @@ class DataSet(SolutionBroker):
             igv_url = self.mDataVault.getIGVUrl(self.getRootDSName())
             if igv_url is not None:
                 ret["igv-urls"] = [
-                    f"{igv_url}/{sample_id}.{self.mFastaBase}.bam"
-                    for sample_id in self.mFamilyInfo.getIds()]
+                    f"{igv_url}/{sample_nm}.{self.mFastaBase}.bam"
+                    for sample_nm in self.mFamilyInfo.getNames()]
         return ret
 
     #===============================================
