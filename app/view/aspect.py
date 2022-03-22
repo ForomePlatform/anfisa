@@ -36,6 +36,7 @@ class AspectH:
         self.mColGroups = col_groups
         self.mMode      = mode
         self.mColumnMarkupF = None
+        self.mMaster = None
         assert self.mSource in ("_view", "__data"), (
             "For aspect " + name + "missing source: " + self.mSource)
 
@@ -43,6 +44,10 @@ class AspectH:
             self.mAttrs = []
         if attrs is not None:
             self.setAttributes(attrs)
+
+    def _setMaster(self, master):
+        assert self.mMaster is None
+        self.mMaster = master
 
     def __getitem__(self, idx):
         return self.mAttrs[idx]
@@ -141,8 +146,9 @@ class AspectH:
         ret_handle["columns"] = len(objects)
         fld_data = dict()
         for attr in self.mAttrs:
-            if (attr.getName() is None
-                    or attr.hasKind("hidden")):
+            if attr.getName() is None or attr.hasKind("hidden"):
+                continue
+            if not self.mMaster.testRequirements(attr.getRequirements()):
                 continue
             values = []
             cnt_good = 0

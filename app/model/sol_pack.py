@@ -134,8 +134,8 @@ class SolutionPack:
             f"Collision: fname={fname} / items={items is not None}")
         if fname:
             items = self.readListFile(fname)
-        self.mItems.append(SolutionItem("panel", panel_name,
-            (panel_type, items), requires,
+        self.mItems.append(SolutionItem("panel." + panel_type,
+            panel_name, items, requires,
             self.mUsedNames))
 
     def regItemDict(self, name, the_dict, requires = None):

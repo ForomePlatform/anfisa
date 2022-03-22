@@ -64,8 +64,8 @@ class CompHetsUnit(FunctionUnit):
             if trio_crit is not None:
                 yield trio_id,  trio_crit
 
-    def makeInfoStat(self, eval_h, point_no):
-        ret_handle = self.prepareStat()
+    def makeInfoStat(self, eval_h, stat_ctx, point_no):
+        ret_handle = self.prepareStat(stat_ctx)
         ret_handle["trio-variants"] = [trio_info[0]
             for trio_info in self.mZygSupport.getTrioSeq()]
         ret_handle["approx-modes"] = self.mZygSupport.getApproxInfo()
@@ -116,9 +116,9 @@ class CompHetsUnit(FunctionUnit):
             return "Bad approx parameter"
         return None
 
-    def makeParamStat(self, condition, parameters, eval_h, point_no):
+    def makeParamStat(self, condition, parameters, eval_h, stat_ctx, point_no):
         context, err_msg = self._locateContext(parameters, eval_h, point_no)
-        ret_handle = self.prepareStat()
+        ret_handle = self.prepareStat(stat_ctx)
         ret_handle.update(parameters)
         if err_msg:
             ret_handle["err"] = err_msg
@@ -150,8 +150,8 @@ class CompoundRequestUnit(FunctionUnit):
             return
         yield "True", context["crit"]
 
-    def makeInfoStat(self, eval_h, point_no):
-        ret_handle = self.prepareStat()
+    def makeInfoStat(self, eval_h, stat_ctx, point_no):
+        ret_handle = self.prepareStat(stat_ctx)
         ret_handle["approx-modes"] = self.mZygSupport.getApproxInfo()
         ret_handle["labels"] = eval_h.getLabelPoints(point_no)
         ret_handle["family"] = self.mZygSupport.getNames()
@@ -204,9 +204,9 @@ class CompoundRequestUnit(FunctionUnit):
             return "Argument request is required"
         return self.mZygSupport.validateRequest(parameters["request"])
 
-    def makeParamStat(self, condition, parameters, eval_h, point_no):
+    def makeParamStat(self, condition, parameters, eval_h, stat_ctx, point_no):
         context, err_msg = self._locateContext(parameters, eval_h, point_no)
-        ret_handle = self.prepareStat()
+        ret_handle = self.prepareStat(stat_ctx)
         if err_msg:
             ret_handle["err"] = err_msg
         else:

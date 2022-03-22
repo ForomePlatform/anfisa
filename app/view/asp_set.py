@@ -22,8 +22,11 @@ from .aspect import AspectH
 
 #===============================================
 class AspectSetH:
-    def __init__(self, aspects):
+    def __init__(self, aspects, schema_modes):
         self.mAspects = aspects
+        self.mSchemaModes = schema_modes
+        for asp in self.mAspects:
+            asp._setMaster(self)
 
     def __getitem__(self, name):
         for asp in self.mAspects:
@@ -39,8 +42,14 @@ class AspectSetH:
         return [asp.dump() for asp in self.mAspects]
 
     @classmethod
-    def load(cls, data):
-        return cls([AspectH.load(it) for it in data])
+    def load(cls, data, schema_modes):
+        return cls([AspectH.load(it) for it in data],
+            schema_modes)
+
+    def testRequirements(self, modes):
+        if modes is None:
+            return True
+        return len(self.mSchemaModes & modes) > 0
 
     #===============================================
     def getViewRepr(self, rec_data, view_context):

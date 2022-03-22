@@ -25,11 +25,13 @@ from app.view.colgrp import ColGroupsH
 from .favor import FavorSchema
 
 #===============================================
-def defineViewSchema(metadata_record = None):
+def defineViewSchema(metadata_record = None, schema_modes = None):
     data_schema = (metadata_record.get("data_schema")
         if metadata_record else None)
+    if schema_modes is None:
+        schema_modes = set()
     if data_schema == "FAVOR":
-        return FavorSchema.defineViewSchema(metadata_record)
+        return FavorSchema.defineViewSchema(metadata_record, schema_modes)
     assert data_schema is None or data_schema == "CASE", (
         "Bad data schema: " + data_schema)
 
@@ -71,7 +73,7 @@ def defineViewSchema(metadata_record = None):
             col_groups = ColGroupsH([["colocated_variants", None]])),
         AspectH("input", "VCF", "__data", field = "input", mode = "string")]
 
-    aspects = AspectSetH(aspect_list)
+    aspects = AspectSetH(aspect_list, schema_modes)
 
     aspects["view_gen"].setAttributes([
         AttrH("genes", title = "Gene(s)", is_seq = True,
@@ -134,10 +136,11 @@ def defineViewSchema(metadata_record = None):
         AttrH("variant_intron_canonical",
             title = "Variant Intron (Canonical)", is_seq = True,
             tooltip = "Intron # according to canonical transcript"),
-        AttrH("gene_panels", title = "Gene panels", is_seq = True),
+        # TRF!
+        # AttrH("gene_panels", title = "Gene panels", is_seq = True),
         AttrH(None),
         AttrH("proband_genotype", title = "Proband Genotype",
-            required = {"PROBAND"}),
+            requires = {"PROBAND"}),
         AttrH("maternal_genotype", title = "Maternal Genotype"),
         AttrH("paternal_genotype", title = "Paternal Genotype"),
         AttrH("igv", title = "IGV", kind = "place",
@@ -173,8 +176,9 @@ def defineViewSchema(metadata_record = None):
         AttrH("transcript_annotations", title = "Consequences", is_seq = True),
         AttrH("variant_exon", title = "Exon"),
         AttrH("variant_intron", title = "Intron"),
-        AttrH("tr_gene_panels", title = "Gene panels",
-            is_seq = True, kind = "posted"),
+        # TRF!
+        #AttrH("tr_gene_panels", title = "Gene panels",
+        #    is_seq = True, kind = "posted"),
 
         AttrH("cpos", title = "CPos"),
         AttrH("hgvs_c_snp_eff", title = "CPos SnpEff"),
@@ -280,7 +284,7 @@ def defineViewSchema(metadata_record = None):
 
     aspects["view_gnomAD"].setAttributes([
         AttrH("allele", title = "Allele"),
-        AttrH("proband", title = "Proband", required = {"PROBAND"}),
+        AttrH("proband", title = "Proband", requires = {"PROBAND"}),
         AttrH("pli", title = "pLI", is_seq = True),
         AttrH("af", title = "Overall AF"),
         AttrH("genome_af", title = "Genome AF"),

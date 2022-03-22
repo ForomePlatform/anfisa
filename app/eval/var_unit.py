@@ -26,6 +26,7 @@ class VarUnit:
     def __init__(self, eval_space, descr, unit_kind = None,
             sub_kind = None):
         self.mEvalSpace = eval_space
+        self.mDescr = descr
         self.mUnitKind  = descr.get("kind", unit_kind)
         self.mSubKind = descr.get("sub-kind", sub_kind)
         self.mInternalName = descr["name"]
@@ -85,7 +86,13 @@ class VarUnit:
     def _setScreened(self, value = True):
         self.mScreened = value
 
-    def prepareStat(self, incomplete_mode = False):
+    def getMean(self):
+        return self.mDescr.get("mean")
+
+    def getDescr(self):
+        return self.mDescr
+
+    def prepareStat(self, stat_ctx, incomplete_mode = False):
         ret_handle = deepcopy(self.mInfo)
         if incomplete_mode:
             ret_handle["incomplete"] = True
@@ -160,15 +167,15 @@ class FunctionUnit(ComplexEnumUnit):
     def getParameters(self):
         return self.mParameters
 
-    def makeInfoStat(self, eval_h):
-        return VarUnit.prepareStat(self, None)
+    def makeInfoStat(self, eval_h, stat_ctx, point_no):
+        return VarUnit.prepareStat(self, stat_ctx, None)
 
     @abc.abstractmethod
     def locateContext(self, cond_data, eval_h):
         return None
 
     @abc.abstractmethod
-    def makeParamStat(self, condition, parameters, eval_h):
+    def makeParamStat(self, condition, parameters, eval_h, stat_ctx):
         return None
 
     @abc.abstractmethod

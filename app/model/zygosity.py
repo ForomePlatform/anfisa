@@ -126,7 +126,7 @@ class ZygositySupport:
                 continue
             cond_scenario_seq.append(cond_scenario)
             stat_info = self.mGeneUnits[approx_mode].makeStat(
-                actual_condition.addAnd(cond_scenario), None)
+                actual_condition.addAnd(cond_scenario), None, None)
             genes = set()
             for info in stat_info["variants"]:
                 gene, count = info[:2]

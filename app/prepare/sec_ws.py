@@ -109,7 +109,8 @@ class SecondaryWsCreation(ExecutionTask):
         view_schema = deepcopy(self.mDS.getViewSchema())
         flt_schema  = deepcopy(self.mDS.getFltSchema())
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
-        filter_set = FilterPrepareSetH(meta_rec, anfisaVariables)
+        filter_set = FilterPrepareSetH(meta_rec, anfisaVariables,
+            "ws", derived_mode = True)
         filter_set.setupFromInfo(flt_schema)
         trans_prep = TransformPreparator_WS(flt_schema, self.mDS, False)
 

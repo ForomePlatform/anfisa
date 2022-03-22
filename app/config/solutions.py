@@ -364,33 +364,33 @@ def setupGenericPack(app_config, base_pack):
         "GeneDx":   "GeneDx",
         "Invitae":  "Invitae"})
 
-    base_pack.regPanel("ACMG59", "Symbol",
+    base_pack.regPanel("ACMG59", "symbol",
         cfgPath("acmg59.lst"))
-    base_pack.regPanel("All_Hearing_Loss", "Symbol",
+    base_pack.regPanel("All_Hearing_Loss", "symbol",
         cfgPath("all_hearing_loss.lst"))
-    base_pack.regPanel("Reportable_Hearing_Loss", "Symbol",
+    base_pack.regPanel("Reportable_Hearing_Loss", "symbol",
         cfgPath("rep_hearing_loss.lst"))
-    base_pack.regPanel("Complement_System", "Symbol",
+    base_pack.regPanel("Complement_System", "symbol",
         cfgPath("complement_system.lst"))
-    base_pack.regPanel("PharmGKB_VIP", "Symbol",
+    base_pack.regPanel("PharmGKB_VIP", "symbol",
         cfgPath("pharmgkb_vip.lst"))
-    base_pack.regPanel("Coagulation_System", "Symbol",
+    base_pack.regPanel("Coagulation_System", "symbol",
         cfgPath("coagulation_system.lst"))
-    base_pack.regPanel("Thrombotic_Thrombocytopenic_Purpura", "Symbol",
+    base_pack.regPanel("Thrombotic_Thrombocytopenic_Purpura", "symbol",
         cfgPath("ttp.lst"))
-    base_pack.regPanel("Immune_Dysregulation", "Symbol",
+    base_pack.regPanel("Immune_Dysregulation", "symbol",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Autism_Spectrum", "Symbol",
+    base_pack.regPanel("Autism_Spectrum", "symbol",
         cfgPath("autism.lst"))
-    base_pack.regPanel("Holoprosencephaly", "Symbol",
+    base_pack.regPanel("Holoprosencephaly", "symbol",
         cfgPath("hpe.lst"))
-    base_pack.regPanel("Tubulinopathies", "Symbol",
+    base_pack.regPanel("Tubulinopathies", "symbol",
         cfgPath("tubulinopathies.lst"))
-    base_pack.regPanel("Notch_Signaling_Pathway", "Symbol",
+    base_pack.regPanel("Notch_Signaling_Pathway", "symbol",
         cfgPath("notch.lst"))
-    base_pack.regPanel("SSH1_Interactors", "Symbol",
+    base_pack.regPanel("SSH1_Interactors", "symbol",
         cfgPath("ssh.lst"))
-    base_pack.regPanel("Wnt1_Interactors", "Symbol",
+    base_pack.regPanel("Wnt1_Interactors", "symbol",
         cfgPath("wnt.lst"))
 
     base_pack.regPanel("Check-Tags", "_tags", items = [
@@ -480,17 +480,6 @@ def setupInstanceSolutions(app_config, base_pack):
 
 
 #===============================================
-def completeDsModes(ds_h):
-    if ds_h.getDataSchema() == "CASE":
-        family_info = ds_h.getFamilyInfo()
-        trio_seq = family_info.getTrioSeq()
-        if trio_seq:
-            ds_h.addModes({"trio"})
-            if trio_seq[0][0] == "Proband":
-                ds_h.addModes({"trio_base"})
-                if len(family_info) == 3:
-                    ds_h.addModes({"trio_pure"})
-        if ds_h.getDataInfo()["meta"].get("cohorts"):
-            ds_h.addModes({"cohorts"})
-    elif ds_h.getDataSchema() == "FAVOR":
-        FavorSchema.completeDsModes(ds_h)
+def startTune(ds_h):
+    if ds_h.getDataSchema() == "FAVOR":
+        FavorSchema.startTune(ds_h)

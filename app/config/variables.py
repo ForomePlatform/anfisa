@@ -158,6 +158,8 @@ anfisaVariables.regVar("Number_ALTs", "numeric",
 anfisaVariables.predeclareClassification(
     "na1", "transcript", "na3")
 
+anfisaVariables.regVar("_Symbol", "enum")
+
 anfisaVariables.regVar("Symbol", "enum")
 
 anfisaVariables.regVar("Panels", "enum")

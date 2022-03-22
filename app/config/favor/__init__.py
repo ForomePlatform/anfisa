@@ -21,7 +21,7 @@
 from .f_solutions import solutionsFavor
 from .f_view import defFavorView
 from .f_flt import defFavorFlt
-from .f_tune import tuneFavorAspects, tuneFavorUnits, completeFavorDS
+from .f_tune import tuneFavorAspects, tuneFavorUnits, startFavorTune
 #===============================================
 class FavorSchema:
 
@@ -30,12 +30,12 @@ class FavorSchema:
         solutionsFavor(sol_pack)
 
     @classmethod
-    def defineViewSchema(cls, metadata_record):
-        return defFavorView(metadata_record)
+    def defineViewSchema(cls, metadata_record, schema_modes):
+        return defFavorView(metadata_record, schema_modes)
 
     @classmethod
-    def defineFilterSchema(cls, metadata_record):
-        return defFavorFlt(metadata_record)
+    def defineFilterSchema(cls, metadata_record, ds_kind, derived_mode):
+        return defFavorFlt(metadata_record, ds_kind, derived_mode)
 
     @classmethod
     def tuneAspects(cls, ds_h, aspects):
@@ -46,5 +46,5 @@ class FavorSchema:
         tuneFavorUnits(ds_h)
 
     @classmethod
-    def completeDsModes(cls, ds_h):
-        completeFavorDS(ds_h)
+    def startTune(cls, ds_h):
+        startFavorTune(ds_h)

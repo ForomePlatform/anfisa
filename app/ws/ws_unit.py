@@ -39,7 +39,7 @@ class WS_Unit(VarUnit):
         return None
 
     @abc.abstractmethod
-    def makeStat(self, condition, eval_h):
+    def makeStat(self, condition, eval_h, stat_ctx):
         return None
 
     @abc.abstractmethod
@@ -59,8 +59,8 @@ class WS_NumericValueUnit(WS_Unit, NumUnitSupport):
     def getRecVal(self, rec_no):
         return self.mArray[rec_no]
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         num_stat = NumDiapStat()
         for rec_no, _ in condition.iterSelection():
             num_stat.regValue(self.mArray[rec_no])
@@ -97,8 +97,8 @@ class WS_EnumUnit(WS_Unit, EnumUnitSupport):
     def getVariantList(self):
         return list(iter(self.mVariantSet))
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         enum_stat = EnumStat(self.mVariantSet)
         for rec_no, _ in condition.iterSelection():
             enum_stat.regValues(self.getRecVal((rec_no)))
@@ -195,8 +195,8 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
     def getItemVal(self, item_idx):
         return self.mArray[item_idx]
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         num_stat = NumDiapStat(True)
         for group_no, it_idx in condition.iterItemIdx():
             num_stat.regValue([self.mArray[it_idx]], group_no)
@@ -255,8 +255,8 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
             self.mArray.extend([self.mVariantSet.indexOf(value)
                 for value in values])
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
             enum_stat.regValues([self.mArray[it_idx]], group_no = group_no,
@@ -309,8 +309,8 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
             for values in seq:
                 self._fillOne(values)
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
             enum_stat.regValues(self.mPackSetSeq[self.mArray[it_idx]],

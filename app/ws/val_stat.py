@@ -87,18 +87,24 @@ class NumHistogramBuilder:
                 self.mInfo = None
                 self.mIntervals = None
                 return
+            self.mIntervals[-1] *= (1 - 1E-5)
             self.mInfo.append(pp)
         else:
             self.mInfo = ["LIN", v_min, v_max]
-            if self.mIntMode and v_max - v_min <= num_bins:
-                step = 1.
+            if self.mIntMode and v_max - v_min < num_bins + 1E-3:
+                init, step = .5, 1.
             else:
-                step = float(v_max - v_min) / num_bins
-            vv = v_min + (step * .5)
+                step = max(1E-5, float(v_max - v_min) / num_bins)
+                init = step
             self.mIntervals = []
-            while vv < v_max:
+            vv = v_min + init
+            while vv < v_max - (step / 3):
                 self.mIntervals.append(vv)
                 vv += step
+            if len(self.mIntervals) == 0:
+                self.mInfo = None
+                self.mIntervals = None
+                return
         self.mInfo.append([0] * (len(self.mIntervals) + 1))
 
     def isOK(self):
@@ -117,7 +123,7 @@ class NumHistogramBuilder:
         if isinstance(val, list):
             val = val[0]
         for idx, cell_value in enumerate(self.mIntervals):
-            if val <= cell_value:
+            if val < cell_value:
                 self.mInfo[-1][idx] += 1
                 return
         self.mInfo[-1][-1] += 1

@@ -26,7 +26,7 @@ from app.view.asp_set import AspectSetH
 from app.config.a_config import AnfisaConfig
 from app.config.view_tune import tuneAspects
 from app.config.flt_tune import tuneUnits
-from app.config.solutions import completeDsModes
+from app.config.solutions import startTune
 from app.eval.condition import ConditionMaker
 from app.eval.filter import FilterEval
 from app.eval.dtree import DTreeEval
@@ -37,7 +37,6 @@ from app.prepare.sec_ws import SecondaryWsCreation
 from .ds_disk import DataDiskStorage
 from .ds_favor import FavorStorage
 from .sol_broker import SolutionBroker
-from .family import FamilyInfo
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
@@ -51,13 +50,13 @@ class DataSet(SolutionBroker):
 
     #===============================================
     def __init__(self, data_vault, dataset_info, dataset_path,
-            sol_pack_name = None, add_modes = None):
-        SolutionBroker.__init__(self,
-            dataset_info["meta"].get("data_schema", "CASE"),
-            dataset_info.get("modes"))
+            sol_pack_name = None):
+        SolutionBroker.__init__(self, dataset_info["meta"],
+            ds_kind = dataset_info["kind"],
+            derived_mode = dataset_info.get("base"),
+            zygosity_support = dataset_info.get("zygosity_var"))
+        self.addModes(dataset_info.get("modes"))
         self.addModes(data_vault.getApp().getRunModes())
-        if add_modes:
-            self.addModes(add_modes)
         self.mDataVault = data_vault
         self.mDataInfo = dataset_info
         self.mName = dataset_info["name"]
@@ -65,19 +64,13 @@ class DataSet(SolutionBroker):
         self.mTotal = dataset_info["total"]
         self.mMongoAgent = (data_vault.getApp().getMongoConnector().
             getDSAgent(dataset_info["mongo"], dataset_info["kind"]))
-        self.mAspects = AspectSetH.load(dataset_info["view_schema"])
         self.mFltSchema = dataset_info["flt_schema"]
+        self.mAspects = AspectSetH.load(dataset_info["view_schema"],
+            self.getModes())
         self.mPath = dataset_path
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
         self.mCondVisitorTypes = []
-        reference = dataset_info["meta"]["versions"].get("reference")
-        self.mFastaBase = "hg38" if reference and "38" in reference else "hg19"
-
-        if self.getBaseDSName():
-            self.addModes({"DERIVED"})
-        else:
-            self.addModes({"SECONDARY"})
 
         if self.getDataSchema() == "FAVOR" and self.mDSKind == "xl":
             self.mRecStorage = FavorStorage(
@@ -85,20 +78,9 @@ class DataSet(SolutionBroker):
         else:
             self.mRecStorage = DataDiskStorage(self, self.mPath)
 
-        self.mFamilyInfo = FamilyInfo(dataset_info["meta"])
-        if (self.mDataInfo.get("zygosity_var")
-                and 1 <= len(self.mFamilyInfo) <= 10):
-            self.addModes({"ZYG"})
-        self.mZygSupport = None
-
         self.mViewContext = dict()
-        if self.mFamilyInfo.getCohortList():
-            self.mViewContext["cohorts"] = self.mFamilyInfo.getCohortMap()
-            self.addModes({"COHORTS"})
-        elif self.getDataSchema() != "FAVOR":
-            self.addModes({"PROBAND"})
-        completeDsModes(self)
 
+        startTune(self)
         tuneAspects(self, self.mAspects)
 
     def startService(self):
@@ -144,9 +126,6 @@ class DataSet(SolutionBroker):
 
     def getDataInfo(self):
         return self.mDataInfo
-
-    def getFamilyInfo(self):
-        return self.mFamilyInfo
 
     def getRecStorage(self):
         return self.mRecStorage
@@ -202,7 +181,7 @@ class DataSet(SolutionBroker):
         if self.testRequirements({"ZYG"}):
             var_name = self.mDataInfo["zygosity_var"]
             return ["%s_%d" % (var_name, idx)
-                for idx in range(len(self.mFamilyInfo))]
+                for idx in range(len(self.getFamilyInfo()))]
         return []
 
     def makeSolEntry(self, key, entry_data, name,
@@ -268,7 +247,7 @@ class DataSet(SolutionBroker):
                 ret["secondary"] = [ws_h.getName() for ws_h in secondary_seq]
         else:
             ret["meta"] = self.mDataInfo["meta"]
-            ret["cohorts"] = self.mFamilyInfo.getCohortList()
+            ret["cohorts"] = self.getFamilyInfo().getCohortList()
             ret["unit-classes"] = (
                 self.mDataVault.getVarRegistry().getClassificationDescr())
             ret["export-max-count"] = self.sMaxExportSize
@@ -289,33 +268,36 @@ class DataSet(SolutionBroker):
             ret["unit-groups"] = unit_groups
             igv_url = self.mDataVault.getIGVUrl(self.getRootDSName())
             if igv_url is not None:
-                ret["igv-urls"] = [
-                    f"{igv_url}/{sample_nm}.{self.mFastaBase}.bam"
-                    for sample_nm in self.mFamilyInfo.getNames()]
+                url_seq = []
+                for name, id in zip(self.mFamilyInfo.getNames(),
+                        self.mFamilyInfo.getIds()):
+                    url_seq.append(igv_url.format(name = name, id = id))
+                ret["igv-urls"] = url_seq
         return ret
 
     #===============================================
-    def prepareAllUnitStat(self, condition, eval_h,
+    def prepareAllUnitStat(self, condition, eval_h, stat_ctx,
             time_end, point_no = None):
         ret = []
         for unit_h in self.getEvalSpace().iterUnits():
             if unit_h.isScreened():
                 continue
             if unit_h.getUnitKind() == "func":
-                ret.append(unit_h.makeInfoStat(eval_h, point_no))
+                ret.append(unit_h.makeInfoStat(eval_h, stat_ctx, point_no))
                 continue
             if point_no is not None and not unit_h.isInDTrees():
                 continue
             if time_end is False:
-                ret.append(unit_h.prepareStat(incomplete_mode = True))
+                ret.append(unit_h.prepareStat(
+                    stat_ctx, incomplete_mode = True))
                 continue
-            ret.append(unit_h.makeStat(condition, eval_h))
+            ret.append(unit_h.makeStat(condition, eval_h, stat_ctx))
             if time_end is not None and datetime.now() > time_end:
                 time_end = False
         return ret
 
     def prepareSelectedUnitStat(self, unit_names, condition,
-            eval_h, time_end = None, point_no = None):
+            eval_h, stat_ctx, time_end = None, point_no = None):
         ret = []
         for unit_name in unit_names:
             unit_h = self.getEvalSpace().getUnit(unit_name)
@@ -323,7 +305,7 @@ class DataSet(SolutionBroker):
                 "No function provided in DS: " + unit_name)
             assert point_no is None or unit_h.isInDTrees(), (
                 "Unit is inaccessible in Decision Trees: " + unit_name)
-            ret.append(unit_h.makeStat(condition, eval_h))
+            ret.append(unit_h.makeStat(condition, eval_h, stat_ctx))
             if time_end is not None and datetime.now() > time_end:
                 break
         return ret
@@ -417,6 +399,11 @@ class DataSet(SolutionBroker):
         self.sStatRqCount += 1
         return str(self.sStatRqCount) + '/' + str(datetime.now())
 
+    def _makeStatCtx(self, rq_args):
+        if "ctx" in rq_args:
+            return json.loads(rq_args["ctx"])
+        return None
+
     #===============================================
     @RestAPI.ds_request
     def rq__ds_stat(self, rq_args):
@@ -445,7 +432,7 @@ class DataSet(SolutionBroker):
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
-                filter_h, time_end),
+                filter_h, self._makeStatCtx(rq_args), time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "rq-id": self._makeRqId()}
@@ -464,7 +451,7 @@ class DataSet(SolutionBroker):
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
-                dtree_h, time_end, point_no),
+                dtree_h, self._makeStatCtx(rq_args), time_end, point_no),
             "rq-id": self._makeRqId()}
         return ret_handle
 
@@ -485,7 +472,7 @@ class DataSet(SolutionBroker):
             "rq-id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition,
-                eval_h, time_end, point_no)}
+                eval_h, self._makeStatCtx(rq_args), time_end, point_no)}
         return ret_handle
 
     #===============================================
@@ -505,7 +492,8 @@ class DataSet(SolutionBroker):
         unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
         assert "param" in rq_args, 'Missing request argument "param"'
         parameters = json.loads(rq_args["param"])
-        ret = unit_h.makeParamStat(condition, parameters, eval_h, point_no)
+        ret = unit_h.makeParamStat(condition, parameters,
+            eval_h, self._makeStatCtx(rq_args), point_no)
         if rq_args.get("rq_id"):
             ret["rq-id"] = rq_args.get("rq_id")
         if rq_args.get("no"):

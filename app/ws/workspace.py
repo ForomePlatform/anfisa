@@ -36,8 +36,8 @@ from .ws_io import exportWS
 #===============================================
 class Workspace(DataSet):
     def __init__(self, data_vault, dataset_info, dataset_path):
-        DataSet.__init__(self, data_vault, dataset_info, dataset_path,
-            add_modes = {"WS"})
+        DataSet.__init__(self, data_vault, dataset_info, dataset_path)
+        assert self.getDSKind() == "ws"
         assert self.getRecStorage().getKind() == "disk", (
             "Missing storage kind: " + self.getRecStorage().getKind())
         self.mTabRecRand = array('q')
@@ -65,7 +65,7 @@ class Workspace(DataSet):
         self._loadPData()
         self._loadFData()
         self.mTagsMan = TagsManager(self,
-            self.getPanelVariants("Check-Tags", "_tags"))
+            self.getPanelList("Check-Tags", "_tags"))
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
         if not transcript_id_unit:
@@ -273,5 +273,3 @@ class Workspace(DataSet):
         use_support = rq_args.get("support") not in ("no", "off", "0")
         use_root_doc = rq_args.get("doc") not in ("no", "off", "0")
         return exportWS(self, use_support, use_root_doc)
-
-

@@ -86,9 +86,11 @@ def _formPanel(output, workspace_name, ws_pub_url):
                 </tr>
                 <tr id="ws-stat-total">
                     <td class="ws-stat-pre">Total:</td>
-                    <td id="ws-stat-total-var" title="variants in dataset"></td>
+                    <td id="ws-stat-total-var"
+                        title="variants in dataset"></td>
                     <td class="ws-stat-op">&#x00D7;</td>
-                    <td id="ws-stat-total-tr" title="transcripts in dataset"></td>
+                    <td id="ws-stat-total-tr"
+                        title="transcripts in dataset"></td>
                     <td class="ws-stat-op">&#x21C9;</td>
                     <td id="ws-stat-total-trv"
                         title="transcript variants in dataset"></td>

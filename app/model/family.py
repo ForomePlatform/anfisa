@@ -78,6 +78,20 @@ class FamilyInfo:
                         "Cohort sample is not registered: " + it_id)
                     self.mCohortMap[it_id] = item["name"]
 
+    def prepareModes(self):
+        ret = set()
+        trio_seq = self.getTrioSeq()
+        if trio_seq:
+            ret.add("trio")
+            if trio_seq[0][0] == "Proband":
+                ret.add("trio_base")
+                if len(self) == 3:
+                    ret.add("trio_pure")
+        if self.mCohortList is not None:
+            ret.add("COHORTS")
+        else:
+            ret.add("PROBAND")
+
     def __len__(self):
         return len(self.mMembers)
 

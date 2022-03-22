@@ -54,8 +54,8 @@ class RulesUnit(ComplexEnumUnit):
             dtree_h.activate()
             yield dtree_h.getDTreeName(), dtree_h.getFinalCondition()
 
-    def makeStat(self, condition, eval_h):
-        ret_handle = self.prepareStat()
+    def makeStat(self, condition, eval_h, stat_ctx):
+        ret_handle = self.prepareStat(stat_ctx)
         self.collectComplexStat(ret_handle, condition,
             detailed = self.isDetailed())
         return ret_handle

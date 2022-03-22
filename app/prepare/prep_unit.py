@@ -219,7 +219,8 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 class EnumConvertor(PathValueConvertor):
     def __init__(self, master, name, vpath, unit_no, vgroup,
-            sub_kind, variants, accept_other_values, value_map, conversion,
+            sub_kind, variants = None, accept_other_values = False,
+            value_map = None, conversion = None,
             default_value = None, compact_mode = False,  separators = None):
         PathValueConvertor.__init__(self, master, name, vpath, unit_no, vgroup)
         self.mSubKind = sub_kind
@@ -333,6 +334,41 @@ class EnumConvertor(PathValueConvertor):
         return ret
 
 #===============================================
+class VarietyConvertor(EnumConvertor):
+    def __init__(self, master, name, unit_no, vgroup,
+            atom_name, panel_name, vpath, panel_type, separator = '|'):
+        EnumConvertor.__init__(self, master, name, vpath,
+            unit_no, vgroup, "status")
+        self.mAtomName = atom_name
+        self.mPanelName = panel_name
+        self.mPanelType = panel_type
+        self.mSeparator = separator
+
+    def convert(self, values, rec_no):
+        try:
+            value = self.mSeparator.join(sorted(map(str, values)))
+            self.mVarCount[value] += 1
+            return value
+        except Exception:
+            self.regError(rec_no, values)
+        return None
+
+    def dump(self):
+        ret = PathValueConvertor.dump(self)
+        ret["kind"] = "enum"
+        ret["sub-kind"] = "status"
+        ret["mean"] = "variety"
+        ret["atom-name"] = self.mAtomName
+        ret["panel-name"] = self.mPanelName
+        ret["panel-type"] = self.mPanelType
+        ret["separator"] = self.mSeparator
+        variants = []
+        for var in sorted(set(self.mVarCount.keys())):
+            variants.append([var, self.mVarCount[var]])
+        ret["variants"] = variants
+        return ret
+
+#===============================================
 class PresenceConvertor(ValueConvertor):
     def __init__(self, master, name, unit_no, vgroup, path_info_seq):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
@@ -376,9 +412,8 @@ class PanelConvertor(ValueConvertor):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelType = panel_type
-        self.mPanelSets = {
-            pname: set(self.getMaster().getPanelVariants(pname))
-            for pname in self.getMaster().getPanelNames(self.mPanelType)}
+        self.mPanelSets = {pname: set(names)
+            for pname, names in self.getMaster().iterPanels(panel_type)}
         assert len(self.mPanelSets) > 0, (
             "No data for panel type " + panel_type)
         self.mCntUndef = 0
@@ -501,8 +536,11 @@ class TranscriptPanelsConvertor(TranscriptEnumConvertor):
         self.mDescr["panel-type"] = panel_type
         if view_name:
             self.mDescr["view-name"] = view_name
-        panel_names = list(self.getMaster().getPanelNames(panel_type))
-        assert len(panel_names) > 0, (
+        is_ok = False
+        for _ in self.getMaster().iterPanels(panel_type):
+            is_ok = True
+            break
+        assert is_ok, (
             "No data for panel type " + panel_type)
 
 #===============================================
@@ -567,6 +605,11 @@ def loadConvertorInstance(info, vgroup, filter_set):
                 info["no"], vgroup,
                 _DummyUnitHandler(info["panel-base"]), info["panel-type"],
                 info.get("view-path"))
+        if info.get("mean") == "variety":
+            return VarietyConvertor(filter_set, info["name"], info["no"],
+                vgroup, info["atom-name"], info["panel-name"],
+                info["path"], info["panel-type"], info["separator"])
+
         return EnumConvertor(filter_set, info["name"], info["path"],
             info["no"], vgroup,
             info["sub-kind"], info.get("pre-variants"),

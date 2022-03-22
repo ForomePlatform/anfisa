@@ -477,11 +477,15 @@ Create this file (igv.dir by default configuration) to provide access from datas
 If the file exists, it should be a file in JSON format with list of instructions. Each instruction has two fields: ``"name"`` as name of dataset, and ``"url"`` as reference to location of BAM-files: 
 
     | ``[``
-    |       ``{`` ``"name":`` "*dataset name*", ``url``: "*reference to BAM-files*" ``}``,
+    |       ``{`` ``"name":`` "*dataset name*", ``"url"``: "*reference to BAM-file*" ``}``,
     |         ...
     | ``]``
 
-The file controls references to base datasets, IGV-links in derived datasets are evaluated in automatic way.    
+The value of ``"url"`` is subject of format operation to insert data specific for each sample, either ``{id}`` or ``{name}``. As an example:
+
+    |  ``{"dataset": "PGP3140_panel_hl", "url": "https://nowhere/{name}.bam"}``
+    
+The file controls references to base datasets, IGV-links in derived datasets are evaluated in automatic way. 
 
 .. _Druid_setup:
 

@@ -74,9 +74,9 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         metadata_record["versions"][
             "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
 
-    view_aspects = defineViewSchema(metadata_record)
+    filter_set = defineFilterSchema(metadata_record, ds_kind)
+    view_aspects = defineViewSchema(metadata_record, filter_set.getModes())
     view_checker = ViewDataChecker(view_aspects)
-    filter_set = defineFilterSchema(metadata_record)
 
     if input_reader:
         if report_lines:
@@ -176,7 +176,7 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    filter_set = defineFilterSchema(ds_info["meta"])
+    filter_set = defineFilterSchema(ds_info["meta"], "xl")
 
     return druid_adm.uploadDataset(ds_name,
         ds_info["flt_schema"],
@@ -187,7 +187,7 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
 #=====================================
 def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
     assert solutionsAreReady()
-    filter_set = defineFilterSchema(favor_storage.getMetaData())
+    filter_set = defineFilterSchema(favor_storage.getMetaData(), "xl")
     fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
 
     with gzip.open(fdata_path, "wt", encoding = "utf-8") as outp:

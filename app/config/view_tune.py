@@ -416,7 +416,7 @@ class IGV_AttrH(AttrH):
         self.reset(None, False)
         file_urls = ','.join([
             f"{igv_url}/{sample_id}.{self.mBase}.bam"
-                for sample_id in self.mSamplesIds])
+            for sample_id in self.mSamplesIds])
         self.mPreUrl = (f"http://localhost:60151/load?file={file_urls}"
             f"&genome={self.mBase}&merge=false&name={self.mSamplesNames}")
         return True

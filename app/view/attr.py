@@ -28,7 +28,8 @@ class AttrH:
 
     #===============================================
     def __init__(self, name, kind = None, title = None,
-            is_seq = False, tooltip = None, render_mode = None):
+            is_seq = False, tooltip = None, render_mode = None,
+            requires = None):
         assert kind != "place" or name.lower() == name, (
             f"Placement attribute {name}: must be lowercase")
         self.mAspect = None
@@ -39,6 +40,7 @@ class AttrH:
         self.mIsSeq = is_seq
         self.mRenderMode = render_mode
         self.mReprFunc = None
+        self.mRequires = requires
 
     def setAspect(self, asp):
         self.mAspect = asp
@@ -77,6 +79,9 @@ class AttrH:
     def setReprFunc(self, repr_func):
         self.mReprFunc = repr_func
 
+    def getRequirements(self):
+        return self.mRequires
+
     #===============================================
     def dump(self):
         ret = {
@@ -84,12 +89,15 @@ class AttrH:
             "title": self.mTitle, "is_seq": self.mIsSeq}
         if self.mToolTip:
             ret["tooltip"] = self.mToolTip
+        if self.mRequires:
+            ret["requires"] = sorted(self.mRequires)
         return ret
 
     @classmethod
     def load(cls, data):
         return cls(data["name"], data["kind"], data["title"],
-            is_seq = data["is_seq"], tooltip = data.get("tooltip"))
+            is_seq = data["is_seq"], tooltip = data.get("tooltip"),
+            requires = data.get("requires"))
 
     #===============================================
     def htmlRepr(self, obj, view_context):

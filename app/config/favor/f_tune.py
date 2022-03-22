@@ -49,7 +49,7 @@ def tuneFavorUnits(ds_h):
         }, before = "Chromosome")
 
 # ===============================================
-def completeFavorDS(ds_h):
+def startFavorTune(ds_h):
     pass
 
 # ===============================================

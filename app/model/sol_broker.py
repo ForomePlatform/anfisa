@@ -18,23 +18,27 @@
 #  limitations under the License.
 #
 
-import logging
 from threading import Lock
 from collections import defaultdict
 
 from forome_tools.sync_obj import SyncronizedObject
 from app.config.a_config import AnfisaConfig
 from .sol_pack import SolutionPack
+from .family import FamilyInfo
 #===============================================
 class SolutionBroker(SyncronizedObject):
-    def __init__(self, data_schema, modes):
+    def __init__(self, meta_info, ds_kind,
+            derived_mode = False, zygosity_support = True):
         SyncronizedObject.__init__(self)
-        self.mDataSchema = data_schema
-        self.mSolPack = SolutionPack.select(data_schema)
+        self.mDataSchema = meta_info.get("data_schema", "CASE")
+        self.mSolPack = SolutionPack.select(self.mDataSchema)
         self.mLock  = Lock()
         self.mModes = set()
         self.mModes.add(self.mDataSchema)
-        self.addModes(modes)
+        ds_kind = ds_kind.upper()
+        assert ds_kind in {"WS", "XL"}
+        self.mModes.add(ds_kind)
+
         self.mStdFilterDict = None
         self.mStdFilterList = None
         self.mFilterCache = None
@@ -42,11 +46,32 @@ class SolutionBroker(SyncronizedObject):
         self.mSolKinds = None
         self.mNamedAttrs = dict()
 
+        reference = meta_info["versions"].get("reference")
+        self.mFastaBase = "hg38" if reference and "38" in reference else "hg19"
+
+        if derived_mode:
+            self.addModes({"DERIVED"})
+        else:
+            self.addModes({"PRIMARY"})
+
+        self.mFamilyInfo = FamilyInfo(meta_info)
+        self.addModes(self.mFamilyInfo.prepareModes())
+
+        if (1 <= len(self.mFamilyInfo) <= 10 and zygosity_support):
+            self.addModes({"ZYG"})
+        self.mZygSupport = None
+
     def getSolEnv(self):
         return self.mSolEnv
 
     def getDataSchema(self):
         return self.mDataSchema
+
+    def getFamilyInfo(self):
+        return self.mFamilyInfo
+
+    def getFastaBase(self):
+        return self.mFastaBase
 
     #===============================================
     def setSolEnv(self, sol_space):
@@ -80,6 +105,9 @@ class SolutionBroker(SyncronizedObject):
                 return it
         return None
 
+    def getModes(self):
+        return self.mModes
+
     #===============================================
     def regNamedAttr(self, name, attr_h):
         assert name not in self.mNamedAttrs, "Attribute duplication: " + name
@@ -89,25 +117,15 @@ class SolutionBroker(SyncronizedObject):
         return self.mNamedAttrs[name]
 
     #===============================================
-    def getPanelNames(self, panel_type):
-        ret = []
-        for it in self.iterStdItems("panel"):
-            if it.getData()[0] == panel_type:
-                ret.append(it.getName())
-        return ret
+    def iterPanels(self, panel_type):
+        for it in self.iterStdItems("panel." + panel_type):
+            yield (it.getName(), it.getData())
 
-    def getPanelVariants(self, panel_name,
-            panel_type = None, assert_mode = True):
-        for it in self.iterStdItems("panel"):
-            if it.getName() == panel_name:
-                if panel_type is None or it.getData()[0] == panel_type:
-                    return it.getData()[1]
-        if not panel_type:
-            panel_type = "?"
-        if assert_mode:
-            assert False, f"{panel_type}: Panel {panel_name} not found"
-        else:
-            logging.warning(f"{panel_type}: Panel {panel_name} not found")
+    def getPanelList(self, panel_name, panel_type):
+        for pname, names in self.iterPanels(panel_type):
+            if pname == panel_name:
+                return names
+        assert False, f"{panel_type}: Panel {panel_name} not found"
         return None
 
     #===============================================

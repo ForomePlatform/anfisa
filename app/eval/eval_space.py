@@ -21,6 +21,7 @@ import abc, json
 from hashlib import md5
 
 from .condition import ConditionMaker
+from .variety import VarietyUnit
 #===============================================
 class EvalSpace:
     def __init__(self, ds_h):
@@ -46,6 +47,13 @@ class EvalSpace:
         assert False
 
     def _addUnit(self, unit_h, force_it = False):
+        if unit_h.getMean() == "variety":
+            self._addReservedUnit(unit_h)
+            variety_h = VarietyUnit(unit_h)
+            self._addUnit(variety_h)
+            self._addUnit(variety_h.getPanelUnit())
+            return
+
         self.mUnits.append(unit_h)
         assert force_it or unit_h.getName() not in self.mUnitDict, (
             "Duplicate unit name: " + unit_h.getName())

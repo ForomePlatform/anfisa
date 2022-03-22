@@ -23,13 +23,14 @@ from app.prepare.prep_filters import FilterPrepareSetH
 from app.config.variables import anfisaVariables
 
 # ===============================================
-def defFavorFlt(metadata_record):
+def defFavorFlt(metadata_record, ds_kind, derived_mode = False):
     assert metadata_record.get("data_schema") == "FAVOR", (
         "FAVOR data schema expected: "
         + metadata_record.get("data_schema"))
+    assert ds_kind == "xl" and not derived_mode
 
-    filters = FilterPrepareSetH(metadata_record, anfisaVariables,
-        check_identifiers = False)
+    filters = FilterPrepareSetH(metadata_record, anfisaVariables, "xl",
+        derived_mode = False, check_identifiers = True)
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",
@@ -44,12 +45,15 @@ def defFavorFlt(metadata_record):
             default_value = sys.maxsize)
 
     with filters.viewGroup("Genes"):
-        genes_unit = filters.multiStatusUnit("Symbol",
-            #  "/_filters/genes[]",
-            "/_view/general/genes[]",
-            compact_mode = True)
-        filters.panelsUnit("Panels", genes_unit, "Symbol",
-            view_path = "/_view/general/gene_panels")
+        filters.varietyUnit("_Symbol", "Symbol", "Panels",
+            "/_filters/eqtl_gene[]", "symbol")
+
+        #genes_unit = filters.multiStatusUnit("Symbol",
+        #    "/_view/general/genes[]",
+        #    compact_mode = True)
+        #filters.panelsUnit("Panels", genes_unit, "Symbol",
+        #    view_path = "/_view/general/gene_panels")
+
         filters.intValueUnit("Num_Genes", "/_view/general/genes",
             conversion = "len", default_value = 0)
 

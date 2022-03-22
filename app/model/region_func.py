@@ -37,11 +37,11 @@ class RegionFuncUnit(FunctionUnit):
         if variants is None or "True" in variants:
             yield ("True", context["loc-condition"])
 
-    def makeInfoStat(self, eval_h, point_no):
-        return self.prepareStat()
+    def makeInfoStat(self, eval_h, stat_ctx, point_no):
+        return self.prepareStat(stat_ctx)
 
-    def makeParamStat(self, condition, parameters, eval_h, point_no):
-        ret_handle = self.prepareStat()
+    def makeParamStat(self, condition, parameters, eval_h, stat_ctx, point_no):
+        ret_handle = self.prepareStat(stat_ctx)
         ret_handle.update(parameters)
         loc_condition, error_msg = self.parse(parameters.get("locus"))
         if loc_condition is None:

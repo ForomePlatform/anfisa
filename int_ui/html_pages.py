@@ -103,8 +103,8 @@ def noRecords(output):
     print('''
         <body>
             <h3>No variants available</h3>
-            <p>Try to drop <button onclick='parent.window.updateCurZone(false);'
-            >zone</button>
+            <p>Try to drop <button
+                onclick='parent.window.updateCurZone(false);'>zone</button>
             or
             <button onclick='parent.window.updateCurFilter("");'
             >filter</button>.</p>

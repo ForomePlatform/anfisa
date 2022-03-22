@@ -22,6 +22,7 @@ from datetime import datetime
 
 from app.config.a_config import AnfisaConfig
 from app.model.dataset import DataSet
+
 from .xl_space import XL_EvalSpace
 from .xl_unit import XL_Unit
 from .long_runner import XL_LongRunner_DTreeCounts
@@ -31,7 +32,8 @@ class XLDataset(DataSet):
 
     def __init__(self, data_vault, dataset_info, dataset_path):
         DataSet.__init__(self, data_vault,
-            dataset_info, dataset_path, add_modes = {"XL"})
+            dataset_info, dataset_path)
+        assert self.getDSKind() == "xl"
         self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
         self.mLongRunners = dict()
 
