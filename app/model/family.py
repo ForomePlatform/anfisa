@@ -91,6 +91,7 @@ class FamilyInfo:
             ret.add("COHORTS")
         else:
             ret.add("PROBAND")
+        return ret
 
     def __len__(self):
         return len(self.mMembers)
