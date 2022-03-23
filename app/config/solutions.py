@@ -364,33 +364,33 @@ def setupGenericPack(app_config, base_pack):
         "GeneDx":   "GeneDx",
         "Invitae":  "Invitae"})
 
-    base_pack.regPanel("ACMG59", "symbol",
+    base_pack.regPanel("ACMG59", "Symbol",
         cfgPath("acmg59.lst"))
-    base_pack.regPanel("All_Hearing_Loss", "symbol",
+    base_pack.regPanel("All_Hearing_Loss", "Symbol",
         cfgPath("all_hearing_loss.lst"))
-    base_pack.regPanel("Reportable_Hearing_Loss", "symbol",
+    base_pack.regPanel("Reportable_Hearing_Loss", "Symbol",
         cfgPath("rep_hearing_loss.lst"))
-    base_pack.regPanel("Complement_System", "symbol",
+    base_pack.regPanel("Complement_System", "Symbol",
         cfgPath("complement_system.lst"))
-    base_pack.regPanel("PharmGKB_VIP", "symbol",
+    base_pack.regPanel("PharmGKB_VIP", "Symbol",
         cfgPath("pharmgkb_vip.lst"))
-    base_pack.regPanel("Coagulation_System", "symbol",
+    base_pack.regPanel("Coagulation_System", "Symbol",
         cfgPath("coagulation_system.lst"))
-    base_pack.regPanel("Thrombotic_Thrombocytopenic_Purpura", "symbol",
+    base_pack.regPanel("Thrombotic_Thrombocytopenic_Purpura", "Symbol",
         cfgPath("ttp.lst"))
-    base_pack.regPanel("Immune_Dysregulation", "symbol",
+    base_pack.regPanel("Immune_Dysregulation", "Symbol",
         cfgPath("immune_dysregulation.lst"))
-    base_pack.regPanel("Autism_Spectrum", "symbol",
+    base_pack.regPanel("Autism_Spectrum", "Symbol",
         cfgPath("autism.lst"))
-    base_pack.regPanel("Holoprosencephaly", "symbol",
+    base_pack.regPanel("Holoprosencephaly", "Symbol",
         cfgPath("hpe.lst"))
-    base_pack.regPanel("Tubulinopathies", "symbol",
+    base_pack.regPanel("Tubulinopathies", "Symbol",
         cfgPath("tubulinopathies.lst"))
-    base_pack.regPanel("Notch_Signaling_Pathway", "symbol",
+    base_pack.regPanel("Notch_Signaling_Pathway", "Symbol",
         cfgPath("notch.lst"))
-    base_pack.regPanel("SSH1_Interactors", "symbol",
+    base_pack.regPanel("SSH1_Interactors", "Symbol",
         cfgPath("ssh.lst"))
-    base_pack.regPanel("Wnt1_Interactors", "symbol",
+    base_pack.regPanel("Wnt1_Interactors", "Symbol",
         cfgPath("wnt.lst"))
 
     base_pack.regPanel("Check-Tags", "_tags", items = [
