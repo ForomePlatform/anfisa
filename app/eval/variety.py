@@ -43,7 +43,6 @@ class VarietyUnit(VarUnit):
         self.mSeparator = base_unit_h.getDescr()["separator"]
         self.mPanelType = base_unit_h.getDescr()["panel-type"]
         self.getInfo()["panel-name"] = self.mPanelUnit.getName()
-        self.getInfo()["variety"] = self.getName()
         self.mSingleSet = set()
         self.mMultiMap = defaultdict(list)
         for info in base_unit_h.getDescr()["variants"]:
@@ -92,6 +91,9 @@ class VarietyUnit(VarUnit):
                 f"Enum {self.getName}: empty set of variants")
             return self.getEvalSpace().getCondNone()
         return self.makeBaseCond(variants, filter_mode)
+
+    def fillRecord(self, inp_data, rec_no):
+        self.mBaseUnit.fillRecord(inp_data, rec_no)
 
     def makeStat(self, condition, eval_h, stat_ctx):
         base_stat = self.mBaseUnit.makeStat(condition, eval_h, None)
@@ -160,6 +162,9 @@ class VarietyPanelUnit(VarUnit):
 
         return self.mVariety.makeBaseCond(
             self.mapVariants(variants), filter_mode)
+
+    def fillRecord(self, inp_data, rec_no):
+        pass
 
     def makeStat(self, condition, eval_h, stat_ctx):
         assert False

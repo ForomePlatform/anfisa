@@ -49,7 +49,7 @@ class AspectSetH:
     def testRequirements(self, modes):
         if modes is None:
             return True
-        return len(self.mSchemaModes & modes) > 0
+        return len(self.mSchemaModes & set(modes)) > 0
 
     #===============================================
     def getViewRepr(self, rec_data, view_context):

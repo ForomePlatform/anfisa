@@ -711,10 +711,7 @@ var sCreateWsH = {
         if (info == null) {
             this.mDivModStatus.innerHTML = "Task information lost";
         } else {
-            if (info[0] == null) {
-                this.mDivModStatus.innerHTML = info[1];
-            } else {
-            }
+            this.mDivModStatus.innerHTML = info[1];
         }
     }
 };
