@@ -235,6 +235,7 @@ var sOpEnumH = {
     mStatusMode: null,
     mUpdateCondStr: null,
     mDivFuncParam: null,
+    mFreeMode: null,
     mArrangeBase: null,
     mArrangeDelta: null,
 
@@ -283,9 +284,11 @@ var sOpEnumH = {
         if (unit_stat["kind"] == "func") {
             this.mFuncCtrl = sOpFuncH;
             this.mFuncCtrl.setup(unit_stat);
+            this.mFreeMode = null;
         } else {
             this.mFuncCtrl = null;
-            this._setupVariants(unit_stat["variants"]);
+            this._setupVariants(getStatVariants(unit_stat));
+            this.mFreeMode = (unit_stat["free-atoms"] !== undefined);
         }
     },
     
@@ -447,7 +450,7 @@ var sOpEnumH = {
             else
                 err_msg = sel_names.length + " items selected";
         } else
-            err_msg = " Out of choice"
+            err_msg = (this.mFreeMode)? "No choice in trace": " Out of choice"
         if (this.mUpdateCondStr && !err_msg && condition_data &&
                 JSON.stringify(condition_data) == this.mUpdateCondStr) {
             err_msg = " ";
@@ -497,13 +500,39 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
             list_stat_rep.push('<span class="stat-ok">' + normFloatLongTail(val_min) + 
                 ' &le;&nbsp;...&nbsp;&le; ' + normFloatLongTail(val_max, true) + ' </span>');
         }
-        list_stat_rep.push(': ' + reportStatCount(counts, unit_stat, 0));
+        list_stat_rep.push(': ' + reportStatCount(counts, unit_stat["detailed"], 0));
     }
 }
 
 /*************************************/
+function getStatVariants(unit_stat) {
+    if (unit_stat["free-atoms"] != undefined) {
+        var all_variants = unit_stat["variants"];
+        var sel_variants = all_variants;
+        if (all_variants) {
+            var free_atoms = unit_stat["free-atoms"];
+            sel_variants = [];
+            for (var idx = 0; idx < all_variants.length; idx++) {
+                var_stat = all_variants[idx];
+                if (free_atoms.indexOf(var_stat[0]) >= 0)
+                    sel_variants.push(var_stat);
+            }
+        }
+        return sel_variants;
+    }
+    if (unit_stat["atom-name"]) {
+        if (unit_stat["atom-stat"])
+            return unit_stat["atom-stat"]["panels"];
+        return null;
+    } 
+    return unit_stat["variants"];
+}
+
+/*************************************/
 function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
-    var_list = unit_stat["variants"];
+    var_list = getStatVariants(unit_stat);
+    cnt_detailed = unit_stat["detailed"];
+    
     list_count = 0;
     if (var_list) {
         for (j = 0; j < var_list.length; j++) {
@@ -512,7 +541,11 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         }
     }
     if (list_count == 0) {
-        list_stat_rep.push('<span class="stat-bad">Out of choice</span>');
+        if (unit_stat["free-atoms"] !== undefined)
+            empty_msg = "No choice in trace"
+        else
+            empty_msg = "Out of choice";
+        list_stat_rep.push('<span class="stat-bad">' + empty_msg + '</span>');
         return;
     }
     needs_expand = list_count > 6 && expand_mode;
@@ -536,7 +569,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         view_count -= 1;
         list_count--;
         list_stat_rep.push('<li><b>' + var_name + '</b>: ' + 
-            reportStatCount(var_list[j], unit_stat, 1) + '</li>');
+            reportStatCount(var_list[j], cnt_detailed, 1) + '</li>');
     }
     list_stat_rep.push('</ul>');
     if (list_count > 0) {
@@ -545,8 +578,8 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
     }
 }
 
-function reportStatCount(count_info, unit_stat, shift) {
-    if (unit_stat["detailed"] && count_info[1 + shift] > 0) {
+function reportStatCount(count_info, detailed, shift) {
+    if (detailed && count_info[1 + shift] > 0) {
         cnt = count_info[1 + shift];
         s_mult = (cnt > 1)? "s":"";
         return '<span class="stat-count">' + cnt + 
@@ -941,8 +974,22 @@ var sUnitClassesH = {
             "stat--" + unit_name).getBoundingClientRect().top;
     },
 
-    setupItems: function(items, total_counts, unit_map,  
+    setupItems: function(stat_list, items, total_counts, unit_map,  
             unit_names_to_load, div_el, expand_mode, click_func) {
+        for (var idx = 0; idx < stat_list.length; idx++) {
+            if (sOpFuncH.notSupported(stat_list[idx]))
+                continue;
+            unit_stat = stat_list[idx];
+            unit_map[unit_stat["name"]] = idx;
+            items.push(unit_stat);
+        }
+        for (idx = 0; idx < items.length; idx++) {
+            unit_stat = items[idx];
+            if (unit_stat["panel-name"]) {
+                items[unit_map[unit_stat["panel-name"]]]
+                    ["atom-stat"] = unit_stat;
+            }
+        }
         var list_stat_rep = [];
         var group_title = false;
         this.mCurTotalCounts = total_counts;
@@ -951,7 +998,6 @@ var sUnitClassesH = {
         for (idx = 0; idx < items.length; idx++) {
             unit_stat = items[idx];
             unit_name   = unit_stat["name"];
-            unit_map[unit_name] = idx;
             if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
                 if (group_title != false) {
                     list_stat_rep.push('</div>');
@@ -1043,8 +1089,10 @@ var sUnitClassesH = {
         div_el.innerHTML = list_stat_rep.join('\n');
         div_el.className = "";
         e_rep = this.unitEntropyReport(unit_stat);
-        if (e_rep[0] >= 0)
+        if (e_rep[0] >= 0) {
             this.mCurEntropyRep[unit_idx] = e_rep;
+            this.renderEntopyReport(unit_idx);
+        }
     },
     
     renderEntopyReport: function(unit_idx) {
@@ -1077,10 +1125,13 @@ var sUnitClassesH = {
             }
         } else if (unit_stat["kind"] == "enum") {
             var c_idx = (unit_stat["detailed"]? 2:1);
-            for (var j = 0; j < unit_stat["variants"].length; j++) {
-                cnt = unit_stat["variants"][j][c_idx];
-                var_counts.push(cnt);
-                total -= cnt;
+            var variants = getStatVariants(unit_stat);
+            if (variants) {
+                for (var j = 0; j < variants.length; j++) {
+                    cnt = variants[j][c_idx];
+                    var_counts.push(cnt);
+                    total -= cnt;
+                }
             }
             // No special work for multiset
             if (total > 0)
@@ -1093,12 +1144,31 @@ var sUnitClassesH = {
 };
 
 /*************************************/
+function reduceTotal(total) {
+    if (total < 5)
+        // for N < 5; easy to select
+        return 1;
+    if (total < 25)
+        // for N < 25; still possible to view all values together on one page
+        return 1 + (total - 5) / 20;
+    if (total < 125)
+        // for N < 125; easy to scroll
+        return 2 + Math.sqrt(total - 25) / 5;
+    if (total < 625)
+        // for N < 625; still possible to scroll
+        return 4 + (total - 125) / 100;
+    if (total < 3125)
+        // for N < 3125; difficult to scroll, exact N no longer matters
+        return 9 + (total - 625) / 200;
+    // for N >= 3125; visual selection 
+    return 21.5;
+}
 
 /*************************************/
 function entropyReport(counts) {
     var total = 0.;
     for (j = 0; j < counts.length; j++) {
-        total += counts[j];
+        total += Math.sqrt(counts[j]);
     }
     if (total < 3) 
         return [-1, "E=0! T=" + total];
@@ -1108,11 +1178,9 @@ function entropyReport(counts) {
         if (counts[j] == 0)
             continue;
         cnt++;
-        quote = counts[j] / total;
+        quote = Math.sqrt(counts[j]) / total;
         sum_e -= quote * Math.log2(quote);
     }
-    l_tot = Math.log2(total);
-    norm_e = sum_e / l_tot;
-    return [norm_e, "E=" + norm_e.toFixed(3) + " S=" + l_tot.toFixed(3) + 
-        " T=" + total + " N=" + cnt];
+    norm_e = sum_e / Math.log2(total);
+    return [norm_e, "E=" + norm_e.toFixed(3) + " T=" + total + " C=" + cnt];
 }

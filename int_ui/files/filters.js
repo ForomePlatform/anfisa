@@ -110,22 +110,15 @@ var sUnitsH = {
         if (sSamplesCtrl)
             sSamplesCtrl.reset(this.mFilteredCounts[0]);
         this.mItems = [];
-        for (var idx=0; idx < info["stat-list"].length; idx++) {
-            if (sOpFuncH.notSupported(info["stat-list"][idx]))
-                continue;
-            this.mItems.push(info["stat-list"][idx]);
-        }
-        sConditionsH.setup(info);
-        sOpFilterH.update(info["cur-filter"], info["filter-list"]);
-        updateCurFilter(sOpFilterH.getCurFilterName(), true);
         this.mUnitMap = {}
-        var list_stat_rep = [];
         this.mUnitsDelay = [];
-        
-        this.mDivList.className = "";
-        sUnitClassesH.setupItems(
+        sUnitClassesH.setupItems(info["stat-list"],
             this.mItems, this.mTotalCounts, 
             this.mUnitMap, this.mUnitsDelay, this.mDivList);
+        sConditionsH.setup(info);
+        sOpFilterH.update(info["cur-filter"], info["filter-list"]);
+        updateCurFilter(sOpFilterH.getCurFilterName(), true);        
+        this.mDivList.className = "";
                 
         var unit_name = this.mCurUnit;
         if (unit_name) {
@@ -187,13 +180,22 @@ var sUnitsH = {
             unit_stat = info["units"][idx];
             unit_name = unit_stat["name"];
             unit_idx = this.mUnitMap[unit_name];
-            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
+            if (unit_stat["atom-name"]) 
+                unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             this.mItems[unit_idx] = unit_stat;
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
+            if (unit_stat["panel-name"]) {
+                panel_idx = this.mUnitMap[unit_stat["panel-name"]];
+                this.mItems[panel_idx]["atom-stat"] = unit_stat;
+                sUnitClassesH.refillUnitStat(this.mItems[panel_idx], panel_idx);
+                if (this.mCurUnit == unit_stat["panel-name"])
+                    this.selectUnit(unit_stat["panel-name"], true);
+            }
             if (cur_el) {
                 cur_top = cur_el.getBoundingClientRect().top;
                 this.mDivList.scrollTop += cur_top - prev_top;
@@ -248,14 +250,6 @@ var sUnitsH = {
         softScroll(new_unit_el, 1);
         sConditionsH.onUnitSelect();
         sOpCondH.onUnitSelect();
-    },
-    
-    updateFuncUnit: function(unit_name, unit_stat) {
-        if (this.mCurFuncName != null) {
-            this.mCurFuncName = unit_name;
-            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
-            this.selectUnit(this.mCurUnit, true);
-        }
     },
     
     prepareWsCreate: function() {

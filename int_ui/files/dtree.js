@@ -498,21 +498,15 @@ var sUnitsH = {
         sSubVRecH.reset(this.mFilteredCounts[0]);
             
         this.mItems = [];
-        for (var idx=0; idx < info["stat-list"].length; idx++) {
-            if (sOpFuncH.notSupported(info["stat-list"][idx]))
-                continue;
-            this.mItems.push(info["stat-list"][idx]);
-        }
         this.mUnitMap = {};
         this.mUnitsDelay = [];
-        this.mCurUnit = null;        
-        this.mCurFuncName = null;
-
-        this.mDivList.className = "";
-        sUnitClassesH.setupItems(
+        sUnitClassesH.setupItems(info["stat-list"],
             this.mItems, this.mTotalCounts, this.mUnitMap, 
             this.mUnitsDelay, this.mDivList,
             1, "sDecisionTree.showUnitCond");
+        this.mCurUnit = null;        
+        this.mCurFuncName = null;
+        this.mDivList.className = "";
         
         this.selectUnit(this.mItems[0]["name"]);
         this.checkDelayed();
@@ -566,13 +560,22 @@ var sUnitsH = {
             unit_stat = info["units"][idx];
             unit_name = unit_stat["name"];
             unit_idx = this.mUnitMap[unit_name];
-            sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
+            if (unit_stat["atom-name"])
+                unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             this.mItems[unit_idx] = unit_stat;
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
+            if (unit_stat["panel-name"]) {
+                panel_idx = this.mUnitMap[unit_stat["panel-name"]];
+                this.mItems[panel_idx]["atom-stat"] = unit_stat;
+                sUnitClassesH.refillUnitStat(this.mItems[panel_idx], panel_idx);
+                if (this.mCurUnit == unit_stat["panel-name"])
+                    this.selectUnit(unit_stat["panel-name"], true);
+            }
             if (cur_el) {
                 cur_top = cur_el.getBoundingClientRect().top;
                 el_list.scrollTop += cur_top - prev_top;
@@ -600,14 +603,6 @@ var sUnitsH = {
     
     selectUnit: function(stat_unit, force_it) {
         this.checkUnitDelay(stat_unit);
-    },
-    
-    updateFuncUnit: function(unit_name, unit_stat) {
-        if (this.mCurFuncName != null) {
-            this.mCurFuncName = unit_name;
-            this.mItems[this.mUnitMap[unit_name]] = unit_stat;
-            this.selectUnit(this.mCurUnit, true);
-        }
     },
     
     prepareWsCreate: function() {

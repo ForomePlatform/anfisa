@@ -49,7 +49,8 @@ class EvalSpace:
     def _addUnit(self, unit_h, force_it = False):
         if unit_h.getMean() == "variety":
             self._addReservedUnit(unit_h)
-            variety_h = VarietyUnit(unit_h)
+            variety_h = VarietyUnit(unit_h,
+                self.getDS().getDSKind() == "ws")
             self._addUnit(variety_h)
             self._addUnit(variety_h.getPanelUnit())
             return
