@@ -63,8 +63,14 @@ def exportWS(ds_h, with_support, with_root_doc):
 
     with tarfile.open(export_dir + "/" + out_name, "w:gz") as tar:
         for fname in ("fdata.json.gz", "pdata.json.gz",
-                "stat.json", "vdata.ixbz2", "doc/info.html"):
+                "vdata.ixbz2", "doc/info.html"):
             tar.add(ds_dir + fname, arcname =  fname)
+        for fname in ("stat.json"):
+            if os.path.exists(ds_dir + fname):
+                tar.add(ds_dir + fname, arcname =  fname)
+
+        if os.path.exists(ds_dir + "stat.json"):
+            tar.add(ds_dir + "stat.json", arcname =  "stat.json")
         jsDataToTar(tar, "dsinfo.json", ds_info)
         if support_data is not None:
             jsDataToTar(tar, "support.json", support_data)
@@ -86,7 +92,7 @@ def importWS(vault_h, ds_name, tar_content):
         member_names = set(tar.getnames())
 
         for fname in ("fdata.json.gz", "pdata.json.gz", "dsinfo.json",
-                "stat.json", "vdata.ixbz2", "doc/info.html"):
+                "vdata.ixbz2", "doc/info.html"):
             if fname not in member_names:
                 return {
                     "error": f"Bad dataset archive: file {fname} is required"}
