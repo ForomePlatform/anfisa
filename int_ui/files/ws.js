@@ -595,7 +595,7 @@ function doArchivation() {
 
 function setupArchivation(info) {
     res_el = document.getElementById("export-result");
-    if (info["fname"]) {
+    if (info["url"]) {
         res_el.className = "popup";
         res_el.innerHTML = '<a href="' + info["url"] + 
             '" target="blank" ' + 'download>Download archive</a>';
