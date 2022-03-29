@@ -27,7 +27,7 @@ from app.view.attr import AttrH
 # Transcript details support
 #===============================================
 def markupTranscriptTab(info_handle, view_context, aspect):
-    if "details" not in view_context:
+    if "details" not in view_context or len(info_handle["colhead"]) == 0:
         return
     it_map = bitarray(view_context["details"])
     assert aspect.getColGroups().getAttr(0) == "transcripts", (
