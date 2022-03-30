@@ -1145,12 +1145,12 @@ var sUnitClassesH = {
 
 /*************************************/
 function reduceTotal(total) {
-    if (total < 5)
+    if (total < 10)
         // for N < 5; easy to select
-        return 1;
+        return 0.3 + 0.02 * (total);
     if (total < 25)
         // for N < 25; still possible to view all values together on one page
-        return 1 + (total - 5) / 20;
+        return 0.5 + (total - 10) / 15;
     if (total < 125)
         // for N < 125; easy to scroll
         return 2 + Math.sqrt(total - 25) / 5;
@@ -1167,8 +1167,12 @@ function reduceTotal(total) {
 /*************************************/
 function entropyReport(counts) {
     var total = 0.;
+    var q = false
     for (j = 0; j < counts.length; j++) {
-        total += Math.sqrt(counts[j]);
+        if (q)
+            total += Math.sqrt(counts[j]);
+        else
+            total += counts[j]
     }
     if (total < 3) 
         return [-1, "E=0! T=" + total];
@@ -1178,9 +1182,23 @@ function entropyReport(counts) {
         if (counts[j] == 0)
             continue;
         cnt++;
-        quote = Math.sqrt(counts[j]) / total;
+        if (q)
+            quote = Math.sqrt(counts[j]) / total;
+        else
+            quote = counts[j] /total
         sum_e -= quote * Math.log2(quote);
     }
-    norm_e = sum_e / Math.log2(total);
-    return [norm_e, "E=" + norm_e.toFixed(3) + " T=" + total + " C=" + cnt];
+    var norm_e = sum_e / Math.log2 (total);
+    var divisor = reduceTotal(counts.length)
+    var pp = norm_e / divisor
+    if (pp > 1)
+        pp = 1.0
+    return [
+        pp,
+        "E=" + norm_e.toFixed(3) +
+        " T=" + total +
+        " C=" + cnt +
+        " D=" + divisor.toFixed(3) +
+        " L=" + counts.length
+    ];
 }

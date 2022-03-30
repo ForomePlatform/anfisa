@@ -18,7 +18,7 @@
 
 Anfisa is a Variant Analysis and Curation Tool. Its purpose is to 
 bring together Genetic Research and Clinical settings and provide a 
-medical genticist with access to research Genome.
+medical geneticist with access to research Genome.
 
 See more about the goal of the project at https://forome.org/  
 
