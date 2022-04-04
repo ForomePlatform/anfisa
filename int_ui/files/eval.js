@@ -761,7 +761,7 @@ function startWsCreate() {
 /* Visual control for units and visual groups */
 /**********************************************/
 var sUnitClassesH = {
-    mUnitClasses: null,
+    mUShowClasses: null,
     mUnitItems: null,
     mVGroupsSeq: null,
     mDivTopBack: null,
@@ -770,9 +770,8 @@ var sUnitClassesH = {
     mSpanIntState: null,
     mBtnReset: null,
     mBtnDone: null,
-    mCurCriterium: null,
-    mCurTotalCounts: null,
-    mCurEntropyRep: null,
+    mCurUShowState: null,
+    mCurFlteredCounts: null,
     
     init: function() {
         this.mDivTopBack = document.getElementById("unit-classes-back");
@@ -783,12 +782,12 @@ var sUnitClassesH = {
         this.mBtnDone = document.getElementById("unit-classes-done");
     },
     
-    setup: function(unit_classes) {
-        this.mUnitClasses = unit_classes;
+    setup: function(show_classes) {
+        this.mUShowClasses = show_classes;
         var list_rep = [];
         var j, k;
-        for (j = 0; j < this.mUnitClasses.length; j++) {
-            unit_cls = this.mUnitClasses[j];
+        for (j = 0; j < this.mUShowClasses.length; j++) {
+            unit_cls = this.mUShowClasses[j];
             list_rep.push('<div class="unit-classes-class">\n' +
                 '  <div class="unit-class-title">' + 
                 '<input id="ucl--' + j + '-all" type="checkbox" checked ' +
@@ -812,16 +811,16 @@ var sUnitClassesH = {
         }
     },
 
-    itInWork: function(it_classes, except_cls) {
+    isUShown: function(it_classes, except_index) {
         var j, k, in_w;
-        if (this.mCurCriterium != null) {
-            for (var j=0; j < this.mCurCriterium.length; j++) {
-                if ((this.mCurCriterium[j] != null) 
-                        && (j != except_cls)) {
+        if (this.mCurUShowState != null) {
+            for (var j=0; j < this.mCurUShowState.length; j++) {
+                if ((this.mCurUShowState[j] != null) 
+                        && (j != except_index)) {
                     in_w = false;
                     for (var k=0; k < it_classes[j].length; k++) {
-                        if(this.mCurCriterium[j].
-                            indexOf(it_classes[j][k]) >= 0) {
+                        if(this.mCurUShowState[j].
+                                indexOf(it_classes[j][k]) >= 0) {
                             in_w = true;
                             break;
                         }
@@ -837,18 +836,18 @@ var sUnitClassesH = {
     
     updateItems: function(unit_items, no_reset) {
         this.mUnitItems = unit_items;
-        if (this.mUnitClasses == null) {
+        if (this.mUShowClasses == null) {
             return;
         }
         var cls_counts = [];
         var j, idx, k;
-        for (j = 0; j < this.mUnitClasses.length; j++) {
-            cls_counts.push(Array(this.mUnitClasses[j]["values"].length).fill(0));
+        for (j = 0; j < this.mUShowClasses.length; j++) {
+            cls_counts.push(Array(this.mUShowClasses[j]["values"].length).fill(0));
         }
         for (idx=0; idx < this.mUnitItems.length; idx++) {
             it_classes = this.mUnitItems[idx]["classes"];
-            for (j=0; j < this.mUnitClasses.length; j++) {
-                if (!this.itInWork(it_classes, j))
+            for (j=0; j < this.mUShowClasses.length; j++) {
+                if (!this.isUShown(it_classes, j))
                     continue;
                 facet_idxs = it_classes[j];
                 for (k=0; k < facet_idxs.length; k++) {
@@ -856,9 +855,9 @@ var sUnitClassesH = {
                 }
             }
         }
-        for (j = 0; j < this.mUnitClasses.length; j++) {
+        for (j = 0; j < this.mUShowClasses.length; j++) {
             cls_total = cls_counts[j].reduce(function(acc, val) { return acc + val; }, 0)
-            for (k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+            for (k=0; k < this.mUShowClasses[j]["values"].length; k++) {
                 it_code = '--' + j + '-' + k;
                 it_div = document.getElementById('div-ucl' + it_code);
                 it_check = document.getElementById('ucl' + it_code);
@@ -876,29 +875,40 @@ var sUnitClassesH = {
     },
     
     update: function(no_reset) {
-        this.mCurCriterium = [];
+        this.mCurUShowState = [];
         var j, k, idx;
-        for (j = 0; j < this.mUnitClasses.length; j++) {
+        for (j = 0; j < this.mUShowClasses.length; j++) {
             cls_div = document.getElementById("ucl-group--" + j);
             cls_check = document.getElementById("ucl--" + j + "-all");
             cls_div.style.display = (cls_check.checked)? "none":"block";
             var j_cr = null;
             if (!cls_check.checked) {
                 j_cr = [];
-                for(k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+                for(k=0; k < this.mUShowClasses[j]["values"].length; k++) {
                     it_code = '--' + j + '-' + k;
                     if (document.getElementById("ucl" + it_code).checked)
                         j_cr.push(k);
                 }
             }
-            this.mCurCriterium.push(j_cr);
+            this.mCurUShowState.push(j_cr);
         }
+        var cnt_shown = this.updateUShow();
+        if (cnt_shown == 0 && this.mUnitItems.length > 0 && !no_reset) {
+            this.reset(true);
+            return;
+        }
+        this.showStatus(cnt_shown, this.mUnitItems.length);
+    },
+    
+    updateUShow: function() {
         var cnt_shown = 0;
         var groups_shown = [];
         var group_e_val = -1;
         for (idx = 0; idx < this.mUnitItems.length; idx++) {
             it = this.mUnitItems[idx];
-            var in_w = this.itInWork(it["classes"]);
+            var ushown = this.isUShown(it["classes"]);
+            document.getElementById("stat--" + it["name"]).style.display = 
+                (ushown)? "block": "none";
             if (groups_shown.length < this.mVGroupsSeq.length &&
                     idx == this.mVGroupsSeq[groups_shown.length]) {
                 if (groups_shown.length > 0)
@@ -906,14 +916,12 @@ var sUnitClassesH = {
                 groups_shown.push(false);
                 group_e_val = -1;
             }
-            if (in_w) {
+            if (ushown) {
                 cnt_shown++;
                 groups_shown[groups_shown.length - 1] = true;
             }
-            document.getElementById("stat--" + it["name"]).style.display = 
-                (in_w)? "block": "none";
             e_val = this.renderEntopyReport(idx);
-            if (in_w && e_val > group_e_val)
+            if (ushown && e_val > group_e_val)
                 group_e_val = e_val;
         }
         if (groups_shown.length > 0)
@@ -923,11 +931,6 @@ var sUnitClassesH = {
             if (grp_el)
                 grp_el.style.display = (groups_shown[idx])? "block": "none";
         }
-        if (cnt_shown == 0 && this.mUnitItems.length > 0 && !no_reset) {
-            this.reset(true);
-            return;
-        }
-        this.showStatus(cnt_shown, this.mUnitItems.length);
     },
     
     showStatus: function(cnt_shown, cnt_all) {
@@ -950,10 +953,10 @@ var sUnitClassesH = {
     
     reset: function(heavy_mode) {
         var j;
-        for (j = 0; j < this.mUnitClasses.length; j++) {
+        for (j = 0; j < this.mUShowClasses.length; j++) {
             document.getElementById("ucl--" + j + "-all").checked = true;
             if (heavy_mode) {
-                for(k=0; k < this.mUnitClasses[j]["values"].length; k++) {
+                for(k=0; k < this.mUShowClasses[j]["values"].length; k++) {
                     it_code = '--' + j + '-' + k;
                     document.getElementById("ucl" + it_code).checked = true;
                 }
@@ -974,7 +977,7 @@ var sUnitClassesH = {
             "stat--" + unit_name).getBoundingClientRect().top;
     },
 
-    setupItems: function(stat_list, items, total_counts, unit_map,  
+    setupItems: function(stat_list, items, filtered_counts, unit_map,  
             unit_names_to_load, div_el, expand_mode, click_func) {
         for (var idx = 0; idx < stat_list.length; idx++) {
             if (sOpFuncH.notSupported(stat_list[idx]))
@@ -992,8 +995,7 @@ var sUnitClassesH = {
         }
         var list_stat_rep = [];
         var group_title = false;
-        this.mCurTotalCounts = total_counts;
-        this.mCurEntropyRep = [];
+        this.mCurFlteredCounts = filtered_counts;
         this.mVGroupsSeq = [];
         for (idx = 0; idx < items.length; idx++) {
             unit_stat = items[idx];
@@ -1057,7 +1059,6 @@ var sUnitClassesH = {
                         break;
                 }
             }
-            this.mCurEntropyRep.push(this.unitEntropyReport(unit_stat));
             list_stat_rep.push('</div></div>')
         }
         if (group_title != false) {
@@ -1088,16 +1089,12 @@ var sUnitClassesH = {
         }
         div_el.innerHTML = list_stat_rep.join('\n');
         div_el.className = "";
-        e_rep = this.unitEntropyReport(unit_stat);
-        if (e_rep[0] >= 0) {
-            this.mCurEntropyRep[unit_idx] = e_rep;
-            this.renderEntopyReport(unit_idx);
-        }
     },
     
     renderEntopyReport: function(unit_idx) {
+        var unit_stat = this.mUnitItems[unit_idx];
+        var e_rep = this.unitEntropyReport(unit_stat);
         e_el = document.getElementById("unit-entropy--" + unit_idx);
-        e_rep = this.mCurEntropyRep[unit_idx];
         e_el.innerHTML = '['+ e_rep[0].toFixed(3) + ']';
         e_el.title = e_rep[1];
         return e_rep[0];
@@ -1111,7 +1108,7 @@ var sUnitClassesH = {
     unitEntropyReport: function(unit_stat) {
         if (unit_stat == null || unit_stat["incomplete"])
             return [-1, "loading"];
-        var total = this.mCurTotalCounts[(unit_stat["detailed"])?1:0];
+        var total = this.mCurFlteredCounts[(unit_stat["detailed"])?1:0];
         var var_counts = [];
         if (unit_stat["kind"] == "numeric") {
             if (unit_stat["histogram"]) {
@@ -1120,8 +1117,6 @@ var sUnitClassesH = {
                     var_counts.push(hist_seq[j]);
                     total -= hist_seq[j];
                 }
-                if (total > 0)
-                    var_counts.push(total);
             }
         } else if (unit_stat["kind"] == "enum") {
             var c_idx = (unit_stat["detailed"]? 2:1);
@@ -1146,7 +1141,7 @@ var sUnitClassesH = {
 /*************************************/
 function reduceTotal(total) {
     if (total < 10)
-        // for N < 5; easy to select
+        // for N < 10; easy to select
         return 0.3 + 0.02 * (total);
     if (total < 25)
         // for N < 25; still possible to view all values together on one page
@@ -1167,12 +1162,10 @@ function reduceTotal(total) {
 /*************************************/
 function entropyReport(counts) {
     var total = 0.;
-    var q = false
     for (j = 0; j < counts.length; j++) {
-        if (q)
-            total += Math.sqrt(counts[j]);
-        else
-            total += counts[j]
+        total += counts[j]
+        // alt:
+        // total += Math.sqrt(counts[j]);
     }
     if (total < 3) 
         return [-1, "E=0! T=" + total];
@@ -1182,10 +1175,9 @@ function entropyReport(counts) {
         if (counts[j] == 0)
             continue;
         cnt++;
-        if (q)
-            quote = Math.sqrt(counts[j]) / total;
-        else
-            quote = counts[j] /total
+        quote = counts[j] /total
+        // alt:
+        // quote = Math.sqrt(counts[j]) / total;
         sum_e -= quote * Math.log2(quote);
     }
     var norm_e = sum_e / Math.log2 (total);

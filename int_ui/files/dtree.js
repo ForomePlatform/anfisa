@@ -501,7 +501,7 @@ var sUnitsH = {
         this.mUnitMap = {};
         this.mUnitsDelay = [];
         sUnitClassesH.setupItems(info["stat-list"],
-            this.mItems, this.mTotalCounts, this.mUnitMap, 
+            this.mItems, this.mFilteredCounts, this.mUnitMap, 
             this.mUnitsDelay, this.mDivList,
             1, "sDecisionTree.showUnitCond");
         this.mCurUnit = null;        
@@ -565,8 +565,8 @@ var sUnitsH = {
                 this.mUnitsDelay.splice(pos, 1);
             if (unit_stat["atom-name"])
                 unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
-            sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             this.mItems[unit_idx] = unit_stat;
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (unit_stat["panel-name"]) {

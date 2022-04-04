@@ -113,7 +113,7 @@ var sUnitsH = {
         this.mUnitMap = {}
         this.mUnitsDelay = [];
         sUnitClassesH.setupItems(info["stat-list"],
-            this.mItems, this.mTotalCounts, 
+            this.mItems, this.mFilteredCounts, 
             this.mUnitMap, this.mUnitsDelay, this.mDivList);
         sConditionsH.setup(info);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
@@ -185,8 +185,8 @@ var sUnitsH = {
                 this.mUnitsDelay.splice(pos, 1);
             if (unit_stat["atom-name"]) 
                 unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
-            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             this.mItems[unit_idx] = unit_stat;
+            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (unit_stat["panel-name"]) {
