@@ -1175,18 +1175,14 @@ function entropyReport(counts) {
         if (counts[j] == 0)
             continue;
         cnt++;
-        quote = counts[j] /total
-        // alt:
-        // quote = Math.sqrt(counts[j]) / total;
+        quote = counts[j] /total;
         sum_e -= quote * Math.log2(quote);
     }
     var norm_e = sum_e / Math.log2 (total);
-    var divisor = reduceTotal(counts.length)
-    var pp = norm_e / divisor
-    if (pp > 1)
-        pp = 1.0
+    var divisor = reduceTotal(cnt);
+    var pp = norm_e / divisor;
     return [
-        pp,
+        Math.min(1.0, pp),
         "E=" + norm_e.toFixed(3) +
         " T=" + total +
         " C=" + cnt +
