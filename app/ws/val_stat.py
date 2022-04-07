@@ -80,13 +80,9 @@ class NumHistogramBuilder:
                 pp += 1
             self.mInfo.append(pp - 1)
             self.mIntervals = [pow(1E1, pp - 1)]
-            while True:
-                up_bound = pow(1E1, pp)
-                if v_max >= up_bound:
-                    self.mIntervals.append(up_bound)
-                    pp += 1
-                else:
-                    break
+            while self.mIntervals[-1] < v_max:
+                self.mIntervals.append(pow(1E1, pp))
+                pp += 1
 
             if len(self.mIntervals) == 1:
                 self.mInfo = None
