@@ -12,6 +12,7 @@ Requests
    :doc:`job_status`        Job status
    :doc:`adm_update`        Force vault state update
    :doc:`adm_reload_ds`     Force dataset reload
+   :doc:`import_ws`         Create workspace by archive file
   ------------------------- ------------------------------------------------------------- 
   \ 
   *Dataset level*
@@ -43,7 +44,6 @@ Requests
    :doc:`export`            Export operation in Excel format
    :doc:`ds2ws`             Creation of secondary workspace
    :doc:`export_ws`         Export workspace as archive
-   :doc:`import_ws`         Create workspace by archive file
   ------------------------- -------------------------------------------------------------
   \ 
   *WS-dataset support*

@@ -75,14 +75,19 @@ class NumHistogramBuilder:
             v_min, v_max = int(v_min), int(v_max)
         if self.mLogMode:
             self.mInfo = ["LOG"]
-            pp = 0 if self.mIntMode else too_low_power
+            pp = 1 if self.mIntMode else too_low_power
             while (pow(1E1, pp) < v_min):
                 pp += 1
             self.mInfo.append(pp - 1)
             self.mIntervals = [pow(1E1, pp - 1)]
-            while (v_max > self.mIntervals[-1]):
-                self.mIntervals.append(pow(1E1, pp))
-                pp += 1
+            while True:
+                up_bound = pow(1E1, pp)
+                if v_max >= up_bound:
+                    self.mIntervals.append(up_bound)
+                    pp += 1
+                else:
+                    break
+
             if len(self.mIntervals) == 1:
                 self.mInfo = None
                 self.mIntervals = None
