@@ -220,7 +220,8 @@ var sOpNumH = {
             } else {
                 val = "" + h_info[2];
             }
-            h_content.push('<span class="hist-diap">' + val + '</span>'); 
+            var h_repr = JSON.stringify(h_info).replace(/"/g, '&quot;');
+            h_content.push('<span class="hist-diap" title="' + h_repr + ' ">' + val + '</span>'); 
         }
         this.mDivHistogram.innerHTML = h_content.join("");
     }
