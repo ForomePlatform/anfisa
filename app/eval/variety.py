@@ -102,30 +102,37 @@ class VarietyUnit(VarUnit):
     def makeStat(self, condition, eval_h, stat_ctx):
         base_stat = self.mBaseUnit.makeStat(condition, eval_h, None)
 
-        if self.mFullMode:
-            free_names = self.mAllAtoms
-        else:
-            free_names = set()
+        full_mode = self.mFullMode
+        panel_mode = True
+        free_names = None
+        if stat_ctx is not None:
             key_ctx = "free." + self.getName()
-            if stat_ctx is not None and key_ctx in stat_ctx:
+            if key_ctx in stat_ctx:
                 free_names = set(stat_ctx[key_ctx])
+            if stat_ctx.get("unit") == "internal":
+                full_mode = True
+                panel_mode = False
+
+        if free_names is None:
+            free_names = self.mAllAtoms
 
         atom_names = free_names.copy()
         panel_names = dict()
         panel_cnt = dict()
-        for pname, names in self.iterPanels():
-            names = set(names)
-            panel_names[pname] = names
-            panel_cnt[pname] = 0
-            if not self.mFullMode:
-                atom_names |= names
+        if panel_mode:
+            for pname, names in self.iterPanels():
+                names = set(names)
+                panel_names[pname] = names
+                panel_cnt[pname] = 0
+                if not self.mFullMode:
+                    atom_names |= names
         atom_cnt = {nm: 0 for nm in atom_names}
 
         for base_var, count in base_stat["variants"]:
             if count < 1:
                 continue
             names = set(base_var.split(self.mSeparator))
-            if not self.mFullMode:
+            if not full_mode:
                 names &= atom_names
             if len(names) == 0:
                 continue
@@ -138,12 +145,13 @@ class VarietyUnit(VarUnit):
         ret_handle = self.prepareStat(stat_ctx)
         if not self.mFullMode:
             ret_handle["free-atoms"] = sorted(free_names)
-        ret_handle["panel-atoms"] = [[pname, sorted(panel_names[pname])]
-            for pname in sorted(panel_cnt.keys())]
         ret_handle["variants"] = [[nm, atom_cnt[nm]]
             for nm in sorted(atom_cnt.keys())]
-        ret_handle["panels"] = [[pname, panel_cnt[pname]]
-            for pname in sorted(panel_cnt.keys())]
+        if panel_mode:
+            ret_handle["panel-atoms"] = [[pname, sorted(panel_names[pname])]
+                for pname in sorted(panel_cnt.keys())]
+            ret_handle["panels"] = [[pname, panel_cnt[pname]]
+                for pname in sorted(panel_cnt.keys())]
         return ret_handle
 
 #===============================================
