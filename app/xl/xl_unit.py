@@ -71,6 +71,18 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
                 query["filter"] = cond_repr
         return query
 
+    @classmethod
+    def count2rank(cls, count):
+        if count < 4096:
+            return 16384
+        if count < 8192:
+            return 8192
+        if count < 16384:
+            return 2048
+        if count < 32768:
+            return 512
+        return 128
+
     def _prepareHistogram(self, druid_agent, query, v_min, v_max, count):
         if self.getEvalSpace().noHistogram():
             return None
@@ -78,11 +90,12 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         h_info = h_builder.getInfo()
         if h_info is None:
             return None
+
         query["aggregations"] = [{
             "type": "quantilesDoublesSketch",
             "name": "__sketch__",
             "fieldName": self.getInternalName(),
-            "k": 128}]
+            "k": self.count2rank(count)}]
         query["postAggregations"] = [
             {
                 "type": "quantilesDoublesSketchToHistogram",

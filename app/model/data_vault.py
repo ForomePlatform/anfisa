@@ -19,6 +19,7 @@
 #
 
 import sys, os, json, logging, traceback
+import typing, array
 from glob import glob
 from io import StringIO
 from copy import deepcopy
@@ -358,6 +359,9 @@ class DataVault(SyncronizedObject):
         assert "file" in rq_args, 'Missing argument "file"'
         ds_name = rq_args["name"]
         content = rq_args["file"]
+        if (isinstance(ds_name, typing.ByteString)
+                or isinstance(ds_name, array.array)):
+            ds_name = ds_name.decode("utf-8")
         ret = importWS(self, ds_name, content)
         self.scanAll()
         return ret
