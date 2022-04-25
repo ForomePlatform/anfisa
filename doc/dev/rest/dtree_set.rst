@@ -42,6 +42,11 @@ Synopsis
     |           ``{`` *dictionary* 
     |                 point no, *int*: ``[`` *list of* :doc:`s_condition` ``]``
     |           ``}``
+    |      "**err-atoms**": *optional* atomic errors
+    |           ``{`` *dictionary* 
+    |                 point no *int*: 
+    |                   ``{`` atom idx *int*: *string* ``}``
+    |           ``}``
     |      "**labels**": ``[`` *list of string* ``]`` - defined state labels 
     |        
     |      "**error**": *optional* diagnostics for first error, *string*
@@ -80,6 +85,8 @@ Returning properties:
     **cond-atoms**: Point of kind ``"If"`` contains one or many :term:`decision tree atomic conditions<decision tree atomic condition>`, or in short form "atoms". Atoms are active zones in user interface: the user can change atomic condition and it causes modification of decision tree of kind ``"ATOM"``
     
         Atoms are indexed by pair of integers: index of point and index in list of point atoms, so property **cond-atoms** is organized as dictionary with integer keys(indexes of points of type ``"If"``) and values as list of :doc:`s_condition` structures.
+    
+    **err-atoms**: Presents only if some atomic conditions in the tree are broken. Only essential indexes are filled with error messages. 
     
     **labels**: The property contains all :term:`state labels<decision tree state label>` defined on decision tree, it might be used for rendering purposes.
         
