@@ -1,0 +1,146 @@
+/*
+ * Copyright (c) 2019. Partners HealthCare and other members of
+ * Forome Association
+ *
+ * Developed by Sergey Trifonov based on contributions by Joel Krier,
+ * Michael Bouzinier, Shamil Sunyaev and other members of Division of
+ * Genetics, Brigham and Women's Hospital
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
+#all {
+    width: 100%;
+    height: 100%;
+    align-items: stretch;    
+    margin: 0px;
+    padding: 0px;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: row;
+}
+
+#left {
+    white-space: nowrap;
+    height: 100%;
+    max-height: 100%;
+    width: 450px;
+    min-width: 420px;
+    margin-right: 3px;
+    white-space: normal;
+    display: flex;
+    flex-direction: column;
+}
+
+#right {
+    margin-top: 2px;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    white-space: nowrap;
+    height: 100%;
+    max-height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#gene-ctrl {
+    flex-direction: column;
+}
+
+#sel-pattern {
+    text-align: stretch;
+    flex-direction: row;
+}
+
+#sel-panels {
+    text-align: stretch;
+    flex-direction: row;
+}
+
+#symbol-info {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    border: 0px;
+}
+
+#symbol-list {
+    font-family: sans-serif;
+    margin-top: 30px;
+    background-color:#333455; 
+    color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+}
+
+div.sym-ref {
+    cursor: pointer;
+    padding: 5px;
+}
+
+div.sym-ref.cur {
+    color: yellow;
+    cursor: default;
+}
+
+div.grp-ref {
+    padding-top: 10px;
+    padding-left: 10px;
+    cursor: default;
+}
+
+div.active {
+    font-weight: bold;
+}
+
+div.grp-ref span {
+    font-size: 80%;
+}
+
+span#ds-name {
+    font-weight: bold;
+    cursor: pointer;
+}
+
+span#ds-name:hover {
+    color: yellow;
+}
+
+table.sym-tab, table.sym-tab.tr {
+    border: 1px solid #333455; 
+    font-family: sans-serif;
+}
+
+table.data-keys, table.data-keys.tr {
+    border: 1px solid black;
+}
+
+td.title {
+    font-weight: bold;
+    background-color: #F0F0F0;
+}
+
+td.key {
+    font-weight: bold;
+    font-size: 90%;
+    width: 300px;
+}
+td.val {
+    background-color: #F8F8FF;
+    width: 100%;
+}

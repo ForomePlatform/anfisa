@@ -28,6 +28,7 @@ from .html_xl import formXLPage
 from .html_dtree import formDTreePage
 from .record import fullRecordView
 from .doc_nav import formDocNavigationPage
+from .html_genes import formGenesPage
 #===============================================
 class IntUI:
     sHtmlBase = None
@@ -123,6 +124,14 @@ class IntUI:
             if ds_h:
                 output = StringIO()
                 formDocNavigationPage(output,
+                    cls.sHtmlTitle, cls.sHtmlBase, ds_h)
+                return serv_h.makeResponse(content = output.getvalue())
+
+        if rq_path == "/genes":
+            ds_h = data_vault.getDS(rq_args["ds"])
+            if ds_h:
+                output = StringIO()
+                formGenesPage(output,
                     cls.sHtmlTitle, cls.sHtmlBase, ds_h)
                 return serv_h.makeResponse(content = output.getvalue())
 

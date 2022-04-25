@@ -50,6 +50,9 @@ class MongoConnector:
             self.mPlainAgents[name] = self.mMongo[self.mPath][name]
         return self.mPlainAgents[name]
 
+    def getDB(self, db_path):
+        return self.mMongo[db_path]
+
 #===============================================
 class MongoDSAgent:
     def __init__(self, connector, agent, name):

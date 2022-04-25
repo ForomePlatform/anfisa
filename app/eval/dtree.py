@@ -353,15 +353,20 @@ class DTreeEval(Evaluation, CaseStory):
 
     def reportInfo(self):
         atom_seq = []
-        atom_dict = {}
+        atom_dict, atom_err_dict = dict(), dict()
         for point in self.mPointList:
-            cond_seq = []
+            cond_seq, error_dict = [], dict()
             for atom_idx, atom_info in enumerate(point.getCondAtoms()):
+                atom_err = atom_info.getErrorMsg()
                 atom_seq.append((point.getPointNo(), atom_idx,
-                    atom_info.getLoc(), atom_info.getErrorMsg()))
+                    atom_info.getLoc(), atom_err))
                 cond_seq.append(atom_info.getCondData())
+                if atom_err:
+                    error_dict[atom_idx] = atom_err
             if len(cond_seq) > 0:
                 atom_dict[point.getPointNo()] = cond_seq
+            if len(error_dict) > 0:
+                atom_err_dict[point.getPointNo()] = error_dict
         html_lines = self._decorCode(atom_seq)
         ret_handle = {
             "points": [point.getInfo(html_lines) for point in self.mPointList],
@@ -370,6 +375,8 @@ class DTreeEval(Evaluation, CaseStory):
             "code": self.mCode,
             "hash": self.mHashCode,
             "eval-status": self.getEvalStatus()}
+        if len(atom_err_dict) > 0:
+            ret_handle["err-atoms"] = atom_err_dict
         if self.mErrorInfo:
             ret_handle.update(self.mErrorInfo)
         if self.mDTreeName:

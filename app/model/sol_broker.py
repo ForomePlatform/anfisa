@@ -167,7 +167,7 @@ class SolutionBroker(SyncronizedObject):
             panel_type = it.getData()[0]
             p_units[panel_type].append(it.getName())
         for panel_type in p_units.keys():
-            ret["panel/" + panel_type] = p_units[panel_type]
+            ret["panel." + panel_type] = p_units[panel_type]
         return ret
 
 #===============================================

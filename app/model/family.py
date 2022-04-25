@@ -87,7 +87,7 @@ class FamilyInfo:
                 ret.add("trio_base")
                 if len(self) == 3:
                     ret.add("trio_pure")
-        if self.mCohortList is not None:
+        if self.mCohortList:
             ret.add("COHORTS")
         else:
             ret.add("PROBAND")

@@ -29,6 +29,7 @@ from collections import defaultdict
 
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
+from .genes_db import GenesDB
 from app.ws.workspace import Workspace
 from app.ws.ws_io import importWS
 from app.xl.xl_dataset import XLDataset
@@ -49,6 +50,7 @@ class DataVault(SyncronizedObject):
         self.mIGVInfo = None
         self.mProblemDataFStats = dict()
         self.mIGV_FStat = None
+        self.mGenesDB = GenesDB(self.mApp.getMongoConnector())
 
         if not auto_mode:
             return
@@ -270,6 +272,10 @@ class DataVault(SyncronizedObject):
                 return None
             return self.mIGVInfo.get(ds_name)
 
+    def getPanelDB(self, type):
+        assert type == "Symbol"
+        return self.mGenesDB
+
     #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
@@ -365,6 +371,11 @@ class DataVault(SyncronizedObject):
         ret = importWS(self, ds_name, content)
         self.scanAll()
         return ret
+
+    #===============================================
+    @RestAPI.vault_request
+    def rq__gene_info(self, rq_args):
+        return self.mGenesDB.getSymbolInfo(rq_args["symbol"])
 
     #===============================================
     # Administrator authorization required

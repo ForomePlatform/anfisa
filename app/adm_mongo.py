@@ -31,7 +31,7 @@ parser.add_argument("--pretty", action = "store_true",
 parser.add_argument("--dry", action = "store_true",
     help = "Dry run: just report instead of data change")
 parser.add_argument("-m", "--mode", default = "list",
-    help="Command: list/dump/restore/drop")
+    help="Command: list/dump/restore/drop/GeneDb")
 parser.add_argument("datasets", nargs = "*",
     help = "Dataset names or pattern with '*'")
 run_args = parser.parse_args()
@@ -89,10 +89,33 @@ def presentation(obj, pretty_mode):
 with open(run_args.config, "r", encoding = "utf-8") as inp:
     cfg = json.loads(inp.read())
 
+#===============================================
+if run_args.mode == "GeneDb":
+    assert len(run_args.datasets) == 1, "DB file name expected as argument"
+    mongo_db = MongoClient(
+        cfg.get("mongo-host"), cfg.get("mongo-port"))["GeneDb"]
+    cnt = 0
+    print("Creation GeneDb", file = sys.stderr)
+    mongo_db["meta"].drop()
+    mongo_db["symbols"].drop()
+    with open(run_args.datasets[0], "r", encoding = "utf-8") as inp:
+        for line in inp:
+            rec = json.loads(line)
+            if "meta" in rec:
+                mongo_db["meta"].insert_one(rec)
+            else:
+                cnt += 1
+                mongo_db["symbols"].insert_one(rec)
+                if cnt % 10000 == 0:
+                    print(f"Storing {cnt} records...",
+                        end = '\r', file = sys.stderr)
+        print(f"Stored {cnt} records, done", file = sys.stderr)
+    sys.exit()
+
+#===============================================
 mongo_db = MongoClient(
     cfg.get("mongo-host"), cfg.get("mongo-port"))[cfg["mongo-db"]]
 
-#===============================================
 aspects = set()
 for asp_code in run_args.aspects:
     if asp_code.upper() == "A":

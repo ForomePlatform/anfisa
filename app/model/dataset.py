@@ -651,6 +651,39 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
+    def rq__panels(self, rq_args):
+        type = rq_args["tp"]
+        ret = {
+            "panels" : sorted(name
+                for name, _ in self.iterPanels(type)),
+            "state": self.getSolEnv().getIntVersion("panel." + type)}
+        return ret
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__symbols(self, rq_args):
+        type = rq_args["tp"]
+        ret = dict()
+        if "list" in rq_args:
+            sel_set = rq_args["list"]
+        elif "pattern" in rq_args:
+            ret["pattern"] = rq_args["pattern"]
+            sel_set = self.mDataVault.getPanelDB(type).selectSymbols(
+                rq_args["pattern"])
+        else:
+            ret["panel"] = rq_args["panel"]
+            ret["state"] = self.getSolEnv().getIntVersion("panel." + type)
+            sel_set = self.getPanelList(rq_args["panel"], type)
+        if sel_set is None:
+            return None
+        ret["all"] = sorted(sel_set)
+        ds_set = (self.getEvalSpace().getUnit(type).
+            getVariantSet().makeValueSet())
+        ret["in-ds"] = sorted(set(sel_set) & ds_set)
+        return ret
+
+    #===============================================
+    @RestAPI.ds_request
     def rq__solutions(self, rq_args):
         return self.reportSolutions()
 
