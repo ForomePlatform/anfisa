@@ -113,4 +113,6 @@ In context of :term:`decision tree` conditions can have complex structure, with 
 |
 | ``["error"``, *none or all condition*, *source condition* ``]``
 
+.. _error_condition:
+
 *Comment*. Instruction ``"error"`` is used for internal purposes in case when condition is not proper, so a simpler condition, either none or all is used on evaluation. But this artificial construction allows us to keep "original meaning" of instruction, so it allows us to modify complex conditions even when they are not proper. 

@@ -100,6 +100,9 @@ Comments
 --------
 The request is partial analogue to :doc:`ds_stat`. Both methods are principal for support main :ref:`work pages<work_pages>` for two mechanisms of :term:`filtration` in the system.
 
+Inside instruction atom can be in an improper state, and there is error message in **err-atoms** for this case, and the Front End needs to show them. In some cases (usually if property name is not supported in dataset, or has improper type) the atom can be blocked. Only deletion of such atom is a proper operation. For blocked atoms the correspondent coindition in **cond-atoms** starts (leading element of top list) with ``"error"`` instruction, see 
+details :ref:`here<error_condition>`.
+
 See also
 --------
 :doc:`dtree_counts`     
