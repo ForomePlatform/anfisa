@@ -127,7 +127,7 @@ class Evaluation:
                 "Bad None condition: " + json.dumps(cond_data))
             return self.mEvalSpace.getCondNone()
         if cond_data[0] == "error":
-            return self.ФbuildCondition(cond_data[1])
+            return self.buildCondition(cond_data[1])
         if cond_data[0] in {"and", "or"}:
             seq = []
             for cc in cond_data[1:]:
