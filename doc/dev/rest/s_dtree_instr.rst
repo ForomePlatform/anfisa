@@ -97,6 +97,8 @@ Actions:
     
     **JOIN-AND**, **JOIN-OR**: join new condition with current condition of If-block by AND or OR operation
 
+    **UP-JOIN_AND**, **UP-JOIN-OR**, **UP-REPLACE**: these variants of instructions refer to internal point of If-block, but affect upper If-point
+    
 .. _dtree_atom_actions:
                 
 ATOM modifying actions

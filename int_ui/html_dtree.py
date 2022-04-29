@@ -165,7 +165,11 @@ def _formCurCondDiv(output):
                 </button>
                 <button id="cond-button-point-up-join-and" title=
                     "Join the condition to upper instruction by and-operation"
-                    onclick="modifyDTree('POINT', 'UP-JOIN-AND');"> Join as AND
+                    onclick="modifyDTree('POINT', 'UP-JOIN-AND');"> Join by AND
+                </button>
+                <button id="cond-button-point-up-join-or" title=
+                    "Join the condition to upper instruction by or-operation"
+                    onclick="modifyDTree('POINT', 'UP-JOIN-OR');"> Join by OR
                 </button>
                 &emsp;&emsp;
                 <button id="cond-button-point-replace"

@@ -73,6 +73,10 @@ class ConditionMaker:
             return cond_seq[0]
         return ["or"] + cond_seq[:]
 
+    @staticmethod
+    def coverError(cond_seq, use_all = False):
+        return ["error", [] if use_all else [None], cond_seq]
+
 #===============================================
 def validateCondition(cond_info):
     if (isinstance(cond_info, list) and len(cond_info) > 2
@@ -123,6 +127,8 @@ def reduceCondData(cond_data):
         if sub_cond is cond_data[1]:
             return cond_data
         return ["not", sub_cond]
+    if cond_data[0] == "error":
+        return cond_data[2]
     if cond_data[0] in ("and", "or"):
         modified = False
         seq = []

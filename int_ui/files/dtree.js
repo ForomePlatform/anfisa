@@ -396,7 +396,8 @@ var sDecisionTree = {
             if (cur_point["level"] == 0)
                 actions = ["point-insert"];
             else
-                actions = ["point-up-join-and", "point-up-replace"];
+                actions = ["point-up-join-and", 
+                    "point-up-join-or", "point-up-replace"];
         } else {
             if (cur_point["kind"] == "If") 
                 actions = ["point-replace", "point-insert", 
@@ -656,7 +657,7 @@ var sOpCondH = {
     mCurUnitName: null,
     mActionList: ["atom-set", "atom-delete", "point-delete", 
         "point-insert", "point-replace", "point-join-and", "point-join-or", 
-        "point-up-replace", "point-up-join-and"],
+        "point-up-replace", "point-up-join-and", "point-up-join-or"],
     mCurActions: null,
 
     init: function() {

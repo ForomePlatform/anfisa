@@ -11,8 +11,11 @@ Condition descriptor
     
 In context of :term:`decision tree` conditions have form of :term:`decision tree atomic condition`, and the user can modify them in interactive way in :doc:`../concepts/dtree_pg`. 
 
+Atomic conditions
+-----------------
+
 Format for numeric property
----------------------------
+```````````````````````````
 
 | ``[`` *list* 
 |       **[0]**: ``"numeric"``
@@ -45,7 +48,7 @@ Comments
     
 
 Format for enumerated property 
-------------------------------
+``````````````````````````````
 
 | ``[`` *list* 
 |       **[0]**: ``"enum"``
@@ -67,7 +70,7 @@ Format of condition allows to define conditions for both :term:`status<status pr
 - For single value selection (length of array in position **[3]** is 1) there is no difference between join modes ``"OR"`` and ``"AND"``
 
 Format for function condition
------------------------------
+`````````````````````````````
 
 | ``[`` *list* 
 |       **[0]**: ``"func"``
@@ -88,3 +91,26 @@ Different functions have different format of function arguments (position **[4]*
 
 Available functions and their arguments are documented in :doc:`func_ref`
 
+Complex condition constructions
+--------------------------------
+
+In context of :term:`decision tree` conditions can have complex structure, with support of full set of constructive logical combinations. Here is the list of supported constructions:
+
+| ``[]``                
+|          - condition designates any variant, all
+|
+| ``[null]``            
+|          - condition designates empty set of variants, none
+|
+| ``["or"``, *list of sub-conditions* ``]``
+|          - union of conditions, operation ``"or"``
+|
+| ``["and"``, *list of sub-conditions* ``]``
+|          - intersection of conditions, operation ``"and"``
+|
+| ``["not"``, *condition* ``]``
+|          - negation of condition
+|
+| ``["error"``, *none or all condition*, *source condition* ``]``
+
+*Comment*. Instruction ``"error"`` is used for internal purposes in case when condition is not proper, so a simpler condition, either none or all is used on evaluation. But this artificial construction allows us to keep "original meaning" of instruction, so it allows us to modify complex conditions even when they are not proper. 

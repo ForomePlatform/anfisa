@@ -806,7 +806,6 @@ var sUnitClassesH = {
             list_rep.push('</div></div>');
         }
         this.mDivMain.innerHTML = list_rep.join("\n");
-        this.showStatus();
         if (this.mUnitItems != null) {
             this.updateItems(this.mUnitItems);
         }
@@ -932,6 +931,7 @@ var sUnitClassesH = {
             if (grp_el)
                 grp_el.style.display = (groups_shown[idx])? "block": "none";
         }
+        return cnt_shown;
     },
     
     showStatus: function(cnt_shown, cnt_all) {

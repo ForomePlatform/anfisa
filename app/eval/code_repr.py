@@ -25,6 +25,8 @@ from forome_tools.ident import checkIdentifier
 #===============================================
 def formatIfCode(cond_data):
     cond_kind = cond_data[0]
+    if cond_kind == "error":
+        return formatIfCode(cond_data[2])
     if cond_kind not in ("or", "and"):
         rep = StringIO()
         rep.write('if ')
@@ -57,6 +59,9 @@ def formatConditionCode(cond_data):
 #===============================================
 def _reprConditionCode(cond_data, output, group_mode):
     cond_kind = cond_data[0]
+    if cond_kind == "error":
+        return _reprConditionCode(
+            cond_data[2], output, group_mode)
     if cond_kind in ("or", "and"):
         if group_mode:
             output.write('(')
