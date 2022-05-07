@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, os, json, logging, traceback
+import sys, os, json, logging, traceback, re, shutil
 import typing, array
 from glob import glob
 from io import StringIO
@@ -195,7 +195,8 @@ class DataVault(SyncronizedObject):
 
     def unloadDS(self, ds_name, ds_kind = None):
         with self:
-            ds_h = self.mDataSets[ds_name]
+            ds_h = self.mDataSets.get(ds_name)
+            assert ds_h is not None, ("No dataset " + ds_name)
             assert not ds_kind or ds_kind == ds_h.getDSKind(), (
                 "Dataset kind collision: "
                 + ds_h.getDSKind() + " vs. " + ds_kind)
@@ -391,3 +392,21 @@ class DataVault(SyncronizedObject):
         self.unloadDS(ds_name)
         self.loadDS(ds_name)
         return "Reloaded " + ds_name
+
+    @RestAPI.vault_request
+    def rq__adm_drop_ds(self, rq_args):
+        assert "ds" in rq_args, 'Missing request argument "ds"'
+        ds_name = rq_args["ds"]
+        patterns = self.mApp.getOption("auto-drop-datasets")
+        if patterns is None:
+            patterns = []
+        for pattern in patterns:
+            if re.search(pattern, ds_name):
+                logging.info(f"Drop dataset {ds_name} by rule '{pattern}'")
+                self.unloadDS(ds_name)
+                shutil.rmtree(self.mVaultDir + '/' + ds_name)
+                self.scanAll()
+                return "Dropped " + ds_name
+        assert False, (f"Drop dataset {ds_name} failed: " +
+            "no appropriate pattern in 'auto-drop-datasets' config option")
+        return None
