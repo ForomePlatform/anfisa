@@ -37,6 +37,7 @@ from app.prepare.sec_ws import SecondaryWsCreation
 from .ds_disk import DataDiskStorage
 from .ds_favor import FavorStorage
 from .sol_broker import SolutionBroker
+from .sol_support import SolPanelHandler
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
@@ -192,6 +193,9 @@ class DataSet(SolutionBroker):
         if key == "dtree":
             return DTreeEval(self.getEvalSpace(), entry_data,
                 name, updated_time, updated_from)
+        if key.startswith("panel."):
+            return SolPanelHandler(key[6:], name, entry_data,
+                updated_time, updated_from)
         assert False, "Bad solution entry kind: " + key
         return None
 
@@ -435,6 +439,7 @@ class DataSet(SolutionBroker):
                 filter_h, self._makeStatCtx(rq_args), time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
+            "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
             "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
         return ret_handle
@@ -530,6 +535,7 @@ class DataSet(SolutionBroker):
             "point-counts": self.prepareDTreePointCounts(
                 dtree_h, rq_id, time_end = time_end),
             "dtree-list": self.getSolEntryList("dtree"),
+            "dtree-sol-version": self.getSolEnv().getIntVersion("filter"),
             "rq-id": rq_id}
 
         ret_handle.update(dtree_h.reportInfo())
@@ -653,27 +659,42 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__panels(self, rq_args):
         type = rq_args["tp"]
+        if "instr" in rq_args:
+            instr_info = json.loads(rq_args["instr"])
+            if instr_info[0] == "DELETE":
+                instr_list = None
+            else:
+                instr_info, instr_list = instr_info[:2], instr_info[2]
+            if not self.modifySolEntry("panel." + type,
+                    instr_info, instr_list):
+                assert False, (
+                    "Bad instruction kind: " + json.dumps(instr_info))
         ret = {
-            "panels" : sorted(name
-                for name, _ in self.iterPanels(type)),
-            "state": self.getSolEnv().getIntVersion("panel." + type)}
+            "panel-type": type,
+            "panels" : self.getSolEntryList("panel." + type),
+            "panel-sol-version": self.getSolEnv().getIntVersion(
+                "panel." + type),
+            "db-version": self.mDataVault.getPanelDB(type).getMetaInfo()}
         return ret
 
     #===============================================
     @RestAPI.ds_request
     def rq__symbols(self, rq_args):
         type = rq_args["tp"]
-        ret = dict()
+        ret = {"type": type}
         if "list" in rq_args:
-            sel_set = rq_args["list"]
+            sel_set = json.loads(rq_args["list"])
         elif "pattern" in rq_args:
             ret["pattern"] = rq_args["pattern"]
             sel_set = self.mDataVault.getPanelDB(type).selectSymbols(
                 rq_args["pattern"])
         else:
             ret["panel"] = rq_args["panel"]
+            ret["panel-sol-version"] = self.getSolEnv().getIntVersion(
+                "panel." + type)
             ret["state"] = self.getSolEnv().getIntVersion("panel." + type)
-            sel_set = self.getPanelList(rq_args["panel"], type)
+            entry_h = self.pickSolEntry("panel." + type, rq_args["panel"])
+            sel_set = entry_h.getSymList() if entry_h else None
         if sel_set is None:
             return None
         ret["all"] = sorted(sel_set)

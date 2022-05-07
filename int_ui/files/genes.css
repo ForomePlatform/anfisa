@@ -26,37 +26,49 @@
     align-items: stretch;    
     margin: 0px;
     padding: 0px;
+    overflow-y: hidden;
+    overflow-x: hidden;
     white-space: nowrap;
-    display: flex;
-    flex-direction: row;
-}
-
-#left {
-    white-space: nowrap;
-    height: 100%;
-    max-height: 100%;
-    width: 450px;
-    min-width: 420px;
-    margin-right: 3px;
-    white-space: normal;
     display: flex;
     flex-direction: column;
 }
 
-#right {
+#top {
+    width: 100%;
+    height: 110px;
+    max-height: 110px;
+    margin: 5px;
+    white-space: normal;
+    display: flex;
+    flex-direction: row;
+}
+
+#bottom {
+    display: flex;
+    width: 100%;
+    min-width: 100%;
+    flex-direction: row;
+}
+
+#left, #right , #center {
     margin-top: 2px;
     overflow-y: hidden;
     overflow-x: hidden;
     white-space: nowrap;
     height: 100%;
     max-height: 100%;
-    width: 100%;
     display: flex;
     flex-direction: column;
 }
 
-#gene-ctrl {
+#gene-ctrl, #dyn-panel-ctrl {
+    display: flex;
     flex-direction: column;
+    height: 100%;
+    width: 50%;
+    min-height: 100%;
+    min-width: 50%;
+    margin-left: 10px;
 }
 
 #sel-pattern {
@@ -69,28 +81,67 @@
     flex-direction: row;
 }
 
-#symbol-info {
+#symbol-list-wrap {
     width: 100%;
     max-width: 100%;
     height: 100%;
-    border: 0px;
 }
 
-#symbol-list {
+div.symbol-list {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
     font-family: sans-serif;
-    margin-top: 30px;
     background-color:#333455; 
     color: white;
     overflow-y: auto;
     overflow-x: hidden;
+}
+
+#symbol-info-wrap {
     width: 100%;
     max-width: 100%;
     height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+div.symbol-info {
+    width: 100%;
+    max-width: 100%;
+    border: 0px;
+}
+
+#symbol-ref-info {
+    font-size: 95%;
+}
+
+#sel-dyn-panel {
+    display: flex;
+    flex-direction: row;
+}
+
+div.note {
+    margin: 5px;
+    font-size: 80%;
+    font-style: italic;
+}
+
+div.buttons {
+    text-align: right;
+    background-color: gray;
 }
 
 div.sym-ref {
     cursor: pointer;
     padding: 5px;
+}
+
+.sym-act-ref {
+    cursor: pointer;
+    padding: 5px;
+    font-weight: bold;
+    color: #000080;
 }
 
 div.sym-ref.cur {
@@ -110,6 +161,12 @@ div.active {
 
 div.grp-ref span {
     font-size: 80%;
+}
+
+#gene-versions {
+    float: right;
+    margin-right: 20px;
+    cursor: help;
 }
 
 span#ds-name {
@@ -143,4 +200,12 @@ td.key {
 td.val {
     background-color: #F8F8FF;
     width: 100%;
+}
+
+.remove {
+    text-decoration: line-through;
+}
+
+.new {
+    font-style: italic;
 }

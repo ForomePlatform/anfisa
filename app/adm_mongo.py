@@ -25,7 +25,7 @@ parser = ArgumentParser()
 parser.add_argument("-c", "--config", default = "./anfisa.json",
     help = "Anfisa config file")
 parser.add_argument("-a", "--aspects", default = "FDT",
-    help = "Aspects: All/Filter/Dtree/Tags/Info")
+    help = "Aspects: All/Filter/Dtree/Panels/Tags/Info")
 parser.add_argument("--pretty", action = "store_true",
     help = "Pretty JSON print")
 parser.add_argument("--dry", action = "store_true",
@@ -40,6 +40,7 @@ run_args = parser.parse_args()
 sAspectMap = {
     "I": "dsinfo",
     "F": "filter",
+    "P": "panel.Symbol",
     "D": "dtree",
     "T": "tags"
 }
@@ -124,9 +125,10 @@ for asp_code in run_args.aspects:
         aspects.add(sAspectMap[asp_code.upper()])
     else:
         assert False, ("Bad aspect code: " + asp_code
-            + " (All/Info/Filter/Dtree/Tags)")
+            + " (All/Info/Filter/Dtree/Panels/Tags)")
 
-assert len(aspects) > 0, "Aspect (All/Info/Filter/Dtree/Tags) not defined"
+assert len(aspects) > 0, (
+    "Aspect (All/Info/Filter/Dtree/Panels/Tags) not defined")
 
 print("//Aspects: " + " ".join(sorted(aspects)), file = sys.stderr)
 

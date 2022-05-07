@@ -32,7 +32,7 @@ class GenesDB:
         self.mMetaInfo = None
         for rec in self.mDB_h["meta"].find():
             assert self.mMetaInfo is None
-            self.mMetaInfo = rec
+            self.mMetaInfo = toJSON(rec)["meta"]
         for rec in self.mDB_h["symbols"].find():
             symb = rec["_id"]
             if "gtf" in rec:
@@ -41,6 +41,9 @@ class GenesDB:
         logging.info(f"GeneDb started with {len(self.mAllSymbols)} records, "
             + str(self.mMetaInfo))
 
+    def getMetaInfo(self):
+        return self.mMetaInfo
+
     def getSymbolInfo(self, symbol_name):
         if symbol_name not in self.mAllSymbols:
             return None
@@ -48,7 +51,7 @@ class GenesDB:
         return toJSON(ret)
 
     def selectSymbols(self, pattern, active_only = False, gene_list = None):
-        if len(pattern) < 2:
+        if len(pattern) < 3 or sum(chr.isalnum() for chr in pattern) < 2:
             return None
         patt = re.compile('^' + pattern.replace('*', '.*') + '$', re.IGNORECASE)
         ret = []

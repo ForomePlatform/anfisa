@@ -23,7 +23,6 @@ from hashlib import md5
 from app.eval.dtree import DTreeEval
 from app.eval.condition import condDataUnits
 
-
 #===============================================
 def codeHash(tree_code):
     return md5(bytes(tree_code.strip(), 'utf-8')).hexdigest()
@@ -152,7 +151,7 @@ class SolutionPack:
 
     #===============================================
     def iterItems(self, kind, test_f):
-        for it in self.mItems:
+        for it in sorted(self.mItems, key = lambda it: it.getName()):
             if it.testIt(kind, test_f):
                 yield it
 

@@ -85,8 +85,9 @@ class VarietyUnit(VarUnit):
             self.mBaseUnit, base_variants, filter_mode)
 
     def iterPanels(self):
-        return (self.getEvalSpace().
-            getDS().iterPanels(self.mPanelType))
+        for it in (self.getEvalSpace().getDS().iterSolEntries(
+                "panel." + self.mPanelType)):
+            yield (it.getName(), it.getSymList())
 
     def buildCondition(self, cond_data, eval_h):
         filter_mode, variants = cond_data[2:]

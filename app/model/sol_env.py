@@ -89,7 +89,7 @@ class _SolKindMongoHandler:
     sDefaultNone = (None, None, None)
 
     def __init__(self, sol_kind, mongo_agent):
-        self.mSolKind = sol_kind
+        self.mSolKind = sol_kind.replace('.', '_')
         self.mMongoAgent = mongo_agent
         self.mData = dict()
         self.mIntVersion = 0
@@ -98,7 +98,7 @@ class _SolKindMongoHandler:
             self.mData[name] = [it[self.mSolKind],
                 AnfisaConfig.normalizeTime(it.get("time")), it["from"]]
 
-    def getSolKind(self):
+    def _getSolKind(self):
         return self.mSolKind
 
     def getIntVersion(self):

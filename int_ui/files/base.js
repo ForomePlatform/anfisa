@@ -135,8 +135,34 @@ function softScroll(nd, upper_level) {
     if (rect.top - 10 < rect_parent.top ||
             rect.top + rect.height + 10 >  rect_parent.top + rect_parent.height) {
         nd.scrollIntoView(
-            {behavior: 'auto', block: 'start', inline: 'center'});
+            {behavior: 'auto', block: 'start'}); // inline: 'center'
     }
+}
+
+/*************************************/
+function pushKey(the_list, the_key) {
+    if (the_list.indexOf(the_key) < 0) {
+        the_list.push(the_key);
+    }
+    return the_list;
+}
+
+function popKey(the_list, the_key) {
+    while (true) {
+        rm_idx = the_list.indexOf(the_key);
+        if (rm_idx < 0)
+            break;
+        the_list.splice(rm_idx, 1);
+    }
+    return the_list;
+}
+
+function pushKeyToStr(the_str, the_key) {
+    return pushKey(the_str.split(' '), the_key).join(' ');
+}
+
+function popKeyFromStr(the_str, the_key) {
+    return popKey(the_str.split(' '), the_key).join(' ');
 }
 
 /*************************************/

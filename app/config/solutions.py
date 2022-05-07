@@ -20,9 +20,9 @@
 
 import os, logging
 from glob import glob
-from app.config.a_config import AnfisaConfig
 from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
+from app.model.sol_support import StdNameSupport
 from app.model.tab_report import ReportTabSchema
 from .favor import FavorSchema
 import app.config.view_tune as view_tune
@@ -36,13 +36,8 @@ def cfgPath(fname):
 def cfgPathSeq(fnames):
     return [cfgPath(fname) for fname in fnames]
 
-
-#===============================================
-sStdFMark = AnfisaConfig.configOption("filter.std.mark")
 def stdNm(name):
-    global sStdFMark
-    return sStdFMark + name
-
+    return StdNameSupport.stdNm(name)
 
 #===============================================
 sSolutionsAreReady = False
