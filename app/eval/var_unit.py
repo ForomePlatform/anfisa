@@ -120,6 +120,12 @@ class EnumUnitSupport:
         return self.getEvalSpace().makeEnumCond(
             self, variants, filter_mode)
 
+    def filterActualVariants(self, variants):
+        return sorted(set(variants) & self.getVariantSet().makeValueSet())
+
+    def evalExtraVariants(self, variants):
+        return self.getVariantSet().makeValueSet() - set(variants)
+
 #===============================================
 #===============================================
 class ComplexEnumUnit(VarUnit, EnumUnitSupport):

@@ -745,7 +745,14 @@ var sCreateWsH = {
         if (info == null) {
             this.mDivModStatus.innerHTML = "Task information lost";
         } else {
-            this.mDivModStatus.innerHTML = info[1];
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                target_ref = (sWsPubURL != "ws")? '': (' target="' + 
+                    sCommonTitle + ':' + info[0]["ws"] + '"'); 
+                this.mDivModStatus.innerHTML = 'Done: <a href="' + sWsPubURL + 
+                    '?ds=' +  info[0]["ws"] + '"' + target_ref + '>Open it</a>';
+            }
         }
     }
 };

@@ -80,6 +80,7 @@ class DataSet(SolutionBroker):
             self.mRecStorage = DataDiskStorage(self, self.mPath)
 
         self.mViewContext = dict()
+        self.mPanelsExtra = dict()
 
         startTune(self)
         tuneAspects(self, self.mAspects)
@@ -409,6 +410,19 @@ class DataSet(SolutionBroker):
         return None
 
     #===============================================
+    def _getPanelExtra(self, type):
+        if type in self.mPanelsExtra:
+            return self.mPanelsExtra[type]
+        panels_cfg = AnfisaConfig.configOption("panels.setup")
+        assert type in panels_cfg, ("Panel type not supported: " + type)
+
+        all_symbols = self.mDataVault.getPanelDB(type).getAllSymbols()
+        unit_h = self.getEvalSpace().getUnit(panels_cfg[type]["unit"])
+        extra_symbols = unit_h.evalExtraVariants(all_symbols)
+        self.mPanelsExtra[type] = extra_symbols
+        return extra_symbols
+
+    #===============================================
     @RestAPI.ds_request
     def rq__ds_stat(self, rq_args):
         time_end = self._getArgTimeEnd(rq_args)
@@ -687,7 +701,7 @@ class DataSet(SolutionBroker):
         elif "pattern" in rq_args:
             ret["pattern"] = rq_args["pattern"]
             sel_set = self.mDataVault.getPanelDB(type).selectSymbols(
-                rq_args["pattern"])
+                rq_args["pattern"], extra = self._getPanelExtra(type))
         else:
             ret["panel"] = rq_args["panel"]
             ret["panel-sol-version"] = self.getSolEnv().getIntVersion(
@@ -698,10 +712,16 @@ class DataSet(SolutionBroker):
         if sel_set is None:
             return None
         ret["all"] = sorted(sel_set)
-        ds_set = (self.getEvalSpace().getUnit(type).
-            getVariantSet().makeValueSet())
-        ret["in-ds"] = sorted(set(sel_set) & ds_set)
+        ret["in-ds"] = (self.getEvalSpace().getUnit(type).
+            filterActualVariants(sel_set))
         return ret
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__symbol_info(self, rq_args):
+        type = rq_args["tp"]
+        return self.mDataVault.getPanelDB(type).getSymbolInfo(
+            rq_args["symbol"], extra = self._getPanelExtra(type))
 
     #===============================================
     @RestAPI.ds_request

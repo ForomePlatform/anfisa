@@ -64,6 +64,10 @@ class AnfisaConfig:
             "render": None
         },
 
+        "panels.setup": {
+            "Symbol": {"unit": "Symbol"}
+        },
+
         "zygosity.path.base": "/__data/zygosity",
 
         "transcript.path.base": "/_view/transcripts",

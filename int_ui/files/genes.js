@@ -225,7 +225,7 @@ function selectGene(sym, info_frame) {
         else
             setupSymInfoRef(null);
     } else {
-        ajaxCall("gene_info", "symbol=" + sym, 
+        ajaxCall("symbol_info", "ds=" + sDSName + "&tp=Symbol&symbol=" + sym, 
             (info_frame == 0)? setupSymInfo:setupSymInfoRef);
     }
 }

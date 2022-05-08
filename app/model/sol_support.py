@@ -124,7 +124,7 @@ class SolutionKindHandler:
                     entry_obj = None
                 if entry_obj is None:
                     entry_obj = self.mBroker.makeSolEntry(self.mSolKind,
-                        entry_data, self.offName(name), upd_time, upd_from)
+                        entry_data, name, upd_time, upd_from)
                     update = True
                 dyn_entries.append(entry_obj)
             update |= len(dyn_names) + len(self.mStdNames) != len(self.mNames)
@@ -132,10 +132,12 @@ class SolutionKindHandler:
                 self._setup(dyn_names, dyn_entries)
         return update
 
-    def getList(self):
+    def getListInfo(self):
         ret_handle = []
         with self.mBroker:
             for idx, name in enumerate(self.mNames):
+                if self.mSpecialName and name == self.mSpecialName:
+                    continue
                 entry_obj = self.mEntryDict[name]
                 upd_time, upd_from = entry_obj.getUpdateInfo()
                 ret_handle.append({

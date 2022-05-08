@@ -139,7 +139,7 @@ class SolutionBroker(SyncronizedObject):
 
     def iterSolEntries(self, kind):
         sol_kind_h = self.mSolKinds[kind]
-        for info in sol_kind_h.getList():
+        for info in sol_kind_h.getListInfo():
             yield sol_kind_h.pickByName(info["name"])
 
     def noSolEntries(self, kind):
@@ -156,7 +156,7 @@ class SolutionBroker(SyncronizedObject):
             return self.mSolKinds[kind].modifySolEntry(instr, entry_data)
 
     def getSolEntryList(self, kind):
-        return self.mSolKinds[kind].getList()
+        return self.mSolKinds[kind].getListInfo()
 
     #===============================================
     def reportSolutions(self):

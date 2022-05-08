@@ -374,11 +374,6 @@ class DataVault(SyncronizedObject):
         return ret
 
     #===============================================
-    @RestAPI.vault_request
-    def rq__gene_info(self, rq_args):
-        return self.mGenesDB.getSymbolInfo(rq_args["symbol"])
-
-    #===============================================
     # Administrator authorization required
     @RestAPI.vault_request
     def rq__adm_update(self, rq_args):

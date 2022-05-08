@@ -41,24 +41,35 @@ class GenesDB:
         logging.info(f"GeneDb started with {len(self.mAllSymbols)} records, "
             + str(self.mMetaInfo))
 
+    def getAllSymbols(self):
+        return self.mAllSymbols
+
     def getMetaInfo(self):
         return self.mMetaInfo
 
-    def getSymbolInfo(self, symbol_name):
+    def getSymbolInfo(self, symbol_name, extra = None):
         if symbol_name not in self.mAllSymbols:
+            if extra and symbol_name in extra:
+                return {
+                    "_id": symbol_name,
+                    "gtf": [{"-": "no information provided"}]}
             return None
         ret = self.mDB_h["symbols"].find_one({"_id": symbol_name})
         return toJSON(ret)
 
-    def selectSymbols(self, pattern, active_only = False, gene_list = None):
+    def selectSymbols(self, pattern, active_only = False,
+            gene_list = None, extra = None):
         if len(pattern) < 3 or sum(chr.isalnum() for chr in pattern) < 2:
             return None
-        patt = re.compile('^' + pattern.replace('*', '.*') + '$', re.IGNORECASE)
-        ret = []
+        patt = re.compile(
+            '^' + pattern.replace('*', '.*') + '$', re.IGNORECASE)
+        ret = set()
         symbol_names = self.mActiveSymbols if active_only else self.mAllSymbols
+        if extra is not None:
+            symbol_names = symbol_names | extra
         if gene_list:
             symbol_names &= set(gene_list)
         for symbol_name in symbol_names:
             if patt.match(symbol_name):
-                ret.append(symbol_name)
-        return ret
+                ret.add(symbol_name)
+        return sorted(ret)

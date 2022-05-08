@@ -69,6 +69,12 @@ class VarietyUnit(VarUnit):
     def getPanelType(self):
         return self.mPanelType
 
+    def filterActualVariants(self, variants):
+        return sorted(set(variants) & self.mAllAtoms)
+
+    def evalExtraVariants(self, variants):
+        return self.mAllAtoms - set(variants)
+
     def mapVariants(self, variants):
         ret = set()
         for var in variants:
