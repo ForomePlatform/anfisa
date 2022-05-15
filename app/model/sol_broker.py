@@ -171,7 +171,7 @@ class SolutionBroker(SyncronizedObject):
             if special_name is not None:
                 panel_h = kind_h.pickByName(special_name)
                 if panel_h is not None:
-                    return panel_h
+                    yield panel_h
 
     #===============================================
     def reportSolutions(self):
