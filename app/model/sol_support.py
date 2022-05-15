@@ -130,6 +130,11 @@ class SolutionKindHandler:
                         entry_data, name, upd_time, upd_from)
                     update = True
                 dyn_entries.append(entry_obj)
+            if (self.mSpecialName is not None
+                    and self.mSpecialName not in dyn_names):
+                dyn_names.append(self.mSpecialName)
+                dyn_entries.append(self.mBroker.makeSolEntry(self.mSolKind,
+                    [], self.mSpecialName, None, None))
             update |= len(dyn_names) + len(self.mStdNames) != len(self.mNames)
             if update:
                 self._setup(dyn_names, dyn_entries)
