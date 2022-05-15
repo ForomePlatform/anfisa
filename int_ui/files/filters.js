@@ -63,7 +63,7 @@ var sUnitsH = {
         return ret;
     },
     
-    formRqArgs: function(conditions, filter_name, use_delay, add_instr) {
+    formRqArgs: function(conditions, filter_name, use_delay, add_instr, use_ctx) {
         args =  this.mCallDS;
         if (filter_name) {
             args += "&filter=" + encodeURIComponent(filter_name);
@@ -76,6 +76,9 @@ var sUnitsH = {
             args += "&" + add_instr[0] + "=" + encodeURIComponent(add_instr[1]);
         if (use_delay && this.mDelayMode)
             args += "&tm=0";
+        if (use_ctx)
+            args += "&ctx=" + encodeURIComponent(JSON.stringify(
+            {"collect-active-symbols":true}));
         return args;
     },
     
@@ -88,7 +91,7 @@ var sUnitsH = {
         this.mDivList.className = "wait";
         this.mWaiting = true;
         ajaxCall("ds_stat", 
-            this.formRqArgs(conditions, filter_name, true, add_instr), 
+            this.formRqArgs(conditions, filter_name, true, add_instr, true), 
             function(info){sUnitsH._setup(info);})
     },
 
@@ -183,15 +186,15 @@ var sUnitsH = {
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
-            if (unit_stat["atom-name"]) 
-                unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
+            if (unit_stat["variety-name"]) 
+                unit_stat["variety-stat"] = this.mItems[unit_idx]["variety-stat"];
             this.mItems[unit_idx] = unit_stat;
             sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (unit_stat["panel-name"]) {
                 panel_idx = this.mUnitMap[unit_stat["panel-name"]];
-                this.mItems[panel_idx]["atom-stat"] = unit_stat;
+                this.mItems[panel_idx]["variety-stat"] = unit_stat;
                 sUnitClassesH.refillUnitStat(this.mItems[panel_idx], panel_idx);
                 if (this.mCurUnit == unit_stat["panel-name"])
                     this.selectUnit(unit_stat["panel-name"], true);

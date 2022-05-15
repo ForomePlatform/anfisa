@@ -47,18 +47,20 @@ class EvalSpace:
         assert False
 
     def _addUnit(self, unit_h, force_it = False):
-        if unit_h.getMean() == "variety":
-            self._addReservedUnit(unit_h)
-            variety_h = VarietyUnit(unit_h,
-                self.getDS().getDSKind() == "ws")
-            self._addUnit(variety_h)
-            self._addUnit(variety_h.getPanelUnit())
-            return
+        if unit_h.getMean() == "variety" and not unit_h.isDetailed():
+                self._addReservedUnit(unit_h)
+                variety_h = VarietyUnit(unit_h)
+                self._addUnit(variety_h)
+                self._addUnit(variety_h.getPanelUnit())
+                return
 
         self.mUnits.append(unit_h)
         assert force_it or unit_h.getName() not in self.mUnitDict, (
             "Duplicate unit name: " + unit_h.getName())
         self.mUnitDict[unit_h.getName()] = unit_h
+
+        if unit_h.getMean() == "variety" and unit_h.isDetailed():
+            self._addUnit(unit_h.getPanelUnit())
 
     def _insertUnit(self, unit_h,
             before = None, after = None, insert_idx = None):
@@ -106,18 +108,32 @@ class EvalSpace:
             ret = ret.addOr(cond)
         return ret
 
+    def getUsedDimValues(self, eval_h, dim_name):
+        ret = set()
+        for unit_h in self.mUnits:
+            if unit_h.getDimName() == dim_name:
+                ret |= eval_h.getUsedEnumValues(unit_h.getName())
+        return ret
+
 #===============================================
 class Eval_Condition:
     def __init__(self, eval_space, cond_type, name = None):
         self.mEvalSpace = eval_space
         self.mCondType = cond_type
         self.mName = name
+        self.mPreForm = None
+
+    def setPreForm(self, pre_data):
+        self.mPreForm = pre_data
 
     def getEvalSpace(self):
         return self.mEvalSpace
 
     def getCondType(self):
         return self.mCondType
+
+    def getPreForm(self):
+        return self.mPreForm
 
     def __not__(self):
         assert False

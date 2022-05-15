@@ -24,6 +24,9 @@ from app.prepare.prep_filters import FilterPrepareSetH
 from .variables import anfisaVariables
 from .favor import FavorSchema
 #===============================================
+#===============================================
+sAdvanceMode = False
+
 sConsequenceVariants = [
     "transcript_ablation",
     "splice_acceptor_variant",
@@ -162,14 +165,14 @@ def defineFilterSchema(metadata_record, ds_kind, derived_mode = False):
         #   conversion = ["len"], default_value = 0)
 
     with filters.viewGroup("Genes"):
-        #--experimental:
-        #filters.varietyUnit("_Symbol", "Symbol", "Panels",
-        #    "/_view/general/genes[]", "Symbol")
-        #--current:
-        genes_unit = filters.multiStatusUnit("Symbol",
-            "/_view/general/genes[]", compact_mode = True)
-        filters.panelsUnit("Panels", genes_unit, "Symbol",
-            view_path = "/_view/general/gene_panels")
+        if sAdvanceMode:
+            filters.varietyUnit("_Symbol", "Symbol", "Panels",
+                "/_view/general/genes[]", "Symbol", dim_name = "Symbol")
+        else:
+            genes_unit = filters.multiStatusUnit("Symbol",
+                "/_view/general/genes[]", compact_mode = True)
+            filters.panelsUnit("Panels", genes_unit, "Symbol",
+                view_path = "/_view/general/gene_panels")
 
         filters.multiStatusUnit("EQTL_Gene", "/_filters/eqtl_gene[]",
             default_value = "None")
@@ -195,10 +198,15 @@ def defineFilterSchema(metadata_record, ds_kind, derived_mode = False):
         filters.transcriptStatusUnit("Transcript_id", "id",
             default_value = "undefined", transcript_id_mode = True)
 
-        tr_genes_unit = filters.transcriptStatusUnit("Transctript_Gene",
-            "gene", default_value = "undefined")
-        filters.transcriptPanelsUnit("Transcript_Gene_Panels",
-            tr_genes_unit, "Symbol", view_name = "tr_gene_panels")
+        if sAdvanceMode:
+            filters.transcriptVarietyUnit("Transcript_Gene",
+                "Transcript_Gene_Panels", "gene", "Symbol",
+                default_value = "undefined", dim_name = "Symbol")
+        else:
+            tr_genes_unit = filters.transcriptStatusUnit("Transctript_Gene",
+                "gene", default_value = "undefined")
+            filters.transcriptPanelsUnit("Transcript_Gene_Panels",
+                tr_genes_unit, "Symbol", view_name = "tr_gene_panels")
 
         filters.transcriptStatusUnit("Transcript_source", "transcript_source",
             default_value = "undefined")

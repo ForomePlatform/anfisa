@@ -96,6 +96,9 @@ class SolutionKindHandler:
             return not StdNameSupport.isStd(name)
         return True
 
+    def getSpecialName(self):
+        return self.mSpecialName
+
     def _setup(self, dyn_names, dyn_entries):
         dyn_names = [self.dynName(nm) for nm in dyn_names]
         self.mNames = self.mStdNames[:] + dyn_names[:]
@@ -203,3 +206,6 @@ class SolPanelHandler:
 
     def getEvalStatus(self):
         return None
+
+    def isDynamic(self):
+        return StdNameSupport.isDyn(self.mName)

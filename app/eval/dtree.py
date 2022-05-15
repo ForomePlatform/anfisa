@@ -144,6 +144,9 @@ class CheckPoint:
         line_from, line_to = self.mFrag.getLineDiap()
         return "\n".join(code_lines[line_from - 1: line_to - 1])
 
+    def visit(self, visitor):
+        pass
+
 #===============================================
 class LabelPoint(CheckPoint):
     def __init__(self, story, frag, prev_point):
@@ -240,6 +243,10 @@ class ConditionPoint(CheckPoint):
         ret += ["duplicate", "negate", "delete"]
         #  , "label", "comment"]
         return ret
+
+    def visit(self, visitor):
+        if self.mCondition is not None:
+            self.mCondition.visit(visitor)
 
 #===============================================
 class DTreeEval(Evaluation, CaseStory):
@@ -447,3 +454,8 @@ class DTreeEval(Evaluation, CaseStory):
             if frag_h.getInstrType() == "If":
                 ret |= condDataUnits(frag_h.getCondData())
         return ret
+
+    def visitAll(self, visitor):
+        for point in self.mPointList:
+            if point.isActive():
+                point.visit(visitor)

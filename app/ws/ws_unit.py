@@ -26,6 +26,8 @@ from bitarray import bitarray
 from forome_tools.variants import VariantSet
 from app.eval.var_unit import (VarUnit, NumUnitSupport, EnumUnitSupport,
     ReservedNumUnit)
+from app.eval.variety import VarietySupport
+from app.eval.condition import ConditionMaker
 from .val_stat import NumDiapStat, EnumStat
 #===============================================
 class WS_Unit(VarUnit):
@@ -217,9 +219,9 @@ class WS_TranscriptNumericValueUnit(WS_Unit, NumUnitSupport):
 
 #===============================================
 class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
-    def __init__(self, eval_space, unit_data):
-        WS_Unit.__init__(self, eval_space, unit_data,
-            "enum", "transcript-status")
+    def __init__(self, eval_space, unit_data, unit_tp = None):
+        WS_Unit.__init__(self, eval_space, unit_data, "enum",
+            unit_tp if unit_tp else "transcript-status")
         variants_info = unit_data.get("variants")
         self.mVariantSet = VariantSet(
             [info[0] for info in variants_info])
@@ -260,7 +262,7 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         enum_stat = EnumStat(self.mVariantSet, detailed = True)
         for group_no, it_idx in condition.iterItemIdx():
             enum_stat.regValues([self.mArray[it_idx]], group_no = group_no,
-            transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
+                transcript_id = self.getEvalSpace().mapTranscriptID(it_idx))
         enum_stat.reportResult(ret_handle)
         ret_handle["detailed"] = True
         return ret_handle
@@ -321,6 +323,53 @@ class WS_TranscriptMultisetUnit(WS_Unit, EnumUnitSupport):
         return ret_handle
 
 #===============================================
+class WS_TranscriptVarietyUnit(WS_TranscriptStatusUnit, VarietySupport):
+    def __init__(self, eval_space, unit_data):
+        WS_TranscriptStatusUnit.__init__(self,
+            eval_space, unit_data, "transcript-variety")
+        VarietySupport.__init__(self, self.getDescr(), "transcript-multiset")
+        self.getInfo()["panel-name"] = self.getPanelUnit().getName()
+
+    def makeBaseCond(self, variants, filter_mode):
+        ret = self.getEvalSpace().makeEnumCond(
+            self, variants, filter_mode)
+        ret.setPreForm(ConditionMaker.condEnum(
+            self.getName(), variants, filter_mode))
+        return ret
+
+    def mapVariants(self, variants):
+        return variants
+
+    def makeStat(self, condition, eval_h, stat_ctx):
+        return self._makeStat(condition, eval_h, stat_ctx)
+
+    def _collectVariantStat(self, condition, eval_h, panel_seq = None):
+        enum_stat = EnumStat(self.mVariantSet, detailed = True)
+        panel_stat = None
+        if panel_seq is not None:
+            p_sets, p_names = [], []
+            for pname, names in panel_seq:
+                p_names.append(pname)
+                p_sets.append(self.getVariantSet().makeIdxSet(names))
+            panel_stat = EnumStat(VariantSet(p_names), detailed = True)
+        for group_no, it_idx in condition.iterItemIdx():
+            val_idx = self.mArray[it_idx]
+            transcript_id = self.getEvalSpace().mapTranscriptID(it_idx)
+            enum_stat.regValues([val_idx], group_no = group_no,
+                transcript_id = transcript_id)
+            if panel_stat is not None:
+                p_seq = []
+                for p_idx, p_set in enumerate(p_sets):
+                    if val_idx in p_set:
+                        p_seq.append(p_idx)
+                if len(p_seq) > 0:
+                    panel_stat.regValues(p_seq, group_no = group_no,
+                        transcript_id = transcript_id)
+        sym_dict = {info[0]: info for info in enum_stat.makeResult()}
+        panel_seq = panel_stat.makeResult() if panel_stat is not None else None
+        return sym_dict, panel_seq
+
+#===============================================
 def loadWS_Unit(eval_space, unit_data):
     kind = unit_data["kind"]
     if kind == "numeric":
@@ -332,6 +381,8 @@ def loadWS_Unit(eval_space, unit_data):
         return WS_TranscriptStatusUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-multiset":
         return WS_TranscriptMultisetUnit(eval_space, unit_data)
+    if unit_data["sub-kind"] == "transcript-variety":
+        return WS_TranscriptVarietyUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-panels":
         return WS_TranscriptMultisetUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "status":

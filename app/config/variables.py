@@ -201,6 +201,7 @@ anfisaVariables.regVar("Transcript_worst", "enum",
 anfisaVariables.regVar("Transcript_id", "enum")
 
 anfisaVariables.regVar("Transctript_Gene", "enum")
+anfisaVariables.regVar("Transcript_Gene", "enum")
 
 anfisaVariables.regVar("Transcript_Gene_Panels", "enum")
 

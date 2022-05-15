@@ -228,8 +228,8 @@ class DataVault(SyncronizedObject):
             if sub_kind in {"status", "transcript-status"}:
                 var_info["render-mode"] = "pie"
             else:
-                assert sub_kind in {"multi",
-                    "transcript-multiset", "transcript-panels"}, (
+                assert sub_kind in {"multi", "transcript-multiset",
+                    "transcript-panels", "transcript-variety"}, (
                     "Wrong subkind: " + sub_kind)
                 var_info["render-mode"] = "bar"
         return var_info

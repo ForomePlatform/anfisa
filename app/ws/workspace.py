@@ -221,7 +221,7 @@ class Workspace(DataSet):
             "total-counts": self.mEvalSpace.getTotalCounts(),
             "filtered-counts": condition.getCounts(zone_fseq),
             "records": records}
-        self.visitCondition(condition, ret_handle)
+        self.visitEvaluation(filter_h, ret_handle)
         return ret_handle
 
     #===============================================

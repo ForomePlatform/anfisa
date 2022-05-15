@@ -26,7 +26,7 @@ def formGenesPage(output, common_title, html_base, ds_h):
         js_files = ["genes.js", "base.js"])
 
     print(f'  <body onload="initGenesPage(\'{ds_h.getName()}\', '
-        f'\'{ds_h.getDSKind()}\', \'{common_title}\');">', file = output)
+        f'\'{common_title}\');">', file = output)
     print('''
     <div id="all">
       <div id="top">

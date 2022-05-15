@@ -179,7 +179,7 @@ class EnumStat:
             if transcript_id is not None:
                 self.mVarTrSet[val].add(transcript_id)
 
-    def reportResult(self, ret_handle):
+    def makeResult(self):
         if self.mGroupStat is not None:
             self.flushGroup()
         rep_list = []
@@ -189,4 +189,7 @@ class EnumStat:
                 info.insert(1, self.mGroupStat.get(idx, 0))
                 info.append(len(self.mVarTrSet[idx]))
             rep_list.append(info)
-        ret_handle["variants"] = rep_list
+        return rep_list
+
+    def reportResult(self, ret_handle):
+        ret_handle["variants"] = self.makeResult()

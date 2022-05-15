@@ -50,7 +50,7 @@ sTimeH = null;
 function initGenesPage(ds_name, common_title){
     sDSName = ds_name;
     sCommonTitle = common_title;
-    window.name = sCommonTitle + ":" + sDSName + ":DOC";
+    window.name = sCommonTitle + ":" + sDSName + ":GENES";
     window.onresize  = arrangeControls;
     //document.getElementById("ds-name").innerHTML = sDSName;
     ajaxCall("panels", "ds=" + sDSName + "&tp=Symbol", setupPanels);

@@ -270,6 +270,10 @@ def formCurConditionControls(output):
                         /><label for="cond-mode-not">&nbsp;not</label>
                     </span><br/>
                   </div>
+                  <div id="cur-cond-variety">
+                    <a class="popup" onclick="goToPage(\'GENES\');"
+                        >Edit active symbols and panels</a>
+                  </div>
                 </div>
               </div>
             </div>

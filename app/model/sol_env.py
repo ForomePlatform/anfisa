@@ -26,6 +26,10 @@ from app.config.a_config import AnfisaConfig
 class SolutionEnv:
     sSolKeys = ["filter", "dtree", "panel.Symbol", "tags"]
 
+    @classmethod
+    def getSolKeys(cls):
+        return cls.sSolKeys
+
     def __init__(self, mongo_connector, name):
         self.mName = name
         self.mMongoAgent = mongo_connector.getPlainAgent(name)

@@ -41,7 +41,7 @@ class TransformPreparator_WS:
                 else:
                     self.mUnitStatSeq.append(NumUnitStatH(unit_descr))
             elif kind == "enum":
-                if sub_kind == "transcript-status":
+                if sub_kind in ("transcript-status", "transcript-variety"):
                     self.mConvertors.append(
                         TrStatusConvertor(unit_descr))
                 elif sub_kind == "transcript-multiset":

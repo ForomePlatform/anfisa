@@ -134,25 +134,25 @@ class FilterPrepareSetH(SolutionBroker):
 
     def statusUnit(self, name, vpath,
             variants = None, default_value = "False",
-            accept_other_values = False,
-            value_map = None, conversion = None, requires = None):
+            accept_other_values = False, value_map = None, conversion = None,
+            dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup,
+            name, vpath, len(self.mUnits), self.mCurVGroup, dim_name,
             "status", variants, accept_other_values, value_map,
             conversion, default_value = default_value))
 
     def multiStatusUnit(self, name, vpath,
-            variants = None, default_value = None,
-            compact_mode = False, accept_other_values = False,
-            value_map = None, conversion = None, requires = None):
+            variants = None, default_value = None, compact_mode = False,
+            accept_other_values = False, value_map = None, conversion = None,
+            dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup,
+            name, vpath, len(self.mUnits), self.mCurVGroup, dim_name,
             "multi", variants, accept_other_values, value_map,
             conversion, compact_mode = compact_mode,
             default_value = default_value))
@@ -164,24 +164,25 @@ class FilterPrepareSetH(SolutionBroker):
         return self._addUnit(prep_unit.PresenceConvertor(self, name,
             len(self.mUnits), self.mCurVGroup, var_info_seq))
 
-    def varietyUnit(self, name, atom_name, panel_name, vpath, panel_type,
-            requires = None):
+    def varietyUnit(self, name, variety_name, panel_name, vpath, panel_type,
+            dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         self._checkVar(panel_name, "enum")
-        self._checkVar(atom_name, "enum")
+        self._checkVar(variety_name, "enum")
         return self._addUnit(prep_unit.VarietyConvertor(self, name,
-            len(self.mUnits), self.mCurVGroup,
-            atom_name, panel_name, vpath, panel_type))
+            len(self.mUnits), self.mCurVGroup, dim_name,
+            variety_name, panel_name, vpath, panel_type))
 
+    # reserved (currently out of use)
     def panelsUnit(self, name, unit_base, panel_type,
-            view_path = None, requires = None):
+            view_path = None, dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         return self._addUnit(prep_unit.PanelConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
             unit_base, panel_type, view_path))
 
     def transcriptIntValueUnit(self, name, trans_name,
@@ -196,20 +197,20 @@ class FilterPrepareSetH(SolutionBroker):
             "transcript-int", trans_name, default_value))
 
     def transcriptFloatValueUnit(self, name, trans_name,
-            default_value = None, requires = None):
+            default_value = None, dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "numeric")
         assert default_value is not None, (
             f"Transcript Float unit {name} requires default")
         return self._addUnit(prep_unit.TranscriptNumConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
             "transcript-float", trans_name, default_value))
 
     def transcriptStatusUnit(self, name, trans_name,
             variants = None, default_value = "False",
             bool_check_value = None, transcript_id_mode = False,
-            requires = None):
+            dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
@@ -219,26 +220,37 @@ class FilterPrepareSetH(SolutionBroker):
                 + " | " + name)
             self.mTranscriptIdName = name
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
             "transcript-status", trans_name, variants, default_value,
             bool_check_value, transcript_id_mode))
 
-    def transcriptMultisetUnit(self, name, trans_name,
-            variants = None, default_value = None, requires = None):
+    def transcriptMultisetUnit(self, name, trans_name, variants = None,
+            default_value = None, dim_name = None, requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         return self._addUnit(prep_unit.TranscriptEnumConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
             "transcript-multiset", trans_name, variants, default_value))
 
+    def transcriptVarietyUnit(self, name, panel_name, trans_name, panel_type,
+            default_value = None, dim_name = None, requires = None):
+        self._checkVar(name, "enum")
+        self._checkVar(panel_name, "enum")
+        if requires and not self.testRequirements(requires):
+            return None
+        return self._addUnit(prep_unit.TranscriptVarietyConvertor(self,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
+            trans_name, panel_type, panel_name, default_value))
+
+    # reserved (currently out of use)
     def transcriptPanelsUnit(self, name, unit_base, panel_type,
-            view_name = None, requires = None):
+            view_name = None, dim_name = None, requires = None):
         self._checkVar(name, "enum")
         if requires and not self.testRequirements(requires):
             return None
         return self._addUnit(prep_unit.TranscriptPanelsConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
+            name, len(self.mUnits), self.mCurVGroup, dim_name,
             unit_base, panel_type, view_name))
 
     def process(self, rec_no, rec_data):

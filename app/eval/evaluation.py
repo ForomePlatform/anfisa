@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 import abc, json
+from .visitor import EnumUnitConditionVisitor
 
 #===============================================
 class Evaluation:
@@ -83,6 +84,10 @@ class Evaluation:
 
     @abc.abstractmethod
     def getActiveUnitSet(self):
+        assert False
+
+    @abc.abstractmethod
+    def visitAll(self, visitor):
         assert False
 
     def operationError(self, cond_data, err_msg):
@@ -166,3 +171,8 @@ class Evaluation:
                 self.pointError(err_msg)
                 return None
         return unit_h.buildCondition(cond_data, self)
+
+    def getUsedEnumValues(self, unit_name):
+        visitor = EnumUnitConditionVisitor(unit_name)
+        self.visitAll(visitor)
+        return visitor.makeResult()

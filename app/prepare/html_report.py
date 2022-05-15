@@ -154,3 +154,13 @@ def _reportReceipt(output, idx_receipt, receipt):
                 print('<td class="point-ign">%d</td>' % count,
                     file = output)
         print('</table>', file = output)
+
+    if "panels-supply" in receipt:
+        panels_supply = receipt["panels-supply"]
+        for ptype in sorted(panels_supply.keys()):
+            print(f'<h3>Supplied panels for type {ptype}</h3>',
+                file = output)
+            for pname in sorted(panels_supply[ptype].keys()):
+                print(f'<p><b>{pname}</b>: '
+                    + ' '.join(panels_supply[ptype][pname])
+                    + '</p>', file = output)

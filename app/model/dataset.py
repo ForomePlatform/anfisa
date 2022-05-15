@@ -342,12 +342,12 @@ class DataSet(SolutionBroker):
         return counts
 
     #===============================================
-    def visitCondition(self, condition, ret_handle):
-        if condition is None:
+    def visitEvaluation(self, eval_h, ret_handle):
+        if eval_h is None:
             return
         for cond_visitor_type in self.mCondVisitorTypes:
             visitor = cond_visitor_type(self)
-            condition.visit(visitor)
+            eval_h.visitAll(visitor)
             ret = visitor.makeResult()
             if ret:
                 ret_handle[visitor.getName()] = ret
@@ -404,10 +404,23 @@ class DataSet(SolutionBroker):
         self.sStatRqCount += 1
         return str(self.sStatRqCount) + '/' + str(datetime.now())
 
-    def _makeStatCtx(self, rq_args):
+    def _makeStatCtx(self, rq_args, eval_h = None):
         if "ctx" in rq_args:
-            return json.loads(rq_args["ctx"])
+            ret = json.loads(rq_args["ctx"])
+            if ret.get("collect-active-symbols"):
+                self.collectActive(eval_h)
         return None
+
+    #===============================================
+    def collectActive(self, eval_h):
+        for panel_h in self.iterSpecialPanels():
+            new_names = self.getEvalSpace().getUsedDimValues(
+                eval_h, panel_h.getType())
+            old_names = set(panel_h.getSymList())
+            new_names |= old_names
+            if len(new_names) != len(panel_h.getSymList()):
+                self.modifySolEntry("panel." + panel_h.getType(),
+                    ["UPDATE", panel_h.getName()], sorted(new_names))
 
     #===============================================
     def _getPanelExtra(self, type):
@@ -445,12 +458,13 @@ class DataSet(SolutionBroker):
         filter_h = self._getArgCondFilter(rq_args,
             join_cond_data = join_cond_data)
         condition = filter_h.getCondition()
+        stat_ctx = self._makeStatCtx(rq_args, filter_h)
         ret_handle = {
             "kind": self.mDSKind,
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
-                filter_h, self._makeStatCtx(rq_args), time_end),
+                filter_h, stat_ctx, time_end),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
@@ -466,11 +480,12 @@ class DataSet(SolutionBroker):
         assert "no" in rq_args, 'Missing request argument "no"'
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
+        stat_ctx = self._makeStatCtx(rq_args)
         ret_handle = {
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
-                dtree_h, self._makeStatCtx(rq_args), time_end, point_no),
+                dtree_h, stat_ctx, time_end, point_no),
             "rq-id": self._makeRqId()}
         return ret_handle
 
@@ -487,11 +502,12 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
         assert "units" in rq_args, 'Missing request argument "units"'
+        stat_ctx = self._makeStatCtx(rq_args)
         ret_handle = {
             "rq-id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition,
-                eval_h, self._makeStatCtx(rq_args), time_end, point_no)}
+                eval_h, stat_ctx, time_end, point_no)}
         return ret_handle
 
     #===============================================
@@ -511,8 +527,9 @@ class DataSet(SolutionBroker):
         unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
         assert "param" in rq_args, 'Missing request argument "param"'
         parameters = json.loads(rq_args["param"])
+        stat_ctx = self._makeStatCtx(rq_args)
         ret = unit_h.makeParamStat(condition, parameters,
-            eval_h, self._makeStatCtx(rq_args), point_no)
+            eval_h, stat_ctx, point_no)
         if rq_args.get("rq_id"):
             ret["rq-id"] = rq_args.get("rq_id")
         if rq_args.get("no"):
@@ -542,6 +559,7 @@ class DataSet(SolutionBroker):
             dtree_code = modifyDTreeCode(parsed, instr)
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
+        self._makeStatCtx(rq_args, dtree_h)
         rq_id = self._makeRqId()
         ret_handle = {
             "kind": self.mDSKind,
@@ -635,8 +653,11 @@ class DataSet(SolutionBroker):
         else:
             eval_h = self._getArgCondFilter(rq_args)
             condition = eval_h.getCondition()
+        out_handle = dict()
+        self.visitEvaluation(eval_h, out_handle)
+
         return {"task_id": self.getApp().runTask(
-            RecListTask(self, condition, rq_args.get("smpcnt")))}
+            RecListTask(self, condition, rq_args.get("smpcnt"), out_handle))}
 
     #===============================================
     @RestAPI.ds_request

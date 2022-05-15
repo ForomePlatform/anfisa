@@ -68,6 +68,8 @@ var sDecisionTree = {
             args += "&instr=" + encodeURIComponent(JSON.stringify(instr));
         if (dtree_name)
             args += "&dtree=" + encodeURIComponent(dtree_name)
+        args += "&ctx=" +  encodeURIComponent(JSON.stringify(
+                {"collect-active-symbols":true}));
         ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     
@@ -564,15 +566,15 @@ var sUnitsH = {
             var pos = this.mUnitsDelay.indexOf(unit_name);
             if (pos >= 0)
                 this.mUnitsDelay.splice(pos, 1);
-            if (unit_stat["atom-name"])
-                unit_stat["atom-stat"] = this.mItems[unit_idx]["atom-stat"];
+            if (unit_stat["variety-name"])
+                unit_stat["variety-stat"] = this.mItems[unit_idx]["variety-stat"];
             this.mItems[unit_idx] = unit_stat;
             sUnitClassesH.refillUnitStat(unit_stat, unit_idx, 1);
             if (this.mCurUnit == unit_name)
                 this.selectUnit(unit_name, true);
             if (unit_stat["panel-name"]) {
                 panel_idx = this.mUnitMap[unit_stat["panel-name"]];
-                this.mItems[panel_idx]["atom-stat"] = unit_stat;
+                this.mItems[panel_idx]["variety-stat"] = unit_stat;
                 sUnitClassesH.refillUnitStat(this.mItems[panel_idx], panel_idx);
                 if (this.mCurUnit == unit_stat["panel-name"])
                     this.selectUnit(unit_stat["panel-name"], true);

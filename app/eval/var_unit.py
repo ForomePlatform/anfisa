@@ -32,6 +32,7 @@ class VarUnit:
         self.mInternalName = descr["name"]
         self.mVGroup = descr.get("vgroup")
         self.mNo    = descr.get("no", -1)
+        self.mDimName = descr.get("dim-name")
         self.mScreened = False
         if unit_kind is not None:
             assert self.mUnitKind == unit_kind, (
@@ -40,7 +41,7 @@ class VarUnit:
         if sub_kind is not None:
             assert self.mSubKind == sub_kind, (
                 f"Sub-kind conflict: {self.mSubKind}/{sub_kind}"
-                f"for {self.mInternalName}")
+                f" for {self.mInternalName}")
 
         self.mInfo = self.mEvalSpace.getDS().getDataVault().getVariableInfo(
             self.mInternalName, self.mUnitKind, self.mSubKind)
@@ -91,6 +92,9 @@ class VarUnit:
 
     def getDescr(self):
         return self.mDescr
+
+    def getDimName(self):
+        return self.mDimName
 
     def prepareStat(self, stat_ctx, incomplete_mode = False):
         ret_handle = deepcopy(self.mInfo)

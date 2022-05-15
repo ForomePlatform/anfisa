@@ -27,11 +27,12 @@ from forome_tools.path_works import AttrFuncPool
 class ValueConvertor:
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, master, name, unit_no, vgroup):
+    def __init__(self, master, name, unit_no, vgroup, dim_name):
         self.mMaster = master
         self.mName   = name
         self.mVGroup = vgroup
         self.mUnitNo = unit_no
+        self.mDimName = dim_name
         self.mErrorCount = 0
         self.mErrors = []
         if self.mVGroup is not None:
@@ -63,6 +64,8 @@ class ValueConvertor:
             "no": self.mUnitNo}
         if self.mVGroup is not None:
             result["vgroup"] = self.mVGroup.getTitle()
+        if self.mDimName is not None:
+            result["dim-name"] = self.mDimName
         if self.mErrorCount > 0:
             result["errors"] = [self.mErrorCount, self.mErrors]
         return result
@@ -78,8 +81,8 @@ class ValueConvertor:
 class PathValueConvertor(ValueConvertor):
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, master, name, vpath, unit_no, vgroup):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup)
+    def __init__(self, master, name, vpath, unit_no, vgroup, dim_name):
+        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
         self.mPath   = vpath
         self.mPathF  = AttrFuncPool.makeFunc(self.mPath)
 
@@ -101,7 +104,8 @@ class PathValueConvertor(ValueConvertor):
 class _NumericConvertor(PathValueConvertor):
     def __init__(self, master, name, vpath, unit_no, vgroup,
             default_value, diap, conversion):
-        PathValueConvertor.__init__(self, master, name, vpath, unit_no, vgroup)
+        PathValueConvertor.__init__(self,
+            master, name, vpath, unit_no, vgroup, None)
         if diap is not None:
             self.mMinBound, self.mMaxBound = diap
         else:
@@ -218,11 +222,12 @@ class IntConvertor(_NumericConvertor):
 #===============================================
 #===============================================
 class EnumConvertor(PathValueConvertor):
-    def __init__(self, master, name, vpath, unit_no, vgroup,
+    def __init__(self, master, name, vpath, unit_no, vgroup, dim_name,
             sub_kind, variants = None, accept_other_values = False,
             value_map = None, conversion = None,
             default_value = None, compact_mode = False,  separators = None):
-        PathValueConvertor.__init__(self, master, name, vpath, unit_no, vgroup)
+        PathValueConvertor.__init__(self,
+            master, name, vpath, unit_no, vgroup, dim_name)
         self.mSubKind = sub_kind
         self.mPreVariants = variants
         self.mVariantSet = None
@@ -335,11 +340,11 @@ class EnumConvertor(PathValueConvertor):
 
 #===============================================
 class VarietyConvertor(EnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
-            atom_name, panel_name, vpath, panel_type, separator = '|'):
+    def __init__(self, master, name, unit_no, vgroup, dim_name,
+            variety_name, panel_name, vpath, panel_type, separator = '|'):
         EnumConvertor.__init__(self, master, name, vpath,
-            unit_no, vgroup, "status")
-        self.mAtomName = atom_name
+            unit_no, vgroup, dim_name, "status")
+        self.mVarietyName = variety_name
         self.mPanelName = panel_name
         self.mPanelType = panel_type
         self.mSeparator = separator
@@ -358,7 +363,7 @@ class VarietyConvertor(EnumConvertor):
         ret["kind"] = "enum"
         ret["sub-kind"] = "status"
         ret["mean"] = "variety"
-        ret["atom-name"] = self.mAtomName
+        ret["variety-name"] = self.mVarietyName
         ret["panel-name"] = self.mPanelName
         ret["panel-type"] = self.mPanelType
         ret["separator"] = self.mSeparator
@@ -371,7 +376,7 @@ class VarietyConvertor(EnumConvertor):
 #===============================================
 class PresenceConvertor(ValueConvertor):
     def __init__(self, master, name, unit_no, vgroup, path_info_seq):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup)
+        ValueConvertor.__init__(self, master, name, unit_no, vgroup, None)
         self.mPathInfoSeq = path_info_seq
         self.mPathFunctions = [(it_name, AttrFuncPool.makeFunc(it_path))
             for it_name, it_path in self.mPathInfoSeq]
@@ -407,9 +412,9 @@ class PresenceConvertor(ValueConvertor):
 
 #===============================================
 class PanelConvertor(ValueConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
+    def __init__(self, master, name, unit_no, vgroup, dim_name,
             unit_base, panel_type, view_path):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup)
+        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelType = panel_type
         self.mPanelSets = {pname: set(names)
@@ -464,7 +469,7 @@ class PanelConvertor(ValueConvertor):
 class TranscriptNumConvertor(ValueConvertor):
     def __init__(self, master, name, unit_no, vgroup,
             sub_kind, trans_name, default_value):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup)
+        ValueConvertor.__init__(self, master, name, unit_no, vgroup, None)
         prefix, _, postfix = sub_kind.partition('-')
         assert prefix == "transcript" and postfix in ("int", "float"), (
             f"Unexpected prefix/postfix: {prefix}/{postfix}")
@@ -486,10 +491,10 @@ class TranscriptNumConvertor(ValueConvertor):
 
 #===============================================
 class TranscriptEnumConvertor(ValueConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
+    def __init__(self, master, name, unit_no, vgroup, dim_name,
             sub_kind, trans_name, variants, default_value,
-            bool_check_value = False, transcript_id_mode = False):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup)
+            bool_check_value = None, transcript_id_mode = False):
+        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
         assert sub_kind.startswith("transcript-"), (
             "Expected leading transcript- in sub_kind: " + sub_kind)
         assert not transcript_id_mode or sub_kind == "transcript-status", (
@@ -526,11 +531,12 @@ class TranscriptEnumConvertor(ValueConvertor):
         return self.mDescr["tr-name"]
 
 #===============================================
+# Reserved
 class TranscriptPanelsConvertor(TranscriptEnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
+    def __init__(self, master, name, unit_no, vgroup, dim_name,
             unit_base, panel_type, view_name):
         TranscriptEnumConvertor.__init__(self,
-            master, name, unit_no, vgroup,
+            master, name, unit_no, vgroup, dim_name,
             "transcript-panels", None, None, None)
         self.mDescr["panel-base"] = unit_base.getTranscriptName()
         self.mDescr["panel-type"] = panel_type
@@ -542,6 +548,17 @@ class TranscriptPanelsConvertor(TranscriptEnumConvertor):
             break
         assert is_ok, (
             "No data for panel type " + panel_type)
+
+#===============================================
+class TranscriptVarietyConvertor(TranscriptEnumConvertor):
+    def __init__(self, master, name, unit_no, vgroup, dim_name,
+            trans_name, panel_type, panel_name, default_value):
+        TranscriptEnumConvertor.__init__(self,
+            master, name, unit_no, vgroup, dim_name,
+            "transcript-variety", trans_name, None, default_value)
+        self.mDescr["panel-name"] = panel_name
+        self.mDescr["panel-type"] = panel_type
+        self.mDescr["mean"] = "variety"
 
 #===============================================
 #===============================================
@@ -584,14 +601,19 @@ def loadConvertorInstance(info, vgroup, filter_set):
         return None
 
     if kind == "enum":
+        if info["sub-kind"] == "transcript-variety":
+            return TranscriptVarietyConvertor(filter_set, info["name"],
+                info["no"], vgroup, info.get("dim-name"),
+                info["tr-name"], info["panel-type"],
+                info["panel-name"], info.get("default"))
         if info["sub-kind"] == "transcript-panels":
             return TranscriptPanelsConvertor(filter_set, info["name"],
-                info["no"], vgroup,
+                info["no"], vgroup, info.get("dim-name"),
                 _DummyUnitHandler(info["panel-base"]),
                 info["panel-type"], info.get("view-name"))
         if info["sub-kind"].startswith("transcript-"):
             return TranscriptEnumConvertor(filter_set, info["name"],
-                info["no"], vgroup,
+                info["no"], vgroup, info.get("dim-name"),
                 info["sub-kind"], info["tr-name"], info["pre-variants"],
                 info.get("default"), info["bool-check"],
                 info.get("tr-id-mode"))
@@ -602,16 +624,17 @@ def loadConvertorInstance(info, vgroup, filter_set):
                 info["no"], vgroup, path_info_seq)
         if info.get("mean") == "panel":
             return PanelConvertor(filter_set, info["name"],
-                info["no"], vgroup,
+                info["no"], vgroup, info.get("dim-name"),
                 _DummyUnitHandler(info["panel-base"]), info["panel-type"],
                 info.get("view-path"))
         if info.get("mean") == "variety":
             return VarietyConvertor(filter_set, info["name"], info["no"],
-                vgroup, info["atom-name"], info["panel-name"],
+                vgroup, info.get("dim-name"),
+                info["variety-name"], info["panel-name"],
                 info["path"], info["panel-type"], info["separator"])
 
         return EnumConvertor(filter_set, info["name"], info["path"],
-            info["no"], vgroup,
+            info["no"], vgroup, info.get("dim-name"),
             info["sub-kind"], info.get("pre-variants"),
             info["other-values"], info.get("value-map"),
             info.get("conversion"),

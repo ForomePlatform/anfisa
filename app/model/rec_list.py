@@ -30,12 +30,13 @@ class RecListTask(ExecutionTask):
     sViewCountSamplesMin = AnfisaConfig.configOption(
         "xl.view.count.samples.min")
 
-    def __init__(self, ds_h, condition, smp_count):
+    def __init__(self, ds_h, condition, smp_count, out_info):
         ExecutionTask.__init__(self, "Prepare variants...")
         self.mDS = ds_h
         self.mCondition = condition
         self.mResSamples = None
         self.mResFull = None
+        self.mOutInfo = out_info
         if not smp_count:
             self.mSmpCount = self.sViewCountSamplesDefault
         else:
@@ -93,11 +94,9 @@ class RecListTask(ExecutionTask):
             self.collectRecords_WS()
         else:
             self.collectRecords_XL()
-        ret = dict()
         if self.mResSamples:
-            ret["samples"] = self.mResSamples
+            self.mOutInfo["samples"] = self.mResSamples
         if self.mResFull:
-            ret["records"] = self.mResFull
-        self.mDS.visitCondition(self.mCondition, ret)
+            self.mOutInfo["records"] = self.mResFull
         self.setStatus("Done")
-        return ret
+        return self.mOutInfo

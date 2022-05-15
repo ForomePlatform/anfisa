@@ -204,6 +204,10 @@ function goToPage(page_mode, ds_name) {
         window.open("dtree?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":DTREE");
         return;
     }
+    if (page_mode == "GENES") {
+        window.open("genes?ds=" + ds_name, sCommonTitle + ":" + ds_name + ":GENES");
+        return;
+    }
     if (page_mode == "DOC") {
         window.open("doc_nav?ds=" + ds_name, sCommonTitle + ":" + ds_name + ':DOC');        
         return;

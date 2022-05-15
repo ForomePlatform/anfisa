@@ -48,8 +48,13 @@ def tuneUnits(ds_h):
     if ds_h.testRequirements({"WS"}):
         zyg_support.regGeneApprox("transcript",
             "Transcript_id", "shared transcript")
-        zyg_support.regGeneApprox("gene",
-            "Transctript_Gene", "shared gene")
+        #TRF: temporary fix
+        if ds_h.getEvalSpace().getUnit("Transctript_Gene") is not None:
+            zyg_support.regGeneApprox("gene",
+                "Transctript_Gene", "shared gene")
+        else:
+            zyg_support.regGeneApprox("gene",
+                "Transcript_Gene", "shared gene")
     zyg_support.regGeneApprox("rough",
         "Symbol", "non-intersecting transcripts")
 

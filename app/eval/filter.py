@@ -113,6 +113,9 @@ class FilterEval(Evaluation):
     def getPresentation(self):
         return self.mPresentation
 
+    def visitAll(self, visitor):
+        self.mCondition.visit(visitor)
+
     def reportInfo(self):
         cond_seq = []
         for idx, cond_data in enumerate(self.mCondDataSeq):

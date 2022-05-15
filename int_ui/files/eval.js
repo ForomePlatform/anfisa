@@ -236,7 +236,7 @@ var sOpEnumH = {
     mStatusMode: null,
     mUpdateCondStr: null,
     mDivFuncParam: null,
-    mFreeMode: null,
+    mRestrictedMode: null,
     mArrangeBase: null,
     mArrangeDelta: null,
 
@@ -285,15 +285,16 @@ var sOpEnumH = {
         if (unit_stat["kind"] == "func") {
             this.mFuncCtrl = sOpFuncH;
             this.mFuncCtrl.setup(unit_stat);
-            this.mFreeMode = null;
+            this.mRestrictedMode = null;
         } else {
             this.mFuncCtrl = null;
-            this._setupVariants(getStatVariants(unit_stat));
-            this.mFreeMode = (unit_stat["free-atoms"] !== undefined);
+            this._setupVariants(getStatVariants(unit_stat, true), false, 
+                unit_stat["variety-name"] || unit_stat["panel-name"]);
+            this.mRestrictedMode = (unit_stat["rest-count"] !== undefined);
         }
     },
     
-    _setupVariants: function(variants, func_mode) {
+    _setupVariants: function(variants, func_mode, variety_mode) {
         this.mVariants = variants;
         if (this.mVariants == null)
             this.mVariants = [];
@@ -301,6 +302,10 @@ var sOpEnumH = {
         has_zero = false;
         for (j = 0; j < this.mVariants.length; j++) {
             var_name = this.mVariants[j][0];
+            if (var_name == "--") {
+                list_val_rep.push(this.mVariants[j][1]);
+                continue;
+            }
             var_count = this.mVariants[j][1];
             if (unit_stat["detailed"] && var_count > 0)
                 var_count = var_count + '&thinsp;&#x00D7;&thinsp;' + 
@@ -317,6 +322,8 @@ var sOpEnumH = {
         this.careEnumZeros(false);
         if (func_mode && variants.length == 1)
             document.getElementById("elcheck--" + 0).disabled = true;
+        document.getElementById("cur-cond-variety").style.display = 
+            (variety_mode)? "block":"none";            
     },
     
     updateCondition: function(cond) {
@@ -417,6 +424,8 @@ var sOpEnumH = {
         var sel_names = [];
         if (this.mVariants != null) {
             for (j=0; j < this.mVariants.length; j++) {
+                if (this.mVariants[j][0] == "--")
+                    continue;
                 if (document.getElementById("elcheck--" + j).checked) {
                     sel_names.push(this.mVariants[j][0]);
                 }
@@ -451,7 +460,7 @@ var sOpEnumH = {
             else
                 err_msg = sel_names.length + " items selected";
         } else
-            err_msg = (this.mFreeMode)? "No choice in trace": " Out of choice"
+            err_msg = (this.mRestrictedMode)? "No choice in trace": " Out of choice"
         if (this.mUpdateCondStr && !err_msg && condition_data &&
                 JSON.stringify(condition_data) == this.mUpdateCondStr) {
             err_msg = " ";
@@ -506,24 +515,46 @@ function fillStatRepNum(unit_stat, list_stat_rep) {
 }
 
 /*************************************/
-function getStatVariants(unit_stat) {
-    if (unit_stat["free-atoms"] != undefined) {
-        var all_variants = unit_stat["variants"];
-        var sel_variants = all_variants;
-        if (all_variants) {
-            var free_atoms = unit_stat["free-atoms"];
-            sel_variants = [];
-            for (var idx = 0; idx < all_variants.length; idx++) {
-                var_stat = all_variants[idx];
-                if (free_atoms.indexOf(var_stat[0]) >= 0)
-                    sel_variants.push(var_stat);
+function getStatVariants(unit_stat, decor_mode) {
+    if (decor_mode && unit_stat["split-info"] !== undefined) {
+        var in_variants = unit_stat["variants"];
+        var variants = [];
+        var idx = 0;
+        var split_idx, j;
+        for (split_idx=0; 
+                split_idx < unit_stat["split-info"].length; split_idx++) {
+            block_case = unit_stat["split-info"][split_idx][0];
+            block_size = unit_stat["split-info"][split_idx][1];
+            if (block_case == "active") {
+                variants.push(["--", '<div class="enum-stat-note">active (' +
+                    block_size +  '):</div>']); 
+            } else {
+                if (block_case == "used") {
+                    variants.push(["--", 
+                        '<div class="enum-stat-note">used in criteria (' +
+                        block_size + '):</div>']); 
+                } else {
+                    if (block_case == "rest") {
+                        variants.push(["--", 
+                            '<div class="enum-stat-note">and more ' +
+                            block_size + ':</div>']); 
+                    } else {
+                        console.log("Bad block case:" + block_case);
+                    }
+                }
             }
+            for (j = 0; j < block_size; j++)
+                variants.push(in_variants[idx++]);
         }
-        return sel_variants;
+        if (unit_stat["rest-count"] !== undefined)
+            variants.push(["--", '<div class="enum-stat-note">hidden:' + 
+                unit_stat["rest-count"] + '</div>']);
+        return variants;
     }
-    if (unit_stat["atom-name"]) {
-        if (unit_stat["atom-stat"])
-            return unit_stat["atom-stat"]["panels"];
+    
+    if (unit_stat["variety-name"]) {
+        if (unit_stat["variety-stat"])
+            return unit_stat["variety-stat"]["panels"];
         return null;
     } 
     return unit_stat["variants"];
@@ -531,7 +562,7 @@ function getStatVariants(unit_stat) {
 
 /*************************************/
 function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
-    var_list = getStatVariants(unit_stat);
+    var_list = getStatVariants(unit_stat, false);
     cnt_detailed = unit_stat["detailed"];
     
     list_count = 0;
@@ -542,7 +573,7 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
         }
     }
     if (list_count == 0) {
-        if (unit_stat["free-atoms"] !== undefined)
+        if (unit_stat["rest-count"] !== undefined)
             empty_msg = "No choice in trace"
         else
             empty_msg = "Out of choice";
@@ -573,9 +604,13 @@ function fillStatRepEnum(unit_stat, list_stat_rep, expand_mode) {
             reportStatCount(var_list[j], cnt_detailed, 1) + '</li>');
     }
     list_stat_rep.push('</ul>');
-    if (list_count > 0) {
-        list_stat_rep.push('<p class="stat-comment">...and ' + 
-            list_count + ' variants more...</p>');
+    if (list_count > 0 || unit_stat["rest-count"] !== undefined) {
+        list_stat_rep.push('<div class="stat-comment">');
+        if (list_count > 0)
+            list_stat_rep.push('...and ' + list_count + ' variants more');
+        if (unit_stat["rest-count"] !== undefined)
+            list_stat_rep.push('(' + unit_stat["rest-count"] + ' hidden)');
+        list_stat_rep.push('</div>');
     }
 }
 
@@ -998,7 +1033,7 @@ var sUnitClassesH = {
             unit_stat = items[idx];
             if (unit_stat["panel-name"]) {
                 items[unit_map[unit_stat["panel-name"]]]
-                    ["atom-stat"] = unit_stat;
+                    ["variety-stat"] = unit_stat;
             }
         }
         var list_stat_rep = [];
@@ -1128,9 +1163,11 @@ var sUnitClassesH = {
             }
         } else if (unit_stat["kind"] == "enum") {
             var c_idx = (unit_stat["detailed"]? 2:1);
-            var variants = getStatVariants(unit_stat);
+            var variants = getStatVariants(unit_stat, false);
             if (variants) {
                 for (var j = 0; j < variants.length; j++) {
+                    if (variants[j][0] == "--")
+                        continue;
                     cnt = variants[j][c_idx];
                     var_counts.push(cnt);
                     total -= cnt;

@@ -142,6 +142,10 @@ class SolutionBroker(SyncronizedObject):
         for info in sol_kind_h.getListInfo():
             yield sol_kind_h.pickByName(info["name"])
 
+    def getSpecialSolEntry(self, kind):
+        sol_kind_h = self.mSolKinds[kind]
+        return sol_kind_h.pickByName(sol_kind_h.getSpecialName())
+
     def noSolEntries(self, kind):
         return self.mSolKinds[kind].isEmpty()
 
@@ -157,6 +161,15 @@ class SolutionBroker(SyncronizedObject):
 
     def getSolEntryList(self, kind):
         return self.mSolKinds[kind].getListInfo()
+
+    def iterSpecialPanels(self):
+        for sol_kind in self.mSolEnv.getSolKeys():
+            kind_h = self.mSolKinds.get(sol_kind)
+            if kind_h is None:
+                continue
+            special_name = kind_h.getSpecialName()
+            if special_name is not None:
+                yield kind_h.pickByName(special_name)
 
     #===============================================
     def reportSolutions(self):
