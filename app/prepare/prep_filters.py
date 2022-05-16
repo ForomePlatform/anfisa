@@ -165,14 +165,14 @@ class FilterPrepareSetH(SolutionBroker):
             len(self.mUnits), self.mCurVGroup, var_info_seq))
 
     def varietyUnit(self, name, variety_name, panel_name, vpath, panel_type,
-            dim_name = None, requires = None):
+            requires = None):
         if requires and not self.testRequirements(requires):
             return None
         self._checkVar(name, "enum")
         self._checkVar(panel_name, "enum")
         self._checkVar(variety_name, "enum")
         return self._addUnit(prep_unit.VarietyConvertor(self, name,
-            len(self.mUnits), self.mCurVGroup, dim_name,
+            len(self.mUnits), self.mCurVGroup,
             variety_name, panel_name, vpath, panel_type))
 
     # reserved (currently out of use)
@@ -234,13 +234,13 @@ class FilterPrepareSetH(SolutionBroker):
             "transcript-multiset", trans_name, variants, default_value))
 
     def transcriptVarietyUnit(self, name, panel_name, trans_name, panel_type,
-            default_value = None, dim_name = None, requires = None):
+            default_value = None, requires = None):
         self._checkVar(name, "enum")
         self._checkVar(panel_name, "enum")
         if requires and not self.testRequirements(requires):
             return None
         return self._addUnit(prep_unit.TranscriptVarietyConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
+            name, len(self.mUnits), self.mCurVGroup,
             trans_name, panel_type, panel_name, default_value))
 
     # reserved (currently out of use)

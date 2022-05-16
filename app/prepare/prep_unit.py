@@ -340,10 +340,10 @@ class EnumConvertor(PathValueConvertor):
 
 #===============================================
 class VarietyConvertor(EnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, name, unit_no, vgroup,
             variety_name, panel_name, vpath, panel_type, separator = '|'):
         EnumConvertor.__init__(self, master, name, vpath,
-            unit_no, vgroup, dim_name, "status")
+            unit_no, vgroup, None, "status")
         self.mVarietyName = variety_name
         self.mPanelName = panel_name
         self.mPanelType = panel_type
@@ -551,10 +551,10 @@ class TranscriptPanelsConvertor(TranscriptEnumConvertor):
 
 #===============================================
 class TranscriptVarietyConvertor(TranscriptEnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, name, unit_no, vgroup,
             trans_name, panel_type, panel_name, default_value):
         TranscriptEnumConvertor.__init__(self,
-            master, name, unit_no, vgroup, dim_name,
+            master, name, unit_no, vgroup, None,
             "transcript-variety", trans_name, None, default_value)
         self.mDescr["panel-name"] = panel_name
         self.mDescr["panel-type"] = panel_type

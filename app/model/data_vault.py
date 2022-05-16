@@ -273,8 +273,8 @@ class DataVault(SyncronizedObject):
                 return None
             return self.mIGVInfo.get(ds_name)
 
-    def getPanelDB(self, type):
-        assert type == "Symbol"
+    def getPanelDB(self, tp):
+        assert tp == "Symbol"
         return self.mGenesDB
 
     #===============================================
@@ -402,6 +402,6 @@ class DataVault(SyncronizedObject):
                 shutil.rmtree(self.mVaultDir + '/' + ds_name)
                 self.scanAll()
                 return "Dropped " + ds_name
-        assert False, (f"Drop dataset {ds_name} failed: " +
-            "no appropriate pattern in 'auto-drop-datasets' config option")
+        assert False, (f"Drop dataset {ds_name} failed: "
+            + "no appropriate pattern in 'auto-drop-datasets' config option")
         return None

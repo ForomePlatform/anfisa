@@ -167,7 +167,7 @@ def defineFilterSchema(metadata_record, ds_kind, derived_mode = False):
     with filters.viewGroup("Genes"):
         if sAdvanceMode:
             filters.varietyUnit("_Symbol", "Symbol", "Panels",
-                "/_view/general/genes[]", "Symbol", dim_name = "Symbol")
+                "/_view/general/genes[]", "Symbol")
         else:
             genes_unit = filters.multiStatusUnit("Symbol",
                 "/_view/general/genes[]", compact_mode = True)
@@ -201,7 +201,7 @@ def defineFilterSchema(metadata_record, ds_kind, derived_mode = False):
         if sAdvanceMode:
             filters.transcriptVarietyUnit("Transcript_Gene",
                 "Transcript_Gene_Panels", "gene", "Symbol",
-                default_value = "undefined", dim_name = "Symbol")
+                default_value = "undefined")
         else:
             tr_genes_unit = filters.transcriptStatusUnit("Transctript_Gene",
                 "gene", default_value = "undefined")

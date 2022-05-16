@@ -31,6 +31,7 @@ class InheritanceUnit(FunctionUnit):
     def makeIt(ds_h, descr, before = None, after = None):
         unit_h = InheritanceUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
+        ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
@@ -114,6 +115,7 @@ class CustomInheritanceUnit(FunctionUnit):
     def makeIt(ds_h, descr, before = None, after = None):
         unit_h = CustomInheritanceUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
+        ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,

@@ -30,6 +30,7 @@ class CompHetsUnit(FunctionUnit):
         unit_h = CompHetsUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(
             unit_h, before = before, after = after)
+        ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
@@ -136,6 +137,7 @@ class CompoundRequestUnit(FunctionUnit):
         unit_h = CompoundRequestUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(
             unit_h, before = before, after = after)
+        ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,

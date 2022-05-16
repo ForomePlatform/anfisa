@@ -28,6 +28,7 @@ class EvalSpace:
         self.mDS = ds_h
         self.mUnits = []
         self.mUnitDict = dict()
+        self.mFunctions = []
 
     def getDS(self):
         return self.mDS
@@ -46,13 +47,16 @@ class EvalSpace:
     def iterZygUnits(self):
         assert False
 
+    def iterFunctions(self):
+        return iter(self.mFunctions)
+
     def _addUnit(self, unit_h, force_it = False):
         if unit_h.getMean() == "variety" and not unit_h.isDetailed():
-                self._addReservedUnit(unit_h)
-                variety_h = VarietyUnit(unit_h)
-                self._addUnit(variety_h)
-                self._addUnit(variety_h.getPanelUnit())
-                return
+            self._addReservedUnit(unit_h)
+            variety_h = VarietyUnit(unit_h)
+            self._addUnit(variety_h)
+            self._addUnit(variety_h.getPanelUnit())
+            return
 
         self.mUnits.append(unit_h)
         assert force_it or unit_h.getName() not in self.mUnitDict, (
@@ -89,6 +93,16 @@ class EvalSpace:
         assert meta_unit_h.getName() not in self.mUnitDict, (
             "Duplicate meta unit name: " + meta_unit_h.getName())
         self.mUnitDict[meta_unit_h.getName()] = meta_unit_h
+
+    def _addFunction(self, unit_h):
+        # temporary hack: unit is already added as unit
+        if True:
+            assert unit_h.getName() in self.mUnitDict
+        else:
+            assert unit_h.getName() not in self.mUnitDict, (
+                "Duplicate function unit name: " + unit_h.getName())
+            self.mUnitDict[unit_h.getName()] = unit_h
+        self.mFunctions.append(unit_h)
 
     def getUnit(self, unit_name):
         return self.mUnitDict.get(unit_name)

@@ -59,7 +59,7 @@ var sDecisionTree = {
     mPostTreeAction: null,
     
     setup: function(tree_code, instr, dtree_name) {
-        args = "ds=" + sDSName + "&tm=0";
+        args = "ds=" + sDSName + "&tm=0&actsym=1";
         if (tree_code == true)
             tree_code = this.mTreeCode;
         if (tree_code != false)
@@ -68,8 +68,6 @@ var sDecisionTree = {
             args += "&instr=" + encodeURIComponent(JSON.stringify(instr));
         if (dtree_name)
             args += "&dtree=" + encodeURIComponent(dtree_name)
-        args += "&ctx=" +  encodeURIComponent(JSON.stringify(
-                {"collect-active-symbols":true}));
         ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     

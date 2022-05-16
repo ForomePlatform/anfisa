@@ -60,8 +60,9 @@ def formatConditionCode(cond_data):
 def _reprConditionCode(cond_data, output, group_mode):
     cond_kind = cond_data[0]
     if cond_kind == "error":
-        return _reprConditionCode(
+        _reprConditionCode(
             cond_data[2], output, group_mode)
+        return
     if cond_kind in ("or", "and"):
         if group_mode:
             output.write('(')

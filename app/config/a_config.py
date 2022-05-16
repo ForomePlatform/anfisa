@@ -81,8 +81,7 @@ class AnfisaConfig:
         "long.run.passtime": timedelta(minutes = 10),
         "long.run.failures": 5,
 
-        "max.rest.size.Symbol": 300,
-        "max.rest.size.Transcript_Gene": 300,
+        "max.rest.size": 300,
         "comp-hets.cache.size": 10,
 
         "max.gene.comp.count": 10000}

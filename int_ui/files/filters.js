@@ -77,8 +77,7 @@ var sUnitsH = {
         if (use_delay && this.mDelayMode)
             args += "&tm=0";
         if (use_ctx)
-            args += "&ctx=" + encodeURIComponent(JSON.stringify(
-            {"collect-active-symbols":true}));
+            args += "&actsym=1";
         return args;
     },
     

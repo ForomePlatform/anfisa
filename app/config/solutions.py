@@ -39,6 +39,7 @@ def cfgPathSeq(fnames):
 def stdNm(name):
     return StdNameSupport.stdNm(name)
 
+
 #===============================================
 sSolutionsAreReady = False
 

@@ -121,8 +121,7 @@ class VarietySupport:
             sub_kind)
         self.mPanelType = base_descr["panel-type"]
         self.mPanelKind = "panel." + self.mPanelType
-        self.mDefaultRestSize = AnfisaConfig.configOption(
-            "max.rest.size." + self.getName())
+        self.mDefaultRestSize = AnfisaConfig.configOption("max.rest.size")
 
     def getPanelUnit(self):
         return self.mPanelUnit
@@ -159,9 +158,8 @@ class VarietySupport:
                 self.mPanelKind)
             panel_mode = eval_h is not None
         ret_handle["base-panel"] = base_panel.getName()
-        max_rest_size = (stat_ctx.get(self.getName() + "max-rest-size",
-            self.mDefaultRestSize) if stat_ctx is not None
-            else self.mDefaultRestSize)
+        max_rest_size = (stat_ctx.get("max-rest-size", self.mDefaultRestSize)
+            if stat_ctx is not None else self.mDefaultRestSize)
 
         if panel_mode:
             panel_seq = [[pname, set(names)]
@@ -174,7 +172,7 @@ class VarietySupport:
 
         if eval_h is None:
             ret_handle["variants"] = self._varSeq(var_dict, self.mWholeList)
-            return
+            return ret_handle
 
         total_cnt = self._countSeq(var_dict.values())
         res_variants = self._varSeq(var_dict, base_panel.getSymList())
@@ -203,6 +201,8 @@ class VarietySupport:
 
         if panel_res is not None:
             ret_handle["panels"] = panel_res
+            ret_handle["panel-state"] = self.getEvalSpace().getDS().getSolEnv(
+                ).getIntVersion(self.mPanelKind)
         if self.isDetailed():
             ret_handle["detailed"] = True
         return ret_handle
@@ -217,7 +217,7 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
             "vgroup": descr.get("vgroup"),
             "kind": "enum",
             "sub-kind": "multi",
-            "dim-name": descr.get("dim-name")
+            "dim-name": descr["panel-type"]
         }
 
     def __init__(self, base_unit_h):

@@ -274,13 +274,17 @@ class DataSet(SolutionBroker):
             igv_url = self.mDataVault.getIGVUrl(self.getRootDSName())
             if igv_url is not None:
                 url_seq = []
-                for name, id in zip(self.mFamilyInfo.getNames(),
+                for name, sid in zip(self.mFamilyInfo.getNames(),
                         self.mFamilyInfo.getIds()):
-                    url_seq.append(igv_url.format(name = name, id = id))
+                    url_seq.append(igv_url.format(name = name, id = sid))
                 ret["igv-urls"] = url_seq
         return ret
 
     #===============================================
+    def reportFunctions(self, eval_h, stat_ctx, point_no = None):
+        return [unit_h.makeInfoStat(eval_h, stat_ctx, point_no)
+            for unit_h in self.getEvalSpace().iterFunctions()]
+
     def prepareAllUnitStat(self, condition, eval_h, stat_ctx,
             time_end, point_no = None):
         ret = []
@@ -404,11 +408,9 @@ class DataSet(SolutionBroker):
         self.sStatRqCount += 1
         return str(self.sStatRqCount) + '/' + str(datetime.now())
 
-    def _makeStatCtx(self, rq_args, eval_h = None):
+    def _getStatCtx(self, rq_args):
         if "ctx" in rq_args:
-            ret = json.loads(rq_args["ctx"])
-            if ret.get("collect-active-symbols"):
-                self.collectActive(eval_h)
+            return json.loads(rq_args["ctx"])
         return None
 
     #===============================================
@@ -423,16 +425,16 @@ class DataSet(SolutionBroker):
                     ["UPDATE", panel_h.getName()], sorted(new_names))
 
     #===============================================
-    def _getPanelExtra(self, type):
-        if type in self.mPanelsExtra:
-            return self.mPanelsExtra[type]
+    def _getPanelExtra(self, ptype):
+        if ptype in self.mPanelsExtra:
+            return self.mPanelsExtra[ptype]
         panels_cfg = AnfisaConfig.configOption("panels.setup")
-        assert type in panels_cfg, ("Panel type not supported: " + type)
+        assert ptype in panels_cfg, ("Panel type not supported: " + ptype)
 
-        all_symbols = self.mDataVault.getPanelDB(type).getAllSymbols()
-        unit_h = self.getEvalSpace().getUnit(panels_cfg[type]["unit"])
+        all_symbols = self.mDataVault.getPanelDB(ptype).getAllSymbols()
+        unit_h = self.getEvalSpace().getUnit(panels_cfg[ptype]["unit"])
         extra_symbols = unit_h.evalExtraVariants(all_symbols)
-        self.mPanelsExtra[type] = extra_symbols
+        self.mPanelsExtra[ptype] = extra_symbols
         return extra_symbols
 
     #===============================================
@@ -458,13 +460,17 @@ class DataSet(SolutionBroker):
         filter_h = self._getArgCondFilter(rq_args,
             join_cond_data = join_cond_data)
         condition = filter_h.getCondition()
-        stat_ctx = self._makeStatCtx(rq_args, filter_h)
+        if rq_args.get("actsym") in ("1", "true", "yes"):
+            self.collectActive(filter_h)
+
+        stat_ctx = self._getStatCtx(rq_args)
         ret_handle = {
             "kind": self.mDSKind,
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
                 filter_h, stat_ctx, time_end),
+            "functions": self. reportFunctions(filter_h, stat_ctx),
             "filter-list": self.getSolEntryList("filter"),
             "cur-filter": filter_h.getFilterName(),
             "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
@@ -480,12 +486,13 @@ class DataSet(SolutionBroker):
         assert "no" in rq_args, 'Missing request argument "no"'
         point_no = int(rq_args["no"])
         condition = dtree_h.getActualCondition(point_no)
-        stat_ctx = self._makeStatCtx(rq_args)
+        stat_ctx = self._getStatCtx(rq_args)
         ret_handle = {
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
                 dtree_h, stat_ctx, time_end, point_no),
+            "functions": self.reportFunctions(dtree_h, stat_ctx, point_no),
             "rq-id": self._makeRqId()}
         return ret_handle
 
@@ -502,12 +509,11 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
         assert "units" in rq_args, 'Missing request argument "units"'
-        stat_ctx = self._makeStatCtx(rq_args)
         ret_handle = {
             "rq-id": rq_args.get("rq_id"),
             "units": self.prepareSelectedUnitStat(
                 json.loads(rq_args["units"]), condition,
-                eval_h, stat_ctx, time_end, point_no)}
+                eval_h, self._getStatCtx(rq_args), time_end, point_no)}
         return ret_handle
 
     #===============================================
@@ -527,9 +533,8 @@ class DataSet(SolutionBroker):
         unit_h = self.getEvalSpace().getUnit(rq_args["unit"])
         assert "param" in rq_args, 'Missing request argument "param"'
         parameters = json.loads(rq_args["param"])
-        stat_ctx = self._makeStatCtx(rq_args)
         ret = unit_h.makeParamStat(condition, parameters,
-            eval_h, stat_ctx, point_no)
+            eval_h, self._getStatCtx(rq_args), point_no)
         if rq_args.get("rq_id"):
             ret["rq-id"] = rq_args.get("rq_id")
         if rq_args.get("no"):
@@ -559,7 +564,8 @@ class DataSet(SolutionBroker):
             dtree_code = modifyDTreeCode(parsed, instr)
             dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
         dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
-        self._makeStatCtx(rq_args, dtree_h)
+        if rq_args.get("actsym") in ("1", "true", "yes"):
+            self.collectActive(dtree_h)
         rq_id = self._makeRqId()
         ret_handle = {
             "kind": self.mDSKind,
@@ -693,56 +699,56 @@ class DataSet(SolutionBroker):
     #===============================================
     @RestAPI.ds_request
     def rq__panels(self, rq_args):
-        type = rq_args["tp"]
+        ptype = rq_args["tp"]
         if "instr" in rq_args:
             instr_info = json.loads(rq_args["instr"])
             if instr_info[0] == "DELETE":
                 instr_list = None
             else:
                 instr_info, instr_list = instr_info[:2], instr_info[2]
-            if not self.modifySolEntry("panel." + type,
+            if not self.modifySolEntry("panel." + ptype,
                     instr_info, instr_list):
                 assert False, (
                     "Bad instruction kind: " + json.dumps(instr_info))
         ret = {
-            "panel-type": type,
-            "panels" : self.getSolEntryList("panel." + type),
+            "panel-type": ptype,
+            "panels": self.getSolEntryList("panel." + ptype),
             "panel-sol-version": self.getSolEnv().getIntVersion(
-                "panel." + type),
-            "db-version": self.mDataVault.getPanelDB(type).getMetaInfo()}
+                "panel." + ptype),
+            "db-version": self.mDataVault.getPanelDB(ptype).getMetaInfo()}
         return ret
 
     #===============================================
     @RestAPI.ds_request
     def rq__symbols(self, rq_args):
-        type = rq_args["tp"]
-        ret = {"type": type}
+        ptype = rq_args["tp"]
+        ret = {"type": ptype}
         if "list" in rq_args:
             sel_set = json.loads(rq_args["list"])
         elif "pattern" in rq_args:
             ret["pattern"] = rq_args["pattern"]
-            sel_set = self.mDataVault.getPanelDB(type).selectSymbols(
-                rq_args["pattern"], extra = self._getPanelExtra(type))
+            sel_set = self.mDataVault.getPanelDB(ptype).selectSymbols(
+                rq_args["pattern"], extra = self._getPanelExtra(ptype))
         else:
             ret["panel"] = rq_args["panel"]
             ret["panel-sol-version"] = self.getSolEnv().getIntVersion(
-                "panel." + type)
-            ret["state"] = self.getSolEnv().getIntVersion("panel." + type)
-            entry_h = self.pickSolEntry("panel." + type, rq_args["panel"])
+                "panel." + ptype)
+            ret["state"] = self.getSolEnv().getIntVersion("panel." + ptype)
+            entry_h = self.pickSolEntry("panel." + ptype, rq_args["panel"])
             sel_set = entry_h.getSymList() if entry_h else None
         if sel_set is None:
             return None
         ret["all"] = sorted(sel_set)
-        ret["in-ds"] = (self.getEvalSpace().getUnit(type).
+        ret["in-ds"] = (self.getEvalSpace().getUnit(ptype).
             filterActualVariants(sel_set))
         return ret
 
     #===============================================
     @RestAPI.ds_request
     def rq__symbol_info(self, rq_args):
-        type = rq_args["tp"]
-        return self.mDataVault.getPanelDB(type).getSymbolInfo(
-            rq_args["symbol"], extra = self._getPanelExtra(type))
+        ptype = rq_args["tp"]
+        return self.mDataVault.getPanelDB(ptype).getSymbolInfo(
+            rq_args["symbol"], extra = self._getPanelExtra(ptype))
 
     #===============================================
     @RestAPI.ds_request

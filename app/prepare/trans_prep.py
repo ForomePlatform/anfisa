@@ -263,6 +263,7 @@ class TrMultisetConvertor(TrEnumConvertor):
         f_data[self.mName] = res
 
 #===============================================
+# reserved, currently out of use
 class TrPanelsConvertor:
     def __init__(self, sol_broker, unit_descr):
         self.mDescr = unit_descr

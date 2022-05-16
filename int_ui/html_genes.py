@@ -35,8 +35,8 @@ def formGenesPage(output, common_title, html_base, ds_h):
             <input id="sel-check-panel" type="checkbox"
                 onchange="checkSel(0);"/>
            Panels: <span id="gene-versions">&#x1F6C8;</span><br/>
-            <select id="panel-select" onclick="checkSel(0)" onchange="pickPanel();">
-                <option value=""></option>
+            <select id="panel-select" onclick="checkSel(0)"
+                onchange="pickPanel();"><option value=""></option>
             </select>
           </div>
           <div id="sel-pattern">

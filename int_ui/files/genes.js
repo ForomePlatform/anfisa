@@ -474,7 +474,6 @@ function switchDynSym(symbol) {
     }    
     sCurDynPanelChanged = true;
     selectGene(symbol, 0);
-    sCurDynAction = null;
     checkControls();
 }
 
@@ -512,7 +511,7 @@ function dynPanelSave() {
 
 function startDynPanelSaveAs() {
     sCurDynAction = "SaveAs";
-    document.getElementById("dyn-panels-op-act").innerHTML = "Save";
+    document.getElementById("dyn-panels-op-act").innerHTML = "Save as new";
     checkControls();
     dynPanelCheckName();
 }

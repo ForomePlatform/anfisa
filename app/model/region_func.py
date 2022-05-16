@@ -25,6 +25,7 @@ class RegionFuncUnit(FunctionUnit):
     def makeIt(ds_h, descr, map_units, before = None, after = None):
         unit_h = RegionFuncUnit(ds_h, descr, map_units)
         ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
+        ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr, map_units):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,

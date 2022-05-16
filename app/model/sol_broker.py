@@ -177,4 +177,3 @@ class SolutionBroker(SyncronizedObject):
         for kind in ("filter", "dtree", "zone", "tab-schema", "panel.Symbol"):
             ret[kind] = [it.getName() for it in self.iterStdItems(kind)]
         return ret
-
