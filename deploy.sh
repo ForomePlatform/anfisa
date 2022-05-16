@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.7/ 
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.7/
 EOF
 }
 
@@ -11,7 +11,7 @@ EOF
 for flag in "$@"
 do
 	case $flag in
-		--workdir=*) 
+		--workdir=*)
 			WORKDIR=${flag#*=}
 			echo WORKDIR=$WORKDIR
 			if [[ $WORKDIR != /* ]]; then
