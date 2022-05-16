@@ -55,7 +55,7 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
 
   pushd $ASETUP/data/examples || exit
   if [ ! -d pgp3140_wgs_hlpanel/docs ] ; then
-    curl -L -O https://anfisa-test-bucket.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
+    curl -L -O https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
 	mkdir pgp3140_wgs_hlpanel
     unzip pgp3140_wgs_hlpanel.zip -d ./pgp3140_wgs_hlpanel
   fi
