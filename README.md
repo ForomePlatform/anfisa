@@ -90,7 +90,7 @@ location /anfisa {
 }
 ```
 
-4. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tgz) 
+4. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz) 
 and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 #### Installing without Docker
@@ -148,16 +148,16 @@ The port is configurable in your configuration file.
 > experiment with a whole genome 
 
 * First, download 
-  [prepared dataset](https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz)
+  [prepared dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz)
 * Unpack the content into some directory (e.g. directory `data` 
   under your work directory)
 * Run Anfisa ingestion process
                                      
 Here are sample commands that can be executed:
 
-    curl -L -O https://forome-project-bucket.s3.eu-central-1.amazonaws.com/v6/pgp3140_wgs_nist-v4.2.tgz
-    docker cp pgp3140_wgs_nist-v4.2.tgz anfisa6:/anfisa/a-setup/data/examples/
-    docker exec -it anfisa6 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tgz'
+    curl -L -O https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz
+    docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa6:/anfisa/a-setup/data/examples/
+    docker exec -it anfisa6 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
     docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
             
 

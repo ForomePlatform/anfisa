@@ -37,7 +37,7 @@ rm vault/*
 if [ ! -d data/docs ] ; then
   cd data || exit
   rm -r *
-  curl -O -L https://anfisa-test-bucket.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
+  curl -O -L https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
   unzip pgp3140_wgs_hlpanel.zip
   cd ..
 fi
