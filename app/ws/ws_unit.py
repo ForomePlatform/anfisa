@@ -96,9 +96,6 @@ class WS_EnumUnit(WS_Unit, EnumUnitSupport):
     def getVariantSet(self):
         return self.mVariantSet
 
-    def getVariantList(self):
-        return list(iter(self.mVariantSet))
-
     def makeStat(self, condition, eval_h, stat_ctx):
         ret_handle = self.prepareStat(stat_ctx)
         enum_stat = EnumStat(self.mVariantSet)

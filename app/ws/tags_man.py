@@ -53,7 +53,7 @@ class TagsManager(ZoneH):
     def getTagList(self):
         return self.getOpTagList() + self.mCheckTags
 
-    def getVariants(self):
+    def getVariantList(self):
         return self.getTagList()
 
     def updateRec(self, rec_no, tags_data):

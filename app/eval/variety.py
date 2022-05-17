@@ -20,6 +20,7 @@
 import logging
 from collections import defaultdict, Counter
 
+from forome_tools.variants import VariantSet
 from app.config.a_config import AnfisaConfig
 from .condition import ConditionMaker
 from .var_unit import VarUnit
@@ -43,10 +44,23 @@ class MultiStatusUnitAdapter:
                 for nm in seq:
                     self.mMultiMap[nm].append(val)
             whole_set |= set(seq)
-        self.mWholeList = sorted(whole_set)
+        self.mVariantSet = VariantSet(sorted(whole_set))
+        if base_unit_h.getEvalSpace().getDS().getDSKind() == "ws":
+            self.mSingleIdxMap = dict()
+            self.mMultiIdxMap = defaultdict(set)
+            for idx, info in enumerate(base_unit_h.getDescr()["variants"]):
+                val = info[0]
+                seq = val.split(self.mSeparator)
+                if len(seq) == 1:
+                    self.mSingleIdxMap[idx] = self.mVariantSet.indexOf(seq[0])
+                else:
+                    self.mMultiIdxMap[idx] = self.mVariantSet.makeIdxSet(seq)
 
     def getBaseUnit(self):
         return self.mBaseUnit
+
+    def getVariantSet(self):
+        return self.mVariantSet
 
     def _logStart(self, ds_name):
         cnt1, cnt2 = len(self.mSingleSet), len(self.mMultiMap)
@@ -55,10 +69,10 @@ class MultiStatusUnitAdapter:
             f"\tsingle: {cnt1}, multi: {cnt2} variants, counts={counts}")
 
     def filterActualVariants(self, variants):
-        return sorted(set(variants) & set(self.mWholeList))
+        return sorted(set(variants) & self.mVariantSet.makeValueSet())
 
     def evalExtraVariants(self, variants):
-        return set(self.mWholeList) - set(variants)
+        return set(self.mVariantSet.makeValueSet()) - set(variants)
 
     def mapVariants(self, variants):
         ret = set()
@@ -101,6 +115,12 @@ class MultiStatusUnitAdapter:
             panel_res = [[pname, panel_cnt[pname]]
                 for pname, _ in panel_seq]
         return {var: [var, cnt] for var, cnt in var_cnt.items()}, panel_res
+
+    def getRecVal(self, rec_no):
+        # Actual in ws context only
+        if rec_no in self.mSingleIdxMap:
+            return {self.mSingleIdxMap[rec_no]}
+        return self.mMultiIdxMap[rec_no]
 
 #===============================================
 class VarietySupport:
@@ -171,7 +191,8 @@ class VarietySupport:
             condition, eval_h, panel_seq)
 
         if eval_h is None:
-            ret_handle["variants"] = self._varSeq(var_dict, self.mWholeList)
+            ret_handle["variants"] = self._varSeq(
+                var_dict, iter(self.mVariantSet))
             return ret_handle
 
         total_cnt = self._countSeq(var_dict.values())

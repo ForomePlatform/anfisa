@@ -38,7 +38,7 @@ class ZoneH:
             "zone": self.getName(),
             "title": self.getTitle()}
         if not serial_mode:
-            ret["variants"] = self.getVariants()
+            ret["variants"] = self.getVariantList()
         return ret
 
 #===============================================
@@ -50,8 +50,8 @@ class FilterZoneH(ZoneH):
     def getName(self):
         return self.mUnit.getName()
 
-    def getVariants(self):
-        return self.mUnit.getVariantList()
+    def getVariantList(self):
+        return list(iter(self.mUnit.getVariantSet()))
 
     def getRestrictF(self, variants):
         cond = self.getDS().getEvalSpace().makeEnumCond(
