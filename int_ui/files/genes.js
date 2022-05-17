@@ -303,7 +303,7 @@ function renderSymInfo(info, with_ref) {
         if (with_ref) {
             base_sym = symFromInfo(info);
         }        
-        for(j=0; j < info["gtf-refs"].length; j++)
+        for(j=0; j < info["gtf-refs"].length; j++) {
             sym = info["gtf-refs"][j];
             if (with_ref && sym != base_sym) {
                 rep.push('<span class="sym-act-ref" onclick="selectGene(\'' + 
@@ -311,6 +311,7 @@ function renderSymInfo(info, with_ref) {
             } else {
                 rep.push(sym);
             }
+        }
         rep.push('</td></tr>');
     }
     if (info["hgnc"]) {
