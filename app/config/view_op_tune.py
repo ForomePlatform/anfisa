@@ -237,3 +237,59 @@ class OpDTrees_AttrH(AttrH):
 
     def htmlRepr(self, obj, v_context):
         return (' '.join(self.mDS.getRecDTrees(v_context["rec_no"])), "norm")
+
+#===============================================
+# Color support for reports
+#===============================================
+def Polyphen_ColorCode(value):
+    return {
+        "benign": 10,
+        "possibly_damaging": 20,
+        "probably_damaging": 20,
+        "damaging": 30,
+        "B": 10,
+        "P": 20,
+        "D": 30}.get(value, -1)
+
+def SIFT_ColorCode(value):
+    return {
+        "tolerated": 10,
+        "deleterious": 30,
+        "T": 10,
+        "D": 30}.get(value, -1)
+
+def MutationTaster_ColorCode(value):
+    return {
+        "P": 10,
+        "N": 10,
+        "D": 30,
+        "A": 30}.get(value, -1)
+
+def MutationAssessor_ColorCode(value):
+    return {
+        "L": 10,
+        "N": 10,
+        "M": 30,
+        "H": 30}.get(value, -1)
+
+def FATHMM_ColorCode(value):
+    return {
+        "T": 10,
+        "D": 30}.get(value, -1)
+
+sColorFunctions = {
+    "Polyphen": Polyphen_ColorCode,
+    "SIFT": SIFT_ColorCode,
+    "MutationAssessor": MutationAssessor_ColorCode,
+    "MutationTaster": MutationTaster_ColorCode,
+    "FATHMM": FATHMM_ColorCode
+}
+
+def prepareSeqColorTransform(mode):
+    color_func = sColorFunctions[mode]
+    def transform_func(seq_data):
+        if not seq_data:
+            return seq_data
+        return [[value, color_func(value)] for value in seq_data]
+    return transform_func
+

@@ -271,8 +271,8 @@ class TrPanelsConvertor:
         self.mBaseName = unit_descr["panel-base"]
         self.mPanelType = unit_descr["panel-type"]
         self.mViewName = unit_descr.get("view-name")
-        self.mPanelSets = {pname: set(names)
-            for pname, names in sol_broker.iterPanels(self.mPanelType)}
+        self.mPanelSets = {p_it.getName(): set(p_it.getData()) for p_it in
+            sol_broker.iterStdItems("panel." + self.mPanelType)}
         self.mVarCount = Counter()
 
     def isTranscriptID(self):

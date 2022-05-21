@@ -136,8 +136,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
         AttrH("variant_intron_canonical",
             title = "Variant Intron (Canonical)", is_seq = True,
             tooltip = "Intron # according to canonical transcript"),
-        # TRF!
-        # AttrH("gene_panels", title = "Gene panels", is_seq = True),
+        AttrH("gene_panels", kind = "place"),
         AttrH(None),
         AttrH("proband_genotype", title = "Proband Genotype",
             requires = {"PROBAND"}),
@@ -176,9 +175,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
         AttrH("transcript_annotations", title = "Consequences", is_seq = True),
         AttrH("variant_exon", title = "Exon"),
         AttrH("variant_intron", title = "Intron"),
-        # TRF!
-        #AttrH("tr_gene_panels", title = "Gene panels",
-        #    is_seq = True, kind = "posted"),
+        AttrH("tr_gene_panels", kind = "place"),
 
         AttrH("cpos", title = "CPos"),
         AttrH("hgvs_c_snp_eff", title = "CPos SnpEff"),

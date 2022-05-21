@@ -64,15 +64,15 @@ class Workspace(DataSet):
                     transcript_id_unit = unit_h.getName()
         self._loadPData()
         self._loadFData()
-        self.mTagsMan = TagsManager(self,
-            self.getPanelList("Check-Tags", "_tags"))
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
         if not transcript_id_unit:
             transcript_id_unit = AnfisaConfig.configOption("ws.transcript.id")
         self.mEvalSpace._setupTrIdUnit(transcript_id_unit)
+        self.mTagsMan = None
         self.startService()
 
+        self.mTagsMan = TagsManager(self, "Check-Tags")
         self.mZoneHandlers  = []
         for zone_it in self.iterStdItems("zone"):
             unit_name = zone_it.getData()

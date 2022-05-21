@@ -417,8 +417,8 @@ class PanelConvertor(ValueConvertor):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
         self.mBaseUnitName = unit_base.getName()
         self.mPanelType = panel_type
-        self.mPanelSets = {pname: set(names)
-            for pname, names in self.getMaster().iterPanels(panel_type)}
+        self.mPanelSets = {p_it.getName(): set(p_it.getData()) for p_it
+            in self.getMaster().iterStdItems("panel." + panel_type)}
         assert len(self.mPanelSets) > 0, (
             "No data for panel type " + panel_type)
         self.mCntUndef = 0
@@ -543,7 +543,7 @@ class TranscriptPanelsConvertor(TranscriptEnumConvertor):
         if view_name:
             self.mDescr["view-name"] = view_name
         is_ok = False
-        for _ in self.getMaster().iterPanels(panel_type):
+        for _ in self.getMaster().iterStdItems("panel." + panel_type):
             is_ok = True
             break
         assert is_ok, (

@@ -25,11 +25,17 @@ from app.config.a_config import AnfisaConfig
 from .zone import ZoneH
 #===============================================
 class TagsManager(ZoneH):
-    def __init__(self, ds_h, check_tag_list):
+    def __init__(self, ds_h, panel_name):
         ZoneH.__init__(self, ds_h, "_tags")
         self.mTagSets = defaultdict(set)
         self.mMarkedSet = set()
-        self.mCheckTags = check_tag_list
+        self.mCheckTags = None
+        for it in ds_h.iterStdItems("panel._tags"):
+            if it.getName() == panel_name:
+                self.mCheckTags = it.getData()
+                break
+        assert self.mCheckTags, f"Tag panel {panel_name} not found"
+        self.refreshTags()
 
     def getName(self):
         return "_tags"

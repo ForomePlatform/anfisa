@@ -118,24 +118,13 @@ class SolutionBroker(SyncronizedObject):
         return self.mNamedAttrs[name]
 
     #===============================================
-    def iterPanels(self, panel_type):
-        for it in self.iterStdItems("panel." + panel_type):
-            yield (it.getName(), it.getData())
-
-    def getPanelList(self, panel_name, panel_type):
-        for pname, names in self.iterPanels(panel_type):
-            if pname == panel_name:
-                return names
-        assert False, f"{panel_type}: Panel {panel_name} not found"
-        return None
-
-    #===============================================
     def refreshSolEntries(self, kind):
         with self:
             if kind in self.mSolKinds:
                 self.mSolKinds[kind].refreshSolEntries()
             elif kind == "tags" and self.getDSKind() == "ws":
-                self.getTagsMan().refreshTags()
+                if self.getTagsMan() is not None:
+                    self.getTagsMan().refreshTags()
 
     def iterSolEntries(self, kind):
         sol_kind_h = self.mSolKinds[kind]
@@ -162,6 +151,18 @@ class SolutionBroker(SyncronizedObject):
     def getSolEntryList(self, kind):
         return self.mSolKinds[kind].getListInfo()
 
+    #===============================================
+    def iterPanels(self, panel_type):
+        for it in (self.iterSolEntries("panel." + panel_type)):
+            yield (it.getName(), it.getSymList())
+
+    def getPanelList(self, panel_name, panel_type, is_optional = False):
+        for pname, names in self.iterPanels(panel_type):
+            if pname == panel_name:
+                return names
+        assert is_optional, f"{panel_type}: Panel {panel_name} not found"
+        return None
+
     def iterSpecialPanels(self):
         for sol_kind in self.mSolEnv.getSolKeys():
             kind_h = self.mSolKinds.get(sol_kind)
@@ -170,6 +171,14 @@ class SolutionBroker(SyncronizedObject):
             special_name = kind_h.getSpecialName()
             if special_name is not None:
                 yield kind_h.pickByName(special_name)
+
+    def symbolsToPanels(self, panel_type, symbols):
+        symbols = set(symbols)
+        ret = []
+        for pname, names in self.iterPanels(panel_type):
+            if len(symbols & set(names)) > 0:
+                ret.append(pname)
+        return ret
 
     #===============================================
     def reportSolutions(self):

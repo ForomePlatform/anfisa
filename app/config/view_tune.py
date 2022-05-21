@@ -47,6 +47,7 @@ def tuneAspects(ds_h, aspects):
     view_gnomad = aspects["view_gnomAD"]
 
     _resetupAttr(view_gen, UCSC_AttrH(view_gen))
+    _resetupAttr(view_gen, SymbolPanels_AttrH(view_gen, ds_h))
     attr_gnomad = _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
     ds_h.regNamedAttr("gnomAD", attr_gnomad)
     attr_gtex = _resetupAttr(view_db, GTEx_AttrH(view_gen))
@@ -59,6 +60,7 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_db, PMID_AttrH(view_db))
     _resetupAttr(view_db, HGMD_PMID_AttrH(view_db))
     _resetupAttr(view_t,  UNIPROT_AttrH(view_t))
+    _resetupAttr(view_t, TrSymbolPanels_AttrH(view_t, ds_h))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "diseases", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "chemicals", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
@@ -92,6 +94,32 @@ def _resetupAttr(aspect_h, attr_h):
     aspect_h.addAttr(attr_h, min(idx1, idx2)
         if min(idx1, idx2) >= 0 else max(idx1, idx2))
     return attr_h
+
+#===============================================
+class SymbolPanels_AttrH(AttrH):
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, "GENE_PANELS",
+            title = "Gene panels",
+            tooltip = "Gene panels positive on variant")
+        self.mDS = ds_h
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, v_context):
+        genes = obj["genes"]
+        return (' '.join(self.mDS.symbolsToPanels("Symbol", genes)), "norm")
+
+#===============================================
+class TrSymbolPanels_AttrH(AttrH):
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, "TR_GENE_PANELS",
+            title = "Gene panels",
+            tooltip = "Gene panels positive on transcript variant")
+        self.mDS = ds_h
+        self.setAspect(view)
+
+    def htmlRepr(self, obj, v_context):
+        genes = [obj.get("gene")]
+        return (' '.join(self.mDS.symbolsToPanels("Symbol", genes)), "norm")
 
 #===============================================
 class UCSC_AttrH(AttrH):
@@ -591,45 +619,3 @@ class ColorCode_AttrH:
             rec_data["__data"].get("color_code"))
 
 #===============================================
-def Polyphen_ColorCode(value):
-    return {
-        "benign": 10,
-        "possibly_damaging": 20,
-        "probably_damaging": 20,
-        "damaging": 30,
-        "B": 10,
-        "P": 20,
-        "D": 30}.get(value, -1)
-
-def SIFT_ColorCode(value):
-    return {
-        "tolerated": 10,
-        "deleterious": 30,
-        "T": 10,
-        "D": 30}.get(value, -1)
-
-def MutationTaster_ColorCode(value):
-    return {
-        "P": 10,
-        "N": 10,
-        "D": 30,
-        "A": 30}.get(value, -1)
-
-def MutationAssessor_ColorCode(value):
-    return {
-        "L": 10,
-        "N": 10,
-        "M": 30,
-        "H": 30}.get(value, -1)
-
-def FATHMM_ColorCode(value):
-    return {
-        "T": 10,
-        "D": 30}.get(value, -1)
-
-def makeSeqColorTransform(color_func):
-    def transform_func(seq_data):
-        if not seq_data:
-            return seq_data
-        return [[value, color_func(value)] for value in seq_data]
-    return transform_func

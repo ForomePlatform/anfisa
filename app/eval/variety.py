@@ -148,9 +148,7 @@ class VarietySupport:
         return self.mPanelUnit
 
     def iterPanels(self):
-        for it in (self.getEvalSpace().getDS().iterSolEntries(
-                self.mPanelKind)):
-            yield (it.getName(), it.getSymList())
+        return self.getEvalSpace().getDS().iterPanels(self.mPanelType)
 
     @staticmethod
     def _varSeq(var_dict, names):
