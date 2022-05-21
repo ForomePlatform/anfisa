@@ -603,7 +603,7 @@ def loadConvertorInstance(info, vgroup, filter_set):
     if kind == "enum":
         if info["sub-kind"] == "transcript-variety":
             return TranscriptVarietyConvertor(filter_set, info["name"],
-                info["no"], vgroup, info.get("dim-name"),
+                info["no"], vgroup,
                 info["tr-name"], info["panel-type"],
                 info["panel-name"], info.get("default"))
         if info["sub-kind"] == "transcript-panels":
@@ -628,8 +628,8 @@ def loadConvertorInstance(info, vgroup, filter_set):
                 _DummyUnitHandler(info["panel-base"]), info["panel-type"],
                 info.get("view-path"))
         if info.get("mean") == "variety":
-            return VarietyConvertor(filter_set, info["name"], info["no"],
-                vgroup, info.get("dim-name"),
+            return VarietyConvertor(filter_set, info["name"],
+                info["no"], vgroup,
                 info["variety-name"], info["panel-name"],
                 info["path"], info["panel-type"], info["separator"])
 

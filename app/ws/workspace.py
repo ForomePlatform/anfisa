@@ -28,7 +28,7 @@ from app.model.dataset import DataSet
 
 from .rules import RulesUnit
 from .tags_man import TagsManager
-from .zone import FilterZoneH
+from .zone import FilterZoneH, PanelZoneH
 from .ws_unit import loadWS_Unit
 from .ws_space import WS_EvalSpace
 from .ws_io import exportWS
@@ -76,14 +76,19 @@ class Workspace(DataSet):
         self.mZoneHandlers  = []
         for zone_it in self.iterStdItems("zone"):
             unit_name = zone_it.getData()
-            if (unit_name == "_tags"):
+            if unit_name == "_tags":
                 zone_h = self.mTagsMan
                 zone_h._setTitle(zone_it.getName())
             else:
                 unit_h = self.mEvalSpace.getUnit(unit_name)
                 if (not unit_h):
                     continue
-                zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
+                if (unit_h.getMean() == "panel"
+                        # temporary work around
+                        and not unit_h.getDescr().get("view-path")):
+                    zone_h = PanelZoneH(self, zone_it.getName(), unit_h)
+                else:
+                    zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
             self.mZoneHandlers.append(zone_h)
 
         for filter_h in self.iterSolEntries("filter"):

@@ -57,3 +57,28 @@ class FilterZoneH(ZoneH):
         cond = self.getDS().getEvalSpace().makeEnumCond(
             self.mUnit, variants)
         return lambda rec_no: cond.recInSelection(rec_no)
+
+#===============================================
+class PanelZoneH(ZoneH):
+    def __init__(self, ds_h, title, unit_h):
+        ZoneH.__init__(self, ds_h, title)
+        self.mPanelUnit = unit_h
+        self.mVarietyUnit = unit_h.getVariety()
+
+    def getName(self):
+        return self.mPanelUnit.getName()
+
+    def getVariantList(self):
+        return list(pname
+            for pname, _ in self.mVarietyUnit.iterPanels())
+
+    def inVariants(self, rec_no, variants):
+        v_idx_set = self.mVarietyUnit.getRecVal(rec_no)
+        rec_names = self.mVarietyUnit.getVariantSet().makeValueSet(v_idx_set)
+        for pname, names in self.mVarietyUnit.iterPanels():
+            if pname in variants and len(rec_names & set(names)) > 0:
+                return True
+        return False
+
+    def getRestrictF(self, variants):
+        return lambda rec_no: self.inVariants(rec_no, variants)

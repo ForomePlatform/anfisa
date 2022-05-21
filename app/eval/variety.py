@@ -131,6 +131,7 @@ class VarietySupport:
             "no": descr["no"],
             "vgroup": descr.get("vgroup"),
             "kind": "enum",
+            "mean": "panel",
             "dim-name": "panel." + descr["panel-type"],
             "sub-kind": "multi" if sub_kind is None else sub_kind
         }
@@ -243,8 +244,8 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
 
     def __init__(self, base_unit_h):
         VarUnit.__init__(self, base_unit_h.getEvalSpace(),
-            self.makeVarietyDescr(base_unit_h.getDescr()),
-            "enum")
+            self.makeVarietyDescr(
+            base_unit_h.getDescr()), "enum")
         MultiStatusUnitAdapter.__init__(self, base_unit_h)
         VarietySupport.__init__(self, base_unit_h.getDescr())
         self.getInfo()["panel-name"] = self.getPanelUnit().getName()
@@ -275,6 +276,9 @@ class VarietyPanelUnit(VarUnit):
             descr, "enum", "multi" if sub_kind is None else sub_kind)
         self.mVariety = variety_h
         self.getInfo()["variety-name"] = self.mVariety.getName()
+
+    def getVariety(self):
+        return self.mVariety
 
     def mapVariants(self, variants):
         collected = set()
