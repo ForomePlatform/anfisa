@@ -162,8 +162,8 @@ function setupList(info) {
             sCurPanelList = info["all"];
             sCurPanelListInDS = info["in-ds"];
         }
-        if (info["state"] !== undefined)
-            sPState = info["state"];
+        if (info["panel-sol-version"] !== undefined)
+            sPState = info["panel-sol-version"];
     }
     renderList();
     checkControls();

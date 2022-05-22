@@ -8,6 +8,8 @@ This is description of part of API of code configuration layer dealing with conf
 
 ``app/config/view_schema.py``
 
+Here is fragment of the source file ``app/view/asp_set.py`` with API used in configuration:
+
 ::
 
     class AspectSetH:
@@ -117,11 +119,7 @@ Options of attribute definition
 
     ``"json"`` is recommended for all complex types of JSON objects
     
-    There are two exceptional kinds also: they mean not real attributes but placeholders:
-    
-    * ``"place"`` - this attribute placeholder should be replaced but another attribute with runtime evaluation, see :doc:`view_tune_py` for details
-    
-    * ``"posted"`` - this attribute placeholder is going to be controlled by dynamical state of filter :term:`unit`, see :ref:`details here<post_unit_view>`
+    There is also an exceptional kind: ``"place"`` - this attribute placeholder should be replaced but another attribute with runtime evaluation, see :doc:`view_tune_py` for details
     
 * **title** is *optional* visible (in left column of table) name of attribute, by default equals to **name**
 

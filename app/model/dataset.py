@@ -733,7 +733,6 @@ class DataSet(SolutionBroker):
             ret["panel"] = rq_args["panel"]
             ret["panel-sol-version"] = self.getSolEnv().getIntVersion(
                 "panel." + ptype)
-            ret["state"] = self.getSolEnv().getIntVersion("panel." + ptype)
             entry_h = self.pickSolEntry("panel." + ptype, rq_args["panel"])
             sel_set = entry_h.getSymList() if entry_h else None
         if sel_set is None:

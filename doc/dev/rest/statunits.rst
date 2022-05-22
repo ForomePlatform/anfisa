@@ -32,6 +32,9 @@ Synopsis
         **units**: list of property names 
                 *list of strings in JSON string representation*
         
+        **ctx**: *optional*, :doc:`context descriptor<s_stat_ctx>`
+            *in JSON string representation*
+            
     **Return value**: 
     
     | ``{`` *dictionary*

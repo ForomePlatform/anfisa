@@ -20,9 +20,12 @@ Synopsis
 
         **code**: *optional* code of applying decision tree 
         
+        **actsym**: *optional*, add gene symbols from filter to :ref:`active symbols<actsym_purpose>` , 
+            *recommended in form* ``actsym=1``
+
         **instr**: *optional modifier* :doc:`s_dtree_instr`
                    *in JSON string representation*
-        
+
     **Return value**: 
     
     | ``{`` *dictionary*
@@ -59,6 +62,7 @@ Synopsis
     |      **hash**: hash code associated with current tree code, *string*
     |      **dtree-list**: names of all decision trees available for dataset
     |           ``[`` *list of* :doc:`s_sol_entry` ``]``
+    |      **dtree-sol-version**: :ref:`indicator of state<sol_version_indicators>` for decision trees
     |      **rq_id**": unique request id, for use in secondary requests, *string*
     |  ``}``
     

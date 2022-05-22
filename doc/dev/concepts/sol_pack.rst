@@ -11,7 +11,7 @@ Solution items are configurable objects that used by the user in work with syste
 
 * preset items with hidden control
     
-- :term:`gene lists<gene list>`
+- :term:`gene panels<gene panel>`
 
 - configuration of :term:`zones<zone>` and :term:`tags<tagging>`
 

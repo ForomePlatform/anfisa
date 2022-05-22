@@ -22,6 +22,9 @@ Synopsis
         
         **no**: position on tree, *int as string*
 
+        **ctx**: *optional*, :doc:`context descriptor<s_stat_ctx>`
+            *in JSON string representation*
+            
     **Return value**: 
     
     | ``{`` *dictionary*
@@ -38,6 +41,7 @@ Synopsis
     |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**stat-list**": ``[`` *list of* :doc:`s_prop_stat` ``]``
+    |      "**functions**": ``[`` *list of* :doc:`s_prop_stat` for functions ``]``
     |      **rq_id**": unique request id, for use in secondary requests, *string*
     |  ``}``
     
@@ -45,7 +49,7 @@ Description
 -----------
 The request supports :doc:`../concepts/status_report` in context of :doc:`../concepts/dtree_pg`. Filtering properties status data are collected in context of :term:`decision tree point`.
 
-See explanations of input argument **tm** and returning properties **stat-list**, **rq-id** :doc:`here<../concepts/status_report>`
+See explanations of input argument **tm** and returning properties **stat-list**, **functions**, **rq-id** :doc:`here<../concepts/status_report>`
 
 Applied :term:`decision tree` is defined by either **dtree** or **code** arguments, see discussion :ref:`here<dtree_code>`. 
 

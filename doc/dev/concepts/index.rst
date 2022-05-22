@@ -12,6 +12,7 @@ Anfisa Interface concepts
    dtree_pg
    doc_pg
    filters_reg
+   variety
    restrict_flt
    status_report
    sol_pack

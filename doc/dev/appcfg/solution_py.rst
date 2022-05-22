@@ -25,7 +25,7 @@ Solution packs should be defined in process before work with any dataset. Soluti
     # and later, after configuration:
     SolutionPack.regPack(base_pack)
     
-Instance of class SolutionPack provides the following methods for registering various solution items:
+Instance of class SolutionPack provides the following methods for registering various solution items (from source file ``app/model/sol_pack.py``):
 
 ::
 
@@ -121,7 +121,7 @@ Instance of class SolutionPack provides the following methods for registering va
 
 * **regPanel** (self, panel_name, panel_type, fname = None, items = None, requires = None)
 
-    Registration of panels, in other words :term:`gene lists<gene list>`. Most panels are used for preparation of panel :term:`units<unit>` (see details in :doc:`flt_schema_py` the discussion of **panelsUnit()** function). 
+    Registration of a preset panel. 
     
     Items in panel can be defined either via file name or items directly.
     
@@ -138,8 +138,8 @@ Instance of class SolutionPack provides the following methods for registering va
 
 .. _panels_in_instance_context:
         
-    In the current version of the system additional gene/Symbol pannels can be added in context of instance of the application. Use :ref:`solutions<solutions>` option in :doc:`../adm/configuration` to open usage of directory from where the system loads additional panels. Panels are expexted to be represented as files in ``.lst`` format, and names of these files are interpreted as names of gene/Symbol panels. These panels work only in context of the instance of the application.
-         
+    In the current version of the system additional preset gene/Symbol pannels can be added in context of instance of the application. Use :ref:`solutions<solutions>` option in :doc:`../adm/configuration` to open usage of directory from where the system loads additional panels. Panels are expected to be represented as files in ``.lst`` format, and names of these files are interpreted as names of gene/Symbol panels. These panels work only in context of the instance of the application.
+    
 * **regItemDict** (self, name, the_dict, requires = None)
 
     Registration of dictionary of items. 

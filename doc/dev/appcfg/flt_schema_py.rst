@@ -7,7 +7,9 @@ Configuration of filtration schema API
 This is description of part of API of code configuration layer dealing with configuration of data of :term:`filtration` mechanism, see :doc:`../concepts/filtration` for details. Here we explain application of this API in the source file
 
 ``app/config/flt_schema.py``
-    
+
+Here is fragment of the source file ``app/prepare/prep_filters.py`` with API used in configuration:
+
 ::
 
     def defineFilterSchema(metadata_record):
@@ -24,48 +26,43 @@ This is description of part of API of code configuration layer dealing with conf
         def viewGroup(self, view_group_title):
             ...
             
-        def intValueUnit(self, name, vpath, title = None,
-                default_value = None, diap = None,
-                conversion = None, render_mode = None, tooltip = None):
+        def intValueUnit(self, name, vpath, default_value = None,
+            diap = None, conversion = None, requires = None):
             ...
-        def floatValueUnit(self, name, vpath, title = None,
-                default_value = None, diap = None,
-                conversion = None, render_mode = None, tooltip = None):
+        def floatValueUnit(self, name, vpath, default_value = None,
+            diap = None, conversion = None, requires = None):
             ...
-        def statusUnit(self, name, vpath, title = None,
-                variants = None, default_value = "False",
-                accept_other_values = False, value_map = None,
-                conversion = None, render_mode = None, tooltip = None):
+        def statusUnit(self, name, vpath,
+            variants = None, default_value = "False",
+            accept_other_values = False, value_map = None, conversion = None,
+            dim_name = None, requires = None):
             ...
-        def multiStatusUnit(self, name, vpath, title = None,
-                variants = None, default_value = None,
-                compact_mode = False,
-                accept_other_values = False, value_map = None,
-                render_mode = None, tooltip = None, conversion = None):
+        def multiStatusUnit(self, name, vpath,
+                variants = None, default_value = None, compact_mode = False,
+                accept_other_values = False, value_map = None, conversion = None,
+                dim_name = None, requires = None):
             ...
-        def presenceUnit(self, name, var_info_seq, title = None,
-                render_mode = None, tooltip = None):
+        def presenceUnit(self, name, var_info_seq, requires = None):
             ...
-        def panelsUnit(self, name, unit_base, panel_type, title = None,
-                render_mode = None, tooltip = None, view_path = None):
+        def varietyUnit(self, name, variety_name, panel_name, vpath, panel_type,
+            requires = None):
             ...
-        def transcriptIntValueUnit(self, name, trans_name, title = None,
-                default_value = None, render_mode = None, tooltip = None):
+        def transcriptIntValueUnit(self, name, trans_name,
+            default_value = None, requires = None):
             ...
-        def transcriptFloatValueUnit(self, name, trans_name, title = None,
-                default_value = None, render_mode = None, tooltip = None):
+        def transcriptFloatValueUnit(self, name, trans_name,
+            default_value = None, dim_name = None, requires = None):
             ...
-        def transcriptStatusUnit(self, name, trans_name, title = None,
-                variants = None, default_value = "False",
-                render_mode = None, tooltip = None, bool_check_value = None):
+        def transcriptStatusUnit(self, name, trans_name,
+            variants = None, default_value = "False",
+            bool_check_value = None, transcript_id_mode = False,
+            dim_name = None, requires = None):
             ...
-        def transcriptMultisetUnit(self, name, trans_name, title = None,
-                variants = None, default_value = None,
-                render_mode = None, tooltip = None):
+        def transcriptMultisetUnit(self, name, trans_name, variants = None,
+            default_value = None, dim_name = None, requires = None):
             ...
-        def transcriptPanelsUnit(self, name, unit_base, panel_type,
-                title = None, view_name = None,
-                render_mode = None, tooltip = None):
+        def transcriptVarietyUnit(self, name, panel_name, trans_name, panel_type,
+            default_value = None, requires = None):
             ...
 
 The filtration schema is configured in ``defineFilterSchema()`` function as instance of ``FilterPrepareSetH`` class.
@@ -104,15 +101,9 @@ Common options of methods:
 
 * **vpath**, *string* - for most kinds of units it is :ref:`path<json_path_loc>` to data in annotated JSON record
 
-* **title**, *optional string* - human readable description of unit, can be not defined if **name** is sufficient
-
 * **default_value** - default value of unit if data is not defined in annotated JSON record, it is good practice to set this option always
 
 * **conversion** - *optional list*; representation of conversion method applied to data got from **vpath** to form value of unit for variant, see :doc:`list_conv`
-
-* **render_mode** - *optional string*; used in UI to represent values of unit (see :doc:`../rest/s_prop_stat` for details)
-
-* **tooltip** - *optional string*; explanation of unit meaning to render in UI as tooltip (title in HTML terms)
 
 * for status/multi-status units:
 
@@ -121,6 +112,23 @@ Common options of methods:
     * **accept_other_values** - *optional boolean*, if ``True``, the full list of variants can be completed by other values, if any found in data
 
     * **value_map** - *optional dictionary*, if presents it is a translation map of values (usually in use for technical values ``"True"/"False"`` in cases when their meanings are not clear for the user)
+
+    * **dim_name** - *optional string*; for future usage, the purpose of this option is to define multiple units as ones that refer to the same "dimension": list of values for these units could be interpeted as elements of the single list of values; in the current version this mechanism is used for :doc:`variety/panel support<../concepts/variety>` in an automatical way, but up to now there is no need to set this option directly
+
+Variable registry
+^^^^^^^^^^^^^^^^^
+
+For different datasets units with the same meaning might have different presentation: status or multiset, integer or float. It may disorient the user if these units have different visualisation properties for different datasets. The solution of this problem is to organize long-term registery of variables, or unit names, independent of stucture of concrete dataset. All unit names should be registered, and there there can be outdated names in registery. The following properties that affect visualisaton can be set in this registery for units:
+
+* **title**, *optional string* - human readable description of unit, can be not defined if **name** is sufficient
+
+* **render_mode** - *optional string*; used in UI to represent values of unit (see :doc:`../rest/s_prop_stat` for details)
+
+* **tooltip** - *optional string*; explanation of unit meaning to render in UI as tooltip (title in HTML terms)
+
+The registery is located in the file
+
+``app/config/variables.py``
 
 Ordinary unit types
 ^^^^^^^^^^^^^^^^^^^
@@ -144,8 +152,8 @@ Ordinary unit types
     
         **compact_mode** - *optional boolean** set this option to ``True`` if list of variants for this unit is large (hundred or more items)
         
-Constrained unit types
-^^^^^^^^^^^^^^^^^^^^^^
+Constrained and complex unit types
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     * **presenceUnit()**
     
@@ -153,11 +161,17 @@ Constrained unit types
         
         **var_info_seq** - *list of pairs*: ``[<key>, <path>]``, where ``<key>`` is set as one of unit values if data in annotated JSON record that :ref:`corresponds<json_path_loc>` to ``<path>`` is defined and not empty
         
-    * **panelsUnit()**
+    * **varietyUnit()**
     
-        **unit_base**, *string*: Panels unit is a transformation of another unit with name **unit_base**. The base unit usually have large list of variants (in the current version of system we work with ``Symbol`` unit which variant list contains whole gene symbols nomenclature, it is tens of thousands variants...
+        The call initiates complex of units, see detailed explanation :doc:`here<../concepts/variety>`
+    
+        **variety_name / panel_name**, *strings*: Implementation of this unit assumes in real creation of three units:
+            
+            * internal hidden unit with name **name** of status type, the hidden values of this unit are joint values  of symbols
+            
+            * variety unit with name **variety_name** and panel unit with name **panel_name**, see explanation 
         
-        **panel_type**, *string*: ...Then there are :term:`gene lists<gene list>` registered as :term:`solution items<solution item>` in :doc:`solution pack<solution_py>`. In the current version of the system they are registered with panel_type ``Symbol``. Thus it is automatic procedure to detect panels that correspond to the given variant, and Panels unit is implementation for this procedure.
+        **panel_type**, *string*; only ``Symbol`` type is supported in the current version
         
         .. _flt_unit_view:
         
@@ -182,14 +196,8 @@ Activation of these units is a part of logic for :doc:`dataset derivation<../res
         
     * **transcriptMultisetUnit()**
 
-    * **transcriptPanelsUnit()**
+    * **transcriptVarietyUnit()**
     
-.. _post_unit_view:
-
-        **view_name**, *optional string**: is used instead of **view_path** for ordinary panels units. Since evaluation of transcript panels unit value is an nontrivial procedure, there might be a need to show its result to the user. If this option is set, result of evaluation of panel list is put to annotated JSON record by the path ``/_view/transcripts`` extended by **view_name**. 
-        
-        The correspondent viewing attribute in :doc:`view_schema_py` must be signed by special :ref:`attribute kind<attribute_kinds>` ``"posted"``
-            
 See also
 --------
 
@@ -202,3 +210,5 @@ See also
 :doc:`list_conv`
 
 :doc:`ajson`
+
+:doc:`../concepts/variety`

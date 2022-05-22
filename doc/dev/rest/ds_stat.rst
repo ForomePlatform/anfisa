@@ -20,6 +20,12 @@ Synopsis
         **conditions**: *optional* list of applying :doc:`condition descriptors<s_condition>`
             *in JSON string representation*
 
+        **ctx**: *optional*, :doc:`context descriptor<s_stat_ctx>`
+            *in JSON string representation*
+            
+        **actsym**: *optional*, add gene symbols from filter to :ref:`active symbols<actsym_purpose>` 
+            *recommended in form* ``actsym=1``
+        
         **instr**: *optional modifier* 
         
     |       ``[``
@@ -44,6 +50,7 @@ Synopsis
     |               **[2]** *optional* count of transcripts, *int*
     |           ``]``
     |      "**stat-list**": ``[`` *list of* :doc:`s_prop_stat` ``]``
+    |      "**functions**": ``[`` *list of* :doc:`s_prop_stat` for functions ``]``
     |      "**cur-filter**: *optional* name of current filter, *string*
     |      "**conditions**:  ``[`` *list of* :doc:`s_condition` ``]``
     |      "**cond-seq**: render information for conditions
@@ -59,6 +66,7 @@ Synopsis
     |      **hash**: hash code associated with current filter conditions, *string*
     |      **filter-list**: names of all filters available for dataset
     |           ``[`` *list of* :doc:`s_sol_entry` ``]``
+    |      **filter-sol-version**: :ref:`indicator of state<sol_version_indicators>` for filters
     |      **rq_id**": unique request id, for use in secondary requests, *string*
     |  ``}``
     
@@ -66,7 +74,7 @@ Description
 -----------
 The request is the principal one for organizing :term:`filtering regime<filter>` for :term:`datasets<dataset>`. 
 
-The most important functionality initiated by this method is :doc:`../concepts/status_report`, see there explanations of input argument **tm** and returning properties **stat-list**, **rq-id**
+The most important functionality initiated by this method is :doc:`../concepts/status_report`, see there explanations of input argument **tm** and returning properties **stat-list**, **functions**, **rq-id**
 
 The rest of information returning by the request concerns filters as :doc:`../concepts/sol_work`.
 

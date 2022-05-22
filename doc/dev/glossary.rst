@@ -111,7 +111,13 @@ Anfisa glossary
         :term:`Enumerated property` with single value
         
     Multiset property
-        :term:`Enumerated property` with single value
+        :term:`Enumerated property` with multiple value
+        
+    Variety property
+        :term:`Enumerated property` with wide spectrum of values (or symbols). Dual to correspondent :term:`panel property`, see :doc:`concepts/variety`.
+        
+    Panel property
+        :term:`Enumerated property` represents presence of the dual :term:`variety property` symbols in :term:`symbol panels<symbol panel>`, see :doc:`concepts/variety`.
         
     Functions
     Filtering function
@@ -132,9 +138,15 @@ Anfisa glossary
     Rules
         Aggregated :term:`multiset property` that detects what :term:`decision trees<decision tree>` are positive on the variant. Available only in :term:`filtering regime` in :doc:`concepts/ws_pg`. 
         
-    Gene list
-        List of genes registered in the system as :term:`solution item`
+    Symbol panel
+        List of symbols prepared for special purposes. Used in :doc:`concepts/variety`. Symbol panels are :term:`solution items<solution item>`
         
+    Gene panel
+        List of gene symbols. Gene panels are :term:`solution items<solution item>`
+        
+    Active symbols
+        Symbols that are reported in :term:`variety properties<variety property>` in complete form. Implemented as persistent hidden :term:`symbol panel`, see details :ref:`here<panels_as_sol_items>`
+
     Export
         Operation of creation (external) Excel document for selected variants. Document is stored on server side, see :ref:`configuration settings<export_cfg>`.
         

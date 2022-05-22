@@ -116,9 +116,7 @@ On creation of dataset the JSON annotated variant record is being modifying by t
 * :doc:`flt_schema_py` logic allows to configure:
     
     * additional :ref:`pre-tranformations<flt_pre_tranform>` of record
-    
-    * creation of constrained :ref:`panels unit<flt_unit_view>` and :ref:`transcript panels unit<post_unit_view>` might require to store result of evaluation inside annotated JSON record
-    
+        
 See also
 --------
 

@@ -1,19 +1,21 @@
-Status report mechanism with delays
-===================================
+Status report mechanism (with delays)
+=====================================
 
 If a set of :term:`variants<variant>` is selected in process of  :doc:`filtration`, it is actual to prepare and render a report for all filtering properties status applied to this set.
 
 Status report for a filtering property is information about distribution of values of this property on selected :term:`variants<variant>`. 
 
-For numeric property it is diapason of values, for enumerated one it is list of actual values with counts of variants having it.
+For :term:`numeric property` it is diapason of values, for :term:`enumerated one<enumerated property>` it is list of actual values with counts of variants having it. In practice this mechanism appears to be effective and very helpful. It is intuitively clear for the user and might be used in (informal as well as formal) understanding of objects and their properties. 
 
-In practice this mechanism appears to be effective and very helpful. It is intuitively clear for the user and might be used in (informal as well as formal) understanding of objects and their properties. 
+Information on numeric and enumerated proper contains in **stat-list** returning property in form of list of :doc:`../rest/s_prop_stat`. If delay happens (see below, **tm** argument), the structures might have incomplete state.
+
+The returning property **functions** contains information about available :term:`functions` and has form of list of :doc:`../rest/s_prop_stat`, always in incomplete state (see details :ref:`here<functions_support>`). 
 
 Status report mechanism uses two options:
 
 - argument of requests **tm** (it is float value in seconds, recommended value: 1) controls time period of evaluation of request; in case of timeout requests return incomplete result
 
-- returning property **"rq-id"** and argument of delayed requests **rq_id** with the same value allows to organize series of requests in single evaluation context 
+- returning property **"rq-id"** and argument of delayed requests **rq_id** with the same value allows to organize series of requests in single evaluation context  
  
 Status report mechanism starts by initiation request: 
  

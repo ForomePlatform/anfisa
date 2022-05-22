@@ -32,6 +32,9 @@ Synopsis
         **param**: parameters of function
                 *JSON string representation*
         
+        **ctx**: *optional*, :doc:`context descriptor<s_stat_ctx>`
+            *in JSON string representation*
+            
     **Return value**: :doc:`s_prop_stat`
 
 Description
