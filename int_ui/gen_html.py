@@ -146,10 +146,17 @@ def formFilterPanel(output, modal_mode):
         print('''
         <div id="flt-unit-classes">
             <span id="unit-classes-state"></span>
-            <button onclick="sUnitClassesH.show();"
+            <button onclick="sEvalCtrlH.show();"
                 title="Select filtration properties in work">&#9745;</button>
         </div>''', file = output)
     print('''
+          <div id="function-list">
+            <span class="note">Functions:</span>
+            <select id="function-name-select"
+                onchange="sEvalCtrlH.checkFunctionSelect();">
+                <option value=""></option>
+            </select>
+          </div>
           <div id="stat-list" class="list-items">
           </div>
         </div>
@@ -359,15 +366,15 @@ def formUnitClassesDiv(output):
                 &#9745;&nbsp;Select filtration properties in work
             </span>
             <span class="close-it"
-                onclick="sUnitClassesH.hide();">&times;</span>
+                onclick="sEvalCtrlH.hide();">&times;</span>
         </div>
         <div id="unit-classes-main">
         </div>
         <div id="unit-classes-ctrl">
-            <button id="unit-classes-done" onclick="sUnitClassesH.hide();">
+            <button id="unit-classes-done" onclick="sEvalCtrlH.hide();">
               Done
             </button>
-            <button id="unit-classes-reset" onclick="sUnitClassesH.reset();">
+            <button id="unit-classes-reset" onclick="sEvalCtrlH.reset();">
               Show all
             </button>
             <span id="unit-classes-int-state"></span>

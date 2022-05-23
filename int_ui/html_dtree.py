@@ -115,7 +115,7 @@ def _formPanel(output):
         </div>
         <div id="dtree-unit-classes">
             <span id="unit-classes-state"></span>
-            <button onclick="sUnitClassesH.show();"
+            <button onclick="sEvalCtrlH.show();"
                 title="Select filtration properties in work">&#9745;</button>
         </div>
       </div>
@@ -125,6 +125,13 @@ def _formPanel(output):
           </div>
         </div>
         <div id="panel-stat">
+          <div id="function-list">
+            <span class="note">Functions:</span>
+            <select id="function-name-select"
+                onchange="sEvalCtrlH.checkFunctionSelect();">
+                <option value=""></option>
+            </select>
+          </div>
           <div id="stat-list" class="list-items">
           </div>
         </div>

@@ -60,12 +60,14 @@ Notes
     
 * For each type of solution items the system provides version integer indicators of the type common state: indicator increases if any solution item of this type created, updated or deleted. Indicators are reset on restart of the system. Indicators can be used in the Front-End logics for detection when the correspondent information on solution items should be reloaded from Back-End.
  
-* Names of dynamical solution items must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces; in terms of js the criterium is as follows:
+* Names for dynamical solution items must start with any letter ("alpha") symbol (any alphabet) and must not contain spaces; in terms of js the criterium is as follows:
     
     ::
         
         /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
 
+    Length of name for dynamical solution must not exceed 255 symbols.
+    
 See also
 --------
 :doc:`sol_pack`

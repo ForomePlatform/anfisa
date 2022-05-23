@@ -153,7 +153,7 @@ var sSubVRecH = {
                 v_prefix  + (idx + 1) + '</div>');
         }
         this.mDivRecList.innerHTML = list_rep.join('\n');
-        this.mSpanTotal.innerHTML = "In scope: " + sUnitsH.getCurCount();
+        this.mSpanTotal.innerHTML = "In scope: " + sEvalCtrlH.getCurCount();
         this.mCurRecIdx = null;
         this.selectRec(0);
     },

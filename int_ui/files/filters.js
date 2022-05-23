@@ -27,31 +27,18 @@
 /**************************************/
 var sUnitsH = {
     mCallDS: null,
-    mDivList: null,
-    mItems: null,
-    mUnitMap: null,
-    mCurUnit: null,
-    mCurFuncName: null,
-    mTotalCounts: null,
-    mFilteredCounts: null,
-    mRqId: null,
-    mUnitsDelay: null,
-    mWaiting: null,
-    mTimeH: null,
     mDelayMode: null,
     mOffline: false,
-    mCount: null,
     
     init: function(call_ds, delay_mode) {
         this.mCallDS = call_ds;
-        this.mDivList = document.getElementById("stat-list");
         this.mDelayMode = delay_mode;
         sFiltersH.init();
         sOpCondH.init();
         sOpNumH.init();
         sOpEnumH.init("filter-cur-cond", 10);
         sCreateWsH.init();
-        sUnitClassesH.init();
+        sEvalCtrlH.init();
         this.setup();
     },
     
@@ -59,7 +46,7 @@ var sUnitsH = {
         ret = this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
         if (use_id)
-            ret += "&rq_id=" + encodeURIComponent(this.mRqId);
+            ret += sEvalCtrlH.argRqId();
         return ret;
     },
     
@@ -82,13 +69,7 @@ var sUnitsH = {
     },
     
     setup: function(conditions, filter_name, add_instr) {
-        this.mRqId = false;
-        if (this.mTimeH != null) {
-            clearInterval(this.mTimeH);
-            this.mTimeH = null;
-        }
-        this.mDivList.className = "wait";
-        this.mWaiting = true;
+        sEvalCtrlH.waitForSetup();
         ajaxCall("ds_stat", 
             this.formRqArgs(conditions, filter_name, true, add_instr, true), 
             function(info){sUnitsH._setup(info);})
@@ -96,196 +77,63 @@ var sUnitsH = {
 
     _setup: function(info) {
         this.mOffline = true;
-        this.mWaiting = false;
-        this.mFilteredCounts = info["filtered-counts"];
-        this.mTotalCounts = info["total-counts"];
-        this.mCount = this.mFilteredCounts[0];
-        this.mRqId  = info["rq-id"];
-        var el_rep = document.getElementById("list-report");
-        if (el_rep) {
-            if (this.mFilteredCounts[0] != this.mTotalCounts[0])
-                el_rep.innerHTML = 
-                    this.mFilteredCounts[0] + "/" + this.mTotalCounts[0];
-            else
-                el_rep.innerHTML = this.mFilteredCounts[0] + "";
-        }
-        if (sSamplesCtrl)
-            sSamplesCtrl.reset(this.mFilteredCounts[0]);
-        this.mItems = [];
-        this.mUnitMap = {}
-        this.mUnitsDelay = [];
-        sUnitClassesH.setupItems(info["stat-list"],
-            this.mItems, this.mFilteredCounts, 
-            this.mUnitMap, this.mUnitsDelay, this.mDivList);
+        var prev_cur_name = sEvalCtrlH.getCurUnitName();
+        sEvalCtrlH._startSetup(info, sSamplesCtrl);
         sConditionsH.setup(info);
         sOpFilterH.update(info["cur-filter"], info["filter-list"]);
-        updateCurFilter(sOpFilterH.getCurFilterName(), true);        
-        this.mDivList.className = "";
-                
-        var unit_name = this.mCurUnit;
-        if (unit_name) {
-            var unit_idx = null;
-            for (idx = 0; idx < this.mItems.length; idx++) {
-                if (unit_name == this.mItems[idx]["name"]) {
-                    unit_idx = idx;
-                    break;
-                }                    
-            }
-            unit_name = (unit_idx !=null)? unit_name:null;
-        }
-        
-        if (!unit_name) 
-            unit_name = this.mItems[0]["name"];
-        this.mCurUnit = null;
-        this.mCurFuncName = null;
-        
+        updateCurFilter(sOpFilterH.getCurFilterName(), true);
         this.mOffline = false;
-        this.selectUnit(unit_name);
+        this.selectUnit(sEvalCtrlH.chooseCurName(prev_cur_name));
         sFiltersH.update();
-        this.checkDelayed();
+        sEvalCtrlH.checkDelayed();
     },
 
-    checkDelayed: function() {
-        if (this.mWaiting || this.mTimeH != null || this.mUnitsDelay.length == 0)
-            return;
-        this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
-    },
-    
     loadUnits: function() {
-        clearInterval(this.mTimeH);
-        this.mTimeH = null;
-        if (this.mWaiting || this.mUnitsDelay.length == 0)
-            return;
-        this.mWaiting = true;
-        this.sortVisibleDelays();
-        ajaxCall("statunits", this.getRqArgs() +
-            ((this.mDelayMode)? "&tm=1":"") + 
-            "&rq_id=" + encodeURIComponent(this.mRqId) + 
-            "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay)), 
+        sEvalCtrlH.waitForLoad();
+        ajaxCall("statunits", this.getRqArgs(true) +
+            ((this.mDelayMode)? "&tm=1":"") + sEvalCtrlH.argDelays(), 
             function(info){sUnitsH._loadUnits(info);})
     },
 
-    _unitDivEl: function(unit_name) {
-        return document.getElementById("stat--" + unit_name);
-    },
-    
     _loadUnits: function(info) {
-        if (info["rq-id"] != this.mRqId) 
-            return;
-        this.mWaiting = false;
-        var cur_el = (this.mCurUnit)? this._unitDivEl(this.mCurUnit): null;
-        if (cur_el)
-            var prev_top = cur_el.getBoundingClientRect().top;
-        var prev_unit = this.mCurUnit;
-        var prev_h =  sUnitClassesH.topUnitStat(this.mCurUnit);
-        for (var idx = 0; idx < info["units"].length; idx++) {
-            unit_stat = info["units"][idx];
-            unit_name = unit_stat["name"];
-            unit_idx = this.mUnitMap[unit_name];
-            var pos = this.mUnitsDelay.indexOf(unit_name);
-            if (pos >= 0)
-                this.mUnitsDelay.splice(pos, 1);
-            if (unit_stat["variety-name"]) 
-                unit_stat["variety-stat"] = this.mItems[unit_idx]["variety-stat"];
-            this.mItems[unit_idx] = unit_stat;
-            sUnitClassesH.refillUnitStat(unit_stat, unit_idx);
-            if (this.mCurUnit == unit_name)
-                this.selectUnit(unit_name, true);
-            if (unit_stat["panel-name"]) {
-                panel_idx = this.mUnitMap[unit_stat["panel-name"]];
-                this.mItems[panel_idx]["variety-stat"] = unit_stat;
-                sUnitClassesH.refillUnitStat(this.mItems[panel_idx], panel_idx);
-                if (this.mCurUnit == unit_stat["panel-name"])
-                    this.selectUnit(unit_stat["panel-name"], true);
-            }
-            if (cur_el) {
-                cur_top = cur_el.getBoundingClientRect().top;
-                this.mDivList.scrollTop += cur_top - prev_top;
-            }
-        }
-        sUnitClassesH.update();
-        this.checkDelayed();
+        sEvalCtrlH.loadUnits(info);
     },
     
-    getCurUnitTitle: function() {
-        if (this.mCurUnit == null)
-            return "?";
-        if (this.mItems[this.mUnitMap[this.mCurUnit]]["kind"] == "func")
-            return this.mCurUnit + "()";
-        return this.mCurUnit;
+    infoIsUpToDate: function(info) {
+        return sEvalCtrlH.checkRqId(info);
     },
     
-    getCurUnitName: function() {
-        return this.mCurUnit;
-    },
-    
-    getCurUnitStat: function() {
-        if (this.mCurUnit == null)
-            return null;
-        return this.mItems[this.mUnitMap[this.mCurUnit]];
-    },
-    
-    selectUnit: function(stat_unit, force_it) {
+    selectUnit: function(unit_name, force_it) {
         if (this.mOffline) {
-            this.mCurUnit = stat_unit;
+            sEvalCtrlH.setCurUnit(unit_name);
             return;
         }
-        var pos = this.mUnitsDelay.indexOf(stat_unit);
-        if (pos > 0) {
-            this.mUnitsDelay.splice(pos, 1);
-            this.mUnitsDelay.splice(0, 0, stat_unit);
-        }
-        if (pos >= 0) 
-            this.checkDelayed();
-        if (this.mCurUnit == stat_unit && !force_it) 
+        sEvalCtrlH.checkUnitDelay(unit_name);
+        if (sEvalCtrlH.getCurUnitName() == unit_name && !force_it) 
             return;
-        var new_unit_el = this._unitDivEl(stat_unit);
-        if (new_unit_el == null) 
+        var new_unit_el = sEvalCtrlH.unitDiv(unit_name);
+        if (new_unit_el == null && !force_it) 
             return;
-        if (this.mCurUnit != null) {
-            var prev_el = this._unitDivEl(this.mCurUnit);
-            if (prev_el)
-                prev_el.className = prev_el.className.replace(" cur", "");
+        prev_el = sEvalCtrlH.curUnitDiv();
+        if (prev_el)
+            prev_el.className = prev_el.className.replace(" cur", "");
+        sEvalCtrlH.setCurUnit(unit_name);
+        if (new_unit_el) {
+            new_unit_el.className = new_unit_el.className + " cur";
+            softScroll(new_unit_el, 1);
         }
-        this.mCurUnit = stat_unit;
-        new_unit_el.className = new_unit_el.className + " cur";
-        softScroll(new_unit_el, 1);
         sConditionsH.onUnitSelect();
         sOpCondH.onUnitSelect();
     },
     
     prepareWsCreate: function() {
-        return [this.mFilteredCounts[0], this.mTotalCounts[0]];
+        return [sEvalCtrlH.getCurCount(), sEvalCtrlH.getTotalCount()];
     },
     
     getWsCreateArgs: function() {
         return this.mCallDS + "&conditions=" + 
             encodeURIComponent(JSON.stringify(sConditionsH.getConditions()));
-    },
-    
-    getCurCount: function() {
-        return this.mFilteredCounts[0];
-    },
-    
-    sortVisibleDelays: function() {
-        var view_height = this.mDivList.getBoundingClientRect().height;
-        view_seq = [];
-        hidden_seq = [];
-        for (var idx=0; idx < this.mUnitsDelay.length; idx++) {
-            var rect = this._unitDivEl(this.mUnitsDelay[idx]).getBoundingClientRect();
-            if ((rect.top + rect.height < 0) || (rect.top > view_height))
-                hidden_seq.push(this.mUnitsDelay[idx]);
-            else
-                view_seq.push(this.mUnitsDelay[idx]);
-        }
-        this.mUnitsDelay = view_seq.concat(hidden_seq);
-    },
-    
-    checkRqId: function(info) {
-        if (info["rq-id"] != this.mRqId) 
-            return false;
-        return true;
-    }
+    }    
 };
 
 /**************************************/
@@ -491,8 +339,9 @@ var sConditionsH = {
     
     onUnitSelect: function() {
         if (this.mCurCondIdx == null || 
-                this.mCondSeq[this.mCurCondIdx]["unit"] != sUnitsH.getCurUnitName())
-            this.selectCond(this.findCond(sUnitsH.getCurUnitName()));
+                this.mCondSeq[this.mCurCondIdx]["unit"] != 
+                sEvalCtrlH.getCurUnitName())
+            this.selectCond(this.findCond(sEvalCtrlH.getCurUnitName()));
     },
 
     findCond: function(unit_name, cond_type) {
@@ -540,15 +389,16 @@ var sOpCondH = {
     },
     
     onUnitSelect: function() {
-        unit_name = sUnitsH.getCurUnitName();
-        document.getElementById("cond-title").innerHTML = sUnitsH.getCurUnitTitle();
+        unit_name = sEvalCtrlH.getCurUnitName();
+        document.getElementById("cond-title").innerHTML = 
+            sEvalCtrlH.getCurUnitTitle();
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();
             this.formCondition(null);
             return;
         } 
-        unit_stat = sUnitsH.getCurUnitStat();
+        unit_stat = sEvalCtrlH.getCurUnitStat();
     
         if (unit_stat["incomplete"])
             this.mCurTpHandler = null;
@@ -579,7 +429,7 @@ var sOpCondH = {
     },
     
     formCondition: function(condition_data, err_msg, add_always) {
-        cur_unit_name = sUnitsH.getCurUnitName();
+        cur_unit_name = sEvalCtrlH.getCurUnitName();
         this.mCondition   = null;
         this.mIdxToAdd    = null;
         this.mIdxToUpdate = null;
@@ -658,7 +508,6 @@ var sFiltersH = {
     mComboName: null,
     mCurFilterName: null,
     mCurFilterInfo: null,
-    mCurFilterIdx: null,
     mBtnOp: null,
     
     mAllList: [],
@@ -679,13 +528,10 @@ var sFiltersH = {
         this.mOpList = [];
         this.mAllList = [];
         this.mFltTimeDict = {};
-        this.mCurFilterIdx = 0;
         for (idx = 0; idx < filter_list.length; idx++) {
             flt_info = filter_list[idx];
             if (flt_info["name"] == this.mCurFilterName)
                 this.mCurFilterInfo = flt_info;
-            if (flt_info["name"] ==this.mCurFilterName)
-                this.mCurFilterIdx = this.mAllList.length;
             this.mAllList.push(flt_info["name"]);
             if (!flt_info["standard"])
                 this.mOpList.push(flt_info["name"]);
@@ -795,7 +641,7 @@ var sFiltersH = {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList, this.mCurFilterIdx);
+        this.fillSelNames(false, this.mAllList, this.mCurFilterName);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
@@ -807,7 +653,7 @@ var sFiltersH = {
         this.mCurOp = "join";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList, this.mCurFilterIdx);
+        this.fillSelNames(false, this.mAllList, this.mCurFilterName);
         this.mSelName.disabled = false;
         this.mBtnOp.innerHTML = "Join";
         this.mBtnOp.style.display = "block";
@@ -887,26 +733,10 @@ var sFiltersH = {
         }
     },
 
-    fillSelNames: function(with_empty, filter_list, sel_idx) {
+    fillSelNames: function(with_empty, filter_list, cur_value) {
         if (this.mSelName == null || this.mAllList == null)
             return;
-        for (idx = this.mSelName.length -1; idx >= 0; idx--) {
-            this.mSelName.remove(idx);
-        }
-        if (with_empty) {
-            var option = document.createElement('option');
-            option.innerHTML = "";
-            option.value = "";
-            this.mSelName.append(option)
-        }
-        for (idx = 0; idx < filter_list.length; idx++) {
-            flt_name = filter_list[idx];
-            var option = document.createElement('option');
-            option.innerHTML = flt_name;
-            option.value = flt_name;
-            this.mSelName.append(option)
-        }
-        this.mSelName.selectedIndex = (sel_idx)? sel_idx : 0;
+        resetSelectInput(this.mSelName, filter_list, with_empty, cur_value);
     },
     
     getAllList: function() {
@@ -919,14 +749,17 @@ var sFiltersH = {
 /*************************************/
 function showExport() {
     relaxView();
-    if (getCurCount() <= 9000)
-        res_content = 'Export ' + getCurCount() + ' variants?<br>' +
-            '<button class="popup" onclick="doExport();">To Excel</button>' + 
-            '&emsp;<button class="popup" onclick="doCSVExport();">To CSV</button>' + 
-            '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
+    var cur_count = sEvalCtrlH.getCurCount();
+    if (cur_count <= 9000)
+        res_content = 'Export ' + cur_count + ' variants?<br>' +
+            '<button class="popup" onclick="doExport();">'+
+            'To Excel</button>&emsp;' +
+            '<button class="popup" onclick="doCSVExport();">'+
+            'To CSV</button>&emsp;' + 
+            '<button class="popup" onclick="relaxView();">Cancel</button>';
     else
         res_content = 'Too many variants for export: ' + 
-            getCurCount() + ' > 9000.<br>' +
+            cur_count + ' > 9000.<br>' +
             '<button class="popup" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("export-result");
     res_el.innerHTML = res_content;
@@ -937,7 +770,7 @@ function setupExport(info) {
     res_el = document.getElementById("export-result");
     if (info["fname"]) {
         res_el.className = "popup";
-        res_el.innerHTML = 'Exported ' + getCurCount() + ' variants<br>' +
+        res_el.innerHTML = 'Exported ' + sEvalCtrlH.getCurCount() + ' variants<br>' +
         '<a href="' + info["fname"] + '" target="blank" ' + 'download>Download</a>';
     } else {
         res_el.className = "popup problems";

@@ -492,7 +492,7 @@ var sOpEnumH = {
 /*************************************/
 /*************************************/
 function renderEnumStat(unit_name, expand_mode) {
-    sUnitClassesH.renderEnumStat(unit_name, expand_mode);
+    sEvalCtrlH.renderEnumStat(unit_name, expand_mode);
 }
 
 /*************************************/
@@ -803,26 +803,76 @@ function startWsCreate() {
 /**********************************************/
 /* Visual control for units and visual groups */
 /**********************************************/
-var sUnitClassesH = {
+var sEvalCtrlH = {
     mUShowClasses: null,
-    mUnitItems: null,
     mVGroupsSeq: null,
     mDivTopBack: null,
     mDivMain: null,
+    mDivList: null,
+    mSelFunc: null,
     mSpanState: null,
     mSpanIntState: null,
     mBtnReset: null,
     mBtnDone: null,
     mCurUShowState: null,
-    mCurFlteredCounts: null,
+    mTimeH: null,
+    mWaiting: false,
+    mRqId: null,
+    mPostAction: null,
+    mUnitsDelay: null,
+    mItems: null,
+    mFunctions: null,
+    mFunctionNames: null,
+    mUnitMap: null,
+    mCurUnit: null,
+    mCurFuncName: null,
+    mTotalCounts: null,
+    mFilteredCounts: null,
     
     init: function() {
         this.mDivTopBack = document.getElementById("unit-classes-back");
         this.mDivMain = document.getElementById("unit-classes-main");
+        this.mDivList = document.getElementById("stat-list");
+        this.mSelFunc = document.getElementById("function-name-select");
         this.mSpanState = document.getElementById("unit-classes-state");
         this.mSpanIntState = document.getElementById("unit-classes-int-state");
         this.mBtnReset = document.getElementById("unit-classes-reset");
         this.mBtnDone = document.getElementById("unit-classes-done");
+    },
+
+    waitForSetup: function() {
+        this.mRqId = false;
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        this.mDivList.className = "wait";
+        this.mSelFunc.className = "wait";
+        this.mWaiting = true;
+    },
+
+    waitForLoad: function() {
+        clearInterval(this.mTimeH);
+        this.mTimeH = null;
+        if (this.mWaiting || this.mUnitsDelay.length == 0)
+            return;
+        this.mWaiting = true;
+        this.sortVisibleDelays();
+    },
+   
+    _startSetup: function(info, smp_ctrl, expand_mode, click_func) {
+        this.mWaiting = false;
+        this.mRqId  = info["rq-id"];
+        this.mDivList.className = "";
+        this.mSelFunc.className = "";
+        this.mFilteredCounts = info["filtered-counts"];
+        this.mTotalCounts = info["total-counts"];
+        this.renderCounts();
+        if (smp_ctrl)
+            smp_ctrl.reset(this.mFilteredCounts[0]);
+        
+        this.setupItems(info["stat-list"], info["functions"], 
+            expand_mode, click_func);
     },
     
     setup: function(show_classes) {
@@ -834,7 +884,7 @@ var sUnitClassesH = {
             list_rep.push('<div class="unit-classes-class">\n' +
                 '  <div class="unit-class-title">' + 
                 '<input id="ucl--' + j + '-all" type="checkbox" checked ' +
-                'onclick="sUnitClassesH.update();">&nbsp;' + 
+                'onclick="sEvalCtrlH.update();">&nbsp;' + 
                 unit_cls["title"] + '</div>');
             list_rep.push('<div class="unit-class-group" id="ucl-group--' + j + '">');
             for(k=0; k < unit_cls["values"].length; k++) {
@@ -842,17 +892,115 @@ var sUnitClassesH = {
                 list_rep.push(
                     '    <div class="unit-class-val" id="div-ucl' + it_code + '">' +
                     '<input id="ucl' + it_code + '" type="checkbox" checked ' +
-                    'onclick="sUnitClassesH.update();">&nbsp;' + 
+                    'onclick="sEvalCtrlH.update();">&nbsp;' + 
                     unit_cls["values"][k] + '</div>');
             }
             list_rep.push('</div></div>');
         }
         this.mDivMain.innerHTML = list_rep.join("\n");
-        if (this.mUnitItems != null) {
-            this.updateItems(this.mUnitItems);
+        if (this.mItems != null) {
+            this.updateItems();
         }
     },
 
+    getCurUnitName: function() {
+        return this.mCurUnit;
+    },
+    
+    getCurUnitStat: function() {
+        if (this.mCurUnit == null)
+            return null;
+        return this.mUnitMap[this.mCurUnit];
+    },
+
+    getCurUnitTitle: function() {
+        if (this.mCurUnit == null)
+            return "?";
+        if (this.mUnitMap[this.mCurUnit]["kind"] == "func")
+            return this.mCurUnit + "()";
+        return this.mCurUnit;
+    },
+    
+    getUnitStat: function(unit_name) {
+        this.checkUnitDelay(unit_name);
+        return this.mUnitMap[unit_name];
+    },
+    
+    chooseCurName: function(unit_name) {
+        if (unit_name && this.mUnitMap[unit_name] != undefined)
+            return unit_name;
+        return this.mItems[0]["name"];
+    },
+    
+    argRqId: function() {
+        return "&rq_id=" + encodeURIComponent(this.mRqId);
+    },
+
+    argDelays: function() {
+        return "&units=" + encodeURIComponent(JSON.stringify(this.mUnitsDelay));
+    },
+    
+    getCurCount: function() {
+        return this.mFilteredCounts[0];
+    },
+    
+    getTotalCount: function() {
+        return this.mTotalCounts[0];
+    },
+    
+    checkRqId: function(info) {
+        if (info["rq-id"] != this.mRqId) 
+            return false;
+        return true;
+    },
+    
+    checkDelayed: function() {
+        var post_action = this.mPostAction;
+        this.mPostAction = null;
+        if (post_action)
+            eval(post_action);
+        if (this.mWaiting || this.mTimeH != null || this.mUnitsDelay.length == 0)
+            return;
+        this.mTimeH = setInterval(function(){sUnitsH.loadUnits();}, 50);
+    },
+    
+    postAction: function(action, no_wait) {
+        if (!no_wait || this.mWaiting) {
+            if (this.mPostAction) 
+                this.mPostAction += "\n" + action;
+            else
+                this.mPostAction = action;
+            return true;
+        }
+        return false;
+    },
+    
+    renderCounts: function() {
+        var el_rep = document.getElementById("list-report");
+        if (!el_rep) 
+            return;
+        if (this.mFilteredCounts[0] != this.mTotalCounts[0])
+            el_rep.innerHTML = 
+                this.mFilteredCounts[0] + "/" + this.mTotalCounts[0];
+        else
+            el_rep.innerHTML = this.mFilteredCounts[0] + "";
+    },
+    
+    checkFunctionSelect: function() {
+        var func_unit_name = this.mSelFunc.value;
+        if (func_unit_name == this.mCurUnit)
+            return;
+        if (func_unit_name == "") {
+            this.setCurUnit(this.mCurUnit);
+            return;
+        }
+        sUnitsH.selectUnit(func_unit_name, "func");
+    },
+    
+    isFuncUnit: function(unit_name) {
+        return this.mFunctionNames.indexOf(unit_name) >= 0;
+    },
+    
     isUShown: function(it_classes, except_index) {
         var j, k, in_w;
         if (this.mCurUShowState != null) {
@@ -876,8 +1024,7 @@ var sUnitClassesH = {
         return true;        
     },
     
-    updateItems: function(unit_items, no_reset) {
-        this.mUnitItems = unit_items;
+    updateItems: function(no_reset) {
         if (this.mUShowClasses == null) {
             return;
         }
@@ -886,8 +1033,8 @@ var sUnitClassesH = {
         for (j = 0; j < this.mUShowClasses.length; j++) {
             cls_counts.push(Array(this.mUShowClasses[j]["values"].length).fill(0));
         }
-        for (idx=0; idx < this.mUnitItems.length; idx++) {
-            it_classes = this.mUnitItems[idx]["classes"];
+        for (idx=0; idx < this.mItems.length; idx++) {
+            it_classes = this.mItems[idx]["classes"];
             for (j=0; j < this.mUShowClasses.length; j++) {
                 if (!this.isUShown(it_classes, j))
                     continue;
@@ -935,21 +1082,21 @@ var sUnitClassesH = {
             this.mCurUShowState.push(j_cr);
         }
         var cnt_shown = this.updateUShow();
-        if (cnt_shown == 0 && this.mUnitItems.length > 0 && !no_reset) {
+        if (cnt_shown == 0 && this.mItems.length > 0 && !no_reset) {
             this.reset(true);
             return;
         }
-        this.showStatus(cnt_shown, this.mUnitItems.length);
+        this.showStatus(cnt_shown, this.mItems.length);
     },
     
     updateUShow: function() {
         var cnt_shown = 0;
         var groups_shown = [];
         var group_e_val = -1;
-        for (idx = 0; idx < this.mUnitItems.length; idx++) {
-            it = this.mUnitItems[idx];
+        for (idx = 0; idx < this.mItems.length; idx++) {
+            it = this.mItems[idx];
             var ushown = this.isUShown(it["classes"]);
-            document.getElementById("stat--" + it["name"]).style.display = 
+            this.unitDiv(it["name"]).style.display = 
                 (ushown)? "block": "none";
             if (groups_shown.length < this.mVGroupsSeq.length &&
                     idx == this.mVGroupsSeq[groups_shown.length]) {
@@ -1007,41 +1154,48 @@ var sUnitClassesH = {
         }
         this.update();
         if (heavy_mode) {
-            this.updateItems(this.mUnitItems, true);
+            this.updateItems(true);
         } else {
             this.hide();
         }
     },
     
-    topUnitStat: function(unit_name) {
-        if (!unit_name)
-            return null;
-        return document.getElementById(
-            "stat--" + unit_name).getBoundingClientRect().top;
-    },
-
-    setupItems: function(stat_list, items, filtered_counts, unit_map,  
-            unit_names_to_load, div_el, expand_mode, click_func) {
-        for (var idx = 0; idx < stat_list.length; idx++) {
-            if (sOpFuncH.notSupported(stat_list[idx]))
-                continue;
+    setupItems: function(stat_list, func_list, expand_mode, click_func) {
+        this.mItems = [];
+        this.mUnitMap = {}
+        this.mUnitsDelay = [];
+        var idx;
+        for (idx = 0; idx < stat_list.length; idx++) {
             unit_stat = stat_list[idx];
-            unit_map[unit_stat["name"]] = idx;
-            items.push(unit_stat);
+            if (unit_stat["kind"] == "func")
+                continue;
+            this.mUnitMap[unit_stat["name"]] = unit_stat;
+            this.mItems.push(unit_stat);
         }
-        for (idx = 0; idx < items.length; idx++) {
-            unit_stat = items[idx];
+        this.mFunctions = [];
+        this.mFunctionNames = [];
+        for (idx = 0; idx < func_list.length; idx++) {
+            unit_stat = func_list[idx];
+            if (sOpFuncH.notSupported(unit_stat))
+                continue;
+            this.mUnitMap[unit_stat["name"]] = unit_stat;
+            this.mFunctions.push(unit_stat);
+            this.mFunctionNames.push(unit_stat["name"]);
+        }
+        
+        resetSelectInput(this.mSelFunc, this.mFunctionNames, true, "");
+        
+        for (idx = 0; idx < this.mItems.length; idx++) {
+            unit_stat = this.mItems[idx];
             if (unit_stat["panel-name"]) {
-                items[unit_map[unit_stat["panel-name"]]]
-                    ["variety-stat"] = unit_stat;
+                this.mUnitMap[unit_stat["panel-name"]]["variety-stat"] = unit_stat;
             }
         }
         var list_stat_rep = [];
         var group_title = false;
-        this.mCurFlteredCounts = filtered_counts;
         this.mVGroupsSeq = [];
-        for (idx = 0; idx < items.length; idx++) {
-            unit_stat = items[idx];
+        for (idx = 0; idx < this.mItems.length; idx++) {
+            unit_stat = this.mItems[idx];
             unit_name   = unit_stat["name"];
             if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
                 if (group_title != false) {
@@ -1088,7 +1242,7 @@ var sUnitClassesH = {
             list_stat_rep.push('<div id="stat-data--' + 
                 unit_name + '" class="stat-unit-data">');
             if (unit_stat["incomplete"]) {
-                unit_names_to_load.push(unit_name);
+                this.mUnitsDelay.push(unit_name);
                 list_stat_rep.push('<div class="comment">Loading data...</div>');
             } else {
                 switch (unit_stat["kind"]) {
@@ -1107,19 +1261,23 @@ var sUnitClassesH = {
         if (group_title != false) {
             list_stat_rep.push('</div>')
         }
-        div_el.innerHTML = list_stat_rep.join('\n');
-        this.updateItems(items);
+        this.mDivList.innerHTML = list_stat_rep.join('\n');
+        this.updateItems();
     },
     
     renderEnumStat: function(unit_name, expand_mode) {
-        unit_stat = sUnitsH.getUnitStat(unit_name);
+        unit_stat = this.getUnitStat(unit_name);
         list_stat_rep = [];
         fillStatRepEnum(unit_stat, list_stat_rep, expand_mode);
         div_el = document.getElementById("stat-data--" + unit_stat["name"]);
         div_el.innerHTML = list_stat_rep.join('\n');
     },
     
-    refillUnitStat: function(unit_stat, unit_idx, expand_mode) {
+    resetupUnitStat: function(unit_stat, expand_mode) {
+        prev_unit_stat = this.mUnitMap[unit_stat["name"]];
+        this.mUnitMap[unit_stat["name"]] = unit_stat;
+        this.mItems[this.mItems.indexOf(prev_unit_stat)] = unit_stat;
+        
         div_el = document.getElementById("stat-data--" + unit_stat["name"]);
         list_stat_rep = [];
         if (unit_stat["kind"] == "func") 
@@ -1135,7 +1293,7 @@ var sUnitClassesH = {
     },
     
     renderEntopyReport: function(unit_idx) {
-        var unit_stat = this.mUnitItems[unit_idx];
+        var unit_stat = this.mItems[unit_idx];
         var e_rep = this.unitEntropyReport(unit_stat);
         e_el = document.getElementById("unit-entropy--" + unit_idx);
         e_el.innerHTML = '['+ e_rep[0].toFixed(3) + ']';
@@ -1151,7 +1309,7 @@ var sUnitClassesH = {
     unitEntropyReport: function(unit_stat) {
         if (unit_stat == null || unit_stat["incomplete"])
             return [-1, "loading"];
-        var total = this.mCurFlteredCounts[(unit_stat["detailed"])?1:0];
+        var total = this.mFilteredCounts[(unit_stat["detailed"])?1:0];
         var var_counts = [];
         if (unit_stat["kind"] == "numeric") {
             if (unit_stat["histogram"]) {
@@ -1179,6 +1337,86 @@ var sUnitClassesH = {
         }
         
         return entropyReport(var_counts);
+    },
+    
+    unitDiv: function(unit_name) {
+        return document.getElementById("stat--" + unit_name);
+    },
+
+    curUnitDiv: function() {
+        if (this.mCurUnit && this.mFunctionNames.indexOf(this.mCurUnit) < 0)
+            return this.unitDiv(this.mCurUnit);
+        return null;
+    },
+    
+    setCurUnit: function(unit_name) {
+        this.mCurUnit = unit_name;
+        this.mSelFunc.selectedIndex = this.mFunctionNames.indexOf(this.mCurUnit) + 1;
+    },
+    
+    sortVisibleDelays: function() {
+        var view_height = this.mDivList.getBoundingClientRect().height;
+        view_seq = [];
+        hidden_seq = [];
+        for (var idx=0; idx < this.mUnitsDelay.length; idx++) {
+            var rect = this.unitDiv(this.mUnitsDelay[idx]).getBoundingClientRect();
+            if ((rect.top + rect.height < 0) || (rect.top > view_height))
+                hidden_seq.push(this.mUnitsDelay[idx]);
+            else
+                view_seq.push(this.mUnitsDelay[idx]);
+        }
+        this.mUnitsDelay = view_seq.concat(hidden_seq);
+    },
+    
+    checkUnitDelay: function(unit_name) {
+        var pos = this.mUnitsDelay.indexOf(unit_name);
+        if (pos >= 0) {
+            this.mUnitsDelay.splice(pos, 1);
+            this.mUnitsDelay.splice(0, 0, unit_name);
+        }
+        if (pos >= 0) 
+            this.checkDelayed();
+    },
+    
+    dropUnitDelay: function(unit_name) {
+        var pos = this.mUnitsDelay.indexOf(unit_name);
+        if (pos >= 0) 
+            this.mUnitsDelay.splice(pos, 1);
+    },
+    
+    loadUnits: function(info, expand_mode, cond_h) {
+        if (!sUnitsH.infoIsUpToDate(info))
+            return;
+        this.mWaiting = false;
+        var cur_el = this.curUnitDiv();
+        if (cur_el)
+            var prev_top = cur_el.getBoundingClientRect().top;
+        
+        for (var idx = 0; idx < info["units"].length; idx++) {
+            unit_stat = info["units"][idx];
+            unit_name = unit_stat["name"];
+            this.dropUnitDelay(unit_name);
+            if (unit_stat["variety-name"]) 
+                unit_stat["variety-stat"] = this.mUnitMap[unit_name]["variety-stat"];
+            this.resetupUnitStat(unit_stat, expand_mode);
+            if (this.mCurUnit == unit_name)
+                sUnitsH.selectUnit(unit_name, true);
+            if (unit_stat["panel-name"]) {
+                panel_stat = this.mUnitMap[unit_stat["panel-name"]];
+                panel_stat["variety-stat"] = unit_stat;
+                this.resetupUnitStat(panel_stat, expand_mode);
+                if (this.mCurUnit == unit_stat["panel-name"])
+                    sUnitsH.selectUnit(unit_stat["panel-name"], true);
+            }
+            if (cur_el) {
+                cur_top = cur_el.getBoundingClientRect().top;
+                this.mDivList.scrollTop += cur_top - prev_top;
+            }
+            if (cond_h)
+                cond_h.checkDelay(unit_name);
+        }
+        this.update();
+        this.checkDelayed();
     }
     
 };

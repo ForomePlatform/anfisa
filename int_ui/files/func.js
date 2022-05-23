@@ -33,6 +33,7 @@ var sOpFuncH = {
     mOpVariants: null,
     mOpMode: null,
     mCurFState: null,
+    mFDict: null,
 
     init: function() {
         this.mFDict = {
@@ -150,7 +151,7 @@ var sOpFuncH = {
     _setupStat: function(info) {
         if (this.mUnitStat == null)
             return;
-        if (!sUnitsH.checkRqId(info))
+        if (!sUnitsH.infoIsUpToDate(info))
             return;
         var ret_state = this.mCurFuncH.parseFState(info);
         this.mRuntimeErr = info["err"];

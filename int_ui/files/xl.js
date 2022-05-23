@@ -46,10 +46,6 @@ function onFilterListChange() {
 }
 
 /*************************************/
-function getCurCount() {
-    return sUnitsH.mCount;
-}
-
 function doExport() {
     sViewH.popupOff();
     args = "ds=" + sDSName + "&conditions=" + 

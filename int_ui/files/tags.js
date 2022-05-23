@@ -117,16 +117,10 @@ function setupTags(info) {
         if (tag_name == "_note")
             continue;
         if (sTagOrder.indexOf(tag_name) < 0) {
-            var option = document.createElement('option');
-            option.innerHTML = tag_name;
-            option.value = tag_name;
-            sInpTagNameList.append(option)
+            sInpTagNameList.append(_mkOption(tag_name));
         }
     }
-    var option = document.createElement('option');
-    option.innerHTML = "_note";
-    option.value = "_note";
-    sInpTagNameList.append(option);
+    sInpTagNameList.append(_mkOption("_note"));
     sInpTagNameList.selectedIndex = -1;
     document.getElementById("tags-time").innerHTML = (info["upd-time"])?
         ('Updated: <span class="note-time">' + 

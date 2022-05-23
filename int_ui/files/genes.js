@@ -88,33 +88,10 @@ function setupPanels(info) {
         sDynPanelPrefix = sDynPanelNames[0][0];
     sPState     = info["panel-sol-version"];
     sDBVersions = info["db-version"];
-    sel_el = document.getElementById("panel-select");
-    for (idx = sel_el.length - 1; idx >= 0; idx--) {
-        sel_el.remove(idx);
-    }
-    for (idx = 0; idx < sAllPanelNames.length; idx++) {
-        pname = sAllPanelNames[idx];
-        var option = document.createElement('option');
-        option.innerHTML = pname;
-        option.value = pname;
-        sel_el.append(option)
-    }
-    sel_el.selectedIndex = Math.max(0, 
-        sAllPanelNames.indexOf(sCurPanelName));
-
-    dyn_sel_el = document.getElementById("dyn-panels-combo-list");
-    for (idx = dyn_sel_el.length - 1; idx >= 0; idx--) {
-        dyn_sel_el.remove(idx);
-    }
-    for (idx = 0; idx < sDynPanelNames.length; idx++) {
-        pname = sDynPanelNames[idx];
-        var option = document.createElement('option');
-        option.innerHTML = pname;
-        option.value = pname;
-        dyn_sel_el.append(option)
-    }
-    dyn_sel_el.selectedIndex = Math.max(0, 
-        sDynPanelNames.indexOf(sCurDynPanelName));
+    resetSelectInput(document.getElementById("panel-select"),
+        sAllPanelNames, false, sCurPanelName);
+    resetSelectInput(document.getElementById("dyn-panels-combo-list"),
+        sDynPanelNames, false, sCurDynPanelName);
     
     document.getElementById("gene-versions").title = sDBVersions.join('\n');
     

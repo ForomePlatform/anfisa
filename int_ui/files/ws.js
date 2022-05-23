@@ -260,10 +260,6 @@ function refreshHitTranscripts(val) {
 //=====================================
 // Export
 //=====================================
-function getCurCount() {
-    return sRecList.length;
-}
-
 function doExport() {
     sViewH.popupOff();
     ajaxCall("export", sConditionsH.getCondRqArgs(
@@ -281,18 +277,7 @@ function doCSVExport() {
 // Filters
 //=====================================
 function onFilterListChange() {
-    var all_filters = sFiltersH.getAllList();
-    for (idx = sSelectFltNamed.length - 1; idx > 0; idx--) {
-        sSelectFltNamed.remove(idx);
-    }
-    for (idx = 0; idx < all_filters.length; idx++) {
-        flt_name = all_filters[idx];
-        var option = document.createElement('option');
-        option.innerHTML = flt_name;
-        option.value = flt_name;
-        sSelectFltNamed.append(option)
-    }
-    sSelectFltNamed.selectedIndex = all_filters.indexOf(sCurFilterName) + 1;
+    resetSelectInput(sSelectFltNamed, sFiltersH.getAllList(), true, sCurFilterName);
     sFiltersH.update();
     sViewH.popupOff();
 }
@@ -376,18 +361,7 @@ sTagSupportH = {
 
     _loadSelection: function(info) {
         this.mCurTag = (info["tag"])? info["tag"]: null;
-        for (idx = this.mSelCurTag.length - 1; idx > 0; idx--) {
-            this.mSelCurTag.remove(idx);
-        }
-        tag_list = info["tag-list"];
-        for (idx = 0; idx < tag_list.length; idx++) {
-            tag_name = tag_list[idx];
-            var option = document.createElement('option');
-            option.innerHTML = tag_name;
-            option.value = tag_name;
-            this.mSelCurTag.append(option)
-        }
-        this.mSelCurTag.selectedIndex = tag_list.indexOf(this.mCurTag) + 1;
+        resetSelectInput(this.mSelCurTag, info["tag-list"], true, this.mCurTag);
         this.mTagRecList = (this.mCurTag)? info["tag-rec-list"]:null;
 
         if (this.mTagsState != info["tags-state"]) {

@@ -72,7 +72,7 @@ def _formPanel(output):
         </div>
         <div id="xl-unit-classes">
             <span id="unit-classes-state"></span>
-            <button onclick="sUnitClassesH.show();"
+            <button onclick="sEvalCtrlH.show();"
                 title="Select filtration properties in work">&#9745;</button>
         </div>
       </div>''', file = output)

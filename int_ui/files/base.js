@@ -166,6 +166,30 @@ function popKeyFromStr(the_str, the_key) {
 }
 
 /*************************************/
+function _mkOption(value) {
+    var option = document.createElement('option');
+    option.innerHTML = value;
+    option.value = value;
+    return option;
+}
+
+function resetSelectInput(sel_el, values, with_empty, cur_value) {
+    for (idx = sel_el.length - 1; idx >= 0; idx--) {
+        sel_el.remove(idx);
+    }
+    var idx_shift = 0;
+    if (with_empty) {
+        sel_el.append(_mkOption(""));
+        idx_shift = 1;
+    }
+    for (idx = 0; idx < values.length; idx++) {
+        sel_el.append(_mkOption(values[idx]));
+    }
+    
+    sel_el.selectedIndex = Math.max(0, values.indexOf(cur_value) + idx_shift);
+}
+
+/*************************************/
 function setupDSInfo(info) {
     if (info["doc"] === undefined) {
         document.getElementById("menu-doc").disabled = true;
@@ -177,7 +201,7 @@ function setupDSInfo(info) {
             sCohortViewModes[sCohortList[idx]] = true;
         }
     }
-    sUnitClassesH.setup(info["unit-classes"]);
+    sEvalCtrlH.setup(info["unit-classes"]);
 }
 
 /*************************************/
@@ -328,7 +352,7 @@ function setupDSControls() {
     sOpEnumH.init();
     sCreateWsH.init();
     sSubVRecH.init();
-    sUnitClassesH.init();
+    sEvalCtrlH.init();
     ajaxCall("dsinfo", "ds=" + sDSName, setupDSInfo);
 }
 

@@ -195,6 +195,11 @@ span.note-time {
     font-style: italic;
 }
 
+.note {
+    font-size: 90%;
+    font-style: italic;    
+}
+
 div.list-items {
     margin: 5px;
     padding: 5px;
