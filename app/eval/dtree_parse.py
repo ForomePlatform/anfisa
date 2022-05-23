@@ -502,8 +502,9 @@ class ParsedDTree:
 
     #===============================================
     def processFloat(self, it):
-        if not isinstance(it, ast.Num) or (
-                not isinstance(it.n, int) and not isinstance(it.n, float)):
+        if not isinstance(it, ast.Num):
+            self.errorIt(it, "Numeric is expected: %r" % it)
+        if (not isinstance(it.n, int) and not isinstance(it.n, float)):
             self.errorIt(it, "Int or float is expected: %r" % it.n)
         return it.n
 
