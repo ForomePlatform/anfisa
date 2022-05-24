@@ -93,7 +93,20 @@ The location of the vault directory::
 Location of file with configuration of access to BAM-files, used in IGV-links. See discussion here: :ref:`IGV direct support<IGV_direct_support>`. ::
     
     "igv-dir": "${HOME}/igv.dir",
-        
+
+.. index::
+    auto-drop-datasets; service coinfiguration option
+    
+.. _adm_drop_datasets:
+    
+* **auto-drop-datasets**, *list of strings*
+
+The option determines dataset names that can be dropped automatically via request :doc:`../rest/adm_drop_ds`. There can be multiple patterns in list, and dataset name is good for drop if any of patterns appears in its name. Patterns should be correct Python regular expressions::
+
+    "auto-drop-datasets": ["(?i)test"]
+    
+  (Example shows the case when dataset name should contain substring "test" in ignorecase mode) 
+    
 .. index:: 
     solutions; service configuration option
 

@@ -13,6 +13,7 @@ Anfisa Interface concepts
    doc_pg
    filters_reg
    variety
+   prop_ux
    restrict_flt
    status_report
    sol_pack

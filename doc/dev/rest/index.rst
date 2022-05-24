@@ -12,6 +12,7 @@ Requests
    :doc:`job_status`        Job status
    :doc:`adm_update`        Force vault state update
    :doc:`adm_reload_ds`     Force dataset reload
+   :doc:`adm_drop_ds`       Drop dataset 
   ------------------------- ------------------------------------------------------------- 
   \ 
   *Dataset level*
@@ -69,6 +70,7 @@ Requests
    job_status
    adm_update
    adm_reload_ds
+   adm_drop_ds
 
    dsinfo 
    ds_list

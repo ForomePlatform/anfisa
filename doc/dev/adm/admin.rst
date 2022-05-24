@@ -31,6 +31,11 @@ The following notations are used in different places of administration documenta
     ANFISA_HTML_BASE         top service URL                   ``http://<server>/anfisa/``
     ANFISA_HTML_APP_BASE     URL to LocalUI and REST           ``http://<server>/anfisa/app/``
   ====================== ==================================== =================================
+
+Preparation of the service
+--------------------------
+
+Before start service it is necessary to :ref:`load gene database to Mongo<mongo_gene_db>`.
   
 Running the service
 -------------------
@@ -55,6 +60,23 @@ The following commands start resp. stop the uWSGI service: ::
 
     $ sudo systemctl start anfisa
     $ sudo systemctl stop anfisa
+
+Administrator competence
+------------------------
+Administrator of Anfisa instance is responsible for:
+
+        *with use of* :doc:`storage` utility
+
+    - create and update primary datasets, keep dataset naming policy
+    
+    - drop primary and derived datasets, when they become out of use
+    
+    
+        *with use of* :doc:`adm_mongo` utility
+        
+    - backup solution and tagging information accumulated in Mongo storage
+    
+mongo_gene_db
 
 Sharing data between multiple users
 -----------------------------------

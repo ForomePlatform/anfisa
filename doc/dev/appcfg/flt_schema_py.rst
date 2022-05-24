@@ -115,20 +115,16 @@ Common options of methods:
 
     * **dim_name** - *optional string*; for future usage, the purpose of this option is to define multiple units as ones that refer to the same "dimension": list of values for these units could be interpeted as elements of the single list of values; in the current version this mechanism is used for :doc:`variety/panel support<../concepts/variety>` in an automatical way, but up to now there is no need to set this option directly
 
+.. _variable_registry:    
+
 Variable registry
 ^^^^^^^^^^^^^^^^^
 
-For different datasets units with the same meaning might have different presentation: status or multiset, integer or float. It may disorient the user if these units have different visualisation properties for different datasets. The solution of this problem is to organize long-term registery of variables, or unit names, independent of stucture of concrete dataset. All unit names should be registered, and there there can be outdated names in registery. The following properties that affect visualisaton can be set in this registery for units:
+For different datasets units with the same meaning might have different presentation: status or multiset, integer or float. It may disorient the user if these units have different visualisation properties for different datasets. The solution of this problem is to organize long-term registery of variables, or unit names, independent of stucture of concrete dataset. All unit names should be registered, and there there can be outdated names in registery. 
 
-* **title**, *optional string* - human readable description of unit, can be not defined if **name** is sufficient
+Variable registry registers variables with their :doc:`UX settings<../concepts/prop_ux>`.
 
-* **render_mode** - *optional string*; used in UI to represent values of unit (see :doc:`../rest/s_prop_stat` for details)
-
-* **tooltip** - *optional string*; explanation of unit meaning to render in UI as tooltip (title in HTML terms)
-
-The registery is located in the file
-
-``app/config/variables.py``
+The registry configuration is located in the file ``app/config/variables.py``
 
 Ordinary unit types
 ^^^^^^^^^^^^^^^^^^^

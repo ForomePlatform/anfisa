@@ -83,7 +83,9 @@ Description
 
 The data structure is used in return values of requests :doc:`ds_stat`, :doc:`dtree_stat`, :doc:`statunits` and :doc:`statfunc`. It represents status report for a :term:`filtering property` applied to selected set of variants. In case of :term:`workspace` selection also applies to :term:`transcript variants<transcript variant>`. 
 
-See discussion on :doc:`../concepts/status_report` for understanding general principle and details.
+See discussion in :doc:`../concepts/status_report` for understanding general principle and details.
+
+See discussion in :doc:`../concepts/prop_ux` for understanding UX settings for filtering properties. 
 
 In context of requests :doc:`ds_stat`, :doc:`dtree_stat` status report can be incomplete. In this case the property **incomplete** is set and details of status (**min**/**max**/**count** for numeric properties and **variants** for enum ones) do not present in structure. 
 
@@ -175,6 +177,8 @@ See also
 :doc:`statunits` 
 
 :doc:`statfunc`
+
+:doc:`../concepts/prop_ux`
 
 :doc:`../concepts/restrict_flt`
 
