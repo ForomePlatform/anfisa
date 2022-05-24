@@ -51,7 +51,11 @@ Other features
 
 .. _gene_db:
 
-The system supports gene symbol database. The data is collected from two souces: HGNC and Ensembl/GTF.
+The system supports gene symbol database. The data is collected from two souces: HGNC_ and Ensembl_/GTF.
+
+.. _HGNC: https://www.genenames.org/
+
+.. _Ensembl: http://www.ensembl.org/index.html
 
 Architecture: Back End, REST API, Front End
 -------------------------------------------
