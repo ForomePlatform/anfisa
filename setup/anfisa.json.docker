@@ -9,6 +9,7 @@
     "run-modes": [],
     "job-vault-check-period": 30,
     "igv-dir": "${HOME}/igv.dir",
+    "auto-drop-datasets": ["(?i)test"],
     "--solutions": {
         "panels": {
             "Symbol": {
