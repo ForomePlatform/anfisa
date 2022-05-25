@@ -28,11 +28,11 @@ A detailed [Setup and Administration Guide](https://github.com/ForomePlatform/an
 
 - Installation & Administration Documentation
 
-https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/
+https://foromeplatform.github.io/documentation/anfisa-dev.v0.7/
 
 - User Documentation
 
-https://foromeplatform.github.io/documentation/anfisa-user.v0.6/
+https://foromeplatform.github.io/documentation/anfisa-user.v0.7/
 
 ##  Installation
 
@@ -156,9 +156,9 @@ The port is configurable in your configuration file.
 Here are sample commands that can be executed:
 
     curl -L -O https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz
-    docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa6:/anfisa/a-setup/data/examples/
-    docker exec -it anfisa6 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
-    docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
+    docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa7:/anfisa/a-setup/data/examples/
+    docker exec -it anfisa7 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
+    docker exec -it anfisa7 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
             
 
 ## Public Demo 
