@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.6/ 
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.7/ 
 EOF
 }
 
@@ -67,8 +67,8 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
   docker-compose up -d
   docker ps
 
-  docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
-  docker exec -it anfisa6 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
+  docker exec -it anfisa7 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k ws -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel/pgp3140_wgs_hlpanel.cfg PGP3140_HL_GENES'
+  docker exec -it anfisa7 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 200 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_hlpanel/pgp3140_wgs_hlpanel.cfg XL_PGP3140_HL_GENES'
 
   popd || exit
 

@@ -45,12 +45,12 @@ There are two variants for Anfisa service configuration:
 .. index:: 
     Legacy UI; current User Interface 
 
-For the current version of system 0.6 only Legacy UI is supported. Legacy UI​ is a collection of web pages which gives the user access to the full functionality of the system; unfortunately this kind of UI does not satisfy all criteria for a “good UI”. In particular, it works properly only under Chrome or Firefox browsers.
+For the current version of system 0.7 only Legacy UI is supported. Legacy UI​ is a collection of web pages which gives the user access to the full functionality of the system; unfortunately this kind of UI does not satisfy all criteria for a “good UI”. In particular, it works properly only under Chrome or Firefox browsers.
 
 .. index:: 
     NextGen frontend; future advanced User Interface
 
-NextGen Frontend for the version 0.6, which satisfies the criteria for a "good UI", is currently a subject of development.
+NextGen Frontend for the version 0.7, which satisfies the criteria for a "good UI", is currently a subject of development.
 
 Setup
 #####
