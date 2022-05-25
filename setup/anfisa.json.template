@@ -50,7 +50,7 @@
     "doc-report-css": "${HOME}/int_ui/files/report.css",
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
-        "vault-prefix": "demo_v5",
+        "vault-prefix": "demo_v7",
         "index": "http://HOST_IP:8081/druid/indexer/v1/task",
         "query": "http://HOST_IP:8888/druid/v2",
         "sql":   "http://HOST_IP:8888/druid/v2/sql",

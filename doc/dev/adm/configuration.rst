@@ -239,7 +239,7 @@ Additional solutions configuration, only gene panels (based on Symbol) are suppo
         {
             "id": "dev",
             "title": "Anfisa Installation&Administration Documentation",
-            "url": "https://foromeplatform.github.io/documentation/anfisa-dev.v0.6/",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-dev.v0.7/",
             "source": "${HOME}/doc/dev/",
             "build": "${WORK}/doc/dev/",
             "path": "doc/dev/"
@@ -247,7 +247,7 @@ Additional solutions configuration, only gene panels (based on Symbol) are suppo
         {
             "id": "user",
             "title": "Anfisa User Documentation",
-            "url": "https://foromeplatform.github.io/documentation/anfisa-user.v0.6/",
+            "url": "https://foromeplatform.github.io/documentation/anfisa-user.v0.7/",
             "source": "${HOME}/doc/user/",
             "build": "${WORK}/doc/user/",
             "path": "doc/user/"
