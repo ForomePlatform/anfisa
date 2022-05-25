@@ -26,35 +26,61 @@ UX settings of filtration properties
         
     The current version of the system provides the following classification:
     
-=================== ===================================== ===================
- *facet*                *Title*                            *Technical name*
-------------------- ------------------------------------- -------------------
-                        Call Annotations                    call
-Knowledge Domain        Phenotypic Data                     phenotype
- (**facet1**)           Compound Rules                      rules
-                        Population Genetics                 popgen
-                        Functional                          function
-                        Animal Genetics                     animal
-                        Human Genetics                      human
-                        Epigenetics                         epigenetics
-                        N/A                                 na1
-------------------- ------------------------------------- -------------------
-                        Transcript                          transcript
-Scale                   Variant                             variant
- (**facet2**)           Position                            position
-                        Window                              window
-                        Gene                                gene
-                        N/A                                 na2
-------------------- ------------------------------------- -------------------
-                        Statistical Genetics Evidence       statgen
-Method                  Bioinformatics Inference            bioinf
- (**facet3**)           Experimental, in Vivo               in-vivo
-                        Experimental, in Vitro              in-vitro
-                        Experimental, Other                 explanation
-                        Clinical Evidence                   clinical
-                        Raw Data                            raw
-                        N/A                                 na3
-=================== ===================================== ===================
+    +----------------------+-------------------------------------+-------------------+
+    |   *facet*            |        *Title*                      |  *Technical name* |
+    +======================+=====================================+===================+
+    | **Knowledge Domain** |                                     |  **facet1**       |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Call Annotations                 |  call             |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Phenotypic Data                 |  phenotype        |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Compound Rules                  |  rules            |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Population Genetics             |  popgen           |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Functional                      |  function         |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Animal Genetics                 |  animal           |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Human Genetics                  |  human            |
+    +                      +-------------------------------------+-------------------+
+    |                      |     Epigenetics                     |  epigenetics      |
+    +                      +-------------------------------------+-------------------+
+    |                      |     N/A                             |  na1              |
+    +----------------------+-------------------------------------+-------------------+
+    | **Scale**            |                                     |  **facet2**       |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Transcript                       | transcript        |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Variant                          |   variant         |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Position                         |   position        |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Window                           |   window          |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Gene                             |   gene            |
+    +                      +-------------------------------------+-------------------+
+    |                      |    N/A                              |    na2            |                 
+    +----------------------+-------------------------------------+-------------------+
+    | **Method**           |                                     |     **facet3**    |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Statistical Genetics Evidence    |   statgen         |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Bioinformatics Inference         |   bioinf          |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Experimental, in Vivo            |   in-vivo         |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Experimental, in Vitro           |   in-vitro        |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Experimental, Other              |   explanation     |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Clinical Evidence                |   clinical        |
+    +                      +-------------------------------------+-------------------+
+    |                      |    Raw Data                         |   raw             |
+    +                      +-------------------------------------+-------------------+
+    |                      |    N/A                              |   na3             |
+    +----------------------+-------------------------------------+-------------------+
 
 See also
 --------
