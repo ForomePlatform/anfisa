@@ -362,7 +362,7 @@ class VarietyConvertor(EnumConvertor):
         ret = PathValueConvertor.dump(self)
         ret["kind"] = "enum"
         ret["sub-kind"] = "status"
-        ret["mean"] = "variety"
+        ret["mean"] = "pre-variety"
         ret["variety-name"] = self.mVarietyName
         ret["panel-name"] = self.mPanelName
         ret["panel-type"] = self.mPanelType

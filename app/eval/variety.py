@@ -237,6 +237,7 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
             "vgroup": descr.get("vgroup"),
             "kind": "enum",
             "sub-kind": "multi",
+            "mean": "variety",
             "dim-name": descr["panel-type"]
         }
 

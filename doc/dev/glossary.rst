@@ -124,7 +124,7 @@ Anfisa glossary
         Aggregated information items that can be used in :doc:`concepts/filtration` as well as :term:`filtering properties<filtering property>`, in case if parameter data is defined. See :doc:`rest/func_ref`.
         
     Filtering properties classification
-        Classification of :term:`filtering properties<filtering property>` using to :doc:`restrict properties<concepts/restrict_flt>` in filtering regime.
+        Classification of :term:`filtering properties<filtering property>` using to :doc:`concepts/prop_ux` in filtering regime.
         
     Dataset documentation
         Collection of documents in various formats attached to dataset or produced by the system on dataset loading or creation. Documentation on :term:`secondary workspace` includes references to documentation on base one.

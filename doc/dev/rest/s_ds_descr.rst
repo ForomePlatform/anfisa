@@ -35,7 +35,7 @@ Format
 |       *in case of* :doc:`dsinfo` *request*:
 |       -------------------------------------
 |       "**meta**":     metadata of dataset, *JSON structure*
-|       "**classes**":  descriptor of :term:`filtering properties classification`
+|       "**unit-classes**":  descriptor of :ref:`properties classification<properties_classification>`
 |               ``[`` *list* of facet classifications
 |                   ``{``
 |                       **title**: title of facet classification, *string*
@@ -82,4 +82,4 @@ Used in requests
 
 :doc:`../concepts/doc_pg`
 
-:doc:`../concepts/restrict_flt`
+:doc:`../concepts/prop_ux`

@@ -51,14 +51,10 @@ class VarFacetClassifier:
         self.mFacetMaps.append(facet_map)
 
     def mapFacetClassName(self, facet_idx, facet_name):
-        if isinstance(facet_name, list):
-            return sorted(self.mapFacetClassName(facet_idx, name)[0]
-                for name in facet_name)
-
         assert facet_name in self.mFacetMaps[facet_idx], (
             f"Improper facet class name {facet_name}"
             f" for facet no {facet_idx + 1}")
-        return [self.mFacetMaps[facet_idx][facet_name]]
+        return self.mFacetMaps[facet_idx][facet_name]
 
     def getDescr(self):
         return self.mDescr
@@ -99,10 +95,12 @@ class VarRegistry:
         ret = []
         for idx in range(self.mFacetClassifier.getSize()):
             if facets[idx] is not None:
-                ret.append(
-                    self.mFacetClassifier.mapFacetClassName(idx, facets[idx]))
+                facet_idx = self.mFacetClassifier.mapFacetClassName(
+                    idx, facets[idx])
             else:
-                ret.append(self.mCurFacets[idx])
+                facet_idx = self.mCurFacets[idx]
+            assert facet_idx is not None, f"Undefined facet{idx+1}"
+            ret.append(facet_idx)
         return ret
 
     def regVar(self, var_name, var_type,

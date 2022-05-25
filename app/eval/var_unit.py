@@ -44,7 +44,8 @@ class VarUnit:
                 f" for {self.mInternalName}")
 
         self.mInfo = self.mEvalSpace.getDS().getDataVault().getVariableInfo(
-            self.mInternalName, self.mUnitKind, self.mSubKind)
+            self.mInternalName, self.mUnitKind, self.mSubKind,
+            self.mDescr.get("mean"))
         self.mName = self.mInfo["name"].replace(' ', '_')
         self.mInfo["vgroup"] = self.mVGroup
         self.mInfo["kind"] = self.mUnitKind

@@ -51,11 +51,10 @@ class EvalSpace:
         return iter(self.mFunctions)
 
     def _addUnit(self, unit_h, force_it = False):
-        if unit_h.getMean() == "variety" and not unit_h.isDetailed():
+        if unit_h.getMean() == "pre-variety":
             self._addReservedUnit(unit_h)
             variety_h = VarietyUnit(unit_h)
             self._addUnit(variety_h)
-            self._addUnit(variety_h.getPanelUnit())
             return
 
         self.mUnits.append(unit_h)
@@ -63,7 +62,7 @@ class EvalSpace:
             "Duplicate unit name: " + unit_h.getName())
         self.mUnitDict[unit_h.getName()] = unit_h
 
-        if unit_h.getMean() == "variety" and unit_h.isDetailed():
+        if unit_h.getMean() == "variety":
             self._addUnit(unit_h.getPanelUnit())
 
     def _insertUnit(self, unit_h,

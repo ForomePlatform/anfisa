@@ -1007,17 +1007,8 @@ var sEvalCtrlH = {
             for (var j=0; j < this.mCurUShowState.length; j++) {
                 if ((this.mCurUShowState[j] != null) 
                         && (j != except_index)) {
-                    in_w = false;
-                    for (var k=0; k < it_classes[j].length; k++) {
-                        if(this.mCurUShowState[j].
-                                indexOf(it_classes[j][k]) >= 0) {
-                            in_w = true;
-                            break;
-                        }
-                    }
-                    if (!in_w) {
+                    if(this.mCurUShowState[j].indexOf(it_classes[j]) < 0)
                         return false;
-                    }
                 }
             }
         }
@@ -1038,10 +1029,8 @@ var sEvalCtrlH = {
             for (j=0; j < this.mUShowClasses.length; j++) {
                 if (!this.isUShown(it_classes, j))
                     continue;
-                facet_idxs = it_classes[j];
-                for (k=0; k < facet_idxs.length; k++) {
-                    cls_counts[j][facet_idxs[k]]++;
-                }
+                facet_idx = it_classes[j];
+                cls_counts[j][facet_idx]++;
             }
         }
         for (j = 0; j < this.mUShowClasses.length; j++) {

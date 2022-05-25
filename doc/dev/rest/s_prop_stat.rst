@@ -18,12 +18,8 @@ Format
 |        "**tooltip**": *optional* tooltip, *string*
 |        "**incomplete**": *optional* status is incomplete, ``true``
 |        "**detailed**": *optional* transcript data is in counts, ``true``
-|        "**classes**: facet classification of the property, 
-|           ``[`` *list* of facet descriptors
-|               ``[`` indexes of items in facet classification list 
-|                       (usually with one element) *list of integers*
-|               ``]``, ...
-|           ``]``
+|        "**classes**: :ref:`classification of the property<properties_classification>`, 
+|           ``[`` *list of integers* facet descriptors ``]``
 |
 |        *in case of* **kind** = ``"numeric"``
 |        ----------------------------------- 
@@ -85,7 +81,7 @@ The data structure is used in return values of requests :doc:`ds_stat`, :doc:`dt
 
 See discussion in :doc:`../concepts/status_report` for understanding general principle and details.
 
-See discussion in :doc:`../concepts/prop_ux` for understanding UX settings for filtering properties. 
+See discussion in :doc:`../concepts/prop_ux` for understanding UX settings for filtering properties: **title**, **tooltip**, **classes**, **render-mode**. 
 
 In context of requests :doc:`ds_stat`, :doc:`dtree_stat` status report can be incomplete. In this case the property **incomplete** is set and details of status (**min**/**max**/**count** for numeric properties and **variants** for enum ones) do not present in structure. 
 
@@ -94,13 +90,11 @@ In complete state details of status are always set. If status reports for filter
 In **detailed** case (:term:`workspace` context) the main items for counting are :term:`transcript variants<transcript variant>`, so count values form triplet of values in list, first one is for transcript variants, second for :term:`DNA ones<DNA variant>`, and last for :term:`transcripts<transcript>`.
 Otherwise only single DNA variant count is provided in lists. 
 
-The field **classes** provides property classification information, see :doc:`../concepts/restrict_flt`.
-
 Property **sub-kind** can have the following values (transcipt-based subkinds are provided only in :term:`workspace` context):
 
-  ================   ====================
+  ================   =========================
    **kind**           **sub-kind**
-  ================   ====================
+  ================   =========================
    ``"numeric"``      ``"int"`` 
    
                       ``"float"``
@@ -108,7 +102,7 @@ Property **sub-kind** can have the following values (transcipt-based subkinds ar
                       ``"transcript-int"`` 
                       
                       ``"transcript-float"``
-  ----------------   --------------------
+  ----------------   -------------------------
     ``enum``          ``"status"`` 
                       
                       ``"multi"``
@@ -116,9 +110,9 @@ Property **sub-kind** can have the following values (transcipt-based subkinds ar
                       ``"transcript-status"`` 
                       
                       ``"transcript-multi"``
-  ----------------   --------------------
+  ----------------   -------------------------
     ``func``          *type of function*
-  ================   ====================
+  ================   =========================
   
 Variants for enumerated properties
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -180,6 +174,6 @@ See also
 
 :doc:`../concepts/prop_ux`
 
-:doc:`../concepts/restrict_flt`
+:doc:`../concepts/prop_ux`
 
 :doc:`../concepts/variety`

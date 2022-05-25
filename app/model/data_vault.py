@@ -219,13 +219,15 @@ class DataVault(SyncronizedObject):
                     self.mApp.getMongoConnector(), root_name)
             return self.mSolEnvDict[root_name]
 
-    def getVariableInfo(self, var_name, unit_kind, sub_kind):
+    def getVariableInfo(self, var_name, unit_kind, sub_kind, mean):
         var_kind, var_descr = self.mVarRegistry.getVarInfo(var_name)
         assert unit_kind == var_kind, (
             f"Variable kind conflict: {unit_kind}/{var_kind} for {var_name}")
         var_info = deepcopy(var_descr)
         if unit_kind == "enum" and var_info.get("render-mode") is None:
-            if sub_kind in {"status", "transcript-status"}:
+            if mean == "variety":
+                var_info["render-mode"] = "tree-map"
+            elif sub_kind in {"status", "transcript-status"}:
                 var_info["render-mode"] = "pie"
             else:
                 assert sub_kind in {"multi", "transcript-multiset",

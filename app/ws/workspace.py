@@ -96,11 +96,6 @@ class Workspace(DataSet):
         for dtree_h in self.iterSolEntries("dtree"):
             dtree_h.activate()
 
-        # Temporary hack
-        symbol_unit = self.mEvalSpace.getUnit("Symbol")
-        if symbol_unit is not None:
-            symbol_unit.mInfo["render-mode"] = "tree-map"
-
     @staticmethod
     def _makeRecArrayFunc(val_array):
         return lambda rec_no: val_array[rec_no]

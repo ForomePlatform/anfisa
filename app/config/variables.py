@@ -74,7 +74,7 @@ anfisaVariables.regVar("Variant_in", "enum",
     title = "Variant presence in cohorts")
 
 anfisaVariables.regVar("Callers", "enum",
-    title = "Called by", facet1="call")
+    title = "Called by", facet1 = "call")
 
 anfisaVariables.regVar("Inheritance_Mode", "func",
     title = "Inheritance Mode")
@@ -83,10 +83,10 @@ anfisaVariables.regVar("Custom_Inheritance_Mode", "func",
     title = "Custom Inheritance Mode")
 
 anfisaVariables.regVar("Compound_Het", "func",
-    title = "Calculated Compound", facet2="gene")  # Misha:check it
+    title = "Calculated Compound", facet2 = "gene")  # Misha:check it
 
 anfisaVariables.regVar("Compound_Request", "func",
-    title = "Calculated Compound Request", facet2="gene")
+    title = "Calculated Compound Request", facet2 = "gene")
 
 anfisaVariables.regVar("Proband_Zygosity", "enum",
     title = "Proband Zygosity")
@@ -128,27 +128,27 @@ anfisaVariables.regVar("Variant_Class", "enum",
     "alleles and its mapping to the reference genome. "
     "https://useast.ensembl.org/info/genome/variation/"
     "prediction/classification.html#classes",
-    facet1="function", facet2="transcript", facet3="bioinf")
+    facet1 = "function", facet2 = "transcript", facet3 = "bioinf")
 
 anfisaVariables.regVar("Most_Severe_Consequence", "enum",
     tooltip= "Most Severe Consequences from the transcript"
              + " with the worst annotation." + consequences_help,
-    facet1="function", facet2="variant", facet3="bioinf")
+    facet1 = "function", facet2 = "variant", facet3 = "bioinf")
 
 anfisaVariables.regVar("Canonical_Annotation", "enum",
     tooltip= "Most Severe Consequences from canonical transcripts. "
             + consequences_help,
-    facet1="function", facet2="variant", facet3="bioinf")
+    facet1 = "function", facet2 = "variant", facet3 = "bioinf")
 
 anfisaVariables.regVar("Multiallelic", "enum",
     title = "Multi-allelic?",
-    facet1="call")
+    facet1 = "call")
 
 anfisaVariables.regVar("Altered_VCF", "enum",
-    title = "Has VCF been normalized?", facet1="call")
+    title = "Has VCF been normalized?", facet1 = "call")
 
 anfisaVariables.regVar("Number_ALTs", "numeric",
-    title = "Number of Alternative alleles", facet1="call")
+    title = "Number of Alternative alleles", facet1 = "call")
 
 # anfisaVariables.regVar("zyg_len", "numeric")
 
@@ -165,18 +165,18 @@ anfisaVariables.regVar("Symbol", "enum")
 anfisaVariables.regVar("Panels", "enum")
 
 anfisaVariables.regVar("EQTL_Gene", "enum",
-    title = "EQTL Gene", facet1="epigenetics",
-        facet2="window", facet3="statgen")
+    title = "EQTL Gene", facet1 = "epigenetics",
+        facet2 = "window", facet3 = "statgen")
 
 # anfisaVariables.regVar("Transcripts", "enum")
 
 anfisaVariables.regVar("Num_Genes", "numeric",
     title = "Number of overlapping genes",
-                       facet2="position")
+                       facet2 = "position")
 
 anfisaVariables.regVar("Num_Transcripts", "numeric",
     title = "Number of transcripts at the position",
-                       facet2="position")
+                       facet2 = "position")
 
 #======================================
 # viewGroup("Transcripts")
@@ -186,19 +186,19 @@ anfisaVariables.predeclareClassification(
 
 anfisaVariables.regVar("Transcript_consequence", "enum",
                        tooltip=consequences_help,
-                       facet1="function", facet3="bioinf")
+                       facet1 = "function", facet3 = "bioinf")
 
 anfisaVariables.regVar("Transcript_canonical", "enum")
 
 anfisaVariables.regVar("Transcript_GENCODE_Basic", "enum")
 
 anfisaVariables.regVar("Transcript_biotype", "enum",
-                       facet1="function", facet3="bioinf")
+                       facet1 = "function", facet3 = "bioinf")
 
 anfisaVariables.regVar("Transcript_worst", "enum",
-                       facet1="function", facet3="bioinf")
+                       facet1 = "function", facet3 = "bioinf")
 
-anfisaVariables.regVar("Transcript_id", "enum")
+anfisaVariables.regVar("Transcript_id", "enum", render_mode = "tree-map")
 
 anfisaVariables.regVar("Transctript_Gene", "enum")
 anfisaVariables.regVar("Transcript_Gene", "enum")
@@ -211,7 +211,7 @@ anfisaVariables.regVar("Transcript_codon_pos", "enum")
 
 anfisaVariables.regVar("Transcript_region", "enum",
     title= "Gene Region",
-                       facet1="function", facet2="window")
+                       facet1 = "function", facet2 = "window")
 
 anfisaVariables.regVar("Transcript_CDS", "enum",
     title= "CDS?")
@@ -230,11 +230,11 @@ anfisaVariables.regVar("Transcript_dist_from_exon", "numeric",
 anfisaVariables.predeclareClassification(
     "na1", "transcript", "bioinf")
 
-anfisaVariables.regVar("Transcript_PolypPhen_HDIV", "enum", facet1="popgen")
-anfisaVariables.regVar("Transcript_PolyPhen_HVAR", "enum", facet1="popgen")
-anfisaVariables.regVar("Transcript_SIFT", "enum", facet1="function")
-anfisaVariables.regVar("Transcript_SIFT_4G", "enum", facet1="function")
-anfisaVariables.regVar("Transcript_FATHMM", "enum", facet1="function")
+anfisaVariables.regVar("Transcript_PolypPhen_HDIV", "enum", facet1 = "popgen")
+anfisaVariables.regVar("Transcript_PolyPhen_HVAR", "enum", facet1 = "popgen")
+anfisaVariables.regVar("Transcript_SIFT", "enum", facet1 = "function")
+anfisaVariables.regVar("Transcript_SIFT_4G", "enum", facet1 = "function")
+anfisaVariables.regVar("Transcript_FATHMM", "enum", facet1 = "function")
 
 #======================================
 # viewGroup("Coordinates")
@@ -348,10 +348,10 @@ anfisaVariables.regVar("Presence_in_Databases", "enum",
     title = "Presence in Databases")
 
 anfisaVariables.regVar("ClinVar_Submitters", "enum",
-    title = "ClinVar Submitters", facet3="clinical")
+    title = "ClinVar Submitters", facet3 = "clinical")
 
 anfisaVariables.regVar("Number_submitters", "numeric",
-    title = "Number of ClinVar Submitters", facet3="clinical")
+    title = "Number of ClinVar Submitters", facet3 = "clinical")
 
 anfisaVariables.regVar("PMIDs", "enum",
     title = "PMIDs")
@@ -480,17 +480,17 @@ anfisaVariables.regVarTemplate("enum", prefix = "ClinVar_Significance_",
 #     title = "Categorized Benign by Clinvar Trusted Submitters")
 
 anfisaVariables.regVar("splice_altering", "enum",
-    title = "Splice AI splice altering", facet3="bioinf")
+    title = "Splice AI splice altering", facet3 = "bioinf")
 
 anfisaVariables.regVar("splice_ai_dsmax", "numeric",
     title = "Splice AI splice altering score",
-    render_mode = "linear,>", facet3="bioinf")
+    render_mode = "linear,>", facet3 = "bioinf")
 
 anfisaVariables.regVar("Polyphen_2_HVAR", "enum",
     title = "Polyphen",
     tooltip = "HumVar (HVAR) is PolyPhen-2 classifier trained on known human "
     "variation (disease mutations vs. common neutral variants)",
-                       facet2="transcript", facet3="bioinf")
+                       facet2 = "transcript", facet3 = "bioinf")
 
 anfisaVariables.regVar("Polyphen_2_HDIV", "enum",
     title = "Polyphen HDIV (High sensitivity)",
@@ -498,29 +498,29 @@ anfisaVariables.regVar("Polyphen_2_HDIV", "enum",
     "number of select extreme effect disease mutations vs. "
     "divergence with close homologs (e.g. primates), which is "
     "supposed to consist of mostly neutral mutations.",
-                       facet2="transcript", facet3="bioinf")
+                       facet2 = "transcript", facet3 = "bioinf")
 
 anfisaVariables.regVar("SIFT", "enum",
     tooltip = "Sort intolerated from tolerated (An amino acid at a "
     "position is tolerated | The most frequentest amino acid "
     "being tolerated). D: Deleterious T: tolerated",
-    facet1="function", facet2="transcript", facet3="bioinf")
+    facet1 = "function", facet2 = "transcript", facet3 = "bioinf")
 
 anfisaVariables.regVar("FATHMM", "enum",
     tooltip = "Functional analysis through hidden markov model HMM."
     "D: Deleterious; T: Tolerated",
-        facet1="function", facet2="transcript", facet3="bioinf")
+        facet1 = "function", facet2 = "transcript", facet3 = "bioinf")
 
 anfisaVariables.regVar("PrimateAI", "enum",
     tooltip = "Prediction of PrimateAI score based on the authors "
     "recommendation, “T(olerated)” or “D(amaging)”. "
     "The score cutoff between “D” and “T” is 0.803.",
-        facet1="animal", facet3="bioinf")
+        facet1 = "animal", facet3 = "bioinf")
 
 anfisaVariables.regVar("GERP_score", "numeric",
     title = "GERP Score",
     render_mode = "linear,>",
-    facet1="animal", facet2="position", facet3="bioinf")
+    facet1 = "animal", facet2 = "position", facet3 = "bioinf")
 
 #======================================
 # viewGroup("Pharmacogenomics")

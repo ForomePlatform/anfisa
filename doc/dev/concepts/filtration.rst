@@ -19,7 +19,7 @@ See also
 --------
 :doc:`filters_reg`
 
-:doc:`restrict_flt`
+:doc:`prop_ux`
 
 :doc:`dtree_syntax`
 

@@ -14,7 +14,6 @@ Anfisa Interface concepts
    filters_reg
    variety
    prop_ux
-   restrict_flt
    status_report
    sol_pack
    sol_work
