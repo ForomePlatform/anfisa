@@ -17,7 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys, json, re
+import sys, json, re, traceback
 from argparse import ArgumentParser
 from pymongo import MongoClient
 #=====================================
@@ -87,8 +87,13 @@ def presentation(obj, pretty_mode):
 
 
 #===============================================
-with open(run_args.config, "r", encoding = "utf-8") as inp:
-    cfg = json.loads(inp.read())
+try:
+    with open(run_args.config, "r", encoding = "utf-8") as inp:
+        cfg = json.loads(inp.read())
+except Exception:
+    print("Error in configuration file", run_args.config, file = sys.stderr)
+    traceback.print_exc(file = sys.stderr)
+    assert False
 
 #===============================================
 if run_args.mode == "GeneDb":
@@ -110,7 +115,7 @@ if run_args.mode == "GeneDb":
                 if cnt % 10000 == 0:
                     print(f"Storing {cnt} records...",
                         end = '\r', file = sys.stderr)
-        print(f"Stored {cnt} records, done", file = sys.stderr)
+        print(f"\nStored {cnt} records, done", file = sys.stderr)
     sys.exit()
 
 #===============================================

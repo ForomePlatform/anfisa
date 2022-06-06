@@ -26,7 +26,7 @@ from forome_tools.path_works import AttrFuncHelper
 #===============================================
 class AnfisaConfig:
     sTextMessages = {
-        "aspect.tags.title": "Tags&nbsp;&amp;<br/>Filters"}
+        "aspect.tags.title": "Tags"}
 
     sConfigOptions = {
         "aspect.tags.name": "tags_data",

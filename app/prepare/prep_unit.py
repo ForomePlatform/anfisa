@@ -636,10 +636,10 @@ def loadConvertorInstance(info, vgroup, filter_set):
         return EnumConvertor(filter_set, info["name"], info["path"],
             info["no"], vgroup, info.get("dim-name"),
             info["sub-kind"], info.get("pre-variants"),
-            info["other-values"], info.get("value-map"),
+            info.get("other-values"), info.get("value-map"),
             info.get("conversion"),
             default_value = info.get("default"),
-            compact_mode = info["compact"],
+            compact_mode = info.get("compact", False),
             separators = info.get("separators"))
 
     assert False, f'Bad unit={info["name"]} kind={info["kind"]}'
