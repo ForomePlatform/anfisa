@@ -21,6 +21,9 @@ if [ $repo != $target ] ; then
     echo Setting up $target
     mkdir -p $target
     cp $repo/anfisa.json $target
+    cp $repo/setup.py $target
+    cp $repo/README.md $target
+    cp -R $repo/app $target/
     echo $target > .inst_dir
     cd $target
 else

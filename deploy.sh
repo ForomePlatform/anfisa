@@ -51,7 +51,7 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
   chmod -R a+rwx $ASETUP
   chmod -R a+rwx $DRUID
 
-  cp -R setup app doc export int_ui requirements.txt LICENSE README.md $WORKDIR/
+  cp -R setup app doc export int_ui requirements.txt setup.py LICENSE README.md $WORKDIR/
 
   pushd $ASETUP/data/examples || exit
   if [ ! -d pgp3140_wgs_hlpanel/docs ] ; then
