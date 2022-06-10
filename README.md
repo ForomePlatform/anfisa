@@ -73,9 +73,23 @@ Minimum required memory is 8G and swap should be enabled.**
 **If you have less than 4G, you can install demo version without Druid. 
 Update docker-compose.yml.template**
 
+Ensure that the following packages are installed on your system:
+  * docker
+  * docker-compose
+  * curl
+  * zip
+  * unzip
+
+  For example, on Ubuntu, the following command can be used:
+
+       sudo apt update 
+       sudo apt install zip unzip curl docker.io docker-compose
+
+If you run script as non-root user, ensure that Docker has required rights according to the [Post-installation steps for Linux](https://docs.docker.com/engine/install/linux-postinstall/)
+
 1. Run 
 
-`deploy.sh --workdir=<Absolute path to the chosen working directory>`
+`./deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
@@ -94,36 +108,44 @@ and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 #### Installing without Docker
 
 1. Ensure that the following packages are installed on your system:
+    * curl
     * zip 
     * unzip 
     * python3-dev 
     * python3-pip 
     * python3-venv
-    * [MongoDB](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+    * MongoDB
    
    For example, on Ubuntu, the following command can be used:
    
-       sudo apt update && sudo apt install zip unzip python3-dev python3-pip python3-venv
+       sudo apt update && sudo apt install zip unzip python3-dev python3-pip python3-venv curl
     
    > You might need to restart your shell or source .bashrc (or similar) file after the 
    > installation
 
-3. [Optionally] Create [virtual environment](https://docs.python.org/3/library/venv.html) 
+ To install MongoDB follow the [link](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/)
+
+
+2. [Optionally] Create [virtual environment](https://docs.python.org/3/library/venv.html) 
 and activate it. We will be installing a lot of dependent packages, 
 make sure you have permission to do it. A sample command is:
 
        python3 -m venv .anfisa && source .anfisa/bin/activate
 
-4. Make sure you have MongoDB installed. If its endpoint 
-is not localhost:27017, after the installation you will need to edit anfisa.json
+3. Make sure MongoDB is running. The command can be used:
 
-5. Make sure that sphinx is installed. On Ubuntu the installation command is:
+       sudo systemctl status mongod
+       
+If its endpoint is not localhost:27017, you will need to edit anfisa.json
+
+4. Make sure that sphinx is installed. On Ubuntu the installation command is:
 
        sudo apt-get install python3-sphinx
 
-6. Run deploy script (will use pip to install requirements):
+5. Run deploy script (will use pip to install requirements):
 
-       . deploy_local.sh
+       chmod +x deploy_local.sh
+       ./deploy_local.sh
 
 First, the script will ask for an installation directory. 
 By default it would install in the same directory 
@@ -136,9 +158,10 @@ When the script has finished, it will display
 the command to start Anfisa server. 
 
 When the system is running you can access 
-the web interface by the url: http://localhost:8190 
+the web interface by the url: http://localhost:8190/dir
 
-The port is configurable in your configuration file.
+The port is configurable in your configuration file. Configuration file is located in the selected working directory with the name
+> anfisa_hostname.json
                                                             
 
 ###  Ingesting demo whole genome

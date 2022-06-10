@@ -21,6 +21,9 @@ if [ $repo != $target ] ; then
     echo Setting up $target
     mkdir -p $target
     cp $repo/anfisa.json $target
+    cp $repo/setup.py $target
+    cp $repo/README.md $target
+    cp -R $repo/app $target/
     echo $target > .inst_dir
     cd $target
 else
@@ -42,6 +45,13 @@ if [ ! -d data/docs ] ; then
   cd ..
 fi
 
+if [ ! -f data/gene_db.js ] ; then
+  cd data || exit
+  curl -O -L https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/gene_db.zip
+  unzip gene_db.zip
+  cd ..
+fi
+
 if [ ! -f export/SEQaBOO_output_template_20190317.xlsx ] ; then
   cd export || exit
   curl -O -L https://www.dropbox.com/s/4dvunn3dusqc636/SEQaBOO_output_template_20190317.xlsx
@@ -59,6 +69,9 @@ sed  's#/anfisa/a-setup#WOWOWOWO#' ${repo}/setup/anfisa.json.template \
 pip3 install wheel # apparently we need this before other requirements
 pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
 pip3 install -r ${repo}/requirements.txt
+
+echo "Gene_db.js initialisation"
+PYTHONPATH=$repo python3 -m app.adm_mongo -c $target/anfisa_$hostname.json -m GeneDb data/gene_db.js
 
 echo "Loading Sample Dataset"
 echo "PYTHONPATH=$repo python3 -u -m app.storage -c $target/anfisa_$hostname.json -m create -f -k ws -i data/pgp3140_wgs_hlpanel.cfg PGP3140"
