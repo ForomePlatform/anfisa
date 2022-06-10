@@ -132,8 +132,11 @@ make sure you have permission to do it. A sample command is:
 
        python3 -m venv .anfisa && source .anfisa/bin/activate
 
-3. Make sure you have MongoDB installed. If its endpoint 
-is not localhost:27017, after the installation you will need to edit anfisa.json
+3. Make sure MongoDB is running. The command can be used:
+
+       sudo systemctl status mongod
+       
+If its endpoint is not localhost:27017, you will need to edit anfisa.json
 
 4. Make sure that sphinx is installed. On Ubuntu the installation command is:
 
