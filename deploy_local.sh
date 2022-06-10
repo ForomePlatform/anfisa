@@ -50,6 +50,7 @@ if [ ! -f data/gene_db.js ] ; then
   curl -O -L https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/gene_db.zip
   unzip gene_db.zip
   cd ..
+fi
 
 if [ ! -f export/SEQaBOO_output_template_20190317.xlsx ] ; then
   cd export || exit
