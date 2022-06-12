@@ -54,8 +54,7 @@ class AnfisaConfig:
         "export.max.count": 9000,
         "max.tab.rq.size": 9000,  # 50,
 
-        "solution.std.mark": u"\u23da",
-        "solution.dyn.mark": u"\u2692",
+        "solution.std.mark": '@',
         "code.error.mark": u"\u26a0",
 
         "rules.setup": {

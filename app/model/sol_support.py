@@ -25,7 +25,6 @@ from app.config.a_config import AnfisaConfig
 #===============================================
 class StdNameSupport:
     sStdMark = AnfisaConfig.configOption("solution.std.mark")
-    sDynMark = AnfisaConfig.configOption("solution.dyn.mark")
 
     @classmethod
     def stdNm(cls, name):
@@ -38,18 +37,8 @@ class StdNameSupport:
         return name.startswith(cls.sStdMark)
 
     @classmethod
-    def dynNm(cls, name):
-        if name.startswith(cls.sDynMark):
-            return name
-        return cls.sDynMark + name
-
-    @classmethod
-    def isDyn(cls, name):
-        return name.startswith(cls.sDynMark)
-
-    @classmethod
     def offNm(cls, name):
-        if name.startswith(cls.sStdMark) or name.startswith(cls.sDynMark):
+        if name.startswith(cls.sStdMark):
             return name[1:]
         return name
 
@@ -57,10 +46,9 @@ class StdNameSupport:
 class SolutionKindHandler:
     sMaxSolNameLen = AnfisaConfig.configOption("sol.name.max.length")
 
-    def __init__(self, broker, sol_kind, std_mode = True, special_name = None):
+    def __init__(self, broker, sol_kind, special_name = None):
         self.mBroker = broker
         self.mSolKind = sol_kind
-        self.mStdMode = std_mode
         self.mSpecialName = special_name
         self.mNames = None
         self.mEntryDict = None
@@ -75,15 +63,11 @@ class SolutionKindHandler:
         self._setup([], [])
 
     def stdName(self, name):
-        if self.mStdMode:
-            return StdNameSupport.stdNm(name)
-        return StdNameSupport.offNm(name)
+        return StdNameSupport.stdNm(name)
 
     def dynName(self, name):
         if self.mSpecialName and name == self.mSpecialName:
             return self.mSpecialName
-        if not self.mStdMode:
-            return StdNameSupport.dynNm(name)
         return StdNameSupport.offNm(name)
 
     def offName(self, name):
@@ -94,9 +78,7 @@ class SolutionKindHandler:
     def isDyn(self, name):
         if self.mSpecialName and name == self.mSpecialName:
             return True
-        if self.mStdMode:
-            return not StdNameSupport.isStd(name)
-        return True
+        return not StdNameSupport.isStd(name)
 
     def getSpecialName(self):
         return self.mSpecialName
@@ -217,4 +199,4 @@ class SolPanelHandler:
         return None
 
     def isDynamic(self):
-        return StdNameSupport.isDyn(self.mName)
+        return not StdNameSupport.isStd(self.mName)

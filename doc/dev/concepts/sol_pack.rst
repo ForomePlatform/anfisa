@@ -25,7 +25,7 @@ Items with open control satisfy the following logic:
 
 - There are preset items: they are set up in the system configuration, the user can use them and derive operative items starting from them. But the user can not modify these items. 
     
-Preset item always have name, and its name starts with special symbol ``⏚``,
+Preset item always have name, and its name starts with special symbol ``@``,
     
 - Dynamical items: the user can fix a working item (filter, decision tree) as solution one by just setting its name. It is possible also to rename or delete dynamical solution item.
     

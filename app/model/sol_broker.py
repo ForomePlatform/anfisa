@@ -80,7 +80,7 @@ class SolutionBroker(SyncronizedObject):
             self.mSolKinds = {kind: SolutionKindHandler(self, kind)
                 for kind in ("filter", "dtree")}
             self.mSolKinds["panel.Symbol"] = SolutionKindHandler(
-                self, "panel.Symbol", False, "__Symbol__")
+                self, "panel.Symbol", "__Symbol__")
             self.mSolEnv.attachBroker(self)
 
     def deactivate(self):

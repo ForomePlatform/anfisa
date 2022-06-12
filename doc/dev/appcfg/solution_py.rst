@@ -80,7 +80,7 @@ Instance of class SolutionPack provides the following methods for registering va
 
     * All functions for registration has the same argument **requires**. If not empty, the value of it should be set of strings, meaning modes that should be hold for dataset to make the redistered item available.
     
-    * For two types of solution items, filters and decision tree codes, their names automatically completes with prefix symbol `⏚` to make distinction between these preset items and dynamical ones, see :doc:`../concepts/sol_work` for detais.
+    * For solution items of kinds panels, filters and decision tree codes, their names automatically completes with prefix symbol `@` to make distinction between these preset items and dynamical ones, see :doc:`../concepts/sol_work` for detais.
     
     * For two kinds of solution items, decision tree codes and panels definition of item requires file with content. In the the current version of system these files are fixed in repository and located in code subdirectory ``app/configure/files``. Extensions for these files are ``.pyt`` and ``.lst`` corespondently. 
     
@@ -90,7 +90,7 @@ Instance of class SolutionPack provides the following methods for registering va
 
     Registration of :term:`filter` as naming solution item. 
     
-    *Note* The name of filter automatically completes with prefix symbol `⏚` to make distinction between these preset items and dynamical ones, see :doc:`../concepts/sol_work` for detais.
+    *Note* The name of filter automatically completes with prefix symbol `@` to make distinction between these preset items and dynamical ones, see :doc:`../concepts/sol_work` for detais.
 
     *Example*: ::
     
@@ -101,7 +101,7 @@ Instance of class SolutionPack provides the following methods for registering va
             ConditionMaker.condNum("QUAL", min_val = 40)]
             requires = {"WS"})
             
-    Here is a definition and registration of filter with name ``HighConfidence`` (for users ``⏚HighConfidence``) available if mode ``WS`` is on, i.e. if dataset is a :term:`workspace`.
+    Here is a definition and registration of filter with name ``HighConfidence`` (for users ``@HighConfidence``) available if mode ``WS`` is on, i.e. if dataset is a :term:`workspace`.
     
     Content of filter is sequence of :term:`conditions`, to create a condition one needs to use the helpers in class ``ConditionMaker``. The document :doc:`../rest/s_condition` detailed description of another presentation of the same objects, see it for explanation and details.
     

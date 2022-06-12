@@ -9,7 +9,7 @@ Filters and decision trees
 Item of such kinds is some complex object, and in practice it has one of three status states (note that the user can use item always):
 
     * preset solution, see :doc:`sol_pack`
-        The user can not modify it, Names of such solutions are marked by preffix symbol `⏚`
+        The user can not modify it, Names of such solutions are marked by preffix symbol `@`
     
     * dynamical solution
         The user can create, modify, rename and delete it. This item is persistent object, so the user can use it in next sessions.
@@ -48,7 +48,7 @@ Panels are lists of names (symbols), and their usage as solution items is slight
 
     - Panels are split onto groups by panel type. The full name of solution item type for panels has prefix ``panel.``, the current version of the system supports only one type "Symbol", so the full name of this type is ``panel.Symbol``
     
-    - Preset and dynamical panels are supported as well as for filter and decision tree types. The difference is: dynamical panel names are marked by prefix symbol ⚒, and vice versa preset panel names are not marked
+    - Preset and dynamical panels are supported as well as for filter and decision tree types. Preset panel names are marked by prefix symbol ``@``
     
 .. _active_symbols:
 

@@ -63,6 +63,9 @@ sConsequenceVariants = [
     "regulatory_region_variant",
     "feature_truncation",
     "intergenic_variant",
+    "splice_polypyrimidine_tract_variant",
+    "splice_donor_region_variant",
+    "splice_donor_5th_base_variant",
     "undefined"]
 
 #===============================================

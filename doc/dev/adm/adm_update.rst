@@ -93,7 +93,7 @@ The output contains:
                             >receipt kind: filter c-count: 1
     *       BLOCKED ws_BGM_RSRCH_PGP3140_WGS_NIST_3_3_2
                             [ XL_PGP3140_WGS_NIST_3_3_2/?/ws_BGM_RSRCH_PGP3140_WGS_NIST_3_3_2 ]
-                            >receipt kind: dtree name: ⏚BGM Research d-count: 34
+                            >receipt kind: dtree name: @BGM Research d-count: 34
 
 See also
 --------
