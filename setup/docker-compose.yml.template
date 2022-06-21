@@ -1,4 +1,4 @@
-version: "2.2"
+version: "3.8"
 
 services:
   anfisa:
@@ -150,3 +150,7 @@ services:
     env_file:
       - setup/environment
     restart: always
+
+networks:
+  default:
+    name: anfisa_default
