@@ -93,13 +93,7 @@ If you run script as non-root user, ensure that Docker has required rights accor
 
 2. Point your browser to http://localhost:9010/anfisa/app/dir 
 
-3. [Optionally] For better data visualization, you can deploy Anfisa's graphical interface:
-
-`./deploy_front.sh`
-
-4. Point your browser to http://localhost:3000
-
-5. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+3. [Optionally] Adjust setting for your webserver to serve Anfisa. 
 For nginx add the following location block:
 
 ``` 
@@ -108,7 +102,7 @@ location /anfisa {
 }
 ```
 
-6. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz) 
+4. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz) 
 and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 #### Installing without Docker
