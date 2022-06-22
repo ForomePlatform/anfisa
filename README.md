@@ -74,23 +74,25 @@ Minimum required memory is 8G and swap should be enabled.**
 Update docker-compose.yml.template**
 
 Ensure that the following packages are installed on your system:
-  * docker
-  * docker compose
+
   * curl
   * zip
   * unzip
+  * docker
+  * docker compose
 
   For example, on Ubuntu, the following command can be used:
 
        sudo apt update 
        sudo apt install zip unzip curl
 
+  Follow the link to install Docker and docker compose on [Ubuntu](https://docs.docker.com/engine/install/ubuntu/) or [Mac OS](https://docs.docker.com/desktop/mac/install/).
+
 Please ensure that Docker version is 19.03.0 or higher and docker compose version is 2 or higher.
 
        docker -v
        docker compose version
        
-If Docker and docker compose are not installed, follow the link to install Docker and docker compose on [Ubuntu](https://docs.docker.com/engine/install/ubuntu/) or [Mac OS](https://docs.docker.com/desktop/mac/install/). 
 If you run script as non-root user, ensure that Docker has required rights according to the [Post-installation steps for Linux](https://docs.docker.com/engine/install/linux-postinstall/)
 
 1. Run 
