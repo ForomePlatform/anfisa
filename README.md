@@ -105,7 +105,7 @@ If you run script as non-root user, ensure that Docker has required rights accor
 
 4. Point your browser to http://localhost:3000
 
-5. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+5. [Optionally] Adjust setting for your webserver to serve Anfisa back-end. 
 For nginx add the following location block:
 
 ``` 
