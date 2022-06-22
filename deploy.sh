@@ -69,8 +69,8 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
   cd $WORKDIR || exit
   sed "s#ASETUP_PATH#${ASETUP}#g" setup/docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" -  > docker-compose.yml
 
-  docker-compose build
-  docker-compose up -d
+  docker compose build
+  docker compose up -d
   docker ps
 
   docker exec -it anfisa7 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.adm_mongo -c /anfisa/anfisa.json -m GeneDb /anfisa/a-setup/data/gene_db.js'
