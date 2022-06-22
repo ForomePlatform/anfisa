@@ -110,7 +110,7 @@ For nginx add the following location block:
 
 ``` 
 location /anfisa {
-	proxy_pass http://127.0.0.1:3000/anfisa;
+	proxy_pass http://127.0.0.1:9010/anfisa;
 }
 ```
 
