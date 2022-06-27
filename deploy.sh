@@ -14,6 +14,11 @@ do
 		--workdir=*) 
 			WORKDIR=${flag#*=}
 			echo WORKDIR=$WORKDIR
+			if [[ $WORKDIR != /* ]]; then
+                                echo "ERROR! $WORKDIR is a relative path. Specify absolute path to the working directory."
+                                usage
+                                exit 1
+                        fi
 			if [ ! -d "$WORKDIR" ]; then
 				mkdir -p $WORKDIR
 				chmod a+rwx $WORKDIR
@@ -67,7 +72,7 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
   fi
 
   cd $WORKDIR || exit
-  sed "s#ASETUP_PATH#${ASETUP}#g" setup/docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" -  > docker-compose.yml
+  sed "s#ASETUP_PATH#${ASETUP}#g" setup/docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" > docker-compose.yml
 
   docker compose build
   docker compose up -d
