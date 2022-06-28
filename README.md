@@ -263,7 +263,6 @@ will configure Anfisa for your local system.
 
 1. Run deploy script (will use pip to install requirements):
 
-       chmod +x deploy_local.sh
        ./deploy_local.sh
        
 2. When the script has finished, it will display 
