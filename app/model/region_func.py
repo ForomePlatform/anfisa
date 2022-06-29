@@ -103,16 +103,18 @@ class RegionFuncUnit(FunctionUnit):
             if len(seq_cond) == 0:
                 return None, "No chromosome defined"
             start_val, sep, end_val = loc_parts[1].partition('-')
-            if not start_val.strip().isdigit():
+            start_val = start_val.strip()
+            if not start_val.isdigit() or len(start_val) > 10:
                 return None, "Bad start position"
-            start_val = int(start_val.strip())
+            start_val = int(start_val)
             seq_cond.append(self.getEvalSpace().makeNumericCond(
                 self.getEvalSpace().getUnit(self.mMapUnits["start"]),
                 min_val = start_val, min_eq = True))
             if not sep:
                 end_val = start_val
             else:
-                if not end_val.strip().isdigit():
+                end_val = end_val.strip()
+                if not end_val.isdigit() or len(end_val) > 10:
                     return None, "Bad end position"
                 end_val = int(end_val.strip())
             seq_cond.append(self.getEvalSpace().makeNumericCond(
@@ -121,7 +123,8 @@ class RegionFuncUnit(FunctionUnit):
 
         if len(loc_parts) > 2:
             gene_values = [val.strip() for val in loc_parts[2].split(',')]
-            if len(gene_values) < 1 or not all(gene_values):
+            if len(gene_values) < 1 or not all(gene_values) or max(
+                    len(val) for val in gene_values) > 30:
                 return None, "Bad gene values"
             seq_cond.append(self.getEvalSpace().makeEnumCond(
                 self.getEvalSpace().getUnit(self.mMapUnits["symbol"]),
