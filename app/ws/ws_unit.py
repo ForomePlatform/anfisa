@@ -116,9 +116,12 @@ class WS_StatusUnit(WS_EnumUnit):
     def fillRecord(self, inp_data, rec_no):
         assert len(self.mArray) == rec_no, (
             "Bad record length for "  + self.getName()
-            + " rec_no = " + str(rec_no))
+            + f" rec_no = {rec_no}/{len(self.mArray)}")
         value = inp_data[self.getInternalName()]
-        self.mArray.append(self.mVariantSet.indexOf(value))
+        idx = self.mVariantSet.indexOf(value)
+        assert idx is not None, (
+            f"Improper value {value} for unit {self.getName()}")
+        self.mArray.append(idx)
 
 #===============================================
 class WS_MultiSetUnit(WS_EnumUnit):
@@ -251,7 +254,10 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         if not values:
             self.mArray.append(self.mDefaultValue)
         else:
-            self.mArray.extend([self.mVariantSet.indexOf(value)
+            for value in values:
+                assert self.mVariantSet.indexOf(str(value)) is not None, (
+                    f"Bad {self.getName()}/{value} at {rec_no}")
+            self.mArray.extend([self.mVariantSet.indexOf(str(value))
                 for value in values])
 
     def makeStat(self, condition, eval_h, stat_ctx):

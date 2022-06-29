@@ -216,7 +216,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
 
     aspects["view_qsamples"].setAttributes([
         AttrH("title", title = "Title"),
-        AttrH("qd", title = "Quality by Depth", is_seq = True,
+        AttrH("qd", title = "Quality by Depth", kind = "numeric",
             tooltip = "The QUAL score normalized by allele depth (AD) "
             "for a variant. This annotation puts the variant confidence "
             "QUAL score into perspective by normalizing for the amount "
@@ -227,7 +227,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
             "than it really is. To compensate for this, we normalize "
             "the variant confidence by depth, which gives us a more "
             "objective picture of how well supported the call is."),
-        AttrH("mq", title = "Mapping Quality", is_seq = True,
+        AttrH("mq", title = "Mapping Quality", kind = "numeric",
             tooltip = "This is the root mean square mapping quality over all "
             "the reads at the site. Instead of the average mapping "
             "quality of the site, this annotation gives the square root "
@@ -239,7 +239,8 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
             tooltip = "QUAL tells you how confident we are that there is "
             "some kind of variation at a given site. The variation may be "
             "present in one or more samples."),
-        AttrH("strand_odds_ratio", title = "Strand Odds Ratio", is_seq = True,
+        AttrH("strand_odds_ratio", kind = "numeric",
+            title = "Strand Odds Ratio",
             tooltip = "Another way to estimate strand bias using a "
             "test similar to the symmetric odds ratio test. "
             "SOR was created because FS tends to penalize variants "
@@ -247,7 +248,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
             "exons tend to only be covered by reads in one direction "
             "and FS gives those variants a bad score. SOR will take "
             "into account the ratios of reads that cover both alleles."),
-        AttrH("fs", title = "Fisher Strand Bias", is_seq = True,
+        AttrH("fs", title = "Fisher Strand Bias", kind = "numeric",
             tooltip = "Phred-scaled probability that there is strand bias at "
             "the site. Strand Bias tells us whether the alternate "
             "allele was seen more or less often on the forward or "
@@ -287,7 +288,7 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
         AttrH("genome_af", title = "Genome AF"),
         AttrH("exome_af", title = "Exome AF"),
         AttrH("hom", title = "Number of homozygotes"),
-        AttrH("hem", title = "Number of hemizygotes", is_seq = True),
+        AttrH("hem", title = "Number of hemizygotes"),
         AttrH("genome_an", title = "Genome AN"),
         AttrH("exome_an", title = "Exome AN"),
         AttrH("url", title = "URL", kind = "link", is_seq = True),

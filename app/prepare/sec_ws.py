@@ -28,7 +28,6 @@ from app.config.a_config import AnfisaConfig
 from app.config.flt_schema import defineFilterSchema
 from app.config.variables import anfisaVariables
 from app.prepare.prep_filters import FilterPrepareSetH
-from .trans_prep import TransformPreparator_WS
 from .html_report import reportDS
 
 _make_compiler_happy = defineFilterSchema
@@ -125,18 +124,15 @@ class SecondaryWsCreation(ExecutionTask):
             return None
 
         view_schema = deepcopy(self.mDS.getViewSchema())
-        flt_schema  = deepcopy(self.mDS.getFltSchema())
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
         filter_set = FilterPrepareSetH(meta_rec, anfisaVariables,
-            "ws", derived_mode = True)
-        filter_set.setupFromInfo(flt_schema)
-        trans_prep = TransformPreparator_WS(flt_schema, self.mDS, False)
+            "ws", derived_mode = True,
+            pre_flt_schema = self.mDS.getFltSchema())
 
         os.mkdir(ws_dir)
         logging.info("Fill dataset %s datafiles..." % self.mWSName)
 
-        with DataDiskStorageWriter(False,
-                ws_dir, filter_set, trans_prep) as ws_out:
+        with DataDiskStorageWriter(False, ws_dir, filter_set) as ws_out:
             for _, rec_data in self.mDS.getRecStorage().iterRecords(
                     rec_no_seq):
                 ws_out.saveRecord(rec_data)
@@ -146,8 +142,6 @@ class SecondaryWsCreation(ExecutionTask):
 
         self.setStatus("Finishing...")
         logging.info("Finalizing derivation %s" % self.mWSName)
-
-        total_item_count = trans_prep.finishUp()
 
         date_loaded = datetime.now().isoformat()
         mongo_agent = self.mDS.getApp().getMongoConnector().getDSAgent(
@@ -168,9 +162,9 @@ class SecondaryWsCreation(ExecutionTask):
             "name": self.mWSName,
             "kind": "ws",
             "view_schema": view_schema,
-            "flt_schema": flt_schema,
+            "flt_schema": filter_set.dump(),
             "total": len(rec_no_seq),
-            "total_items": total_item_count,
+            "total_items": self.mDS.getTotal(),
             "mongo": self.mWSName,
             "base": self.mDS.getName(),
             "root": self.mDS.getRootDSName(),

@@ -61,7 +61,6 @@ class DataSet(SolutionBroker):
         self.mDataVault = data_vault
         self.mDataInfo = dataset_info
         self.mName = dataset_info["name"]
-        self.mDSKind = dataset_info["kind"]
         self.mTotal = dataset_info["total"]
         self.mMongoAgent = (data_vault.getApp().getMongoConnector().
             getDSAgent(dataset_info["mongo"], dataset_info["kind"]))
@@ -73,7 +72,7 @@ class DataSet(SolutionBroker):
             self.mPath + "/dsinfo.json")
         self.mCondVisitorTypes = []
 
-        if self.getDataSchema() == "FAVOR" and self.mDSKind == "xl":
+        if self.getDataSchema() == "FAVOR" and self.getDSKind() == "xl":
             self.mRecStorage = FavorStorage(
                 self.getApp().getOption("favor-url"))
         else:
@@ -95,7 +94,7 @@ class DataSet(SolutionBroker):
         return fstat_info == self.mFInfo
 
     def descrContext(self, rq_args, rq_descr):
-        rq_descr.append("kind=" + self.mDSKind)
+        rq_descr.append("kind=" + self.getDSKind())
         rq_descr.append("dataset=" + self.mName)
 
     def addConditionVisitorType(self, visitor_type):
@@ -113,9 +112,6 @@ class DataSet(SolutionBroker):
 
     def getName(self):
         return self.mName
-
-    def getDSKind(self):
-        return self.mDSKind
 
     def getTotal(self):
         return self.mTotal
@@ -225,7 +221,7 @@ class DataSet(SolutionBroker):
             "name": self.mName,
             "upd-time": self.getMongoAgent().getCreationDate(),
             "create-time": self.mDataVault.getTimeOfStat(self.mFInfo),
-            "kind": self.mDSKind,
+            "kind": self.getDSKind(),
             "note": note,
             "doc": self.getDocsInfo(),
             "total": self.getTotal(),
@@ -465,7 +461,7 @@ class DataSet(SolutionBroker):
 
         stat_ctx = self._getStatCtx(rq_args)
         ret_handle = {
-            "kind": self.mDSKind,
+            "kind": self.getDSKind(),
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "filtered-counts": self.getEvalSpace().evalTotalCounts(condition),
             "stat-list": self.prepareAllUnitStat(condition,
@@ -568,7 +564,7 @@ class DataSet(SolutionBroker):
             self.collectActive(dtree_h)
         rq_id = self._makeRqId()
         ret_handle = {
-            "kind": self.mDSKind,
+            "kind": self.getDSKind(),
             "total-counts": self.getEvalSpace().getTotalCounts(),
             "point-counts": self.prepareDTreePointCounts(
                 dtree_h, rq_id, time_end = time_end),

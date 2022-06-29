@@ -23,14 +23,14 @@ from app.prepare.prep_filters import FilterPrepareSetH
 from app.config.variables import anfisaVariables
 
 # ===============================================
-def defFavorFlt(metadata_record, ds_kind, derived_mode = False):
+def defFavorFlt(metadata_record, ds_kind, druid_adm):
     assert metadata_record.get("data_schema") == "FAVOR", (
         "FAVOR data schema expected: "
         + metadata_record.get("data_schema"))
-    assert ds_kind == "xl" and not derived_mode
+    assert ds_kind == "xl"
 
-    filters = FilterPrepareSetH(metadata_record, anfisaVariables, "xl",
-        derived_mode = False, check_identifiers = True)
+    filters = FilterPrepareSetH(metadata_record, anfisaVariables,
+        "xl", check_identifiers = True, druid_adm = druid_adm)
 
     with filters.viewGroup("Coordinates"):
         filters.statusUnit("Chromosome", "/_filters/chromosome",

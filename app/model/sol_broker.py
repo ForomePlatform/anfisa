@@ -34,9 +34,9 @@ class SolutionBroker(SyncronizedObject):
         self.mLock  = Lock()
         self.mModes = set()
         self.mModes.add(self.mDataSchema)
-        ds_kind = ds_kind.upper()
-        assert ds_kind in {"WS", "XL"}
-        self.mModes.add(ds_kind)
+        self.mDSKind = ds_kind
+        assert self.mDSKind in {"ws", "xl"}
+        self.mModes.add(self.mDSKind.upper())
 
         self.mStdFilterDict = None
         self.mStdFilterList = None
@@ -59,6 +59,9 @@ class SolutionBroker(SyncronizedObject):
         if (1 <= len(self.mFamilyInfo) <= 10 and zygosity_support):
             self.addModes({"ZYG"})
         self.mZygSupport = None
+
+    def getDSKind(self):
+        return self.mDSKind
 
     def getSolEnv(self):
         return self.mSolEnv

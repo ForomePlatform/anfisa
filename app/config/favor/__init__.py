@@ -34,8 +34,8 @@ class FavorSchema:
         return defFavorView(metadata_record, schema_modes)
 
     @classmethod
-    def defineFilterSchema(cls, metadata_record, ds_kind, derived_mode):
-        return defFavorFlt(metadata_record, ds_kind, derived_mode)
+    def defineFilterSchema(cls, metadata_record, ds_kind, druid_adm):
+        return defFavorFlt(metadata_record, ds_kind, druid_adm)
 
     @classmethod
     def tuneAspects(cls, ds_h, aspects):

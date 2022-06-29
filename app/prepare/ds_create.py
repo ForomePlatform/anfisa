@@ -31,7 +31,6 @@ from app.model.ds_disk import DataDiskStorageWriter
 from .html_report import reportDS
 from .doc_works import prepareDocDir
 from .v_check import ViewDataChecker
-from .trans_prep import TransformPreparator_WS, TransformPreparator_XL
 #=====================================
 def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         ds_inv = None, report_lines = False,
@@ -74,7 +73,8 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         metadata_record["versions"][
             "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
 
-    filter_set = defineFilterSchema(metadata_record, ds_kind)
+    filter_set = defineFilterSchema(metadata_record, ds_kind,
+        druid_adm if ds_kind != "ws" else None)
     view_aspects = defineViewSchema(metadata_record, filter_set.getModes())
     view_checker = ViewDataChecker(view_aspects)
 
@@ -82,14 +82,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         if report_lines:
             print("Processing...", file = sys.stderr)
 
-        if ds_kind == "ws":
-            trans_prep = TransformPreparator_WS(
-                filter_set.getTranscriptDescrSeq(),
-                filter_set, True)
-        else:
-            trans_prep = TransformPreparator_XL(druid_adm)
-
-        with DataDiskStorageWriter(True, ds_dir, filter_set, trans_prep,
+        with DataDiskStorageWriter(True, ds_dir, filter_set,
                 view_checker, report_lines) as ds_out:
             for record in input_reader:
                 ds_out.saveRecord(record)
@@ -99,7 +92,6 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         input_reader.close()
         if report_lines:
             print("\nTotal lines: %d" % total, file = sys.stderr)
-        trans_prep.finishUp()
     else:
         record = favor_storage.getRecordData(0)
         view_checker.regValue(0, record)
@@ -176,7 +168,7 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    filter_set = defineFilterSchema(ds_info["meta"], "xl")
+    filter_set = defineFilterSchema(ds_info["meta"], "xl", druid_adm)
 
     return druid_adm.uploadDataset(ds_name,
         ds_info["flt_schema"],
@@ -187,7 +179,8 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
 #=====================================
 def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
     assert solutionsAreReady()
-    filter_set = defineFilterSchema(favor_storage.getMetaData(), "xl")
+    filter_set = defineFilterSchema(
+        favor_storage.getMetaData(), "xl", druid_adm)
     fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
 
     with gzip.open(fdata_path, "wt", encoding = "utf-8") as outp:

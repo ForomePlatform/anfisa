@@ -90,11 +90,10 @@ class DataDiskStorage:
 
 #===============================================
 class DataDiskStorageWriter:
-    def __init__(self, popen_mode, dataset_path, filter_set, trans_prep,
+    def __init__(self, popen_mode, dataset_path, filter_set,
             view_checker = None, report_mode = False):
         self.mPath = dataset_path
         self.mFilterSet = filter_set
-        self.mTransPrep = trans_prep
         self.mViewChecker = view_checker
         self.mReportMode = report_mode
         self.mTotal = 0
@@ -145,7 +144,6 @@ class DataDiskStorageWriter:
         if self.mViewChecker is not None:
             self.mViewChecker.regValue(rec_no, record)
         pre_data = AnfisaConfig.getVariantSystemFields(record)
-        self.mTransPrep.doRec(rec_no, record, flt_data, pre_data)
         if self.mVDataProc is not None:
             print(json.dumps(record, ensure_ascii = False),
                 file = self.mVDataOut)

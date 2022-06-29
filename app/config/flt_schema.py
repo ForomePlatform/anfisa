@@ -109,16 +109,16 @@ def is_none(value):
 FilterPrepareSetH.regNamedFunction("has_variant", sample_has_variant)
 FilterPrepareSetH.regNamedFunction("is_none", is_none)
 #===============================================
-def defineFilterSchema(metadata_record, ds_kind, derived_mode = False):
+def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
     data_schema = metadata_record.get("data_schema")
     if data_schema == "FAVOR":
-        return FavorSchema.defineFilterSchema(metadata_record,
-            ds_kind, derived_mode)
+        return FavorSchema.defineFilterSchema(
+            metadata_record, ds_kind, druid_adm)
     assert data_schema is None or data_schema == "CASE", (
         "Bad data schema: " + data_schema)
 
-    filters = FilterPrepareSetH(metadata_record, anfisaVariables,
-        ds_kind, derived_mode = derived_mode)
+    filters = FilterPrepareSetH(metadata_record, anfisaVariables, ds_kind,
+        druid_adm if ds_kind != "ws" else None)
 
     cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):
