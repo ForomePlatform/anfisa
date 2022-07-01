@@ -151,20 +151,20 @@ Ensure that Docker version is 19.03.0 or higher and Docker Compose version is 2.
 
 `./deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
-2. Point your browser to http://localhost:9010/anfisa/app/dir 
-
-3. [Optionally] For better data visualization, you can deploy Anfisa's graphical interface:
+2. For better data visualization, deploy Anfisa's graphical interface:
 
 `./deploy_front.sh`
 
-4. Point your browser to http://localhost:3000
+3. Point your browser to http://localhost:3000
 
-5. [Optionally] Adjust setting for your webserver to serve Anfisa back-end. 
+4. [Optionally] The internal UI is available at: http://localhost:9010/anfisa/app/dir
+
+5. [Optionally] Adjust setting for your webserver to serve Anfisa. 
 For nginx add the following location block:
 
 ``` 
 location /anfisa {
-	proxy_pass http://127.0.0.1:9010/anfisa;
+	proxy_pass http://localhost:3000;
 }
 ```
 

@@ -1,4 +1,12 @@
 version: "3.8"
+networks:
+  default:
+    driver: bridge
+    name: anfisa_default
+    ipam:
+      driver: default
+      config:
+      - subnet:  172.23.0.0/16
 
 services:
   anfisa:
@@ -13,10 +21,13 @@ services:
     restart: always
     ports:
       - "9010:80"
+    hostname: anfisa7
+    networks:
+      default:
+        ipv4_address: 172.23.0.4
     command:
       - "/usr/local/bin/supervisord"
       
-
   mongo:
     container_name: anfisa7-mongo
     user: root
@@ -150,7 +161,3 @@ services:
     env_file:
       - setup/environment
     restart: always
-
-networks:
-  default:
-    name: anfisa_default
