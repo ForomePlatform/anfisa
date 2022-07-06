@@ -17,7 +17,6 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import json
 from forome_tools.path_works import AttrFuncPool
 from forome_tools.ident import checkIdentifier
 from app.config.a_config import AnfisaConfig

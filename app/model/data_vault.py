@@ -291,7 +291,7 @@ class DataVault(SyncronizedObject):
                 assert ds_name == ds_info["name"], (
                     "Dataset name collision: "
                     + ds_info["name"] + " vs. " + ds_name)
-                anc_names = [name for name, _ in ds_info["ancestors"]]
+                anc_names = [info[0] for info in ds_info["ancestors"]]
                 if len(anc_names) > 0:
                     root_name = anc_names[-1]
                     if root_name not in ds_dict:

@@ -246,7 +246,8 @@ class DataSet(SolutionBroker):
             if len(ancestors) == 0 or ancestors[-1][0] != self.getRootDSName():
                 root_h = self.mDataVault.getDS(self.getRootDSName())
                 ancestors.append([self.getRootDSName(),
-                    None if root_h is None else root_h.getDocsInfo()])
+                    None if root_h is None else root_h.getDocsInfo(),
+                    None if root_h is None else root_h.getCreationTime()])
         ret["ancestors"] = ancestors
 
         if navigation_mode:
