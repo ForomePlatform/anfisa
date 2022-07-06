@@ -162,7 +162,8 @@ anfisaVariables.regVar("_Symbol", "enum")
 
 anfisaVariables.regVar("Symbol", "enum")
 
-anfisaVariables.regVar("Panels", "enum")
+#anfisaVariables.regVar("Panels", "enum")
+anfisaVariables.regVar("Gene_Lists", "enum")
 
 anfisaVariables.regVar("EQTL_Gene", "enum",
     title = "EQTL Gene", facet1 = "epigenetics",
@@ -203,7 +204,8 @@ anfisaVariables.regVar("Transcript_id", "enum", render_mode = "tree-map")
 anfisaVariables.regVar("Transctript_Gene", "enum")
 anfisaVariables.regVar("Transcript_Gene", "enum")
 
-anfisaVariables.regVar("Transcript_Gene_Panels", "enum")
+anfisaVariables.regVar("Transcript_Gene_Lists", "enum")
+#anfisaVariables.regVar("Transcript_Gene_Panels", "enum")
 
 anfisaVariables.regVar("Transcript_source", "enum")
 
@@ -604,6 +606,10 @@ anfisaVariables.regVar("CpG", "numeric",
 def _fixVarName(var_name):
     if var_name == "hg19":
         return "In_hg19"
+    if var_name == "Panels":
+        return "Gene_Lists"
+    if var_name == "Transcript_Gene_Panels":
+        return "Transcript_Gene_Lists"
     if var_name.endswith("_AF") or var_name.endswith("_AF2"):
         return "Cohort_" + var_name
     if var_name.endswith("_Significance"):

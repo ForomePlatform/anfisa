@@ -1,5 +1,5 @@
 #Exclude  variants not in hearing loss panel
-if Panels not in {"@ACMG59", "ACMG59"}:
+if Gene_Lists not in {"@ACMG59", "ACMG59"}:
     return False
 
 #Include Present in HGMD as "DM"

@@ -51,6 +51,8 @@ Requests of this type initiates :doc:`../concepts/status_report` and form series
 
 Returning data must contain status report for first property (the first entry in **units** as property name), other properties can be not evaluated if there is no enough time (see details for argument **tm** in references).
 
+In case of :term:`WS-dataset` the request provides status report construction for special name ``"_tags"`` as "name of unit". Tags are not subect of :term:`filtration` process, however status report for tags can be useful in logic of Front-End application. The status report for this case is simpler than :doc:`s_prop_stat`, it contains only **name** and **variants** properties. See :doc:`s_zone` for details.
+
 See also
 --------
 :doc:`ds_stat` 
@@ -60,3 +62,5 @@ See also
 :doc:`../concepts/status_report`
 
 :doc:`../concepts/filters_reg`
+
+:doc:`s_zone`

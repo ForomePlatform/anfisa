@@ -109,9 +109,9 @@ def setupNamedAttr(ds_h, name, process_func):
 #===============================================
 class SymbolPanels_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "GENE_PANELS",
-            title = "Gene panels",
-            tooltip = "Gene panels positive on variant")
+        AttrH.__init__(self, "GENE_LISTS",
+            title = "Gene lists",
+            tooltip = "Gene lists positive on variant")
         self.mDS = ds_h
         self.setAspect(view)
 
@@ -122,9 +122,9 @@ class SymbolPanels_AttrH(AttrH):
 #===============================================
 class TrSymbolPanels_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "TR_GENE_PANELS",
-            title = "Gene panels",
-            tooltip = "Gene panels positive on transcript variant")
+        AttrH.__init__(self, "TR_GENE_LISTS",
+            title = "Gene lists",
+            tooltip = "Gene lists positive on transcript variant")
         self.mDS = ds_h
         self.setAspect(view)
 

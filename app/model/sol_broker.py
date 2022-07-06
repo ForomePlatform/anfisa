@@ -144,8 +144,8 @@ class SolutionBroker(SyncronizedObject):
     def pickSolEntry(self, kind, name):
         return self.mSolKinds[kind].pickByName(name)
 
-    def updateSolEntry(self, kind, sol_entry):
-        return self.mSolKinds[kind].updateSolEntry(sol_entry)
+    def normalizeSolEntry(self, kind, sol_entry):
+        return self.mSolKinds[kind].normalizeSolEntry(sol_entry)
 
     def modifySolEntry(self, kind, instr, entry_data):
         with self:

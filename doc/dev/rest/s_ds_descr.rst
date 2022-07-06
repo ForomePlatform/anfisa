@@ -24,6 +24,7 @@ Format
 |                   ``[`` *list*
 |                       [**0**]: name of ancestor dataset, *string*
 |                       [**1**]: *optional* dataset documentation, :doc:`s_doc_descr`
+|                       [**2**]: *optional* time of dataset installation, *string, time time in ISO format*
 |                   ``]``, ...
 |               ``]``
 |       
@@ -48,6 +49,28 @@ Format
 |           ``[`` *list of strings* ``]``
 |       "**export-max-count**:  maximum record count available for 
 |                       export operations (:doc:`csv_export`, :doc:`export`), *int*
+|       "**receipts**: *optional* list of specifications for dataset derivations
+|           ``[`` *dictionary*
+|               "**kind**": kind of derivation: ``"filter"`` or ``"dtree"``, *string*
+|               "**eval-update-info**: *list*
+|                    [**0**]: creation time, *string in ISO format*
+|                    [**1**]: base dataset name, *string*
+|               "**panels-supply**: dynamic panels used in receipt *optional dictionary*
+|                    ``{``
+|                       panel kind: *list of strings*
+|                    ``}``   
+|                   *for kind* ``filter``:
+|               "**f-presentation**": *list of strings**
+|                           list of filter criteria in form of Python code 
+|               "**filter-name**": *optional* name of filter, if filter is named
+|                   *for kind* ``dtree``:
+|               "**p-presentation**: *list* of point presentations
+|                    [**0**]: presentation in form of Python code with HTML markup, *string*
+|                    [**1**]: count of variants selected, *optional int*
+|                    [**2**]: mode of selection, *optional boolean*
+|               "**dtree-name**": *optional* name of decision tree, if tree is named
+|           ``]``
+
 
 Description
 -----------
@@ -71,6 +94,10 @@ Important part of metadata is list of versions of sources used in dataset annota
 |                   source name, *string*: source version, *string* 
 |                   ...
 |               ``}``
+    
+Property **receipts** is actual for derived datasets and contains complete information how the dataset was derived, i.e. produced from root dataset. Information is given in human readable form for render purposes. Receipts are sorted in stack order: the first receipt in array corresponds to the latest derivation filtration.
+    
+Receipts might use :doc:`panels<../concepts/variety>` as dynamical :doc:`solutions<../concepts/sol_work>`, so the internal property **panels-supply** fixes actual state of used panels at moment of derivation.
     
 Used in requests
 ----------------

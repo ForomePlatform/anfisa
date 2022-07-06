@@ -51,7 +51,7 @@ def defFavorFlt(metadata_record, ds_kind, druid_adm):
         #genes_unit = filters.multiStatusUnit("Symbol",
         #    "/_view/general/genes[]",
         #    compact_mode = True)
-        #filters.panelsUnit("Panels", genes_unit, "Symbol",
+        #filters.panelsUnit("Gene_Lists", genes_unit, "Symbol",
         #    view_path = "/_view/general/gene_panels")
 
         filters.intValueUnit("Num_Genes", "/_view/general/genes",

@@ -154,7 +154,7 @@ class SolutionKindHandler:
             self.mBroker.getName(), self.mSolKind, option,
             self.offName(name), entry_data)
 
-    def updateSolEntry(self, sol_obj):
+    def normalizeSolEntry(self, sol_obj):
         with self.mBroker:
             upd_sol_entry = self.mHashDict.get(sol_obj.getHashCode())
             if upd_sol_entry is not None:

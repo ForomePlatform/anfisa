@@ -32,6 +32,7 @@ from .zone import FilterZoneH, PanelZoneH
 from .ws_unit import loadWS_Unit
 from .ws_space import WS_EvalSpace
 from .ws_io import exportWS
+from .val_stat import EnumStat
 
 #===============================================
 class Workspace(DataSet):
@@ -138,6 +139,16 @@ class Workspace(DataSet):
     @staticmethod
     def makeNegation(func_f):
         return lambda rec_no: not func_f(rec_no)
+
+    def checkSupportStat(self, name, condition):
+        if name == "_tags":
+            ret_handle = {"name": "_tags", "kind": "support"}
+            enum_stat = EnumStat(self.mTagsMan.getTagList())
+            for rec_no, _ in condition.iterSelection():
+                enum_stat.regValues(self.mTagsMan.getRecTags(rec_no))
+            enum_stat.reportResult(ret_handle)
+            return ret_handle
+        return None
 
     def restrictZoneF(self, zone_data):
         ret_seq = []

@@ -132,6 +132,9 @@ class DataSet(SolutionBroker):
         return self.mPath
 
     #===============================================
+    def getCreationTime(self):
+        return self.mDataVault.getTimeOfStat(self.mFInfo)
+
     def getViewSchema(self):
         return self.mAspects.dump()
 
@@ -205,6 +208,9 @@ class DataSet(SolutionBroker):
     def getMaxExportSize(self):
         return self.sMaxExportSize
 
+    def checkSupportStat(self, name, condition):
+        return None
+
     #===============================================
     @classmethod
     def shortPDataReport(cls, rec_no, rec_data):
@@ -220,7 +226,7 @@ class DataSet(SolutionBroker):
         ret = {
             "name": self.mName,
             "upd-time": self.getMongoAgent().getCreationDate(),
-            "create-time": self.mDataVault.getTimeOfStat(self.mFInfo),
+            "create-time": self.getCreationTime(),
             "kind": self.getDSKind(),
             "note": note,
             "doc": self.getDocsInfo(),
@@ -231,9 +237,10 @@ class DataSet(SolutionBroker):
         while base_name is not None:
             base_h = self.mDataVault.getDS(base_name)
             if base_h is None:
-                ancestors.append([base_name, None])
+                ancestors.append([base_name, None, None])
                 break
-            ancestors.append([base_name, base_h.getDocsInfo()])
+            ancestors.append([base_name, base_h.getDocsInfo(),
+                base_h.getCreationTime()])
             base_name = base_h.getBaseDSName()
         if self.getRootDSName() and self.getRootDSName() != self.getName():
             if len(ancestors) == 0 or ancestors[-1][0] != self.getRootDSName():
@@ -252,6 +259,8 @@ class DataSet(SolutionBroker):
             ret["unit-classes"] = (
                 self.mDataVault.getVarRegistry().getClassificationDescr())
             ret["export-max-count"] = self.sMaxExportSize
+            if "receipts" in self.mDataInfo:
+                ret["receipts"] = self.mDataInfo["receipts"]
         if not navigation_mode:
             cur_v_group = None
             unit_groups = []
@@ -305,6 +314,10 @@ class DataSet(SolutionBroker):
             eval_h, stat_ctx, time_end = None, point_no = None):
         ret = []
         for unit_name in unit_names:
+            check_data = self. checkSupportStat(unit_name, condition)
+            if check_data is not None:
+                ret.append(check_data)
+                continue
             unit_h = self.getEvalSpace().getUnit(unit_name)
             assert not unit_h.isScreened() and unit_h.getUnitKind != "func", (
                 "No function provided in DS: " + unit_name)
@@ -372,7 +385,7 @@ class DataSet(SolutionBroker):
             cond_data = cond_data[:] + join_cond_data[:]
         if filter_h is None:
             filter_h = FilterEval(self.getEvalSpace(), cond_data)
-        filter_h = self.updateSolEntry("filter", filter_h)
+        filter_h = self.normalizeSolEntry("filter", filter_h)
         if activate_it:
             filter_h.activate()
         return filter_h
@@ -389,7 +402,7 @@ class DataSet(SolutionBroker):
                     'Missing request argument: "dtree" or "code"')
                 dtree_h = DTreeEval(self.getEvalSpace(), rq_args["code"])
         if not no_cache:
-            dtree_h = self.updateSolEntry("dtree", dtree_h)
+            dtree_h = self.normalizeSolEntry("dtree", dtree_h)
         if activate_it:
             dtree_h.activate()
         return dtree_h

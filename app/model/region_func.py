@@ -96,9 +96,6 @@ class RegionFuncUnit(FunctionUnit):
                 self.getEvalSpace().getUnit(self.mMapUnits["chrom"]),
                 ["chr" + chrom_val]))
 
-        #if len(seq_cond) > 0:
-        #    return self.getEvalSpace().joinAnd(seq_cond), None
-
         if loc_parts[1]:
             if len(seq_cond) == 0:
                 return None, "No chromosome defined"

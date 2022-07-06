@@ -279,7 +279,7 @@ def formCurConditionControls(output):
                   </div>
                   <div id="cur-cond-variety">
                     <a class="popup" onclick="goToPage(\'GENES\');"
-                        >Edit active symbols and panels</a>
+                        >Edit active symbols and gene lists</a>
                   </div>
                 </div>
               </div>

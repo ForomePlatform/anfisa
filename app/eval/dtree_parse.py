@@ -113,7 +113,6 @@ class ParsedDTree:
         self.mDummyLinesReg = set()
         self.mLabels = dict()
         self.mFirstError = None
-        hash_h = md5()
         code_lines = self.mCode.splitlines()
 
         for parsed_d, err_info, line_diap in parseCodeByPortions(
@@ -138,13 +137,6 @@ class ParsedDTree:
                     else:
                         self.errorIt(instr_d,
                             "Instructon must be of if-type")
-                    for frag_h in fragments:
-                        line_from, line_to = frag_h.getLineDiap()
-                        for line_no in range(line_from, line_to):
-                            if line_no not in self.mDummyLinesReg:
-                                hash_h.update(bytes(code_lines[line_no - 1],
-                                    "utf-8"))
-                                hash_h.update(b'\n')
                 except Exception as err:
                     if self.mError is None:
                         logException("Exception on parse tree code")
@@ -156,6 +148,8 @@ class ParsedDTree:
                 if self.mFirstError is None:
                     self.mFirstError = err_info
             self.mFragments += fragments
+        hash_h = md5()
+        hash_h.update(bytes(self.mCode, "utf-8"))
         self.mHashCode = hash_h.hexdigest()
         self.mCurLineDiap = None
         self.mError = None

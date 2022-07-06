@@ -3,7 +3,7 @@ if Num_Samples < 1:
     return False
 
 #Exclude  variants not in hearing loss panel
-if Panels not in {"@All_Hearing_Loss", "All_Hearing_Loss"}:
+if Gene_Lists not in {"@All_Hearing_Loss", "All_Hearing_Loss"}:
     return False
 
 #Include Present in HGMD as "DM"

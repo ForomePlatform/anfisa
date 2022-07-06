@@ -681,7 +681,8 @@ var sDTreesH = {
             (!!this.mCurDTreeName)? "disabled":"";
         document.getElementById("dtree-op-modify").className = 
             (!!this.mCurDTreeName ||
-                (this.mOpList.length == 0))? "disabled":"";
+                (this.mCurDTreeName && this.mCurDTreeName[0] == '@' ||
+                (this.mOpList.length == 0)))? "disabled":"";
         document.getElementById("dtree-op-delete").className = 
             (!this.mCurDTreeName || 
                 this.mOpList.indexOf(this.mCurDTreeName) < 0)? "disabled":"";
@@ -777,7 +778,8 @@ var sDTreesH = {
     },
 
     startModify: function() {
-        if (sDecisionTree.isEmpty() || this.mCurDTreeName)
+        if (sDecisionTree.isEmpty() || 
+            (this.mCurDTreeName && this.mCurDTreeName[0] == '@'))
             return;
         this.fillSelNames(false, this.mOpList);
         this.mCurOp = "modify";

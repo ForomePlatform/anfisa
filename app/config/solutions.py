@@ -339,7 +339,7 @@ def setupSolutions_Case(app_config, base_pack):
     #     [cfgPath("hearing_loss.pyt")])
 
     base_pack.regZone("Gene", "Symbol")
-    base_pack.regZone("Gene List", "Panels")
+    base_pack.regZone("Gene List", "Gene_Lists")
     base_pack.regZone("Sample", "Has_Variant")
     base_pack.regZone("Cohort", "Variant_in",  requires = {"cohorts"})
     base_pack.regZone("Tag", "_tags")

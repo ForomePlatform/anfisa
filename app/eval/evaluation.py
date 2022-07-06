@@ -75,10 +75,6 @@ class Evaluation:
         assert False
 
     @abc.abstractmethod
-    def reportInfo(self):
-        assert False
-
-    @abc.abstractmethod
     def getActualCondition(self, point_no):
         assert False
 

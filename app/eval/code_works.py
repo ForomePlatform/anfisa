@@ -27,9 +27,12 @@ from difflib import Differ
 #===============================================
 #===============================================
 def normalizeCode(code):
-    return '\n'.join([line.rstrip().replace('\t', '    ')
-        for line in code.splitlines()])
-
+    ret = []
+    for line in code.splitlines():
+        ln = line.rstrip().replace('\t', '    ')
+        if ln:
+            ret.append(ln)
+    return "\n".join(ret)
 
 #===============================================
 #===============================================

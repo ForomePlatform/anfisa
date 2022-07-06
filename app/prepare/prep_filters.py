@@ -17,7 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
+import json
 from forome_tools.path_works import AttrFuncPool
 from forome_tools.ident import checkIdentifier
 from app.config.a_config import AnfisaConfig
@@ -269,6 +269,10 @@ class FilterPrepareSetH(SolutionBroker):
         result = dict()
         if self.mTransPathBaseF is not None:
             tr_seq_seq = self.mTransPathBaseF(rec_data)
+            print("Tr:", json.dumps(tr_seq_seq),
+                "trancripts" in rec_data["_view"])
+            if "trancripts" in rec_data["_view"]:
+                print("tr0:", json.dumps(rec_data)["_view"]["trancripts"])
             assert len(tr_seq_seq) <= 1
             if len(tr_seq_seq) == 1:
                 tr_seq = tr_seq_seq[0]

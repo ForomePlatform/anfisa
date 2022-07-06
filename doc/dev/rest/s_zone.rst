@@ -21,22 +21,26 @@ In serial form **variants** is dropped.
 
 Property **title** is used for rendering. 
 
-Property **zone** is hidden for the user, and is base technical identifier of zone.
-
 In current version the following zones are provided:
 
     ===========  =================   =======================
      **title**      **zone**
     ===========  =================   =======================
     Gene          ``Symbol``
-    Gene_List     ``Panels``
+    Gene List     ``Gene_Lists``
     Sample        ``Has_Variant``
     Tag           ``_tags``
     Cohort        ``Variant_in``     *in special cases*
     ===========  =================   =======================
+
+Property **zone** is hidden for the user, usually it corresponds to name of :term:`unit`, filtering property. So the extended Front-End application logic can collect information about zones not only by :doc:`zone_list` but by :doc:`statunits` al well, using **zone** attribute as unit name.
+
+The exceptional zone is tags, ``"_tags"``: tags must not be filtering property, but request :doc:`statunits` provides special support for this name and this logic. 
     
 Used in requests
 ----------------
 :doc:`zone_list`  
 
 :doc:`ws_list`   
+
+:doc:`statunits`   

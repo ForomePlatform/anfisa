@@ -43,7 +43,25 @@ class ListConversions:
         return default
 
     @staticmethod
-    def clear(arr):
+    def c_len(arr):
+        if arr:
+            return len(arr)
+        return 0
+
+    @staticmethod
+    def c_min(arr):
+        if arr:
+            return min(arr)
+        return 0
+
+    @staticmethod
+    def c_max(arr):
+        if arr:
+            return max(arr)
+        return 0
+
+    @staticmethod
+    def c_clear(arr):
         ret = []
         if arr:
             for val in arr:
@@ -54,27 +72,29 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def uniq(arr):
+    def c_uniq(arr):
         if not arr:
             return []
         return sorted(set(arr))
 
     @staticmethod
-    def values(arr):
+    def c_values(arr):
         ret = []
-        for dict_entry in arr:
-            ret += sorted(dict_entry.values())
+        if arr:
+            for dict_entry in arr:
+                ret += sorted(dict_entry.values())
         return ret
 
     @staticmethod
-    def keys(arr):
+    def c_keys(arr):
         ret = []
-        for dict_entry in arr:
-            ret += sorted(dict_entry.keys())
+        if arr:
+            for dict_entry in arr:
+                ret += sorted(dict_entry.keys())
         return ret
 
     @staticmethod
-    def positive(arr):
+    def c_positive(arr):
         ret = []
         for val in arr:
             if val:
@@ -82,7 +102,7 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def negative(arr):
+    def c_negative(arr):
         ret = []
         for val in arr:
             if not val:
@@ -90,7 +110,7 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def split(separator, arr):
+    def c_split(separator, arr):
         ret = []
         for val in arr:
             if not val:
@@ -100,7 +120,7 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def split_re(pattern, arr):
+    def c_split_re(pattern, arr):
         ret = []
         for val in arr:
             if not val:
@@ -110,7 +130,7 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def filter(check_f, arr):
+    def c_filter(check_f, arr):
         ret = []
         for val in arr:
             if check_f(val):
@@ -118,55 +138,53 @@ class ListConversions:
         return ret
 
     @staticmethod
-    def property(attr_name, arr):
+    def c_property(attr_name, arr):
         ret = []
         for val in arr:
             ret.append(val.get(attr_name)
                 if val else None)
         return ret
 
+    sStrConv = None
+
     @classmethod
     def makeOne(cls, conv_item, func_registry):
+        if cls.sStrConv is None:
+            cls.sStrConv = {
+                "len": cls.c_len,
+                "min": cls.c_min,
+                "max": cls.c_max,
+                "values": cls.c_values,
+                "keys": cls.c_keys,
+                "clear": cls.c_clear,
+                "uniq": cls.c_uniq,
+                "positive": cls.c_positive,
+                "negative": cls.c_negative
+            }
         if isinstance(conv_item, str):
-            if conv_item == "len":
-                return lambda rec: cls.op_rec(len, 0, rec)
-            if conv_item == "min":
-                return lambda rec: cls.op_rec(min, 0, rec)
-            if conv_item == "max":
-                return lambda rec: cls.op_rec(max, 0, rec)
-            if conv_item == "values":
-                return lambda rec: cls.op_rec(cls.values, [], rec)
-            if conv_item == "keys":
-                return lambda rec: cls.op_rec(cls.keys, [], rec)
-            if conv_item == "clear":
-                return cls.clear
-            if conv_item == "uniq":
-                return cls.uniq
-            if conv_item == "positive":
-                return cls.positive
-            if conv_item == "negative":
-                return cls.negative
+            if conv_item in cls.sStrConv:
+                return cls.sStrConv[conv_item]
             conv_f = func_registry.getNamedFunction(conv_item)
             if conv_f is not None:
                 return conv_f
         if isinstance(conv_item, list) and len(conv_item) == 2:
             func_name, par = conv_item
             if func_name == "property":
-                return lambda rec: cls.property(par, rec)
+                return lambda rec: cls.c_property(par, rec)
             if func_name == "skip":
                 def op_f(rec):
                     return rec[par:]
                 return lambda rec: cls.op_rec(op_f, [], rec)
             if func_name == "split":
-                return lambda rec: cls.split(par, rec)
+                return lambda rec: cls.c_split(par, rec)
             if func_name == "split_re":
                 pattern = re.compile(par)
-                return lambda rec: cls.split_re(pattern, rec)
+                return lambda rec: cls.c_split_re(pattern, rec)
             if func_name == "filter":
                 conv_f = func_registry.getNamedFunction(par)
                 assert conv_f is not None, (
                     "No named function: %s" % par)
-                return lambda rec: cls.filter(conv_f, rec)
+                return lambda rec: cls.c_filter(conv_f, rec)
             if func_name == "min":
                 return lambda rec: cls.op_rec(min, par, rec)
             if func_name == "max":
@@ -175,125 +193,9 @@ class ListConversions:
         return None
 
 #===============================================
-# TRF: All the code below is deprecated
-#===============================================
-def _conv_len(arr):
-    if arr:
-        return len(arr)
-    return 0
-
-def _conv_min(arr):
-    if arr:
-        return min(arr)
-    return 0
-
-def _conv_bool_present(val):
-    if val in [True, "True"]:
-        return "Present"
-    elif val in [False, "False"]:
-        return "Absent"
-    return val
-
-def _conv_count(arr, prop_name, value, skip = 0):
-    return sum(el.get(prop_name) == value for el in arr[skip:])
-
-def _conv_maxval(arr, prop_name):
-    return max(el.get(prop_name) for el in arr)
-
-def _conv_maxval_filter(arr, prop_name, filter_f):
-    seq = []
-    for el in arr:
-        if filter_f(el):
-            seq.append(el.get(prop_name))
-    return max(seq)
-
-def _conv_map(arr, prop_name):
-    return [el.get(prop_name) for el in arr]
-
-def _conv_values(arr):
-    if not arr:
-        return []
-    assert len(arr) == 1
-    dict_data = arr[0]
-    ret = set()
-    for rec in dict_data.values():
-        for val in rec.split(','):
-            val = val.strip()
-            if val:
-                ret.add(val)
-    return sorted(ret)
-
-
-#===============================================
-sComplexConversions = {
-    "count": (["property", "skip", "value"], {"skip": 0, "value": None}),
-    "max": (["property", "filter"], {"filter": None}),
-    "map": (["property"], dict())
-}
-
-def parseComplexConv(conversion):
-    global sComplexConversions
-    fields = conversion.split(',')
-    func_name = fields[0].strip()
-    assert func_name in sComplexConversions, (
-        'Improper conversion function "%s"' % conversion)
-    arg_list, arg_default_values = sComplexConversions[func_name]
-    func_args = dict()
-    for field in fields[1:]:
-        if '=' in field:
-            nm, _, val = field.partition('=')
-        else:
-            nm, val = "", field
-        nm = nm.strip()
-        assert nm in arg_list, (
-            f'Extra arg "{nm}" in conversion "{conversion}"')
-        assert nm not in func_args, (
-            f'Arg "{nm}" duplication in conversion "{conversion}"')
-        func_args[nm] = val.strip()
-    for nm in arg_list:
-        if nm in func_args:
-            continue
-        assert nm in arg_default_values, (
-            f'Arg "{nm}" not set in conversion "{conversion}"')
-        func_args[nm] = arg_default_values[nm]
-    return func_name, func_args
-
-#===============================================
 def makeFilterConversion(conversion, filter_set):
     if not conversion:
         return None
-    if isinstance(conversion, list):
-        return ListConversions.make(conversion, filter_set)
-    if ',' in conversion:
-        func_name, func_args = parseComplexConv(conversion)
-        if func_name == "count":
-            prop_name, value, skip = [func_args[key]
-                for key in ("property", "value", "skip")]
-            skip = int(skip)
-            return lambda arr: _conv_count(arr, prop_name, value, skip)
-        if func_name == "map":
-            prop_name = func_args["property"]
-            return lambda arr: _conv_map(arr, prop_name)
-        if func_name == "max":
-            prop_name, filter_name = [func_args[key]
-                for key in ("property", "filter")]
-            if filter_name:
-                filter_f = filter_set.getNamedFunction(filter_name)
-                assert filter_f is not None, (
-                    "No registered annotation function: " + filter_name)
-                return lambda arr: _conv_maxval_filter(
-                    arr, prop_name, filter_f)
-            return lambda arr: _conv_maxval(arr, prop_name)
-    if conversion == "len":
-        return _conv_len
-    if conversion == "min":
-        return _conv_min
-    if conversion == "bool":
-        return _conv_bool_present
-    if conversion == "values":
-        return _conv_values
-    filter_f = filter_set.getNamedFunction(conversion)
-    if filter_f is not None:
-        return filter_f
-    assert False, "Bad conversion: " + conversion
-    return None
+    assert isinstance(conversion, list), (
+        "Deprecated conversion logic, reload dataset")
+    return ListConversions.make(conversion, filter_set)
