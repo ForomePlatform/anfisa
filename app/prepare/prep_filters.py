@@ -269,10 +269,6 @@ class FilterPrepareSetH(SolutionBroker):
         result = dict()
         if self.mTransPathBaseF is not None:
             tr_seq_seq = self.mTransPathBaseF(rec_data)
-            print("Tr:", json.dumps(tr_seq_seq),
-                "trancripts" in rec_data["_view"])
-            if "trancripts" in rec_data["_view"]:
-                print("tr0:", json.dumps(rec_data)["_view"]["trancripts"])
             assert len(tr_seq_seq) <= 1
             if len(tr_seq_seq) == 1:
                 tr_seq = tr_seq_seq[0]
