@@ -1,0 +1,16 @@
+apiVersion: "v1"
+kind: PersistentVolumeClaim
+metadata:
+  name: forome-datasets-pvc
+  annotations:
+    ibm.io/auto-create-bucket: "false"
+    ibm.io/auto-delete-bucket: "false"
+    ibm.io/bucket: forome-dataset-private
+    ibm.io/secret-name: cos-write-access
+spec:
+  storageClassName: ibmc-s3fs-standard-regional
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: "500Gi"

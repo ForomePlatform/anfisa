@@ -1,0 +1,18 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Values.anfisa.anfisa_volumes.workdir_claim_name }}
+  namespace: {{ .Values.anfisa.project }}
+  labels:
+    app.kubernetes.io/component: {{ .Values.anfisa.name }}
+    app.kubernetes.io/instance: {{ .Values.anfisa.name }}
+    app.kubernetes.io/name: {{ .Values.anfisa.name }}
+    app: {{ .Values.anfisa.name }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  volumeMode: Filesystem
+  storageClassName: ibmc-vpc-block-general-purpose

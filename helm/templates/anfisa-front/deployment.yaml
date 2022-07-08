@@ -1,0 +1,36 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Values.anfisa_front.name }}
+  labels:
+    app: {{ .Values.anfisa_front.name }}
+spec:
+  selector:                
+    matchLabels:     
+      app: {{ .Values.anfisa_front.name }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.anfisa_front.name }}
+    spec:
+      serviceAccountName: default
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 0
+      containers:
+      - name: {{ .Values.anfisa_front.name }}
+        image: {{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa_front.name }}:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+          - name: config-volume
+            mountPath: /usr/share/nginx/html/Anfisa/env-config.js
+            subPath: env-config.js
+      serviceAccount: default
+      volumes:
+        - name: config-volume
+          configMap:
+            name: front-config
+            defaultMode: 0666
+      restartPolicy: Always

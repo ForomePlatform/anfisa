@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 8.0
+description: MySQL Database Server
+name: mysql
+type: application
+version: "0.1"

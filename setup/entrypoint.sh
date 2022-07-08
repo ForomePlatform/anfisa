@@ -1,5 +1,5 @@
 #!/bin/bash
-for d in /anfisa/a-setup/{data,logs,vault,export/work,ui} ; do
+for d in {/anfisa/a-setup/{data,logs,vault,export/work,ui},/data} ; do
     [ ! -d $d ] && mkdir -p $d
 done
 if [ ! -f /anfisa/a-setup/export/SEQaBOO_output_template_20190317.xlsx ]  ; then

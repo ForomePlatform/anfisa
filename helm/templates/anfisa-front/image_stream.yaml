@@ -1,0 +1,8 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: {{ .Values.anfisa_front.name }}
+  generation: 1
+spec:
+  lookupPolicy:
+    local: false
