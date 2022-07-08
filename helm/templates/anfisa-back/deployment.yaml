@@ -5,8 +5,6 @@ metadata:
   labels:
     app: {{ .Values.anfisa.name }}
     chart: anfisa
-  annotations:
-      argocd.argoproj.io/sync-options: Validate=false
 spec:
   replicas: 1
   selector:
@@ -30,11 +28,11 @@ spec:
               protocol: TCP
           env:
             - name: ANFISA_COORD_HOST
-              value: anfisa-druid-coordinator
+              value: {{ .Values.anfisa.name }}-druid-coordinator
             - name: ANFISA_ROUTER_HOST
               value: router
             - name: ANFISA_MONGO_HOST
-              value: anfisa-mongodb
+              value: {{ .Values.anfisa.name }}-mongodb
           ports:
           image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
           terminationMessagePath: /dev/termination-log
@@ -43,8 +41,8 @@ spec:
           stdin: true
           # command: [ "/bin/bash" ]
           # args: [ "-c", "sleep infinity" ]
-          command: [ "/usr/bin/entrypoint.sh" ]
-          args: [ "/usr/local/bin/supervisord" ]
+          # command: [ "/usr/bin/entrypoint.sh" ]
+          # args: [ "/usr/local/bin/supervisord" ]
           volumeMounts:
           - name: forome-anfisa
             mountPath: /data/anfisa/
@@ -52,12 +50,12 @@ spec:
             mountPath: /anfisa/a-setup/
           - name: forome-datasets-pvc
             mountPath: /mnt/forome-datasets
-
-
-          - name: anfisa-config
+          - name: anfisa-json
             mountPath: /anfisa/anfisa.json
             subPath: anfisa.json
-     
+          - name: nginx-conf
+            mountPath: /etc/nginx/conf.d/anfisa.conf
+            subPath: anfisa.conf
       volumes:
       - name: forome-anfisa
         persistentVolumeClaim:
@@ -68,10 +66,12 @@ spec:
       - name: forome-datasets-pvc
         persistentVolumeClaim:
           claimName: {{ .Values.anfisa.anfisa_volumes.datasets_claim_name }}
-
-      - name: anfisa-config
+      - name: anfisa-json
         configMap:
-          name: {{ .Values.anfisa.name }}
-          defaultMode: 420
-
+          name: {{ .Values.anfisa.name }}-anfisa-json
+          defaultMode: 0644
+      - name: nginx-conf
+        configMap:
+          name: {{ .Values.anfisa.name }}-nginx-conf
+          defaultMode: 0644
       terminationGracePeriodSeconds: 5

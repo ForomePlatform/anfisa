@@ -1,7 +1,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ .Values.anfisa.name }}
+  name: {{ .Values.anfisa.name }}-anfisa-json
   namespace: {{ .Values.anfisa.project }}
 data:
   anfisa.json: |

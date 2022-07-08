@@ -30,7 +30,7 @@ anfisa:
   project: anfisa-test
   name: anfisa-back
   git_uri: https://github.com/ForomePlatform/anfisa.git
-  git_branch: v.0.7.x
+  git_branch: helm
   output_registry: image-registry.openshift-image-registry.svc:5000
   anfisa_volumes:
     workdir_volume: anfisa-workdir

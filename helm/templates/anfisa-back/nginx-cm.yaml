@@ -1,0 +1,24 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ .Values.anfisa.name }}-nginx-conf
+  namespace: {{ .Values.anfisa.project }}
+data:
+  anfisa.conf: |
+    server {
+            server_name _;
+            location /app/ {
+                    include uwsgi_params;
+                    uwsgi_read_timeout 3000;
+                    uwsgi_buffering off;
+                    uwsgi_pass 127.0.0.1:3041;
+            }
+            location ~ /app/ui/images {
+                    rewrite ^/app/ui/images/(.*)$ /$1 break;
+                    root /anfisa/anfisa/int_ui/images;
+            }
+            location ~ /app/ui {
+                    rewrite ^/app/ui/(.*)$ /$1 break;
+                    root /anfisa/a-setup/ui;
+            }
+    }
