@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.anfisa.name }}
+  labels:
+    app: {{ .Values.anfisa.name }}
+    chart: anfisa
+  annotations:
+      argocd.argoproj.io/sync-options: Validate=false
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.anfisa.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.anfisa.name }}
+    spec:
+      serviceAccountName: default
+      securityContext:
+        fsGroup: 0
+        runAsUser: 0
+        runAsGroup: 0
+      containers: 
+        - name: {{ .Values.anfisa.name }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          env:
+            - name: ANFISA_COORD_HOST
+              value: anfisa-druid-coordinator
+            - name: ANFISA_ROUTER_HOST
+              value: router
+            - name: ANFISA_MONGO_HOST
+              value: anfisa-mongodb
+          ports:
+          image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          tty: true
+          stdin: true
+          # command: [ "/bin/bash" ]
+          # args: [ "-c", "sleep infinity" ]
+          command: [ "/usr/bin/entrypoint.sh" ]
+          args: [ "/usr/local/bin/supervisord" ]
+          volumeMounts:
+          - name: forome-anfisa
+            mountPath: /data/anfisa/
+          - name: {{ .Values.anfisa.anfisa_volumes.workdir_volume }}
+            mountPath: /anfisa/a-setup/
+          - name: forome-datasets-pvc
+            mountPath: /mnt/forome-datasets
+
+
+          - name: anfisa-config
+            mountPath: /anfisa/anfisa.json
+            subPath: anfisa.json
+     
+      volumes:
+      - name: forome-anfisa
+        persistentVolumeClaim:
+          claimName: forome-anfisa-s3-pvc
+      - name: {{ .Values.anfisa.anfisa_volumes.workdir_volume }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.anfisa.anfisa_volumes.workdir_claim_name }}
+      - name: forome-datasets-pvc
+        persistentVolumeClaim:
+          claimName: {{ .Values.anfisa.anfisa_volumes.datasets_claim_name }}
+
+      - name: anfisa-config
+        configMap:
+          name: {{ .Values.anfisa.name }}
+          defaultMode: 420
+
+      terminationGracePeriodSeconds: 5

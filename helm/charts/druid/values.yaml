@@ -1,0 +1,283 @@
+# Default values for druid.
+
+image:
+  repository: apache/druid
+  tag: 0.20.1
+  pullPolicy: IfNotPresent
+
+extensions:
+  loadList:
+  - druid-histogram
+  - druid-datasketches
+  - druid-lookups-cached-global
+  - postgresql-metadata-storage
+  - druid-kafka-indexing-service
+  - druid-parquet-extensions
+  - druid-kinesis-indexing-service
+#   - druid-s3-extensions
+
+env:
+  # Deep storage
+  # specify your bucket name for s3 deep storage & indexer logs
+  # e.g.:
+  ##druid_s3_endpoint_url: https://s3.us-south.cloud-object-storage.appdomain.cloud
+  ##druid_s3_accessKey: ac145787bbca4f5fa7a6529e6be0206d
+  ##druid_s3_secretKey: 1516c07bd8342f6840f2cee19af906e42344892355fe52e4
+  druid_storage_disableAcl: true
+  druid_storage_type: local
+  druid_storage_storageDirectory: /data/anfisa/var/druid/segments
+  druid_indexer_logs_directory: /data/anfisa/var/druid/indexing-logs
+  druid_indexer_logs_type: file
+  #druid_storage_bucket: anfisa-druid
+  #druid_storage_baseKey: druid/segments
+  #druid_indexer_logs_type: s3
+  #druid_indexer_logs_s3Bucket: deep-storage-bucket
+  #druid_indexer_logs_s3Prefix: druid/indexing-logs
+
+  druid_coordinator_balancer_strategy: cachingCost
+
+  druid_indexer_queue_startDelay: PT30S
+
+  druid_indexer_runner_javaOptsArray: '["-server", "-Xmx1g", "-Xms1g", "-XX:MaxDirectMemorySize=3g", "-Duser.timezone=UTC", "-Dfile.encoding=UTF-8", "-Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager"]'
+  druid_processing_buffer_sizeBytes: "10000000"
+  druid_processing_numMergeBuffers: "4"
+  druid_processing_numThreads: "16"
+  druid_server_maxSize: "8000000000"
+
+  druid_worker_capacity: "4"
+  druid_indexer_fork_property_druid_processing_numMergeBuffers: "2"
+  druid_indexer_fork_property_druid_processing_buffer_sizeBytes: "10000000"
+  druid_indexer_fork_property_druid_processing_numThreads: "1"
+
+router:
+  managementProxy:
+    enabled: true
+  replicaCount: 1
+  name: router
+  port: 8888
+  servicePort: 80
+  serviceType: ClusterIP
+  javaOpts:
+  ingress:
+    enabled: false
+    annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    path: /
+    hosts:
+    - chart-example.local
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  env: {}
+
+broker:
+  replicaCount: 1
+  name: broker
+  port: 8082
+  serviceType: ClusterIP
+  javaOpts:
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    path: /
+    hosts:
+      - chart-example.local
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  env:
+    DRUID_XMX: 1g
+    DRUID_XMS: 1g
+    DRUID_MAXNEWSIZE: 250m
+    DRUID_NEWSIZE: 250m
+    DRUID_MAXDIRECTMEMORYSIZE: 6g
+
+# coordinator also runs an overlord by default (master node)
+coordinator:
+  replicaCount: 1
+  name: coordinator
+  port: 8081
+  serviceType: ClusterIP
+  javaOpts:
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    path: /
+    hosts:
+      - chart-example.local
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  resources: {}
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAnnotations: {}
+  env:
+    DRUID_XMX: 256m
+    DRUID_XMS: 256m
+#    DRUID_MAXNEWSIZE: 250m
+#    DRUID_NEWSIZE: 250m
+#    DRUID_MAXDIRECTMEMORYSIZE: 6g
+
+historical:
+  name: historical
+  replicaCount: 2
+  port: 8083
+  serviceType: ClusterIP
+  javaOpts:
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    path: /
+    hosts:
+      - chart-example.local
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: "4Gi"
+    # storageClass: "ssd"
+
+  health:
+    livenessInitialDelaySeconds: 120
+    readinessInitialDelaySeconds: 120
+  antiAffinity: "soft"
+  nodeAffinity: {}
+  nodeSelector: {}
+  tolerations: []
+  resources: {}
+  podAnnotations: {}
+  podDisruptionBudget:
+    enabled: false
+    # minAvailable: 2
+    maxUnavailable: 1
+  updateStrategy:
+    type: RollingUpdate
+  env:
+    DRUID_XMX: 1g
+    DRUID_XMS: 1g
+    DRUID_MAXNEWSIZE: 250m
+    DRUID_NEWSIZE: 250m
+    DRUID_MAXDIRECTMEMORYSIZE: 6g
+
+middleManager:
+  name: middle-manager
+  replicaCount: 3
+  port: 8091
+  serviceType: ClusterIP
+  javaOpts:
+  ingress:
+    enabled: false
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    path: /
+    hosts:
+      - chart-example.local
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+  persistence:
+    enabled: true
+    accessMode: ReadWriteOnce
+    size: "4Gi"
+    #storageClass: "ibmc-vpc-block-10iops-tier"
+
+    # data2_claim:
+    #   storageclass: "ibmc-vpc-block-10iops-tier"
+    #   accessmode: ReadWriteMany
+    #   size: "10Gi"
+      
+    
+  health:
+    livenessInitialDelaySeconds: 60
+    readinessInitialDelaySeconds: 60
+  antiAffinity: "soft"
+  nodeAffinity: {}
+  nodeSelector: {}
+  tolerations: []
+  resources: {}
+  podAnnotations: {}
+  podDisruptionBudget:
+    enabled: false
+    # minAvailable: 2
+    maxUnavailable: 1
+  updateStrategy:
+    type: RollingUpdate
+  env: {}
+#    DRUID_XMX: 1g
+#    DRUID_XMS: 1g
+#    DRUID_MAXNEWSIZE: 250m
+#    DRUID_NEWSIZE: 250m
+#    DRUID_MAXDIRECTMEMORYSIZE: 6172m
+  
+
+monitoring:
+  enabled: false
+  createServiceMonitor: true
+  port: 8000
+
+zookeeper:
+  enabled: true
+  replicaCount: 3
+  env:
+    ZK_HEAP_SIZE: "512M"
+  persistence:
+    enabled: true
+
+
+# ------------------------------------------------------------------------------
+# PostgreSql:
+# ------------------------------------------------------------------------------
+# postgresql:
+#   enabled: true
+#   postgresqlPostgresPassword: druidroot
+#   postgresqlUsername: druid
+#   postgresqlPassword: druid
+#   postgresqlDatabase: druid
+
+# ------------------------------------------------------------------------------
+# MongoDB:
+# ------------------------------------------------------------------------------
+# mongodb:
+#   enabled: true
+#   useStatefulSet: true
+#   architecture: standalone
+#   auth:
+#     enabled: false
+#     username: admin
+#     database: temp
+#   podSecurityContext:
+#     enabled: true
+#     fsGroup: 1000700000
+#   containerSecurityContext:
+#     enabled: true
+#     runAsUser: 1000700000
+#     runAsNonRoot: true
+#   serviceAccount:
+#     enabled: true

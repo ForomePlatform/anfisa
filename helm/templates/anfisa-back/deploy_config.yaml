@@ -1,0 +1,39 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: {{ .Values.anfisa.name }}
+  labels:
+    app: {{ .Values.anfisa.name }}
+    deploymentconfig: {{ .Values.anfisa.name }}
+spec:
+  replicas: 1
+  selector:
+    app: {{ .Values.anfisa.name }}
+    deploymentconfig: {{ .Values.anfisa.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.anfisa.name }}
+        deploymentconfig: {{ .Values.anfisa.name }}
+    spec:
+      containers:
+        - name: {{ .Values.anfisa.name }}
+          image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          tty: true
+          stdin: true
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
+  triggers:
+  - type: ConfigChange
+  - imageChangeParams:
+      automatic: true
+      containerNames:
+      - {{ .Values.anfisa.name }}
+      from:
+        kind: ImageStreamTag
+        name: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}:latest"
+    type: ImageChange
+  strategy:
+    type: Rolling

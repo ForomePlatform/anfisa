@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "mysql.name" . }}
+  labels:
+    {{- include "mysql.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  selector:
+    matchLabels:
+      {{- include "mysql.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "mysql.name" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "mysql.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ include "mysql.name" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["--default-authentication-plugin=mysql_native_password"]
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+
+          env:
+          - name: {{ .Values.environment.first_env }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.environment.secret_name }}
+                key: {{ .Values.environment.secret_key1 }}
+          - name: {{ .Values.environment.second_env }}
+            value: {{ .Values.environment.user }}
+          - name: {{ .Values.environment.third_env }}
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.environment.secret_name }}
+                key: {{ .Values.environment.secret_key2 }}
+          - name: {{ .Values.environment.fourth_env }}
+            value: {{ .Values.environment.database }}
+
+#          volumeMounts:
+#            - name: data
+#              mountPath: /opt
+
+          ports:
+          - name: mysql
+            containerPort: {{ .Values.service.port }}
+      securityContext:
+      {{- toYaml .Values.securityContext | nindent 8 }}
