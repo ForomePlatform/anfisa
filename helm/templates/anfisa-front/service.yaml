@@ -4,7 +4,6 @@ metadata:
   name: anfisa-frontend
   labels:
     app: {{ .Values.anfisa_front.name }}
-  
 spec:
   ports:
   - name: anfisa-frontend
