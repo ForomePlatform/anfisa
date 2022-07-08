@@ -151,15 +151,11 @@ Ensure that Docker version is 19.03.0 or higher and Docker Compose version is 2.
 
 `./deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
-2. For better data visualization, deploy Anfisa's graphical interface:
+2. Point your browser to http://localhost:3000
 
-`./deploy_front.sh`
+3. [Optionally] The internal UI is available at: http://localhost:9010/anfisa/app/dir
 
-3. Point your browser to http://localhost:3000
-
-4. [Optionally] The internal UI is available at: http://localhost:9010/anfisa/app/dir
-
-5. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+4. [Optionally] Adjust setting for your webserver to serve Anfisa. 
 For nginx add the following location block:
 
 ``` 
@@ -168,7 +164,7 @@ location /anfisa {
 }
 ```
 
-6. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz) 
+5. Download [sample whole genome dataset](https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz) 
 and [ingest it](#ingesting-demo-whole-genome). Will require around 4 hours
 
 ***
