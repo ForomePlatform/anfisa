@@ -34,7 +34,7 @@ spec:
       volumes:
         - name: front-env-config
           configMap:
-            name: env-config
+            name: front-env-config
         - name: front-nginx-config
           configMap:
             name: front-nginx-config
