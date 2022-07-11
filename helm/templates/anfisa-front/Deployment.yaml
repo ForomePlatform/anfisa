@@ -35,7 +35,7 @@ spec:
         - name: front-env-config
           configMap:
             name: env-config
-        - name: front-nginx-conf
+        - name: front-nginx-config
           configMap:
-            name: front-nginx-conf
+            name: front-nginx-config
       restartPolicy: Always
