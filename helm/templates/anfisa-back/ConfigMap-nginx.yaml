@@ -1,13 +1,13 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ .Values.anfisa.name }}-nginx-conf
+  name: back-nginx-config
   namespace: {{ .Values.anfisa.project }}
 data:
   anfisa.conf: |
     server {
             server_name _;
-            location /app/ {
+            location /app {
                     include uwsgi_params;
                     uwsgi_read_timeout 3000;
                     uwsgi_buffering off;

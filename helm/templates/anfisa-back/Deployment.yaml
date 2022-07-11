@@ -50,13 +50,13 @@ spec:
             mountPath: /anfisa/a-setup/
           - name: forome-datasets-pvc
             mountPath: /mnt/forome-datasets
-          - name: anfisa-json
+          - name: back-anfisa-config
             mountPath: /anfisa/anfisa.json
             subPath: anfisa.json
-          - name: nginx-conf
+          - name: back-nginx-config
             mountPath: /etc/nginx/conf.d/anfisa.conf
             subPath: anfisa.conf
-          - name: uwsgi-ini
+          - name: back-uwsgi-config
             mountPath: /anfisa/uwsgi.ini
             subPath: uwsgi.ini
       volumes:
@@ -69,16 +69,16 @@ spec:
       - name: forome-datasets-pvc
         persistentVolumeClaim:
           claimName: {{ .Values.anfisa.anfisa_volumes.datasets_claim_name }}
-      - name: anfisa-json
+      - name: back-anfisa-config
         configMap:
-          name: {{ .Values.anfisa.name }}-anfisa-json
-          defaultMode: 420
-      - name: nginx-conf
+          name: back-anfisa-config
+          # defaultMode: 420
+      - name: back-nginx-config
         configMap:
-          name: {{ .Values.anfisa.name }}-nginx-conf
-          defaultMode: 420
-      - name: uwsgi-ini
+          name: back-nginx-config
+          # defaultMode: 420
+      - name: back-uwsgi-config
         configMap:
-          name: {{ .Values.anfisa.name }}-uwsgi-ini
-          defaultMode: 420
+          name: back-uwsgi-config
+          # defaultMode: 420
       terminationGracePeriodSeconds: 5
