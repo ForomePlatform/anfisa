@@ -29,7 +29,7 @@ data:
             try_files $uri $uri/ /index.html;
       }
       location /bams {
-            root /datatest;
+          root /datatest;
           # autoindex on;
       }
     }
