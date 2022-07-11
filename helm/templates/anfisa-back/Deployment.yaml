@@ -54,7 +54,8 @@ spec:
             mountPath: /anfisa/anfisa.json
             subPath: anfisa.json
           - name: back-nginx-config
-            mountPath: /etc/nginx/conf.d/anfisa.conf
+            mountPath: /etc/nginx/sites-enabled/default
+            # mountPath: /etc/nginx/conf.d/anfisa.conf
             subPath: anfisa.conf
           - name: back-uwsgi-config
             mountPath: /anfisa/uwsgi.ini
@@ -72,13 +73,13 @@ spec:
       - name: back-anfisa-config
         configMap:
           name: back-anfisa-config
-          # defaultMode: 420
+          defaultMode: 0666
       - name: back-nginx-config
         configMap:
           name: back-nginx-config
-          # defaultMode: 420
+          defaultMode: 0666
       - name: back-uwsgi-config
         configMap:
           name: back-uwsgi-config
-          # defaultMode: 420
+          defaultMode: 0666
       terminationGracePeriodSeconds: 5

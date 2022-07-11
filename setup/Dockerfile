@@ -14,7 +14,8 @@ WORKDIR /anfisa
 #     && bash -c 'mkdir -p {anfisa/{anfisa,a-setup},/data}'
 COPY setup/anfisa.json.docker ./anfisa.json
 COPY setup/uwsgi.ini ./uwsgi.ini
-COPY setup/default.nginx /etc/nginx/conf.d/anfisa.conf
+# COPY setup/default.nginx /etc/nginx/conf.d/anfisa.conf
+COPY setup/default.nginx /etc/nginx/sites-enabled/default
 COPY setup/supervisord.conf /etc/supervisord.conf
 COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
 RUN set -eux \

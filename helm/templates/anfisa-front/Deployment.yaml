@@ -35,7 +35,9 @@ spec:
         - name: front-env-config
           configMap:
             name: front-env-config
+            defaultMode: 0666
         - name: front-nginx-config
           configMap:
             name: front-nginx-config
+            defaultMode: 0666
       restartPolicy: Always
