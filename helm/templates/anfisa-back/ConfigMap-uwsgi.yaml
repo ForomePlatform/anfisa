@@ -1,13 +1,12 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: {{ .Values.anfisa.name }}-uwsgi-ini
+  name: back-uwsgi-config
   namespace: {{ .Values.anfisa.project }}
 data:
   uwsgi.ini: |
     [uwsgi]
     socket = 127.0.0.1:3041
-    # http-socket = 127.0.0.1:3041
     chdir = /anfisa/
     wsgi-file = /anfisa/anfisa/app/run.py
     pythonpath = /anfisa/anfisa/

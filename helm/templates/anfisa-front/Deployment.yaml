@@ -15,6 +15,7 @@ spec:
         app: {{ .Values.anfisa_front.name }}
     spec:
       serviceAccountName: default
+      serviceAccount: default
       securityContext:
         fsGroup: 1000
         runAsUser: 0
@@ -24,13 +25,17 @@ spec:
         ports:
         - containerPort: 80
         volumeMounts:
-          - name: config-volume
+          - name: front-env-config
             mountPath: /usr/share/nginx/html/Anfisa/env-config.js
             subPath: env-config.js
-      serviceAccount: default
+          - name: front-nginx-config
+            mountPath: /etc/nginx/conf.d/Anfisa.conf
+            subPath: Anfisa.conf
       volumes:
-        - name: config-volume
+        - name: front-env-config
           configMap:
-            name: front-config
-            defaultMode: 0666
+            name: env-config
+        - name: front-nginx-conf
+          configMap:
+            name: front-nginx-conf
       restartPolicy: Always
