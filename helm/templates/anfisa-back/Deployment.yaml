@@ -56,6 +56,9 @@ spec:
           - name: nginx-conf
             mountPath: /etc/nginx/conf.d/anfisa.conf
             subPath: anfisa.conf
+          - name: uwsgi-ini
+            mountPath: /anfisa/uwsgi.ini
+            subPath: uwsgi.ini
       volumes:
       - name: forome-anfisa
         persistentVolumeClaim:
@@ -69,9 +72,13 @@ spec:
       - name: anfisa-json
         configMap:
           name: {{ .Values.anfisa.name }}-anfisa-json
-          defaultMode: 0644
+          defaultMode: 420
       - name: nginx-conf
         configMap:
           name: {{ .Values.anfisa.name }}-nginx-conf
-          defaultMode: 0644
+          defaultMode: 420
+      - name: uwsgi-ini
+        configMap:
+          name: {{ .Values.anfisa.name }}-uwsgi-ini
+          defaultMode: 420
       terminationGracePeriodSeconds: 5
