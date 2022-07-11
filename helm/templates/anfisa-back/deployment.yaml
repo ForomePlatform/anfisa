@@ -28,11 +28,11 @@ spec:
               protocol: TCP
           env:
             - name: ANFISA_COORD_HOST
-              value: {{ .Values.anfisa.name }}-druid-coordinator
+              value: anfisa-druid-coordinator
             - name: ANFISA_ROUTER_HOST
               value: router
             - name: ANFISA_MONGO_HOST
-              value: {{ .Values.anfisa.name }}-mongodb
+              value: anfisa-mongodb
           ports:
           image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
           terminationMessagePath: /dev/termination-log
