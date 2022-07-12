@@ -1,9 +1,0 @@
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: front-env-config
-data:
-  env-config.js: |
-    window._env_ = {
-      REACT_APP_URL_BACKEND: '{{ .Values.anfisa_front.url_backend }}'
-    }

@@ -1,6 +1,48 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
+  name: back-nginx-config
+  namespace: {{ .Values.anfisa.project }}
+data:
+  anfisa.conf: |
+    server {
+        listen 80;
+        location /app {
+            include uwsgi_params;
+            uwsgi_read_timeout 3000;
+            uwsgi_buffering off;
+            uwsgi_pass 127.0.0.1:3041;
+        }
+        location ~ /app/ui/images {
+            rewrite ^/app/ui/images/(.*)$ /$1 break;
+            root /anfisa/anfisa/int_ui/images;
+        }
+        location ~ /app/ui {
+            rewrite ^/app/ui/(.*)$ /$1 break;
+            root /anfisa/a-setup/ui;
+        }
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: back-uwsgi-config
+  namespace: {{ .Values.anfisa.project }}
+data:
+  uwsgi.ini: |
+    [uwsgi]
+    socket = 127.0.0.1:3041
+    chdir = /anfisa/
+    wsgi-file = /anfisa/anfisa/app/run.py
+    pythonpath = /anfisa/anfisa/
+    processes = 1
+    threads = 30
+    logger = file:logfile=/anfisa/a-setup/logs/uwsgi.log,maxsize=500000
+    lazy
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
   name: back-anfisa-config
   namespace: {{ .Values.anfisa.project }}
 data:
