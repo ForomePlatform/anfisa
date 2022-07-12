@@ -24,20 +24,24 @@ spec:
         image: {{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa_front.name }}:latest
         ports:
         - containerPort: 80
+        # tty: true
+        # stdin: true
+        # command: [ "/bin/bash" ]
+        # args: [ "-c", "sleep infinity" ]
         volumeMounts:
-          - name: front-env-config
-            mountPath: /usr/share/nginx/html/Anfisa/env-config.js
-            subPath: env-config.js
           - name: front-nginx-config
-            mountPath: /etc/nginx/conf.d/Anfisa.conf
-            subPath: Anfisa.conf
+            mountPath: /etc/nginx/conf.d/anfisa.conf
+            subPath: anfisa.conf
+          - name: front-env-config
+            mountPath: /usr/share/nginx/html/anfisa/env-config.js
+            subPath: env-config.js
       volumes:
-        - name: front-env-config
-          configMap:
-            name: front-env-config
-            defaultMode: 0666
         - name: front-nginx-config
           configMap:
             name: front-nginx-config
+            defaultMode: 0666
+        - name: front-env-config
+          configMap:
+            name: front-env-config
             defaultMode: 0666
       restartPolicy: Always

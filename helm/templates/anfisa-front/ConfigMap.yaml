@@ -3,12 +3,10 @@ apiVersion: v1
 metadata:
   name: front-nginx-config
 data:
-  Anfisa.conf: |
-    upstream backend {
-        server anfisa-backend;
-    }
+  anfisa.conf: |
     server {
         listen 80;
+        server_name _;
         location /app {
             include uwsgi_params;
             uwsgi_read_timeout 3000;
@@ -25,12 +23,21 @@ data:
             client_max_body_size 100M;
             proxy_buffering off;
             proxy_read_timeout 3000;
-            root /usr/share/nginx/html/Anfisa/;
+            root /usr/share/nginx/html/anfisa/;
             try_files $uri $uri/ /index.html;
       }
-      location /bams {
-          root /datatest;
-          # autoindex on;
-      }
+      # location /bams {
+      #     root /datatest;
+      #     # autoindex on;
+      # }
     }
-
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: front-env-config
+data:
+  env-config.js: |
+    window._env_ = {
+      REACT_APP_URL_BACKEND: '{{ .Values.anfisa_front.url_backend }}'
+    }
