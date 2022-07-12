@@ -22,9 +22,10 @@ RUN set -eux \
     && chmod +x /usr/bin/entrypoint.sh
 WORKDIR /anfisa/anfisa
 COPY . ./
-RUN pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools
-RUN pip3 install -r requirements.txt
-RUN pip3 install supervisor
+RUN set -eux \
+    && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools \
+    && pip3 install -r requirements.txt \
+    && pip3 install supervisor
 WORKDIR /anfisa
 EXPOSE 80
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
