@@ -10,7 +10,7 @@ echo "Cloning a Anfisa-react-client repo"
 cd $DIR
 git clone https://github.com/ForomePlatform/Anfisa-React-Client.git .
 # BRUNCH=$(git branch -r | grep "release-" | sort -r | awk '{print $1}' | head -1 | sed 's|.*/||')
-BRUNCH=helm
+BRUNCH=docker
 git checkout $BRUNCH
 result=$( sudo docker images -q anfisa-react-client)
 if [[ -n "$result" ]]; then
