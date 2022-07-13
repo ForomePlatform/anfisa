@@ -2,7 +2,7 @@
 target=$(pwd)
 read -p "Installation directory Anfisa-front: ${target}? (y/n)" response
 if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
-read -p "Type directory: " target
+  read -p "Type directory: " target
 fi
 mkdir -p ${target}/front
 DIR=${target}/front
@@ -12,10 +12,10 @@ git clone https://github.com/ForomePlatform/Anfisa-React-Client.git .
 # BRUNCH=$(git branch -r | grep "release-" | sort -r | awk '{print $1}' | head -1 | sed 's|.*/||')
 BRUNCH=docker
 git checkout $BRUNCH
-result=$( sudo docker images -q anfisa-react-client)
+result=$(sudo docker images -q anfisa-react-client)
 if [[ -n "$result" ]]; then
-echo "image exists"
-sudo docker rmi -f anfisa-react-client
+    echo "image exists"
+    sudo docker rmi -f anfisa-react-client
 fi
 echo "build the new docker image"
 cat << \EOF > default.nginx
@@ -48,13 +48,13 @@ server {
 EOF
 sudo docker build -t anfisa-react-client . >> ${DIR}/output
 echo "built docker images and proceeding to delete existing container"
-result=$( docker ps -aq -f name=anfisa-react-client)
+result=$(docker ps -aq -f name=anfisa-react-client)
 if [[ -n "$result" ]]; then
-echo "Container exists"
-sudo docker ps -aq -f name=anfisa-react-client | xargs docker rm -f
-echo "Deleted the existing docker container"
+    echo "Container exists"
+    sudo docker ps -aq -f name=anfisa-react-client | xargs docker rm -f
+    echo "Deleted the existing docker container"
 else
-echo "No such running container"
+    echo "No such running container"
 fi
 echo "Deploying the updated container"
 sudo docker run --name anfisa-react-client -d -p 3000:80 --network anfisa_default anfisa-react-client
