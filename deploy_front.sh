@@ -18,15 +18,15 @@ if [[ -n "$result" ]]; then
     sudo docker rmi -f anfisa-react-client
 fi
 echo "build the new docker image"
-cat << EOF > default.nginx
+cat << \EOF > default.nginx
 server {
     listen 80;
 
     location /app {
-         rewrite ^/(.*)$ /anfisa/$1 break;
-         proxy_pass http://172.23.0.4:80;
-         error_log /var/log/nginx/anfisa_err.log warn;
-         access_log /var/log/nginx/anfisa.log;
+        rewrite ^/(.*)$ /anfisa/$1 break;
+        proxy_pass http://172.23.0.4:80;
+        error_log /var/log/nginx/anfisa_err.log warn;
+        access_log /var/log/nginx/anfisa.log;
 
     }
 
