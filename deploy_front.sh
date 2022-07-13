@@ -4,8 +4,8 @@ read -p "Installation directory Anfisa-front: ${target}? (y/n)" response
 if [ "$response" != "y" ] && [ "$response" != "Y" ] ; then
   read -p "Type directory: " target
 fi
-mkdir -p ${target}/front
-DIR=${target}/front
+mkdir -p ${target}/anfisa-react-client
+DIR=${target}/anfisa-react-client
 echo "Cloning a Anfisa-react-client repo"
 cd $DIR
 git clone https://github.com/ForomePlatform/Anfisa-React-Client.git .
@@ -18,7 +18,7 @@ if [[ -n "$result" ]]; then
     sudo docker rmi -f anfisa-react-client
 fi
 echo "build the new docker image"
-cat << \EOF > default.nginx
+cat << EOF > default.nginx
 server {
     listen 80;
 
@@ -67,6 +67,6 @@ EOF
 echo "Copy env-config.js into running container"
 sudo docker cp ./env-config.js anfisa-react-client:/usr/share/nginx/html/anfisa/
 echo "Add header Access-Control-Allow-Origin in Back-end container"
-sudo docker exec -d anfisa7 sed -i '59 i \\t\tadd_header 'Access-Control-Allow-Origin' '*' always;' /etc/nginx/conf.d/anfisa.conf
+sudo docker exec -d anfisa7 sed -i '59 i \\t\tadd_header 'Access-Control-Allow-Origin' '*' always;' /etc/nginx/sites-enabled/default
 sudo docker restart anfisa7
 echo "Open URL http://localhost:3000"
