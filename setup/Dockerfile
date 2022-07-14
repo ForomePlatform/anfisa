@@ -15,7 +15,7 @@ ENV ANFISA_HTML_BASE=/anfisa
 ENV NGINX_VERSION   1.23.0
 ENV PKG_RELEASE     1~bullseye
 
-RUN set -eux \
+RUN set -x \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
     && \
