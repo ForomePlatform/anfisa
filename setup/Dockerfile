@@ -1,6 +1,17 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
 FROM python:3.7
 
+ENV ANFISA_HOME=/anfisa/anfisa
+ENV ANFISA_WORK=/anfisa/a-setup
+ENV ANFISA_ROOT=/anfisa
+ENV ANFISA_HTML_APP_BASE=/anfisa/app
+ENV ANFISA_HTML_BASE=/anfisa
+
+# RUN set -eux \
+#     && apt-get update \
+# 	&& apt-get install --no-install-recommends -y nginx \
+#     && rm -rf /var/lib/apt/lists/*
+
 ENV NGINX_VERSION   1.23.0
 ENV PKG_RELEASE     1~bullseye
 
@@ -68,24 +79,10 @@ RUN set -x \
     # && ln -sf /dev/stdout /var/log/nginx/access.log \
     # && ln -sf /dev/stderr /var/log/nginx/error.log
 
-ENV ANFISA_HOME=/anfisa/anfisa
-ENV ANFISA_WORK=/anfisa/a-setup
-ENV ANFISA_ROOT=/anfisa
-ENV ANFISA_HTML_APP_BASE=/anfisa/app
-ENV ANFISA_HTML_BASE=/anfisa
-# RUN set -eux \
-#     && apt-get update \
-# 	&& apt-get install --no-install-recommends -y nginx \
-#     && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /anfisa
-# RUN set -eux \
-#     && bash -c 'mkdir -p {anfisa/{anfisa,a-setup},/data}'
-COPY setup/anfisa.json.docker ./anfisa.json
+COPY setup/anfisa.json.k8s ./anfisa.json
 COPY setup/uwsgi.ini ./uwsgi.ini
 COPY setup/default.conf.template /etc/nginx/templates/
-# COPY setup/default.nginx /etc/nginx/conf.d/anfisa.conf
-# COPY setup/default.nginx /etc/nginx/sites-enabled/default
 COPY setup/supervisord.conf /etc/supervisord.conf
 COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
 
