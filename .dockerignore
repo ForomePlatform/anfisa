@@ -3,7 +3,7 @@
 .dockerignore
 .gitignore
 helm/
-setup/
-LICENSE
-deploy*
+deploy*.sh
+# setup/
+# LICENSE
 #*.md
