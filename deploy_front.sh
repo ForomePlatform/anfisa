@@ -24,7 +24,7 @@ server {
 
     location /app {
         rewrite ^/(.*)$ /anfisa/$1 break;
-        proxy_pass http://172.23.0.4:80;
+        proxy_pass http://anfisa7;
         error_log /var/log/nginx/anfisa_err.log warn;
         access_log /var/log/nginx/anfisa.log;
 
@@ -32,7 +32,7 @@ server {
 
     location /anfisa {
         rewrite ^/(.*)$ /$1/app break;
-        proxy_pass http://172.23.0.4:80;
+        proxy_pass http://anfisa7;
         error_log /var/log/nginx/anfisa_err.log warn;
         access_log /var/log/nginx/anfisa.log;
     }
