@@ -88,6 +88,7 @@ RUN set -eux \
 
 WORKDIR /anfisa
 COPY setup/anfisa.json ./anfisa.json
+COPY setup/anfisa.json ./anfisa.json1
 COPY setup/uwsgi.ini ./uwsgi.ini
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
