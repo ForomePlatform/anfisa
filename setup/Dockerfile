@@ -79,25 +79,26 @@ RUN set -x \
     # && ln -sf /dev/stdout /var/log/nginx/access.log \
     # && ln -sf /dev/stderr /var/log/nginx/error.log
 
-WORKDIR /anfisa
-COPY setup/anfisa.json.k8s ./anfisa.json
-COPY setup/uwsgi.ini ./uwsgi.ini
-COPY setup/default.conf.template /etc/nginx/templates/
-COPY setup/supervisord.conf /etc/supervisord.conf
-COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
-
-WORKDIR /entrypoint.d
-COPY setup/entrypoint.d/ ./
-RUN set -eux \
-    && chmod +x /entrypoint.d/*.sh \
-    && chmod +x /usr/bin/entrypoint.sh
-
 WORKDIR /anfisa/anfisa
 COPY . ./
 RUN set -eux \
     && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools \
     && pip3 install -r requirements.txt \
     && pip3 install supervisor
+
+WORKDIR /anfisa
+COPY setup/anfisa.json.k8s ./anfisa.json
+RUN ls -al /anfisa
+COPY setup/uwsgi.ini ./uwsgi.ini
+COPY setup/default.conf.template /etc/nginx/templates/
+COPY setup/supervisord.conf /etc/supervisord.conf
+COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
+# WORKDIR /entrypoint.d
+COPY setup/entrypoint.d/ /entrypoint.d
+RUN ls -al /entrypoint.d
+RUN set -eux \
+    && chmod +x /entrypoint.d/*.sh \
+    && chmod +x /usr/bin/entrypoint.sh
 
 WORKDIR /anfisa
 EXPOSE 80
