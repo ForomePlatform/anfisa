@@ -15,7 +15,7 @@ ENV ANFISA_HTML_BASE=/anfisa
 ENV NGINX_VERSION   1.23.0
 ENV PKG_RELEASE     1~bullseye
 
-RUN set -x \
+RUN set -eux \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
     && \
@@ -87,20 +87,16 @@ RUN set -eux \
     && pip3 install supervisor
 
 WORKDIR /anfisa
-COPY setup/anfisa.json.k8s ./anfisa.json
-RUN ls -al /anfisa
+COPY setup/anfisa.json ./anfisa.json
 COPY setup/uwsgi.ini ./uwsgi.ini
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
 COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
-# WORKDIR /entrypoint.d
 COPY setup/entrypoint.d/ /entrypoint.d
-RUN ls -al /entrypoint.d
 RUN set -eux \
     && chmod +x /entrypoint.d/*.sh \
     && chmod +x /usr/bin/entrypoint.sh
 
-WORKDIR /anfisa
 EXPOSE 80
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 CMD [ "/usr/local/bin/supervisord" ]
