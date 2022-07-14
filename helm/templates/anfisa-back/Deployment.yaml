@@ -43,7 +43,7 @@ spec:
           stdin: true
           # command: [ "/bin/bash" ]
           # args: [ "-c", "sleep infinity" ]
-          # command: [ "/usr/bin/entrypoint.sh" ]
+          # command: [ "/entrypoint.sh" ]
           # args: [ "/usr/local/bin/supervisord" ]
           volumeMounts:
           - name: forome-anfisa

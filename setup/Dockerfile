@@ -87,16 +87,16 @@ RUN set -eux \
     && pip3 install supervisor
 
 WORKDIR /anfisa
-COPY setup/anfisa.json.k8s ./anfisa.json
+COPY setup/anfisa.json ./anfisa.json
 COPY setup/uwsgi.ini ./uwsgi.ini
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
-COPY setup/entrypoint.sh /usr/bin/entrypoint.sh
+COPY setup/entrypoint.sh /entrypoint.sh
 COPY setup/entrypoint.d/ /entrypoint.d
 RUN set -eux \
-    && chmod +x /entrypoint.d/*.sh \
-    && chmod +x /usr/bin/entrypoint.sh
+    && chmod +x /entrypoint.sh \
+    && chmod +x /entrypoint.d/*.sh
 
 EXPOSE 80
-ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/usr/local/bin/supervisord" ]
