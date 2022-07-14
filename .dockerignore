@@ -1,9 +1,9 @@
 .idea/
 .git/
-.dockerignore
-.gitignore
-helm/
+#.dockerignore
+#.gitignore
+#helm/
 #setup/
-LICENSE
-deploy*
-*.md
+#LICENSE
+#deploy*
+#*.md
