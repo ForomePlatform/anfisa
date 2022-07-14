@@ -4,6 +4,3 @@
 .gitignore
 helm/
 deploy*.sh
-# setup/
-# LICENSE
-#*.md
