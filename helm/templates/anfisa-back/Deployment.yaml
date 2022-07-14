@@ -52,9 +52,9 @@ spec:
             mountPath: /anfisa/a-setup/
           - name: forome-datasets-pvc
             mountPath: /mnt/forome-datasets
-          - name: back-anfisa-config
-            mountPath: /anfisa/anfisa.json
-            subPath: anfisa.json
+          # - name: back-anfisa-config
+          #   mountPath: /anfisa/anfisa.json
+          #   subPath: anfisa.json
           # - name: back-nginx-config
           #   # mountPath: /etc/nginx/sites-enabled/default
           #   mountPath: /etc/nginx/conf.d/default.conf
@@ -72,10 +72,10 @@ spec:
       - name: forome-datasets-pvc
         persistentVolumeClaim:
           claimName: {{ .Values.anfisa.anfisa_volumes.datasets_claim_name }}
-      - name: back-anfisa-config
-        configMap:
-          name: back-anfisa-config
-          defaultMode: 0666
+      # - name: back-anfisa-config
+      #   configMap:
+      #     name: back-anfisa-config
+      #     defaultMode: 0666
       # - name: back-nginx-config
       #   configMap:
       #     name: back-nginx-config
