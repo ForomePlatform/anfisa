@@ -1,0 +1,21 @@
+server {
+    listen 80;
+    server_name _;
+
+    location /app {
+        include uwsgi_params;
+        uwsgi_read_timeout 3000;
+        uwsgi_buffering off;
+        uwsgi_pass ${BACKEND};
+    }
+
+    location ~ /app/ui/images {
+        rewrite ^/app/ui/images/(.*)$ /$1 break;
+        root /anfisa/anfisa/int_ui/images;
+    }
+
+    location ~ /app/ui {
+        rewrite ^/app/ui/(.*)$ /$1 break;
+        root /anfisa/a-setup/ui;
+    }
+}
