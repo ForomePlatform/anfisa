@@ -65,9 +65,10 @@ RUN set -x \
     && if [ -n "$tempDir" ]; then \
         apt-get purge -y --auto-remove \
         && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; \
-    fi
+    fi \
     # && ln -sf /dev/stdout /var/log/nginx/access.log \
     # && ln -sf /dev/stderr /var/log/nginx/error.log
+    && ln -sf /dev/stdout /anfisa/a-setup/logs/anfisa.log
 
 WORKDIR /anfisa/anfisa
 COPY . ./
@@ -77,7 +78,8 @@ RUN set -eux \
     && pip3 install supervisor
 
 WORKDIR /anfisa
-COPY setup/anfisa.json.template ./
+COPY setup/anfisa.json.k8s ./anfisa.json
+# COPY setup/anfisa.json.template ./
 COPY setup/uwsgi.ini ./
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
