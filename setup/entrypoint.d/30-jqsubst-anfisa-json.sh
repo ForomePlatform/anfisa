@@ -7,7 +7,7 @@ ME=$(basename $0)
 json_subst() {
   local anfisa_conf_template="${ANFISA_SRC}/anfisa.json.template"
   local anfisa_conf="${ANFISA_SRC}/anfisa.json"
-  if [ ! -f "$anfisa_conf" ]; then
+  if [ -f "$anfisa_conf" ]; then
     echo "$ME: ERROR: $anfisa_conf exists, exiting ..."
     return 0
   fi
