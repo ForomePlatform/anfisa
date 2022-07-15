@@ -5,8 +5,8 @@ set -e
 ME=$(basename $0)
 
 json_subst() {
-  local anfisa_conf_template="${ANFISA_SRC}/anfisa.json.template"
-  local anfisa_conf="${ANFISA_SRC}/anfisa.json"
+  local anfisa_conf_template="/anfisa/anfisa.json.template"
+  local anfisa_conf="/anfisa/anfisa.json"
   if [ -f "$anfisa_conf" ]; then
     echo "$ME: ERROR: $anfisa_conf exists, exiting ..."
     return 0
@@ -14,9 +14,9 @@ json_subst() {
   echo "$ME: Substitute json values ..."
     # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
     # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
+    # ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
   jq '
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
-    ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
     ."html-base" = "'"${ANFISA_HTML_APP_BASE}"'" |
     ."druid"."vault-prefix" = "'"${ANFISA_DRUIDVAULTPREFIX}"'" |

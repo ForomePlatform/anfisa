@@ -51,29 +51,29 @@ anfisa:
     #   value: /anfisa/anfisa
     - name: ANFISA_WORK
       value: /anfisa/a-setup
-    - name: ANFISA_SRC
-      value: /anfisa
+    # - name: ANFISA_SRC
+    #   value: /anfisa
     - name: ANFISA_HTML_APP_BASE
       value: /app
     - name: ANFISA_HTML_TITLE
-      value: "Anfisa v7"
-    - name: ANFISA_DRUID_VAULT_PREFIX
-      value: "anfisa_v7"
-    - name: ANFISA_DRUID_INDEX
+      value: "Anfisa"
+    - name: ANFISA_DRUIDVAULTPREFIX
+      value: "demo_v7"
+    - name: ANFISA_DRUIDINDEX
       value: "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task"
-    - name: ANFISA_DRUID_COORD
+    - name: ANFISA_DRUIDCOORD
       value: "http://anfisa-druid-coordinator:8081/druid/coordinator/v1"
-    - name: ANFISA_DRUID_SQL
+    - name: ANFISA_DRUIDSQL
       value: "http://router:80/druid/v2/sql"
-    - name: ANFISA_DRUID_QUERY
+    - name: ANFISA_DRUIDQUERY
       value: "http://router:80/druid/v2"
-    - name: ANFISA_DRUID_COPYDIR
+    - name: ANFISA_DRUIDCOPYDIR
       value: /data/anfisa
-    - name: ANFISA_MONGO_HOST
+    - name: ANFISA_MONGOHOST
       value: "anfisa-mongodb"
-    - name: ANFISA_MONGO_PORT
+    - name: ANFISA_MONGOPORT
       value: 27017
-    - name: ANFISA_MONGO_DB
+    - name: ANFISA_MONGODB
       value: Anfisa1
 
 # ------------------------------------------------------------------------------
