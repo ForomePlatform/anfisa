@@ -7,7 +7,10 @@ ME=$(basename $0)
 json_subst() {
   local anfisa_conf_template="${ANFISA_SRC}/anfisa.json.template"
   local anfisa_conf="${ANFISA_SRC}/anfisa.json"
-  [ ! -f "$anfisa_conf" ] || echo "$anfisa_conf exists, exiting ..."; return 0
+  if [ ! -f "$anfisa_conf" ]; then
+    echo "$ME: ERROR: $anfisa_conf exists, exiting ..."
+    return 0
+  fi
   echo "$ME: Substitute json values ..."
     # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
     # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
