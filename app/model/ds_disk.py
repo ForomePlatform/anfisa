@@ -140,10 +140,10 @@ class DataDiskStorageWriter:
 
     def saveRecord(self, record):
         rec_no = self.mTotal
-        flt_data = self.mFilterSet.process(rec_no, record)
+        pre_data = AnfisaConfig.getVariantSystemFields(record)
+        flt_data = self.mFilterSet.process(rec_no, record, pre_data)
         if self.mViewChecker is not None:
             self.mViewChecker.regValue(rec_no, record)
-        pre_data = AnfisaConfig.getVariantSystemFields(record)
         if self.mVDataProc is not None:
             print(json.dumps(record, ensure_ascii = False),
                 file = self.mVDataOut)

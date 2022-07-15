@@ -9,7 +9,7 @@ Format
 
 | ``{`` *dictionary*, 
 |        "**name**": entry name, *string*
-|        "**standard**": intry is standard (pre-set), *boolean*
+|        "**standard**": entry is standard (pre-set), *boolean*
 |        "**eval-status**": evaluation status of entry, 
 |                   ``"ok"`` *or* ``"runtime"`` *or* ``"error"``
 |        "**upd-time**: *optional* timestamp of last update of entry,

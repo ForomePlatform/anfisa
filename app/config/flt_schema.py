@@ -118,7 +118,7 @@ def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
         "Bad data schema: " + data_schema)
 
     filters = FilterPrepareSetH(metadata_record, anfisaVariables, ds_kind,
-        druid_adm if ds_kind != "ws" else None)
+        druid_adm = druid_adm if ds_kind != "ws" else None)
 
     cohorts = metadata_record.get("cohorts")
     with filters.viewGroup("Inheritance"):

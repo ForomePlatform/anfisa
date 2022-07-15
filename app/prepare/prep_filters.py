@@ -261,7 +261,7 @@ class FilterPrepareSetH(SolutionBroker):
             name, len(self.mUnits), self.mCurVGroup, dim_name,
             unit_base.getTranscriptName(), panel_type, view_name))
 
-    def process(self, rec_no, rec_data):
+    def process(self, rec_no, rec_data, pre_data):
         for transform_f in self.mPreTransformSeq:
             transform_f(rec_no, rec_data)
 
@@ -293,8 +293,8 @@ class FilterPrepareSetH(SolutionBroker):
 
         self.mZygosityData.process(rec_no, rec_data, result)
         if self.mDruidAdm is not None:
-            rec_data.update(self.mDruidAdm.internalFltData(
-                rec_no, rec_data))
+            result.update(self.mDruidAdm.internalFltData(
+                rec_no, pre_data))
         return result
 
     def reportProblems(self, output):

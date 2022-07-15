@@ -279,6 +279,10 @@ class VarietyPanelUnit(VarUnit):
     def getVariety(self):
         return self.mVariety
 
+    def getVariantSet(self):
+        return VariantSet([pname
+            for pname, _ in self.mVariety.iterPanels()])
+
     def mapVariants(self, variants):
         collected = set()
         for pname, names in self.mVariety.iterPanels():

@@ -140,7 +140,9 @@ class DruidAdmin(DruidAgent):
                     "inputFormat": {
                         "type": "json"}},
                 "tuningConfig": {
-                    "type": "index_parallel"}}}
+                    "type": "index_parallel",
+                    "reportParseExceptions" : True,
+                    "logParseExceptions": True}}}
 
         if report_fname is not None:
             with open(report_fname, "w", encoding="utf-8") as outp:
