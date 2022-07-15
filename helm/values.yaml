@@ -36,6 +36,47 @@ anfisa:
     workdir_volume: anfisa-workdir
     workdir_claim_name: anfisa-workdir-claim
     datasets_claim_name: forome-datasets-pvc
+  env:
+    - name: ANFISA_COORD_HOST
+      value: anfisa-druid-coordinator
+    - name: ANFISA_ROUTER_HOST
+      value: router
+    - name: ANFISA_MONGO_HOST
+      value: anfisa-mongodb
+    - name: BACKEND
+      value: 127.0.0.1:3041
+    - name: ANFISA_ROOT
+      value: /anfisa
+    - name: ANFISA_SRC
+      value: /anfisa
+    - name: ANFISA_HOME
+      value: /anfisa/anfisa
+    - name: ANFISA_WORK
+      value: /anfisa/a-setup
+    - name: ANFISA_HTML_BASE
+      value: /anfisa
+    - name: ANFISA_HTML_APP_BASE
+      value: /anfisa/app
+    - name: ANFISA_HTML_TITLE
+      value: "Anfisa v7"
+    - name: ANFISA_DRUID_VAULT_PREFIX
+      value: "demo_v7"
+    - name: ANFISA_DRUID_INDEX
+      value: "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task"
+    - name: ANFISA_DRUID_COORD
+      value: "http://anfisa-druid-coordinator:8081/druid/coordinator/v1"
+    - name: ANFISA_DRUID_SQL
+      value: "http://router:80/druid/v2/sql"
+    - name: ANFISA_DRUID_QUERY
+      value: "http://router:80/druid/v2"
+    - name: ANFISA_DRUID_COPYDIR
+      value: /data/anfisa
+    - name: ANFISA_MONGO_HOST
+      value: "anfisa-mongodb"
+    - name: ANFISA_MONGO_PORT
+      value: 27017
+    - name: ANFISA_MONGO_DB
+      value: Anfisa1
 
 # ------------------------------------------------------------------------------
 # anfisa_front:

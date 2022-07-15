@@ -26,15 +26,13 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          # {{ if .Values.anfisa.env }}
           env:
-            - name: ANFISA_COORD_HOST
-              value: anfisa-druid-coordinator
-            - name: ANFISA_ROUTER_HOST
-              value: router
-            - name: ANFISA_MONGO_HOST
-              value: anfisa-mongodb
-            - name: BACKEND
-              value: 127.0.0.1:3041
+            {{- range .Values.anfisa.env }}
+            - name: {{ .name }}
+              value: {{ .value }}
+            {{- end }}
+          # {{ end }}
           ports:
           image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
           terminationMessagePath: /dev/termination-log
