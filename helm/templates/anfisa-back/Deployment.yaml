@@ -29,8 +29,8 @@ spec:
           # {{ if .Values.anfisa.env }}
           env:
             {{- range .Values.anfisa.env }}
-            - name: {{ .name }}
-              value: {{ .value }}
+            - name: {{ .name | quote }}
+              value: {{ .value | quote }}
             {{- end }}
           # {{ end }}
           ports:
