@@ -28,6 +28,6 @@ json_subst() {
     # anfisa.json > $$.json.tmp && mv $$.json.tmp anfisa.json
 }
 
-cd /anfisa && json_subst
+#cd /anfisa && json_subst
 
 exit 0
