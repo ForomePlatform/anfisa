@@ -3,7 +3,7 @@
     "host": "0.0.0.0",
     "port": 3041,
     "html-base": "/app",
-    "html-title": "Anfisa v7 in Docker",
+    "html-title": "Anfisa",
     "data-vault": "${WORK}/vault",
     "run-options": [],
     "run-modes": [],
@@ -45,12 +45,11 @@
         ["/ui", "${WORK}/ui"],
         ["/doc/", "${WORK}/doc/"],
         ["/excel", "${WORK}/export/work"]],
-
     "mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "doc-report-css": "${HOME}/int_ui/files/report.css",
     "doc-pygments-css": "${HOME}/int_ui/files/py_pygments.css",
     "druid": {
-        "vault-prefix": "demo_v6",
+        "vault-prefix": "demo_v7",
         "index": "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task",
         "query": "http://router:80/druid/v2",
         "sql":   "http://router:80/druid/v2/sql",

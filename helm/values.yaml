@@ -45,16 +45,16 @@ anfisa:
       value: anfisa-mongodb
     - name: BACKEND
       value: 127.0.0.1:3041
-    - name: ANFISA_ROOT
-      value: /anfisa
-    - name: ANFISA_SRC
-      value: /anfisa
-    - name: ANFISA_HOME
-      value: /anfisa/anfisa
+    # - name: ANFISA_ROOT
+    #   value: /anfisa
+    # - name: ANFISA_HOME
+    #   value: /anfisa/anfisa
     - name: ANFISA_WORK
       value: /anfisa/a-setup
-    - name: ANFISA_HTML_BASE
+    - name: ANFISA_SRC
       value: /anfisa
+    # - name: ANFISA_HTML_BASE
+    #   value: /anfisa
     - name: ANFISA_HTML_APP_BASE
       value: /app
     - name: ANFISA_IGV_DIR

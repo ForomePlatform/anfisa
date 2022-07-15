@@ -44,7 +44,7 @@
     "dir-files": [
         ["/ui/images", "${HOME}/int_ui/images"],
         ["/ui", "${WORK}/ui"],
-        ["--/doc/", "${WORK}/doc/"],
+        ["/doc/", "${WORK}/doc/"],
         ["/excel", "${WORK}/export/work"]],
     "mirror-ui": ["${HOME}/int_ui/files", "${WORK}/ui"],
     "doc-report-css": "${HOME}/int_ui/files/report.css",

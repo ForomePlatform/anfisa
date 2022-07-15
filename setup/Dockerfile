@@ -78,8 +78,7 @@ RUN set -eux \
     && pip3 install supervisor
 
 WORKDIR /anfisa
-COPY setup/anfisa.json.k8s ./anfisa.json
-# COPY setup/anfisa.json.template ./
+COPY setup/anfisa.json.template ./
 COPY setup/uwsgi.ini ./
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
