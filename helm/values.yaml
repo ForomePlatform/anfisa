@@ -57,6 +57,8 @@ anfisa:
       value: /anfisa
     - name: ANFISA_HTML_APP_BASE
       value: /app
+    - name: ANFISA_IGV_DIR
+      value: /anfisa/anfisa/igv.dir
     - name: ANFISA_HTML_TITLE
       value: "Anfisa v7"
     - name: ANFISA_DRUID_VAULT_PREFIX

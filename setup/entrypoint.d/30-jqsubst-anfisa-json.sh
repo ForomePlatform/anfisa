@@ -6,6 +6,7 @@ ME=$(basename $0)
 
 json_subst() {
   echo "$ME: Substitute json values ..."
+    # ."igv-dir" = "'"${ANFISA_IGV_DIR}"'" |
   jq '
     ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
     ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
@@ -13,7 +14,6 @@ json_subst() {
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
     ."html-base" = "'"${ANFISA_HTML_APP_BASE}"'" |
-    ."igv-dir" = "'"${ANFISA_IGV_DIR}"'" |
     ."druid"."vault-prefix" = "'"${ANFISA_DRUID_VAULT_PREFIX}"'" |
     ."druid"."index" = "'"${ANFISA_DRUID_INDEX}"'" |
     ."druid"."coord" = "'"${ANFISA_DRUID_COORD}"'" |
