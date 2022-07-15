@@ -56,11 +56,11 @@ anfisa:
     - name: ANFISA_HTML_BASE
       value: /anfisa
     - name: ANFISA_HTML_APP_BASE
-      value: /anfisa/app
+      value: /app
     - name: ANFISA_HTML_TITLE
       value: "Anfisa v7"
     - name: ANFISA_DRUID_VAULT_PREFIX
-      value: "demo_v7"
+      value: "anfisa_v7"
     - name: ANFISA_DRUID_INDEX
       value: "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task"
     - name: ANFISA_DRUID_COORD
