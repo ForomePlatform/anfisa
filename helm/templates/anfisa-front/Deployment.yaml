@@ -29,8 +29,8 @@ spec:
         # command: [ "/bin/bash" ]
         # args: [ "-c", "sleep infinity" ]
         env:
-          - name: BACKEND
-            value: http://anfisa-backend:80
+        - name: BACKEND
+          value: http://anfisa-backend:80
         volumeMounts:
           # - name: front-nginx-config
           #   mountPath: /etc/nginx/conf.d/default.conf
