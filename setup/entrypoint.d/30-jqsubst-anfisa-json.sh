@@ -24,7 +24,7 @@ json_subst() {
     ."mongo-port" = "'"${ANFISA_MONGO_PORT}"'" |
     ."mongo-db" = "'"${ANFISA_MONGO_DB}"'"
     ' \
-    anfisa.json.template > anfisa.json
+    anfisa.json.template > anfisa.json || return 0
     # anfisa.json > $$.json.tmp && mv $$.json.tmp anfisa.json
 }
 
