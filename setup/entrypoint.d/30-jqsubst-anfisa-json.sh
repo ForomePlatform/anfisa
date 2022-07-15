@@ -5,16 +5,16 @@ set -e
 ME=$(basename $0)
 
 json_subst() {
-  local anfisa_conf_template="${ANFISA_ROOT}/anfisa.json.template"
-  local anfisa_conf="${ANFISA_ROOT}/anfisa.json"
+  local anfisa_conf_template="${ANFISA_SRC}/anfisa.json.template"
+  local anfisa_conf="${ANFISA_SRC}/anfisa.json"
   if [ -f "$anfisa_conf" ]; then
     echo "$ME: ERROR: $anfisa_conf exists, exiting ..."
     return 0
   fi
   echo "$ME: Substitute json values ..."
     # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
+    # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
   jq '
-    ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
     ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
