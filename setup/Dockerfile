@@ -1,17 +1,6 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
 FROM python:3.7
 
-ENV ANFISA_HOME=/anfisa/anfisa
-ENV ANFISA_WORK=/anfisa/a-setup
-ENV ANFISA_ROOT=/anfisa
-ENV ANFISA_HTML_APP_BASE=/anfisa/app
-ENV ANFISA_HTML_BASE=/anfisa
-
-# RUN set -eux \
-#     && apt-get update \
-# 	&& apt-get install --no-install-recommends -y nginx \
-#     && rm -rf /var/lib/apt/lists/*
-
 ENV NGINX_VERSION   1.23.0
 ENV PKG_RELEASE     1~bullseye
 
@@ -70,6 +59,7 @@ RUN set -x \
                         $nginxPackages \
                         gettext-base \
                         curl \
+                        jq \
     && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
     \
     && if [ -n "$tempDir" ]; then \
