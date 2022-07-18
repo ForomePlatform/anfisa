@@ -45,10 +45,6 @@ anfisa:
       value: anfisa-mongodb
     - name: BACKEND
       value: 127.0.0.1:3041
-    # - name: ANFISA_ROOT
-    #   value: "/anfisa"
-    # - name: ANFISA_HOME
-    #   value: "/anfisa/anfisa"
     - name: ANFISA_WORK
       value: "/anfisa/a-setup"
     - name: ANFISA_SRC
@@ -71,10 +67,10 @@ anfisa:
       value: "/data/anfisa"
     - name: ANFISA_MONGOHOST
       value: "anfisa-mongodb"
-    - name: ANFISA_MONGOPORT
-      value: 27017
     - name: ANFISA_MONGODB
       value: "Anfisa1"
+    - name: ANFISA_MONGOPORT
+      value: 27017
 
 # ------------------------------------------------------------------------------
 # anfisa_front:
@@ -84,3 +80,6 @@ anfisa_front:
   git_uri: https://github.com/ForomePlatform/Anfisa-React-Client.git
   git_branch: release-v.0.7.0
   url_backend: https://anfisa-test.asset-forome-0b8a4e8de101bcbaf4eafc441eda83b3-0000.us-south.containers.appdomain.cloud/app
+  env:
+  - name: BACKEND
+    value: http://anfisa-backend:80
