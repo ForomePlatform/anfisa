@@ -14,9 +14,9 @@ json_subst() {
   echo "$ME: Substitute json values ..."
     # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
     # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
-    # ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
   jq '
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
+    ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
     ."html-base" = "'"${ANFISA_HTML_APP_BASE}"'" |
     ."druid"."vault-prefix" = "'"${ANFISA_DRUIDVAULTPREFIX}"'" |

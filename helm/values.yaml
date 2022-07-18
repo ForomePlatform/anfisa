@@ -51,8 +51,8 @@ anfisa:
     #   value: /anfisa/anfisa
     - name: ANFISA_WORK
       value: /anfisa/a-setup
-    # - name: ANFISA_SRC
-    #   value: /anfisa
+    - name: ANFISA_SRC
+      value: /anfisa
     - name: ANFISA_HTML_APP_BASE
       value: /app
     - name: ANFISA_HTML_TITLE
