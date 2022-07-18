@@ -45,7 +45,7 @@ echo "build the new docker image"
 #    }
 # }
 # EOF
-sudo docker build -t anfisa-react-client . >> ${DIR}/output
+sudo docker build -t anfisa-react-client . | tee ${DIR}/output
 echo "built docker images and proceeding to delete existing container"
 result=$(docker ps -aq -f name=anfisa-react-client)
 if [[ -n "$result" ]]; then
