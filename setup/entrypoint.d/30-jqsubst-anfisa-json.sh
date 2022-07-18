@@ -7,7 +7,7 @@ ME=$(basename $0)
 json_subst() {
   local anfisa_conf_template="/anfisa/anfisa.json.template"
   local anfisa_conf="/anfisa/anfisa.json"
-  if [ -f "$anfisa_conf" ]; then
+  if [[ -f "$anfisa_conf" ]]; then
     echo "$ME: ERROR: $anfisa_conf exists, exiting ..."
     return 0
   fi
@@ -22,13 +22,14 @@ json_subst() {
     ."druid"."coord" = "'"${ANFISA_DRUIDCOORD}"'" |
     ."druid"."sql" = "'"${ANFISA_DRUIDSQL}"'" |
     ."druid"."query" = "'"${ANFISA_DRUIDQUERY}"'" |
-    ."druid"."copydir" = "'"${ANFISA_DRUIDCOPYDIR}"'" |
     ."mongo-host" = "'"${ANFISA_MONGOHOST}"'" |
     ."mongo-db" = "'"${ANFISA_MONGODB}"'" |
     ."mongo-port" = '"${ANFISA_MONGOPORT}"'
     ' \
     "$anfisa_conf_template" > "$anfisa_conf"
-    # anfisa.json > $$.json.tmp && mv $$.json.tmp anfisa.json
+  if [[ ! -z "${ANFISA_DRUIDCOPYDIR}" ]]; then
+    jq '."druid"."copydir" = "'"${ANFISA_DRUIDCOPYDIR}"'"' anfisa.json > $$.json.tmp && mv $$.json.tmp anfisa.json
+  fi
 }
 
 json_subst
