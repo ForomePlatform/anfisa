@@ -85,7 +85,7 @@ class Workspace(DataSet):
                 if (not unit_h):
                     continue
                 if (unit_h.getMean() == "panel"
-                        and "panel-name" in unit_h.getDescr()):
+                        and "dim-name" in unit_h.getDescr()):
                     zone_h = PanelZoneH(self, zone_it.getName(), unit_h)
                 else:
                     zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
