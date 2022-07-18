@@ -12,9 +12,9 @@ json_subst() {
     return 0
   fi
   echo "$ME: Substitute json values ..."
-    # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
-    # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
   jq '
+    ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
+    ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
     ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
@@ -26,8 +26,8 @@ json_subst() {
     ."druid"."query" = "'"${ANFISA_DRUIDQUERY}"'" |
     ."druid"."copydir" = "'"${ANFISA_DRUIDCOPYDIR}"'" |
     ."mongo-host" = "'"${ANFISA_MONGOHOST}"'" |
-    ."mongo-port" = '"${ANFISA_MONGOPORT}"' |
-    ."mongo-db" = "'"${ANFISA_MONGODB}"'"
+    ."mongo-db" = "'"${ANFISA_MONGODB}"'" |
+    ."mongo-port" = '"${ANFISA_MONGOPORT}"'
     ' \
     "$anfisa_conf_template" > "$anfisa_conf"
     # anfisa.json > $$.json.tmp && mv $$.json.tmp anfisa.json
