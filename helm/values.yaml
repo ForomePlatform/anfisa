@@ -50,11 +50,11 @@ anfisa:
     # - name: ANFISA_HOME
     #   value: /anfisa/anfisa
     - name: ANFISA_WORK
-      value: /anfisa/a-setup
+      value: "/anfisa/a-setup"
     - name: ANFISA_SRC
-      value: /anfisa
+      value: "/anfisa"
     - name: ANFISA_HTML_APP_BASE
-      value: /app
+      value: "/app"
     - name: ANFISA_HTML_TITLE
       value: "Anfisa"
     - name: ANFISA_DRUIDVAULTPREFIX
@@ -68,13 +68,13 @@ anfisa:
     - name: ANFISA_DRUIDQUERY
       value: "http://router:80/druid/v2"
     - name: ANFISA_DRUIDCOPYDIR
-      value: /data/anfisa
+      value: "/data/anfisa"
     - name: ANFISA_MONGOHOST
       value: "anfisa-mongodb"
     - name: ANFISA_MONGOPORT
       value: 27017
     - name: ANFISA_MONGODB
-      value: Anfisa1
+      value: "Anfisa1"
 
 # ------------------------------------------------------------------------------
 # anfisa_front:
