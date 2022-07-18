@@ -12,9 +12,9 @@ json_subst() {
     return 0
   fi
   echo "$ME: Substitute json values ..."
+    # ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
+    # ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
   jq '
-    ."file-path-def"."ROOT" = "'"${ANFISA_ROOT}"'" |
-    ."file-path-def"."HOME" = "'"${ANFISA_HOME}"'" |
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |
     ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
