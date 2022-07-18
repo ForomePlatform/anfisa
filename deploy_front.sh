@@ -10,7 +10,6 @@ echo "Cloning a Anfisa-react-client repo"
 cd $DIR
 git clone https://github.com/ForomePlatform/Anfisa-React-Client.git .
 BRUNCH=$(git branch -r | grep "release-" | sort -r | awk '{print $1}' | head -1 | sed 's|.*/||')
-# BRUNCH=docker
 git checkout $BRUNCH
 result=$(sudo docker images -q anfisa-react-client)
 if [[ -n "$result" ]]; then
@@ -61,7 +60,7 @@ sudo docker run --name anfisa-react-client -d -p 3000:80 -e "BACKEND=http://anfi
 touch env-config.js
 cat << EOF > ./env-config.js
 window._env_ = {
-  REACT_APP_URL_BACKEND: 'http://localhost:9010/anfisa/app'
+  REACT_APP_URL_BACKEND: 'http://localhost:3000/app'
 }
 EOF
 echo "Copy env-config.js into running container"
