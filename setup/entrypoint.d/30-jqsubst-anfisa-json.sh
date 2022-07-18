@@ -26,7 +26,7 @@ json_subst() {
     ."druid"."query" = "'"${ANFISA_DRUIDQUERY}"'" |
     ."druid"."copydir" = "'"${ANFISA_DRUIDCOPYDIR}"'" |
     ."mongo-host" = "'"${ANFISA_MONGOHOST}"'" |
-    ."mongo-port" = "'"${ANFISA_MONGOPORT}"'" |
+    ."mongo-port" = '"${ANFISA_MONGOPORT}"' |
     ."mongo-db" = "'"${ANFISA_MONGODB}"'"
     ' \
     "$anfisa_conf_template" > "$anfisa_conf"
