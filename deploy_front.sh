@@ -40,7 +40,7 @@ server {
         client_max_body_size 100M;
         proxy_buffering off;
         proxy_read_timeout 3000;
-        root /usr/share/nginx/html/Anfisa/;
+        root /usr/share/nginx/html/anfisa/;
         try_files $uri $uri/ /index.html;
    }
 }
@@ -64,7 +64,7 @@ window._env_ = {
 }
 EOF
 echo "Copy env-config.js into running container"
-sudo docker cp ./env-config.js anfisa-react-client:/usr/share/nginx/html/Anfisa/
+sudo docker cp ./env-config.js anfisa-react-client:/usr/share/nginx/html/anfisa/
 echo "Add header Access-Control-Allow-Origin in Back-end container"
 sudo docker exec -d anfisa7 sed -i '59 i \\t\tadd_header 'Access-Control-Allow-Origin' '*' always;' /etc/nginx/conf.d/anfisa.conf
 sudo docker restart anfisa7
