@@ -42,18 +42,3 @@ druid_processing_tmpDir=/opt/druid/var/tmp
 druid_server_http_defaultQueryTimeout=1500000
 
 DRUID_LOG4J=<?xml version="1.0" encoding="UTF-8" ?><Configuration status="WARN"><Appenders><Console name="Console" target="SYSTEM_OUT"><PatternLayout pattern="%d{ISO8601} %p [%t] %c - %m%n"/></Console></Appenders><Loggers><Root level="info"><AppenderRef ref="Console"/></Root><Logger name="org.apache.druid.jetty.RequestLog" additivity="false" level="DEBUG"><AppenderRef ref="Console"/></Logger></Loggers></Configuration>
-
-# json config substitution
-ANFISA_WORK="/anfisa/a-setup"
-ANFISA_SRC="/anfisa"
-ANFISA_HTML_APP_BASE="/app"
-ANFISA_HTML_TITLE="Anfisa"
-ANFISA_DRUIDVAULTPREFIX="demo_v7"
-ANFISA_DRUIDINDEX="http://anfisa7-coordinator:8081/druid/indexer/v1/task"
-ANFISA_DRUIDCOORD="http://anfisa7-coordinator:8081/druid/coordinator/v1"
-ANFISA_DRUIDSQL="http://anfisa7-router:80/druid/v2/sql"
-ANFISA_DRUIDQUERY="http://anfisa7-router:80/druid/v2"
-ANFISA_DRUIDCOPYDIR="/data/anfisa"
-ANFISA_MONGOHOST="anfisa7-mongo"
-ANFISA_MONGODB="Anfisa1"
-ANFISA_MONGOPORT=27017
