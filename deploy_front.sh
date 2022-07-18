@@ -45,7 +45,7 @@ echo "build the new docker image"
 #         try_files $uri $uri/ /index.html;
 #    }
 # }
-EOF
+# EOF
 sudo docker build -t anfisa-react-client . >> ${DIR}/output
 echo "built docker images and proceeding to delete existing container"
 result=$(docker ps -aq -f name=anfisa-react-client)
