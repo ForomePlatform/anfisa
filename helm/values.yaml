@@ -82,5 +82,5 @@ anfisa:
 anfisa_front:
   name: anfisa-front
   git_uri: https://github.com/ForomePlatform/Anfisa-React-Client.git
-  git_branch: docker
+  git_branch: release-v.0.7.0
   url_backend: https://anfisa-test.asset-forome-0b8a4e8de101bcbaf4eafc441eda83b3-0000.us-south.containers.appdomain.cloud/app
