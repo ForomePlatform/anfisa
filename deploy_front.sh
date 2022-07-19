@@ -56,7 +56,7 @@ else
     echo "No such running container"
 fi
 echo "Deploying the updated container"
-sudo docker run --name anfisa-react-client -d -p 3000:80 -e "BACKEND=http://anfisa7" --network anfisa_default anfisa-react-client
+sudo docker run --name anfisa-react-client -d -p 3000:80 -e "BACKEND=http://anfisa7" --network anfisa_default --restart=always anfisa-react-client
 touch env-config.js
 cat << EOF > ./env-config.js
 window._env_ = {
