@@ -55,8 +55,8 @@
         "query": "http://HOST_IP:8888/druid/v2",
         "sql":   "http://HOST_IP:8888/druid/v2/sql",
         "coord": "http://HOST_IP:8081/druid/coordinator/v1",
-        "-copydir": "/data/anfisa",
-        "-scp": {
+        "--copydir": "/data/anfisa",
+        "--scp": {
             "dir": "/data/upload/",
             "key": "---",
             "host": "---",
