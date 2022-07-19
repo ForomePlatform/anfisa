@@ -157,7 +157,7 @@ Ensure that Docker version is 19.03.0 or higher and Docker Compose version is 2.
 
 3. Point your browser to http://localhost:3000
 
-4. [Optionally] The internal UI is available at: http://localhost:9010/anfisa/app/dir
+4. [Optionally] The internal UI is available at: http://localhost:9010/app/dir
 
 5. [Optionally] Adjust setting for your webserver to serve Anfisa. 
 For nginx add the following location block:
