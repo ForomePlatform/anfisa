@@ -161,3 +161,13 @@ services:
     env_file:
       - setup/environment
     restart: always
+
+  anfisa-react-client:
+    container_name: anfisa-react-client
+    user: root
+    build:
+      context: .
+      dockerfile: setup/Dockerfile_front
+    restart: always
+    ports:
+      - "3000:80"

@@ -85,9 +85,11 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
 
   popd || exit
 
-  echo "Open URL http://localhost:9010/anfisa/app/dir"
+  echo "Open URL http://localhost:9010/anfisa/app/dir - The internal UI"
+  echo "Open URL http://localhost:3000 - Anfisa's graphical interface"
 else
   echo ERROR! All parameters are required!
   usage
 fi
-
+sudo docker exec -d anfisa7 sed -i '59 i \\t\tadd_header 'Access-Control-Allow-Origin' '*' always;' /etc/nginx/conf.d/anfisa.conf
+sudo docker exec -d anfisa7 nginx -s reload

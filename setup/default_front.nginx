@@ -1,0 +1,26 @@
+server {
+    listen 80;
+
+    location /app {
+         rewrite ^/(.*)$ /anfisa/$1 break;
+         proxy_pass http://172.23.0.4:80;
+         error_log /var/log/nginx/anfisa_err.log warn;
+         access_log /var/log/nginx/anfisa.log;
+
+    }
+
+    location /anfisa {
+        rewrite ^/(.*)$ /$1/app break;
+        proxy_pass http://172.23.0.4:80;
+        error_log /var/log/nginx/anfisa_err.log warn;
+        access_log /var/log/nginx/anfisa.log;
+    }
+
+    location / {
+        client_max_body_size 100M;
+        proxy_buffering off;
+        proxy_read_timeout 3000;
+        root /usr/share/nginx/html/Anfisa/;
+        try_files $uri $uri/ /index.html;
+   }
+}
