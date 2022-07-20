@@ -6,7 +6,7 @@
 
 2. #### Go to your project
 
-`oc project PROJECT_NAME`
+`oc project <namespace>`
 
 3. #### Clone repository
 
@@ -14,7 +14,7 @@
 
 4. `cd anfisa-openshift/anfisa-chart`
 
-5. Edit values.yml
+5. Edit `values.yml`
 
 6. #### Assign the anyuid security context constraint to the project
 `oc adm policy add-scc-to-user anyuid system:serviceaccount:<project name>:default`
@@ -44,9 +44,20 @@
 `oc get storageclass | grep 'ibmc-s3fs`
 
 16. #### Install anfisa via Helm
-`helm upgrade --install anfisa -n PROJECT_NAME --debug .`
+`helm upgrade --install anfisa -n <namespace> --debug .`
 
 17. #### In openshift console start all builds
 `click BUILD -> buildconfigs -> start build`
 or
 `oc start-build <build-name> --follow`
+
+#### Uninstall
+
+Uninstall chart:
+`helm uninstall anfisa`
+
+and clear pvc:
+`kubectl get pvc -n <namespace> --no-headers | awk '{print $1}' | xargs -I{} kubectl -n <namespace> delete pvc {}`
+
+if pv haven't delete after pvc deletion:
+`kubectl get pv --no-headers | grep <namespace> | awk '{print $1}' | xargs -I{} kubectl delete pv {}`
