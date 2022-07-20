@@ -151,6 +151,9 @@ Ensure that Docker version is 19.03.0 or higher and Docker Compose version is 2.
 
 `./deploy.sh --workdir=<Absolute path to the chosen working directory>`
 
+Example:
+`./deploy.sh --workdir=$(src)/anfisa`
+
 2. For better data visualization, deploy Anfisa's graphical interface:
 
 `./deploy_front.sh`
