@@ -1,13 +1,7 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: {{ .Values.anfisa.anfisa_volumes.workdir_claim_name }}
-  namespace: {{ .Values.anfisa.project }}
-  labels:
-    app.kubernetes.io/component: {{ .Values.anfisa.name }}
-    app.kubernetes.io/instance: {{ .Values.anfisa.name }}
-    app.kubernetes.io/name: {{ .Values.anfisa.name }}
-    app: {{ .Values.anfisa.name }}
+  name: anfisa-workdir-claim
 spec:
   accessModes:
     - ReadWriteOnce
@@ -41,8 +35,8 @@ metadata:
   annotations:
     ibm.io/auto-create-bucket: "true"
     ibm.io/auto-delete-bucket: "false"
-    ibm.io/bucket: "{{ .Values.volumeclaim.bucket }}"
-    ibm.io/secret-name: "{{ .Values.volumeclaim.secret }}"
+    ibm.io/bucket: forome-anfisa
+    ibm.io/secret-name: cos-write-access
 spec:
   storageClassName: ibmc-s3fs-standard-regional
   accessModes:
