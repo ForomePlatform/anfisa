@@ -2,7 +2,7 @@
 # apiVersion: v1
 # metadata:
 #   name: back-nginx-config
-#   namespace: {{ .Values.anfisa.project }}
+#   namespace: {{ .Release.Namespace }}
 # data:
 #   anfisa.conf: |
 #     server {
@@ -27,7 +27,7 @@
 # apiVersion: v1
 # metadata:
 #   name: back-uwsgi-config
-#   namespace: {{ .Values.anfisa.project }}
+#   namespace: {{ .Release.Namespace }}
 # data:
 #   uwsgi.ini: |
 #     [uwsgi]
@@ -44,7 +44,7 @@
 # apiVersion: v1
 # metadata:
 #   name: back-anfisa-config
-#   namespace: {{ .Values.anfisa.project }}
+#   namespace: {{ .Release.Namespace }}
 # data:
 #   anfisa.json: |
 #     {

@@ -1,85 +1,62 @@
-# Default values
+name: anfisa-back
+# git_uri: https://github.com/ForomePlatform/anfisa.git
+# git_branch: helm
+# output_registry: image-registry.openshift-image-registry.svc:5000
 
-# ------------------------------------------------------------------------------
-# S3PVC-CLAIM:
-#persistenceVolumeClaim for anfisa and druid-components
-# ------------------------------------------------------------------------------
-
-volumeclaim :
-  bucket: forome-anfisa
-  secret: cos-write-access
-  # claim: s3pvc ----> #hardcode in PVC
-  # access_mode: ReadWriteOnce ----> #hardcode in PVC
-  # size: "1000Gi" #hardcode
-  # storageclass: ibmc-s3fs-standard-regional ----> #hardcode in PVC
-
-# ------------------------------------------------------------------------------
-# Anfisa-ingress:
-# ------------------------------------------------------------------------------
 ingress:
   name: anfisa-ingress
-  host: anfisa-test.asset-forome-0b8a4e8de101bcbaf4eafc441eda83b3-0000.us-south.containers.appdomain.cloud
-  certificate: asset-forome-0b8a4e8de101bcbaf4eafc441eda83b3-0000
-  #oc get secrets -n openshift-ingress - view secrets with TLC-certificates
+  host: __ingress_hostname__
+  certificate: __ingress_tlsSecretName__
 
-# ------------------------------------------------------------------------------
-# Anfisa-back:
-# ------------------------------------------------------------------------------
+image:
+  repository: forome.azurecr.io/anfisa
+  pullPolicy: IfNotPresent
+  tag: "0.7.5.helm"
 
-anfisa:
-  project: anfisa-test
-  name: anfisa-back
-  git_uri: https://github.com/ForomePlatform/anfisa.git
-  git_branch: helm
-  output_registry: image-registry.openshift-image-registry.svc:5000
-  anfisa_volumes:
-    workdir_volume: anfisa-workdir
-    workdir_claim_name: anfisa-workdir-claim
-    datasets_claim_name: forome-datasets-pvc
-  env:
-    - name: ANFISA_COORD_HOST
-      value: anfisa-druid-coordinator
-    - name: ANFISA_ROUTER_HOST
-      value: router
-    - name: ANFISA_MONGO_HOST
-      value: anfisa-mongodb
-    - name: BACKEND
-      value: 127.0.0.1:3041
-    - name: ANFISA_WORK
-      value: "/anfisa/a-setup"
-    - name: ANFISA_SRC
-      value: "/anfisa"
-    - name: ANFISA_HTML_APP_BASE
-      value: "/app"
-    - name: ANFISA_HTML_TITLE
-      value: "Anfisa"
-    - name: ANFISA_DRUIDVAULTPREFIX
-      value: "demo_v7"
-    - name: ANFISA_DRUIDINDEX
-      value: "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task"
-    - name: ANFISA_DRUIDCOORD
-      value: "http://anfisa-druid-coordinator:8081/druid/coordinator/v1"
-    - name: ANFISA_DRUIDSQL
-      value: "http://router:80/druid/v2/sql"
-    - name: ANFISA_DRUIDQUERY
-      value: "http://router:80/druid/v2"
-    - name: ANFISA_DRUIDCOPYDIR
-      value: "/data/anfisa"
-    - name: ANFISA_MONGOHOST
-      value: "anfisa-mongodb"
-    - name: ANFISA_MONGODB
-      value: "Anfisa1"
-    - name: ANFISA_MONGOPORT
-      value: 27017
+imagePullSecrets:
+  - name: anfisa-registry
 
-# ------------------------------------------------------------------------------
-# anfisa_front:
-# 
-anfisa_front:
-  name: anfisa-front
-  git_uri: https://github.com/ForomePlatform/Anfisa-React-Client.git
-  git_branch: release-v.0.7.0
-  url_backend: https://anfisa-test.asset-forome-0b8a4e8de101bcbaf4eafc441eda83b3-0000.us-south.containers.appdomain.cloud/app
-  env:
+imageCredentials:
+  registry: forome.azurecr.io
+  username: __imageCredentials_username__
+  password: __imageCredentials_password__
+
+bucketCredentials:
+  accessKey: __bucketCredentials_accessKey__
+  secretKey: __bucketCredentials_secretKey__
+
+env:
+  - name: ANFISA_COORD_HOST
+    value: anfisa-druid-coordinator
+  - name: ANFISA_ROUTER_HOST
+    value: router
+  - name: ANFISA_MONGO_HOST
+    value: anfisa-mongodb
   - name: BACKEND
-    value: http://anfisa-backend:80
+    value: 127.0.0.1:3041
+  - name: ANFISA_WORK
+    value: "/anfisa/a-setup"
+  - name: ANFISA_SRC
+    value: "/anfisa"
+  - name: ANFISA_HTML_APP_BASE
+    value: "/app"
+  - name: ANFISA_HTML_TITLE
+    value: "Anfisa"
+  - name: ANFISA_DRUIDVAULTPREFIX
+    value: "demo_v7"
+  - name: ANFISA_DRUIDINDEX
+    value: "http://anfisa-druid-coordinator:8081/druid/indexer/v1/task"
+  - name: ANFISA_DRUIDCOORD
+    value: "http://anfisa-druid-coordinator:8081/druid/coordinator/v1"
+  - name: ANFISA_DRUIDSQL
+    value: "http://router:80/druid/v2/sql"
+  - name: ANFISA_DRUIDQUERY
+    value: "http://router:80/druid/v2"
+  - name: ANFISA_DRUIDCOPYDIR
+    value: "/data/anfisa"
+  - name: ANFISA_MONGOHOST
+    value: "anfisa-mongodb"
+  - name: ANFISA_MONGODB
+    value: "Anfisa1"
+  - name: ANFISA_MONGOPORT
+    value: 27017

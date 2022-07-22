@@ -1,40 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.anfisa.name }}
+  name: {{ .Values.name }}
   labels:
-    app: {{ .Values.anfisa.name }}
+    app: {{ .Values.name }}
     chart: anfisa
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.anfisa.name }}
+      app: {{ .Values.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.anfisa.name }}
+        app: {{ .Values.name }}
     spec:
       serviceAccountName: default
       securityContext:
         fsGroup: 0
         runAsUser: 0
         runAsGroup: 0
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers: 
-        - name: {{ .Values.anfisa.name }}
+        - name: {{ .Values.name }}
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
-          # {{ if .Values.anfisa.env }}
+          {{- if .Values.env }}
           env:
-            {{- range .Values.anfisa.env }}
+            {{- range .Values.env }}
             - name: {{ .name | quote }}
               value: {{ .value | quote }}
             {{- end }}
-          # {{ end }}
+          {{- end }}
           ports:
-          image: "{{ .Values.anfisa.output_registry }}/{{ .Values.anfisa.project }}/{{ .Values.anfisa.name }}"
+          # image: "{{ .Values.output_registry }}/{{ .Release.Namespace }}/{{ .Values.name }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           tty: true
@@ -46,7 +52,7 @@ spec:
           volumeMounts:
           - name: forome-anfisa
             mountPath: /data/anfisa/
-          - name: {{ .Values.anfisa.anfisa_volumes.workdir_volume }}
+          - name: anfisa-workdir
             mountPath: /anfisa/a-setup/
           - name: forome-datasets-pvc
             mountPath: /mnt/forome-datasets
@@ -64,12 +70,12 @@ spec:
       - name: forome-anfisa
         persistentVolumeClaim:
           claimName: forome-anfisa-s3-pvc
-      - name: {{ .Values.anfisa.anfisa_volumes.workdir_volume }}
+      - name: anfisa-workdir
         persistentVolumeClaim:
-          claimName: {{ .Values.anfisa.anfisa_volumes.workdir_claim_name }}
+          claimName: anfisa-workdir-claim
       - name: forome-datasets-pvc
         persistentVolumeClaim:
-          claimName: {{ .Values.anfisa.anfisa_volumes.datasets_claim_name }}
+          claimName: forome-datasets-pvc
       # - name: back-anfisa-config
       #   configMap:
       #     name: back-anfisa-config

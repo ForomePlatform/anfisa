@@ -3,17 +3,16 @@ kind: Route
 metadata:
   name: anfisa-backend
   labels:
-    app: {{ .Values.anfisa.name }}
+    app: {{ .Values.name }}
 spec:
-  host: >-
-    {{ .Values.ingress.host }}
+  host: {{ .Values.ingress.host }}
   path: /app
   to:
     kind: Service
     name: anfisa-backend
     weight: 100
   port:
-    targetPort: anfisa-backend
+    targetPort: 80
   tls:
     insecureEdgeTerminationPolicy: Allow
     termination: edge
