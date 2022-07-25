@@ -5,8 +5,8 @@ name: anfisa-back
 
 ingress:
   name: anfisa-ingress
-  host: __ingress_hostname__
-  certificate: __ingress_tlsSecretName__
+  host: __ingressHost__
+  certificate: __ingressCert__
 
 image:
   repository: forome.azurecr.io/anfisa
@@ -18,12 +18,12 @@ imagePullSecrets:
 
 imageCredentials:
   registry: forome.azurecr.io
-  username: __imageCredentials_username__
-  password: __imageCredentials_password__
+  username: __imageUsername__
+  password: __imagePassword__
 
 bucketCredentials:
-  accessKey: __bucketCredentials_accessKey__
-  secretKey: __bucketCredentials_secretKey__
+  accessKey: __bucketAccessKey__
+  secretKey: __bucketSecretKey__
 
 env:
   - name: ANFISA_COORD_HOST
