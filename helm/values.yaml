@@ -10,8 +10,8 @@ ingress:
 
 image:
   repository: forome.azurecr.io/anfisa
+  tag: __appVersion__
   pullPolicy: IfNotPresent
-  tag: "0.7.5.helm"
 
 imagePullSecrets:
   - name: anfisa-registry
