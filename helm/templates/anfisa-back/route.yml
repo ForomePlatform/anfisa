@@ -9,10 +9,10 @@ spec:
   path: /app
   to:
     kind: Service
-    name: http
+    name: anfisa-backend
     weight: 100
   port:
-    targetPort: http
+    targetPort: 80
   tls:
     insecureEdgeTerminationPolicy: Allow
     termination: edge
