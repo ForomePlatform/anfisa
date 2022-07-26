@@ -503,43 +503,87 @@ var sOpCondH = {
 /*************************************/
 var sFiltersH = {
     mTimeH: null,
-    mCurOp: null,
-    mSelName: null,
+    mInpName: null,
+    mListName: null,
     mComboName: null,
     mCurFilterName: null,
     mCurFilterInfo: null,
+    mInpRubric: null,
+    mListRubric: null,
+    mDivRubric: null,
+    mCheckEval: null,
     mBtnOp: null,
     
-    mAllList: [],
-    mOpList: [],
+    mAllNames: [],
+    mOpNames: [],
+    mEvalProblemNames: [],
+    mRubricDict: [],
+    mAllRubrics: [],
+    mEvalProblemRubrics: [],
     mFltTimeDict: null,
 
     init: function() {
         this.mInpName   = document.getElementById("filter-name-input");
-        this.mSelName   = document.getElementById("filter-name-combo-list");
+        this.mListName   = document.getElementById("filter-name-combo-list");
         this.mComboName = document.getElementById("filter-name-combo");
         this.mBtnOp     = document.getElementById("filter-act-op");
+        // No view support for rubrics in UI, logic is hidden now
+        this.mListRubric = document.getElementById("filter-rubric-combo-list");
+        this.mInpRubric  = document.getElementById("filter-rubric-input");
+        this.mCheckEval  = document.getElementById("filter-eval-check");
+        this.mDivRubric = document.getElementById("filter-rubric-div");
+        this.mDivRubric.style.display = "none"; 
     },
 
     setup: function(filter_name, filter_list) {
+        // Here we collect all information for rubric support
+        // But currently this support is hidden in this UI
         this.mCurFilterName = filter_name;
         this.mCurFilterInfo = null;
-        var prev_all_list = JSON.stringify(this.mAllList);
-        this.mOpList = [];
-        this.mAllList = [];
+        var prev_all_list = JSON.stringify(this.mAllNames);
+        this.mOpNames = [];
+        this.mAllNames = [];
+        this.mEvalProblemNames = [];
+        this.mRubricDict = [];
+        this.mAllRubrics = [];
         this.mFltTimeDict = {};
         for (idx = 0; idx < filter_list.length; idx++) {
             flt_info = filter_list[idx];
             if (flt_info["name"] == this.mCurFilterName)
                 this.mCurFilterInfo = flt_info;
-            this.mAllList.push(flt_info["name"]);
+            this.mAllNames.push(flt_info["name"]);
             if (!flt_info["standard"])
-                this.mOpList.push(flt_info["name"]);
+                this.mOpNames.push(flt_info["name"]);
+            if (flt_info["eval-status"] != "ok")
+                this.mEvalProblemNames.push(flt_info["name"]);
+            if (flt_info["rubric"]) {
+                if (this.mAllRubrics.indexOf(flt_info["rubric"]) >= 0)
+                    this.mRubricDict[flt_info["rubric"]].push(flt_info["name"])
+                else {
+                    this.mAllRubrics.push(flt_info["rubric"]);
+                    this.mRubricDict[flt_info["rubric"]] = [flt_info["name"]];
+                }
+            }
             this.mFltTimeDict[flt_info["name"]] = filter_list["upd-time"];
         }
-        if (prev_all_list != JSON.stringify(this.mAllList))
+        this.mEvalProblemRubrics = [];
+        if (this.mEvalProblemNames.length > 0) {
+            for (idx = 0; idx < this.mAllRubrics.length; idx++) {
+                var is_ok = false;
+                var rnames = this.mRubricDict[this.mAllRubrics[idx]];
+                for (j = 0; j < rnames.length; j++) {
+                    if(this.mEvalProblemNames.indexOf(rnames[j]) < 0) {
+                        is_ok = true;
+                        break;
+                    }
+                }
+                if (!is_ok)
+                    this.mEvalProblemRubrics.push(this.mAllRubrics[idx]);
+            }
+        }
+        if (prev_all_list != JSON.stringify(this.mAllNames))
             onFilterListChange();
-        return this.mAllList;
+        return this.mAllNames;
     },
     
     update: function() {
@@ -549,19 +593,41 @@ var sFiltersH = {
             this.mTimeH = null;
         }
         
+        var cur_rubric = null;
         if (!this.mCurFilterName) {
             this.mComboName.style.display = "none";
             this.mInpName.value = "";
         } else {
             this.mInpName.value = this.mCurFilterName;
             this.mInpName.disabled = true;
-            this.mSelName.disabled = true;
+            this.mListName.disabled = true;
             this.mComboName.style.display = "block";
+            for (j=0; j < this.mAllRubrics.length; j++) {
+                rname = this.mAllRubrics[j];
+                if (this.mRubricDict[rname].indexOf(this.mCurFilterName) > 0) {
+                    cur_rubric = rname;
+                    break;
+                }
+            }
         }
+
+        /* 
+        if (cur_rubric === null) {
+            this.mDivRubric.style.display = "none";
+        } else {
+            this.mInpRubric.value = cur_rubric;
+            this.mInpRubric.disabled = true;
+            resetSelectInput(this.mListRubric, [cur_rubric], false, cur_rubric);            
+            this.mListRubric.disabled = true;
+            this.mDivRubric.style.display = "flex";            
+            this.mCheckEval.style.display = "none";
+        }
+        */
+        
         this.mInpName.style.visibility = "visible";
         no_cond = sConditionsH.isEmpty();
         has_name = !!this.mCurFilterName;
-        no_op_names = (this.mOpList.length == 0);
+        no_op_names = (this.mOpNames.length == 0);
         
         document.getElementById("filters-op-create").className = 
             (no_cond || has_name)? "disabled":"";
@@ -571,7 +637,7 @@ var sFiltersH = {
             (no_cond)? "disabled":"";
         document.getElementById("filters-op-delete").className = 
             (this.mCurFilterName == "" || 
-                this.mOpList.indexOf(this.mCurFilterName) < 0)? "disabled":"";
+                this.mOpNames.indexOf(this.mCurFilterName) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
     },
 
@@ -597,14 +663,14 @@ var sFiltersH = {
         return ret.join('\n');
     },
     
-    checkName: function() {
+    checkSelection: function() {
         if (this.mCurOp == null)
             return;
 
         cur_filter = sOpFilterH.getCurFilterName();
         filter_name = this.mInpName.value;
-        q_all = this.mAllList.indexOf(filter_name) >= 0;
-        q_op  = this.mOpList.indexOf(filter_name) >= 0;
+        q_all = this.mAllNames.indexOf(filter_name) >= 0;
+        q_op  = this.mOpNames.indexOf(filter_name) >= 0;
         
         if (this.mCurOp == "modify") {
             this.mBtnOp.disabled = (!q_op) || filter_name == cur_filter;
@@ -625,24 +691,30 @@ var sFiltersH = {
         this.mBtnOp.disabled = !q_ok;
         
         if (this.mTimeH == null) 
-            this.mTimeH = setInterval(function(){sFiltersH.checkName();}, 100);
+            this.mTimeH = setInterval(function(){sFiltersH.checkSelection();}, 100);
     },
     
     filterExists: function(filter_name) {
-        return this.mAllList.indexOf(filter_name) >= 0;
+        return this.mAllNames.indexOf(filter_name) >= 0;
     },
     
     select: function() {
-        this.mInpName.value = this.mSelName.value;
-        this.checkName();
+        this.mInpName.value = this.mListName.value;
+        this.checkSelection();
     },
 
+    selectRubric: function() {
+        this.mInpRubric.value = this.mListRubric.value;
+        this.checkSelection();
+    },
+    
     startLoad: function() {
         this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList, this.mCurFilterName);
-        this.mSelName.disabled = false;
+        
+        this.fillSelNames(false, this.mAllNames, this.mCurFilterName);
+        this.mListName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
         this.select();
@@ -653,8 +725,8 @@ var sFiltersH = {
         this.mCurOp = "join";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList, this.mCurFilterName);
-        this.mSelName.disabled = false;
+        this.fillSelNames(false, this.mAllNames, this.mCurFilterName);
+        this.mListName.disabled = false;
         this.mBtnOp.innerHTML = "Join";
         this.mBtnOp.style.display = "block";
         this.select();
@@ -667,12 +739,12 @@ var sFiltersH = {
         this.mCurOp = "create";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "visible";
-        this.mSelName.disabled = false;
+        this.mListName.disabled = false;
         this.mInpName.disabled = false;
-        this.fillSelNames(true, this.mAllList);
+        this.fillSelNames(true, this.mAllNames);
         this.mBtnOp.innerHTML = "Create";
         this.mBtnOp.style.display = "block";
-        this.checkName();
+        this.checkSelection();
         this.mComboName.style.display = "block";
     },
 
@@ -680,11 +752,11 @@ var sFiltersH = {
         cur_filter = sOpFilterH.getCurFilterName();
         if (sConditionsH.isEmpty() || cur_filter != "")
             return;
-        this.fillSelNames(false, this.mOpList);
+        this.fillSelNames(false, this.mOpNames);
         this.mCurOp = "modify";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.mSelName.disabled = false;
+        this.mListName.disabled = false;
         this.mBtnOp.innerHTML = "Modify";
         this.mBtnOp.style.display = "block";
         this.select();
@@ -693,7 +765,7 @@ var sFiltersH = {
 
     deleteIt: function() {
         cur_filter = sOpFilterH.getCurFilterName();
-        if (cur_filter == "" ||  this.mOpList.indexOf(cur_filter) < 0)
+        if (cur_filter == "" ||  this.mOpNames.indexOf(cur_filter) < 0)
             return;
         sUnitsH.setup(sConditionsH.getConditions(), "",
             ["instr", JSON.stringify(["DELETE", this.mInpName.value])]);
@@ -702,8 +774,8 @@ var sFiltersH = {
     action: function() {
         cur_filter = sOpFilterH.getCurFilterName();
         filter_name = this.mInpName.value;
-        q_all = this.mAllList.indexOf(filter_name) >= 0;
-        q_op = this.mOpList.indexOf(filter_name) >= 0;
+        q_all = this.mAllNames.indexOf(filter_name) >= 0;
+        q_op = this.mOpNames.indexOf(filter_name) >= 0;
         
         switch (this.mCurOp) {
             case "create":
@@ -734,13 +806,13 @@ var sFiltersH = {
     },
 
     fillSelNames: function(with_empty, filter_list, cur_value) {
-        if (this.mSelName == null || this.mAllList == null)
+        if (this.mListName == null || this.mAllNames == null)
             return;
-        resetSelectInput(this.mSelName, filter_list, with_empty, cur_value);
+        resetSelectInput(this.mListName, filter_list, with_empty, cur_value);
     },
     
     getAllList: function() {
-        return this.mAllList;
+        return this.mAllNames;
     }
 };
 

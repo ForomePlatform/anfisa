@@ -108,6 +108,12 @@ def is_none(value):
 
 FilterPrepareSetH.regNamedFunction("has_variant", sample_has_variant)
 FilterPrepareSetH.regNamedFunction("is_none", is_none)
+
+#===============================================
+def getClinvarTrusted(filters):
+    return filters.getStdItemData(
+        "item-dict", "Clinvar_Trusted_Submitters")
+
 #===============================================
 def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
     data_schema = metadata_record.get("data_schema")
@@ -309,8 +315,7 @@ def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
             ("GnomAD", "/_filters/gnomad_af_fam"),
             ("HGMD", "/__data/hgmd_pmids[]"),
             ("OMIM", "/_view/databases/omim")]
-        for submitter in sorted(filters.getStdItem(
-                "item-dict", "Clinvar_Trusted_Submitters").getData().values()):
+        for submitter in sorted(getClinvarTrusted(filters).values()):
             presence_in_db.append((submitter,
                 "/_view/databases/clinvar_trusted/%s" % submitter))
         filters.presenceUnit("Presence_in_Databases", presence_in_db)
@@ -370,9 +375,9 @@ def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
             value_map = {"True": "Benign", "False": "VUS or Pathogenic"})
         filters.multiStatusUnit("ClinVar_Significance",
             "/__data/clinvar_significance[]")
+
         filters.regPreTransform(lambda rec_no, rec_data:
-            clinvarPreTransform(rec_data, filters.getStdItem(
-                "item-dict", "Clinvar_Trusted_Submitters").getData()))
+            clinvarPreTransform(rec_data, getClinvarTrusted(filters)))
 
         filters.multiStatusUnit("Clinvar_Trusted_Significance",
             "/_view/databases/clinvar_trusted",
@@ -399,8 +404,7 @@ def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
             "/_filters/clinvar_acmg_guidelines[]",
             default_value = "None")
 
-        for submitter in sorted(filters.getStdItem(
-                "item-dict", "Clinvar_Trusted_Submitters").getData().values()):
+        for submitter in sorted(getClinvarTrusted(filters).values()):
             filters.statusUnit(f"ClinVar_Significance_{submitter}",
                 "/_view/databases/clinvar_trusted",
                 conversion = [["property", submitter]],

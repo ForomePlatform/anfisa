@@ -75,8 +75,8 @@ class SecondaryWsCreation(ExecutionTask):
         }
 
         if self.mEval.getSolKind() == "filter":
-            if self.mEval.getFilterName():
-                receipt["filter-name"] = self.mEval.getFilterName()
+            if self.mEval.getName():
+                receipt["filter-name"] = self.mEval.getName()
             condition = self.mEval.getCondition()
             rec_count = self.mDS.getEvalSpace().evalTotalCounts(condition)[0]
             if (rec_count < 1
@@ -88,8 +88,8 @@ class SecondaryWsCreation(ExecutionTask):
             receipt["f-presentation"] = self.mEval.getPresentation()
             receipt["conditions"] = self.mEval.getCondDataSeq()
         else:
-            if self.mEval.getDTreeName():
-                receipt["dtree-name"] = self.mEval.getDTreeName()
+            if self.mEval.getName():
+                receipt["dtree-name"] = self.mEval.getName()
             rec_no_seq, point_seq = self.mEval.collectRecSeq()
             receipt["p-presentation"] = point_seq
             receipt["dtree-code"] = self.mEval.getCode()
@@ -104,7 +104,7 @@ class SecondaryWsCreation(ExecutionTask):
             panel_descr = dict()
             for pname in pnames:
                 p_h = self.mDS.pickSolEntry("panel." + ptype, pname)
-                if p_h.isDynamic():
+                if p_h is not None and p_h.isDynamic():
                     panel_descr[p_h.getName()] = p_h.getSymList()
             if len(panel_descr) > 0:
                 panels_supply[ptype] = panel_descr

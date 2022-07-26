@@ -88,10 +88,6 @@ select#dtree-name-input {
     font-size: 16px;
 }
 
-#dtree-name-input:disabled {
-    opacity: 0;
-}
-
 #dtree-name-combo {
     margin: 0px 5px 0px 10px;
 }

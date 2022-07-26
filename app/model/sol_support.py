@@ -23,6 +23,20 @@ from hashlib import md5
 
 from app.config.a_config import AnfisaConfig
 #===============================================
+def makeSolItemInfo(kind, name, data, rubric,
+        upd_time = None, upd_from = None,
+        used_names = None, requires = None, is_std = None):
+    if used_names is not None:
+        assert name not in used_names, "Name duplication " + name
+        used_names.add(name)
+    ret = {"_tp": kind, "name": name, "data": data}
+    for key, val in [("rubric", rubric), ("is_std", is_std), ("req", requires),
+            ("time", upd_time), ("from", upd_from)]:
+        if val is not None:
+            ret[key] = val
+    return ret
+
+#===============================================
 class StdNameSupport:
     sStdMark = AnfisaConfig.configOption("solution.std.mark")
 
@@ -42,33 +56,29 @@ class StdNameSupport:
             return name[1:]
         return name
 
+    @classmethod
+    def normNm(cls, name, is_std):
+        if is_std:
+            return cls.stdNm(name)
+        return cls.offNm(name)
+
 #===============================================
 class SolutionKindHandler:
     sMaxSolNameLen = AnfisaConfig.configOption("sol.name.max.length")
 
-    def __init__(self, broker, sol_kind, special_name = None):
+    def __init__(self, broker, sol_kind, sol_maker, special_name = None):
         self.mBroker = broker
         self.mSolKind = sol_kind
+        self.mSolMaker = sol_maker
         self.mSpecialName = special_name
         self.mNames = None
         self.mEntryDict = None
         self.mHashDict = None
-        self.mStdNames = []
-        self.mStdEntries = []
-        for it in self.mBroker.iterStdItems(self.mSolKind):
-            std_name = self.stdName(it.getName())
-            self.mStdEntries.append(self.mBroker.makeSolEntry(
-                self.mSolKind, it.getData(), std_name))
-            self.mStdNames.append(std_name)
+        self.mStdEntries = [self.mSolMaker(info)
+            for info in self.mBroker.iterStdItems(self.mSolKind)]
+        self.mStdNames = [entry_h.getName()
+            for entry_h in self.mStdEntries]
         self._setup([], [])
-
-    def stdName(self, name):
-        return StdNameSupport.stdNm(name)
-
-    def dynName(self, name):
-        if self.mSpecialName and name == self.mSpecialName:
-            return self.mSpecialName
-        return StdNameSupport.offNm(name)
 
     def offName(self, name):
         if self.mSpecialName and name == self.mSpecialName:
@@ -84,11 +94,11 @@ class SolutionKindHandler:
         return self.mSpecialName
 
     def _setup(self, dyn_names, dyn_entries):
-        dyn_names = [self.dynName(nm) for nm in dyn_names]
         self.mNames = self.mStdNames[:] + dyn_names[:]
         self.mEntryDict = {name: entry_h
             for name, entry_h in zip(self.mStdNames, self.mStdEntries)}
         for name, entry_h in zip(dyn_names, dyn_entries):
+            assert self.isDyn(name), "Not a dyn name: " + name
             self.mEntryDict[name] = entry_h
         self.mHashDict = {entry_obj.getHashCode(): entry_obj
             for entry_obj in self.mEntryDict.values()}
@@ -102,23 +112,24 @@ class SolutionKindHandler:
             dyn_names = []
             dyn_entries = []
             for info in self.mBroker.getSolEnv().iterEntries(self.mSolKind):
-                name, entry_data, upd_time, upd_from = info
-                name = self.dynName(name)
+                name = info["name"]
                 dyn_names.append(name)
                 entry_obj = self.mEntryDict.get(name)
+                upd_info = [info.get("time"), info.get("from")]
                 if (entry_obj is not None
-                        and [upd_time, upd_from] != entry_obj.getUpdateInfo()):
+                        and upd_info != entry_obj.getUpdateInfo()):
                     entry_obj = None
                 if entry_obj is None:
-                    entry_obj = self.mBroker.makeSolEntry(self.mSolKind,
-                        entry_data, name, upd_time, upd_from)
+                    entry_obj = self.mSolMaker(makeSolItemInfo(
+                        self.mSolKind, name, info["data"], info.get("rubric"),
+                        info.get("time"), info.get("from")))
                     update = True
                 dyn_entries.append(entry_obj)
             if (self.mSpecialName is not None
                     and self.mSpecialName not in dyn_names):
                 dyn_names.append(self.mSpecialName)
-                dyn_entries.append(self.mBroker.makeSolEntry(self.mSolKind,
-                    [], self.mSpecialName, None, None))
+                dyn_entries.append(self.mSolMaker(makeSolItemInfo(
+                    self.mSolKind, self.mSpecialName, [], None)))
             update |= len(dyn_names) + len(self.mStdNames) != len(self.mNames)
             if update:
                 self._setup(dyn_names, dyn_entries)
@@ -137,22 +148,29 @@ class SolutionKindHandler:
                     "standard": idx < len(self.mStdNames),
                     "upd-time": upd_time,
                     "upd-from": upd_from,
+                    "rubric": entry_obj.getRubric(),
                     "eval-status": entry_obj.getEvalStatus()})
         return ret_handle
 
     def modifySolEntry(self, instr, entry_data):
-        option, name = instr
+        option, name = instr[:2]
         assert name and self.isDyn(name), (
             "Improper name for dynamic solution entry: " + name)
-        name = self.offName(name)
         assert ((name[0].isalpha() and ' ' not in name)
             or name == self.mSpecialName), (
             "Improper name for solution entry: " + name)
         assert len(name) < self.sMaxSolNameLen, (
             "Too long name for solution entry: " + name)
+        if len(instr) > 2:
+            rubric = instr[2]
+        else:
+            prev_entry = self.pickByName(name)
+            rubric = (prev_entry.getRubric()
+                if prev_entry is not None else None)
+
         return self.mBroker.getSolEnv().modifyEntry(
             self.mBroker.getName(), self.mSolKind, option,
-            self.offName(name), entry_data)
+            name, entry_data, rubric)
 
     def normalizeSolEntry(self, sol_obj):
         with self.mBroker:
@@ -171,14 +189,26 @@ class SolutionKindHandler:
 
 #===============================================
 class SolPanelHandler:
-    def __init__(self, tp, name, sym_list,
+    def __init__(self, tp, name, sym_list, rubric = None,
             updated_time = None, updated_from = None):
         self.mType = tp
         self.mName = name
         self.mSymList = sym_list
+        self.mRubric = rubric
         self.mUpdatedInfo = [updated_time, updated_from]
         self.mHashCode = md5(bytes(json.dumps(sorted(set(self.mSymList)),
             sort_keys = True), encoding = "utf-8")).hexdigest()
+
+    @staticmethod
+    def makeSolEntry(info):
+        prefix, tp = info["_tp"].split('.')
+        assert prefix == "panel"
+        return SolPanelHandler(tp,
+            StdNameSupport.normNm(info["name"], info.get("is_std")),
+            info["data"],
+            rubric = info.get("rubric"),
+            updated_time = info.get("time"),
+            updated_from = info.get("from"))
 
     def getType(self):
         return self.mType
@@ -188,6 +218,9 @@ class SolPanelHandler:
 
     def getSymList(self):
         return self.mSymList
+
+    def getRubric(self):
+        return self.mRubric
 
     def getUpdateInfo(self):
         return self.mUpdatedInfo

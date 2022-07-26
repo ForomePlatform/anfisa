@@ -37,7 +37,6 @@ from app.prepare.sec_ws import SecondaryWsCreation
 from .ds_disk import DataDiskStorage
 from .ds_favor import FavorStorage
 from .sol_broker import SolutionBroker
-from .sol_support import SolPanelHandler
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
@@ -88,7 +87,10 @@ class DataSet(SolutionBroker):
         self.mZygSupport = ZygositySupport(self)
         tuneUnits(self)
         self.mDataVault.getVarRegistry().relax(self.mName)
-        self.setSolEnv(self.mDataVault.makeSolutionEnv(self))
+        eval_space = self.getEvalSpace()
+        self._setupEnv(self.mDataVault.makeSolutionEnv(self), {
+            "filter": lambda info: FilterEval.makeSolEntry(eval_space, info),
+            "dtree": lambda info: DTreeEval.makeSolEntry(eval_space, info)})
 
     def isUpToDate(self, fstat_info):
         return fstat_info == self.mFInfo
@@ -184,20 +186,6 @@ class DataSet(SolutionBroker):
             return ["%s_%d" % (var_name, idx)
                 for idx in range(len(self.getFamilyInfo()))]
         return []
-
-    def makeSolEntry(self, key, entry_data, name,
-            updated_time = None, updated_from = None):
-        if key == "filter":
-            return FilterEval(self.getEvalSpace(), entry_data,
-                name, updated_time, updated_from)
-        if key == "dtree":
-            return DTreeEval(self.getEvalSpace(), entry_data,
-                name, updated_time, updated_from)
-        if key.startswith("panel."):
-            return SolPanelHandler(key[6:], name, entry_data,
-                updated_time, updated_from)
-        assert False, "Bad solution entry kind: " + key
-        return None
 
     def getDocsInfo(self):
         ret = [None, [["Info", "info.html"]]]
@@ -482,7 +470,7 @@ class DataSet(SolutionBroker):
                 filter_h, stat_ctx, time_end),
             "functions": self. reportFunctions(filter_h, stat_ctx),
             "filter-list": self.getSolEntryList("filter"),
-            "cur-filter": filter_h.getFilterName(),
+            "cur-filter": filter_h.getName(),
             "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
             "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
@@ -681,7 +669,7 @@ class DataSet(SolutionBroker):
         assert "seq" in rq_args, 'Missing request argument "seq"'
         assert "schema" in rq_args, 'Missing request argument "schema"'
         seq_rec_no = json.loads(rq_args["seq"])
-        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
+        tab_schema = self.getStdItemData("tab-schema", rq_args["schema"])
         return [tab_schema.reportRecord(self, rec_no)
             for rec_no in seq_rec_no[:self.sMaxTabRqSize]]
 
@@ -702,7 +690,7 @@ class DataSet(SolutionBroker):
         rec_no_seq = self.fiterRecords(filter_h.getCondition(),
             zone_data = rq_args.get("zone"))
         assert "schema" in rq_args, 'Missing request argument "schema"'
-        tab_schema = self.getStdItem("tab-schema", rq_args["schema"]).getData()
+        tab_schema = self.getStdItemData("tab-schema", rq_args["schema"])
         return ["!", "csv", reportCSV(self, tab_schema, rec_no_seq),
             [("Content-Disposition", "attachment;filename=anfisa_export.csv")]]
 

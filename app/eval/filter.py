@@ -22,6 +22,7 @@ import json
 from hashlib import md5
 
 from forome_tools.log_err import logException
+from app.model.sol_support import StdNameSupport
 from .evaluation import Evaluation
 from .condition import validateCondition, condDataUnits
 from .code_repr import formatConditionCode
@@ -29,12 +30,13 @@ from .code_repr import formatConditionCode
 #===============================================
 class FilterEval(Evaluation):
     def __init__(self, eval_space, cond_data_seq, name = None,
-            updated_time = None, updated_from = None):
+            rubric = None, updated_time = None, updated_from = None):
         Evaluation.__init__(self, eval_space,
             md5(bytes(json.dumps(cond_data_seq, sort_keys = True),
                 encoding = "utf-8")).hexdigest(),
             updated_time, updated_from)
         self.mFilterName = name
+        self.mRubric = rubric
         self.mCondDataSeq = cond_data_seq
         self.mPresentation = []
         self.mConditions = None
@@ -48,6 +50,15 @@ class FilterEval(Evaluation):
             else:
                 self.mPresentation.append(formatConditionCode(cond_data))
         self.mCondition = None
+
+    @staticmethod
+    def makeSolEntry(eval_space, info):
+        assert info["_tp"] == "filter"
+        return FilterEval(eval_space, info["data"],
+            name = StdNameSupport.normNm(info["name"], info.get("is_std")),
+            rubric = info.get("rubric"),
+            updated_time = info.get("time"),
+            updated_from = info.get("from"))
 
     def activate(self):
         if self.mConditions is not None:
@@ -94,8 +105,11 @@ class FilterEval(Evaluation):
     def isActive(self):
         return self.mConditions is not None
 
-    def getFilterName(self):
+    def getName(self):
         return self.mFilterName
+
+    def getRubric(self):
+        return self.mRubric
 
     def getCondition(self):
         return self.mCondition

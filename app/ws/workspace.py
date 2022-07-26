@@ -76,19 +76,19 @@ class Workspace(DataSet):
         self.mTagsMan = TagsManager(self, "Check-Tags")
         self.mZoneHandlers  = []
         for zone_it in self.iterStdItems("zone"):
-            unit_name = zone_it.getData()
+            unit_name = zone_it["data"]
             if unit_name == "_tags":
                 zone_h = self.mTagsMan
-                zone_h._setTitle(zone_it.getName())
+                zone_h._setTitle(zone_it["name"])
             else:
                 unit_h = self.mEvalSpace.getUnit(unit_name)
                 if (not unit_h):
                     continue
                 if (unit_h.getMean() == "panel"
                         and "dim-name" in unit_h.getDescr()):
-                    zone_h = PanelZoneH(self, zone_it.getName(), unit_h)
+                    zone_h = PanelZoneH(self, zone_it["name"], unit_h)
                 else:
-                    zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
+                    zone_h = FilterZoneH(self, zone_it["name"], unit_h)
             self.mZoneHandlers.append(zone_h)
 
         for filter_h in self.iterSolEntries("filter"):
@@ -203,7 +203,7 @@ class Workspace(DataSet):
                 continue
             filter_h.activate()
             if filter_h.getCondition().recInSelection(rec_no):
-                ret_seq.append(filter_h.getFilterName())
+                ret_seq.append(filter_h.getName())
         return sorted(ret_seq)
 
     def getRecDTrees(self, rec_no):
@@ -213,7 +213,7 @@ class Workspace(DataSet):
                 continue
             dtree_h.activate()
             if dtree_h.getFinalCondition().recInSelection(rec_no):
-                ret_seq.append(dtree_h.getDTreeName())
+                ret_seq.append(dtree_h.getName())
         return sorted(ret_seq)
 
     #===============================================

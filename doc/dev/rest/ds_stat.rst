@@ -31,6 +31,7 @@ Synopsis
     |       ``[``
     |           **[0]**: option, ``"UPDATE"``, ``"DELETE"`` *or* ``"JOIN"``
     |           **[1]**: filter name, *string*
+    |           **[2]**: rubric, in case of ``"UPDATE"`` option,  *optional string, optional position**
     |       ``]`` *in JSON string representation*
         
     **Return value**: 
@@ -91,7 +92,11 @@ Modification of filters
 ^^^^^^^^^^^^^^^^^^^^^^^
 If argument **instr** is set, the request modifies filter on server side in the following cases:
 
-   * ``["UPDATE", <filter_name>]`` the value of argument **conditions** are interpreted as new content of filter ``filter_name``, use this option for both create or update filter
+   * ``["UPDATE", <filter_name>, [<rubric>]]`` the value of argument **conditions** are interpreted 
+    as new content of filter ``filter_name``, use this option for both create or update filter
+    
+    (Note:``null`` as ``<rubric>`` means rubric drop for existing filter; do not put this item in list 
+     if no change of rubric is expected)
     
    * ``["DELETE", <filter_name>]`` the filter ``filter_name`` is subject to be deleted.
      

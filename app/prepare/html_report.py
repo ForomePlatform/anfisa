@@ -119,8 +119,9 @@ def _reportReceipt(output, idx_receipt, receipt):
                 + '</b>', file = output)
             if "eval-update-info" in receipt:
                 updated_time, updated_from = receipt["eval-update-info"]
-                print("updated at", reprDateVal(updated_time),
-                    "from", updated_from, file = output)
+                if updated_time is not None:
+                    print("updated at", reprDateVal(updated_time),
+                        "from", updated_from, file = output)
             print("</p>", file = output)
         print('<table class="report-filter">', file = output)
         for instr in receipt["f-presentation"]:
@@ -135,8 +136,9 @@ def _reportReceipt(output, idx_receipt, receipt):
                 + '</b>', file = output)
             if "eval-update-info" in receipt:
                 updated_time, updated_from = receipt["eval-update-info"]
-                print("updated at", reprDateVal(updated_time),
-                    "from", updated_from, file = output)
+                if updated_time is not None:
+                    print("updated at", reprDateVal(updated_time),
+                        "from", updated_from, file = output)
             print("</p>", file = output)
         print('<table class="report-dtree">', file = output)
         for instr, count, ret_mode in receipt["p-presentation"]:

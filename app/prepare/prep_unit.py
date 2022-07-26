@@ -264,12 +264,12 @@ class _EnumStatCollector:
             if self.mDefaultValue is not None:
                 assert self.mDefaultValue in self.mVariants, (
                     "For " + self.getName() + " default "
-                    + str(self.mDefaultValue) +
-                    "is not in preset variants:")
+                    + str(self.mDefaultValue)
+                    + "is not in preset variants:")
             for var in pre_variants:
                 assert isinstance(var, str), (
-                    "For " + self.getName() +
-                    " variant value is not str: " + repr(var))
+                    "For " + self.getName()
+                    + " variant value is not str: " + repr(var))
         if self.mDefaultValue is not None:
             assert isinstance(self.mDefaultValue, str), (
                 "For " + self.getName() +
@@ -461,8 +461,9 @@ class PanelConvertor(ValueConvertor):
         ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
         self.mBaseUnitName = base_unit_name
         self.mPanelType = panel_type
-        self.mPanelSets = {p_it.getName(): set(p_it.getData()) for p_it
-            in self.getMaster().iterStdItems("panel." + panel_type)}
+        p_key = "panel." + panel_type
+        self.mPanelSets = {p_it["name"]: p_it["data"] for p_it in
+            self.getMaster.iterStdItems(p_key)}
         assert len(self.mPanelSets) > 0, (
             "No data for panel type " + panel_type)
         self.mCntUndef = 0
@@ -689,8 +690,9 @@ class TranscriptMultiConvertor(_TranscriptEnumConvertor):
 class TranscriptPanelsConvertor(TranscriptMultiConvertor):
     def __init__(self, master, name, unit_no, vgroup, dim_name,
             base_tr_name, panel_type, view_name):
-        panel_sets = {p_it.getName(): set(p_it.getData()) for p_it in
-            master.iterStdItems("panel." + panel_type)}
+        p_key = "panel." + panel_type
+        panel_sets = {p_it["name"]: p_it["data"] for p_it in
+            master.iterStdItems(p_key)}
         TranscriptMultiConvertor.__init__(self, master, name, unit_no,
             vgroup, dim_name, "transcript-panels", base_tr_name,
             sorted(panel_sets.keys()), None)

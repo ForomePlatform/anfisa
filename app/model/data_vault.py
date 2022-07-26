@@ -23,7 +23,6 @@ import typing, array
 from glob import glob
 from io import StringIO
 from copy import deepcopy
-from threading import Lock
 from datetime import datetime
 from collections import defaultdict
 
@@ -42,7 +41,6 @@ class DataVault(SyncronizedObject):
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
         self.mVarRegistry = var_registry
-        self.mLock  = Lock()
         self.mDataSets = dict()
         self.mSolEnvDict = dict()
         self.mScanModeLevel = 0

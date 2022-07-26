@@ -22,8 +22,6 @@ import os
 from pymongo import MongoClient
 from datetime import datetime
 
-from app.config.a_config import AnfisaConfig
-
 #===============================================
 class MongoConnector:
     def __init__(self, data_path, host = None, port = None):
@@ -70,7 +68,7 @@ class MongoDSAgent:
     def getCreationDate(self):
         it = self.mAgent.find_one({"_tp": "dsinfo"})
         if it is not None:
-            return AnfisaConfig.normalizeTime(it.get("upd-time"))
+            return it.get("upd-time")
         return None
 
     def updateCreationDate(self, time_label = None, ajson_fname = None):
@@ -89,8 +87,7 @@ class MongoDSAgent:
     def getNote(self):
         it = self.mAgent.find_one({"_tp": "dsinfo"})
         if it is not None:
-            return (it.get("note", "").strip(),
-                AnfisaConfig.normalizeTime(it.get("note-time")))
+            return (it.get("note", "").strip(), it.get("note-time"))
         return ("", None)
 
     def setNote(self, note):

@@ -622,20 +622,20 @@ var sOpCondH = {
 /*************************************/
 var sDTreesH = {
     mTimeH: null,
-    mCurOp: null,
-    mSelName: null,
+    mInpName: null,
+    mListName: null,
     mComboName: null,
     mCurDTreeName: null,
     mCurDTreeInfo: null,
     mBtnOp: null,
     
-    mAllList: [],
-    mOpList: [],
+    mAllNames: [],
+    mOpNames: [],
     mDTreeTimeDict: null,
 
     init: function() {
         this.mInpName   = document.getElementById("dtree-name-input");
-        this.mSelName   = document.getElementById("dtree-name-combo-list");
+        this.mListName   = document.getElementById("dtree-name-combo-list");
         this.mComboName = document.getElementById("dtree-name-combo");
         this.mBtnOp     = document.getElementById("dtree-act-op");
     },
@@ -643,26 +643,26 @@ var sDTreesH = {
     setup: function(dtree_name, dtree_list) {
         this.mCurDTreeName = dtree_name;
         this.mCurDTreeInfo = null;
-        var prev_all_list = JSON.stringify(this.mAllList);
-        this.mOpList = [];
-        this.mAllList = [];
+        var prev_all_list = JSON.stringify(this.mAllNames);
+        this.mOpNames = [];
+        this.mAllNames = [];
         this.mDTreeTimeDict = {};
         for (idx = 0; idx < dtree_list.length; idx++) {
             dtree_info = dtree_list[idx];
             if (dtree_info["name"] == this.mCurDTreeName)
                 this.mCurDTreeInfo = dtree_info;
-            this.mAllList.push(dtree_info["name"]);
+            this.mAllNames.push(dtree_info["name"]);
             if (!dtree_info["standard"])
-                this.mOpList.push(dtree_info["name"]);
+                this.mOpNames.push(dtree_info["name"]);
             this.mDTreeTimeDict[dtree_info["name"]] = dtree_info["upd-time"];
         }
-        //if (prev_all_list != JSON.stringify(this.mAllList))
+        //if (prev_all_list != JSON.stringify(this.mAllNames))
         //    onDTreeListChange();
         this.update();
     },
     
     update: function() {
-        this.mCurOp = null;
+        this.mInpName = null;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
@@ -673,7 +673,7 @@ var sDTreesH = {
         } else {
             this.mInpName.value = this.mCurDTreeName;
             this.mInpName.disabled = true;
-            this.mSelName.disabled = true;
+            this.mListName.disabled = true;
             this.mComboName.style.display = "block";
         }
         this.mInpName.style.visibility = "visible";
@@ -682,10 +682,10 @@ var sDTreesH = {
         document.getElementById("dtree-op-modify").className = 
             (!!this.mCurDTreeName ||
                 (this.mCurDTreeName && this.mCurDTreeName[0] == '@' ||
-                (this.mOpList.length == 0)))? "disabled":"";
+                (this.mOpNames.length == 0)))? "disabled":"";
         document.getElementById("dtree-op-delete").className = 
             (!this.mCurDTreeName || 
-                this.mOpList.indexOf(this.mCurDTreeName) < 0)? "disabled":"";
+                this.mOpNames.indexOf(this.mCurDTreeName) < 0)? "disabled":"";
         this.mBtnOp.style.display = "none";
     },
 
@@ -711,24 +711,24 @@ var sDTreesH = {
         return ret.join('\n');
     },
     
-    checkName: function() {
-        if (this.mCurOp == null)
+    checkSelection: function() {
+        if (this.mInpName == null)
             return;
 
         dtree_name = this.mInpName.value;
-        q_all = this.mAllList.indexOf(dtree_name) >= 0;
-        q_op  = this.mOpList.indexOf(dtree_name) >= 0;
+        q_all = this.mAllNames.indexOf(dtree_name) >= 0;
+        q_op  = this.mOpNames.indexOf(dtree_name) >= 0;
         
-        if (this.mCurOp == "modify") {
+        if (this.mInpName == "modify") {
             this.mBtnOp.disabled = (!q_op) || dtree_name == this.mCurDTreeName;
             return;
         }
-        if (this.mCurOp == "load") {
+        if (this.mInpName == "load") {
             this.mBtnOp.disabled = (!q_all) || dtree_name == this.mCurDTreeName;
             return;
         }
         
-        if (this.mCurOp != "create") {
+        if (this.mInpName != "create") {
             return; /*assert false! */
         }
         
@@ -738,24 +738,24 @@ var sDTreesH = {
         this.mBtnOp.disabled = !q_ok;
         
         if (this.mTimeH == null) 
-            this.mTimeH = setInterval(function(){sDTreesH.checkName();}, 100);
+            this.mTimeH = setInterval(function(){sDTreesH.checkSelection();}, 100);
     },
     
     dtreeExists: function(dtree_name) {
-        return this.mAllList.indexOf(dtree_name) >= 0;
+        return this.mAllNames.indexOf(dtree_name) >= 0;
     },
     
     select: function() {
-        this.mInpName.value = this.mSelName.value;
-        this.checkName();
+        this.mInpName.value = this.mListName.value;
+        this.checkSelection();
     },
 
     startLoad: function() {
-        this.mCurOp = "load";
+        this.mInpName = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.fillSelNames(false, this.mAllList, this.mCurDTreeName);
-        this.mSelName.disabled = false;
+        this.fillSelNames(false, this.mAllNames, this.mCurDTreeName);
+        this.mListName.disabled = false;
         this.mBtnOp.innerHTML = "Load";
         this.mBtnOp.style.display = "block";
         this.select();
@@ -765,15 +765,15 @@ var sDTreesH = {
     startCreate: function() {
         if (sDecisionTree.isEmpty())
             return;
-        this.mCurOp = "create";
+        this.mInpName = "create";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "visible";
-        this.mSelName.disabled = false;
+        this.mListName.disabled = false;
         this.mInpName.disabled = false;
-        this.fillSelNames(true, this.mAllList);
+        this.fillSelNames(true, this.mAllNames);
         this.mBtnOp.innerHTML = "Create";
         this.mBtnOp.style.display = "block";
-        this.checkName();
+        this.checkSelection();
         this.mComboName.style.display = "block";
     },
 
@@ -781,11 +781,11 @@ var sDTreesH = {
         if (sDecisionTree.isEmpty() || 
             (this.mCurDTreeName && this.mCurDTreeName[0] == '@'))
             return;
-        this.fillSelNames(false, this.mOpList);
-        this.mCurOp = "modify";
+        this.fillSelNames(false, this.mOpNames);
+        this.mInpName = "modify";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
-        this.mSelName.disabled = false;
+        this.mListName.disabled = false;
         this.mBtnOp.innerHTML = "Modify";
         this.mBtnOp.style.display = "block";
         this.select();
@@ -794,17 +794,17 @@ var sDTreesH = {
 
     deleteIt: function() {
         if (!this.mCurDTreeName || 
-                this.mOpList.indexOf(this.mCurDTreeName) < 0)
+                this.mOpNames.indexOf(this.mCurDTreeName) < 0)
             return;
         sDecisionTree.setup(true, ["DTREE", "DELETE", this.mCurDTreeName]);
     },
 
     action: function() {
         dtree_name = this.mInpName.value;
-        q_all = this.mAllList.indexOf(dtree_name) >= 0;
-        q_op = this.mOpList.indexOf(dtree_name) >= 0;
+        q_all = this.mAllNames.indexOf(dtree_name) >= 0;
+        q_op = this.mOpNames.indexOf(dtree_name) >= 0;
         
-        switch (this.mCurOp) {
+        switch (this.mInpName) {
             case "create":
                 if (!q_all && checkIdentifier(dtree_name)) {
                     sDecisionTree.setup(true, 
@@ -826,13 +826,13 @@ var sDTreesH = {
     },
 
     fillSelNames: function(with_empty, dtree_list, cur_value) {
-        if (this.mSelName == null || this.mAllList == null)
+        if (this.mListName == null || this.mAllNames == null)
             return;
-        resetSelectInput(this.mSelName, dtree_list, with_empty, cur_value);
+        resetSelectInput(this.mListName, dtree_list, with_empty, cur_value);
     },
     
     getAllList: function() {
-        return this.mAllList;
+        return this.mAllNames;
     }
 };
 

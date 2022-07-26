@@ -44,15 +44,15 @@ class RulesUnit(ComplexEnumUnit):
         return self.mDS.noSolEntries("dtree")
 
     def getVariantSet(self):
-        return VariantSet([dtree_h.getDTreeName()
+        return VariantSet([dtree_h.getName()
             for dtree_h in self.mDS.iterSolEntries("dtree")])
 
     def iterComplexCriteria(self, context, variants = None):
         for dtree_h in self.mDS.iterSolEntries("dtree"):
-            if variants is not None and dtree_h.getDTreeName() not in variants:
+            if variants is not None and dtree_h.getName() not in variants:
                 continue
             dtree_h.activate()
-            yield dtree_h.getDTreeName(), dtree_h.getFinalCondition()
+            yield dtree_h.getName(), dtree_h.getFinalCondition()
 
     def makeStat(self, condition, eval_h, stat_ctx):
         ret_handle = self.prepareStat(stat_ctx)

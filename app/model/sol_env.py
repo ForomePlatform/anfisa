@@ -20,7 +20,7 @@
 
 from datetime import datetime
 
-from app.config.a_config import AnfisaConfig
+from .sol_support import makeSolItemInfo
 
 #===============================================
 class SolutionEnv:
@@ -64,18 +64,14 @@ class SolutionEnv:
     def getEntry(self, key, name):
         return self.mHandlers[key].getEntry(name)
 
-    def modifyEntry(self, ds_name, sol_kind, option, name, value):
-        if self.mHandlers[sol_kind].modifyData(option, name, value, ds_name):
+    def modifyEntry(self, ds_name, sol_kind, option, name, value,
+            rubric = None):
+        if self.mHandlers[sol_kind].modifyEntry(
+                option, name, value, rubric, ds_name):
             for broker_h in self.mBrokers:
                 broker_h.refreshSolEntries(sol_kind)
             return True
         return False
-
-    def getTagsData(self, rec_key):
-        return self.mHandlers["tags"].getData(rec_key)
-
-    def setTagsData(self, rec_key, tags_data):
-        pass
 
     def dumpAll(self):
         ret = []
@@ -90,48 +86,47 @@ class SolutionEnv:
 
 #===============================================
 class _SolKindMongoHandler:
-    sDefaultNone = (None, None, None)
-
     def __init__(self, sol_kind, mongo_agent):
         self.mSolKind = sol_kind.replace('.', '_')
         self.mMongoAgent = mongo_agent
-        self.mData = dict()
+        self.mEntries = dict()
         self.mIntVersion = 0
         for it in self.mMongoAgent.find({"_tp": self.mSolKind}):
-            name = it["name"]
-            self.mData[name] = [it[self.mSolKind],
-                AnfisaConfig.normalizeTime(it.get("time")), it["from"]]
+            assert "data" in it, "Mongo support is out of date"
+            assert it["name"] not in self.mEntries, (
+                "Key duplication: " + self.mSolKind + "/" + it["name"])
+            self.mEntries[it["name"]] = makeSolItemInfo(
+                self.mSolKind, it["name"], it["data"], it.get("rubric"),
+                    it["time"], it["from"])
 
-    def _getSolKind(self):
+    def getSolKind(self):
         return self.mSolKind
 
     def getIntVersion(self):
         return self.mIntVersion
 
     def iterEntries(self):
-        ret = []
-        for name in sorted(self.mData.keys()):
-            value, upd_time, upd_from = self.mData[name]
-            ret.append((name, value, upd_time, upd_from))
-        return iter(ret)
+        for name in sorted(self.mEntries.keys()):
+            yield self.mEntries[name]
 
     def getEntry(self, name):
-        return self.mData.get(name, self.sDefaultNone)
+        return self.mEntries.get(name)
 
-    def modifyData(self, option, name, value, upd_from):
+    def modifyEntry(self, option, name, value, rubric, upd_from):
         if option == "UPDATE":
-            time_label = datetime.now().isoformat()
+            info = makeSolItemInfo(self.mSolKind,
+                name, value, rubric,
+                upd_time = datetime.now().isoformat(),
+                upd_from = upd_from)
             self.mMongoAgent.update_one({"_tp": self.mSolKind, "name": name},
-                {"$set": {self.mSolKind: value, "_tp": self.mSolKind,
-                    "time": time_label, "from": upd_from}},
+                {"$set": info},
                 upsert = True)
-            self.mData[name] = [value,
-                AnfisaConfig.normalizeTime(time_label), upd_from]
+            self.mEntries[name] = info
             self.mIntVersion += 1
             return True
-        if option == "DELETE" and name in self.mData:
+        if option == "DELETE" and name in self.mEntries:
             self.mMongoAgent.delete_many({"_tp": self.mSolKind, "name": name})
-            del self.mData[name]
+            del self.mEntries[name]
             self.mIntVersion += 1
             return True
         return False

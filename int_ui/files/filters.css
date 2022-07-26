@@ -109,6 +109,8 @@ div#filters-edit-ctrl {
     vertical-align: bottom;
     margin: 5px 10px 10px 5px;
     display: flex;
+    flex-wrap: wrap;
+    width: 100%;
 }
 
 div#filter-wrap-list-conditions {
@@ -116,14 +118,6 @@ div#filter-wrap-list-conditions {
     width: 100%;
     display: grid;
     overflow: hidden;
-}
-
-select#filter-name-input {
-    font-size: 14px;
-}
-
-#filter-name-input:disabled {
-    opacity: 0;
 }
 
 #filter-name-combo {
@@ -139,6 +133,21 @@ select#filter-name-input {
     max-height: 20px;
     height: 20px;
 }
+
+#filter-rubric-div {
+    display: flex;
+    justify-content: flex-end;
+    font-style: italic;
+    flex-grow: 3;
+    font-size: 80%;
+    vertical-align: bottom;
+    padding-right: 5px;
+}
+
+#filter-rubric-input {
+    z-index: 500;
+}
+
 /********************Unit stat support*****************************/
 div.stat-unit {
     cursor: pointer;

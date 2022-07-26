@@ -69,8 +69,8 @@ class PanelZoneH(ZoneH):
         return self.mPanelUnit.getName()
 
     def getVariantList(self):
-        return list(pname
-            for pname, _ in self.mVarietyUnit.iterPanels())
+        return [pname
+            for pname, _ in self.mVarietyUnit.iterPanels()]
 
     def inVariants(self, rec_no, variants):
         v_idx_set = self.mVarietyUnit.getRecVal(rec_no)

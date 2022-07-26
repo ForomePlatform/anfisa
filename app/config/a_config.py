@@ -65,7 +65,7 @@ class AnfisaConfig:
         },
 
         "panels.setup": {
-            "Symbol": {"unit": "Symbol"}
+            "Symbol": {"unit": "Symbol", "special": "__Symbol__"}
         },
 
         "zygosity.path.base": "/__data/zygosity",
@@ -109,12 +109,6 @@ class AnfisaConfig:
                 "yellow", "yellow-cross", "green"}:
             return color_code
         return "grey"
-
-    @classmethod
-    def normalizeTime(cls, time_label):
-        if time_label is None:
-            return None
-        return time_label
 
     @classmethod
     def getAnfisaVersion(cls):

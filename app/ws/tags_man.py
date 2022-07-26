@@ -29,11 +29,7 @@ class TagsManager(ZoneH):
         ZoneH.__init__(self, ds_h, "_tags")
         self.mTagSets = defaultdict(set)
         self.mMarkedSet = set()
-        self.mCheckTags = None
-        for it in ds_h.iterStdItems("panel._tags"):
-            if it.getName() == panel_name:
-                self.mCheckTags = it.getData()
-                break
+        self.mCheckTags = ds_h.getStdItemData("panel._tags", panel_name)
         assert self.mCheckTags, f"Tag panel {panel_name} not found"
         self.refreshTags()
 
@@ -44,7 +40,7 @@ class TagsManager(ZoneH):
         self.mTagSets = defaultdict(set)
         self.mMarkedSet = set()
         for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
-            rec_key, tags_data = tags_info[:2]
+            rec_key, tags_data = tags_info["name"], tags_info["data"]
             if not tags_data:
                 continue
             rec_no = self.getDS().getRecNoByKey(rec_key)
@@ -71,7 +67,8 @@ class TagsManager(ZoneH):
             del tags_data[key]
 
         rec_key = self.getDS().getRecKey(rec_no)
-        prev_data = self.getDS().getSolEnv().getEntry("tags", rec_key)[0]
+        prev_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        prev_data = prev_info["data"] if prev_info is not None else None
         if (prev_data is None
                 or any(val != tags_data.get(key)
                     for key, val in prev_data.items())
@@ -87,16 +84,23 @@ class TagsManager(ZoneH):
 
     def getRecTags(self, rec_no):
         rec_key = self.getDS().getRecKey(rec_no)
-        return self.getDS().getSolEnv().getEntry("tags", rec_key)[0]
+        tags_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        if tags_info is None:
+            return None
+        return tags_info["data"]
 
     def makeRecReport(self, rec_no):
         ret = self.getTagListInfo()
         rec_key = self.getDS().getRecKey(rec_no)
-        tags_data, upd_time, upd_from = self.getDS().getSolEnv().getEntry(
-            "tags", rec_key)
-        ret["rec-tags"] = tags_data if tags_data is not None else dict()
-        ret["upd-time"] = upd_time
-        ret["upd-from"] = upd_from
+        tags_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        if tags_info is not None:
+            ret["rec-tags"] = tags_info["data"]
+            ret["upd-time"] = tags_info.get("time")
+            ret["upd-from"] = tags_info.get("from")
+        else:
+            ret["rec-tags"] = dict()
+            ret["upd-time"] = None
+            ret["upd-from"] = None
         return ret
 
     def getRestrictF(self, variants):
@@ -129,7 +133,7 @@ class TagsManager(ZoneH):
             for rec_no in rec_no_seq}
         to_update_seq = []
         for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
-            rec_key, tags_data = tags_info[:2]
+            rec_key, tags_data = tags_info["name"], tags_info["data"]
             if tags_data is None:
                 continue
             if rec_key in new_tag_keys:

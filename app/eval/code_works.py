@@ -34,6 +34,7 @@ def normalizeCode(code):
             ret.append(ln)
     return "\n".join(ret)
 
+
 #===============================================
 #===============================================
 sDiff = Differ()

@@ -141,7 +141,7 @@ class DruidAdmin(DruidAgent):
                         "type": "json"}},
                 "tuningConfig": {
                     "type": "index_parallel",
-                    "reportParseExceptions" : True,
+                    "reportParseExceptions": True,
                     "logParseExceptions": True}}}
 
         if report_fname is not None:

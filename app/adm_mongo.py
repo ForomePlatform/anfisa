@@ -31,7 +31,7 @@ parser.add_argument("--pretty", action = "store_true",
 parser.add_argument("--dry", action = "store_true",
     help = "Dry run: just report instead of data change")
 parser.add_argument("-m", "--mode", default = "list",
-    help="Command: list/dump/restore/drop/GeneDb")
+    help="Command: list/dump/restore/drop/GeneDb/upgrade-a")
 parser.add_argument("datasets", nargs = "*",
     help = "Dataset names or pattern with '*'")
 run_args = parser.parse_args()
@@ -138,6 +138,22 @@ assert len(aspects) > 0, (
 print("//Aspects: " + " ".join(sorted(aspects)), file = sys.stderr)
 
 #===============================================
+def upgradeIt(it):
+    if it["_tp"] == "dsinfo" or "data" in it:
+        return None
+    fld_name = it["_tp"]
+    if fld_name not in it:
+        print("Warning strange item:", presentation(it))
+        return None
+    ret = {"_tp": it["_tp"], "name": it["name"], "data": it[fld_name]}
+    for key in ("time", "from", "rubric"):
+        if key in it:
+            ret[key] = it[key]
+    rest_keys = set(it.keys()) - set(ret.keys()) - {"_id", fld_name}
+    assert len(rest_keys) == 0, repr(sorted(rest_keys))
+    return ret
+
+#===============================================
 name_flt = NameFilter(run_args.datasets)
 
 ds_present_set = set()
@@ -232,5 +248,21 @@ elif run_args.mode == "restore":
             print("-> Added records:", rec_count, file = sys.stderr)
         else:
             print("-> Skipped records:", rec_count, file = sys.stderr)
+elif run_args.mode == "upgrade-a":
+    for ds_name in name_flt.filterNames(ds_present_set):
+        print(presentation({"_tp": "DS", "name": ds_name}, run_args.pretty))
+        modified = []
+        for it in mongo_db[ds_name].find():
+            mod_it = upgradeIt(it)
+            if mod_it is not None:
+                modified.append(mod_it)
+        if len(modified) == 0:
+            print("= skipped (nothing to upgrade)")
+        else:
+            for mod_it in modified:
+                mongo_db[ds_name].update_one(
+                    {"_tp": mod_it["_tp"], "name": mod_it["name"]},
+                    {"$set": mod_it})
+            print("= upgraded", len(modified), "items")
 else:
     print("Oops: command not supported", file = sys.stderr)

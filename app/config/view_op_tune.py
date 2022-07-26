@@ -277,6 +277,7 @@ def FATHMM_ColorCode(value):
         "T": 10,
         "D": 30}.get(value, -1)
 
+
 sColorFunctions = {
     "Polyphen": Polyphen_ColorCode,
     "SIFT": SIFT_ColorCode,
@@ -287,9 +288,9 @@ sColorFunctions = {
 
 def prepareSeqColorTransform(mode):
     color_func = sColorFunctions[mode]
+
     def transform_func(seq_data):
         if not seq_data:
             return seq_data
         return [[value, color_func(value)] for value in seq_data]
     return transform_func
-

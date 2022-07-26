@@ -221,6 +221,19 @@ def formFilterPanel(output, modal_mode):
                 onclick="sFiltersH.action();">
               ...
             </button>
+            <div id="filter-rubric-div">
+                Rubric:
+                <div id="filter-rubric-combo" class="combobox">
+                  <select id="filter-rubric-combo-list"
+                      onchange="sFiltersH.selectRubric();">
+                    <option value=""></option>
+                  </select>
+                  <input id="filter-rubric-input" type="text"/>
+                </div>
+                <input id="filter-eval-check" type="checkbox"
+                    title = "With invalid filters"
+                    onchange="sFiltersH.select();" />
+            </div>
           </div>
           <div id="filter-wrap-list-conditions">
             <div id="filter-list-conditions">

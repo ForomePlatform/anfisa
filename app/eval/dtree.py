@@ -21,6 +21,7 @@
 import logging, json
 
 from app.config.a_config import AnfisaConfig
+from app.model.sol_support import StdNameSupport
 from .evaluation import Evaluation
 from .dtree_parse import ParsedDTree
 from .code_works import HtmlPresentation
@@ -250,14 +251,15 @@ class ConditionPoint(CheckPoint):
 
 #===============================================
 class DTreeEval(Evaluation, CaseStory):
-    def __init__(self, eval_space, dtree_code, dtree_name = None,
-            updated_time = None, updated_from = None):
+    def __init__(self, eval_space, dtree_code, name = None,
+            rubric = None, updated_time = None, updated_from = None):
         parsed = ParsedDTree(eval_space, dtree_code)
         Evaluation.__init__(self, eval_space, parsed.getHashCode(),
             updated_time, updated_from)
         CaseStory.__init__(self)
         self.mCode = parsed.getTreeCode()
-        self.mDTreeName = dtree_name
+        self.mDTreeName = name
+        self.mRubric = rubric
         self.mPointList = None
         self.mFragments = parsed.getFragments()
         self.mFinalCondition = None
@@ -268,7 +270,16 @@ class DTreeEval(Evaluation, CaseStory):
             self.mErrorInfo = {
                 "line": lineno, "pos": offset, "error": msg_text}
             logging.error(("Error in tree %s code: (%d:%d) %s\n" %
-                (dtree_name if dtree_name else "", lineno, offset, msg_text)))
+                (name if name else "", lineno, offset, msg_text)))
+
+    @staticmethod
+    def makeSolEntry(eval_space, info):
+        assert info["_tp"] == "dtree"
+        return DTreeEval(eval_space, info["data"],
+            name = StdNameSupport.normNm(info["name"], info.get("is_std")),
+            rubric = info.get("rubric"),
+            updated_time = info.get("time"),
+            updated_from = info.get("from"))
 
     def isActive(self):
         return self.mPointList is not None
@@ -334,8 +345,11 @@ class DTreeEval(Evaluation, CaseStory):
     def getCode(self):
         return self.mCode
 
-    def getDTreeName(self):
+    def getName(self):
         return self.mDTreeName
+
+    def getRubric(self):
+        return self.mRubric
 
     def getCurPointNo(self):
         return Evaluation.getCurPointNo(self)

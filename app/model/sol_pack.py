@@ -22,33 +22,11 @@ import logging
 from hashlib import md5
 from app.eval.dtree import DTreeEval
 from app.eval.condition import condDataUnits
+from .sol_support import makeSolItemInfo
 
 #===============================================
 def codeHash(tree_code):
     return md5(bytes(tree_code.strip(), 'utf-8')).hexdigest()
-
-#===============================================
-class SolutionItem:
-    def __init__(self, kind, name, data, requires,
-            used_names, ext_name = None):
-        self.mKind = kind
-        self.mName = name
-        self.mRequires = requires
-        self.mData = data
-        use_name = ext_name if ext_name else self.mName
-        assert use_name not in used_names, "Name duplication " + use_name
-        used_names.add(use_name)
-
-    def testIt(self, kind, test_f):
-        if kind is not None and self.mKind != kind:
-            return False
-        return test_f(self.mRequires)
-
-    def getName(self):
-        return self.mName
-
-    def getData(self):
-        return self.mData
 
 #===============================================
 class SolutionPack:
@@ -105,7 +83,11 @@ class SolutionPack:
     def getName(self):
         return self.mName
 
-    def regFilter(self, flt_name, cond_seq, requires = None):
+    def __iter__(self):
+        return iter(self.mItems)
+
+    def regFilter(self, flt_name, cond_seq,
+            requires = None, rubric = None):
         if self.mCheckUnitsFunc is not None:
             unit_names = set()
             for cond_data in cond_seq:
@@ -113,47 +95,46 @@ class SolutionPack:
             if not self.mCheckUnitsFunc("filter",
                     flt_name, unit_names, requires):
                 return
-        self.mItems.append(SolutionItem("filter", flt_name,
-            cond_seq, requires, self.mUsedNames))
+        self.mItems.append(makeSolItemInfo(
+            "filter", flt_name, cond_seq, rubric,
+            used_names = self.mUsedNames, requires = requires, is_std = True))
 
-    def regDTree(self, tree_name, fname_seq, requires = None):
+    def regDTree(self, tree_name, fname_seq,
+            requires = None, rubric= None):
         tree_code = self.readFileSeq(fname_seq)
         if self.mCheckUnitsFunc is not None:
             dtree_h = DTreeEval(None, tree_code)
             if not self.mCheckUnitsFunc("dtree",
                     tree_name, dtree_h.getActiveUnitSet(), requires):
                 return
-        it = SolutionItem("dtree", tree_name,
-            tree_code, requires, self.mUsedNames)
-        self.mItems.append(it)
+        self.mItems.append(makeSolItemInfo(
+            "dtree", tree_name, tree_code, rubric,
+            used_names = self.mUsedNames, requires = requires, is_std = True))
 
     def regPanel(self, panel_name, panel_type,
-            fname = None, items = None, requires = None):
+            fname = None, items = None,
+            requires = None, rubric = None):
         assert (fname is not None) ^ (items is not None), (
             f"Collision: fname={fname} / items={items is not None}")
         if fname:
             items = self.readListFile(fname)
-        self.mItems.append(SolutionItem("panel." + panel_type,
-            panel_name, items, requires,
-            self.mUsedNames))
+        else:
+            assert isinstance(items, list)
+        self.mItems.append(makeSolItemInfo(
+            "panel." + panel_type, panel_name, items, rubric,
+            used_names = self.mUsedNames, requires = requires, is_std = True))
 
     def regItemDict(self, name, the_dict, requires = None):
-        self.mItems.append(SolutionItem("item-dict",
-            name, the_dict, requires, self.mUsedNames))
+        self.mItems.append(makeSolItemInfo(
+            "item-dict", name, the_dict, None,
+            used_names = self.mUsedNames, requires = requires, is_std = True))
 
     def regZone(self, zone_title, unit_name, requires = None):
-        self.mItems.append(SolutionItem("zone",
-            zone_title,  unit_name, requires, self.mUsedNames))
+        self.mItems.append(makeSolItemInfo(
+            "zone", zone_title, unit_name, None,
+            used_names = self.mUsedNames, requires = requires, is_std = True))
 
-    def regTabSchema(self, tab_schema, requires = None):
-        self.mItems.append(SolutionItem("tab-schema",
-            tab_schema.getName(), tab_schema, requires, self.mUsedNames))
-
-    #===============================================
-    def iterItems(self, kind, test_f):
-        for it in sorted(self.mItems, key = lambda it: it.getName()):
-            if it.testIt(kind, test_f):
-                yield it
-
-    def getTreeByHashCode(self, hash_code):
-        return self.mTreeCodes.get(hash_code)
+    def regTabSchema(self, tab_schema, requires = None, rubric = None):
+        self.mItems.append(makeSolItemInfo(
+            "tab-schema", tab_schema.getName(), tab_schema, rubric,
+            used_names = self.mUsedNames, requires = requires, is_std = True))

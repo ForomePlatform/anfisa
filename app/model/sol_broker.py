@@ -18,11 +18,10 @@
 #  limitations under the License.
 #
 
-from threading import Lock
-
 from forome_tools.sync_obj import SyncronizedObject
+from app.config.a_config import AnfisaConfig
 from .sol_pack import SolutionPack
-from .sol_support import SolutionKindHandler
+from .sol_support import SolutionKindHandler, SolPanelHandler
 from .family import FamilyInfo
 #===============================================
 class SolutionBroker(SyncronizedObject):
@@ -31,16 +30,12 @@ class SolutionBroker(SyncronizedObject):
         SyncronizedObject.__init__(self)
         self.mDataSchema = meta_info.get("data_schema", "CASE")
         self.mSolPack = SolutionPack.select(self.mDataSchema)
-        self.mLock  = Lock()
         self.mModes = set()
         self.mModes.add(self.mDataSchema)
         self.mDSKind = ds_kind
         assert self.mDSKind in {"ws", "xl"}
         self.mModes.add(self.mDSKind.upper())
 
-        self.mStdFilterDict = None
-        self.mStdFilterList = None
-        self.mFilterCache = None
         self.mSolEnv = None
         self.mSolKinds = None
         self.mNamedAttrs = dict()
@@ -76,14 +71,27 @@ class SolutionBroker(SyncronizedObject):
         return self.mFastaBase
 
     #===============================================
-    def setSolEnv(self, sol_space):
+    def _setupEnv(self, sol_env, sol_makers):
         assert self.mSolEnv is None, "solEnv is already set"
         with self:
-            self.mSolEnv = sol_space
-            self.mSolKinds = {kind: SolutionKindHandler(self, kind)
-                for kind in ("filter", "dtree")}
-            self.mSolKinds["panel.Symbol"] = SolutionKindHandler(
-                self, "panel.Symbol", "__Symbol__")
+            self.mSolEnv = sol_env
+            self.mSolKinds = dict()
+            for sol_kind in sol_env.getSolKeys():
+                kind_h = None
+                if sol_kind in sol_makers:
+                    kind_h = SolutionKindHandler(self,
+                        sol_kind, sol_makers[sol_kind])
+                elif sol_kind.startswith("panel."):
+                    prefix, ptype = sol_kind.split('.')
+                    panels_cfg = AnfisaConfig.configOption("panels.setup")
+                    assert ptype in panels_cfg, ("Panel type not supported: " + ptype)
+                    kind_h = SolutionKindHandler(self, sol_kind,
+                        SolPanelHandler.makeSolEntry,
+                        special_name = panels_cfg[ptype].get("special"))
+                else:
+                    assert sol_kind == "tags", "Bad sol kind: " + sol_kind
+                    continue
+                self.mSolKinds[sol_kind] = kind_h
             self.mSolEnv.attachBroker(self)
 
     def deactivate(self):
@@ -101,12 +109,14 @@ class SolutionBroker(SyncronizedObject):
         return len(modes & self.mModes) == len(modes)
 
     def iterStdItems(self, item_kind):
-        return self.mSolPack.iterItems(item_kind, self.testRequirements)
+        for it in self.mSolPack:
+            if it["_tp"] == item_kind and self.testRequirements(it.get("req")):
+                yield it
 
-    def getStdItem(self, item_kind, item_name):
-        for it in self.mSolPack.iterItems(item_kind, self.testRequirements):
-            if it.getName() == item_name:
-                return it
+    def getStdItemData(self, item_kind, item_name):
+        for it in self.iterStdItems(item_kind):
+            if it["name"] == item_name:
+                return it["data"]
         return None
 
     def getModes(self):
@@ -187,5 +197,5 @@ class SolutionBroker(SyncronizedObject):
     def reportSolutions(self):
         ret = dict()
         for kind in ("filter", "dtree", "zone", "tab-schema", "panel.Symbol"):
-            ret[kind] = [it.getName() for it in self.iterStdItems(kind)]
+            ret[kind] = [it["name"] for it in self.iterStdItems(kind)]
         return ret
