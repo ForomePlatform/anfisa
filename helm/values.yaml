@@ -3,11 +3,6 @@ name: anfisa-back
 # git_branch: helm
 # output_registry: image-registry.openshift-image-registry.svc:5000
 
-ingress:
-  name: anfisa-ingress
-  host: __ingressHost__
-  certificate: __ingressCert__
-
 image:
   repository: forome.azurecr.io/anfisa
   tag: __appVersion__
@@ -24,6 +19,15 @@ imageCredentials:
 bucketCredentials:
   accessKey: __bucketAccessKey__
   secretKey: __bucketSecretKey__
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  name: anfisa-ingress
+  host: __ingressHost__
+  certificate: __ingressCert__
 
 env:
   - name: ANFISA_COORD_HOST
