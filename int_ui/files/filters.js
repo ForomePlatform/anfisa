@@ -531,7 +531,7 @@ var sFiltersH = {
         this.mListRubric = document.getElementById("filter-rubric-combo-list");
         this.mInpRubric  = document.getElementById("filter-rubric-input");
         this.mCheckEval  = document.getElementById("filter-eval-check");
-        this.mDivRubric = document.getElementById("filter-rubric-div");
+        this.mDivRubric  = document.getElementById("filter-rubric-div");
         this.mDivRubric.style.display = "none"; 
     },
 

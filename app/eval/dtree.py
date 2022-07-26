@@ -426,7 +426,7 @@ class DTreeEval(Evaluation, CaseStory):
         return html_lines
 
     def collectRecSeq(self):
-        max_ws_size = AnfisaConfig.configOption("max.ws.size")
+        ws_max_count = AnfisaConfig.configOption("ws.max.count")
         html_lines = self._decorCode()
         ret = set()
         info_seq = []
@@ -441,12 +441,12 @@ class DTreeEval(Evaluation, CaseStory):
                 info_seq[-1][2] = point.getDecision()
             if point.getDecision() is True:
                 assert point.getPointKind() == "Return"
-                assert point_count < max_ws_size
+                assert point_count < ws_max_count
                 if point_count > 0:
                     seq = self.getEvalSpace().evalRecSeq(
                         condition, point_count)
                     ret |= set(seq)
-            assert len(ret) < max_ws_size
+            assert len(ret) < ws_max_count
         return sorted(ret), info_seq
 
     def getFinalCondition(self):

@@ -13,6 +13,7 @@ Requests
    :doc:`adm_update`        Force vault state update
    :doc:`adm_reload_ds`     Force dataset reload
    :doc:`adm_drop_ds`       Drop dataset 
+   :doc:`defaults`          Instance settings
   ------------------------- ------------------------------------------------------------- 
   \ 
   *Dataset level*
@@ -71,6 +72,7 @@ Requests
    adm_update
    adm_reload_ds
    adm_drop_ds
+   defaults
 
    dsinfo 
    ds_list

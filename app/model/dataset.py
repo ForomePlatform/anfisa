@@ -45,7 +45,7 @@ from .tab_report import reportCSV
 class DataSet(SolutionBroker):
     sStatRqCount = 0
     sTimeCoeff = AnfisaConfig.configOption("tm.coeff")
-    sMaxTabRqSize = AnfisaConfig.configOption("max.tab.rq.size")
+    sMaxTabRqSize = AnfisaConfig.configOption("tab.max.count")
     sMaxExportSize = AnfisaConfig.configOption("export.max.count")
 
     #===============================================

@@ -39,9 +39,12 @@ class AnfisaConfig:
         },
 
         "tm.coeff": .2,
-
-        "max.ws.size":  9000,
         "report.lines": 100,
+
+        "ws.max.count":  9000,
+        "export.max.count": 9000,
+        "tab.max.count": 9000,  # 50,
+
         "ds.name.max.length": 255,
         "tag.name.max.length": 255,
         "sol.name.max.length": 255,
@@ -50,9 +53,6 @@ class AnfisaConfig:
         "xl.view.count.samples.default": 25,
         "xl.view.count.samples.min": 10,
         "xl.view.count.samples.max": 150,
-
-        "export.max.count": 9000,
-        "max.tab.rq.size": 9000,  # 50,
 
         "solution.std.mark": '@',
         "code.error.mark": u"\u26a0",

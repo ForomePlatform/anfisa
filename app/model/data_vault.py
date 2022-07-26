@@ -29,6 +29,7 @@ from collections import defaultdict
 from .rest_api import RestAPI
 from .sol_env import SolutionEnv
 from .genes_db import GenesDB
+from app.config.a_config import AnfisaConfig
 from app.ws.workspace import Workspace
 from app.ws.ws_io import importWS
 from app.xl.xl_dataset import XLDataset
@@ -277,6 +278,17 @@ class DataVault(SyncronizedObject):
         assert tp == "Symbol"
         return self.mGenesDB
 
+    def canDropDS(self, ds_name, report_it = False):
+        patterns = self.mApp.getOption("auto-drop-datasets")
+        if patterns is None:
+            return False
+        for pattern in patterns:
+            if re.search(pattern, ds_name):
+                if report_it:
+                    logging.info(f"Drop dataset {ds_name} by rule '{pattern}'")
+                return True
+        return False
+
     #===============================================
     @RestAPI.vault_request
     def rq__dirinfo(self, rq_args):
@@ -392,16 +404,27 @@ class DataVault(SyncronizedObject):
     def rq__adm_drop_ds(self, rq_args):
         assert "ds" in rq_args, 'Missing request argument "ds"'
         ds_name = rq_args["ds"]
-        patterns = self.mApp.getOption("auto-drop-datasets")
-        if patterns is None:
-            patterns = []
-        for pattern in patterns:
-            if re.search(pattern, ds_name):
-                logging.info(f"Drop dataset {ds_name} by rule '{pattern}'")
-                self.unloadDS(ds_name)
-                shutil.rmtree(self.mVaultDir + '/' + ds_name)
-                self.scanAll()
-                return "Dropped " + ds_name
+        if self.canDropDS(ds_name, True):
+            self.unloadDS(ds_name)
+            shutil.rmtree(self.mVaultDir + '/' + ds_name)
+            self.scanAll()
+            return "Dropped " + ds_name
         assert False, (f"Drop dataset {ds_name} failed: "
             + "no appropriate pattern in 'auto-drop-datasets' config option")
         return None
+
+    @RestAPI.vault_request
+    def rq__defaults(self, rq_args):
+        ret = {key: AnfisaConfig.configOption(key)
+            for key in ("ws.max.count", "export.max.count", "tab.max.count",
+            "ds.name.max.length", "tag.name.max.length", "sol.name.max.length",
+            "xl.view.count.full", "xl.view.count.samples.default",
+            "xl.view.count.samples.min", "xl.view.count.samples.max",
+            "solution.std.mark")}
+        for key in ("run-options", "run-modes", "job-vault-check-period"):
+            ret[key] = self.mApp.getOption(key)
+        if "ds" in rq_args:
+            ret["ds-name"] = rq_args["ds"]
+            ret["can-drop-ds"] = self.canDropDS(rq_args["ds"])
+        return ret
+

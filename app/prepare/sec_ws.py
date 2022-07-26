@@ -80,7 +80,7 @@ class SecondaryWsCreation(ExecutionTask):
             condition = self.mEval.getCondition()
             rec_count = self.mDS.getEvalSpace().evalTotalCounts(condition)[0]
             if (rec_count < 1
-                    or rec_count >= AnfisaConfig.configOption("max.ws.size")):
+                    or rec_count >= AnfisaConfig.configOption("ws.max.count")):
                 self.setStatus("Size is incorrect: %d" % rec_count)
                 return None
             rec_no_seq = self.mDS.getEvalSpace().evalRecSeq(
