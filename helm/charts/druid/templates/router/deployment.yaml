@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "druid.router.fullname" . }}
+#  name: druid-router-test
+  labels:
+    app: {{ include "druid.name" . }}
+    chart: {{ include "druid.chart" . }}
+    component: {{ .Values.router.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.router.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "druid.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.router.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "druid.name" . }}
+        release: {{ .Release.Name }}
+        component: {{ .Values.router.name }}
+      {{- with .Values.router.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }}
+    spec:
+      containers:
+        - name: {{ include "druid.router.fullname" . }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: [ "router" ]
+          env:
+          {{- if .Values.zookeeper.enabled }}
+          - name: druid_zk_service_host
+            value: "{{ .Release.Name }}-zookeeper-headless:2181"
+          {{- else }}
+          - name: druid_zk_service_host
+            value: "{{ .Values.zkHosts }}"
+          {{- end }}
+          {{- if .Values.postgresql.enabled }}
+          - name: druid_metadata_storage_type
+            value: postgresql
+          - name: druid_metadata_storage_connector_connectURI
+            value: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.postgresqlDatabase }}"
+          - name: druid_metadata_storage_connector_user
+            value: "{{ .Values.postgresql.postgresqlUsername }}"
+          - name: druid_metadata_storage_connector_password
+            value: "{{ .Values.postgresql.postgresqlPassword }}"
+          {{- end }}
+          - name: druid_extensions_loadList
+            value: {{ .Values.extensions.loadList | toJson | quote }}
+          - name: JAVA_OPTS
+            value: {{ .Values.router.javaOpts }}
+          {{- range $key, $value :=  mergeOverwrite .Values.env .Values.router.env }}
+          - name: {{ $key }}
+            value: {{ $value | quote }}
+          {{- end }}
+          {{- if .Values.monitoring.enabled }}
+          - name: druid_emitter
+            value: http
+          - name: druid_emitter_http_recipientBaseUrl
+            value: "http://localhost:{{ .Values.monitoring.port }}"
+          {{- end}}
+          {{- if .Values.router.managementProxy.enabled }}
+          - name: druid_router_managementProxy_enabled
+            value: "true"
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.router.port }}
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/health
+              port: {{ .Values.router.port }}
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /status/selfDiscovered
+              port: {{ .Values.router.port }}
+          resources:
+{{ toYaml .Values.router.resources | indent 12 }}
+
+        {{- if .Values.monitoring.enabled }}
+        - name: druid-metrics-exporter
+          image: featurefm/druid-exporter
+          imagePullPolicy: Always
+          command: [".venv/bin/druid_exporter", "--debug", "--listen=:{{ .Values.monitoring.port }}"]
+          ports:
+            - name: metrics
+              containerPort: {{ .Values.monitoring.port }}
+          livenessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+        {{- end }}
+
+    {{- with .Values.router.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.router.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.router.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000760000
+        runAsGroup: 1000

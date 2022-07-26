@@ -22,6 +22,8 @@ services:
     ports:
       - "9010:80"
     hostname: anfisa7
+    env_file:
+      - setup/.env
     networks:
       default:
         ipv4_address: 172.23.0.4

@@ -3,3 +3,6 @@
 *.py~
 .inst_dir
 forome_tools-0.1.4-py3-none-any.whl
+anfisa-react-client/
+anfisa/
+helm/values.secrets.yaml
