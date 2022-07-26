@@ -3,4 +3,3 @@ name: anfisa
 description: A Helm chart for Kubernetes
 version: 0.1.0
 appVersion: __appVersion__
-# appVersion: 0.7.6
