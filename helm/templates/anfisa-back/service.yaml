@@ -10,7 +10,7 @@ spec:
     - port: {{ .Values.service.port }}
       targetPort: http
       protocol: TCP
-      name: http
+      name: anfisa-backend
   sessionAffinity: None
   selector:
     app: {{ .Values.name }}
