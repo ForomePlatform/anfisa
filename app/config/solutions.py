@@ -153,7 +153,7 @@ def setupSolutions_Case(app_config, base_pack):
     base_pack.regFilter("BGM_De_Novo", [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Callers", ["BGM_BAYES_DE_NOVO", "RUFUS"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-A")
+        requires = {"trio_base", "WS"}, rubric = "BGM-Genetic-First")
 
     base_pack.regFilter("BGM_Homozygous_Rec", [
         condition_consequence_xBrowse(),
@@ -162,7 +162,7 @@ def setupSolutions_Case(app_config, base_pack):
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
         ConditionMaker.condFunc("Inheritance_Mode", dict(),
             ["Homozygous Recessive"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-A")
+        requires = {"trio_base", "WS"}, rubric = "BGM-Genetic-First")
 
     base_pack.regFilter("BGM_Compound_Het", [
         condition_consequence_xBrowse(),
@@ -171,14 +171,14 @@ def setupSolutions_Case(app_config, base_pack):
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
         ConditionMaker.condFunc("Compound_Het",
             {"approx": "transcript"}, ["Proband"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-A")
+        requires = {"trio_base", "WS"}, rubric = "BGM-Genetic-First")
 
     base_pack.regFilter("BGM_Autosomal_Dominant", [
         condition_consequence_xBrowse(),
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Callers", ["BGM_DE_NOVO"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-A")
+        requires = {"trio_base", "WS"}, rubric = "BGM-Genetic-First")
 
     # Standard mendelian Filters, should belong to
     # "Undiagnosed Patients Solution Pack"
@@ -187,7 +187,7 @@ def setupSolutions_Case(app_config, base_pack):
         ConditionMaker.condEnum("Transcript_biotype", ["protein_coding"]),
         ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
         ConditionMaker.condFunc("Inheritance_Mode", dict(), ["X-linked"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-B")
+        requires = {"trio_base", "WS"}, rubric = "Genetic-First")
 
     base_pack.regFilter("Mendelian_Homozygous_Rec",
         condition_high_quality() + condition_all_genotypes_called()
@@ -199,7 +199,7 @@ def setupSolutions_Case(app_config, base_pack):
                 ["Homozygous Recessive"]),
             ConditionMaker.condEnum("Proband_Zygosity", ["Homozygous"])
         ],
-        requires = {"trio_base", "WS"}, rubric = "Test-B")
+        requires = {"trio_base", "WS"}, rubric = "Genetic-First")
 
     base_pack.regFilter("Mendelian_Compound_Het",
         condition_high_quality() + clinVar_not_benign() + [
@@ -208,7 +208,7 @@ def setupSolutions_Case(app_config, base_pack):
             ConditionMaker.condEnum("Transcript_source", ["Ensembl"]),
             ConditionMaker.condFunc("Compound_Het",
                 {"approx": "transcript"}, ["Proband"])],
-        requires = {"trio_base", "WS"}, rubric = "Test-B")
+        requires = {"trio_base", "WS"}, rubric = "Genetic-First")
 
     base_pack.regFilter("Mendelian_Auto_Dom",
         condition_high_quality() + clinVar_not_benign() + [
@@ -219,17 +219,17 @@ def setupSolutions_Case(app_config, base_pack):
                 ["Autosomal Dominant"]),
             ConditionMaker.condEnum("Proband_Zygosity", ["Heterozygous"])
         ],
-        requires = {"trio_base", "WS"}, rubric = "Test-B")
+        requires = {"trio_base", "WS"}, rubric = "Genetic-First")
 
     base_pack.regFilter("InSilico_Possibly_Damaging",
         condition_high_confidence() + [ConditionMaker.condEnum(
             "Rules", [stdNm("Possibly_Damaging_Predictions")])],
-        requires = {"WS"}, rubric = "Test-C")
+        requires = {"WS"}, rubric = "Genetic-First")
 
     base_pack.regFilter("InSilico_Damaging", condition_high_confidence()
         + [ConditionMaker.condEnum("Rules",
             [stdNm("Damaging_Predictions")])],
-        requires = {"WS"}, rubric = "Test-C")
+        requires = {"WS"}, rubric = "Genetic-First")
 
     # SEQaBOO Filters, should belong to "Hearing Loss Solution Pack"
     # base_pack.regFilter("SEQaBOO_Hearing_Loss_v_01", [
@@ -257,33 +257,34 @@ def setupSolutions_Case(app_config, base_pack):
     #     requires = {"WS"})
     base_pack.regFilter("SEQaBOO_Hearing_Loss_v_5", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss, v.5")])],
-        requires = {"WS"}, rubric = "Test-C")
+        requires = {"WS"}, rubric = "Phenotype-based")
     base_pack.regFilter("SEQaBOO_Hearing_Quick", [
         ConditionMaker.condEnum("Rules", [stdNm("Hearing Loss Quick")])],
-        requires = {"WS"}, rubric = "Test-C")
+        requires = {"WS"}, rubric = "Phenotype-based")
 
     # SEQaBOO Filters, should belong to "Base Solution Pack"
     base_pack.regFilter("SEQaBOO_ACMG59", [
         ConditionMaker.condEnum("Rules", [stdNm("ACMG59")])],
-        requires = {"WS"}, rubric = "Test-C")
+        requires = {"WS"}, rubric = "ACMG-Secondary")
     # base_pack.regFilter("SEQaBOO_ACMG59", [
     #     ConditionMaker.condEnum("Rules", [stdNm("SEQaBOO_ACMG59")]),
     #     ConditionMaker.condEnum("Rules", [stdNm("ACMG59")], "AND")],
     #     requires = {"WS"})
 
     base_pack.regFilter("Loss_Of_Function", condition_high_quality() + [
-        ConditionMaker.condEnum("Most_Severe_Consequence", LoF_CSQ)])
+        ConditionMaker.condEnum("Most_Severe_Consequence", LoF_CSQ)],
+                        rubric = "Genetic-First")
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
-            NON_SYNONYMOUS_CSQ)])
+            NON_SYNONYMOUS_CSQ)], rubric = "Genetic-First")
 
     base_pack.regFilter("UTR_and_Worse", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
-            LOW_IMPACT_CSQ, join_mode = "NOT")])
+            LOW_IMPACT_CSQ, join_mode = "NOT")], rubric = "Genetic-First")
 
     base_pack.regFilter("Impact_Splicing",
-        condition_high_confidence() + impacting_splicing())
+        condition_high_confidence() + impacting_splicing(), rubric = "Genetic-First")
 
     base_pack.regFilter("ClinVar_VUS_or_Worse",
         condition_high_confidence() + [
@@ -291,13 +292,13 @@ def setupSolutions_Case(app_config, base_pack):
             ConditionMaker.condEnum("Clinvar_conflicts", ["True"],
                                     join_mode = "NOT"),
             ConditionMaker.condEnum("Clinvar_Benign", ["VUS or Pathogenic"])
-        ], requires={"XL"})
+        ], requires={"XL"}, rubric = "Genetic-First")
 
     base_pack.regFilter("In_Silico_Damaging",
         condition_high_confidence() + [
             ConditionMaker.condEnum("Polyphen_2_HVAR",  ["D"]),
             ConditionMaker.condEnum("SIFT", ["deleterious"])
-        ], requires={"XL"})
+        ], requires={"XL"}, rubric = "Genetic-First")
 
     # base_pack.regFilter("Impact_Splicing",
     #     condition_high_quality() + impacting_splicing())
@@ -305,30 +306,31 @@ def setupSolutions_Case(app_config, base_pack):
     # Production Decision Trees
     base_pack.regDTree("BGM Research",
         cfgPathSeq(["bgm_xbrowse.pyt"]),
-        requires = {"trio_base"}, rubric = "Test-A")
+        requires = {"trio_base"}, rubric = "Genetic-First")
     base_pack.regDTree("BGM Red Button",
         cfgPathSeq(["bgm_strict.pyt"]),
-        requires = {"trio_base"}, rubric = "Test-A")
+        requires = {"trio_base"}, rubric = "Genetic-First")
     base_pack.regDTree("Trio Candidates",
         cfgPathSeq(["quality.pyt", "rare.pyt", "trio.pyt"]),
-        requires = {"trio_base"}, rubric = "Test-A")
+        requires = {"trio_base"}, rubric = "Genetic-First")
     base_pack.regDTree("All Rare Variants",
-        cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]))
+        cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]),
+                       rubric = "Genetic-First")
     # base_pack.regDTree("Hearing Loss, v.4",
     #    cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",
         cfgPathSeq(["quality.pyt", "hearing_loss_v5.pyt"]),
-        rubric = "Test-B")
+        rubric = "Phenotype-based")
     base_pack.regDTree("Hearing Loss Quick",
         cfgPathSeq(["quality.pyt", "hearing_loss_ws.pyt"]),
-        requires = {"WS"}, rubric = "Test-B")
+        requires = {"WS"}, rubric = "Phenotype-based")
     base_pack.regDTree("ACMG59 Variants",
         cfgPathSeq(["quality.pyt", "acmg59.pyt"]),
-        rubric = "Test-B")
+        rubric = "ACMG-Secondary")
     base_pack.regDTree("Damaging_Predictions",
-        cfgPathSeq(["damaging.pyt"]), rubric = "Test-C")
+        cfgPathSeq(["damaging.pyt"]), rubric = "Genetic-First")
     base_pack.regDTree("Possibly_Damaging_Predictions",
-        cfgPathSeq(["possibly_damaging.pyt"]), rubric = "Test-C")
+        cfgPathSeq(["possibly_damaging.pyt"]), rubric = "Genetic-First")
 
     # Test trees
     # base_pack.regDTree("Q Test",
