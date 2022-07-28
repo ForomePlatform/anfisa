@@ -339,6 +339,7 @@ class DataVault(SyncronizedObject):
                     ds_dict[name] = None
             return {
                 "version": self.mApp.getVersionCode(),
+                "build-hash": self.mApp.getBuildHashCode(),
                 "ds-list": ds_list,
                 "ds-dict": ds_dict,
                 "documentation": [doc_set.dump()

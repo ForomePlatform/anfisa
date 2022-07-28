@@ -51,7 +51,8 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
            <div id="dir-list"></div>
            <div id="dir-info">
                 <div id="div-version">
-                    System version:&nbsp;<span id="app-version"</span>
+                    System version:&nbsp;<span id="app-version"></span>
+                    &emsp;Build:&nbsp;<span id="app-build"></span>
                 </div>
                 <div id="ds-info"></div>
            </div>

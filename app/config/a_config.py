@@ -112,8 +112,16 @@ class AnfisaConfig:
 
     @classmethod
     def getAnfisaVersion(cls):
-        with open(os.path.dirname(os.path.abspath(__file__))
-                + "/../VERSION", "r", encoding = "utf-8") as inp:
+        fname = os.path.dirname(os.path.abspath(__file__)) + "/../VERSION"
+        with open(fname, "r", encoding = "utf-8") as inp:
+            return inp.read().strip()
+
+    @classmethod
+    def getAnfisaBuildHash(cls):
+        fname = os.path.dirname(os.path.abspath(__file__)) + "/../BUILD-HASH"
+        if not os.path.exists(fname):
+            return None
+        with open(fname, "r", encoding = "utf-8") as inp:
             return inp.read().strip()
 
     sVariantSystemFields = {

@@ -48,6 +48,7 @@ function setupDirData(info) {
     sDSDict = info["ds-dict"];
     sCurIdx = null;
     document.getElementById("app-version").innerHTML = info["version"];
+    document.getElementById("app-build").innerHTML = info["build-hash"];
     document.getElementById("ds-info").innerHTML = "";
     var rep_seq = [];
     var idx_from = 0;

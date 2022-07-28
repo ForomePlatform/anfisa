@@ -40,6 +40,12 @@ span#app-version{
     text-weight: bold;
 }
 
+span#app-build{
+    font-style: normal;
+    font-size: 90%;
+    font-family: Courier New;
+}
+
 div#dir-main {
     width: 100%;
     margin: 0px;

@@ -174,6 +174,9 @@ class UpdateApp:
     def getVersionCode(self):
         return AnfisaConfig.getAnfisaVersion()
 
+    def getBuildHashCode(self):
+        return AnfisaConfig.getAnfisaBuildHash()
+
     def updateDS(self, ds_info):
         receipt = ds_info.getDerivationReceipt()
         if receipt is None:

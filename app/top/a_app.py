@@ -144,6 +144,10 @@ class AnfisaApp:
         return AnfisaConfig.getAnfisaVersion()
 
     @classmethod
+    def getBuildHashCode(cls):
+        return AnfisaConfig.getAnfisaBuildHash()
+
+    @classmethod
     def getMongoConnector(cls):
         return cls.sMongoConn
 

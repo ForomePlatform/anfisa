@@ -19,6 +19,7 @@ Synopsis
     
         | ``{`` *dictionary*
         |       "**version**": version of the system, *string*
+        |       "**build-hash**": hash of the system build, *string*
         |       "**ds-list**": dataset names, *list of strings*
         |       "**ds-dict**": dataset descriptors, *dictionary*
         |             <dataset name> : *optional* :doc:`s_ds_descr`
