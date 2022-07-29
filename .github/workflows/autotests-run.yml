@@ -28,9 +28,9 @@ jobs:
       - name: Local modules install
         if: ${{ always() }}
         run: pipenv install
-        working-directory: .
+        working-directory: ./api_tests
         
       - name: Run tests
         if: ${{ always() }}
         run: pipenv run tests
-        working-directory: .
+        working-directory: ./api_tests
