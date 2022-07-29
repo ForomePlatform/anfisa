@@ -10,13 +10,13 @@ on:
       - master
     
 jobs:
-  database_job:
+  api_tests:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          path: ./api_tests
+          path: api_tests
         
       - name: Install Python, pipenv and Pipfile packages
         uses: palewire/install-python-pipenv-pipfile@v2
