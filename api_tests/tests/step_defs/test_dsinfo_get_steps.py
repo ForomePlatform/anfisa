@@ -3,7 +3,7 @@ from pytest_bdd import scenarios, parsers, given, then, when
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
 from lib.api.dsinfo_api import Dsinfo
 from tests.step_defs.conftest import successful_string_to_bool
-from lib.jsonschema.dsinfo_chema import dsinfo_schema
+from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from jsonschema import validate
 
 dsinfo = Dsinfo()
@@ -24,9 +24,11 @@ def dsinfo_response_validate(dsinfo_response):
     validate(dsinfo_response.json(), dsinfo_schema)
 
 
-@then(parsers.cfparse('I see a "{text_message:String}" text in response', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_message(dsinfo_response, text_message):
-    assert text_message in dsinfo_response.text
+@then(parsers.cfparse('I see a "name" key equal to "{name:String}" text in response',
+                      extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_message(dsinfo_response, name):
+    response = dsinfo_response.json()
+    assert response["name"] == name
 
 
 @then(parsers.cfparse('I see a "{error_message:String}" error message in response', extra_types=EXTRA_STRING_TYPES))

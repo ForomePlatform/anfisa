@@ -4,13 +4,13 @@ Feature: Check Dsinfo[GET] request
   @positive
   Scenario Outline: Send Dsinfo request with parameters: "<Parameters>" (successful)
     When I send get dsinfo request with parameters: "<Parameters>" (successful)
-#    Then I validate the response by schema
-    Then I see a "<Text>" text in response
+    Then I validate the response by schema
+    Then I see a "name" key equal to "<Name>" text in response
 
     Examples:
-      | Parameters                          | Text                              |
-      | { "ds": "xl_PGP3140_wgs_panel_hl" } | "name": "xl_PGP3140_wgs_panel_hl" |
-      | { "ds": "1658095799" }              | "name": "1658095799"              |
+      | Parameters                          | Name                    |
+      | { "ds": "xl_PGP3140_wgs_panel_hl" } | xl_PGP3140_wgs_panel_hl |
+      | { "ds": "1658095799" }              | 1658095799              |
 
 
   @negative
