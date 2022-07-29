@@ -26,9 +26,11 @@ jobs:
           python-version: 3.10.0
         
       - name: Local modules install
+        if: ${{ always() }}
         run: pipenv install
         working-directory: .
         
       - name: Run tests
+        if: ${{ always() }}
         run: pipenv run tests
         working-directory: .
