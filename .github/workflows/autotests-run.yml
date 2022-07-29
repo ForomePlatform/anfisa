@@ -13,7 +13,7 @@ jobs:
   api_tests:
     runs-on: ubuntu-latest      
     defaults:
-      - run:
+        run:
         working-directory: api_tests
     steps:
       - uses: actions/checkout@v3
