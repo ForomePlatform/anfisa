@@ -22,8 +22,10 @@ jobs:
         with:
           python-version: 3.10.0
           
+      - name: Local modules install
+        working-directory: ./api_tests
+        run: pipenv install
+          
       - name: Run tests
-        run: |
-          pipenv install
-          pipenv run tests
-        
+        working-directory: ./api_tests
+        run: pipenv run tests
