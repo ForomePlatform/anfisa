@@ -12,7 +12,7 @@ scenarios('../features/dsinfo-get.feature')
 
 
 @when(parsers.cfparse('I send get dsinfo request with parameters: "{parameters:String}" ({successful:String})',
-                       extra_types=EXTRA_STRING_TYPES), target_fixture='dsinfo_response')
+                      extra_types=EXTRA_STRING_TYPES), target_fixture='dsinfo_response')
 def dsinfo_response(parameters, successful):
     parameters = json.loads(parameters)
     successful = successful_string_to_bool(successful)

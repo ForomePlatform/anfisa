@@ -1,0 +1,29 @@
+name: ui-autotests-run
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+    
+jobs:
+  database_job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          
+      - name: Install Python, pipenv and Pipfile packages
+      - uses: palewire/install-python-pipenv-pipfile@v2
+        with:
+          python-version: 3.10.0
+          
+      - name: Run tests
+        run: |
+          pipenv install
+          pipenv run tests
+        

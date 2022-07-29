@@ -5,8 +5,8 @@ It also uses [pipenv](https://pipenv.readthedocs.io/) to manage packages.
 To set up this project on your local machine:
 1. Clone it from this GitHub repository;
 2. Run `pipenv install` from the command line in the project's root directory;
-3. Run `pipenv run python -m pytest`;
-3. Run `pipenv run python -m pytest --gherkin-terminal-reporter`;
+3. Run `pipenv run  python -m pytest`;
+4. Run `pipenv run python -m pytest --gherkin-terminal-reporter`;
 
 
 ## Running Tests
