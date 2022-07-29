@@ -29,5 +29,5 @@ jobs:
         
       - name: Run tests
         if: ${{ always() }}
-        run: pipenv run tests
+        run: pipenv run tests_report
         working-directory: ./api_tests

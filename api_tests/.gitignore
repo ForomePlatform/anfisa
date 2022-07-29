@@ -4,9 +4,7 @@ __pycache__/
 *$py.class
 *.idea/
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# PyInstaller.
 *.manifest
 *.spec
 
@@ -22,7 +20,7 @@ local_settings.py
 .python-version
 
 # Environments
-# .env
+.env
 
 # mypy
 .mypy_cache/
