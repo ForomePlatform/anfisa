@@ -16,16 +16,16 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-          
+        
       - name: Install Python, pipenv and Pipfile packages
-      - uses: palewire/install-python-pipenv-pipfile@v2
+        uses: palewire/install-python-pipenv-pipfile@v2
         with:
           python-version: 3.10.0
-          
+        
       - name: Local modules install
-        working-directory: ./api_tests
         run: pipenv install
-          
-      - name: Run tests
         working-directory: ./api_tests
+        
+      - name: Run tests
         run: pipenv run tests
+        working-directory: ./api_tests
