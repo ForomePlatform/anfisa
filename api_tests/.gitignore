@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.idea/
-.idea/workspace.xml
+*workspace.xml
 
 # PyInstaller.
 *.manifest
@@ -25,3 +25,5 @@ local_settings.py
 
 # mypy
 .mypy_cache/
+cucumber-report.json
+*cucumber-report.json

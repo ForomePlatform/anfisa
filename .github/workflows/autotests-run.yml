@@ -33,11 +33,12 @@ jobs:
         
       - name: Run tests
         if: ${{ always() }}
-        run: pipenv run tests_cucumberjson
+        run: pipenv run tests_report
         working-directory: ./api_tests
         
-      - name: Cucumber report
-        if: ${{ always() }}
-        uses: deblockt/cucumber-report-annotations-action@v1.7
-        with:
-            path: "./api_tests/cucumber-report.json"
+#      - name: Cucumber report
+#        if: ${{ always() }}
+#        uses: deblockt/cucumber-report-annotations-action@v1.7
+#        with:
+#            path: "./api_tests/cucumber-report.json"
+#           access-token: ${{ secrets.GITHUB_TOKEN }}
