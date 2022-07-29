@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="67706395-7e22-4263-afb0-d0dffefebd6d" name="Changes" comment="[FOROME-1370] add run tests (try to fix)">
+      <change beforePath="$PROJECT_DIR$/../.github/workflows/autotests-run.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../.github/workflows/autotests-run.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2CI8OTzoGuqvEquAu1Gh0D3NefD" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Users/Viktoriya Elizaryan/PycharmProjects/anfisa",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\lib\jsonschema" />
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\old" />
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\tests\step_defs" />
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\tests\features" />
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\lib\interface" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Viktoriya Elizaryan\Documents\forome\tau-pytest-bdd-master\old" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="Python tests in test_dsinfo_get_steps.py" type="tests" factoryName="Autodetect" temporary="true" nameIsGenerated="true">
+      <module name="api_tests" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests/step_defs" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="_new_additionalArguments" value="&quot;--gherkin-terminal-reporter&quot;" />
+      <option name="_new_target" value="&quot;$PROJECT_DIR$/tests/step_defs/test_dsinfo_get_steps.py&quot;" />
+      <option name="_new_targetType" value="&quot;PATH&quot;" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python tests.Python tests in test_dsinfo_get_steps.py" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="67706395-7e22-4263-afb0-d0dffefebd6d" name="Changes" comment="" />
+      <created>1658478706864</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1658478706864</updated>
+      <workItem from="1658478708339" duration="822000" />
+      <workItem from="1658480021262" duration="905000" />
+      <workItem from="1658482544176" duration="19344000" />
+      <workItem from="1658559703293" duration="2453000" />
+      <workItem from="1658605982515" duration="140000" />
+      <workItem from="1658606273777" duration="2266000" />
+      <workItem from="1658608592902" duration="239000" />
+      <workItem from="1658762192109" duration="3222000" />
+      <workItem from="1659018586448" duration="9616000" />
+      <workItem from="1659085838765" duration="8598000" />
+    </task>
+    <task id="LOCAL-00001" summary="FOROME-1370 Create an API testing framework">
+      <created>1659086738081</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1659086738081</updated>
+    </task>
+    <task id="LOCAL-00002" summary="[FOROME-1370] add run tests with gitHubAction">
+      <created>1659089583823</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1659089583823</updated>
+    </task>
+    <task id="LOCAL-00003" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659090007231</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1659090007231</updated>
+    </task>
+    <task id="LOCAL-00004" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659090262167</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1659090262167</updated>
+    </task>
+    <task id="LOCAL-00005" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659090382790</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1659090382790</updated>
+    </task>
+    <task id="LOCAL-00006" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659091966047</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1659091966047</updated>
+    </task>
+    <task id="LOCAL-00007" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659092066377</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1659092066377</updated>
+    </task>
+    <task id="LOCAL-00008" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659092133460</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1659092133460</updated>
+    </task>
+    <task id="LOCAL-00009" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659092280289</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1659092280289</updated>
+    </task>
+    <task id="LOCAL-00010" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659092930684</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1659092930684</updated>
+    </task>
+    <task id="LOCAL-00011" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659093399586</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1659093399586</updated>
+    </task>
+    <task id="LOCAL-00012" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659093966916</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1659093966916</updated>
+    </task>
+    <task id="LOCAL-00013" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659094035674</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1659094035674</updated>
+    </task>
+    <task id="LOCAL-00014" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659095255134</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1659095255134</updated>
+    </task>
+    <task id="LOCAL-00015" summary="[FOROME-1370] add run tests (try to fix)">
+      <created>1659095334310</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1659095334310</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="FOROME-1370" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="FOROME-1370 Create an API testing framework" />
+    <MESSAGE value="[FOROME-1370] add run tests with gitHubAction" />
+    <MESSAGE value="[FOROME-1370] add run tests (try to fix)" />
+    <option name="LAST_COMMIT_MESSAGE" value="[FOROME-1370] add run tests (try to fix)" />
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/tau_pytest_bdd_master$pipenv_run_python__m_pytest.coverage" NAME="pipenv run python -m pytest Coverage Results" MODIFIED="1658607590071" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/tau_pytest_bdd_master$.coverage" NAME=" Coverage Results" MODIFIED="1659083300866" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/step_defs" />
+  </component>
+</project>
