@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 *.idea/
+.idea/workspace.xml
 
 # PyInstaller.
 *.manifest
@@ -20,7 +21,7 @@ local_settings.py
 .python-version
 
 # Environments
-.env
+# .env
 
 # mypy
 .mypy_cache/
