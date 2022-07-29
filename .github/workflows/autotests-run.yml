@@ -13,7 +13,7 @@ jobs:
   database_job:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         path: ./api_tests
         with:
           fetch-depth: 0
