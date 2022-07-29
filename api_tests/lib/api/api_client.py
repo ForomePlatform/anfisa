@@ -17,7 +17,8 @@ class ApiRequest:
     def request(self, params):
         url = BASE_URL + self._path
         headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
-        print(url)
+        print('url: ' + url)
+        print('params')
         print(params)
         return requests.request(
             method=self._method,

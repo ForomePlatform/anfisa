@@ -2,7 +2,7 @@
 Feature: Check Dsinfo[GET] request
 
   @positive
-  Scenario Outline: Send Dsinfo request (successful)
+  Scenario Outline: Send Dsinfo request with parameters: "<Parameters>" (successful)
     When I send get dsinfo request with parameters: "<Parameters>" (successful)
 #    Then I validate the response by schema
     Then I see a "<Text>" text in response
@@ -14,7 +14,7 @@ Feature: Check Dsinfo[GET] request
 
 
   @negative
-  Scenario Outline: Send Dsinfo request (unsuccessful)
+  Scenario Outline: Send Dsinfo request with parameters: "<Parameters>" (unsuccessful)
     When I send get dsinfo request with parameters: "<Parameters>" (unsuccessful)
     Then I see a "<Error>" error message in response
 

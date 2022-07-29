@@ -26,7 +26,6 @@ def dsinfo_response_validate(dsinfo_response):
 
 @then(parsers.cfparse('I see a "{text_message:String}" text in response', extra_types=EXTRA_STRING_TYPES))
 def dsinfo_response_message(dsinfo_response, text_message):
-    print(dsinfo_response.text)
     assert text_message in dsinfo_response.text
 
 
