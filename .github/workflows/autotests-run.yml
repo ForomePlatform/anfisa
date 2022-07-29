@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-        path: ./api_tests
         with:
           fetch-depth: 0
+          path: ./api_tests
         
       - name: Install Python, pipenv and Pipfile packages
         uses: palewire/install-python-pipenv-pipfile@v2
