@@ -62,6 +62,7 @@ class NumDiapStat:
 #===============================================
 class NumHistogramBuilder:
     sOneMinusShift = 1 - 1E-5
+    sOnePlusShift  = 1 + 1E-5
 
     def __init__(self, v_min, v_max, count, unit_h,
             too_low_power = -15, num_bins = 10):
@@ -84,14 +85,11 @@ class NumHistogramBuilder:
                 self.mIntervals[0] *= self.sOneMinusShift
             while True:
                 next_bound = pow(1E1, pp)
-                low_next_bound = next_bound * self.sOneMinusShift
-                if v_max > low_next_bound:
+                upper_next_bound = next_bound * self.sOnePlusShift
+                if v_max >= upper_next_bound:
                     self.mIntervals.append(next_bound)
                     pp += 1
                     continue
-                if v_max >= next_bound:
-                    self.mIntervals.append(next_bound)
-                    pp += 1
                 break
 
             if len(self.mIntervals) == 1:

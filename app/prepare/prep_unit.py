@@ -463,7 +463,7 @@ class PanelConvertor(ValueConvertor):
         self.mPanelType = panel_type
         p_key = "panel." + panel_type
         self.mPanelSets = {p_it["name"]: p_it["data"] for p_it in
-            self.getMaster.iterStdItems(p_key)}
+            self.getMaster().iterStdItems(p_key)}
         assert len(self.mPanelSets) > 0, (
             "No data for panel type " + panel_type)
         self.mCntUndef = 0
@@ -481,7 +481,7 @@ class PanelConvertor(ValueConvertor):
         if pitems:
             pitems = set(pitems)
             for pname, pset in self.mPanelSets.items():
-                if len(pitems & pset) > 0:
+                if len(pitems & set(pset)) > 0:
                     res_val.append(pname)
                     self.mVarCount[pname] += 1
             if res_val:
