@@ -36,7 +36,7 @@ env:
     value: router
   - name: ANFISA_MONGO_HOST
     value: anfisa-mongodb
-  - name: BACKEND
+  - name: UWSGI_BACKEND
     value: 127.0.0.1:3041
   - name: ANFISA_WORK
     value: "/anfisa/a-setup"
