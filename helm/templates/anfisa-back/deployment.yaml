@@ -16,6 +16,12 @@ spec:
     metadata:
       labels:
         app: {{ .Values.name }}
+        app.kubernetes.io/name: {{ .Values.name }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+        app.kubernetes.io/managed-by: {{ .Release.Service }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/version: {{ .Chart.AppVersion }}
+        app.kubernetes.io/component: backend
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       serviceAccountName: default
