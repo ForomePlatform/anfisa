@@ -7,8 +7,8 @@ metadata:
     chart: anfisa
 spec:
   replicas: 1
-  strategy:
-    type: Recreate
+  # strategy:
+  #   type: Recreate
   selector:
     matchLabels:
       app: {{ .Values.name }}
@@ -22,7 +22,7 @@ spec:
         app.kubernetes.io/instance: {{ .Release.Name }}
         app.kubernetes.io/version: {{ .Chart.AppVersion }}
         app.kubernetes.io/component: backend
-        rollme: {{ randAlphaNum 5 | quote }}
+        # rollme: {{ randAlphaNum 5 | quote }}
     spec:
       serviceAccountName: default
       securityContext:
