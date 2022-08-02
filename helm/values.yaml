@@ -4,7 +4,7 @@ name: anfisa-back
 # output_registry: image-registry.openshift-image-registry.svc:5000
 
 image:
-  repository: forome.azurecr.io/anfisa
+  repository: forome.azurecr.io/__azRepository__
   tag: __appVersion__
   pullPolicy: IfNotPresent
 
