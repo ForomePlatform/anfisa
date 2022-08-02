@@ -159,7 +159,7 @@ Example:
 
 3. [Optionally] The internal UI is available at: http://localhost:9010/app/dir
 
-4. [Optionally] Adjust setting for your webserver to serve Anfisa. 
+4. [Optionally] Adjust setting for your webserver to serve Anfisa.
 For nginx add the following location block:
 
 ``` 
