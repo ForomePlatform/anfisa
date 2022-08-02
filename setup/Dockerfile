@@ -7,7 +7,7 @@ ENV PKG_RELEASE     1~bullseye
 RUN set -x \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
-        jq git gcc python3-dev python3-pip python3-venv \
+        zip unzip jq git gcc python3-dev python3-pip python3-venv \
     && \
     NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
     found=''; \
