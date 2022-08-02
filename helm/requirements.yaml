@@ -1,0 +1,5 @@
+dependencies:
+- name: druid
+  version: 0.3.12
+  repository: "file://./charts/druid"
+  condition: druid.enabled

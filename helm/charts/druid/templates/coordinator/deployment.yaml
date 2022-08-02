@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "druid.coordinator.fullname" . }}
+  labels:
+    app: {{ include "druid.name" . }}
+    chart: {{ include "druid.chart" . }}
+    component: {{ .Values.coordinator.name }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.coordinator.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "druid.name" . }}
+      release: {{ .Release.Name }}
+      component: {{ .Values.coordinator.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "druid.name" . }}
+        release: {{ .Release.Name }}
+        component: {{ .Values.coordinator.name }}
+      {{- with .Values.coordinator.podAnnotations }}
+      annotations:
+{{ toYaml . | indent 8 }}
+      {{- end }} 
+    spec:
+      containers:
+      - name: {{ include "druid.coordinator.fullname" . }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - name: druid-data
+          mountPath: /data/anfisa
+        args: [ "coordinator" ]
+        env:
+        {{- if .Values.zookeeper.enabled }}
+        - name: druid_zk_service_host
+          value: {{ .Release.Name }}-zookeeper-headless:2181
+        {{- else }}
+        - name: druid_zk_service_host
+          value: {{ .Values.zkHosts }}
+        {{- end }}
+        {{- if .Values.postgresql.enabled }}
+        - name: druid_metadata_storage_type
+          value: postgresql
+        - name: druid_metadata_storage_connector_connectURI
+          value: "jdbc:postgresql://{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.postgresqlDatabase }}"
+        - name: druid_metadata_storage_connector_user
+          value: "{{ .Values.postgresql.postgresqlUsername }}"
+        - name: druid_metadata_storage_connector_password
+          value: "{{ .Values.postgresql.postgresqlPassword }}"
+        {{- end }}
+        - name: JAVA_OPTS
+          value: {{ .Values.coordinator.javaOpts }}
+        {{- range $key, $value :=  mergeOverwrite .Values.env .Values.coordinator.env }}
+        - name: {{ $key }}
+          value: {{ $value | quote }}
+        {{- end }}
+        - name: druid_extensions_loadList
+          value: {{ .Values.extensions.loadList | toJson | quote }}
+        {{- if .Values.monitoring.enabled }}
+        - name: druid_emitter
+          value: http
+        - name: druid_emitter_http_recipientBaseUrl
+          value: "http://localhost:{{ .Values.monitoring.port }}"
+        {{- end}}
+
+        ports:
+          - name: http
+            containerPort: {{ .Values.coordinator.port }}
+            protocol: TCP
+        livenessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/health
+            port: {{ .Values.coordinator.port }}
+        readinessProbe:
+          initialDelaySeconds: 60
+          httpGet:
+            path: /status/selfDiscovered
+            port: {{ .Values.coordinator.port }}
+        resources:
+{{ toYaml .Values.coordinator.resources | indent 12 }}
+      volumes:
+      - name: druid-data
+        persistentVolumeClaim:
+          claimName: forome-anfisa-s3-pvc
+
+      {{- if .Values.monitoring.enabled }}
+      - name: druid-metrics-exporter
+        image: featurefm/druid-exporter
+        imagePullPolicy: Always
+        command: [".venv/bin/druid_exporter", "--debug", "--listen=:{{ .Values.monitoring.port }}"]
+        ports:
+          - name: metrics
+            containerPort: {{ .Values.monitoring.port }}
+        livenessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+        readinessProbe:
+          httpGet:
+            path: /metrics
+            port: metrics
+      {{- end }}
+
+    {{- with .Values.coordinator.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.coordinator.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.coordinator.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000760000
+        runAsGroup: 1000

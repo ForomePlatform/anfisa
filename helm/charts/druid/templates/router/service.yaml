@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.router.name }}
+  labels:
+    app: druid
+    component: router
+spec:
+  ports:
+    - name: {{ .Values.router.name }}
+      protocol: TCP
+      port: {{ .Values.router.servicePort }}
+      targetPort: http
+
+  selector:
+    app: druid
+    component: router
+  type: {{ .Values.router.serviceType }}
+  sessionAffinity: None
