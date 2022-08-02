@@ -1,0 +1,46 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: anfisa-workdir-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 200Gi
+  volumeMode: Filesystem
+  storageClassName: ibmc-vpc-block-general-purpose
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: forome-datasets-pvc
+  annotations:
+    ibm.io/auto-create-bucket: "false"
+    ibm.io/auto-delete-bucket: "false"
+    ibm.io/bucket: forome-dataset-private
+    ibm.io/secret-name: cos-write-access
+spec:
+  storageClassName: ibmc-s3fs-standard-regional
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: "500Gi"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: forome-anfisa-s3-pvc
+  annotations:
+    ibm.io/auto-create-bucket: "true"
+    ibm.io/auto-delete-bucket: "false"
+    ibm.io/bucket: forome-anfisa
+    ibm.io/secret-name: cos-write-access
+spec:
+  storageClassName: ibmc-s3fs-standard-regional
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: "1000Gi"

@@ -1,0 +1,15 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ .Values.router.name }}
+  labels:
+    app: druid
+    component: router
+spec:
+  to:
+    kind: Service
+    name: {{ .Values.router.name }}
+    weight: 100
+  port:
+    targetPort: {{ .Values.router.name }}
+  wildcardPolicy: None

@@ -1,0 +1,17 @@
+dependencies:
+- name: zookeeper
+  version: 6.7.2
+  repository: "file://./charts/zookeeper"
+  condition: zookeeper.enabled
+- name: postgresql
+  version: 8.6.4
+  repository: "file://./charts/postgresql"
+  condition: postgresql.enabled
+- name: mongodb
+  version: 10.13.0
+  repository: "file://./charts/mongodb"
+  condition: mongodb.enabled
+- name: mysql
+  version: 8.0.26
+  repository: "file://./charts/mysql"
+  condition: mysql.enabled
