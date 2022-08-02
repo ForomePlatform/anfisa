@@ -1,12 +1,13 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
-FROM python:3.7
+FROM python:3.7-slim
 
-ENV NGINX_VERSION   1.23.0
+ENV NGINX_VERSION   1.23.1
 ENV PKG_RELEASE     1~bullseye
 
 RUN set -x \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
+        zip unzip jq git gcc python3-dev python3-pip python3-venv \
     && \
     NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
     found=''; \
@@ -59,7 +60,6 @@ RUN set -x \
                         $nginxPackages \
                         gettext-base \
                         curl \
-                        jq \
     && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
     \
     && if [ -n "$tempDir" ]; then \
@@ -72,10 +72,10 @@ RUN set -x \
 
 WORKDIR /anfisa/anfisa
 COPY . ./
-RUN set -eux \
-    && pip3 install -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools \
-    && pip3 install -r requirements.txt \
-    && pip3 install supervisor
+RUN set -x \
+    && pip3 install --no-cache-dir -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools \
+    && pip3 install --no-cache-dir -r requirements.txt \
+    && pip3 install --no-cache-dir supervisor
 
 WORKDIR /anfisa
 COPY setup/anfisa.json.template ./

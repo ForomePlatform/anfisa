@@ -6,7 +6,7 @@ server {
         include uwsgi_params;
         uwsgi_read_timeout 3000;
         uwsgi_buffering off;
-        uwsgi_pass ${BACKEND};
+        uwsgi_pass ${UWSGI_BACKEND};
     }
 
     location ~ /app/ui/images {

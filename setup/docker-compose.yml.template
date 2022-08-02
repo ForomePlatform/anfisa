@@ -1,47 +1,62 @@
-version: "3.8"
+version: "3.9"
+
+x-aliases:
+  - &common_parameters
+    networks:
+    - anfisa
+
 networks:
-  default:
+  anfisa:
     driver: bridge
-    name: anfisa_default
+    name: anfisa
     ipam:
-      driver: default
       config:
-      - subnet:  172.23.0.0/16
+        - subnet:  172.23.0.0/16
 
 services:
-  anfisa:
-    container_name: anfisa7
-    image: anfisa_docker_example:latest
+  anfisa-frontend:
+    container_name: anfisa-frontend
+    <<: *common_parameters
+    build:
+      context: ${GIT_URL:-https://github.com/ForomePlatform/Anfisa-React-Client.git}#${GIT_REF:-develop}
+      dockerfile: Dockerfile
+    image: anfisa-react-client:latest
+    ports:
+      - "3000:80"
+    env_file:
+      - setup/.env.frontend
+    restart: always
+
+  anfisa-backend:
+    container_name: anfisa-backend
+    <<: *common_parameters
+    image: anfisa:latest
     user: root
     volumes:
       - ASETUP_PATH:/anfisa/a-setup
     build:
       context: .
       dockerfile: setup/Dockerfile
-    restart: always
     ports:
       - "9010:80"
-    hostname: anfisa7
     env_file:
-      - setup/.env
-    networks:
-      default:
-        ipv4_address: 172.23.0.4
-    command:
-      - "/usr/local/bin/supervisord"
+      - setup/.env.backend
+    restart: always
       
   mongo:
-    container_name: anfisa7-mongo
-    user: root
+    container_name: anfisa-mongo
+    <<: *common_parameters
     image: mongo
+    user: root
     ports:
       - "27017:27017"
-    restart: always
     env_file:
       - setup/environment
+    restart: always
 
   zookeeper:
-    container_name: anfisa7-zookeeper
+    container_name: anfisa-zookeeper
+    <<: *common_parameters
     image: zookeeper:3.5
     user: root
     ports:
@@ -55,8 +70,9 @@ services:
     restart: always
 
   coordinator:
+    container_name: anfisa-coordinator
+    <<: *common_parameters
     image: apache/druid:0.19.0
-    container_name: anfisa7-coordinator
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -75,8 +91,9 @@ services:
     restart: always
 
   broker:
+    container_name: anfisa-broker
+    <<: *common_parameters
     image: apache/druid:0.19.0
-    container_name: anfisa7-broker
     user: root
     volumes:
       - DRUID_WORK/broker:/opt/druid/var
@@ -97,8 +114,9 @@ services:
     restart: always
 
   historical:
+    container_name: anfisa-historical
+    <<: *common_parameters
     image: apache/druid:0.19.0
-    container_name: anfisa7-historical
     volumes:
       - DRUID_WORK/data/:/opt/data/
       - DRUID_WORK/historical-var/:/opt/druid/var/
@@ -120,8 +138,9 @@ services:
     restart: always
 
   middlemanager:
+    container_name: anfisa-middlemanager
+    <<: *common_parameters
     image: apache/druid:0.19.0
-    container_name: anfisa7-middlemanager
     user: root
     volumes:
       - DRUID_WORK/data/:/opt/data/
@@ -145,8 +164,9 @@ services:
     restart: always
 
   router:
+    container_name: anfisa-router
+    <<: *common_parameters
     image: apache/druid:0.19.0
-    container_name: anfisa7-router
     user: root
     volumes:
       - DRUID_WORK/router/:/opt/druid/var
