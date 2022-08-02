@@ -16,6 +16,7 @@ spec:
     metadata:
       labels:
         app: {{ .Values.name }}
+        rollme: {{ randAlphaNum 5 | quote }}
     spec:
       serviceAccountName: default
       securityContext:
