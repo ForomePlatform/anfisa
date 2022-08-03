@@ -1,0 +1,28 @@
+name: BUILD-HASH
+
+on:
+  push:
+    branches:
+      - 'v.0.7.x'
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.azure/pipelines/**'
+      - 'helm/**'
+      - 'setup/**'
+      - '.dockerignore'
+      - '.gitignore'
+      - '*.sh'
+
+jobs:
+  build-hash:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          git config --global user.name 'GitHub Bot'
+          git config --global user.email '<>'
+          git_hash=$(git rev-parse --short "$GITHUB_SHA")
+          echo $git_hash > ./app/BUILD-HASH
+          git add ./app/BUILD-HASH
+          git commit -m "Update BUILD-HASH"
+          git push
