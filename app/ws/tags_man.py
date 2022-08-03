@@ -23,6 +23,7 @@ from copy import deepcopy
 
 from app.config.a_config import AnfisaConfig
 from .zone import ZoneH
+from forome_tools.job_pool import ExecutionTask
 #===============================================
 class TagsManager(ZoneH):
     def __init__(self, ds_h, panel_name):
@@ -126,18 +127,20 @@ class TagsManager(ZoneH):
             rep["tag-rec-list"] = sorted(self.mTagSets[tag_name])
         return rep
 
-    def selectionTagging(self, tag_name, rec_no_seq):
-        assert tag_name and tag_name not in self.mCheckTags, (
-            "Missing tag: " + tag_name)
-        new_tag_keys = {self.getDS().getRecKey(rec_no)
-            for rec_no in rec_no_seq}
+    def tagIsProper(self, tag_name):
+        return tag_name and tag_name not in self.mCheckTags
+
+    def macroTaggingOp(self, tag_name, rec_keys, task_h = None):
+        rec_keys = deepcopy(rec_keys)
         to_update_seq = []
+        if task_h is not None:
+            task_h.setStatus("Preparation")
         for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
             rec_key, tags_data = tags_info["name"], tags_info["data"]
             if tags_data is None:
                 continue
-            if rec_key in new_tag_keys:
-                new_tag_keys.remove(rec_key)
+            if rec_key in rec_keys:
+                rec_keys.remove(rec_key)
                 tags_data = deepcopy(tags_data)
                 tags_data[tag_name] = "True"
                 to_update_seq.append((rec_key, tags_data))
@@ -147,10 +150,54 @@ class TagsManager(ZoneH):
                 to_update_seq.append((rec_key, tags_data))
         simple_tag_data = {tag_name: "True"}
         max_tag_name_length = AnfisaConfig.configOption("tag.name.max.length")
-        for rec_key in new_tag_keys:
+
+        cur_progess = 0
+        if task_h is not None:
+            total = len(rec_keys)
+            step_cnt = total // 100
+            next_cnt = step_cnt
+        else:
+            next_cnt = 0
+
+        for idx, rec_key in enumerate(rec_keys):
+            while next_cnt > 0 and idx > next_cnt:
+                next_cnt += step_cnt
+                cur_progess += 1
+                task_h.setStatus("Markup records %d%s" % (cur_progess, '%'))
             assert len(rec_key) <= max_tag_name_length, (
                 "Too long tag name (%d+): %s" % (max_tag_name_length, rec_key))
             to_update_seq.append((rec_key, simple_tag_data))
+
+        cur_progess = 0
+        if task_h is not None:
+            total = len(to_update_seq)
+            step_cnt = total // 100
+            next_cnt = step_cnt
+        else:
+            next_cnt = 0
+
         for rec_key, tags_data in to_update_seq:
+            while next_cnt > 0 and idx > next_cnt:
+                next_cnt += step_cnt
+                cur_progess += 1
+                task_h.setStatus("Update records %d%s" % (cur_progess, '%'))
             self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),
                 "tags", "UPDATE", rec_key, tags_data)
+        if task_h is not None:
+            task_h.setStatus("Done")
+
+#===============================================
+class MacroTaggingOperation(ExecutionTask):
+    def __init__(self, tags_man, tag_name, rec_keys):
+        ExecutionTask.__init__(self, "Macro Tagging Operation")
+        self.mTagsMan = tags_man
+        self.mTagName = tag_name
+        self.mRecKeys = rec_keys
+
+    def getTaskType(self):
+        return "macro-tagging"
+
+    def execIt(self):
+        self.mTagsMan.macroTaggingOp(self.mTagName, self.mRecKeys)
+        return {"tags-state":
+                self.mTagsMan.getDS().getSolEnv().getIntVersion("tags")}

@@ -484,7 +484,7 @@ function macroTagging() {
     relaxView();
     res_content = 'Select tag to mark surrent set of variants:<br/>' +
         '<input id="macro-tagging-tag" type="text" class="popup">' + 
-        '&emsp;or clear all marks:&nbsp;<input id="macro-tagging-off-mode"' +
+        '&emsp;or clear tag:&nbsp;<input id="macro-tagging-off-mode"' +
         ' type="checkbox" class="popup"><br/>' +
         '<button class="popup" onclick="doMacroTagging();">Make tagging</button>' + 
         '&emsp;<button class="popup" onclick="relaxView();">Cancel</button>';
