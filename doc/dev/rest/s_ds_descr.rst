@@ -45,6 +45,8 @@ Format
 |               ``]``
 |       "**unit-groups**": group names of filtering properties,
 |           ``[`` *list of strings* ``]``
+|       "**igv-urls**": *optional* url-addresses of BAM files,
+|           ``[`` *list of strings* ``]``
 |       "**cohorts**": *optional* list of cohort names 
 |           ``[`` *list of strings* ``]``
 |       "**export-max-count**:  maximum record count available for 
@@ -98,6 +100,8 @@ Important part of metadata is list of versions of sources used in dataset annota
 Property **receipts** is actual for derived datasets and contains complete information how the dataset was derived, i.e. produced from root dataset. Information is given in human readable form for render purposes. Receipts are sorted in stack order: the first receipt in array corresponds to the latest derivation filtration.
     
 Receipts might use :doc:`panels<../concepts/variety>` as dynamical :doc:`solutions<../concepts/sol_work>`, so the internal property **panels-supply** fixes actual state of used panels at moment of derivation.
+    
+Property **igv-urls** is present if the dataset provides :ref:`IGV direct support<IGV_direct_support>` functionality.
     
 Used in requests
 ----------------
