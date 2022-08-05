@@ -17,6 +17,7 @@ json_subst() {
     ."file-path-def"."SRC" = "'"${ANFISA_SRC}"'" |
     ."html-title" = "'"${ANFISA_HTML_TITLE}"'" |
     ."html-base" = "'"${ANFISA_HTML_APP_BASE}"'" |
+    ."igv-dir" = "'"${ANFISA_IGVDIR}"'" |
     ."druid"."vault-prefix" = "'"${ANFISA_DRUIDVAULTPREFIX}"'" |
     ."druid"."index" = "'"${ANFISA_DRUIDINDEX}"'" |
     ."druid"."coord" = "'"${ANFISA_DRUIDCOORD}"'" |
