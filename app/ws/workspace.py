@@ -27,7 +27,7 @@ from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 
 from .rules import RulesUnit
-from .tags_man import TagsManager
+from .tags_man import TagsManager, MacroTaggingOperation
 from .zone import FilterZoneH, PanelZoneH
 from .ws_unit import loadWS_Unit
 from .ws_space import WS_EvalSpace
@@ -278,8 +278,13 @@ class Workspace(DataSet):
                 eval_h = self._getArgCondFilter(rq_args)
                 rec_no_seq = self.mEvalSpace.evalRecSeq(
                     eval_h.getCondition())
+        assert self.mTagsMan.tagIsProper(tag_name), "Missing tag: " + tag_name
         with self:
-            self.mTagsMan.selectionTagging(tag_name, rec_no_seq)
+            rec_keys = {self.getRecKey(rec_no) for rec_no in rec_no_seq}
+            if rq_args.get("delay") == "true":
+                task = MacroTaggingOperation(self.mTagsMan, tag_name, rec_keys)
+                return {"task_id": self.getApp().runTask(task)}
+            self.mTagsMan.macroTaggingOp(tag_name, rec_keys)
         return {"tags-state": self.getSolEnv().getIntVersion("tags")}
 
     #===============================================
