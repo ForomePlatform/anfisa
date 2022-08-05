@@ -79,6 +79,7 @@ RUN set -x \
 WORKDIR /anfisa
 COPY setup/anfisa.json.template ./
 COPY setup/uwsgi.ini ./
+COPY setup/igv.dir ./
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
 COPY setup/entrypoint.sh /entrypoint.sh

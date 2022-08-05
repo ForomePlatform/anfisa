@@ -1,0 +1,6 @@
+[
+    {"dataset": "PGP3140_HL_GENES",
+        "url": "https://forome-bam.s3.us-south.cloud-object-storage.appdomain.cloud/GRCh38/{name}.sorted.bam"},
+    {"dataset": "XL_PGP3140_HL_GENES",
+        "url": "https://forome-bam.s3.us-south.cloud-object-storage.appdomain.cloud/GRCh38/{name}.sorted.bam"}
+]
