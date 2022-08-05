@@ -3,11 +3,11 @@ name: ui-autotests-run
 on:
   push:
     branches:
-      - master
+      - 'v.0.7.x'
 
   pull_request:
     branches:
-      - master
+      - 'v.0.7.x'
     
 jobs:
   api_tests:
