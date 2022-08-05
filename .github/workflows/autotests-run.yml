@@ -1,0 +1,44 @@
+name: ui-autotests-run
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+    
+jobs:
+  api_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+        
+      - name: Set up Python 3.10.5
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.10.5
+        
+      - name: Install pipenv
+        run: pip install pipenv
+        working-directory: ./api_tests
+        
+      - name: Local modules install
+        if: ${{ always() }}
+        run: pipenv install
+        working-directory: ./api_tests
+        
+      - name: Run tests
+        if: ${{ always() }}
+        run: pipenv run tests_report
+        working-directory: ./api_tests
+        
+#      - name: Cucumber report
+#        if: ${{ always() }}
+#        uses: deblockt/cucumber-report-annotations-action@v1.7
+#        with:
+#            path: "./api_tests/cucumber-report.json"
+#           access-token: ${{ secrets.GITHUB_TOKEN }}

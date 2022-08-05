@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.idea/
+*workspace.xml
+
+# PyInstaller.
+*.manifest
+*.spec
+
+# Unit test 
+.hypothesis/
+.pytest_cache/
+
+# Django stuff:
+*.log
+local_settings.py
+
+# pyenv
+.python-version
+*_init_.py
+
+# Environments
+# .env
+
+# mypy
+.mypy_cache/
+cucumber-report.json
+*cucumber-report.json
