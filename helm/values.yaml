@@ -46,6 +46,8 @@ env:
     value: "/app"
   - name: ANFISA_HTML_TITLE
     value: "Anfisa"
+  - name: ANFISA_IGVDIR
+    value: "/anfisa/igv.dir"
   - name: ANFISA_DRUIDVAULTPREFIX
     value: "demo_v7"
   - name: ANFISA_DRUIDINDEX
