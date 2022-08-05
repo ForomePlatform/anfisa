@@ -33,7 +33,7 @@ jobs:
         
       - name: Run tests
         if: ${{ always() }}
-        run: pipenv run tests_report
+        run: pipenv run tests_parallel_report
         working-directory: ./api_tests
         
 #      - name: Cucumber report

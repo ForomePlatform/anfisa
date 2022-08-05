@@ -13,6 +13,7 @@ To set up this project on your local machine:
 3. You can use tage like: `pipenv run python -m pytest -v -k "positive or negative"`;
 4. You can use script line from file Pipfile: `pipenv run tests` = `pipenv run python -m pytest -v`;
 5. Run `pipenv run tests_report` for report.
+6. Run `pipenv run tests_parallel_report` for report and parallel.
 
 
 ## information
