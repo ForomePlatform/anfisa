@@ -65,10 +65,9 @@ RUN set -x \
     && if [ -n "$tempDir" ]; then \
         apt-get purge -y --auto-remove \
         && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; \
-    fi
-    # && ln -sf /dev/stdout /var/log/nginx/access.log \
-    # && ln -sf /dev/stderr /var/log/nginx/error.log
-    # && ln -sf /dev/stdout /anfisa/a-setup/logs/anfisa.log
+    fi \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log
 
 WORKDIR /anfisa/anfisa
 COPY . ./
