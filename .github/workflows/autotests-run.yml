@@ -1,4 +1,4 @@
-name: ui-autotests-run
+name: api-autotests-run
 
 on:
   push:
