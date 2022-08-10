@@ -20,3 +20,4 @@ class DirInfo:
             print('responseCode:' + response.status_code.__str__())
             # print(response.text)
         return response
+        
