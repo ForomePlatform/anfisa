@@ -1,7 +1,6 @@
 import json
 import pytest
 import time
-from pprint import pprint
 from pytest_bdd import given
 from lib.api.adm_drop_ds import Adm_drop_ds
 from lib.api.dirinfo_api import DirInfo
