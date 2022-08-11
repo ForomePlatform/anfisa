@@ -1,9 +1,11 @@
 """
-This module contains Adm-drop_ds requests
+This module contains Adm_drop_ds requests
 """
 
 from lib.api.api_client import ApiRequest
+
 apiRequest = ApiRequest(method='POST', path='adm_drop_ds')
+
 
 class Adm_drop_ds:
 

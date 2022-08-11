@@ -1,10 +1,11 @@
 """
 This module contains Dirinfo requests
 """
-from pprint import pprint
 
 from lib.api.api_client import ApiRequest
+
 apiRequest = ApiRequest(method='GET', path='dirinfo')
+
 
 class DirInfo:
 

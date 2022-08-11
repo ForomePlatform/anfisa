@@ -2,7 +2,6 @@
 Feature: Check ds2ws [POST] request
 
     @positive
-    @inProgress
     Scenario: Create job to derive ws dataset
     Given xl Dataset is uploaded and processed by the system
     And unique ws Dataset name is generated

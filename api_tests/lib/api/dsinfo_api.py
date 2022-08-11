@@ -1,9 +1,9 @@
 """
 This module Dsinfo get request
 """
-from pprint import pprint
 
 from lib.api.api_client import ApiRequest
+
 apiRequest = ApiRequest(method='GET', path='dsinfo?')
 
 

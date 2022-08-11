@@ -1,7 +1,9 @@
-import requests
 import os
 from pathlib import Path
+
+import requests
 from dotenv import load_dotenv
+
 config_dir = Path(__file__).parent.parent.parent
 dotenv_file = config_dir / f'.env'
 
@@ -26,6 +28,3 @@ class ApiRequest:
             params=params,
             headers=headers,
         )
-
-
-
