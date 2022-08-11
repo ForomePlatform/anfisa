@@ -18,7 +18,7 @@ class ApiRequest:
 
     def request(self, params):
         url = BASE_URL + self._path
-        headers = {'Content-type': 'application/json', 'Accept': 'text/plain'}
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'text/plain'}
         print('url: ' + url)
         print('params')
         print(params)
@@ -29,7 +29,7 @@ class ApiRequest:
             headers=headers,
         )
 
-    def request_with_payload(self, payload):
+    def request_with_formdata(self, payload):
         url = BASE_URL + self._path
         print('url: ' + url)
         print('payload')
