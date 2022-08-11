@@ -28,3 +28,15 @@ class ApiRequest:
             params=params,
             headers=headers,
         )
+
+    def request_with_payload(self, payload):
+        url = BASE_URL + self._path
+        print('url: ' + url)
+        print('payload')
+        print(payload)
+        return requests.request(
+            method=self._method,
+            url=url,
+            data=payload,
+            files=payload
+        )

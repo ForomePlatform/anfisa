@@ -15,3 +15,12 @@ class Ds2ws:
         print('responseCode:' + str(response.status_code))
         print('responseBody:', response.text)
         return response
+
+    @staticmethod
+    def post_with_payload(parameters):
+        response = apiRequest.request_with_payload(parameters)
+        print('responseCode:' + str(response.status_code))
+        print('responseBody:', response.text)
+        return response
+
+
