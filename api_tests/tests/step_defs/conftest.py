@@ -25,8 +25,9 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
-        Adm_drop_ds.post({'ds': wsDataset})
         time.sleep(1)
+        Adm_drop_ds.post({'ds': wsDataset})
+
 
 
 # Fixtures
