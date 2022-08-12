@@ -3,8 +3,10 @@ import pytest
 import time
 from lib.api.adm_drop_ds_api import Adm_drop_ds
 from lib.api.dirinfo_api import DirInfo
-from pytest_bdd import given
 from tests.helpers.generators import testDataPrefix
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES
+from pytest_bdd import  parsers, given
+
 
 
 # Hooks
@@ -46,3 +48,15 @@ def successful_string_to_bool(successful):
         return True
     else:
         return False
+
+@given(
+    parsers.cfparse('{ds_type:String} Dataset is uploaded and processed by the system', extra_types=EXTRA_STRING_TYPES),target_fixture='get_random_dataset_name')
+def get_random_dataset_name(ds_type):
+    response = DirInfo.get()
+    dsDict = json.loads(response.content)["ds-dict"]
+    for value in dsDict.values():
+        if value['kind'] == ds_type:
+            dataset = value['name']
+            break
+    assert dataset != ''
+    return dataset

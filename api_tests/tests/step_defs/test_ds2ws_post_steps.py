@@ -1,9 +1,6 @@
-import json
-
 from jsonschema import validate
 from pytest_bdd import scenarios, parsers, given, when, then
 
-from lib.api.dirinfo_api import DirInfo
 from lib.api.ds2ws_api import Ds2ws
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_INT_TYPES
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
@@ -21,20 +18,6 @@ force = ''
 response = ''
 
 
-@given(
-    parsers.cfparse('{ds_type:String} Dataset is uploaded and processed by the system', extra_types=EXTRA_STRING_TYPES))
-def get_random_dataset_name(ds_type):
-    global dataset
-    response = DirInfo.get()
-    dsDict = json.loads(response.content)["ds-dict"]
-    for value in dsDict.values():
-        if value['kind'] == ds_type:
-            dataset = value['name']
-            break
-    assert dataset != ''
-    return dataset
-
-
 @given(parsers.cfparse('unique {type:String} Dataset name is generated', extra_types=EXTRA_STRING_TYPES))
 def generate_unique_name(type):
     global uniqueWsName
@@ -44,10 +27,10 @@ def generate_unique_name(type):
 
 
 @when(parsers.cfparse('ds2ws request with ds and ws parameters is send'))
-def ds2ws_request():
+def ds2ws_request(get_random_dataset_name):
     global dataset, uniqueWsName, code, conditions, filter, dtree, force, response
     parameters = {
-        'ds': dataset,
+        'ds': get_random_dataset_name,
         'ws': uniqueWsName,
         'code': code,
         'conditions': conditions,
