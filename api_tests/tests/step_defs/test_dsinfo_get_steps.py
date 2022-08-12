@@ -6,7 +6,6 @@ from tests.step_defs.conftest import successful_string_to_bool
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from jsonschema import validate
 
-dsinfo = Dsinfo()
 
 scenarios('../features/dsinfo-get.feature')
 
@@ -16,7 +15,7 @@ scenarios('../features/dsinfo-get.feature')
 def dsinfo_response(parameters, successful):
     parameters = json.loads(parameters)
     successful = successful_string_to_bool(successful)
-    return dsinfo.get(parameters, successful)
+    return Dsinfo.get(parameters, successful)
 
 
 @then(parsers.cfparse('I validate the response by schema'))

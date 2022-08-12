@@ -3,11 +3,11 @@ This module contains Adm_drop_ds requests
 """
 
 from lib.api.api_client import ApiRequest
+headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'text/plain'}
+apiRequest = ApiRequest(method='POST', path='adm_drop_ds', headers=headers)
 
-apiRequest = ApiRequest(method='POST', path='adm_drop_ds')
 
-
-class Adm_drop_ds:
+class AdmDropDs:
 
     @staticmethod
     def post(parameters):

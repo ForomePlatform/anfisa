@@ -1,7 +1,7 @@
 import json
 import pytest
 import time
-from lib.api.adm_drop_ds_api import Adm_drop_ds
+from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from pytest_bdd import given
 from tests.helpers.generators import testDataPrefix
@@ -26,8 +26,7 @@ def pytest_bdd_after_scenario():
             continue
     for wsDataset in ws_to_drop:
         time.sleep(1)
-        Adm_drop_ds.post({'ds': wsDataset})
-
+        AdmDropDs.post({'ds': wsDataset})
 
 
 # Fixtures
