@@ -1,17 +1,16 @@
 """
-This module contains Ds2ws requests
+This module contains Adm_drop_ds requests
 """
 
 from lib.api.api_client import ApiRequest
+apiRequest = ApiRequest(method='POST', path='adm_update')
 
-apiRequest = ApiRequest(method='POST', path='ds2ws')
 
-
-class Ds2ws:
+class AdmUpdate:
 
     @staticmethod
-    def post(parameters):
-        response = apiRequest.request(parameters)
+    def post():
+        response = apiRequest.request_without_params()
         print('responseCode:' + str(response.status_code))
         print('responseBody:', response.text)
         return response
