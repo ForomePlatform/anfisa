@@ -1,7 +1,7 @@
 import json
 import pytest
 import time
-from lib.api.adm_drop_ds_api import Adm_drop_ds
+from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from tests.helpers.generators import testDataPrefix
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
@@ -27,8 +27,8 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
-        Adm_drop_ds.post({'ds': wsDataset})
         time.sleep(1)
+        AdmDropDs.post({'ds': wsDataset})
 
 
 # Fixtures

@@ -4,7 +4,8 @@ This module contains Ds2ws requests
 
 from lib.api.api_client import ApiRequest
 
-apiRequest = ApiRequest(method='POST', path='ds2ws')
+headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'text/plain'}
+apiRequest = ApiRequest(method='POST', path='ds2ws', headers=headers)
 
 
 class Ds2ws:
