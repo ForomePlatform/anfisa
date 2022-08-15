@@ -50,13 +50,15 @@ def successful_string_to_bool(successful):
         return False
 
 @given(
-    parsers.cfparse('{ds_type:String} Dataset is uploaded and processed by the system', extra_types=EXTRA_STRING_TYPES),target_fixture='get_random_dataset_name')
-def get_random_dataset_name(ds_type):
-    response = DirInfo.get()
-    dsDict = json.loads(response.content)["ds-dict"]
-    for value in dsDict.values():
-        if value['kind'] == ds_type:
-            dataset = value['name']
+    parsers.cfparse('{dataset_type:String} Dataset is uploaded and processed by the system',
+                    extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
+def dataset(dataset_type):
+    _dataset = ''
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    for value in ds_dict.values():
+        if value['kind'] == dataset_type:
+            _dataset = value['name']
             break
-    assert dataset != ''
-    return dataset
+    assert _dataset != ''
+    return _dataset

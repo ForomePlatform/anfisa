@@ -29,12 +29,12 @@ Feature: Check dtree_check [POST] request
     @negative
     Scenario Outline: Submit dtree_check request without a code
         Given xl Dataset is uploaded and processed by the system
-        When dtree_check request without code is send
+        When dtree_check request with <code> is send
         Then response status should be 403 OK
         And response body should contain <error>
 
         Examples:
-        | error                                         |
-        | Missing request argument: "dtree" or "code    |
+        | code          | error                                         |
+        | Empty string  | Missing request argument: "dtree" or "code    |
 
 
