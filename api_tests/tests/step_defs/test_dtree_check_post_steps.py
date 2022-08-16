@@ -2,7 +2,7 @@ import json
 from jsonschema import validate
 from pytest_bdd import scenarios, parsers, when, then
 from lib.api.dtree_check_api import DtreeCheck
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_INT_TYPES
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
 from tests.helpers.constructors import Constructor
 
@@ -18,8 +18,8 @@ def dtree_check_response(code, ds, dataset):
     return _response
 
 
-@then(parsers.cfparse('response status should be {status:Number} OK', extra_types=EXTRA_INT_TYPES))
-def assert_status(status, dtree_check_response):
+@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, dtree_check_response, text):
     assert dtree_check_response.status_code == status
 
 

@@ -1,5 +1,5 @@
 """
-This module contains Adm_drop_ds requests
+This module contains AdmDropDs requests
 """
 
 from lib.api.api_client import ApiRequest
