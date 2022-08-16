@@ -2,7 +2,7 @@ import json
 from jsonschema import validate
 from pytest_bdd import scenarios, parsers, given, when, then
 from lib.api.ds2ws_api import Ds2ws
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_INT_TYPES
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_INT_TYPES, EXTRA_TYPES
 from tests.helpers.constructors import Constructor
 from tests.helpers.generators import Generator
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
@@ -24,8 +24,8 @@ def ds2ws_response(dataset, unique_ws_name):
     return Ds2ws.post(parameters)
 
 
-@then(parsers.cfparse('response status should be {status:Number} OK', extra_types=EXTRA_INT_TYPES))
-def assert_status(status, ds2ws_response):
+@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text, ds2ws_response):
     assert ds2ws_response.status_code == status
 
 

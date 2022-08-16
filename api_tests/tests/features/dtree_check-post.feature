@@ -31,7 +31,7 @@ Feature: Check dtree_check [POST] request
     Scenario Outline: Submit dtree_check request without a parameter
         Given xl Dataset is uploaded and processed by the system
         When dtree_check request with <code> and <ds> is send
-        Then response status should be 403 OK
+        Then response status should be 403 Forbidden
         And response body should contain <error>
 
         Examples:
