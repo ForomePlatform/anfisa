@@ -1,17 +1,17 @@
 """
-This module Dsinfo get request
+This module contains Dirinfo requests
 """
 
 from lib.api.api_client import ApiRequest
 
-apiRequest = ApiRequest(method='GET', path='dsinfo?')
+apiRequest = ApiRequest(method='GET', path='dirinfo')
 
 
-class Dsinfo:
+class DirInfo:
 
     @staticmethod
-    def get(parameters, success=True):
-        response = apiRequest.request(parameters)
+    def get(success=True):
+        response = apiRequest.request('')
         if success:
             assert response.status_code == 200
             print('responseCode:' + response.status_code.__str__())

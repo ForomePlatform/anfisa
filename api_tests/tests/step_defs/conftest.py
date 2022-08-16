@@ -1,10 +1,32 @@
+import json
 import pytest
+import time
+from lib.api.adm_drop_ds_api import AdmDropDs
+from lib.api.dirinfo_api import DirInfo
 from pytest_bdd import given
+from tests.helpers.generators import testDataPrefix
 
 
 # Hooks
 def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
     print(f'Step failed: {step}')
+
+
+def pytest_bdd_after_scenario():
+    ws_to_drop = []
+    response = DirInfo.get()
+    ds_dict = json.loads(response.content)["ds-dict"]
+    for value in ds_dict.values():
+        try:
+            if testDataPrefix + 'ws' in value['name']:
+                ws_to_drop.append(value['name'])
+        except ValueError:
+            continue
+        except TypeError:
+            continue
+    for wsDataset in ws_to_drop:
+        time.sleep(1)
+        AdmDropDs.post({'ds': wsDataset})
 
 
 # Fixtures
