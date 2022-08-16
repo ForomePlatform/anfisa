@@ -1,13 +1,13 @@
 """
-This module contains AdmReloadDs requests
+This module contains JobStatus requests
 """
 
 from lib.api.api_client import ApiRequest
 
-apiRequest = ApiRequest(method='POST', path='adm_reload_ds')
+apiRequest = ApiRequest(method='POST', path='job_status')
 
 
-class AdmReloadDs:
+class JobStatus:
 
     @staticmethod
     def post(parameters):

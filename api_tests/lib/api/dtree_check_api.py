@@ -1,5 +1,5 @@
 """
-This module contains Ds2ws requests
+This module contains DtreeCheck requests
 """
 
 from lib.api.api_client import ApiRequest
