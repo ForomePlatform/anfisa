@@ -2,7 +2,7 @@ import json
 from jsonschema import validate
 from pytest_bdd import scenarios, parsers, given, when, then
 from lib.api.ds2ws_api import Ds2ws
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_INT_TYPES, EXTRA_TYPES
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from tests.helpers.constructors import Constructor
 from tests.helpers.generators import Generator
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
