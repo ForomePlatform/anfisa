@@ -4,5 +4,6 @@ testDataPrefix = 'Autotest-'
 
 
 class Generator:
-    def unique_name(self):
-        return testDataPrefix + str(self) + strftime("-%y-%m-%d_%H-%M-%S", gmtime())
+    @staticmethod
+    def unique_name(instanceType):
+        return testDataPrefix + instanceType + strftime("-%y-%m-%d_%H-%M-%S", gmtime())
