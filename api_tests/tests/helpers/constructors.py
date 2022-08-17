@@ -1,9 +1,13 @@
+from tests.helpers.generators import Generator
+
+
 class Constructor:
     @staticmethod
     def ds2ws_payload(**kwargs):
         for key, value in kwargs.items():
-            if value == 'Empty string':
-                kwargs[key] = ''
+            if value[:9] == 'generated':
+                print('IIIIINNNNNNN SEEEEEEEELEEECTOR')
+                kwargs[key] = Generator.test_data(value[10:])
         return {
             'ds': kwargs['ds'] if 'ds' in kwargs else '',
             'ws': kwargs['ws'] if 'ws' in kwargs else '',
