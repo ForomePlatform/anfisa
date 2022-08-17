@@ -1,5 +1,5 @@
 import json
-from pytest_bdd import scenarios, parsers, given, then, when
+from pytest_bdd import scenarios, parsers, then, when
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
 from lib.api.dsinfo_api import Dsinfo
 from tests.step_defs.conftest import successful_string_to_bool
