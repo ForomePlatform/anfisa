@@ -5,11 +5,10 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
-from pytest_bdd import  parsers, given
+from pytest_bdd import parsers, given
 from lib.api.ds2ws_api import Ds2ws
 from lib.api.job_status_api import JobStatus
 from tests.helpers.constructors import Constructor
-
 
 
 # Hooks
@@ -65,14 +64,9 @@ def successful_string_to_bool(successful):
     else:
         return False
 
-def derive_ws(xl_dataset):
-    # Deriving ws dataset
-    unique_ws_name = Generator.unique_name('ws')
-    parameters = Constructor.ds2ws_payload(ds=xl_dataset, ws=unique_ws_name, code='return False')
-    response = Ds2ws.post(parameters)
 
-    # Checking creation
-    parameters = {'task': response.json()['task_id']}
+def ds_creation_status(task_id):
+    parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
     for i in range(10):
         if job_status_response.json()[1] == 'Done':
@@ -81,8 +75,17 @@ def derive_ws(xl_dataset):
             time.sleep(1)
             job_status_response = JobStatus.post(parameters)
             continue
-    assert job_status_response.json()[1] == 'Done'
+    return job_status_response.json()[1]
 
+
+def derive_ws(xl_dataset):
+    # Deriving ws dataset
+    unique_ws_name = Generator.unique_name('ws')
+    parameters = Constructor.ds2ws_payload(ds=xl_dataset, ws=unique_ws_name, code='return False')
+    response = Ds2ws.post(parameters)
+
+    # Checking creation
+    assert ds_creation_status(response.json()['task_id']) == 'Done'
     return unique_ws_name
 
 
