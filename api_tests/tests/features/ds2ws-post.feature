@@ -36,7 +36,7 @@ Feature: Check ds2ws [POST] request
         Examples:
         | ws                                | error                            |
         | generated one space string        | Incorrect derived dataset name   |
-        | generated space separated ws name | Incorrect derived dataset name   |
+        | generated space separated string  | Incorrect derived dataset name   |
         | generated duplicated ws name      | Dataset already exists           |
         | generated 251 literal string      | Failed, ask tech support         |
         #| $$$$$                             | Failed, ask tech support         | BUG

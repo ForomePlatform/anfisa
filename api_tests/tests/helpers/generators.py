@@ -31,7 +31,7 @@ class Generator:
                 return ' '
             case 'empty string':
                 return ''
-            case 'space separated ws name':
+            case 'space separated string':
                 return f'{testDataPrefix} {Generator.random_literal_string(10)}'
             case 'duplicated ws name':
                 duplicated_name = ''
