@@ -10,8 +10,12 @@ dsinfo_schema = {
         },
         "upd-time": {
             "anyOf": [
-                {"type": "string"},
-                {"type": "null"}
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
             ]
         },
         "create-time": {
@@ -24,34 +28,52 @@ dsinfo_schema = {
             "type": "string"
         },
         "doc": {
-            "type": "array",
+            "type": "array"
         },
         "total": {
             "type": "integer"
         },
         "date-note": {
             "anyOf": [
-                {"type": "string"},
-                {"type": "null"}
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
             ]
         },
         "ancestors": {
             "type": "array"
         },
         "meta": {
-            "type": "object",
+            "type": "object"
         },
         "cohorts": {
-            "type": "array",
+            "type": "array"
         },
         "unit-classes": {
-            "type": "array",
+            "type": "array"
         },
         "export-max-count": {
             "type": "integer"
         },
         "unit-groups": {
-            "type": "array",
-        },
-    }
+            "type": "array"
+        }
+    },
+    "required": [
+        "name",
+        "kind",
+        "create-time",
+        "upd-time",
+        "note",
+        "date-note",
+        "total",
+        "doc",
+        "ancestors",
+        "meta",
+        "unit-classes",
+        "unit-groups"
+    ]
 }

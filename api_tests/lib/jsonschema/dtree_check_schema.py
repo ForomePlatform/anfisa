@@ -3,8 +3,22 @@ This module contains DtreeCheck jsonschema
 """
 
 dtree_check_schema = {
-    "code": "string",
-    "error": "string",
-    "line": "integer",
-    "pos": "integer"
+    "type": "object",
+    "properties": {
+        "code": {
+            "type": "string"
+        },
+        "error": {
+            "type": "string"
+        },
+        "line": {
+            "type": "integer"
+        },
+        "pos": {
+            "type": "integer"
+        }
+    },
+    "required": [
+        "code"
+    ]
 }
