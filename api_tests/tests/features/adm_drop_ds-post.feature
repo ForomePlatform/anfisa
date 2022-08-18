@@ -20,3 +20,4 @@ Feature: Check adm_drop_ds [POST] request
         | ds                              | error                                                        |
         | generated empty string          | Missing request argument "ds"                                |
         | generated random literal string | no appropriate pattern in 'auto-drop-datasets' config option |
+        | generated random registered ws  | no appropriate pattern in 'auto-drop-datasets' config option |
