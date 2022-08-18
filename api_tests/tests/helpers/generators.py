@@ -45,7 +45,7 @@ class Generator:
                 return Generator.space_separated_string()
             case 'duplicated ws name':
                 _dataset = ''
-                ds_dict = json.loads( DirInfo.get().content)["ds-dict"]
+                ds_dict = json.loads(DirInfo.get().content)["ds-dict"]
                 for value in ds_dict.values():
                     if value['kind'] == 'ws':
                         _dataset = value['name']
@@ -54,6 +54,8 @@ class Generator:
                 return _dataset
             case '251 literal string':
                 return  Generator.random_literal_string(251)
+            case 'random literal string':
+                return Generator.random_literal_string(10)
             case 'numbers only string':
                 return Generator.random_numeral_string(10)
             case 'symbols only string':
