@@ -1,4 +1,3 @@
-import json
 from jsonschema import validate
 from pytest_bdd import scenarios, parsers, given, when, then
 from lib.api.ds2ws_api import Ds2ws
