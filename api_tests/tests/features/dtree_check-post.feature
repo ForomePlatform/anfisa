@@ -6,8 +6,8 @@ Feature: Check dtree_check [POST] request
         Given xl Dataset is uploaded and processed by the system
         When dtree_check request with <code> and <ds> is send
         Then response status should be 200 OK
-        And response body schema should be valid
-        And response body code should be equal <code>
+        And response body schema should be valid by "dtree_check_schema"
+        And response body "code" should be equal <code>
 
         Examples:
         | ds         | code                                                     |
@@ -19,8 +19,8 @@ Feature: Check dtree_check [POST] request
         Given xl Dataset is uploaded and processed by the system
         When dtree_check request with <code> and <ds> is send
         Then response status should be 200 OK
-        And response body schema should be valid
-        And response body error should be equal <error>
+        And response body schema should be valid by "dtree_check_schema"
+        And response body "error" should be equal <error>
 
         Examples:
         | ds         | code          | error                         |
@@ -32,7 +32,7 @@ Feature: Check dtree_check [POST] request
         Given xl Dataset is uploaded and processed by the system
         When dtree_check request with <code> and <ds> is send
         Then response status should be 403 Forbidden
-        And response body should contain <error>
+        And response body should contain "<error>"
 
         Examples:
         | ds           | code         | error                                       |

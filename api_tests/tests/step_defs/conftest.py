@@ -4,7 +4,7 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from tests.helpers.generators import testDataPrefix, Generator
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
 from pytest_bdd import parsers, given, then
 from lib.api.ds2ws_api import Ds2ws
@@ -124,7 +124,11 @@ def assert_response_code(key, value):
     assert response_json[key] == value
 
 
-@then(parsers.cfparse('response body should be contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
+@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
 def dsinfo_response_error(error_message):
     assert error_message in pytest.response.text
 
+
+@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text):
+    assert pytest.response.status_code == status

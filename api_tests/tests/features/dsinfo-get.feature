@@ -1,4 +1,4 @@
-@only
+@api
 Feature: Check Dsinfo[GET] request
 
   @positive
@@ -16,7 +16,7 @@ Feature: Check Dsinfo[GET] request
   @negative
   Scenario Outline: Send Dsinfo request with parameters: "<parameters>" (unsuccessful)
     When I send get dsinfo request with parameters: "<parameters>" (unsuccessful)
-    Then response body should be contain "<error>"
+    Then response body should contain "<error>"
 
     Examples:
       | parameters   | error                                |
