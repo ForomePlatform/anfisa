@@ -1,7 +1,7 @@
 @api
 Feature: Check ds2ws [POST] request
 
-    @progress
+    @positive
     Scenario: Derive ws dataset with code attribute
     Given xl Dataset is uploaded and processed by the system
     And unique ws Dataset name is generated
@@ -14,7 +14,7 @@ Feature: Check ds2ws [POST] request
     And <code> is present in dsinfo response for derived dataset
 
 
-    @progress
+    @negative
     Scenario: Fail to derive ws dataset without attributes (>9000 records)
     Given xl Dataset with > 9000 records is uploaded and processed by the system
     And unique ws Dataset name is generated
@@ -24,7 +24,7 @@ Feature: Check ds2ws [POST] request
     And job status should be Size is incorrect
 
 
-    @progress
+    @negative
     Scenario Outline: Fail to derive ws dataset with incorrect parameters
     Given xl Dataset is uploaded and processed by the system
     And valid Python code is constructed
@@ -44,7 +44,7 @@ Feature: Check ds2ws [POST] request
         #| generated symbols only string     | Done                             | BUG
 
 
-    @progress
+    @negative
     Scenario Outline: Fail to derive ws dataset with missing parameters
     Given xl Dataset is uploaded and processed by the system
     And unique ws Dataset name is generated

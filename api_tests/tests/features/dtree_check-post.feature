@@ -11,8 +11,8 @@ Feature: Check dtree_check [POST] request
 
         Examples:
         | ds         | code                                                     |
-        | xl dataset | return True                                              |
-        | xl dataset | if anything in {something}:\n\treturn True\nreturn False |
+        | xl Dataset | return True                                              |
+        | xl Dataset | if anything in {something}:\n\treturn True\nreturn False |
 
     @negative
     Scenario Outline: Submit incorrect Python code
@@ -24,8 +24,8 @@ Feature: Check dtree_check [POST] request
 
         Examples:
         | ds         | code          | error                         |
-        | xl dataset | retur True    | Improper instruction          |
-        | xl dataset | True          | Instructon must be of if-type |
+        | xl Dataset | retur True    | Improper instruction          |
+        | xl Dataset | True          | Instructon must be of if-type |
 
     @negative
     Scenario Outline: Submit dtree_check request without a parameter
@@ -35,8 +35,8 @@ Feature: Check dtree_check [POST] request
         And response body should contain <error>
 
         Examples:
-        | ds           | code         | error                                       |
-        | xl dataset   | Empty string | Missing request argument: "dtree" or "code" |
-        | Empty string | return False | Missing request argument "ds"               |
+        | ds                     | code                   | error                                       |
+        | xl Dataset             | generated empty string | Missing request argument: "dtree" or "code" |
+        | generated empty string | return False           | Missing request argument "ds"               |
 
 

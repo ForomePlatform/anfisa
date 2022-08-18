@@ -52,11 +52,10 @@ def ds2ws_response(code, dataset, unique_ws_name):
 
 @when(parsers.cfparse('ds2ws request with {ds:String} and {ws:String} parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
-def ds2ws_response(dataset, ws, ds):
-    dsName = dataset if ds == 'xl Dataset' else ds
-    parameters = Constructor.ds2ws_payload(ds=dsName, ws=ws)
+def ds2ws_response(dataset, ds, ws):
+    ds_name = dataset if ds == 'xl Dataset' else ds
+    parameters = Constructor.ds2ws_payload(ds=ds_name, ws=ws)
     return Ds2ws.post(parameters)
-
 
 
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
@@ -68,10 +67,11 @@ def assert_status(status, text, ds2ws_response):
 def assert_json_schema(ds2ws_response):
     validate(ds2ws_response.json(), ds2ws_schema)
 
+
 @then(parsers.cfparse('response body should contain {error:String}', extra_types=EXTRA_STRING_TYPES))
 def assert_string_error(error, ds2ws_response):
     response = ds2ws_response.text
-    print('ds2ws_response.text',ds2ws_response.text)
+    print('ds2ws_response.text', ds2ws_response.text)
     assert error in response
 
 

@@ -6,7 +6,6 @@ class Constructor:
     def ds2ws_payload(**kwargs):
         for key, value in kwargs.items():
             if value[:9] == 'generated':
-                print('IIIIINNNNNNN SEEEEEEEELEEECTOR')
                 kwargs[key] = Generator.test_data(value[10:])
         return {
             'ds': kwargs['ds'] if 'ds' in kwargs else '',
@@ -21,8 +20,8 @@ class Constructor:
     @staticmethod
     def dtree_check_payload(**kwargs):
         for key, value in kwargs.items():
-            if value == 'Empty string':
-                kwargs[key] = ''
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
         return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
                 'code': kwargs['code'] if 'code' in kwargs else ''
                 }
