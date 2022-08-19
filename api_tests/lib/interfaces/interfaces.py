@@ -5,3 +5,8 @@ EXTRA_INT_TYPES = {
 EXTRA_STRING_TYPES = {
     'String': str,
 }
+
+EXTRA_TYPES = {
+    'Number': int,
+    'String': str,
+}

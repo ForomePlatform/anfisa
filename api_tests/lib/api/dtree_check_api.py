@@ -1,13 +1,14 @@
 """
-This module contains AdmDropDs requests
+This module contains DtreeCheck requests
 """
 
 from lib.api.api_client import ApiRequest
 
-apiRequest = ApiRequest(method='POST', path='adm_drop_ds')
+headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'text/plain'}
+apiRequest = ApiRequest(method='POST', path='dtree_check', headers=headers)
 
 
-class AdmDropDs:
+class DtreeCheck:
 
     @staticmethod
     def post(parameters):

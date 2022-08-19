@@ -3,8 +3,16 @@ import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
-from pytest_bdd import given
-from tests.helpers.generators import testDataPrefix
+from tests.helpers.generators import testDataPrefix, Generator
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
+from jsonschema import validate
+from pytest_bdd import parsers, given, then
+from lib.api.ds2ws_api import Ds2ws
+from lib.api.job_status_api import JobStatus
+from tests.helpers.constructors import Constructor
+from lib.jsonschema.ds2ws_schema import ds2ws_schema
+from lib.jsonschema.dsinfo_schema import dsinfo_schema
+from lib.jsonschema.dtree_check_schema import dtree_check_schema
 
 
 # Hooks
@@ -35,6 +43,19 @@ def fixture_function():
     print('fixture_function')
 
 
+@pytest.fixture
+def xl_dataset():
+    _dataset = ''
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    for value in ds_dict.values():
+        if value['kind'] == 'xl':
+            _dataset = value['name']
+            break
+    assert _dataset != ''
+    return _dataset
+
+
 # Shared Given Steps
 @given('I do something', target_fixture='ddg_home')
 def i_do_something(fixture_function):
@@ -46,3 +67,68 @@ def successful_string_to_bool(successful):
         return True
     else:
         return False
+
+
+def ds_creation_status(task_id):
+    parameters = {'task': task_id}
+    job_status_response = JobStatus.post(parameters)
+    for i in range(10):
+        if job_status_response.json()[1] == 'Done':
+            break
+        else:
+            time.sleep(1)
+            job_status_response = JobStatus.post(parameters)
+            continue
+    return job_status_response.json()[1]
+
+
+def derive_ws(xl_dataset):
+    # Deriving ws dataset
+    unique_ws_name = Generator.unique_name('ws')
+    parameters = Constructor.ds2ws_payload(ds=xl_dataset, ws=unique_ws_name, code='return False')
+    response = Ds2ws.post(parameters)
+
+    # Checking creation
+    assert ds_creation_status(response.json()['task_id']) == 'Done'
+    return unique_ws_name
+
+
+@given(
+    parsers.cfparse('{dataset_type:String} Dataset is uploaded and processed by the system',
+                    extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
+def dataset(dataset_type, xl_dataset):
+    if dataset_type == 'xl':
+        return xl_dataset
+    elif dataset_type == 'ws':
+        return derive_ws(xl_dataset)
+
+
+@then(parsers.cfparse('response body schema should be valid by "{schema:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_json_schema(schema):
+    print(schema)
+    match schema:
+        case 'dsinfo_schema':
+            validate(pytest.response.json(), dsinfo_schema)
+        case 'dtree_check_schema':
+            validate(pytest.response.json(), dtree_check_schema)
+        case 'ds2ws_schema':
+            validate(pytest.response.json(), ds2ws_schema)
+        case _:
+            print(f"Sorry, I couldn't understand {schema!r}")
+
+
+@then(parsers.cfparse('response body "{key:String}" should be equal {value:String}', extra_types=EXTRA_STRING_TYPES))
+def assert_response_code(key, value):
+    response_json = json.loads(pytest.response.text)
+    assert response_json[key] == value
+
+
+@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(error_message):
+    assert error_message in pytest.response.text
+
+
+@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text):
+    assert pytest.response.status_code == status

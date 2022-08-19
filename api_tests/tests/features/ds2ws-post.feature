@@ -7,5 +7,5 @@ Feature: Check ds2ws [POST] request
     And unique ws Dataset name is generated
     When ds2ws request with ds and ws parameters is send
     Then response status should be 200 OK
-    And response body schema should be valid 
+    And response body schema should be valid by "ds2ws_schema"
 
