@@ -8,7 +8,7 @@ Feature: Check ds2ws [POST] request
     And valid Python code is constructed
     When ds2ws request with "ds", "ws" and "code" parameters is send
     Then response status should be 200 OK
-    And response body schema should be valid
+    And response body schema should be valid by "ds2ws_schema"
     And job status should be Done
     And derived dataset can be found in the dirinfo response
     And <code> is present in dsinfo response for derived dataset
@@ -20,7 +20,7 @@ Feature: Check ds2ws [POST] request
     And unique ws Dataset name is generated
     When ds2ws request with "ds" and "ws" parameters is send
     Then response status should be 200 OK
-    And response body schema should be valid
+    And response body schema should be valid by "ds2ws_schema"
     And job status should be Size is incorrect
 
 
@@ -30,7 +30,7 @@ Feature: Check ds2ws [POST] request
     And valid Python code is constructed
     When ds2ws request with "ds", "code" and <ws> parameters is send
     Then response status should be 200 OK
-    And response body schema should be valid
+    And response body schema should be valid by "ds2ws_schema"
     And job status should be <error>
 
         Examples:
@@ -50,7 +50,7 @@ Feature: Check ds2ws [POST] request
     And unique ws Dataset name is generated
     When ds2ws request with <ds> and <ws> parameters is send
     Then response status should be 403 Forbidden
-    And response body should contain <error>
+    And response body should contain "<error>"
 
         Examples:
         | ds                     | ws                       | error                             |

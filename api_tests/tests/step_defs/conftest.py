@@ -5,11 +5,15 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
 from tests.helpers.generators import testDataPrefix, Generator
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES
-from pytest_bdd import parsers, given
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
+from jsonschema import validate
+from pytest_bdd import parsers, given, then
 from lib.api.ds2ws_api import Ds2ws
 from lib.api.job_status_api import JobStatus
 from tests.helpers.constructors import Constructor
+from lib.jsonschema.ds2ws_schema import ds2ws_schema
+from lib.jsonschema.dsinfo_schema import dsinfo_schema
+from lib.jsonschema.dtree_check_schema import dtree_check_schema
 
 
 # Hooks
@@ -38,6 +42,19 @@ def pytest_bdd_after_scenario():
 @pytest.fixture
 def fixture_function():
     print('fixture_function')
+
+
+@pytest.fixture
+def xl_dataset():
+    _dataset = ''
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    for value in ds_dict.values():
+        if value['kind'] == 'xl':
+            _dataset = value['name']
+            break
+    assert _dataset != ''
+    return _dataset
 
 
 # Shared Given Steps
@@ -107,3 +124,34 @@ def dataset(dataset_type):
             return derive_ws(xl_dataset())
         case other:
             return xl_dataset()
+
+
+@then(parsers.cfparse('response body schema should be valid by "{schema:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_json_schema(schema):
+    print(schema)
+    match schema:
+        case 'dsinfo_schema':
+            validate(pytest.response.json(), dsinfo_schema)
+        case 'dtree_check_schema':
+            validate(pytest.response.json(), dtree_check_schema)
+        case 'ds2ws_schema':
+            validate(pytest.response.json(), ds2ws_schema)
+        case _:
+            print(f"Sorry, I couldn't understand {schema!r}")
+
+
+@then(parsers.cfparse('response body "{key:String}" should be equal {value:String}', extra_types=EXTRA_STRING_TYPES))
+def assert_response_code(key, value):
+    response_json = json.loads(pytest.response.text)
+    assert response_json[key] == value
+
+
+@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(error_message):
+    assert error_message in pytest.response.text
+
+
+@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text):
+    assert pytest.response.status_code == status
