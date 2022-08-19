@@ -137,6 +137,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_check_schema)
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
+        case 'dtree_stat_schema':
+            validate(pytest.response.json(), ds2ws_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
 
