@@ -49,7 +49,7 @@ text = text + '\n\n' + result
 
 SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
 print(SLACK_REPORT_SECRET)
-BASE_URL = "https://hooks.slack.com/services/" + "TCJ6MF64T/B03TC82NVSR/afm5YTbLwcbwcN4TSnPhAYXD"
+BASE_URL = "https://hooks.slack.com/services/" + SLACK_REPORT_SECRET.__str__()
 params = {"channel": "#forome-api-tests-reports", "username": "webhookbot", "text": text, "icon_emoji": ":ghost:"}
 response = requests.post(BASE_URL, json=params)
 print(response)
