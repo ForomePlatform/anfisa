@@ -35,8 +35,8 @@ Feature: Check dtree_check [POST] request
         And response body should contain "<error>"
 
         Examples:
-        | ds           | code         | error                                       |
-        | xl dataset   | Empty string | Missing request argument: "dtree" or "code" |
-        | Empty string | return False | Missing request argument "ds"               |
+        | ds                        | code                      | error                                       |
+        | xl dataset                | generated empty string    | Missing request argument: "dtree" or "code" |
+        | generated empty string    | return False              | Missing request argument "ds"               |
 
 

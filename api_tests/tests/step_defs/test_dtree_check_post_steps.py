@@ -14,7 +14,3 @@ def dtree_check_response(code, ds, dataset):
     parameters = Constructor.dtree_check_payload(ds=dataset_name, code=code)
     pytest.response = DtreeCheck.post(parameters)
     return pytest.response
-
-
-
-

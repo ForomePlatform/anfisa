@@ -21,5 +21,3 @@ def ds2ws_response(dataset, unique_ws_name):
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name)
     pytest.response = Ds2ws.post(parameters)
     return pytest.response
-
-
