@@ -33,12 +33,11 @@ jobs:
         
       - name: Run tests
         if: ${{ always() }}
-        run: pipenv run tests_parallel
+        run: pipenv run tests_parallel_cucumberjson_report
         working-directory: ./api_tests
         
-#      - name: Cucumber report
-#        if: ${{ always() }}
-#        uses: deblockt/cucumber-report-annotations-action@v1.7
-#        with:
-#            path: "./api_tests/cucumber-report.json"
-#           access-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Send request
+        if: ${{ always() }}
+        run: pipenv run send_report
+        working-directory: ./api_tests
+        
