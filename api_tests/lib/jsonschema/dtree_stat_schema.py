@@ -24,7 +24,7 @@ dtree_stat_schema = {
         "stat-list": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
             }
         },
         "functions": {
@@ -35,6 +35,7 @@ dtree_stat_schema = {
         },
         "rq_id": {
             "type": "string"
-        }
+        },
+        "required": ["total-counts", "filtered-counts", "stat-list", "functions", "rq_id"]
     }
 }
