@@ -142,7 +142,8 @@ class VarietySupport:
             sub_kind)
         self.mPanelType = base_descr["panel-type"]
         self.mPanelKind = "panel." + self.mPanelType
-        self.mDefaultRestSize = AnfisaConfig.configOption("max.rest.size")
+        self.mDefaultRestSize = AnfisaConfig.configOption(
+            "variety.max.rest.size")
 
     def getPanelUnit(self):
         return self.mPanelUnit

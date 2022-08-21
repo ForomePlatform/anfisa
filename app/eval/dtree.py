@@ -254,12 +254,10 @@ class DTreeEval(Evaluation, CaseStory):
     def __init__(self, eval_space, dtree_code, name = None,
             rubric = None, updated_time = None, updated_from = None):
         parsed = ParsedDTree(eval_space, dtree_code)
-        Evaluation.__init__(self, eval_space, parsed.getHashCode(),
-            updated_time, updated_from)
+        Evaluation.__init__(self, "dtree", eval_space, parsed.getHashCode(),
+            name, rubric, updated_time, updated_from)
         CaseStory.__init__(self)
         self.mCode = parsed.getTreeCode()
-        self.mDTreeName = name
-        self.mRubric = rubric
         self.mPointList = None
         self.mFragments = parsed.getFragments()
         self.mFinalCondition = None
@@ -333,9 +331,6 @@ class DTreeEval(Evaluation, CaseStory):
     def __len__(self):
         return len(self.mPointList)
 
-    def getSolKind(self):
-        return "dtree"
-
     def getMaster(self):
         return self
 
@@ -344,12 +339,6 @@ class DTreeEval(Evaluation, CaseStory):
 
     def getCode(self):
         return self.mCode
-
-    def getName(self):
-        return self.mDTreeName
-
-    def getRubric(self):
-        return self.mRubric
 
     def getCurPointNo(self):
         return Evaluation.getCurPointNo(self)
@@ -398,8 +387,10 @@ class DTreeEval(Evaluation, CaseStory):
             ret_handle["err-atoms"] = atom_err_dict
         if self.mErrorInfo:
             ret_handle.update(self.mErrorInfo)
-        if self.mDTreeName:
-            ret_handle["dtree-name"] = self.mDTreeName
+        if self.getName():
+            ret_handle["dtree-name"] = self.getName()
+        if self.getRubric():
+            ret_handle["rubric"] = self.getRubric()
         return ret_handle
 
     def _decorCode(self, atom_seq = None):

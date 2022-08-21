@@ -42,7 +42,7 @@ class AnfisaConfig:
         "report.lines": 100,
 
         "ws.max.count":  9000,
-        "export.max.count": 9000,
+        "export.max.count": 300,
         "tab.max.count": 9000,  # 50,
 
         "ds.name.max.length": 255,
@@ -81,7 +81,7 @@ class AnfisaConfig:
         "long.run.passtime": timedelta(minutes = 10),
         "long.run.failures": 5,
 
-        "max.rest.size": 300,
+        "variety.max.rest.size": 300,
         "comp-hets.cache.size": 10,
 
         "max.gene.comp.count": 10000}
