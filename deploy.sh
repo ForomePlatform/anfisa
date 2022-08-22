@@ -3,7 +3,7 @@
 usage()
 {
 cat << EOF
-	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.7/ 
+	Usage: $0 --workdir=/path/to/workdir/for/anfisa/0.7/
 EOF
 }
 
@@ -11,7 +11,7 @@ EOF
 for flag in "$@"
 do
 	case $flag in
-		--workdir=*) 
+		--workdir=*)
 			WORKDIR=${flag#*=}
 			echo WORKDIR=$WORKDIR
 			if [[ $WORKDIR != /* ]]; then
@@ -74,8 +74,19 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ] ; then
   cd $WORKDIR || exit
   sed "s#ASETUP_PATH#${ASETUP}#g" setup/docker-compose.yml.template | sed "s#DRUID_WORK#${DRUID}#g" > docker-compose.yml
 
-  docker compose --env-file setup/.env.frontend.build build
-  docker compose up -d
+
+  docker compose > /dev/null
+  if [ $? -eq 0 ]
+  then
+   echo "docker compose exists"
+   FOR_DOCKER_COMPOSE="docker compose"
+  else
+   FOR_DOCKER_COMPOSE="docker-compose"
+   echo "using docker-compose" >&2
+  fi
+
+  $FOR_DOCKER_COMPOSE --env-file setup/.env.frontend.build build
+  $FOR_DOCKER_COMPOSE up -d
   docker ps
   docker exec -it anfisa-backend sh -c 'echo "Initializing ..."; while ! test -f "/anfisa/anfisa.json"; do sleep 5; done'
   docker exec -it anfisa-backend sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -m app.adm_mongo -c /anfisa/anfisa.json -m GeneDb /anfisa/a-setup/data/gene_db.js'
