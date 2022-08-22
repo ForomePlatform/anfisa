@@ -4,7 +4,6 @@ This module contains common jsonschemas
 
 numeric_stat_list = {
     "type": "object",
-    "description": "Positive response of ds2ws endpoint",
     "properties": {
         "name": {
             "type": "string"
@@ -54,14 +53,13 @@ numeric_stat_list = {
         },
         "histogram": {
             "type": "array"
-        },
-        "required": ["name", "kind", "vgroup", "classes"]
-    }
+        }
+    },
+    "required": ["name", "kind", "vgroup", "classes"]
 }
 
 enum_stat_list = {
     "type": "object",
-    "description": "Positive response of ds2ws endpoint",
     "properties": {
         "name": {
             "type": "string"
@@ -92,14 +90,13 @@ enum_stat_list = {
         },
         "variants": {
             "type": "array"
-        },
-        "required": ["name", "kind", "vgroup", "classes"]
-    }
+        }
+    },
+    "required": ["name", "kind", "vgroup", "classes"]
 }
 
 func_stat_list = {
     "type": "object",
-    "description": "Positive response of ds2ws endpoint",
     "properties": {
         "name": {
             "type": "string"
@@ -131,7 +128,7 @@ func_stat_list = {
         "variants": ["null", "array"],
         "err": "string",
         "rq-id": "string",
-        "no": "string",
-        "required": ["name", "kind", "vgroup", "classes", "rq-id"]
-    }
+        "no": "string"
+    },
+    "required": ["name", "kind", "vgroup", "classes", "rq-id"]
 }

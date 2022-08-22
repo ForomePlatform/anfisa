@@ -33,9 +33,9 @@ dtree_stat_schema = {
                 "type": "object"
             }
         },
-        "rq_id": {
+        "rq-id": {
             "type": "string"
         }
     },
-    "required": ["total-counts", "filtered-counts", "stat-list", "functions", "rq_id"]
+    "required": ["total-counts", "filtered-counts", "stat-list", "functions", "rq-id"]
 }

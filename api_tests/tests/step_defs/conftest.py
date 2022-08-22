@@ -4,6 +4,7 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
@@ -138,7 +139,7 @@ def assert_json_schema(schema):
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
         case 'dtree_stat_schema':
-            validate(pytest.response.json(), ds2ws_schema)
+            validate(pytest.response.json(), dtree_stat_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
 
