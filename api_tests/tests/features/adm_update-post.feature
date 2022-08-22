@@ -1,7 +1,7 @@
 @api
 Feature: Check adm_update [POST] request
 
-    @progress
+    @positive
     Scenario: Force update vault state
     When adm_update request is send
     Then response status should be 200 OK
