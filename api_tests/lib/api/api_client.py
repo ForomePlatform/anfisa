@@ -13,17 +13,7 @@ class ApiRequest:
         self._method = method
         self._headers = headers
 
-    def request_without_params(self):
-        url = BASE_URL + self._path
-        headers = self._headers
-        print('url: ' + url)
-        return requests.request(
-            method=self._method,
-            url=url,
-            headers=headers,
-        )
-
-    def request(self, params):
+    def request(self, params=None):
         url = self._base_url + self._path
         headers = self._headers
         print('url: ' + url)
