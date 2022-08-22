@@ -155,3 +155,22 @@ def dsinfo_response_error(error_message):
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
+
+
+@given(parsers.cfparse('unique {dataset_type:String} Dataset name is generated',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_ds_name')
+def unique_ds_name(dataset_type):
+    _unique_ds_name = Generator.unique_name(dataset_type)
+    assert _unique_ds_name != ''
+    return _unique_ds_name
+
+
+@then(parsers.cfparse('job status should be {status:String}', extra_types=EXTRA_STRING_TYPES))
+def assert_job_status(status):
+    assert status in ds_creation_status(pytest.response.json()['task_id'])
+
+
+@given(parsers.cfparse('{code_type:String} Python code is constructed',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
+def code(code_type):
+    return Generator.code(code_type)
