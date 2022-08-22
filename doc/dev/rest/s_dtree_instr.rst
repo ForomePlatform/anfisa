@@ -23,16 +23,16 @@ Format
 |       **[0]**: action type, ``"DTREE"``
 |       **[1]**: action name (from list below), *string* 
 |       **[2]**: decision tree name, *string*
-|       **[3]**: rubric, in case of ``"UPDATE"`` option,  *optional string, optional position*
+|       **[3]**: rubric, in case of ``"UPDATE"`` option,  *optional string*
+|               *position [3] is optional and can be omited*
 |   ``]``
 
 Actions:
 ^^^^^^^^
     
     **UPDATE**: update (as well as create) decision tree with given name
-|        
-        (Note:``null`` as ``<rubric>`` means rubric drop for existing tree; do not put this item in list 
-            if no change of rubric is expected)
+       
+        (Note: if position **[3]** is omited, no change of rubric is expected on update)
           
     **DELETE**: delete decision tree with given name
     
