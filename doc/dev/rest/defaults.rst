@@ -44,6 +44,7 @@ The request returns "hardcoded" constants used by instance of Anfisa:
     
     * **xl.view.count.samples.min** - maximal bound for variant count in sampling :doc:`viewing regime<../concepts/view>` in :term:`XL-dataset`, *int*, 150
 
+    * **variety.max.rest.size** - maximal count of symbols for :doc:`variety filtering property<../concepts/variety>` to provide full statistic, *int*, 300 
     
     * **solution.std.mark** - mark for standard :doc:`solution items<../concepts/sol_pack>`, *str*, ``"@"``
     

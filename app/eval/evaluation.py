@@ -18,15 +18,18 @@
 #  limitations under the License.
 #
 import abc, json
+from app.model.sol_support import SolutionBaseInfo
 from .visitor import EnumUnitConditionVisitor
 
 #===============================================
-class Evaluation:
-    def __init__(self, eval_space, hash_code,
+class Evaluation(SolutionBaseInfo):
+    def __init__(self, kind, eval_space, hash_code,
+            name = None, rubric = None,
             updated_time = None, updated_from = None):
+        SolutionBaseInfo.__init__(self, kind, name, rubric,
+            updated_time, updated_from)
         self.mEvalSpace = eval_space
         self.mHashCode = hash_code
-        self.mUpdatedInfo = [updated_time, updated_from]
         self.mPointNo = 0
         self.mLabels = dict()
         self.mErrors = dict()
@@ -34,9 +37,6 @@ class Evaluation:
 
     def getEvalSpace(self):
         return self.mEvalSpace
-
-    def getUpdateInfo(self):
-        return self.mUpdatedInfo
 
     def getHashCode(self):
         return self.mHashCode
