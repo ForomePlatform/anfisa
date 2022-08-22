@@ -8,6 +8,7 @@ dotenv_file = config_dir / ".env"
 
 load_dotenv(dotenv_file)
 
+
 @dataclass
 class ApiConfig:
     base_url: str = os.getenv("BASE_URL")

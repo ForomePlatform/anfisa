@@ -13,7 +13,7 @@ class ApiRequest:
         self._method = method
         self._headers = headers
 
-    def request(self, params):
+    def request(self, params=None):
         url = self._base_url + self._path
         headers = self._headers
         print('url: ' + url)
