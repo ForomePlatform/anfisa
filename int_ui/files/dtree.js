@@ -627,6 +627,7 @@ var sDTreesH = {
     mComboName: null,
     mCurDTreeName: null,
     mCurDTreeInfo: null,
+    mCurOp: null,
     mBtnOp: null,
     
     mAllNames: [],
@@ -662,7 +663,7 @@ var sDTreesH = {
     },
     
     update: function() {
-        this.mInpName = null;
+        this.mCurOp = null;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
@@ -712,23 +713,23 @@ var sDTreesH = {
     },
     
     checkSelection: function() {
-        if (this.mInpName == null)
+        if (this.mCurOp == null)
             return;
 
         dtree_name = this.mInpName.value;
         q_all = this.mAllNames.indexOf(dtree_name) >= 0;
         q_op  = this.mOpNames.indexOf(dtree_name) >= 0;
         
-        if (this.mInpName == "modify") {
+        if (this.mCurOp == "modify") {
             this.mBtnOp.disabled = (!q_op) || dtree_name == this.mCurDTreeName;
             return;
         }
-        if (this.mInpName == "load") {
+        if (this.mCurOp == "load") {
             this.mBtnOp.disabled = (!q_all) || dtree_name == this.mCurDTreeName;
             return;
         }
         
-        if (this.mInpName != "create") {
+        if (this.mCurOp != "create") {
             return; /*assert false! */
         }
         
@@ -751,7 +752,7 @@ var sDTreesH = {
     },
 
     startLoad: function() {
-        this.mInpName = "load";
+        this.mCurOp = "load";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
         this.fillSelNames(false, this.mAllNames, this.mCurDTreeName);
@@ -765,7 +766,7 @@ var sDTreesH = {
     startCreate: function() {
         if (sDecisionTree.isEmpty())
             return;
-        this.mInpName = "create";
+        this.mCurOp = "create";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "visible";
         this.mListName.disabled = false;
@@ -782,7 +783,7 @@ var sDTreesH = {
             (this.mCurDTreeName && this.mCurDTreeName[0] == '@'))
             return;
         this.fillSelNames(false, this.mOpNames);
-        this.mInpName = "modify";
+        this.mCurOp = "modify";
         this.mInpName.value = "";
         this.mInpName.style.visibility = "hidden";
         this.mListName.disabled = false;
@@ -804,7 +805,7 @@ var sDTreesH = {
         q_all = this.mAllNames.indexOf(dtree_name) >= 0;
         q_op = this.mOpNames.indexOf(dtree_name) >= 0;
         
-        switch (this.mInpName) {
+        switch (this.mCurOp) {
             case "create":
                 if (!q_all && checkIdentifier(dtree_name)) {
                     sDecisionTree.setup(true, 

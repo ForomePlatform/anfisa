@@ -188,14 +188,38 @@ class SolutionKindHandler:
             return self.mEntryDict.get(name)
 
 #===============================================
-class SolPanelHandler:
-    def __init__(self, tp, name, sym_list, rubric = None,
+class SolutionBaseInfo:
+    def __init__(self, kind, name = None, rubric = None,
             updated_time = None, updated_from = None):
-        self.mType = tp
+        self.mKind = kind
         self.mName = name
-        self.mSymList = sym_list
         self.mRubric = rubric
         self.mUpdatedInfo = [updated_time, updated_from]
+
+        if self.mRubric is not None:
+            assert isinstance(self.mRubric, str), (
+                "Rubric is not string: " + str(self.mRubric))
+
+    def getSolKind(self):
+        return self.mKind
+
+    def getName(self):
+        return self.mName
+
+    def getRubric(self):
+        return self.mRubric
+
+    def getUpdateInfo(self):
+        return self.mUpdatedInfo
+
+#===============================================
+class SolPanelHandler(SolutionBaseInfo):
+    def __init__(self, tp, name, sym_list, rubric = None,
+            updated_time = None, updated_from = None):
+        SolutionBaseInfo.__init__(self, "panel." + tp,
+            name, rubric, updated_time, updated_from)
+        self.mType = tp
+        self.mSymList = sym_list
         self.mHashCode = md5(bytes(json.dumps(sorted(set(self.mSymList)),
             sort_keys = True), encoding = "utf-8")).hexdigest()
 
@@ -213,17 +237,8 @@ class SolPanelHandler:
     def getType(self):
         return self.mType
 
-    def getName(self):
-        return self.mName
-
     def getSymList(self):
         return self.mSymList
-
-    def getRubric(self):
-        return self.mRubric
-
-    def getUpdateInfo(self):
-        return self.mUpdatedInfo
 
     def getHashCode(self):
         return self.mHashCode

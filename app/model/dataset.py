@@ -470,7 +470,6 @@ class DataSet(SolutionBroker):
                 filter_h, stat_ctx, time_end),
             "functions": self. reportFunctions(filter_h, stat_ctx),
             "filter-list": self.getSolEntryList("filter"),
-            "cur-filter": filter_h.getName(),
             "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
             "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
