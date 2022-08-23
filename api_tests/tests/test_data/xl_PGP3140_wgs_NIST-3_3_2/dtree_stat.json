@@ -1,1305 +1,1305 @@
 {
-    "total-counts": [
-        9248118
-    ],
-    "filtered-counts": [
-        9248118
-    ],
-    "stat-list": [
-        {
-            "name": "Callers",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Called by",
-            "render-mode": "bar",
-            "vgroup": "Inheritance",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "variants": [
-                [
-                    "GATK_DE_NOVO",
-                    626864
-                ],
-                [
-                    "GATK_HOMOZYGOUS",
-                    2996
-                ],
-                [
-                    "GATK_HOMO_REC",
-                    247310
-                ],
-                [
-                    "INHERITED_FROM: Both parents",
-                    2096979
-                ],
-                [
-                    "INHERITED_FROM: Father",
-                    2476276
-                ],
-                [
-                    "INHERITED_FROM: Mother",
-                    2507330
-                ],
-                [
-                    "INHERITED_FROM: Possible De-Novo",
-                    383565
-                ]
-            ]
-        },
-        {
-            "name": "Inheritance_Mode",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Inheritance Mode",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "inheritance-z",
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ],
-            "available": [
-                "Homozygous Recessive",
-                "X-linked",
-                "Autosomal Dominant",
-                "Compensational"
-            ]
-        },
-        {
-            "name": "Custom_Inheritance_Mode",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Custom Inheritance Mode",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "custom-inheritance-z",
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ]
-        },
-        {
-            "name": "Proband_Zygosity",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Proband Zygosity",
-            "render-mode": "pie",
-            "vgroup": "Inheritance",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Num_Samples",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Number of Samples",
-            "tooltip": "Number of samples for which this variant has been called",
-            "vgroup": "Inheritance",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Has_Variant",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "render-mode": "bar",
-            "vgroup": "Inheritance",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Compound_Het",
-            "classes": [
-                1,
-                4,
-                7
-            ],
-            "title": "Calculated Compound",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "comp-hets",
-            "trio-variants": [
-                "Proband"
-            ],
-            "approx-modes": [
-                [
-                    "rough",
-                    "non-intersecting transcripts"
-                ]
-            ],
-            "labels": []
-        },
-        {
-            "name": "Compound_Request",
-            "classes": [
-                1,
-                4,
-                7
-            ],
-            "title": "Calculated Compound Request",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "comp-request",
-            "approx-modes": [
-                [
-                    "rough",
-                    "non-intersecting transcripts"
-                ]
-            ],
-            "labels": [],
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ]
-        },
-        {
-            "name": "Variant_Class",
-            "classes": [
-                4,
-                0,
-                1
-            ],
-            "tooltip": "Variant class as returned by VEP. The class of a variant is based on Sequence Ontology and is called according to its component alleles and its mapping to the reference genome. https://useast.ensembl.org/info/genome/variation/prediction/classification.html#classes",
-            "render-mode": "pie",
-            "vgroup": "Variant",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Most_Severe_Consequence",
-            "classes": [
-                4,
-                1,
-                1
-            ],
-            "tooltip": "Most Severe Consequences from the transcript with the worst annotation.\n The set of consequence terms is\n defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n for details.\n",
-            "render-mode": "pie",
-            "vgroup": "Variant",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Canonical_Annotation",
-            "classes": [
-                4,
-                1,
-                1
-            ],
-            "tooltip": "Most Severe Consequences from canonical transcripts. \n The set of consequence terms is\n defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n for details.\n",
-            "render-mode": "bar",
-            "vgroup": "Variant",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Multiallelic",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Multi-allelic?",
-            "render-mode": "pie",
-            "vgroup": "Variant",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Altered_VCF",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Has VCF been normalized?",
-            "render-mode": "pie",
-            "vgroup": "Variant",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Symbol",
-            "classes": [
-                8,
-                0,
-                7
-            ],
-            "render-mode": "bar",
-            "vgroup": "Genes",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Gene_Lists",
-            "classes": [
-                8,
-                0,
-                7
-            ],
-            "render-mode": "bar",
-            "vgroup": "Genes",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "EQTL_Gene",
-            "classes": [
-                7,
-                3,
-                0
-            ],
-            "title": "EQTL Gene",
-            "render-mode": "bar",
-            "vgroup": "Genes",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Num_Genes",
-            "classes": [
-                8,
-                2,
-                7
-            ],
-            "title": "Number of overlapping genes",
-            "vgroup": "Genes",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Num_Transcripts",
-            "classes": [
-                8,
-                2,
-                7
-            ],
-            "title": "Number of transcripts at the position",
-            "vgroup": "Genes",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "GeneRegion",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Gene Region",
-            "vgroup": "Coordinates",
-            "kind": "func",
-            "sub-kind": "region"
-        },
-        {
-            "name": "Chromosome",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "render-mode": "pie",
-            "vgroup": "Coordinates",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Start_Pos",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Start Position",
-            "render-mode": "neighborhood",
-            "vgroup": "Coordinates",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "End_Pos",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "End Position",
-            "render-mode": "neighborhood",
-            "vgroup": "Coordinates",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Dist_from_Exon",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Distance From Intron/Exon Boundary",
-            "render-mode": "log,<",
-            "vgroup": "Coordinates",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Dist_from_Exon_Canonical",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Distance From Intron/Exon Boundary (Canonical)",
-            "render-mode": "log,<",
-            "vgroup": "Coordinates",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Dist_from_Exon_Worst",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Distance From Intron/Exon Boundary (Worst)",
-            "render-mode": "log,<",
-            "vgroup": "Coordinates",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Region_Canonical",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Region (Canonical)",
-            "render-mode": "bar",
-            "vgroup": "Coordinates",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Region_Worst",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Region (Worst)",
-            "render-mode": "bar",
-            "vgroup": "Coordinates",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "In_hg19",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "render-mode": "pie",
-            "vgroup": "Coordinates",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_AF",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD Allele Frequency (family)",
-            "render-mode": "log,<",
-            "tooltip": "gnomAD Overall Allele Frequency",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_AF_Exomes",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD Exome Allele Frequency (family)",
-            "render-mode": "log,<",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_AF_Genomes",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD Genome Allele Frequency (family)",
-            "render-mode": "log,<",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_AF_Proband",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD Allele Frequency (proband)",
-            "render-mode": "log,<",
-            "tooltip": "gnomAD Overall Allele Frequency for the allele present in proband",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax_AF",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "PopMax Allele Frequency",
-            "render-mode": "log,<",
-            "tooltip": "Maximum allele frequency across outbred populations",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "PopMax Ancestry",
-            "tooltip": "Outbred population that has the maximum allele frequency",
-            "render-mode": "pie",
-            "vgroup": "gnomAD",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax_AN",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "Number of alleles in outbred PopMax Ancestry",
-            "render-mode": "log,>",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax_AF_Inbred",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "PopMax Allele Frequency (including inbred)",
-            "render-mode": "log,<",
-            "tooltip": "Maximum allele frequency across all populations (including inbred)",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax_Inbred",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "PopMax Ancestry (including inbred)",
-            "render-mode": "log,<",
-            "tooltip": "Population, including inbred, that has the maximum allele frequency",
-            "vgroup": "gnomAD",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_PopMax_AN_Inbred",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "Number of alleles in (inbred) PopMax Ancestry",
-            "render-mode": "log,>",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_Hom",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD: Number of homozygous",
-            "render-mode": "log,>",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "gnomAD_Hem",
-            "classes": [
-                3,
-                1,
-                4
-            ],
-            "title": "gnomAD: Number of hemizygous",
-            "render-mode": "log,>",
-            "vgroup": "gnomAD",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Presence_in_Databases",
-            "classes": [
-                6,
-                1,
-                7
-            ],
-            "title": "Presence in Databases",
-            "render-mode": "bar",
-            "vgroup": "Databases",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "ClinVar_Submitters",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar Submitters",
-            "render-mode": "bar",
-            "vgroup": "Databases",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Number_submitters",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Number of ClinVar Submitters",
-            "vgroup": "Databases",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "PMIDs",
-            "classes": [
-                6,
-                1,
-                7
-            ],
-            "title": "PMIDs",
-            "render-mode": "bar",
-            "vgroup": "Databases",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Number_pmid",
-            "classes": [
-                6,
-                1,
-                7
-            ],
-            "title": "Number of PMIDs",
-            "vgroup": "Databases",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Proband_GQ",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Genotype Quality (GQ) for Proband",
-            "render-mode": "linear,>",
-            "tooltip": "GQ tells you how confident we are that the genotype we assigned to a particular sample is correct. It is simply the second lowest PL, because it is the difference between the second lowest PL and the lowest PL (always 0).",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "Min_GQ",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Minimum GQ for the family",
-            "render-mode": "linear,>",
-            "tooltip": "GQ tells you how confident we are that the genotype we assigned to a particular sample is correct. It is simply the second lowest PL, because it is the difference between the second lowest PL and the lowest PL (always 0).",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "Max_GQ",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "The highest GQ",
-            "render-mode": "linear,=",
-            "tooltip": "Max(GQ) for those samples that have the variant",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Num_NO_CALL",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Number of NO_CALL samples",
-            "render-mode": "linear,=",
-            "tooltip": "Number of samples with NO_CALL in the current site",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "QUAL",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Variant Call Quality",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "QD",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Quality by Depth",
-            "render-mode": "linear,>",
-            "tooltip": "The QUAL score normalized by allele depth (AD) for a variant. This annotation puts the variant confidence QUAL score into perspective by normalizing for the amount of coverage available. Because each read contributes a little to the QUAL score, variants in regions with deep coverage can have artificially inflated QUAL scores, giving the impression that the call is supported by more evidence than it really is. To compensate for this, we normalize the variant confidence by depth, which gives us a more objective picture of how well supported the call is.",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "FS",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "Fisher Strand Bias",
-            "render-mode": "linear,<",
-            "tooltip": "Phred-scaled probability that there is strand bias at the site. Strand Bias tells us whether the alternate allele was seen more or less often on the forward or reverse strand than the reference allele. When there little to no strand bias at the site, the FS value will be close to 0.",
-            "vgroup": "Call_Quality",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "FT",
-            "classes": [
-                0,
-                1,
-                7
-            ],
-            "title": "FILTER",
-            "tooltip": "This field contains the name(s) of any filter(s) that the variant fails to pass, or the value PASS if the variant passed all filters. If the FILTER value is ., then no filtering has been applied to the records.",
-            "render-mode": "bar",
-            "vgroup": "Call_Quality",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "HGMD_Benign",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Categorized Benign in HGMD",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "HGMD_Tags",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_Benign",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Categorized Benign in ClinVar by all submitters",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "ClinVar_Significance",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Clinical Significance in ClinVar",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_Trusted_Significance",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar significance by trusted submitters only",
-            "tooltip": "Clinical Significance by ClinVar trusted submitters only",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_Trusted_Simplified",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "tooltip": "Simplified Clinical Significance by trusted submitters only",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_stars",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar Stars",
-            "render-mode": "log,>",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Number_of_clinvar_submitters",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar: Number of Submitters",
-            "render-mode": "log,>",
-            "vgroup": "Predictions",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_review_status",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar Review Status",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_criteria_provided",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar Criteria",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_conflicts",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "ClinVar Conflicts",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "Clinvar_acmg_guidelines",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "ClinVar_Significance_GeneDx",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Clinical Significance by GeneDx",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "ClinVar_Significance_Invitae",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Clinical Significance by Invitae",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "ClinVar_Significance_LMM",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "title": "Clinical Significance by LMM",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "splice_altering",
-            "classes": [
-                6,
-                1,
-                1
-            ],
-            "title": "Splice AI splice altering",
-            "render-mode": "pie",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "status",
-            "incomplete": true
-        },
-        {
-            "name": "splice_ai_dsmax",
-            "classes": [
-                6,
-                1,
-                1
-            ],
-            "title": "Splice AI splice altering score",
-            "render-mode": "linear,>",
-            "vgroup": "Predictions",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "Polyphen_2_HVAR",
-            "classes": [
-                6,
-                0,
-                1
-            ],
-            "title": "Polyphen",
-            "tooltip": "HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation (disease mutations vs. common neutral variants)",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Polyphen_2_HDIV",
-            "classes": [
-                6,
-                0,
-                1
-            ],
-            "title": "Polyphen HDIV (High sensitivity)",
-            "tooltip": "HumDiv (HDIV) classifier is trained on a smaller number of select extreme effect disease mutations vs. divergence with close homologs (e.g. primates), which is supposed to consist of mostly neutral mutations.",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "SIFT",
-            "classes": [
-                4,
-                0,
-                1
-            ],
-            "tooltip": "Sort intolerated from tolerated (An amino acid at a position is tolerated | The most frequentest amino acid being tolerated). D: Deleterious T: tolerated",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "FATHMM",
-            "classes": [
-                4,
-                0,
-                1
-            ],
-            "tooltip": "Functional analysis through hidden markov model HMM.D: Deleterious; T: Tolerated",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "PrimateAI",
-            "classes": [
-                5,
-                1,
-                1
-            ],
-            "tooltip": "Prediction of PrimateAI score based on the authors recommendation, “T(olerated)” or “D(amaging)”. The score cutoff between “D” and “T” is 0.803.",
-            "render-mode": "bar",
-            "vgroup": "Predictions",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "GERP_score",
-            "classes": [
-                5,
-                2,
-                1
-            ],
-            "title": "GERP Score",
-            "render-mode": "linear,>",
-            "vgroup": "Predictions",
-            "kind": "numeric",
-            "sub-kind": "float",
-            "incomplete": true
-        },
-        {
-            "name": "Diseases",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "render-mode": "bar",
-            "vgroup": "Pharmacogenomics",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Chemicals",
-            "classes": [
-                6,
-                1,
-                5
-            ],
-            "render-mode": "bar",
-            "vgroup": "Pharmacogenomics",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Mostly_Expressed_in",
-            "classes": [
-                7,
-                4,
-                2
-            ],
-            "render-mode": "bar",
-            "vgroup": "Expression",
-            "kind": "enum",
-            "sub-kind": "multi",
-            "incomplete": true
-        },
-        {
-            "name": "Severity",
-            "classes": [
-                7,
-                4,
-                2
-            ],
-            "vgroup": "Debug_Info",
-            "kind": "numeric",
-            "sub-kind": "int",
-            "incomplete": true
-        }
-    ],
-    "functions": [
-        {
-            "name": "GeneRegion",
-            "classes": [
-                6,
-                2,
-                7
-            ],
-            "title": "Gene Region",
-            "vgroup": "Coordinates",
-            "kind": "func",
-            "sub-kind": "region"
-        },
-        {
-            "name": "Inheritance_Mode",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Inheritance Mode",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "inheritance-z",
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ],
-            "available": [
-                "Homozygous Recessive",
-                "X-linked",
-                "Autosomal Dominant",
-                "Compensational"
-            ]
-        },
-        {
-            "name": "Custom_Inheritance_Mode",
-            "classes": [
-                1,
-                1,
-                7
-            ],
-            "title": "Custom Inheritance Mode",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "custom-inheritance-z",
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ]
-        },
-        {
-            "name": "Compound_Het",
-            "classes": [
-                1,
-                4,
-                7
-            ],
-            "title": "Calculated Compound",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "comp-hets",
-            "trio-variants": [
-                "Proband"
-            ],
-            "approx-modes": [
-                [
-                    "rough",
-                    "non-intersecting transcripts"
-                ]
-            ],
-            "labels": []
-        },
-        {
-            "name": "Compound_Request",
-            "classes": [
-                1,
-                4,
-                7
-            ],
-            "title": "Calculated Compound Request",
-            "vgroup": "Inheritance",
-            "kind": "func",
-            "sub-kind": "comp-request",
-            "approx-modes": [
-                [
-                    "rough",
-                    "non-intersecting transcripts"
-                ]
-            ],
-            "labels": [],
-            "family": [
-                "HG002",
-                "HG003",
-                "HG004"
-            ],
-            "affected": [
-                "HG002"
-            ]
-        }
-    ],
-    "rq-id": "58/2022-08-23 08:01:11.103858"
+	"total-counts": [
+		9248118
+	],
+	"filtered-counts": [
+		9248118
+	],
+	"stat-list": [
+		{
+			"name": "Callers",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Called by",
+			"render-mode": "bar",
+			"vgroup": "Inheritance",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"variants": [
+				[
+					"GATK_DE_NOVO",
+					626864
+				],
+				[
+					"GATK_HOMOZYGOUS",
+					2996
+				],
+				[
+					"GATK_HOMO_REC",
+					247310
+				],
+				[
+					"INHERITED_FROM: Both parents",
+					2096979
+				],
+				[
+					"INHERITED_FROM: Father",
+					2476276
+				],
+				[
+					"INHERITED_FROM: Mother",
+					2507330
+				],
+				[
+					"INHERITED_FROM: Possible De-Novo",
+					383565
+				]
+			]
+		},
+		{
+			"name": "Inheritance_Mode",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Inheritance Mode",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "inheritance-z",
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			],
+			"available": [
+				"Homozygous Recessive",
+				"X-linked",
+				"Autosomal Dominant",
+				"Compensational"
+			]
+		},
+		{
+			"name": "Custom_Inheritance_Mode",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Custom Inheritance Mode",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "custom-inheritance-z",
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			]
+		},
+		{
+			"name": "Proband_Zygosity",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Proband Zygosity",
+			"render-mode": "pie",
+			"vgroup": "Inheritance",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Num_Samples",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Number of Samples",
+			"tooltip": "Number of samples for which this variant has been called",
+			"vgroup": "Inheritance",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Has_Variant",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"render-mode": "bar",
+			"vgroup": "Inheritance",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Compound_Het",
+			"classes": [
+				1,
+				4,
+				7
+			],
+			"title": "Calculated Compound",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "comp-hets",
+			"trio-variants": [
+				"Proband"
+			],
+			"approx-modes": [
+				[
+					"rough",
+					"non-intersecting transcripts"
+				]
+			],
+			"labels": []
+		},
+		{
+			"name": "Compound_Request",
+			"classes": [
+				1,
+				4,
+				7
+			],
+			"title": "Calculated Compound Request",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "comp-request",
+			"approx-modes": [
+				[
+					"rough",
+					"non-intersecting transcripts"
+				]
+			],
+			"labels": [],
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			]
+		},
+		{
+			"name": "Variant_Class",
+			"classes": [
+				4,
+				0,
+				1
+			],
+			"tooltip": "Variant class as returned by VEP. The class of a variant is based on Sequence Ontology and is called according to its component alleles and its mapping to the reference genome. https://useast.ensembl.org/info/genome/variation/prediction/classification.html#classes",
+			"render-mode": "pie",
+			"vgroup": "Variant",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Most_Severe_Consequence",
+			"classes": [
+				4,
+				1,
+				1
+			],
+			"tooltip": "Most Severe Consequences from the transcript with the worst annotation.\n The set of consequence terms is\n defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n for details.\n",
+			"render-mode": "pie",
+			"vgroup": "Variant",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Canonical_Annotation",
+			"classes": [
+				4,
+				1,
+				1
+			],
+			"tooltip": "Most Severe Consequences from canonical transcripts. \n The set of consequence terms is\n defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n for details.\n",
+			"render-mode": "bar",
+			"vgroup": "Variant",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Multiallelic",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Multi-allelic?",
+			"render-mode": "pie",
+			"vgroup": "Variant",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Altered_VCF",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Has VCF been normalized?",
+			"render-mode": "pie",
+			"vgroup": "Variant",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Symbol",
+			"classes": [
+				8,
+				0,
+				7
+			],
+			"render-mode": "bar",
+			"vgroup": "Genes",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Gene_Lists",
+			"classes": [
+				8,
+				0,
+				7
+			],
+			"render-mode": "bar",
+			"vgroup": "Genes",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "EQTL_Gene",
+			"classes": [
+				7,
+				3,
+				0
+			],
+			"title": "EQTL Gene",
+			"render-mode": "bar",
+			"vgroup": "Genes",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Num_Genes",
+			"classes": [
+				8,
+				2,
+				7
+			],
+			"title": "Number of overlapping genes",
+			"vgroup": "Genes",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Num_Transcripts",
+			"classes": [
+				8,
+				2,
+				7
+			],
+			"title": "Number of transcripts at the position",
+			"vgroup": "Genes",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "GeneRegion",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Gene Region",
+			"vgroup": "Coordinates",
+			"kind": "func",
+			"sub-kind": "region"
+		},
+		{
+			"name": "Chromosome",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"render-mode": "pie",
+			"vgroup": "Coordinates",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Start_Pos",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Start Position",
+			"render-mode": "neighborhood",
+			"vgroup": "Coordinates",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "End_Pos",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "End Position",
+			"render-mode": "neighborhood",
+			"vgroup": "Coordinates",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Dist_from_Exon",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Distance From Intron/Exon Boundary",
+			"render-mode": "log,<",
+			"vgroup": "Coordinates",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Dist_from_Exon_Canonical",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Distance From Intron/Exon Boundary (Canonical)",
+			"render-mode": "log,<",
+			"vgroup": "Coordinates",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Dist_from_Exon_Worst",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Distance From Intron/Exon Boundary (Worst)",
+			"render-mode": "log,<",
+			"vgroup": "Coordinates",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Region_Canonical",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Region (Canonical)",
+			"render-mode": "bar",
+			"vgroup": "Coordinates",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Region_Worst",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Region (Worst)",
+			"render-mode": "bar",
+			"vgroup": "Coordinates",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "In_hg19",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"render-mode": "pie",
+			"vgroup": "Coordinates",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_AF",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD Allele Frequency (family)",
+			"render-mode": "log,<",
+			"tooltip": "gnomAD Overall Allele Frequency",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_AF_Exomes",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD Exome Allele Frequency (family)",
+			"render-mode": "log,<",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_AF_Genomes",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD Genome Allele Frequency (family)",
+			"render-mode": "log,<",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_AF_Proband",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD Allele Frequency (proband)",
+			"render-mode": "log,<",
+			"tooltip": "gnomAD Overall Allele Frequency for the allele present in proband",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax_AF",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "PopMax Allele Frequency",
+			"render-mode": "log,<",
+			"tooltip": "Maximum allele frequency across outbred populations",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "PopMax Ancestry",
+			"tooltip": "Outbred population that has the maximum allele frequency",
+			"render-mode": "pie",
+			"vgroup": "gnomAD",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax_AN",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "Number of alleles in outbred PopMax Ancestry",
+			"render-mode": "log,>",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax_AF_Inbred",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "PopMax Allele Frequency (including inbred)",
+			"render-mode": "log,<",
+			"tooltip": "Maximum allele frequency across all populations (including inbred)",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax_Inbred",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "PopMax Ancestry (including inbred)",
+			"render-mode": "log,<",
+			"tooltip": "Population, including inbred, that has the maximum allele frequency",
+			"vgroup": "gnomAD",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_PopMax_AN_Inbred",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "Number of alleles in (inbred) PopMax Ancestry",
+			"render-mode": "log,>",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_Hom",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD: Number of homozygous",
+			"render-mode": "log,>",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "gnomAD_Hem",
+			"classes": [
+				3,
+				1,
+				4
+			],
+			"title": "gnomAD: Number of hemizygous",
+			"render-mode": "log,>",
+			"vgroup": "gnomAD",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Presence_in_Databases",
+			"classes": [
+				6,
+				1,
+				7
+			],
+			"title": "Presence in Databases",
+			"render-mode": "bar",
+			"vgroup": "Databases",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "ClinVar_Submitters",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar Submitters",
+			"render-mode": "bar",
+			"vgroup": "Databases",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Number_submitters",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Number of ClinVar Submitters",
+			"vgroup": "Databases",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "PMIDs",
+			"classes": [
+				6,
+				1,
+				7
+			],
+			"title": "PMIDs",
+			"render-mode": "bar",
+			"vgroup": "Databases",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Number_pmid",
+			"classes": [
+				6,
+				1,
+				7
+			],
+			"title": "Number of PMIDs",
+			"vgroup": "Databases",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Proband_GQ",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Genotype Quality (GQ) for Proband",
+			"render-mode": "linear,>",
+			"tooltip": "GQ tells you how confident we are that the genotype we assigned to a particular sample is correct. It is simply the second lowest PL, because it is the difference between the second lowest PL and the lowest PL (always 0).",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "Min_GQ",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Minimum GQ for the family",
+			"render-mode": "linear,>",
+			"tooltip": "GQ tells you how confident we are that the genotype we assigned to a particular sample is correct. It is simply the second lowest PL, because it is the difference between the second lowest PL and the lowest PL (always 0).",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "Max_GQ",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "The highest GQ",
+			"render-mode": "linear,=",
+			"tooltip": "Max(GQ) for those samples that have the variant",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Num_NO_CALL",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Number of NO_CALL samples",
+			"render-mode": "linear,=",
+			"tooltip": "Number of samples with NO_CALL in the current site",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "QUAL",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Variant Call Quality",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "QD",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Quality by Depth",
+			"render-mode": "linear,>",
+			"tooltip": "The QUAL score normalized by allele depth (AD) for a variant. This annotation puts the variant confidence QUAL score into perspective by normalizing for the amount of coverage available. Because each read contributes a little to the QUAL score, variants in regions with deep coverage can have artificially inflated QUAL scores, giving the impression that the call is supported by more evidence than it really is. To compensate for this, we normalize the variant confidence by depth, which gives us a more objective picture of how well supported the call is.",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "FS",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "Fisher Strand Bias",
+			"render-mode": "linear,<",
+			"tooltip": "Phred-scaled probability that there is strand bias at the site. Strand Bias tells us whether the alternate allele was seen more or less often on the forward or reverse strand than the reference allele. When there little to no strand bias at the site, the FS value will be close to 0.",
+			"vgroup": "Call_Quality",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "FT",
+			"classes": [
+				0,
+				1,
+				7
+			],
+			"title": "FILTER",
+			"tooltip": "This field contains the name(s) of any filter(s) that the variant fails to pass, or the value PASS if the variant passed all filters. If the FILTER value is ., then no filtering has been applied to the records.",
+			"render-mode": "bar",
+			"vgroup": "Call_Quality",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "HGMD_Benign",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Categorized Benign in HGMD",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "HGMD_Tags",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_Benign",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Categorized Benign in ClinVar by all submitters",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "ClinVar_Significance",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Clinical Significance in ClinVar",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_Trusted_Significance",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar significance by trusted submitters only",
+			"tooltip": "Clinical Significance by ClinVar trusted submitters only",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_Trusted_Simplified",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"tooltip": "Simplified Clinical Significance by trusted submitters only",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_stars",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar Stars",
+			"render-mode": "log,>",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Number_of_clinvar_submitters",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar: Number of Submitters",
+			"render-mode": "log,>",
+			"vgroup": "Predictions",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_review_status",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar Review Status",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_criteria_provided",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar Criteria",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_conflicts",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "ClinVar Conflicts",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "Clinvar_acmg_guidelines",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "ClinVar_Significance_GeneDx",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Clinical Significance by GeneDx",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "ClinVar_Significance_Invitae",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Clinical Significance by Invitae",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "ClinVar_Significance_LMM",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"title": "Clinical Significance by LMM",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "splice_altering",
+			"classes": [
+				6,
+				1,
+				1
+			],
+			"title": "Splice AI splice altering",
+			"render-mode": "pie",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "status",
+			"incomplete": true
+		},
+		{
+			"name": "splice_ai_dsmax",
+			"classes": [
+				6,
+				1,
+				1
+			],
+			"title": "Splice AI splice altering score",
+			"render-mode": "linear,>",
+			"vgroup": "Predictions",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "Polyphen_2_HVAR",
+			"classes": [
+				6,
+				0,
+				1
+			],
+			"title": "Polyphen",
+			"tooltip": "HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation (disease mutations vs. common neutral variants)",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Polyphen_2_HDIV",
+			"classes": [
+				6,
+				0,
+				1
+			],
+			"title": "Polyphen HDIV (High sensitivity)",
+			"tooltip": "HumDiv (HDIV) classifier is trained on a smaller number of select extreme effect disease mutations vs. divergence with close homologs (e.g. primates), which is supposed to consist of mostly neutral mutations.",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "SIFT",
+			"classes": [
+				4,
+				0,
+				1
+			],
+			"tooltip": "Sort intolerated from tolerated (An amino acid at a position is tolerated | The most frequentest amino acid being tolerated). D: Deleterious T: tolerated",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "FATHMM",
+			"classes": [
+				4,
+				0,
+				1
+			],
+			"tooltip": "Functional analysis through hidden markov model HMM.D: Deleterious; T: Tolerated",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "PrimateAI",
+			"classes": [
+				5,
+				1,
+				1
+			],
+			"tooltip": "Prediction of PrimateAI score based on the authors recommendation, “T(olerated)” or “D(amaging)”. The score cutoff between “D” and “T” is 0.803.",
+			"render-mode": "bar",
+			"vgroup": "Predictions",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "GERP_score",
+			"classes": [
+				5,
+				2,
+				1
+			],
+			"title": "GERP Score",
+			"render-mode": "linear,>",
+			"vgroup": "Predictions",
+			"kind": "numeric",
+			"sub-kind": "float",
+			"incomplete": true
+		},
+		{
+			"name": "Diseases",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"render-mode": "bar",
+			"vgroup": "Pharmacogenomics",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Chemicals",
+			"classes": [
+				6,
+				1,
+				5
+			],
+			"render-mode": "bar",
+			"vgroup": "Pharmacogenomics",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Mostly_Expressed_in",
+			"classes": [
+				7,
+				4,
+				2
+			],
+			"render-mode": "bar",
+			"vgroup": "Expression",
+			"kind": "enum",
+			"sub-kind": "multi",
+			"incomplete": true
+		},
+		{
+			"name": "Severity",
+			"classes": [
+				7,
+				4,
+				2
+			],
+			"vgroup": "Debug_Info",
+			"kind": "numeric",
+			"sub-kind": "int",
+			"incomplete": true
+		}
+	],
+	"functions": [
+		{
+			"name": "GeneRegion",
+			"classes": [
+				6,
+				2,
+				7
+			],
+			"title": "Gene Region",
+			"vgroup": "Coordinates",
+			"kind": "func",
+			"sub-kind": "region"
+		},
+		{
+			"name": "Inheritance_Mode",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Inheritance Mode",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "inheritance-z",
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			],
+			"available": [
+				"Homozygous Recessive",
+				"X-linked",
+				"Autosomal Dominant",
+				"Compensational"
+			]
+		},
+		{
+			"name": "Custom_Inheritance_Mode",
+			"classes": [
+				1,
+				1,
+				7
+			],
+			"title": "Custom Inheritance Mode",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "custom-inheritance-z",
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			]
+		},
+		{
+			"name": "Compound_Het",
+			"classes": [
+				1,
+				4,
+				7
+			],
+			"title": "Calculated Compound",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "comp-hets",
+			"trio-variants": [
+				"Proband"
+			],
+			"approx-modes": [
+				[
+					"rough",
+					"non-intersecting transcripts"
+				]
+			],
+			"labels": []
+		},
+		{
+			"name": "Compound_Request",
+			"classes": [
+				1,
+				4,
+				7
+			],
+			"title": "Calculated Compound Request",
+			"vgroup": "Inheritance",
+			"kind": "func",
+			"sub-kind": "comp-request",
+			"approx-modes": [
+				[
+					"rough",
+					"non-intersecting transcripts"
+				]
+			],
+			"labels": [],
+			"family": [
+				"HG002",
+				"HG003",
+				"HG004"
+			],
+			"affected": [
+				"HG002"
+			]
+		}
+	],
+	"rq-id": "58/2022-08-23 08:01:11.103858"
 }

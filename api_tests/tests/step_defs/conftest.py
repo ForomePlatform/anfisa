@@ -1,5 +1,5 @@
-import importlib
 import json
+
 import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
@@ -16,6 +16,7 @@ from tests.helpers.constructors import Constructor
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
+from deepdiff import DeepDiff
 
 
 # Hooks
@@ -163,6 +164,14 @@ def assert_status(status, text):
 @then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    with open(f'../test_data/{dataset}/{request_name}.json') as f:
-        d = json.load(f)
-    print('\n\n\ntest_data_json', d)
+    with open(f'tests/test_data/{dataset}/{request_name}.json', encoding="utf8") as f:
+        test_data_json = json.load(f)
+    response_json = json.loads(pytest.response.text)
+
+    print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
+    print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
+
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths={"root['rq-id']"})
+    print('ddiff', ddiff)
+
+    assert ddiff == {}

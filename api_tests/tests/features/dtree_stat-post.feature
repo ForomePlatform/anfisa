@@ -15,7 +15,7 @@ Feature: Check dtree_stat [POST] request
         | xl Dataset | return False | 0  | 0  |
 
 
-    @progress
+    @positive
     Scenario Outline: Get attributes for specific xl dataset's dtree by code
     Given xl_PGP3140_wgs_NIST-3_3_2 is uploaded and processed by the system
     When dtree_stat request with <ds>, <code>, <no> and <tm> parameters is send
@@ -24,8 +24,8 @@ Feature: Check dtree_stat [POST] request
 
 
         Examples:
-        | ds         | code         | no | tm |
-        | xl Dataset | return False | 0  | 0  |
+        | ds                        | code         | no | tm |
+        | xl_PGP3140_wgs_NIST-3_3_2 | return False | 0  | 0  |
 
 
     @negative
