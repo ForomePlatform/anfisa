@@ -8,6 +8,7 @@ Feature: Check dtree_stat [POST] request
     Then response status should be 200 OK
     And response body schema should be valid by "dtree_stat_schema"
     And response body stat-list schemas should be valid
+    And response body functions schemas should be valid
 
         Examples:
         | ds         | code         | no | tm |
@@ -19,8 +20,6 @@ Feature: Check dtree_stat [POST] request
     Given xl Dataset is uploaded and processed by the system
     When dtree_stat request with <ds>, <no> and <tm> parameters is send
     Then response status should be 403 Forbidden
-
-
 
         Examples:
         | ds                     | no                     | tm |

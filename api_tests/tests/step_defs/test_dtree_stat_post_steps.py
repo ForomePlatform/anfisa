@@ -30,16 +30,13 @@ def dtree_stat(dataset, ds, no, tm):
     return pytest.response
 
 
-@then(parsers.cfparse('response body stat-list schemas should be valid'))
-def assert_stat_list_schemas(dtree_stat):
-    for element in dtree_stat.json()['stat-list']:
-        print(element,'\n',element['kind'])
+@then(parsers.cfparse('response body {property_name:String} schemas should be valid', extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(dtree_stat, property_name):
+    for element in dtree_stat.json()[property_name]:
         match element['kind']:
             case 'enum':
                 validate(element, enum_stat_list)
             case 'numeric':
-                print('numeric\n')
                 validate(element, numeric_stat_list)
             case 'func':
                 validate(element, func_stat_list)
-                print('func\n')

@@ -33,16 +33,10 @@ numeric_stat_list = {
             "type": "array"
         },
         "min": {
-            "type": [
-                "integer",
-                "float"
-            ]
+            "type": "number"
         },
         "max": {
-            "type": [
-                "integer",
-                "float"
-            ]
+            "type": "number"
         },
         "counts": {
             "type": "array",
@@ -125,10 +119,20 @@ func_stat_list = {
         "detailed": {
             "type": "array"
         },
-        "variants": ["null", "array"],
-        "err": "string",
-        "rq-id": "string",
-        "no": "string"
+        "variants": {
+            "anyOf": [
+                {
+                    "type": "array"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "err": {
+            "type": "string"},
+        "no": {
+            "type": "string"}
     },
-    "required": ["name", "kind", "vgroup", "classes", "rq-id"]
+    "required": ["name", "kind", "vgroup", "classes"]
 }
