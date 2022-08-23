@@ -1,3 +1,4 @@
+import importlib
 import json
 import pytest
 import time
@@ -45,19 +46,6 @@ def fixture_function():
     print('fixture_function')
 
 
-@pytest.fixture
-def xl_dataset():
-    _dataset = ''
-    response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
-    for value in ds_dict.values():
-        if value['kind'] == 'xl':
-            _dataset = value['name']
-            break
-    assert _dataset != ''
-    return _dataset
-
-
 # Shared Given Steps
 @given('I do something', target_fixture='ddg_home')
 def i_do_something(fixture_function):
@@ -88,6 +76,17 @@ def xl_dataset(required_records=0):
     return _dataset
 
 
+def find_dataset(dataset):
+    found = False
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    for value in ds_dict.values():
+        if value['name'] == dataset:
+            found = True
+            break
+    assert found
+
+
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
@@ -113,18 +112,19 @@ def derive_ws(dataset):
 
 
 @given(
-    parsers.cfparse('{dataset_type:String} is uploaded and processed by the system',
+    parsers.cfparse('{dataset_identifier:String} is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
-def dataset(dataset_type):
-    match dataset_type:
+def dataset(dataset_identifier):
+    match dataset_identifier:
         case 'xl Dataset':
             return xl_dataset()
         case 'xl Dataset with > 9000 records':
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
-        case other:
-            return xl_dataset()
+        case _:
+            find_dataset(dataset_identifier)
+            return dataset_identifier
 
 
 @then(parsers.cfparse('response body schema should be valid by "{schema:String}"',
@@ -158,3 +158,11 @@ def dsinfo_response_error(error_message):
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
+
+
+@then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_test_data(request_name, dataset):
+    with open(f'../test_data/{dataset}/{request_name}.json') as f:
+        d = json.load(f)
+    print('\n\n\ntest_data_json', d)
