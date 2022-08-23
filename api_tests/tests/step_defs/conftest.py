@@ -156,6 +156,11 @@ def dsinfo_response_error(error_message):
     assert error_message in pytest.response.text
 
 
+@then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(body):
+    assert pytest.response.text == f'"{body}"'
+
+
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
