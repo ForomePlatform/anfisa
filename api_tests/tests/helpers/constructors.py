@@ -25,3 +25,12 @@ class Constructor:
         return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
                 'code': kwargs['code'] if 'code' in kwargs else ''
                 }
+
+    @staticmethod
+    def csv_export_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
+                'schema': kwargs['schema'] if 'schema' in kwargs else ''
+                }
