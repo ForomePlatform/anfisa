@@ -2,7 +2,7 @@
 This module contains common jsonschemas
 """
 
-numeric_stat_list = {
+numeric_property_status = {
     "type": "object",
     "properties": {
         "name": {
@@ -52,7 +52,7 @@ numeric_stat_list = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-enum_stat_list = {
+enum_property_status = {
     "type": "object",
     "properties": {
         "name": {
@@ -89,7 +89,7 @@ enum_stat_list = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-func_stat_list = {
+func_property_status = {
     "type": "object",
     "properties": {
         "name": {

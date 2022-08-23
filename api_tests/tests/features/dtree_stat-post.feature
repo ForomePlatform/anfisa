@@ -7,8 +7,8 @@ Feature: Check dtree_stat [POST] request
     When dtree_stat request with <ds>, <code>, <no> and <tm> parameters is send
     Then response status should be 200 OK
     And response body schema should be valid by "dtree_stat_schema"
-    And response body stat-list schemas should be valid
-    And response body functions schemas should be valid
+    And response body stat-list property_status schemas should be valid
+    And response body functions property_status schemas should be valid
 
         Examples:
         | ds         | code         | no | tm |

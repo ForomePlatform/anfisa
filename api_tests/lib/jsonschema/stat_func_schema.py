@@ -2,7 +2,7 @@
 This module contains stat_func jsonschema
 """
 
-func_stat_list_for_stat_func = {
+property_status_for_stat_func = {
     "type": "object",
     "properties": {
         "name": {

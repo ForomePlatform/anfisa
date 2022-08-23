@@ -1,10 +1,8 @@
 import pytest
-from jsonschema.validators import validate
-from pytest_bdd import when, parsers, scenarios, then
+from pytest_bdd import when, parsers, scenarios
 
 from lib.api.dtree_stat_api import DtreeStat
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
-from lib.jsonschema.common import enum_stat_list, numeric_stat_list, func_stat_list
 from tests.helpers.constructors import Constructor
 
 scenarios('../features/dtree_stat-post.feature')
@@ -29,14 +27,3 @@ def dtree_stat(dataset, ds, no, tm):
     pytest.response = DtreeStat.post(parameters)
     return pytest.response
 
-
-@then(parsers.cfparse('response body {property_name:String} schemas should be valid', extra_types=EXTRA_STRING_TYPES))
-def assert_stat_list_schemas(dtree_stat, property_name):
-    for element in dtree_stat.json()[property_name]:
-        match element['kind']:
-            case 'enum':
-                validate(element, enum_stat_list)
-            case 'numeric':
-                validate(element, numeric_stat_list)
-            case 'func':
-                validate(element, func_stat_list)

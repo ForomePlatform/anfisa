@@ -5,6 +5,7 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.common import enum_property_status, numeric_property_status, func_property_status
 from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
@@ -164,6 +165,19 @@ def dsinfo_response_error(body):
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
+
+
+@then(parsers.cfparse('response body {property_name:String} property_status schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(property_name):
+    for element in pytest.response.json()[property_name]:
+        match element['kind']:
+            case 'enum':
+                validate(element, enum_property_status)
+            case 'numeric':
+                validate(element, numeric_property_status)
+            case 'func':
+                validate(element, func_property_status)
 
 
 @then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
