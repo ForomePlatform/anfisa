@@ -25,3 +25,10 @@ class Constructor:
         return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
                 'code': kwargs['code'] if 'code' in kwargs else ''
                 }
+
+    def job_status_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'task': kwargs['task'] if 'task' in kwargs else '',
+                }
