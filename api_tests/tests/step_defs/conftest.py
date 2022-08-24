@@ -44,19 +44,6 @@ def fixture_function():
     print('fixture_function')
 
 
-@pytest.fixture
-def xl_dataset():
-    _dataset = ''
-    response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
-    for value in ds_dict.values():
-        if value['kind'] == 'xl':
-            _dataset = value['name']
-            break
-    assert _dataset != ''
-    return _dataset
-
-
 # Shared Given Steps
 @given('I do something', target_fixture='ddg_home')
 def i_do_something(fixture_function):
