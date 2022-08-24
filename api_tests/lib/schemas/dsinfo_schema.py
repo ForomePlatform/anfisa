@@ -1,5 +1,5 @@
 """
-This module Dsinfo jsonschema
+This module Dsinfo schemas
 """
 
 dsinfo_schema = {

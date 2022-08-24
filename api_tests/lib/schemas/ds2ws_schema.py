@@ -1,5 +1,5 @@
 """
-This module contains Ds2ws jsonschema
+This module contains Ds2ws schemas
 """
 
 ds2ws_schema = {

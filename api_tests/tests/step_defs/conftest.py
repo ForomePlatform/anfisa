@@ -1,8 +1,12 @@
 import json
 import pytest
 import time
+
+from csvvalidator import CSVValidator
+
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
+from lib.schemas.csv_export_schema import csv_export_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
@@ -10,9 +14,9 @@ from pytest_bdd import parsers, given, then
 from lib.api.ds2ws_api import Ds2ws
 from lib.api.job_status_api import JobStatus
 from tests.helpers.constructors import Constructor
-from lib.jsonschema.ds2ws_schema import ds2ws_schema
-from lib.jsonschema.dsinfo_schema import dsinfo_schema
-from lib.jsonschema.dtree_check_schema import dtree_check_schema
+from lib.schemas.ds2ws_schema import ds2ws_schema
+from lib.schemas.dsinfo_schema import dsinfo_schema
+from lib.schemas.dtree_check_schema import dtree_check_schema
 
 
 # Hooks
@@ -114,8 +118,12 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_check_schema)
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
-        case 'csv_schema':
-            pass
+        case 'csv_export_schema':
+            validator = CSVValidator(csv_export_schema)
+            validator.add_value_check('chromosome', str)
+            validator.add_value_check('variant', str)
+            problems = validator.validate(pytest.response.text)
+            assert len(problems) == 0
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
 
