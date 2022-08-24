@@ -9,7 +9,7 @@ scenarios('../features/dtree_stat-post.feature')
 
 
 @when(parsers.cfparse(
-    'dtree_stat request with {ds:String}, {code:String}, {no:String} and {tm:String} parameters is send',
+    'dtree_stat request with "{ds:String}", "{code:String}", "{no:String}" and "{tm:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES), target_fixture='dtree_stat')
 def dtree_stat(dataset, ds, code, no, tm):
     ds_name = dataset if ds == 'xl Dataset' else ds
@@ -19,7 +19,7 @@ def dtree_stat(dataset, ds, code, no, tm):
 
 
 @when(parsers.cfparse(
-    'dtree_stat request with {ds:String}, {no:String} and {tm:String} parameters is send',
+    'dtree_stat request with "{ds:String}", "{no:String}" and "{tm:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES), target_fixture='dtree_stat')
 def dtree_stat(dataset, ds, no, tm):
     ds_name = dataset if ds == 'xl Dataset' else ds
