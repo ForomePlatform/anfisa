@@ -31,12 +31,10 @@ from .code_repr import formatConditionCode
 class FilterEval(Evaluation):
     def __init__(self, eval_space, cond_data_seq, name = None,
             rubric = None, updated_time = None, updated_from = None):
-        Evaluation.__init__(self, eval_space,
+        Evaluation.__init__(self, "filter", eval_space,
             md5(bytes(json.dumps(cond_data_seq, sort_keys = True),
                 encoding = "utf-8")).hexdigest(),
-            updated_time, updated_from)
-        self.mFilterName = name
-        self.mRubric = rubric
+            name, rubric, updated_time, updated_from)
         self.mCondDataSeq = cond_data_seq
         self.mPresentation = []
         self.mConditions = None
@@ -99,17 +97,8 @@ class FilterEval(Evaluation):
             sort_keys = True)
         return None
 
-    def getSolKind(self):
-        return "filter"
-
     def isActive(self):
         return self.mConditions is not None
-
-    def getName(self):
-        return self.mFilterName
-
-    def getRubric(self):
-        return self.mRubric
 
     def getCondition(self):
         return self.mCondition
@@ -143,11 +132,15 @@ class FilterEval(Evaluation):
                 if err_msg:
                     cond_info["err"] = err_msg
             cond_seq.append(cond_info)
-        return {
+        ret = {
             "conditions": self.mCondDataSeq,
             "cond-seq": cond_seq,
             "eval-status": self.getEvalStatus(),
-            "hash": self.mHashCode}
+            "hash": self.mHashCode,
+            "cur-filter": self.getName()}
+        if self.getRubric():
+            ret["rubric"] = self.getRubric()
+        return ret
 
     def getActiveUnitSet(self):
         ret = set()

@@ -421,7 +421,7 @@ class DataVault(SyncronizedObject):
             "ds.name.max.length", "tag.name.max.length", "sol.name.max.length",
             "xl.view.count.full", "xl.view.count.samples.default",
             "xl.view.count.samples.min", "xl.view.count.samples.max",
-            "solution.std.mark")}
+            "solution.std.mark", "variety.max.rest.size")}
         for key in ("run-options", "run-modes", "job-vault-check-period"):
             ret[key] = self.mApp.getOption(key)
         if "ds" in rq_args:
