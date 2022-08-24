@@ -130,7 +130,10 @@ def dsinfo_response_error(error_message):
 
 
 @then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_error(body):
+def dsinfo_response_error(body, dataset):
+    if body[-11:] == 'DatasetName':
+        body = body[:-11] + dataset
+    print('\n\nbody',body)
     assert pytest.response.text == f'"{body}"'
 
 
