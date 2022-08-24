@@ -13,7 +13,7 @@ Feature: Check csv_export [POST] request
       Given ws Dataset is uploaded and processed by the system
       When csv export with "ds" and "schema" parameters is send
       Then response status should be 200 OK
-      And response body schema should be valid by "csv_export_schema"
+      And response body should match expected data for "csv_export" request
 
     @progress
     Scenario: Fail to export xl dataset with more than 9000 records

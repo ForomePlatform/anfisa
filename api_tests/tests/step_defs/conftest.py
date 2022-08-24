@@ -3,7 +3,6 @@ import pytest
 import time
 
 from csvvalidator import CSVValidator
-
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.schemas.csv_export_schema import csv_export_schema
@@ -191,7 +190,7 @@ def assert_stat_list_schemas(property_name):
 
 @then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
                       extra_types=EXTRA_STRING_TYPES))
-def assert_test_data(request_name, dataset):
+def assert_json_data(request_name, dataset):
     with open(f'tests/test_data/{dataset}/{request_name}.json', encoding="utf8") as f:
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
@@ -203,3 +202,11 @@ def assert_test_data(request_name, dataset):
     print('ddiff', ddiff)
 
     assert ddiff == {}
+
+
+@then(parsers.cfparse('response body should match expected data for "{request_name:String}" request',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_csv_data(request_name, dataset):
+    with open(f'tests/test_data/xl_PGP3140_wgs_NIST-3_3_2/ws_callers_in_GATK_HOMOZYGOUS/{request_name}', encoding="utf8") as f:
+        file = f.read()
+    print('file\n\n',file)

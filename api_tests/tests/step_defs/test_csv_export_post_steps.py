@@ -8,5 +8,5 @@ scenarios('../features/csv_export-post.feature')
 
 @when(parsers.cfparse('csv export with "ds" and "schema" parameters is send'))
 def csv_export_response(dataset):
-    parameters = Constructor.csv_export_payload(ds=dataset,schema='csv')
+    parameters = Constructor.csv_export_payload(ds=dataset, schema='csv')
     pytest.response = CsvExport.post(parameters)
