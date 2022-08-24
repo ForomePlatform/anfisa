@@ -99,7 +99,7 @@ def derive_ws(dataset):
 
 
 @given(
-    parsers.cfparse('{dataset_type:String} is uploaded and processed by the system',
+    parsers.cfparse('"{dataset_type:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_type):
     match dataset_type:
@@ -128,7 +128,7 @@ def assert_json_schema(schema):
             print(f"Sorry, I couldn't understand {schema!r}")
 
 
-@then(parsers.cfparse('response body "{key:String}" should be equal {value:String}', extra_types=EXTRA_STRING_TYPES))
+@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_response_code(key, value):
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
@@ -144,12 +144,12 @@ def dsinfo_response_error(body):
     assert pytest.response.text == f'"{body}"'
 
 
-@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
 
 
-@given(parsers.cfparse('unique {dataset_type:String} Dataset name is generated',
+@given(parsers.cfparse('unique "{dataset_type:String}" Dataset name is generated',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='unique_ds_name')
 def unique_ds_name(dataset_type):
     _unique_ds_name = Generator.unique_name(dataset_type)
@@ -157,12 +157,12 @@ def unique_ds_name(dataset_type):
     return _unique_ds_name
 
 
-@then(parsers.cfparse('job status should be {status:String}', extra_types=EXTRA_STRING_TYPES))
+@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_job_status(status):
     assert status in ds_creation_status(pytest.response.json()['task_id'])
 
 
-@given(parsers.cfparse('{code_type:String} Python code is constructed',
+@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='code')
 def code(code_type):
     return Generator.code(code_type)
