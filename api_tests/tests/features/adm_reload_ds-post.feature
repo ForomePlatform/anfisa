@@ -16,7 +16,7 @@ Feature: Check adm_reload_ds [POST] request
 
     @negative
     Scenario Outline: adm_reload_ds with empty parameter
-    When adm_reload_ds request with incorrect <ds> parameter is send
+    When adm_reload_ds request with incorrect "<ds>" parameter is send
     Then response status should be 403 Forbidden
     And response body should contain "<error>"
 

@@ -16,7 +16,7 @@ def adm_reload_ds_response(dataset):
     return pytest.response
 
 
-@when(parsers.cfparse('adm_reload_ds request with incorrect {ds:String} parameter is send',
+@when(parsers.cfparse('adm_reload_ds request with incorrect "{ds:String}" parameter is send',
                       extra_types=EXTRA_STRING_TYPES))
 def adm_reload_ds_response(ds):
     parameters = Constructor.adm_reload_ds(ds=ds)
