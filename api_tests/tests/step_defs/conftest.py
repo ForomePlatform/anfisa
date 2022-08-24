@@ -27,21 +27,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
     print(f'Step failed: {step}')
 
 
-def pytest_bdd_after_scenario():
-    ws_to_drop = []
-    response = DirInfo.get()
-    ds_dict = json.loads(response.content)["ds-dict"]
-    for value in ds_dict.values():
-        try:
-            if testDataPrefix + 'ws' in value['name']:
-                ws_to_drop.append(value['name'])
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-    for wsDataset in ws_to_drop:
-        time.sleep(1)
-        AdmDropDs.post({'ds': wsDataset})
+
 
 
 # Fixtures
@@ -104,10 +90,11 @@ def ds_creation_status(task_id):
     return job_status_response.json()[1]
 
 
-def derive_ws(dataset):
+def derive_ws(dataset, code='return False'):
     # Deriving ws dataset
+    print('deriving ... code', code)
     unique_ws_name = Generator.unique_name('ws')
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code='return False')
+    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code=code)
     response = Ds2ws.post(parameters)
 
     # Checking creation
@@ -116,7 +103,7 @@ def derive_ws(dataset):
 
 
 @given(
-    parsers.cfparse('{dataset_identifier:String} is uploaded and processed by the system',
+    parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_identifier):
     match dataset_identifier:
@@ -154,7 +141,7 @@ def assert_json_schema(schema):
             print(f"Sorry, I couldn't understand {schema!r}")
 
 
-@then(parsers.cfparse('response body "{key:String}" should be equal {value:String}', extra_types=EXTRA_STRING_TYPES))
+@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_response_code(key, value):
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
@@ -170,12 +157,31 @@ def dsinfo_response_error(body):
     assert pytest.response.text == f'"{body}"'
 
 
-@then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
+@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
 
 
-@then(parsers.cfparse('response body {property_name:String} property_status schemas should be valid',
+@given(parsers.cfparse('unique "{dataset_type:String}" Dataset name is generated',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_ds_name')
+def unique_ds_name(dataset_type):
+    _unique_ds_name = Generator.unique_name(dataset_type)
+    assert _unique_ds_name != ''
+    return _unique_ds_name
+
+
+@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
+def assert_job_status(status):
+    assert status in ds_creation_status(pytest.response.json()['task_id'])
+
+
+@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
+def code(code_type):
+    return Generator.code(code_type)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" property_status schemas should be valid',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_stat_list_schemas(property_name):
     for element in pytest.response.json()[property_name]:
@@ -204,9 +210,4 @@ def assert_json_data(request_name, dataset):
     assert ddiff == {}
 
 
-@then(parsers.cfparse('response body should match expected data for "{request_name:String}" request',
-                      extra_types=EXTRA_STRING_TYPES))
-def assert_csv_data(request_name, dataset):
-    with open(f'tests/test_data/xl_PGP3140_wgs_NIST-3_3_2/ws_callers_in_GATK_HOMOZYGOUS/{request_name}', encoding="utf8") as f:
-        file = f.read()
-    print('file\n\n',file)
+

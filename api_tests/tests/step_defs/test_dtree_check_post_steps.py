@@ -7,7 +7,7 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/dtree_check-post.feature')
 
 
-@when(parsers.cfparse('dtree_check request with {code:String} and {ds:String} is send', extra_types=EXTRA_STRING_TYPES),
+@when(parsers.cfparse('dtree_check request with "{code:String}" and "{ds:String}" is send', extra_types=EXTRA_STRING_TYPES),
       target_fixture='dtree_check_response')
 def dtree_check_response(code, ds, dataset):
     dataset_name = dataset if ds == 'xl Dataset' else ds
