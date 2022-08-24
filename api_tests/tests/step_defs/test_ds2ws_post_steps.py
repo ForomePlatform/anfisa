@@ -28,7 +28,7 @@ def ds2ws_response(dataset, code, unique_ds_name):
     return pytest.response
 
 
-@when(parsers.cfparse('ds2ws request with "ds", "code" and {ws:String} parameters is send',
+@when(parsers.cfparse('ds2ws request with "ds", "code" and "{ws:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, code, ws):
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=ws, code=code)
@@ -36,7 +36,7 @@ def ds2ws_response(dataset, code, ws):
     return pytest.response
 
 
-@when(parsers.cfparse('ds2ws request with {ds:String} and {ws:String} parameters is send',
+@when(parsers.cfparse('ds2ws request with "{ds:String}" and "{ws:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, ds, ws):
     ds_name = dataset if ds == 'xl Dataset' else ds
