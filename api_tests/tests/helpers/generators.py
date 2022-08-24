@@ -29,6 +29,13 @@ class Generator:
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
 
     @staticmethod
+    def code(code_type):
+        if code_type == 'valid':
+            return 'return False'
+        elif code_type == 'invalid':
+            return Generator.space_separated_string()
+
+    @staticmethod
     def test_data(test_data_type):
         match test_data_type:
             case 'unique ws name':

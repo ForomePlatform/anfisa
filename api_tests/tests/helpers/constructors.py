@@ -34,3 +34,15 @@ class Constructor:
         return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
                 'schema': kwargs['schema'] if 'schema' in kwargs else ''
                 }
+
+    @staticmethod
+    def dtree_stat_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {
+            'ds': kwargs['ds'] if 'ds' in kwargs else '',
+            'code': kwargs['code'] if 'code' in kwargs else '',
+            'no': kwargs['no'] if 'no' in kwargs else '',
+            'tm': kwargs['tm'] if 'tm' in kwargs else ''
+        }

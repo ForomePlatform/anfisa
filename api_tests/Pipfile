@@ -13,6 +13,7 @@ python-dotenv="0.19.2"
 jsonschema = "*"
 pytest-xdist = "*"
 csvvalidator = "*"
+deepdiff = "*"
 
 [requires]
 python_version = "3.10"
