@@ -3,14 +3,16 @@ from pytest_bdd import when, scenarios, parsers, given, then
 from lib.api.csv_export_api import CsvExport
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
 from tests.helpers.constructors import Constructor
+from tests.helpers.generators import Generator
 from tests.step_defs.conftest import derive_ws
 
 scenarios('../features/csv_export-post.feature')
 
 
-@given(parsers.cfparse('ws Dataset, derived by "{code:String}", is prepared', extra_types=EXTRA_STRING_TYPES),
-       target_fixture='ws_derived_by_code')
-def ws_derived_by_code(dataset, code):
+@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
+       target_fixture='ws_less_9000_rec')
+def ws_less_9000_rec(dataset):
+    code = Generator.code('complex')
     return derive_ws(dataset, code)
 
 
@@ -21,8 +23,19 @@ def csv_export_response(dataset):
 
 
 @when(parsers.cfparse('csv_export request with "schema" and "ds" parameters is send'))
-def csv_export_response(ws_derived_by_code):
-    parameters = Constructor.csv_export_payload(ds=ws_derived_by_code, schema='csv')
+def csv_export_response(ws_less_9000_rec):
+    parameters = Constructor.csv_export_payload(ds=ws_less_9000_rec, schema='csv')
+    pytest.response = CsvExport.post(parameters)
+
+
+@when(parsers.cfparse('csv_export request with "{ds:String}" and "{schema:String}" parameters is send',
+                      extra_types=EXTRA_STRING_TYPES))
+def csv_export_response(dataset, ws_less_9000_rec, ds, schema):
+    if ds == 'xl Dataset':
+        ds = dataset
+    elif ds == 'ws with < 9000 records':
+        ds = ws_less_9000_rec
+    parameters = Constructor.csv_export_payload(ds=ds, schema=schema)
     pytest.response = CsvExport.post(parameters)
 
 
@@ -31,5 +44,4 @@ def csv_export_response(ws_derived_by_code):
 def assert_csv_data(request_name, dataset):
     with open(f'tests/test_data/{dataset}/ws_callers_in_GATK_HOMOZYGOUS/{request_name}', encoding="utf8") as f:
         expected_data = f.read()
-    print('pytest.response.text', pytest.response.text)
-    #assert expected_data == pytest.response.text
+    assert expected_data == pytest.response.text.replace("\r", "")

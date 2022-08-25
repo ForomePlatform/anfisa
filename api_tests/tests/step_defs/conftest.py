@@ -27,7 +27,21 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
     print(f'Step failed: {step}')
 
 
-
+def pytest_bdd_after_scenario():
+    ws_to_drop = []
+    response = DirInfo.get()
+    ds_dict = json.loads(response.content)["ds-dict"]
+    for value in ds_dict.values():
+        try:
+            if testDataPrefix + 'ws' in value['name']:
+                ws_to_drop.append(value['name'])
+        except ValueError:
+            continue
+        except TypeError:
+            continue
+    for wsDataset in ws_to_drop:
+        time.sleep(1)
+        AdmDropDs.post({'ds': wsDataset})
 
 
 # Fixtures
@@ -80,7 +94,7 @@ def find_dataset(dataset):
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
-    for i in range(10):
+    for i in range(60):
         if (job_status_response.json()[1] == 'Done') or (job_status_response.json()[0] is None):
             break
         else:

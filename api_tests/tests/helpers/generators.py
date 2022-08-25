@@ -36,7 +36,9 @@ class Generator:
             case 'invalid':
                 return Generator.space_separated_string()
             case 'complex':
-                return 'if Callers in {GATK_HOMOZYGOUS}:\n\treturn True\nreturn False'
+                return '''if Callers in {GATK_HOMOZYGOUS}:
+    return True
+return False'''
             case _:
                 return code
 
