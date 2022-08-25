@@ -25,7 +25,9 @@ from app.config.a_config import AnfisaConfig
 from .condition import ConditionMaker
 from .var_unit import VarUnit
 
-#===============================================
+# ===============================================
+
+
 class MultiStatusUnitAdapter:
     def __init__(self, base_unit_h):
         self.mBaseUnit = base_unit_h
@@ -65,7 +67,8 @@ class MultiStatusUnitAdapter:
     def _logStart(self, ds_name):
         cnt1, cnt2 = len(self.mSingleSet), len(self.mMultiMap)
         counts = self.mLenCounts
-        logging.info(f"Variety {ds_name}:{self.getName()} started with:"
+        logging.info(
+            f"Variety {ds_name}:{self.getName()} started with:"
             f"\tsingle: {cnt1}, multi: {cnt2} variants, counts={counts}")
 
     def filterActualVariants(self, variants):
@@ -95,7 +98,7 @@ class MultiStatusUnitAdapter:
     def _fillRecord(self, inp_data, rec_no):
         self.mBaseUnit.fillRecord(inp_data, rec_no)
 
-    def _collectVariantStat(self, condition, eval_h, panel_seq = None):
+    def _collectVariantStat(self, condition, eval_h, panel_seq=None):
         var_cnt = defaultdict(int)
         panel_cnt, panel_res = None, None
         if panel_seq is not None:
@@ -113,7 +116,7 @@ class MultiStatusUnitAdapter:
                         panel_cnt[pname] += count
         if panel_cnt is not None:
             panel_res = [[pname, panel_cnt[pname]]
-                for pname, _ in panel_seq]
+                         for pname, _ in panel_seq]
         return {var: [var, cnt] for var, cnt in var_cnt.items()}, panel_res
 
     def getRecVal(self, rec_no):
@@ -122,10 +125,12 @@ class MultiStatusUnitAdapter:
             return {self.mSingleIdxMap[rec_no]}
         return self.mMultiIdxMap[rec_no]
 
-#===============================================
+# ===============================================
+
+
 class VarietySupport:
     @staticmethod
-    def makePanelDescr(descr, sub_kind = None):
+    def makePanelDescr(descr, sub_kind=None):
         return {
             "name": descr["panel-name"],
             "no": descr["no"],
@@ -136,13 +141,15 @@ class VarietySupport:
             "sub-kind": "multi" if sub_kind is None else sub_kind
         }
 
-    def __init__(self, base_descr, sub_kind = None):
+    def __init__(self, base_descr, sub_kind=None):
         self.mPanelUnit = VarietyPanelUnit(self,
-            VarietySupport.makePanelDescr(base_descr, sub_kind),
-            sub_kind)
+                                           VarietySupport.makePanelDescr(
+                                               base_descr, sub_kind),
+                                           sub_kind)
         self.mPanelType = base_descr["panel-type"]
         self.mPanelKind = "panel." + self.mPanelType
-        self.mDefaultRestSize = AnfisaConfig.configOption("max.rest.size")
+        self.mDefaultRestSize = AnfisaConfig.configOption(
+            "variety.max.rest.size")
 
     def getPanelUnit(self):
         return self.mPanelUnit
@@ -167,7 +174,7 @@ class VarietySupport:
     def _makeStat(self, condition, eval_h, stat_ctx):
         ret_handle = self.prepareStat(stat_ctx)
         base_panel_name = (stat_ctx.get(self.getName() + ".base-panel")
-            if stat_ctx is not None else None)
+                           if stat_ctx is not None else None)
         if base_panel_name:
             base_panel = self.getEvalSpace().getDS().pickSolEntry(
                 self.mPanelKind, base_panel_name)
@@ -178,11 +185,11 @@ class VarietySupport:
             panel_mode = eval_h is not None
         ret_handle["base-panel"] = base_panel.getName()
         max_rest_size = (stat_ctx.get("max-rest-size", self.mDefaultRestSize)
-            if stat_ctx is not None else self.mDefaultRestSize)
+                         if stat_ctx is not None else self.mDefaultRestSize)
 
         if panel_mode:
             panel_seq = [[pname, set(names)]
-                for pname, names in self.iterPanels()]
+                         for pname, names in self.iterPanels()]
         else:
             panel_seq = None
 
@@ -192,6 +199,9 @@ class VarietySupport:
         if eval_h is None:
             ret_handle["variants"] = self._varSeq(
                 var_dict, iter(self.mVariantSet))
+            # ret_handle["variants"] = self._varSeq(
+            #    var_dict, iter(self.mVariantSet))
+            ret_handle["variants"] = sorted(var_dict.values())
             return ret_handle
 
         total_cnt = self._countSeq(var_dict.values())
@@ -227,7 +237,9 @@ class VarietySupport:
             ret_handle["detailed"] = True
         return ret_handle
 
-#===============================================
+# ===============================================
+
+
 class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
     @staticmethod
     def makeVarietyDescr(descr):
@@ -243,7 +255,7 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
 
     def __init__(self, base_unit_h):
         VarUnit.__init__(self, base_unit_h.getEvalSpace(),
-            self.makeVarietyDescr(
+                         self.makeVarietyDescr(
             base_unit_h.getDescr()), "enum")
         MultiStatusUnitAdapter.__init__(self, base_unit_h)
         VarietySupport.__init__(self, base_unit_h.getDescr())
@@ -256,8 +268,9 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
     def buildCondition(self, cond_data, eval_h):
         filter_mode, variants = cond_data[2:]
         if len(variants) == 0:
-            eval_h.operationError(cond_data,
-                f"Enum {self.getName}: empty set of variants")
+            if eval_h is not None:
+                eval_h.operationError(
+                    cond_data, f"Enum {self.getName}: empty set of variants")
             return self.getEvalSpace().getCondNone()
         return self._makeBaseCond(variants, filter_mode)
 
@@ -267,11 +280,14 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
     def makeStat(self, condition, eval_h, stat_ctx):
         return self._makeStat(condition, eval_h, stat_ctx)
 
-#===============================================
+# ===============================================
+
+
 class VarietyPanelUnit(VarUnit):
 
-    def __init__(self, variety_h, descr, sub_kind = None):
-        VarUnit.__init__(self, variety_h.getEvalSpace(),
+    def __init__(self, variety_h, descr, sub_kind=None):
+        VarUnit.__init__(
+            self, variety_h.getEvalSpace(),
             descr, "enum", "multi" if sub_kind is None else sub_kind)
         self.mVariety = variety_h
         self.getInfo()["variety-name"] = self.mVariety.getName()
@@ -281,7 +297,7 @@ class VarietyPanelUnit(VarUnit):
 
     def getVariantSet(self):
         return VariantSet([pname
-            for pname, _ in self.mVariety.iterPanels()])
+                           for pname, _ in self.mVariety.iterPanels()])
 
     def mapVariants(self, variants):
         collected = set()
@@ -294,8 +310,8 @@ class VarietyPanelUnit(VarUnit):
         filter_mode, variants = cond_data[2:]
 
         if len(variants) == 0:
-            eval_h.operationError(cond_data,
-                f"Enum {self.getName}: empty set of variants")
+            eval_h.operationError(
+                cond_data, f"Enum {self.getName}: empty set of variants")
             return self.getEvalSpace().getCondNone()
 
         if filter_mode == "AND" and len(variants) > 1:
@@ -331,3 +347,4 @@ class VarietyPanelUnit(VarUnit):
         if self.mVariety.isDetailed():
             ret_handle["detailed"] = True
         return ret_handle
+

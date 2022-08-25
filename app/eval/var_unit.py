@@ -21,17 +21,19 @@
 import abc
 from copy import deepcopy
 
-#===============================================
+# ===============================================
+
+
 class VarUnit:
-    def __init__(self, eval_space, descr, unit_kind = None,
-            sub_kind = None):
+    def __init__(self, eval_space, descr, unit_kind=None,
+                 sub_kind=None):
         self.mEvalSpace = eval_space
         self.mDescr = descr
-        self.mUnitKind  = descr.get("kind", unit_kind)
+        self.mUnitKind = descr.get("kind", unit_kind)
         self.mSubKind = descr.get("sub-kind", sub_kind)
         self.mInternalName = descr["name"]
         self.mVGroup = descr.get("vgroup")
-        self.mNo    = descr.get("no", -1)
+        self.mNo = descr.get("no", -1)
         self.mDimName = descr.get("dim-name")
         self.mScreened = False
         if unit_kind is not None:
@@ -85,7 +87,7 @@ class VarUnit:
     def isInDTrees(self):
         return True
 
-    def _setScreened(self, value = True):
+    def _setScreened(self, value=True):
         self.mScreened = value
 
     def getMean(self):
@@ -97,7 +99,7 @@ class VarUnit:
     def getDimName(self):
         return self.mDimName
 
-    def prepareStat(self, stat_ctx, incomplete_mode = False):
+    def prepareStat(self, stat_ctx, incomplete_mode=False):
         ret_handle = deepcopy(self.mInfo)
         if incomplete_mode:
             ret_handle["incomplete"] = True
@@ -106,21 +108,26 @@ class VarUnit:
     def isTranscriptID(self):
         return False
 
-#===============================================
-#===============================================
+# ===============================================
+# ===============================================
+
+
 class NumUnitSupport:
     def buildCondition(self, cond_data, eval_h):
         min_val, min_eq, max_val, max_eq = cond_data[2]
-        return self.getEvalSpace().makeNumericCond(self,
-            min_val, min_eq, max_val, max_eq)
+        return self.getEvalSpace().makeNumericCond(
+            self, min_val, min_eq, max_val, max_eq)
 
-#===============================================
+# ===============================================
+
+
 class EnumUnitSupport:
     def buildCondition(self, cond_data, eval_h):
         filter_mode, variants = cond_data[2:]
         if len(variants) == 0:
-            eval_h.operationError(cond_data,
-                f"Enum {self.getName}: empty set of variants")
+            if eval_h is not None:
+                eval_h.operationError(
+                    cond_data, f"Enum {self.getName}: empty set of variants")
             return self.getEvalSpace().getCondNone()
         return self.getEvalSpace().makeEnumCond(
             self, variants, filter_mode)
@@ -131,19 +138,21 @@ class EnumUnitSupport:
     def evalExtraVariants(self, variants):
         return self.getVariantSet().makeValueSet() - set(variants)
 
-#===============================================
-#===============================================
+# ===============================================
+# ===============================================
+
+
 class ComplexEnumUnit(VarUnit, EnumUnitSupport):
     def __init__(self, eval_space, descr,
-            unit_kind = None, sub_kind = None):
+                 unit_kind=None, sub_kind=None):
         VarUnit.__init__(self, eval_space, descr, unit_kind, sub_kind)
 
     @abc.abstractmethod
-    def iterComplexCriteria(self, context = None, variants = None):
+    def iterComplexCriteria(self, context=None, variants=None):
         pass
 
     def collectComplexStat(self, ret_handle, base_condition,
-            context = None, detailed = False):
+                           context=None, detailed=False):
         val_stat_list = []
         for name, condition in self.iterComplexCriteria(context):
             if base_condition is not None:
@@ -156,7 +165,7 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
             ret_handle["detailed"] = True
         ret_handle["variants"] = val_stat_list
 
-    def buildCondition(self, cond_data, eval_h, context = None):
+    def buildCondition(self, cond_data, eval_h, context=None):
         filter_mode, variants = cond_data[2:4]
         single_cr_seq = []
         for _, condition in self.iterComplexCriteria(context, variants):
@@ -168,11 +177,13 @@ class ComplexEnumUnit(VarUnit, EnumUnitSupport):
             return self.getEvalSpace().joinAnd(single_cr_seq)
         return self.getEvalSpace().joinOr(single_cr_seq)
 
-#===============================================
+# ===============================================
+
+
 class FunctionUnit(ComplexEnumUnit):
     def __init__(self, eval_space, descr, sub_kind, parameters):
         ComplexEnumUnit.__init__(self, eval_space, descr,
-            unit_kind = "func", sub_kind = sub_kind)
+                                 unit_kind="func", sub_kind=sub_kind)
         self.mParameters = parameters
 
     def getParameters(self):
@@ -195,13 +206,15 @@ class FunctionUnit(ComplexEnumUnit):
 
     def buildCondition(self, cond_data, eval_h):
         context = self.locateContext(cond_data, eval_h)
-        return ComplexEnumUnit.buildCondition(self,
-            cond_data, eval_h, context)
+        return ComplexEnumUnit.buildCondition(
+            self, cond_data, eval_h, context)
 
-#===============================================
-#===============================================
+# ===============================================
+# ===============================================
+
+
 class ReservedNumUnit(NumUnitSupport):
-    def __init__(self, eval_space, name, sub_kind = "int"):
+    def __init__(self, eval_space, name, sub_kind="int"):
         self.mEvalSpace = eval_space
         self.mName = name
         self.mSubKind = sub_kind
@@ -220,3 +233,4 @@ class ReservedNumUnit(NumUnitSupport):
 
     def getSubKind(self):
         return self.mSubKind
+
