@@ -25,3 +25,13 @@ class Constructor:
         return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
                 'code': kwargs['code'] if 'code' in kwargs else ''
                 }
+
+    @staticmethod
+    def ws_tags_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
+                'rec': kwargs['rec'] if 'rec' in kwargs else '',
+                'tags': kwargs['tags'] if 'tags' in kwargs else '',
+                }
