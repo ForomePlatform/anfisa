@@ -3,6 +3,7 @@ import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
+from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
@@ -72,7 +73,7 @@ def successful_string_to_bool(successful):
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
-    for i in range(10):
+    for i in range(60):
         if job_status_response.json()[1] == 'Done':
             break
         else:
@@ -82,10 +83,10 @@ def ds_creation_status(task_id):
     return job_status_response.json()[1]
 
 
-def derive_ws(xl_dataset):
+def derive_ws(xl_dataset, code='return False'):
     # Deriving ws dataset
     unique_ws_name = Generator.unique_name('ws')
-    parameters = Constructor.ds2ws_payload(ds=xl_dataset, ws=unique_ws_name, code='return False')
+    parameters = Constructor.ds2ws_payload(ds=xl_dataset, ws=unique_ws_name, code=code)
     response = Ds2ws.post(parameters)
 
     # Checking creation
@@ -114,8 +115,11 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_check_schema)
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
+        case 'ws_tags_schema':
+            validate(pytest.response.json(), ws_tags_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
+            raise NameError('Schema is not found')
 
 
 @then(parsers.cfparse('response body "{key:String}" should be equal {value:String}', extra_types=EXTRA_STRING_TYPES))
@@ -137,3 +141,10 @@ def dsinfo_response_error(body):
 @then(parsers.cfparse('response status should be {status:Number} {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
+
+
+@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
+       target_fixture='ws_less_9000_rec')
+def ws_less_9000_rec(dataset):
+    code = Generator.code('complex')
+    return derive_ws(dataset, code)

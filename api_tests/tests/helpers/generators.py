@@ -29,6 +29,20 @@ class Generator:
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
 
     @staticmethod
+    def code(code):
+        match code:
+            case 'valid':
+                return 'return False'
+            case 'invalid':
+                return Generator.space_separated_string()
+            case 'complex':
+                return '''if Callers in {GATK_HOMOZYGOUS}:
+    return True
+return False'''
+            case _:
+                return code
+
+    @staticmethod
     def test_data(test_data_type):
         match test_data_type:
             case 'unique ws name':

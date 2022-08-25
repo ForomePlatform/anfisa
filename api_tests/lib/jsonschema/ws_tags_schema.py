@@ -15,10 +15,10 @@ ws_tags_schema = {
             "type": "object"
         },
         "upd-time": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "upd-from": {
-            "type": "string"
+            "type": ["string", "null"]
         },
         "filters": {
             "type": "array",
