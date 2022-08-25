@@ -2,6 +2,7 @@ import json
 import random
 import string
 from time import gmtime, strftime, time
+
 from lib.api.dirinfo_api import DirInfo
 
 testDataPrefix = 'Autotest-'
@@ -27,6 +28,10 @@ class Generator:
     @staticmethod
     def symbols_only_string():
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
+
+    @staticmethod
+    def tag(name, value):
+        return '{"%(tag)s":%(value)s}' % {'tag': name, 'value': value}
 
     @staticmethod
     def code(code):

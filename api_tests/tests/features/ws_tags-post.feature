@@ -11,10 +11,26 @@ Feature: Check ws_tags [POST] request
 
         Examples:
         | ws            | rec |
-        | generated ws  | 0   |
+        | ws Dataset    | 0   |
 
 
     @progresss
+    Scenario Outline: Create a new tag for ws dataset
+    Given xl Dataset is uploaded and processed by the system
+    And ws Dataset with < 9000 records is derived from it
+    And unique tag name is prepared
+    When ws_tags request with "<ws>", "<rec>" and "<tag>" is send
+    Then response status should be 200 OK
+    And response body "op-tags" list should include "tag"
+    And response body "rec-tags" should include "tag object"
+
+
+        Examples:
+        | ws            | rec | tag      |
+        | ws Dataset    | 0   | true Tag |
+
+
+    @progress
     Scenario Outline: Return a list of tags for ws dataset
     Given xl Dataset is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
@@ -25,6 +41,6 @@ Feature: Check ws_tags [POST] request
         Examples:
         | ws                              | rec                    | error                          |
         | generated empty string          | 0                      | Missing request argument "ds"  |
-        | generated ws                    | generated empty string | Missing request argument "rec" |
+        | ws Dataset                      | generated empty string | Missing request argument "rec" |
         | generated random literal string | 0                      | No dataset                     |
         | xl Dataset                      | 0                      | DS kinds conflicts: xl vs. ws  |
