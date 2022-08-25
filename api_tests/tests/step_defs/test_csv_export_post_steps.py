@@ -9,12 +9,6 @@ from tests.step_defs.conftest import derive_ws
 scenarios('../features/csv_export-post.feature')
 
 
-@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
-       target_fixture='ws_less_9000_rec')
-def ws_less_9000_rec(dataset):
-    code = Generator.code('complex')
-    return derive_ws(dataset, code)
-
 
 @when(parsers.cfparse('csv_export request with "ds" and "schema" parameters is send'))
 def csv_export_response(dataset):
