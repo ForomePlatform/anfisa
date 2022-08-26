@@ -1,9 +1,9 @@
 @api
 Feature: Check ws_tags [POST] request
 
-    @progress
+    @positive
     Scenario Outline: Return a list of tags for ws dataset
-    Given "xl Dataset" is uploaded and processed by the system
+    Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_tags request with "<ws>" and "<rec>" is send
     Then response status should be "200" OK
@@ -14,24 +14,26 @@ Feature: Check ws_tags [POST] request
         | ws Dataset    | 0   |
 
 
-    @progresss
+    @positive
     Scenario Outline: Create a new tag for ws dataset
-    Given "xl Dataset" is uploaded and processed by the system
+    Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
-    And unique tag name is prepared
-    When ws_tags request with correct "<ws>", "<rec>" and "<tag>" is send
+    And unique tag is prepared
+    When ws_tags request with correct "<ws>", "<rec>" and "<tag_type>" is send
     Then response status should be "200" OK
-    And response body "op-tags" list should include "tag"
-    And response body "rec-tags" should include "tag object"
+    And response body "op-tags" list should include "<tag_type>"
+    And response body "rec-tags" should include "<tag_type>"
+    And tag_select response should include "<tag_type>"
 
         Examples:
-        | ws            | rec | tag                |
-        | ws Dataset    | 0   | generated true Tag |
+        | ws         | rec | tag_type            |
+        | ws Dataset | 0   | generated true Tag  |
+        | ws Dataset | 0   | generated _note Tag |
 
 
-    @progress
+    @negative
     Scenario Outline: Return a list of tags for ws dataset
-    Given "xl Dataset" is uploaded and processed by the system
+    Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_tags request with "<ws>" and "<rec>" is send
     Then response status should be "403" Forbidden

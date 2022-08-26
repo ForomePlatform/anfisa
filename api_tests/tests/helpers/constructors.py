@@ -35,3 +35,11 @@ class Constructor:
                 'rec': kwargs['rec'] if 'rec' in kwargs else '',
                 'tags': kwargs['tags'] if 'tags' in kwargs else '',
                 }
+
+    @staticmethod
+    def tag_select_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'ds': kwargs['ds'] if 'ds' in kwargs else ''
+                }

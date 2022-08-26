@@ -4,6 +4,7 @@ import string
 from time import gmtime, strftime, time
 from lib.api.dirinfo_api import DirInfo
 
+
 testDataPrefix = 'Autotest-'
 
 
@@ -29,8 +30,11 @@ class Generator:
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
 
     @staticmethod
-    def tag(name, value):
-        return '{"%(tag)s":%(value)s}' % {'tag': name, 'value': value}
+    def tag(tag, tag_type):
+        if tag_type == 'generated true Tag' or tag_type == 'generated false Tag':
+            return '{"%(tag)s": true}' % {'tag': tag}
+        elif tag_type == 'generated _note Tag':
+            return '{"_note": "%(text)s"}' % {'text': tag}
 
     @staticmethod
     def code(code):
@@ -74,6 +78,3 @@ return False'''
                 return Generator.random_numeral_string(10)
             case 'symbols only string':
                 return Generator.symbols_only_string()
-            case 'true Tag':
-                tag_name = Generator.unique_name('tag')
-                return Generator.tag(tag_name, 'true')
