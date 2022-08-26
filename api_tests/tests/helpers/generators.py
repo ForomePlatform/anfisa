@@ -4,7 +4,6 @@ import string
 from time import gmtime, strftime, time
 from lib.api.dirinfo_api import DirInfo
 
-
 testDataPrefix = 'Autotest-'
 
 
@@ -21,11 +20,9 @@ class Generator:
     def random_numeral_string(length):
         return ''.join(random.choice(string.digits) for _ in range(length))
 
-
     @staticmethod
     def space_separated_string():
         return f'{testDataPrefix} {Generator.random_literal_string(10)}'
-
 
     @staticmethod
     def symbols_only_string():
