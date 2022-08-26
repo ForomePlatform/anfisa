@@ -64,12 +64,13 @@ else:
     _color = read_color
     text = result + _text
 
-
+header = header_repository + header_action
 print(text)
 BASE_URL = "https://hooks.slack.com/services/" + str(SLACK_REPORT_SECRET)
 params = {
     "channel": "#forome-api-tests-reports",
     "username": "webhookbot",
+    "text": header,
     "attachments": [
         {
             "color": _color,
