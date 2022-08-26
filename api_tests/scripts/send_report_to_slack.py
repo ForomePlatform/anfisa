@@ -2,11 +2,29 @@ import os
 import requests
 import json
 
-with open('cucumber-report.json') as json_file:
-    data = json.load(json_file)
-
+SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
+GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
+GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME")
+GITHUB_ACTOR = os.environ.get("GITHUB_ACTOR")
+GITHUB_RUN_NUMBER = os.environ.get("GITHUB_RUN_NUMBER")
 green_color = "#008000"
 read_color = "#B22222"
+_text = '_____________________________________________' + '\n'
+_color = ''
+_passing = 0
+_failing = 0
+_count = 0
+link_repository = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/pull/' + str(GITHUB_REF_NAME)
+link_action = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/actions/runs/' + str(GITHUB_RUN_ID)
+header_repository =\
+    'Autotests passed on <repository #' + GITHUB_REF_NAME + '|' + link_repository + '>, author: ' + GITHUB_ACTOR + '\n'
+header_action =\
+    'Test Run <ID #' + GITHUB_RUN_NUMBER + '|' + link_action + '>\n'
+
+
+with open('cucumber-report.json') as json_file:
+    data = json.load(json_file)
 
 
 def scenario_result(elements):
@@ -22,11 +40,7 @@ def scenario_result(elements):
     return _result
 
 
-_text = '_____________________________________________' + '\n'
-_color = ''
-_passing = 0
-_failing = 0
-_count = 0
+
 for feature in data:
     param = '\n*Feature*: ' + feature['name']
     for scenario in feature['elements']:
@@ -52,7 +66,6 @@ else:
 
 
 print(text)
-SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
 BASE_URL = "https://hooks.slack.com/services/" + str(SLACK_REPORT_SECRET)
 params = {
     "channel": "#forome-api-tests-reports",
