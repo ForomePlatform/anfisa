@@ -2,12 +2,12 @@ import os
 import requests
 import json
 
-SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
-GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
-GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
-GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME").replace("/merge", "")
-GITHUB_ACTOR = os.environ.get("GITHUB_ACTOR")
-GITHUB_RUN_NUMBER = os.environ.get("GITHUB_RUN_NUMBER")
+SLACK_REPORT_SECRET = str(os.environ.get("SLACK_REPORT_SECRET"))
+GITHUB_REPOSITORY = str(os.environ.get("GITHUB_REPOSITORY"))
+GITHUB_RUN_ID = str(os.environ.get("GITHUB_RUN_ID"))
+GITHUB_REF_NAME = str(os.environ.get("GITHUB_REF_NAME")).replace("/merge", "")
+GITHUB_ACTOR = str(os.environ.get("GITHUB_ACTOR"))
+GITHUB_RUN_NUMBER = str(os.environ.get("GITHUB_RUN_NUMBER"))
 green_color = "#008000"
 read_color = "#B22222"
 _text = '_____________________________________________' + '\n'
@@ -15,8 +15,9 @@ _color = ''
 _passing = 0
 _failing = 0
 _count = 0
-link_repository = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/pull/' + str(GITHUB_REF_NAME)
-link_action = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/actions/runs/' + str(GITHUB_RUN_ID)
+BASE_URL = "https://hooks.slack.com/services/" + SLACK_REPORT_SECRET
+link_repository = 'https://github.com/' + GITHUB_REPOSITORY + '/pull/' + GITHUB_REF_NAME
+link_action = 'https://github.com/' + GITHUB_REPOSITORY + '/actions/runs/' + GITHUB_RUN_ID
 header_repository =\
     'Autotests passed on <' + link_repository + '|repository #' + GITHUB_REF_NAME + '>, author: ' + GITHUB_ACTOR + '\n'
 header_action =\
@@ -40,9 +41,7 @@ def scenario_result(elements):
     return _result
 
 
-
 for feature in data:
-    param = '\n*Feature*: ' + feature['name']
     for scenario in feature['elements']:
         param = scenario_result(scenario['steps'])
         if param == 'PASSED':
@@ -65,9 +64,10 @@ else:
     text = result + _text
 
 header = header_repository + header_action
+print(header)
 print(text)
-BASE_URL = "https://hooks.slack.com/services/" + str(SLACK_REPORT_SECRET)
-params = {
+
+body = {
     "channel": "#forome-api-tests-reports",
     "username": "webhookbot",
     "text": header,
@@ -79,5 +79,5 @@ params = {
     ],
     "icon_emoji": ":ghost:"
 }
-response = requests.post(BASE_URL, json=params)
+response = requests.post(BASE_URL, json=body)
 print(response)
