@@ -2,7 +2,6 @@ import json
 import random
 import string
 from time import gmtime, strftime, time
-
 from lib.api.dirinfo_api import DirInfo
 
 testDataPrefix = 'Autotest-'

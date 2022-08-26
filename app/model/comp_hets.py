@@ -23,18 +23,21 @@ from hashlib import md5
 
 from app.config.a_config import AnfisaConfig
 from app.eval.var_unit import FunctionUnit
-#=====================================
+# =====================================
+
+
 class CompHetsUnit(FunctionUnit):
     @staticmethod
-    def makeIt(ds_h, descr, before = None, after = None):
+    def makeIt(ds_h, descr, before=None, after=None):
         unit_h = CompHetsUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(
-            unit_h, before = before, after = after)
+            unit_h, before=before, after=after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
-        FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
-            sub_kind = "comp-hets", parameters = ["approx", "state"])
+        FunctionUnit.__init__(
+            self, ds_h.getEvalSpace(), descr,
+            sub_kind="comp-hets", parameters=["approx", "state"])
         self.mZygSupport = ds_h.getZygositySupport()
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
@@ -54,7 +57,7 @@ class CompHetsUnit(FunctionUnit):
                 trio_info, approx_mode, actual_condition)
         return ret_handle
 
-    def iterComplexCriteria(self, context, variants = None):
+    def iterComplexCriteria(self, context, variants=None):
         if context is None:
             return
         trio_dict = context["trio-dict"]
@@ -67,25 +70,25 @@ class CompHetsUnit(FunctionUnit):
 
     def makeInfoStat(self, eval_h, stat_ctx, point_no):
         ret_handle = self.prepareStat(stat_ctx)
-        ret_handle["trio-variants"] = [trio_info[0]
-            for trio_info in self.mZygSupport.getTrioSeq()]
+        ret_handle["trio-variants"] = [
+            trio_info[0] for trio_info in self.mZygSupport.getTrioSeq()]
         ret_handle["approx-modes"] = self.mZygSupport.getApproxInfo()
         ret_handle["labels"] = eval_h.getLabelPoints(point_no)
         return ret_handle
 
-    def _locateContext(self, parameters, eval_h, point_no = None):
+    def _locateContext(self, parameters, eval_h, point_no=None):
         if parameters.get("state"):
             actual_condition = eval_h.getLabelCondition(
                 parameters["state"], point_no)
             if actual_condition is None:
-                return None, ("State label %s not defined"
-                    % parameters["state"])
+                return None, f"State label {parameters['state']} not defined"
+
         else:
             actual_condition = eval_h.getActualCondition(point_no)
         approx_mode = self.mZygSupport.normalizeApprox(
             parameters.get("approx"))
         if approx_mode is False:
-            return None, "Improper approx mode %s" % parameters["approx"]
+            return None, f"Improper approx mode {parameters['approx']}"
 
         build_id = approx_mode + '|' + actual_condition.hashCode()
         with self.getEvalSpace().getDS():
@@ -125,29 +128,31 @@ class CompHetsUnit(FunctionUnit):
             ret_handle["err"] = err_msg
         else:
             self.collectComplexStat(ret_handle, condition, context,
-                self.mZygSupport.getGeneUnit(
-                    context.get("approx")).isDetailed())
+                                    self.mZygSupport.getGeneUnit(
+                                        context.get("approx")).isDetailed())
 
         return ret_handle
 
-#=====================================
+# =====================================
+
+
 class CompoundRequestUnit(FunctionUnit):
     @staticmethod
-    def makeIt(ds_h, descr, before = None, after = None):
+    def makeIt(ds_h, descr, before=None, after=None):
         unit_h = CompoundRequestUnit(ds_h, descr)
         ds_h.getEvalSpace()._insertUnit(
-            unit_h, before = before, after = after)
+            unit_h, before=before, after=after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
-            sub_kind = "comp-request",
-            parameters = ["request", "approx", "state"])
+                              sub_kind="comp-request",
+                              parameters=["request", "approx", "state"])
         self.mZygSupport = ds_h.getZygositySupport()
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
 
-    def iterComplexCriteria(self, context, variants = None):
+    def iterComplexCriteria(self, context, variants=None):
         if context is None:
             return
         yield "True", context["crit"]
@@ -160,13 +165,13 @@ class CompoundRequestUnit(FunctionUnit):
         ret_handle["affected"] = self.mZygSupport.getAffectedGroup()
         return ret_handle
 
-    def _locateContext(self, parameters, eval_h, point_no = None):
+    def _locateContext(self, parameters, eval_h, point_no=None):
         if parameters.get("state"):
             actual_condition = eval_h.getLabelCondition(
                 parameters["state"], point_no)
             if actual_condition is None:
                 return None, ("State label %s not defined"
-                    % parameters["state"])
+                              % parameters["state"])
         else:
             actual_condition = eval_h.getActualCondition(point_no)
         approx_mode = self.mZygSupport.normalizeApprox(
@@ -178,11 +183,12 @@ class CompoundRequestUnit(FunctionUnit):
         if self.mZygSupport.emptyRequest(c_rq):
             return None, "Empty request"
 
-        build_id = md5(bytes(json.dumps(c_rq, sort_keys = True)
-            + approx_mode + '|' + actual_condition.hashCode(),
-            encoding="utf-8")).hexdigest()
+        build_id = md5(bytes(json.dumps(c_rq, sort_keys=True)
+                             + approx_mode + '|' + actual_condition.hashCode(),
+                             encoding="utf-8")).hexdigest()
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
+        context = None
         if context is None:
             context = {
                 "approx": approx_mode,
@@ -213,7 +219,8 @@ class CompoundRequestUnit(FunctionUnit):
             ret_handle["err"] = err_msg
         else:
             self.collectComplexStat(ret_handle, condition, context,
-                self.mZygSupport.getGeneUnit(
-                    context.get("approx")).isDetailed())
+                                    self.mZygSupport.getGeneUnit(
+                                        context.get("approx")).isDetailed())
         ret_handle.update(parameters)
         return ret_handle
+
