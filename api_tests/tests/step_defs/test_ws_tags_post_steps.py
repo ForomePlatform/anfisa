@@ -27,7 +27,7 @@ def ws_tags_response(dataset, ws_less_9000_rec, ws, rec):
     pytest.response = WsTags.post(parameters)
 
 
-@when(parsers.cfparse('ws_tags request with "{ws:String}", "{rec:String}" and "tag" is send',
+@when(parsers.cfparse('ws_tags request with correct "{ws:String}", "{rec:String}" and "{tag:String}" is send',
                       extra_types=EXTRA_STRING_TYPES))
 def ws_tags_response(dataset, ws_less_9000_rec, ws, rec, tag):
     print('time to debug')
@@ -37,8 +37,7 @@ def ws_tags_response(dataset, ws_less_9000_rec, ws, rec, tag):
         print(ws)
     elif ws == 'xl Dataset':
         ws = dataset
-    ws = ws_less_9000_rec
-    tag = '{"%(tag)s": true}' % {'tag': tag}
+    #tag = '{"%(tag)s": true}' % {'tag': tag}
 
     parameters = Constructor.ws_tags_payload(ds=ws, rec=rec, tags=tag)
     print('parameters', parameters)

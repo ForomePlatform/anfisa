@@ -75,3 +75,6 @@ return False'''
                 return Generator.random_numeral_string(10)
             case 'symbols only string':
                 return Generator.symbols_only_string()
+            case 'true Tag':
+                tag_name = Generator.unique_name('tag')
+                return Generator.tag(tag_name, 'true')

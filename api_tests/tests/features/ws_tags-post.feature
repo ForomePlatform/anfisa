@@ -19,15 +19,14 @@ Feature: Check ws_tags [POST] request
     Given xl Dataset is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     And unique tag name is prepared
-    When ws_tags request with "<ws>", "<rec>" and "<tag>" is send
+    When ws_tags request with correct "<ws>", "<rec>" and "<tag>" is send
     Then response status should be 200 OK
     And response body "op-tags" list should include "tag"
     And response body "rec-tags" should include "tag object"
 
-
         Examples:
-        | ws            | rec | tag      |
-        | ws Dataset    | 0   | true Tag |
+        | ws            | rec | tag                |
+        | ws Dataset    | 0   | generated true Tag |
 
 
     @progress
