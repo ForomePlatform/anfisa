@@ -25,10 +25,3 @@ Feature: Check adm_reload_ds [POST] request
         | generated empty string           | Missing request argument "ds" |
         | generated random literal string  | No dataset                    |
         | generated space separated string | No dataset                    |
-
-
-
-
-
-
-
