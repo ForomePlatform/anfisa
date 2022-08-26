@@ -113,7 +113,7 @@ def derive_ws(dataset):
 
 
 @given(
-    parsers.cfparse('{dataset_identifier:String} is uploaded and processed by the system',
+    parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_identifier):
     match dataset_identifier:
