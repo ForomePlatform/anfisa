@@ -57,7 +57,7 @@ class Generator:
                 return _dataset
             case '251 literal string':
                 return Generator.random_literal_string(251)
-            case 'random literal string':
+            case 'random literal string' | 'random string':
                 return Generator.random_literal_string(10)
             case 'numbers only string':
                 return Generator.random_numeral_string(10)

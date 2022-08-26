@@ -10,9 +10,9 @@ Feature: Check dtree_stat [POST] request
     And response body stat-list property_status schemas should be valid
     And response body functions property_status schemas should be valid
 
-        Examples:
-        | ds         | code         | no | tm |
-        | xl Dataset | return False | 0  | 0  |
+    Examples:
+    | ds         | code         | no | tm |
+    | xl Dataset | return False | 0  | 0  |
 
 
     @positive
@@ -22,19 +22,21 @@ Feature: Check dtree_stat [POST] request
     Then response status should be "200" OK
     And response body json should match expected data for dtree_stat request
 
+    Examples:
+    | ds                        | code         | no | tm |
+    | xl_PGP3140_wgs_NIST-3_3_2 | return False | 0  | 0  |
 
-        Examples:
-        | ds                        | code         | no | tm |
-        | xl_PGP3140_wgs_NIST-3_3_2 | return False | 0  | 0  |
 
-
-    @negative
+    @progress
     Scenario Outline: Fail to get attributes for any xl dataset's dtree
     Given "xl Dataset" is uploaded and processed by the system
-    When dtree_stat request with "<ds>", "<no>" and "<tm>" parameters is send
+    When dtree_stat request with "<ds>", "<code>", "<no>" and "<tm>" parameters is send
     Then response status should be "403" Forbidden
+    And response body should contain "<error>"
 
-        Examples:
-        | ds                     | no                     | tm |
-        | generated empty string | 0                      | 0  |
-        | xl Dataset             | generated empty string | 0  |
+    Examples:
+    | ds                 | no                | tm | code             | error                                       |
+    | gen. empty string  | 0                 | 0  | return False     | Missing request argument "ds"               |
+    | xl Dataset         | gen. empty string | 0  | return False     | Missing request argument "no"               |
+    | xl Dataset         | 0                 | 0  | gen. empty string| Missing request argument: "dtree" or "code" |
+    | gen. random string | 0                 | 0  | return False     | No dataset                                  |

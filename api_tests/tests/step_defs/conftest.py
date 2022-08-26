@@ -182,7 +182,7 @@ def assert_stat_list_schemas(property_name):
 @then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    with open(f'tests/test_data/{dataset}/{request_name}.json', encoding="utf8") as f:
+    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
 
