@@ -5,6 +5,9 @@ import json
 with open('cucumber-report.json') as json_file:
     data = json.load(json_file)
 
+green_color = "#008000"
+read_color = "#B22222"
+
 
 def scenario_result(elements):
     _result = ''
@@ -19,36 +22,48 @@ def scenario_result(elements):
     return _result
 
 
-text = ''
-
+_text = '_____________________________________________' + '\n'
+_color = ''
 _passing = 0
 _failing = 0
 _count = 0
 for feature in data:
     param = '\n*Feature*: ' + feature['name']
-    text = text + param + '\n'
     for scenario in feature['elements']:
         param = scenario_result(scenario['steps'])
-        text = text + '       *Scenario*: ' + scenario['name'] + ' ' + '[*' + param + '*]\n'
         if param == 'PASSED':
             _passing = _passing + 1
         else:
             _failing = _failing + 1
+            _text = _text + '*Scenario*: ' + scenario['name'] + ' ' + '[*' + param + '*]\n'
 _count = _failing + _passing
-print(text)
+
 result = \
-        '______________________________\n' \
-        'Tests: ' + _count.__str__() + '\n' \
-        'Passing: ' + _passing.__str__() + '\n' \
-        'Failing: ' + _failing.__str__() + '\n'
+        'Tests: ' + str(_count) + '\n' \
+        'Passing: ' + str(_passing) + '\n' \
+        'Failing: ' + str(_failing) + '\n' \
 
-print(result)
+if _failing == 0:
+    _color = green_color
+    text = result
+else:
+    _color = read_color
+    text = result + _text
 
-text = text + '\n\n' + result
 
-
+print(text)
 SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
-BASE_URL = "https://hooks.slack.com/services/" + SLACK_REPORT_SECRET.__str__()
-params = {"channel": "#forome-api-tests-reports", "username": "webhookbot", "text": text, "icon_emoji": ":ghost:"}
+BASE_URL = "https://hooks.slack.com/services/" + str(SLACK_REPORT_SECRET)
+params = {
+    "channel": "#forome-api-tests-reports",
+    "username": "webhookbot",
+    "attachments": [
+        {
+            "color": _color,
+            "text": text
+        }
+    ],
+    "icon_emoji": ":ghost:"
+}
 response = requests.post(BASE_URL, json=params)
 print(response)

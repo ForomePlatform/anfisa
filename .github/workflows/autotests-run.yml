@@ -42,4 +42,7 @@ jobs:
         if: ${{ always() }}
         run: pipenv run send_report
         working-directory: ./api_tests
-        
+                
+      - name: Printenv
+        if: ${{ always() }}
+        run: printenv
