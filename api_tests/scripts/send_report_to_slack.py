@@ -5,7 +5,7 @@ import json
 SLACK_REPORT_SECRET = os.environ.get("SLACK_REPORT_SECRET")
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 GITHUB_RUN_ID = os.environ.get("GITHUB_RUN_ID")
-GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME")
+GITHUB_REF_NAME = os.environ.get("GITHUB_REF_NAME").replace("/merge", "")
 GITHUB_ACTOR = os.environ.get("GITHUB_ACTOR")
 GITHUB_RUN_NUMBER = os.environ.get("GITHUB_RUN_NUMBER")
 green_color = "#008000"
