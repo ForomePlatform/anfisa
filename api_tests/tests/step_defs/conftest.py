@@ -166,7 +166,7 @@ def assert_status(status, text):
     assert pytest.response.status_code == status
 
 
-@then(parsers.cfparse('response body {property_name:String} property_status schemas should be valid',
+@then(parsers.cfparse('response body "{property_name:String}" property_status schemas should be valid',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_stat_list_schemas(property_name):
     for element in pytest.response.json()[property_name]:
@@ -179,7 +179,7 @@ def assert_stat_list_schemas(property_name):
                 validate(element, func_property_status)
 
 
-@then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
+@then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
     with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
