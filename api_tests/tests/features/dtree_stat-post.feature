@@ -27,7 +27,7 @@ Feature: Check dtree_stat [POST] request
     | xl_PGP3140_wgs_NIST-3_3_2 | return False | 0  | 0  |
 
 
-    @progress
+    @negative
     Scenario Outline: Fail to get attributes for any xl dataset's dtree
     Given "xl Dataset" is uploaded and processed by the system
     When dtree_stat request with "<ds>", "<code>", "<no>" and "<tm>" parameters is send
