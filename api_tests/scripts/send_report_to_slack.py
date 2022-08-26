@@ -18,9 +18,9 @@ _count = 0
 link_repository = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/pull/' + str(GITHUB_REF_NAME)
 link_action = 'https://github.com/' + str(GITHUB_REPOSITORY) + '/actions/runs/' + str(GITHUB_RUN_ID)
 header_repository =\
-    'Autotests passed on <repository #' + GITHUB_REF_NAME + '|' + link_repository + '>, author: ' + GITHUB_ACTOR + '\n'
+    'Autotests passed on <' + link_repository + '|repository #' + GITHUB_REF_NAME + '>, author: ' + GITHUB_ACTOR + '\n'
 header_action =\
-    'Test Run <ID #' + GITHUB_RUN_NUMBER + '|' + link_action + '>\n'
+    'Test Run <' + link_action + '|ID #' + GITHUB_RUN_NUMBER + '>\n'
 
 
 with open('cucumber-report.json') as json_file:
