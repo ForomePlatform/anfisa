@@ -4,7 +4,9 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
-from lib.jsonschema.common import enum_property_status, numeric_property_status, func_property_status
+from lib.jsonschema.ds_stat_schema import ds_stat_schema
+from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
+    func_property_status_schema, solution_entry_schema
 from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
@@ -141,6 +143,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds2ws_schema)
         case 'dtree_stat_schema':
             validate(pytest.response.json(), dtree_stat_schema)
+        case 'ds_stat_schema':
+            validate(pytest.response.json(), ds_stat_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
 
@@ -172,11 +176,25 @@ def assert_stat_list_schemas(property_name):
     for element in pytest.response.json()[property_name]:
         match element['kind']:
             case 'enum':
-                validate(element, enum_property_status)
+                validate(element, enum_property_status_schema)
             case 'numeric':
-                validate(element, numeric_property_status)
+                validate(element, numeric_property_status_schema)
             case 'func':
-                validate(element, func_property_status)
+                validate(element, func_property_status_schema)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" solution_entry schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_solution_entry_schemas(property_name):
+    for element in pytest.response.json()[property_name]:
+        validate(element, solution_entry_schema)
+
+
+@then(parsers.cfparse('response body "{property_name_1:String}" value should be equal "{property_name_2:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def determine_equality_of_properties(property_name_1, property_name_2):
+    response_json = json.loads(pytest.response.text)
+    assert response_json[property_name_1] == response_json[property_name_2]
 
 
 @then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',

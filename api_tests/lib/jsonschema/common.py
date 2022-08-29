@@ -2,7 +2,7 @@
 This module contains common jsonschemas
 """
 
-numeric_property_status = {
+numeric_property_status_schema = {
     "type": "object",
     "properties": {
         "name": {
@@ -52,7 +52,7 @@ numeric_property_status = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-enum_property_status = {
+enum_property_status_schema = {
     "type": "object",
     "properties": {
         "name": {
@@ -89,7 +89,7 @@ enum_property_status = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-func_property_status = {
+func_property_status_schema = {
     "type": "object",
     "properties": {
         "name": {
@@ -137,7 +137,7 @@ func_property_status = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-solution_entry = {
+solution_entry_schema = {
   "type": "object",
   "required": ["name", "standard", "eval-status"],
   "properties": {
