@@ -1,7 +1,7 @@
 @api
 Feature: Check ws_tags [POST] request
 
-    @positive
+    @progress
     Scenario Outline: Return a list of tags for ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
@@ -14,7 +14,7 @@ Feature: Check ws_tags [POST] request
         | ws Dataset    | 0   |
 
 
-    @progress
+    @positive
     Scenario Outline: Return a list of tags for specific ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
@@ -44,7 +44,7 @@ Feature: Check ws_tags [POST] request
 
 
     @negative
-    Scenario Outline: Return a list of tags for ws dataset
+    Scenario Outline: Fail to return a list of tags for ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_tags request with "<ws>" and "<rec>" is send
