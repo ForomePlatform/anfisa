@@ -1,4 +1,7 @@
 import json
+import os
+import sys
+
 import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
@@ -182,7 +185,15 @@ def assert_stat_list_schemas(property_name):
 @then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
+    #with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
+    file_path = f"{os.path.dirname(sys.argv[0])}\\tests\\test-data\\{dataset}\\{request_name}.json".replace('\\\\',b'\\r')
+    #file_path = f'tests/test-data/{dataset}/{request_name}.json'
+    from pathlib import Path
+
+    base_path = Path(__file__).parent
+    #file_path = (base_path / f"tests/test-data/{dataset}/{request_name}.json").resolve()
+
+    with open(f'C:\Users\vadim.anisimov\source\repos\Anfisa-back-TEST\anfisa\api_tests\tests\test-data\{dataset}\{request_name}.json', encoding="utf8") as f:
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
 
