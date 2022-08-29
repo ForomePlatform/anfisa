@@ -28,7 +28,6 @@ ds_stat_schema = {
                 "type": "number"
             },
             "minItems": 1,
-            "maxItems": 1,
         },
         "filtered-counts": {
             "type": "array",
@@ -36,7 +35,6 @@ ds_stat_schema = {
                 "type": "number"
             },
             "minItems": 1,
-            "maxItems": 1,
         },
         "stat-list": {
             "type": "array"

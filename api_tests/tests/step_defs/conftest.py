@@ -187,6 +187,7 @@ def assert_stat_list_schemas(property_name):
                       extra_types=EXTRA_STRING_TYPES))
 def assert_solution_entry_schemas(property_name):
     for element in pytest.response.json()[property_name]:
+        print('element', element)
         validate(element, solution_entry_schema)
 
 
@@ -194,6 +195,8 @@ def assert_solution_entry_schemas(property_name):
                       extra_types=EXTRA_STRING_TYPES))
 def determine_equality_of_properties(property_name_1, property_name_2):
     response_json = json.loads(pytest.response.text)
+    print('response_json[property_name_1]', response_json[property_name_1])
+    print('response_json[property_name_2]', response_json[property_name_2])
     assert response_json[property_name_1] == response_json[property_name_2]
 
 

@@ -30,6 +30,9 @@ numeric_property_status_schema = {
             "type": "boolean"
         },
         "detailed": {
+            "type": "boolean"
+        },
+        "classes": {
             "type": "array"
         },
         "min": {
@@ -80,6 +83,9 @@ enum_property_status_schema = {
             "type": "boolean"
         },
         "detailed": {
+            "type": "boolean"
+        },
+        "classes": {
             "type": "array"
         },
         "variants": {
@@ -117,6 +123,9 @@ func_property_status_schema = {
             "type": "boolean"
         },
         "detailed": {
+            "type": "boolean"
+        },
+        "classes": {
             "type": "array"
         },
         "variants": {
@@ -148,10 +157,24 @@ solution_entry_schema = {
       "type": "boolean"
     },
     "upd-time": {
-      "type": "string"
+       "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
     },
     "upd-from": {
-      "type": "string"
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "rubric": {
       "type": "string"
