@@ -3,6 +3,7 @@ import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
+from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
@@ -20,6 +21,7 @@ from lib.jsonschema.ds2ws_schema import ds2ws_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
 from deepdiff import DeepDiff
+import random
 
 
 # Hooks
@@ -71,11 +73,14 @@ def number_of_ds_records(ds_name):
 def xl_dataset(required_records=0):
     _dataset = ''
     response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    ds_dict = json.loads(response_dir_info.text)["ds-dict"]
+    print('ds_dict',ds_dict)
+    xl_list = []
     for value in ds_dict.values():
         if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
-            _dataset = value['name']
-            break
+            xl_list.append(value['name'])
+    print('xl_list',xl_list)
+    _dataset = random.choice(xl_list)
     assert _dataset != ''
     return _dataset
 
@@ -89,6 +94,14 @@ def find_dataset(dataset):
             found = True
             break
     assert found
+
+
+def prepare_filter(dataset):
+    parameters = Constructor.ds_stat_payload(ds=dataset)
+    response = DsStat.post(parameters)
+    stat_list = json.loads(response)["stat_list"]
+    print(stat_list)
+    return []
 
 
 def ds_creation_status(task_id):
@@ -126,6 +139,12 @@ def dataset(dataset_identifier):
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
+        case 'ws Dataset with < 9000 records':
+            print('< 9000')
+            for i in range(10):
+                filter = prepare_filter(xl_dataset())
+                if filter[0] == True:
+                    break
         case _:
             find_dataset(dataset_identifier)
             return dataset_identifier
@@ -214,7 +233,9 @@ def assert_test_data(request_name, dataset):
     print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
     print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
 
-    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths={"root['rq-id']","root['upd-time']","root['upd-from']", "root['tags-state']","root['op-tags']","root['rec-tags']"})
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
+                     exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
+                                    "root['op-tags']", "root['rec-tags']"})
     print('ddiff', ddiff)
 
     assert ddiff == {}
