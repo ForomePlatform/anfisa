@@ -262,7 +262,7 @@ def assert_test_data(request_name, dataset):
 
     ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
                      exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
-                                    "root['op-tags']", "root['rec-tags']"})
+                                    "root['op-tags']", "root['rec-tags']", "root['ds']"})
     print('ddiff', ddiff)
 
     assert ddiff == {}
