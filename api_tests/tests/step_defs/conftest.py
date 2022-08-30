@@ -74,13 +74,16 @@ def xl_dataset(required_records=0):
     _dataset = ''
     response_dir_info = DirInfo.get()
     ds_dict = json.loads(response_dir_info.text)["ds-dict"]
-    print('ds_dict',ds_dict)
     xl_list = []
     for value in ds_dict.values():
-        if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
-            xl_list.append(value['name'])
-    print('xl_list',xl_list)
+        try:
+            if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
+                xl_list.append(value['name'])
+        except TypeError:
+            continue
+    print('xl_list', xl_list)
     _dataset = random.choice(xl_list)
+    print('selected xl dataset', _dataset)
     assert _dataset != ''
     return _dataset
 
@@ -99,9 +102,20 @@ def find_dataset(dataset):
 def prepare_filter(dataset):
     parameters = Constructor.ds_stat_payload(ds=dataset)
     response = DsStat.post(parameters)
-    stat_list = json.loads(response)["stat_list"]
-    print(stat_list)
-    return []
+    stat_list = json.loads(response.text)["stat-list"]
+    result = ''
+    for element in stat_list:
+        try:
+            if element['kind'] == 'enum':
+                for variant in element["variants"]:
+                    if (variant[1] < 3000) and (variant[1] > 3):
+                        result = '''if %(stat_name)s in {%(variant_name)s}:
+    return True
+return False''' % {'stat_name': element["name"], 'variant_name': variant[0]}
+                        return result
+        except TypeError:
+            continue
+    return result
 
 
 def ds_creation_status(task_id):
@@ -118,6 +132,7 @@ def ds_creation_status(task_id):
 
 
 def derive_ws(dataset, code='return False'):
+    print('derive_ws', dataset, code)
     # Deriving ws dataset
     unique_ws_name = Generator.unique_name('ws')
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code=code)
@@ -139,12 +154,15 @@ def dataset(dataset_identifier):
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
-        case 'ws Dataset with < 9000 records':
-            print('< 9000')
+        case 'xl Dataset with filter':
+            xl_ds = ''
             for i in range(10):
-                filter = prepare_filter(xl_dataset())
-                if filter[0] == True:
+                xl_ds = xl_dataset()
+                prep_filter = prepare_filter(xl_ds)
+                if prep_filter != '':
                     break
+            assert xl_ds != ''
+            return xl_ds
         case _:
             find_dataset(dataset_identifier)
             return dataset_identifier
@@ -263,5 +281,5 @@ def code(code_type):
 @given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
        target_fixture='ws_less_9000_rec')
 def ws_less_9000_rec(dataset):
-    code = Generator.code('complex')
+    code = prepare_filter(dataset)
     return derive_ws(dataset, code)

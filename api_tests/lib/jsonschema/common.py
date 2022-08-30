@@ -177,7 +177,14 @@ solution_entry_schema = {
         ]
     },
     "rubric": {
-      "type": "string"
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "eval-status": {
       "type": "string"

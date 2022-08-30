@@ -1,9 +1,9 @@
 @api
 Feature: Check ws_tags [POST] request
 
-    @progress
+    @positive
     Scenario Outline: Return a list of tags for any ws dataset
-    Given "ws Dataset with < 9000 records" is uploaded and processed by the system
+    Given "xl Dataset with filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_tags request with "<ws>" and "<rec>" is send
     Then response status should be "200" OK
@@ -28,7 +28,7 @@ Feature: Check ws_tags [POST] request
 
     @positive
     Scenario Outline: Create a new tag for any ws dataset
-    Given "ws Dataset with < 9000 records" is uploaded and processed by the system
+    Given "xl Dataset with filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     And unique tag is prepared
     When ws_tags request with correct "<ws>", "<rec>" and "<tag_type>" is send
@@ -45,7 +45,7 @@ Feature: Check ws_tags [POST] request
 
     @negative
     Scenario Outline: Fail to return a list of tags for any ws dataset
-    Given "ws Dataset with < 9000 records" is uploaded and processed by the system
+    Given "xl Dataset with filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_tags request with "<ws>" and "<rec>" is send
     Then response status should be "403" Forbidden
