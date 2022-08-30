@@ -5,6 +5,7 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.ws_list_schema import ws_list_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
@@ -185,6 +186,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds_stat_schema)
         case 'ws_tags_schema':
             validate(pytest.response.json(), ws_tags_schema)
+        case 'ws_list_schema':
+            validate(pytest.response.json(), ws_list_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
             raise NameError('Schema is not found')
@@ -224,12 +227,18 @@ def assert_stat_list_schemas(property_name):
                 validate(element, func_property_status_schema)
 
 
-@then(parsers.cfparse('response body "{property_name:String}" solution_entry schemas should be valid',
+@then(parsers.cfparse('response body "{property_name:String}" "{schema_name:String}" schemas should be valid',
                       extra_types=EXTRA_STRING_TYPES))
-def assert_solution_entry_schemas(property_name):
-    for element in pytest.response.json()[property_name]:
-        print('element', element)
-        validate(element, solution_entry_schema)
+def assert_nested_schemas(property_name, schema_name):
+    match schema_name:
+        case 'solution_entry':
+            for element in pytest.response.json()[property_name]:
+                print('element', element)
+                validate(element, solution_entry_schema)
+        case 'descriptor':
+            for element in pytest.response.json()[property_name]:
+                print('element', element)
+                validate(element, ws_list_schema)
 
 
 @then(parsers.cfparse('response body "{property_name_1:String}" value should be equal "{property_name_2:String}"',
@@ -283,3 +292,6 @@ def code(code_type):
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
     return derive_ws(dataset, code)
+
+
+

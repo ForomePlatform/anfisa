@@ -9,7 +9,7 @@ Feature: Check DsStat [POST] request
     And response body schema should be valid by "ds_stat_schema"
     And response body "stat-list" property_status schemas should be valid
     And response body "functions" property_status schemas should be valid
-    And response body "filter-list" solution_entry schemas should be valid
+    And response body "filter-list" "solution_entry" schemas should be valid
     And response body "total-counts" value should be equal "filtered-counts"
 
         Examples:
