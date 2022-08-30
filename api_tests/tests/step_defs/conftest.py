@@ -108,7 +108,7 @@ def prepare_filter(dataset):
         try:
             if element['kind'] == 'enum':
                 for variant in element["variants"]:
-                    if (variant[1] < 3000) and (variant[1] > 3):
+                    if (variant[1] < 300) and (variant[1] > 3):
                         result = '''if %(stat_name)s in {%(variant_name)s}:
     return True
 return False''' % {'stat_name': element["name"], 'variant_name': variant[0]}

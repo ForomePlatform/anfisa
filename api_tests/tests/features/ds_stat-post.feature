@@ -26,6 +26,6 @@ Feature: Check DsStat [POST] request
     And response body should contain "<error>"
 
         Examples:
-    | ds                      | error                         |
-    | generated empty string  | Missing request argument "ds" |
-    | gen. random string      | No dataset                    |
+    | ds                           | error                         |
+    | generated empty string       | Missing request argument "ds" |
+    | generated random string      | No dataset                    |
