@@ -1,10 +1,10 @@
-=============
+*************
 Forome AnFiSA
-=============
+*************
 
 Forome and AnFiSa overview
 ==========================
-**Forome** (Forum for Omics) is an open community of renowned clinicians,
+**Forome** (Forum for Omics: https://forome.org/) is an open community of renowned clinicians,
 researchers and professional software developers
 from different countries and backgrounds.
 The Forome project purpose is to create the first community-built and fully
@@ -21,14 +21,30 @@ Forome Genomics Platform supports both clinical and research workflows for all f
 including Mendelian analysis on a case-by-case basis and on cohorts of patients.
 It contains an integrated development environment for clinical rules, providing the ability to seamlessly
 transform research workflows into novel clinical protocols.
-See more at https://forome.org/
 
-**AnFiSA** (Annotation and Filtration for Sequencing Analysis) is a Variant Analysis and Curation tool developed as a part of the Forome platform.
+**AnFiSA** (Annotation and Filtration for Sequencing Analysis) is a Variant Analysis and Curation tool
+developed as a part of the Forome platform. It was designed to be
+a specialized data warehouse for complex genomic data analysis,
+such as whole genome sequencing for patients with rare diseases.
+
 AnFiSA provides to user an organized web-based interface for variant filtration, curation and interpretation.
 It incorporates a novel framework for intuitive and visual application of inclusion and exclusion criteria to
-millions of records. AnFiSA keeps all data relevant to the annotation and curation processes
+millions of records.
+The AnFiSA platform is simple enough to be used by clinicians while at the same time capable of transforming
+research workflows into more formal clinical protocols.
+AnFiSA represents these protocols as human readable scripts in a notebook-like environment.
+
+In addition AnFiSA keeps all data relevant to the annotation and curation processes
 in the format straightforward for the review,
 ensuring results reproducibility and traceability.
+As a warehouse, AnFiSA stores annotations of all possible mutations in the human genome
+that are used to prioritize candidate pathogenic variants in an affected proband.
+It provides an easy and intuitive way
+to perform reanalysis of some of the cases based on the new versions
+of the knowledge sources or a new variant call file.
+
+AnFiSA capabilities
+===================
 
 Anfisa tool allows the following:
 
@@ -67,6 +83,13 @@ https://github.com/ForomePlatform/anfisa/tree/v.0.7.x
 User guide and tutorial
 =======================
 
+Anfisa user guide describes all available Anfisa tool options, operators and fields providing insight
+into functional possibilities of the application.
+This user guide also includes step-by-step instructions for geneticists and clinicians who are involved
+in genetic variant’s analysis, annotations and curation.
+
+This guide is current as of Anfisa version v.0.7.
+
 To get familiar with AnFiSA capabilities, go through the following pages:
 
 
@@ -74,6 +97,8 @@ To get familiar with AnFiSA capabilities, go through the following pages:
    :maxdepth: 1
 
    intro
+
+   managing_data
    
    annotation_sources
    
