@@ -50,10 +50,29 @@ Genomic data are inherently multidimensional, i.e., every record is described by
 properties coming from a variety of interconnected sources, with each property often having multiple and even
 inconsistent values often supported by contradicting evidence.
 This is where OnLine Analytical Processing (OLAP) is valuable.
-OLAP tools specifically focus on achieving the maximum performance for data querying and information retrieval.
+OLAP tools specifically focus on achieving the maximum performance for complex data querying,
+data aggregation and information retrieval.
+
 This approach is proven with other verticals like financial analysis, sales forecasting, etc.,
 but to the best of our knowledge has never been applied to the big data in genetics. Currently,
 AnFiSA relies on Apache Druid for backend OLAP support.
+
+Pivoting data and pivot tables visualization
+--------------------------------------------
+The main foundation of our development strategy was the realization that genetic data are massive,
+which makes it impossible to analyze individual records.
+However, the data are static, which means that they do not change in real time and require analytical
+rather than transactional processing. The volume of the data naturally leads to the idea
+of visualization with Pivot Tables.
+Pivot Tables show summary statistics and allow rearranging (or pivoting)
+to spot patterns and build more advanced data models.
+
+In AnFiSA, this idea is applied to the process of manual filtration of variants
+to identify candidate causative mutations when a user builds a filter by adding conditions one-by-one.
+As it is impossible to review individual records in a subset containing many thousands or millions of records,
+we instead display a pivot table, a widget visualizing the distribution of the properties of the records.
+AnFiSA does not make decisions for users - rather, it provides them with self-guided tools
+to navigate in the labyrinth of heterogeneous information.
 
 Curated decision trees
 ----------------------
@@ -82,8 +101,12 @@ and same sets of rules may be invoked in many similar situations.
 AnFiSA supports a number of pre-defined built-in decision trees.
 They are included in the distribution and are available in the codebase on GitHub.
 
-
-
+Crowdsourcing
+-------------
+Finally, there is the idea of crowdsourcing for solving the most challenging clinical cases
+for patients with undiagnosed diseases. AnFiSA gives clinicians an option to create a secondary workspace,
+which includes only very limited and fully de-identified information and thus can be shared
+with outside researchers.
 
 Testing data
 ============
