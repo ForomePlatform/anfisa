@@ -7,9 +7,9 @@ branches:
   - name: "v.0.7.x*"
     channel: '0.7.x'
     prerelease: true
-ci: true
-debug: false
-dryRun: true
+ci: false
+debug: true
+dryRun: false
 tagFormat: 'v.${version}'
 
 preset: 'conventionalcommits'
@@ -98,6 +98,16 @@ generateNotes:
         - type: 'test'
           section: '🧪 Tests'
           hidden: true
+
+prepare:
+  - path: '@semantic-release/exec'
+    verifyReleaseCmd: "echo Anfisa ${nextRelease.version} > app/VERSION"
+  - path: '@semantic-release/exec'
+    verifyReleaseCmd: "echo $(git rev-parse --short HEAD) > app/BUILD-HASH"
+  - path: '@semantic-release/git'
+    # Push a release commit and tag, including configurable files
+    message: 'chore(RELEASE): ${nextRelease.version}'
+    assets: ['CHANGELOG.md','app/VERSION']
 
 publish:
   - path: '@semantic-release/github'
