@@ -6,9 +6,10 @@ from tests.helpers.constructors import Constructor
 
 scenarios('../features/tag_select-get.feature')
 
+
 @when(parsers.cfparse(
     'tag_select request with correct "ds" parameter is send'))
 def teg_select(dataset):
-    parameters = Constructor.dtree_stat_payload(ds=dataset)
+    parameters = Constructor.tag_select_payload(ds=dataset)
     pytest.response = TagSelect.get(parameters)
     return pytest.response

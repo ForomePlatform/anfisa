@@ -5,6 +5,7 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.tag_select_schema import tag_select_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
@@ -185,6 +186,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds_stat_schema)
         case 'ws_tags_schema':
             validate(pytest.response.json(), ws_tags_schema)
+        case 'tag_select_schema':
+            validate(pytest.response.json(), tag_select_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
             raise NameError('Schema is not found')

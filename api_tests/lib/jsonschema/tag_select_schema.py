@@ -13,7 +13,14 @@ tag_select_schema = {
       }
     },
     "tag": {
-      "type": "string"
+       "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
     },
     "tags-state": {
       "type": "number"
