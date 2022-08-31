@@ -1,7 +1,7 @@
 @api
 Feature: Check tag_select [GET] request
 
-    @progress
+    @positive
     Scenario Outline: Should return tags of any ws dataset
     Given "ws Dataset" is uploaded and processed by the system
     When tag_select request with "<ds>" parameter is send
@@ -23,19 +23,22 @@ Feature: Check tag_select [GET] request
 
 
     @positive
-    Scenario: Should return tags of specific ws dataset
+    Scenario Outline: Should return tag, created by another ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
-    And _note tag is created for variant 0 of ws dataset
+    And unique tag is prepared
+    And "<tag>" is created for "<rec>" record of ws dataset
     And another ws Dataset with < 9000 records is derived
     When tag_select request with second ws dataset as "ds" is send
     Then response status should be "200" OK
-    And response body "op-tags" list should include "_note"
-    And response body "rec-tags" should include
-    And response body "upd-from" should be equal "first ws dataset"
+    And response body "tag-list" tag list should include "<tag>"
+
+        Examples:
+        | rec | tag                 |
+        | 0   | generated _note Tag |
 
 
-    @progress
+    @negative
     Scenario Outline: Should return tags of specific ws dataset
     Given "xl Dataset" is uploaded and processed by the system
     When tag_select request with "<ds>" parameter is send

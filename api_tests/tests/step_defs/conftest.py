@@ -270,6 +270,14 @@ def unique_ds_name(dataset_type):
     return _unique_ds_name
 
 
+@given(parsers.cfparse('unique tag is prepared',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_tag')
+def unique_tag():
+    _unique_tag_name = Generator.unique_name('tag')
+    assert _unique_tag_name != ''
+    return _unique_tag_name
+
+
 @then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_job_status(status):
     assert status in ds_creation_status(pytest.response.json()['task_id'])
@@ -286,3 +294,12 @@ def code(code_type):
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
     return derive_ws(dataset, code)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_status(property_name, unique_tag, tag_type):
+    if tag_type == 'generated true Tag':
+        assert unique_tag in pytest.response.json()[property_name]
+    elif tag_type == 'generated _note Tag':
+        assert '_note' in pytest.response.json()[property_name]

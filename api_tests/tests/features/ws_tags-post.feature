@@ -33,7 +33,7 @@ Feature: Check ws_tags [POST] request
     And unique tag is prepared
     When ws_tags request with correct "<ws>", "<rec>" and "<tag_type>" is send
     Then response status should be "200" OK
-    And response body "op-tags" list should include "<tag_type>"
+    And response body "op-tags" tag list should include "<tag_type>"
     And response body "rec-tags" should include "<tag_type>"
     And tag_select response should include "<tag_type>"
 
