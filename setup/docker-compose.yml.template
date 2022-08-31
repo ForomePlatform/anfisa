@@ -17,10 +17,7 @@ services:
   anfisa-frontend:
     container_name: anfisa-frontend
     <<: *common_parameters
-    build:
-      context: ${GIT_URL:-https://github.com/ForomePlatform/Anfisa-React-Client.git}#${GIT_REF:-develop}
-      dockerfile: Dockerfile
-    image: anfisa-react-client:latest
+    image: forome.azurecr.io/anfisa-react-client:latest
     ports:
       - "3000:80"
     env_file:
@@ -30,19 +27,16 @@ services:
   anfisa-backend:
     container_name: anfisa-backend
     <<: *common_parameters
-    image: anfisa:latest
+    image: forome.azurecr.io/anfisa:latest
     user: root
     volumes:
       - ASETUP_PATH:/anfisa/a-setup
-    build:
-      context: .
-      dockerfile: setup/Dockerfile
     ports:
       - "9010:80"
     env_file:
       - setup/.env.backend
     restart: always
-      
+
   mongo:
     container_name: anfisa-mongo
     <<: *common_parameters
@@ -147,7 +141,7 @@ services:
       - DRUID_WORK/middlemanager/:/opt/druid/var
       - ASETUP_PATH/vault:/anfisa/a-setup/vault
       - ASETUP_PATH/../data/:/anfisa/data/
-    depends_on: 
+    depends_on:
       - zookeeper
       - coordinator
     ports:
@@ -158,7 +152,7 @@ services:
       - DRUID_XMS=64m
       - DRUID_XMX=256m
       - druid_indexer_fork_property_druid_processing_buffer_sizeBytes=100000000
-      - druid_indexer_fork_property_druid_processing_numThreads=1  
+      - druid_indexer_fork_property_druid_processing_numThreads=1
     env_file:
       - setup/environment
     restart: always
