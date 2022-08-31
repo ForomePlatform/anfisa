@@ -23,7 +23,6 @@ def ds2ws_response(dataset, unique_ds_name):
 @when(parsers.cfparse('ds2ws request with correct "ds", "code" and "ws" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, code, unique_ds_name):
-    print('REQUEST')
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ds_name, code=code)
     pytest.response = Ds2ws.post(parameters)
     return pytest.response
