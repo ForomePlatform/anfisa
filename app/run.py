@@ -20,6 +20,7 @@
 
 import sys, logging
 import logging.config
+from pythonjsonlogger import jsonlogger
 
 from forome_tools.json_conf import loadJSonConfig
 from forome_tools.hserv import setupHServer, HServHandler
