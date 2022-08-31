@@ -12,7 +12,6 @@
       - [Installing via Docker](#installing-via-docker)
       - [Installing without Docker](#installing-without-docker)
     - [Ingesting demo whole genome](#ingesting-demo-whole-genome)
-  - [Public Demo](#public-demo-1)
 
 <!-- tocstop -->
 
@@ -297,18 +296,3 @@ Here are sample commands that can be executed:
     docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa-backend:/anfisa/a-setup/data/examples/
     docker exec -it anfisa-backend sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
     docker exec -it anfisa-backend sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
-
-## Public Demo 
-
-For a quick introduction, look at a demo of Anfisa based on a high 
-confidence small variants callset v 4.2 created by NIST 
-by integrating results of sequencing, alignment and 
-variant calling from different sources; including 
-both short and long read techniques.  
-
-
-The demo server with REST API and a stable built-in UI 
-is available at: https://api.demo.forome.org/
-
-A novel [React](https://reactjs.org/) Front End is under development
-and a beta version can be previewed at: https://app.demo.forome.org/ 
