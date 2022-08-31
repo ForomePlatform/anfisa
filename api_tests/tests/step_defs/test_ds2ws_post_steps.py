@@ -1,4 +1,5 @@
 import json
+import time
 
 import pytest
 from pytest_bdd import scenarios, parsers, when, then
@@ -47,12 +48,16 @@ def ds2ws_response(dataset, ds, ws):
 
 @then(parsers.cfparse('derived dataset can be found in the dirinfo response'))
 def assert_code_presence(unique_ds_name):
+    time.sleep(2)
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
+    print('DirInfo response', response.text)
     assert unique_ds_name in ds_dict
 
 
 @then(parsers.cfparse('"code" is present in dsinfo response for derived dataset'))
 def assert_job_status(unique_ds_name, code):
+    time.sleep(2)
     response = Dsinfo.get({'ds': unique_ds_name})
+    print("DsInfo response", response.text)
     assert response.json()['receipts'][0]['dtree-code'] == code
