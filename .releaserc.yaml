@@ -4,6 +4,9 @@ branches:
   - name: "v.0.7.x"
     channel: '0.7.x'
     prerelease: true
+  - name: "v.0.7.x*"
+    channel: '0.7.x'
+    prerelease: true
 ci: true
 debug: false
 dryRun: true
