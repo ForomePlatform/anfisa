@@ -88,6 +88,6 @@ RUN set -eux \
     && chmod +x /entrypoint.sh \
     && chmod +x /entrypoint.d/*.sh
 
-EXPOSE 80
+EXPOSE 3041
 ENTRYPOINT [ "/entrypoint.sh" ]
 CMD [ "/usr/local/bin/supervisord" ]
