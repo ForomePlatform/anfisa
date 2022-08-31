@@ -103,9 +103,9 @@ generateNotes:
 
 prepare:
   - path: '@semantic-release/exec'
-    verifyReleaseCmd: "echo Anfisa ${nextRelease.version} > app/VERSION"
+    cmd: "echo Anfisa ${nextRelease.version} > app/VERSION"
   - path: '@semantic-release/exec'
-    verifyReleaseCmd: "echo $(git rev-parse --short HEAD) > app/BUILD-HASH"
+    cmd: "echo $(git rev-parse --short HEAD) > app/BUILD-HASH"
   - path: '@semantic-release/changelog'
   - path: '@semantic-release/git'
     # Push a release commit and tag, including configurable files
