@@ -17,17 +17,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import abc, json
+import abc
+import json
 from app.model.sol_support import SolutionBaseInfo
 from .visitor import EnumUnitConditionVisitor
 
-#===============================================
+# ===============================================
+
+
 class Evaluation(SolutionBaseInfo):
     def __init__(self, kind, eval_space, hash_code,
-            name = None, rubric = None,
-            updated_time = None, updated_from = None):
+                 name=None, rubric=None,
+                 updated_time=None, updated_from=None):
         SolutionBaseInfo.__init__(self, kind, name, rubric,
-            updated_time, updated_from)
+                                  updated_time, updated_from)
         self.mEvalSpace = eval_space
         self.mHashCode = hash_code
         self.mPointNo = 0
@@ -46,7 +49,7 @@ class Evaluation(SolutionBaseInfo):
             return None
         return self.getActualCondition(self.mLabels[label])
 
-    def getLabelPoints(self, point_no = None):
+    def getLabelPoints(self, point_no=None):
         ret = []
         for label, p_no in self.mLabels.items():
             if point_no is None or p_no <= point_no:
@@ -60,10 +63,6 @@ class Evaluation(SolutionBaseInfo):
 
     def getEvalStatus(self):
         return self.mEvalStatus
-
-    @abc.abstractmethod
-    def getSolKind(self):
-        return None
 
     @abc.abstractmethod
     def isActive(self):
@@ -96,7 +95,7 @@ class Evaluation(SolutionBaseInfo):
     def inRuntime(self):
         return self.mPointNo is not None
 
-    def pointError(self, err_msg, point_no = None):
+    def pointError(self, err_msg, point_no=None):
         if point_no is None:
             point_no = self.mPointNo
         assert point_no is not None
@@ -108,7 +107,7 @@ class Evaluation(SolutionBaseInfo):
         assert self.mPointNo is not None
         self.mPointNo = None
 
-    def runNextPoint(self, p_no = None, label = None):
+    def runNextPoint(self, p_no=None, label=None):
         if p_no is None:
             self.mPointNo += 1
         else:
@@ -153,14 +152,14 @@ class Evaluation(SolutionBaseInfo):
             return None
         if unit_h.getUnitKind() != cond_data[0]:
             self.pointError("Field type conflict: %s/%s"
-                % (cond_data[0], unit_h.getUnitKind()))
+                            % (cond_data[0], unit_h.getUnitKind()))
             return None
         if unit_h.getUnitKind() == "func":
             extra_params = (set(cond_data[4].keys())
-                - set(unit_h.getParameters()))
+                            - set(unit_h.getParameters()))
             if len(extra_params) > 0:
                 self.pointError("Function extra parameters: "
-                    + ' '.join(sorted(extra_params)))
+                                + ' '.join(sorted(extra_params)))
                 return None
             err_msg = unit_h.validateArgs(cond_data[4])
             if err_msg:
@@ -172,3 +171,4 @@ class Evaluation(SolutionBaseInfo):
         visitor = EnumUnitConditionVisitor(unit_name)
         self.visitAll(visitor)
         return visitor.makeResult()
+

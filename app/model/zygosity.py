@@ -21,7 +21,9 @@ import logging
 
 from app.config.a_config import AnfisaConfig
 from app.eval.condition import ZYG_BOUNDS_VAL
-#===============================================
+# ===============================================
+
+
 class ZygositySupport:
     sMaxGeneCompCount = AnfisaConfig.configOption("max.gene.comp.count")
 
@@ -73,15 +75,15 @@ class ZygositySupport:
     def hasXLinked(self):
         return self.mFamilyInfo.groupHasMales()
 
-    #=========================
+    # =========================
     # Scenarios
-    #=========================
+    # =========================
     def conditionScenario(self, scenario):
         seq = []
         for zyg_bounds, seq_samples in scenario.items():
             for idx in self.mFamilyInfo.names2idxset(seq_samples):
                 seq.append(self.mEvalSpace.makeNumericCond(
-                    self.mEvalSpace.getZygUnit(idx), zyg_bounds = zyg_bounds))
+                    self.mEvalSpace.getZygUnit(idx), zyg_bounds=zyg_bounds))
         return self.mEvalSpace.joinAnd(seq)
 
     def conditionZHomoRecess(self, problem_group):
@@ -111,11 +113,11 @@ class ZygositySupport:
             "0": problem_group,
             "1-2": self.mFamilyInfo.complement(problem_group)})
 
-    #=========================
+    # =========================
     # Compound requests
-    #=========================
+    # =========================
     def makeCompoundRequest(self, approx_mode,
-            actual_condition, c_rq, unit_name):
+                            actual_condition, c_rq, unit_name):
         set_genes = None
         cond_scenario_seq = []
         for min_count, scenario in c_rq:
@@ -142,13 +144,13 @@ class ZygositySupport:
             return self.mEvalSpace.getCondNone()
         if len(set_genes) >= self.sMaxGeneCompCount:
             return None
-        logging.info("Eval compound genes for %s: %d" %
-            (unit_name,  len(set_genes)))
+        logging.info(
+            f"Eval compound genes for {unit_name}/{approx_mode}:"
+            + str(len(set_genes)))
 
         return self.mEvalSpace.joinAnd([
-            actual_condition,
-            self.mEvalSpace.makeEnumCond(
-                self.mGeneUnits[approx_mode], sorted(set_genes)),
+            actual_condition, self.mGeneUnits[approx_mode].buildCondition(
+                [None, None, "OR", sorted(set_genes)], None),
             self.mEvalSpace.joinOr(cond_scenario_seq)])
 
     @classmethod
@@ -160,9 +162,9 @@ class ZygositySupport:
                         return False
         return True
 
-    #=========================
+    # =========================
     # Validation
-    #=========================
+    # =========================
     @classmethod
     def validateScenario(cls,  scenario):
         if not isinstance(scenario, dict):
@@ -170,12 +172,12 @@ class ZygositySupport:
         bad_keys = set(scenario.keys()) - set(ZYG_BOUNDS_VAL.keys())
         if len(bad_keys) > 0:
             return ("Improper keys in scenario: "
-                + " ".join(sorted(bad_keys)))
+                    + " ".join(sorted(bad_keys)))
         for val in scenario.values():
             if (not isinstance(val, list)
                     or not all(isinstance(v,  str) for v in val)):
                 return ("Values in scenario dict "
-                    + "should be lists of identifiers")
+                        + "should be lists of identifiers")
         return None
 
     @classmethod
@@ -190,3 +192,4 @@ class ZygositySupport:
             if err_msg:
                 return err_msg + (" in record no %d" % (idx + 1))
         return None
+

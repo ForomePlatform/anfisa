@@ -1,4 +1,4 @@
-from pytest_bdd import scenarios, when, parsers
+from pytest_bdd import scenarios, when, parsers, then
 import pytest
 
 from lib.api.job_status_api import JobStatus
@@ -13,3 +13,8 @@ def job_status_response(task):
     parameters = Constructor.job_status_payload(task=task)
     pytest.response = JobStatus.post(parameters)
     print(pytest.response)
+
+
+@then(parsers.cfparse('response body should be "{body:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(body):
+    assert pytest.response.text == f'{body}'
