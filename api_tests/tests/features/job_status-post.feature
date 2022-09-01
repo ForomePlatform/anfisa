@@ -1,9 +1,20 @@
 @api
 Feature: Check job_status [POST] request
 
+    @progress
+    Scenario: Positive job_status request
+      Given "xl Dataset with > 9000 records" is uploaded and processed by the system
+      And unique "ws" Dataset name is generated
+      And ws dataset is derived from it
+      When job_status request is send
+      Then response status should be "200" OK
+      And response body schema should be valid by "job_status_schema"
+
+
+
     @negative
     Scenario Outline: Send job_status request without parameter
-      When job_status request with <task> is send
+      When job_status request with "<task>" is send
       Then response status should be "<code>" <status>
       And response body should contain "<error>"
 
@@ -16,7 +27,7 @@ Feature: Check job_status [POST] request
 
    @negative
     Scenario Outline: Send job_status request with incorrect parameter
-      When job_status request with <task> is send
+      When job_status request with "<task>" is send
       Then response status should be "200" OK
       And response body should be "null"
 
