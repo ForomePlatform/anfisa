@@ -136,3 +136,42 @@ func_property_status = {
     },
     "required": ["name", "kind", "vgroup", "classes"]
 }
+
+solution_entry_schema = {
+  "type": "object",
+  "required": ["name", "standard", "eval-status"],
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "standard": {
+      "type": "boolean"
+    },
+    "upd-time": {
+       "anyOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+    },
+    "upd-from": {
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "null"
+            }
+        ]
+    },
+    "rubric": {
+      "type": "string"
+    },
+    "eval-status": {
+      "type": "string"
+    }
+  }
+}

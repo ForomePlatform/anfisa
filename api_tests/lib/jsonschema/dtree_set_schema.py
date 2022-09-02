@@ -4,7 +4,20 @@ This module contains DtreeSet jsonschema
 
 dtree_set_schema = {
     "type": "object",
-    "required": [],
+    "required": [
+        "kind",
+        "total-counts",
+        "point-counts",
+        "code",
+        "points",
+        "cond-atoms",
+        "labels",
+        "eval-status",
+        "hash",
+        "dtree-list",
+        "dtree-sol-version",
+        "rq-id"
+    ],
     "properties": {
         "kind": {
             "type": "string"
@@ -27,6 +40,9 @@ dtree_set_schema = {
                     "type": "null"
                 }
             ]
+        },
+        "code": {
+            "type": "string"
         },
         "dtree-list": {
             "type": "array"
@@ -52,9 +68,6 @@ dtree_set_schema = {
                 "type": "string"
             }
         },
-        "code": {
-            "type": "string"
-        },
         "error": {
             "type": "string"
         },
@@ -77,31 +90,35 @@ dtree_set_schema = {
 }
 
 dtree_point_descriptor = {
-    "kind": {
-        "type": "string"
-    },
-    "level": {
-        "type": "number",
-        "minimum": 0,
-        "maximum": 1
-    },
-    "decision": {
-        "anyOf": [
-            {
-                "type": "boolean"
-            },
-            {
-                "type": "null"
-            }
-        ]
-    },
-    "code-frag": {
-        "type": "string"
-    },
-    "actions": {
-        "type": "array",
-        "items": {
+    "type": "object",
+    "required": ["kind", "level", "decision", "code-frag", "actions"],
+    "properties": {
+        "kind": {
             "type": "string"
+        },
+        "level": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+        },
+        "decision": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "null"
+                }
+            ]
+        },
+        "code-frag": {
+            "type": "string"
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
         }
     }
 }
