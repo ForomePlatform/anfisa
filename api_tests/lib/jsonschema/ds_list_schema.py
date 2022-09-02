@@ -2,7 +2,7 @@
 This module contains DsList jsonschema
 """
 
-ds2ws_schema = {
+ds_list_schema = {
     "type": "object",
     "properties": {
         "task_id": {
