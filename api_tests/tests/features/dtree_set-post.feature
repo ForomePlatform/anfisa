@@ -1,0 +1,6 @@
+
+
+
+
+
+  Solution entry descriptor schema
