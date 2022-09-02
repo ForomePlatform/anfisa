@@ -30,7 +30,8 @@ def ds_list_response(ds):
     pytest.response = DsList.post(parameters)
 
 
-@then(parsers.cfparse('job_status should be "Done"', extra_types=EXTRA_STRING_TYPES),target_fixture='job_status_response')
+@then(parsers.cfparse('job_status should be "Done"', extra_types=EXTRA_STRING_TYPES),
+      target_fixture='job_status_response')
 def job_status_response():
     task_id = pytest.response.json()['task_id']
     response = ''

@@ -8,11 +8,12 @@ Feature: Check dtree_check [POST] request
         Then response status should be "200" OK
         And response body schema should be valid by "dtree_check_schema"
         And response body "code" should be equal "<code>"
+        And error property is not present in response
 
         Examples:
-        | ds         | code                                                     |
-        | xl Dataset | return True                                              |
-        | xl Dataset | if anything in {something}:\n\treturn True\nreturn False |
+        | ds         | code                   |
+        | xl Dataset | return True            |
+        | xl Dataset | generated complex code |
 
     @negative
     Scenario Outline: Submit incorrect Python code
