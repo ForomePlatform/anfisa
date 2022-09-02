@@ -95,8 +95,8 @@ Ensure that the following packages are installed on your system:
   * curl
   * zip
   * unzip
-  * Docker v19.03.0 or higher
-  * Docker Compose v2.0.0 or higher
+  * Docker v20 or higher
+  * Docker Compose v2.2.0 or higher
 
 Click on the below appropriate tab to install the required packages on Ubuntu or Mac OS.
 
