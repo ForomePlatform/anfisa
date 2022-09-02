@@ -108,6 +108,8 @@ def dataset(dataset_type):
             return xl_dataset()
         case 'xl Dataset with > 9000 records':
             return xl_dataset(9000)
+        case 'xl Dataset with > 150 records':
+            return xl_dataset(150)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
         case other:
