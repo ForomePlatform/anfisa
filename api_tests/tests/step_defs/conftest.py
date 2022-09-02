@@ -1,5 +1,4 @@
 import json
-import __main__
 import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
@@ -149,6 +148,8 @@ def assert_json_schema(schema):
 
 @then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_response_code(key, value):
+    if value[:9] == 'generated':
+        value = Generator.test_data(value[10:])
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
 

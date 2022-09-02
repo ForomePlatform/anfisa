@@ -29,11 +29,18 @@ class Generator:
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
 
     @staticmethod
-    def code(code_type):
-        if code_type == 'valid':
-            return 'return False'
-        elif code_type == 'invalid':
-            return Generator.space_separated_string()
+    def code(code, prop1='Callers', prop2='GATK_HOMOZYGOUS'):
+        match code:
+            case 'valid':
+                return 'return False'
+            case 'invalid':
+                return Generator.space_separated_string()
+            case 'complex':
+                return '''if %(prop1)s in {%(prop2)s}:
+    return True
+return False''' % {'prop1': prop1, 'prop2': prop2}
+            case _:
+                return code
 
     @staticmethod
     def test_data(test_data_type):
@@ -63,3 +70,5 @@ class Generator:
                 return Generator.random_numeral_string(10)
             case 'symbols only string':
                 return Generator.symbols_only_string()
+            case 'complex code':
+                return Generator.code('complex')
