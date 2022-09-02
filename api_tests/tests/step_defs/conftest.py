@@ -184,11 +184,6 @@ def assert_stat_list_schemas(property_name):
 @then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    print('__main__',__main__)
-
-    #if __main__.__file__[-11:] != '__main__.py':
-        #path = f'../test-data/{dataset}/{request_name}.json'
-    #else:
     path = f'tests/test-data/{dataset}/{request_name}.json'
     with open(path, encoding="utf8") as f:
         test_data_json = json.load(f)
