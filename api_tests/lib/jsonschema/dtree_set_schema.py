@@ -75,3 +75,33 @@ dtree_set_schema = {
         }
     }
 }
+
+dtree_point_descriptor = {
+    "kind": {
+        "type": "string"
+    },
+    "level": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+    },
+    "decision": {
+        "anyOf": [
+            {
+                "type": "boolean"
+            },
+            {
+                "type": "null"
+            }
+        ]
+    },
+    "code-frag": {
+        "type": "string"
+    },
+    "actions": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        }
+    }
+}
