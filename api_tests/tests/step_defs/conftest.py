@@ -110,7 +110,9 @@ def dataset(dataset_type):
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
-        case other:
+        case 'ws Dataset with <test> in the name':
+            return derive_ws(xl_dataset())
+        case _:
             return xl_dataset()
 
 
