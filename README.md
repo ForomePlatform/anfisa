@@ -2,15 +2,16 @@
 
 <!-- toc -->
 
-- [Overview](#overview)
-- [Online Development Documentation](#online-development-documentation)
-- [Public Demo](#public-demo)
-- [Installation](#installation)
-  * [Select branch or release:](#select-branch-or-release)
-  * [Installation instructions](#installation-instructions)
-    + [Installing via Docker](#installing-via-docker)
-    + [Installing without Docker](#installing-without-docker)
-  * [Ingesting demo whole genome](#ingesting-demo-whole-genome)
+- [Anfisa](#anfisa)
+  - [Overview](#overview)
+  - [Online Development Documentation](#online-development-documentation)
+  - [Public Demo](#public-demo)
+  - [Installation](#installation)
+    - [Select branch or release:](#select-branch-or-release)
+    - [Installation instructions](#installation-instructions)
+      - [Installing via Docker](#installing-via-docker)
+      - [Installing without Docker](#installing-without-docker)
+    - [Ingesting demo whole genome](#ingesting-demo-whole-genome)
 
 <!-- tocstop -->
 
@@ -94,8 +95,8 @@ Ensure that the following packages are installed on your system:
   * curl
   * zip
   * unzip
-  * Docker v19.03.0 or higher
-  * Docker Compose v2.0.0 or higher
+  * Docker v20 or higher
+  * Docker Compose v2.2.0 or higher
 
 Click on the below appropriate tab to install the required packages on Ubuntu or Mac OS.
 
@@ -291,6 +292,7 @@ The port is configurable in your configuration file. Configuration file is locat
 Here are sample commands that can be executed:
 
     curl -L -O https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_nist-v4.2.tar.gz
-    docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa7:/anfisa/a-setup/data/examples/
-    docker exec -it anfisa7 sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
-    docker exec -it anfisa7 sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'
+
+    docker cp pgp3140_wgs_nist-v4.2.tar.gz anfisa-backend:/anfisa/a-setup/data/examples/
+    docker exec -it anfisa-backend sh -c 'cd /anfisa/a-setup/data/examples && tar -zxvf pgp3140_wgs_nist-v4.2.tar.gz'
+    docker exec -it anfisa-backend sh -c 'PYTHONPATH=/anfisa/anfisa/ python3 -u -m app.storage -c /anfisa/anfisa.json -m create --reportlines 1000 -f -k xl -i /anfisa/a-setup/data/examples/pgp3140_wgs_nist-v4.2/pgp3140_wgs_nist-v4.2.cfg XL_PGP3140_NIST_V42'

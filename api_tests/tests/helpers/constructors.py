@@ -27,6 +27,14 @@ class Constructor:
                 }
 
     @staticmethod
+    def adm_reload_ds(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'ds': kwargs['ds'] if 'ds' in kwargs else ''}
+
+
+    @staticmethod
     def arm_drop_ds_payload(**kwargs):
         for key, value in kwargs.items():
             if value[:9] == 'generated':
