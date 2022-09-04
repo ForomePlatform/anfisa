@@ -22,6 +22,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
 
 
 def pytest_bdd_after_scenario():
+    time.sleep(7)
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
