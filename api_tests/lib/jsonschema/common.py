@@ -137,7 +137,7 @@ func_property_status = {
     "required": ["name", "kind", "vgroup", "classes"]
 }
 
-solution_entry_schema = {
+solution_entry = {
   "type": "object",
   "required": ["name", "standard", "eval-status"],
   "properties": {

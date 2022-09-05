@@ -45,10 +45,9 @@ class Constructor:
                 kwargs[key] = Generator.test_data(value[10:])
         return {
             'ds': kwargs['ds'] if 'ds' in kwargs else '',
-            'ws': kwargs['ws'] if 'ws' in kwargs else '',
-            'code': kwargs['code'] if 'code' in kwargs else '',
-            'conditions': kwargs['conditions'] if 'conditions' in kwargs else '',
-            'filter': kwargs['filter'] if 'filter' in kwargs else '',
+            'tm': kwargs['tm'] if 'tm' in kwargs else '',
             'dtree': kwargs['dtree'] if 'dtree' in kwargs else '',
-            'force': kwargs['force'] if 'force' in kwargs else ''
+            'code': kwargs['code'] if 'code' in kwargs else '',
+            'actsym': kwargs['actsym'] if 'actsym' in kwargs else '',
+            'instr': kwargs['instr'] if 'instr' in kwargs else ''
         }
