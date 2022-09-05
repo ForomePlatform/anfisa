@@ -1,0 +1,136 @@
+{
+    "kind": "xl",
+    "total-counts": [
+        9248118
+    ],
+    "point-counts": [
+        null,
+        null,
+        null
+    ],
+    "dtree-list": [
+        {
+            "name": "@BGM Research",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@BGM Red Button",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@Trio Candidates",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@All Rare Variants",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@Hearing Loss, v.5",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "PhenotypeBased",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@ACMG59 Variants",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "ACMGSecondary",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@Damaging_Predictions",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "@Possibly_Damaging_Predictions",
+            "standard": true,
+            "upd-time": null,
+            "upd-from": null,
+            "rubric": "GeneticFirst",
+            "eval-status": "ok"
+        },
+        {
+            "name": "testtest6342",
+            "standard": false,
+            "upd-time": "2022-08-24T11:21:39.169463",
+            "upd-from": "xl_PGP3140_wgs_NIST-3_3_2",
+            "rubric": null,
+            "eval-status": "ok"
+        }
+    ],
+    "dtree-sol-version": 0,
+    "rq-id": "7/2022-09-05 08:05:41.389338",
+    "points": [
+        {
+            "kind": "If",
+            "level": 0,
+            "decision": null,
+            "code-frag": "<span class=\"k\">if</span> <span class=\"n\">Callers<span class=\"dtree-atom-mark\" id=\"__atom_0-0\" ></span></span> <span class=\"ow\">in</span> <span class=\"p\">{</span><span class=\"n\">GATK_HOMOZYGOUS</span><span class=\"p\">}:</span>",
+            "actions": [
+                "duplicate",
+                "negate",
+                "delete"
+            ]
+        },
+        {
+            "kind": "Return",
+            "level": 1,
+            "decision": true,
+            "code-frag": "    <span class=\"k\">return</span> <span class=\"kc\">True</span>",
+            "actions": [
+                "bool-false",
+                "bool-true"
+            ]
+        },
+        {
+            "kind": "Return",
+            "level": 0,
+            "decision": false,
+            "code-frag": "<span class=\"k\">return</span> <span class=\"kc\">False</span>",
+            "actions": [
+                "bool-false",
+                "bool-true"
+            ]
+        }
+    ],
+    "cond-atoms": {
+        "0": [
+            [
+                "enum",
+                "Callers",
+                "OR",
+                [
+                    "GATK_HOMOZYGOUS"
+                ]
+            ]
+        ]
+    },
+    "labels": [],
+    "code": "if Callers in {GATK_HOMOZYGOUS}:\n    return True\nreturn False",
+    "hash": "fdd3cc58f8d42db2eccb20096fe520e7",
+    "eval-status": "ok"
+}
