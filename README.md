@@ -169,9 +169,15 @@ Example:
 4. [Optionally] Adjust setting for your webserver to serve Anfisa.
 For nginx add the following location block:
 
-``` 
-location /anfisa {
-	proxy_pass http://localhost:3000;
+```nginx
+server {
+    listen 80;
+    server_name dnsname.for.reversproxy.com;
+    client_max_body_size 100M;
+
+    location / {
+       proxy_pass http://localhost:3000; 
+    }
 }
 ```
 
