@@ -4,6 +4,7 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
+from lib.api.dtree_set_api import DtreeSet
 from lib.jsonschema.dtree_set_schema import dtree_set_schema
 from lib.jsonschema.common import enum_property_status, numeric_property_status, func_property_status
 from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
@@ -25,8 +26,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
     print(f'Step failed: {step}')
 
 
-def pytest_bdd_after_scenario():
-    time.sleep(7)
+def delete_auto_ws_datasets():
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
@@ -41,6 +41,41 @@ def pytest_bdd_after_scenario():
     for wsDataset in ws_to_drop:
         AdmDropDs.post({'ds': wsDataset})
         time.sleep(1)
+
+
+def list_of_xl_datasets():
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    xl_dataset_list = []
+    for value in ds_dict.values():
+        try:
+            if value['kind'] == 'xl':
+                xl_dataset_list.append(value['name'])
+        except ValueError:
+            continue
+        except TypeError:
+            continue
+    return xl_dataset_list
+
+
+def delete_auto_dtrees():
+    xl_dataset_list = list_of_xl_datasets()
+    print('xl_dataset_list', xl_dataset_list)
+    for xl_ds in xl_dataset_list:
+        response = DtreeSet.post({"ds": xl_ds, "code": 'return False'})
+        dtree_list = response.json()["dtree-list"]
+        for dtree in dtree_list:
+            if testDataPrefix + 'dtree' in dtree["name"]:
+                instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
+                print('instr', instr)
+                DtreeSet.post({"ds": xl_ds, "code": 'return False', "instr": instr})
+
+
+
+def pytest_bdd_after_scenario():
+    time.sleep(7)
+    delete_auto_ws_datasets()
+    delete_auto_dtrees()
 
 
 # Fixtures
@@ -72,9 +107,14 @@ def xl_dataset(required_records=0):
     response_dir_info = DirInfo.get()
     ds_dict = json.loads(response_dir_info.content)["ds-dict"]
     for value in ds_dict.values():
-        if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
-            _dataset = value['name']
-            break
+        try:
+            if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
+                _dataset = value['name']
+                break
+        except ValueError:
+            continue
+        except TypeError:
+            continue
     assert _dataset != ''
     return _dataset
 
@@ -196,7 +236,7 @@ def assert_test_data(request_name, dataset):
     print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
     print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
 
-    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths={"root['rq-id']"})
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths=["root['rq-id']", "root['dtree-list']"])
     print('ddiff', ddiff)
 
     assert ddiff == {}
