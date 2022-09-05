@@ -31,13 +31,14 @@ def ds2ws_response(ds, code, dataset):
     return pytest.response
 
 
-@when(parsers.cfparse('dtree_set request with "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
+@when(parsers.cfparse('dtree_set request with correct "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
 def ds2ws_response(ds, code, instr, dataset, unique_dtree_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
     instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_dtree_name, 'instr': instr}
     parameters = Constructor.dtree_set_payload(ds=ds, code=code, instr=instr)
+    print('parameters',parameters)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
 
