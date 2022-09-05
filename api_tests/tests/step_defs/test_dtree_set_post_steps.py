@@ -1,8 +1,12 @@
 import pytest
-from pytest_bdd import scenarios, parsers, when
+from jsonschema.validators import validate
+from pytest_bdd import scenarios, parsers, when, then
 
 from lib.api.dtree_set_api import DtreeSet
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
+from lib.jsonschema.common import solution_entry
+from lib.jsonschema.dtree_set_schema import dtree_point_descriptor, condition_discriptor_enum, \
+    condition_descriptor_numeric, condition_discriptor_func
 from tests.helpers.constructors import Constructor
 
 scenarios('../features/dtree_set-post.feature')
@@ -16,3 +20,27 @@ def ds2ws_response(ds, code, dataset):
     parameters = Constructor.dtree_set_payload(ds=ds, code=code)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
+
+
+@then(parsers.cfparse('response body "{property_name:String}" "{schema_name:String}" schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(property_name, schema_name):
+    for element in pytest.response.json()[property_name]:
+        match schema_name:
+            case 'dtree_point_descriptor':
+                validate(element, dtree_point_descriptor)
+            case 'solution_entry':
+                validate(element, solution_entry)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" condition_descriptor schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(property_name):
+    for item in pytest.response.json()[property_name].items():
+        match item[0]:
+            case 'enum':
+                validate(item, condition_discriptor_enum)
+            case 'numeric':
+                validate(item, condition_descriptor_numeric)
+            case 'func':
+                validate(item, condition_discriptor_func)

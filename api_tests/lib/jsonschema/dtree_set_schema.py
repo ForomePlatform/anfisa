@@ -37,8 +37,11 @@ dtree_set_schema = {
                     }
                 },
                 {
-                    "type": "null"
-                }
+                    "type": "array",
+                    "items": {
+                        "type": "null"
+                    }
+                },
             ]
         },
         "code": {
@@ -120,5 +123,66 @@ dtree_point_descriptor = {
                 "type": "string"
             }
         }
+    }
+}
+
+condition_descriptor_numeric = {
+    "type": "array",
+    "items": {
+        "anyOf": [
+            {
+                "type": "array"
+            },
+            {
+                "type": "string"
+            }
+        ],
+        "items": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "number"
+                }
+            ]
+        }
+    }
+}
+
+condition_discriptor_enum = {
+    "type": "array",
+    "items": {
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        ]
+    }
+}
+
+condition_discriptor_func = {
+    "type": "array",
+    "items": {
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "object"
+            },
+            {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            }
+        ]
     }
 }

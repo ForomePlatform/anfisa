@@ -168,7 +168,14 @@ solution_entry = {
         ]
     },
     "rubric": {
-      "type": "string"
+        "anyOf": [
+            {
+                "type": "string"
+            },
+            {
+                "type": "null"
+            }
+        ]
     },
     "eval-status": {
       "type": "string"
