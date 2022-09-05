@@ -43,39 +43,22 @@ def delete_auto_ws_datasets():
         time.sleep(1)
 
 
-def list_of_xl_datasets():
-    response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
-    xl_dataset_list = []
-    for value in ds_dict.values():
-        try:
-            if value['kind'] == 'xl':
-                xl_dataset_list.append(value['name'])
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-    return xl_dataset_list
-
-
 def delete_auto_dtrees():
-    xl_dataset_list = list_of_xl_datasets()
-    print('xl_dataset_list', xl_dataset_list)
-    for xl_ds in xl_dataset_list:
-        response = DtreeSet.post({"ds": xl_ds, "code": 'return False'})
+    response_dir_info = DirInfo.get()
+    dataset_list = json.loads(response_dir_info.content)["ds-list"]
+    for ds in dataset_list:
+        response = DtreeSet.post({"ds": ds, "code": 'return False'})
         dtree_list = response.json()["dtree-list"]
         for dtree in dtree_list:
             if testDataPrefix + 'dtree' in dtree["name"]:
                 instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
-                print('instr', instr)
-                DtreeSet.post({"ds": xl_ds, "code": 'return False', "instr": instr})
-
+                DtreeSet.post({"ds": ds, "code": 'return False', "instr": instr})
 
 
 def pytest_bdd_after_scenario():
     time.sleep(7)
     delete_auto_ws_datasets()
-    delete_auto_dtrees()
+    # delete_auto_dtrees()
 
 
 # Fixtures
@@ -124,9 +107,14 @@ def find_dataset(dataset):
     response_dir_info = DirInfo.get()
     ds_dict = json.loads(response_dir_info.content)["ds-dict"]
     for value in ds_dict.values():
-        if value['name'] == dataset:
-            found = True
-            break
+        try:
+            if value['name'] == dataset:
+                found = True
+                break
+        except ValueError:
+            continue
+        except TypeError:
+            continue
     assert found
 
 
@@ -193,6 +181,8 @@ def assert_json_schema(schema):
 def assert_response_code(key, value):
     if value[:9] == 'generated':
         value = Generator.test_data(value[10:])
+    elif value[:4] == 'gen.':
+        value = Generator.test_data(value[5:])
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
 
@@ -236,7 +226,8 @@ def assert_test_data(request_name, dataset):
     print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
     print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
 
-    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths=["root['rq-id']", "root['dtree-list']"])
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
+                     exclude_paths=["root['rq-id']", "root['dtree-list']"])
     print('ddiff', ddiff)
 
     assert ddiff == {}

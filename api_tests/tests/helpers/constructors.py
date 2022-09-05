@@ -41,8 +41,8 @@ class Constructor:
     @staticmethod
     def dtree_set_payload(**kwargs):
         for key, value in kwargs.items():
-            if value[:9] == 'generated':
-                kwargs[key] = Generator.test_data(value[10:])
+            if value[:4] == 'gen.':
+                kwargs[key] = Generator.test_data(value[5:])
         return {
             'ds': kwargs['ds'] if 'ds' in kwargs else '',
             'tm': kwargs['tm'] if 'tm' in kwargs else '',

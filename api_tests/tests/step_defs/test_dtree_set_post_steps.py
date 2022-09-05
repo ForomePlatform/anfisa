@@ -1,6 +1,6 @@
 import pytest
 from jsonschema.validators import validate
-from pytest_bdd import scenarios, parsers, when, then
+from pytest_bdd import scenarios, parsers, when, then, given
 
 from lib.api.dtree_set_api import DtreeSet
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
@@ -8,16 +8,36 @@ from lib.jsonschema.common import solution_entry
 from lib.jsonschema.dtree_set_schema import dtree_point_descriptor, condition_discriptor_enum, \
     condition_descriptor_numeric, condition_discriptor_func
 from tests.helpers.constructors import Constructor
+from tests.helpers.generators import Generator
 
 scenarios('../features/dtree_set-post.feature')
 
 
-@when(parsers.cfparse('dtree_set request with correct "{ds:String}" and "{code:String}" parameters is send',
+@given(parsers.cfparse('unique Dtree name is generated',
+                      ), target_fixture='unique_dtree_name')
+def unique_dtree_name():
+    unique_dtree_name = Generator.unique_name('dtree')
+    assert unique_dtree_name != ''
+    return unique_dtree_name
+
+
+@when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
 def ds2ws_response(ds, code, dataset):
-    if ds == 'xl Dataset':
+    if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
     parameters = Constructor.dtree_set_payload(ds=ds, code=code)
+    pytest.response = DtreeSet.post(parameters)
+    return pytest.response
+
+
+@when(parsers.cfparse('dtree_set request with "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
+                      extra_types=EXTRA_STRING_TYPES))
+def ds2ws_response(ds, code, instr, dataset, unique_dtree_name):
+    if ds == 'xl Dataset' or ds == 'ws Dataset':
+        ds = dataset
+    instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_dtree_name, 'instr': instr}
+    parameters = Constructor.dtree_set_payload(ds=ds, code=code, instr=instr)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
 
@@ -44,3 +64,13 @@ def assert_stat_list_schemas(property_name):
                 validate(item, condition_descriptor_numeric)
             case 'func':
                 validate(item, condition_discriptor_func)
+
+
+@then(parsers.cfparse('created dtree should be present in dtree list for selected dataset'))
+def assert_dtree_presence(dataset, unique_dtree_name):
+    parameters = Constructor.dtree_set_payload(ds=dataset, code=Generator.code('valid'))
+    response_json = DtreeSet.post(parameters).json()
+    dtree_list = []
+    for dtree in response_json["dtree-list"]:
+        dtree_list.append(dtree["name"])
+    assert unique_dtree_name in dtree_list
