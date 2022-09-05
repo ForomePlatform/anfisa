@@ -38,6 +38,7 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
+        time.sleep(1)
         AdmDropDs.post({'ds': wsDataset})
         time.sleep(1)
 
@@ -123,6 +124,8 @@ def dataset(dataset_identifier):
         case 'xl Dataset with > 9000 records':
             return xl_dataset(9000)
         case 'ws Dataset':
+            return derive_ws(xl_dataset())
+        case 'ws Dataset with <test> in the name':
             return derive_ws(xl_dataset())
         case _:
             find_dataset(dataset_identifier)
