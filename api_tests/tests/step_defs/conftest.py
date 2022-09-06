@@ -5,6 +5,7 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.ds_list_schema import ds_list_schema
 from lib.jsonschema.job_status_schema import job_status_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
@@ -44,8 +45,8 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
-        time.sleep(1)
         AdmDropDs.post({'ds': wsDataset})
+        time.sleep(1)
 
 
 # Fixtures
@@ -154,6 +155,8 @@ def dataset(dataset_identifier):
             return xl_dataset()
         case 'xl Dataset with > 9000 records':
             return xl_dataset(9000)
+        case 'xl Dataset with > 150 records':
+            return xl_dataset(150)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
         case 'xl Dataset with filter':
@@ -185,6 +188,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds2ws_schema)
         case 'job_status_schema':
             validate(pytest.response.json(), job_status_schema)
+        case 'ds_list_schema':
+            validate(pytest.response.json(), ds_list_schema)
         case 'dtree_stat_schema':
             validate(pytest.response.json(), dtree_stat_schema)
         case 'ds_stat_schema':
