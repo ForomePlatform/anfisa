@@ -79,3 +79,5 @@ return False''' % {'prop1': prop1, 'prop2': prop2}
                 return Generator.symbols_only_string()
             case 'complex code':
                 return Generator.code('complex')
+            case 'valid code':
+                return Generator.code('valid')

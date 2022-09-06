@@ -12,6 +12,8 @@ from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
     func_property_status_schema, solution_entry_schema
+from lib.api.dtree_set_api import DtreeSet
+from lib.jsonschema.dtree_set_schema import dtree_set_schema
 from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
@@ -32,7 +34,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
     print(f'Step failed: {step}')
 
 
-def pytest_bdd_after_scenario():
+def delete_auto_ws_datasets():
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
@@ -45,8 +47,26 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
-        time.sleep(1)
         AdmDropDs.post({'ds': wsDataset})
+        time.sleep(1)
+
+
+def delete_auto_dtrees():
+    response_dir_info = DirInfo.get()
+    dataset_list = json.loads(response_dir_info.content)["ds-list"]
+    for ds in dataset_list:
+        response = DtreeSet.post({"ds": ds, "code": 'return False'})
+        dtree_list = response.json()["dtree-list"]
+        for dtree in dtree_list:
+            if testDataPrefix + 'dtree' in dtree["name"]:
+                instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
+                DtreeSet.post({"ds": ds, "code": 'return False', "instr": instr})
+
+
+def pytest_bdd_after_scenario():
+    #time.sleep(7)
+    delete_auto_ws_datasets()
+    # delete_auto_dtrees()
 
 
 # Fixtures
@@ -84,6 +104,8 @@ def xl_dataset(required_records=0):
                 xl_list.append(value['name'])
         except TypeError:
             continue
+        except ValueError:
+            continue
     print('xl_list', xl_list)
     _dataset = random.choice(xl_list)
     print('selected xl dataset', _dataset)
@@ -96,9 +118,14 @@ def find_dataset(dataset):
     response_dir_info = DirInfo.get()
     ds_dict = json.loads(response_dir_info.content)["ds-dict"]
     for value in ds_dict.values():
-        if value['name'] == dataset:
-            found = True
-            break
+        try:
+            if value['name'] == dataset:
+                found = True
+                break
+        except ValueError:
+            continue
+        except TypeError:
+            continue
     assert found
 
 
@@ -192,6 +219,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds_list_schema)
         case 'dtree_stat_schema':
             validate(pytest.response.json(), dtree_stat_schema)
+        case 'dtree_set_schema':
+            validate(pytest.response.json(), dtree_set_schema)
         case 'ds_stat_schema':
             validate(pytest.response.json(), ds_stat_schema)
         case 'ws_tags_schema':
@@ -207,6 +236,8 @@ def assert_json_schema(schema):
 def assert_response_code(key, value):
     if value[:9] == 'generated':
         value = Generator.test_data(value[10:])
+    elif value[:4] == 'gen.':
+        value = Generator.test_data(value[5:])
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
 
@@ -268,7 +299,7 @@ def assert_test_data(request_name, dataset):
 
     ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
                      exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
-                                    "root['op-tags']", "root['rec-tags']"})
+                                    "root['op-tags']", "root['rec-tags']", "root['dtree-list']"})
     print('ddiff', ddiff)
 
     assert ddiff == {}

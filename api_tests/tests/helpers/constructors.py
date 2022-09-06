@@ -32,13 +32,13 @@ class Constructor:
                 kwargs[key] = Generator.test_data(value[10:])
         return {'task': kwargs['task'] if 'task' in kwargs else '',
                 }
+
     @staticmethod
     def adm_reload_ds(**kwargs):
         for key, value in kwargs.items():
             if value[:9] == 'generated':
                 kwargs[key] = Generator.test_data(value[10:])
         return {'ds': kwargs['ds'] if 'ds' in kwargs else ''}
-
 
     @staticmethod
     def arm_drop_ds_payload(**kwargs):
@@ -123,3 +123,17 @@ class Constructor:
                 'ctx': kwargs['ctx'] if 'ctx' in kwargs else '',
                 'units': kwargs['units'] if 'units' in kwargs else ''
                 }
+
+    @staticmethod
+    def dtree_set_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:4] == 'gen.':
+                kwargs[key] = Generator.test_data(value[5:])
+        return {
+            'ds': kwargs['ds'] if 'ds' in kwargs else '',
+            'tm': kwargs['tm'] if 'tm' in kwargs else '',
+            'dtree': kwargs['dtree'] if 'dtree' in kwargs else '',
+            'code': kwargs['code'] if 'code' in kwargs else '',
+            'actsym': kwargs['actsym'] if 'actsym' in kwargs else '',
+            'instr': kwargs['instr'] if 'instr' in kwargs else ''
+        }
