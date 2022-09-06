@@ -7,6 +7,7 @@ from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
 from lib.jsonschema.ds_list_schema import ds_list_schema
 from lib.jsonschema.job_status_schema import job_status_schema
+from lib.jsonschema.stat_units_schema import stat_units_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
@@ -32,7 +33,6 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
 
 
 def pytest_bdd_after_scenario():
-    #time.sleep(7)
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
@@ -45,8 +45,8 @@ def pytest_bdd_after_scenario():
         except TypeError:
             continue
     for wsDataset in ws_to_drop:
-        AdmDropDs.post({'ds': wsDataset})
         time.sleep(1)
+        AdmDropDs.post({'ds': wsDataset})
 
 
 # Fixtures
@@ -196,6 +196,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ds_stat_schema)
         case 'ws_tags_schema':
             validate(pytest.response.json(), ws_tags_schema)
+        case 'stat_units_schema':
+            validate(pytest.response.json(), stat_units_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
             raise NameError('Schema is not found')
@@ -257,8 +259,7 @@ def determine_equality_of_properties(property_name_1, property_name_2):
 @then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    path = f'tests/test-data/{dataset}/{request_name}.json'
-    with open(path, encoding="utf8") as f:
+    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
 
