@@ -5,6 +5,7 @@ from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.job_status_schema import job_status_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
@@ -30,7 +31,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
 
 
 def pytest_bdd_after_scenario():
-    time.sleep(7)
+    #time.sleep(7)
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
@@ -45,7 +46,6 @@ def pytest_bdd_after_scenario():
     for wsDataset in ws_to_drop:
         time.sleep(1)
         AdmDropDs.post({'ds': wsDataset})
-        time.sleep(1)
 
 
 # Fixtures
@@ -183,6 +183,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_check_schema)
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
+        case 'job_status_schema':
+            validate(pytest.response.json(), job_status_schema)
         case 'dtree_stat_schema':
             validate(pytest.response.json(), dtree_stat_schema)
         case 'ds_stat_schema':
