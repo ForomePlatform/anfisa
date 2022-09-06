@@ -16,3 +16,4 @@ def dtree_stat(dataset, ds, code, no, tm):
     parameters = Constructor.dtree_stat_payload(ds=ds_name, code=code, no=no, tm=tm)
     pytest.response = DtreeStat.post(parameters)
     return pytest.response
+
