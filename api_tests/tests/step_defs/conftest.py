@@ -4,6 +4,8 @@ import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.common import enum_property_status, numeric_property_status, func_property_status
+from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
@@ -14,6 +16,7 @@ from tests.helpers.constructors import Constructor
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
+from deepdiff import DeepDiff
 
 
 # Hooks
@@ -37,6 +40,7 @@ def pytest_bdd_after_scenario():
     for wsDataset in ws_to_drop:
         time.sleep(1)
         AdmDropDs.post({'ds': wsDataset})
+        time.sleep(1)
 
 
 # Fixtures
@@ -75,6 +79,17 @@ def xl_dataset(required_records=0):
     return _dataset
 
 
+def find_dataset(dataset):
+    found = False
+    response_dir_info = DirInfo.get()
+    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    for value in ds_dict.values():
+        if value['name'] == dataset:
+            found = True
+            break
+    assert found
+
+
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
@@ -100,10 +115,10 @@ def derive_ws(dataset):
 
 
 @given(
-    parsers.cfparse('"{dataset_type:String}" is uploaded and processed by the system',
+    parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
-def dataset(dataset_type):
-    match dataset_type:
+def dataset(dataset_identifier):
+    match dataset_identifier:
         case 'xl Dataset':
             return xl_dataset()
         case 'xl Dataset with > 9000 records':
@@ -113,7 +128,8 @@ def dataset(dataset_type):
         case 'ws Dataset with <test> in the name':
             return derive_ws(xl_dataset())
         case _:
-            return xl_dataset()
+            find_dataset(dataset_identifier)
+            return dataset_identifier
 
 
 @then(parsers.cfparse('response body schema should be valid by "{schema:String}"',
@@ -127,12 +143,16 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_check_schema)
         case 'ds2ws_schema':
             validate(pytest.response.json(), ds2ws_schema)
+        case 'dtree_stat_schema':
+            validate(pytest.response.json(), dtree_stat_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
 
 
 @then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_response_code(key, value):
+    if value[:9] == 'generated':
+        value = Generator.test_data(value[10:])
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
 
@@ -150,6 +170,36 @@ def dsinfo_response_error(body):
 @then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
 def assert_status(status, text):
     assert pytest.response.status_code == status
+
+
+@then(parsers.cfparse('response body "{property_name:String}" property_status schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(property_name):
+    for element in pytest.response.json()[property_name]:
+        match element['kind']:
+            case 'enum':
+                validate(element, enum_property_status)
+            case 'numeric':
+                validate(element, numeric_property_status)
+            case 'func':
+                validate(element, func_property_status)
+
+
+@then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_test_data(request_name, dataset):
+    path = f'tests/test-data/{dataset}/{request_name}.json'
+    with open(path, encoding="utf8") as f:
+        test_data_json = json.load(f)
+    response_json = json.loads(pytest.response.text)
+
+    print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
+    print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
+
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths={"root['rq-id']"})
+    print('ddiff', ddiff)
+
+    assert ddiff == {}
 
 
 @given(parsers.cfparse('unique "{dataset_type:String}" Dataset name is generated',
