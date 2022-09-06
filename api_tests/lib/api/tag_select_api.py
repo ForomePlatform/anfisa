@@ -1,16 +1,16 @@
 """
-This module contains AdmUpdate requests
+This module contains TagSelect requests
 """
 
 from lib.api.api_client import ApiRequest
-apiRequest = ApiRequest(method='POST', path='adm_update')
+apiRequest = ApiRequest(method='GET', path='tag_select')
 
 
-class AdmUpdate:
+class TagSelect:
 
     @staticmethod
-    def post():
-        response = apiRequest.request()
+    def get(parameters):
+        response = apiRequest.request(parameters)
         print('responseCode:' + str(response.status_code))
         print('responseBody:', response.text)
         return response

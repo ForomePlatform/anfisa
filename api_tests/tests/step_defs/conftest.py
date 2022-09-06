@@ -3,7 +3,9 @@ import pytest
 import time
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
+from lib.api.ds_stat_api import DsStat
 from lib.api.dsinfo_api import Dsinfo
+from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
     func_property_status_schema, solution_entry_schema
@@ -19,6 +21,7 @@ from lib.jsonschema.ds2ws_schema import ds2ws_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
 from deepdiff import DeepDiff
+import random
 
 
 # Hooks
@@ -72,11 +75,17 @@ def number_of_ds_records(ds_name):
 def xl_dataset(required_records=0):
     _dataset = ''
     response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
+    ds_dict = json.loads(response_dir_info.text)["ds-dict"]
+    xl_list = []
     for value in ds_dict.values():
-        if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
-            _dataset = value['name']
-            break
+        try:
+            if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
+                xl_list.append(value['name'])
+        except TypeError:
+            continue
+    print('xl_list', xl_list)
+    _dataset = random.choice(xl_list)
+    print('selected xl dataset', _dataset)
     assert _dataset != ''
     return _dataset
 
@@ -92,10 +101,29 @@ def find_dataset(dataset):
     assert found
 
 
+def prepare_filter(dataset):
+    parameters = Constructor.ds_stat_payload(ds=dataset)
+    response = DsStat.post(parameters)
+    stat_list = json.loads(response.text)["stat-list"]
+    result = ''
+    for element in stat_list:
+        try:
+            if element['kind'] == 'enum':
+                for variant in element["variants"]:
+                    if (variant[1] < 300) and (variant[1] > 3):
+                        result = '''if %(stat_name)s in {%(variant_name)s}:
+    return True
+return False''' % {'stat_name': element["name"], 'variant_name': variant[0]}
+                        return result
+        except TypeError:
+            continue
+    return result
+
+
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
-    for i in range(10):
+    for i in range(60):
         if (job_status_response.json()[1] == 'Done') or (job_status_response.json()[0] is None):
             break
         else:
@@ -105,10 +133,11 @@ def ds_creation_status(task_id):
     return job_status_response.json()[1]
 
 
-def derive_ws(dataset):
+def derive_ws(dataset, code='return False'):
+    print('derive_ws', dataset, code)
     # Deriving ws dataset
     unique_ws_name = Generator.unique_name('ws')
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code='return False')
+    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code=code)
     response = Ds2ws.post(parameters)
 
     # Checking creation
@@ -127,6 +156,15 @@ def dataset(dataset_identifier):
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
+        case 'xl Dataset with filter':
+            xl_ds = ''
+            for i in range(10):
+                xl_ds = xl_dataset()
+                prep_filter = prepare_filter(xl_ds)
+                if prep_filter != '':
+                    break
+            assert xl_ds != ''
+            return xl_ds
         case 'ws Dataset with <test> in the name':
             return derive_ws(xl_dataset())
         case _:
@@ -149,8 +187,11 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), dtree_stat_schema)
         case 'ds_stat_schema':
             validate(pytest.response.json(), ds_stat_schema)
+        case 'ws_tags_schema':
+            validate(pytest.response.json(), ws_tags_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
+            raise NameError('Schema is not found')
 
 
 @then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
@@ -217,7 +258,9 @@ def assert_test_data(request_name, dataset):
     print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
     print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
 
-    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True, exclude_paths={"root['rq-id']"})
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
+                     exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
+                                    "root['op-tags']", "root['rec-tags']"})
     print('ddiff', ddiff)
 
     assert ddiff == {}
@@ -240,3 +283,10 @@ def assert_job_status(status):
                        extra_types=EXTRA_STRING_TYPES), target_fixture='code')
 def code(code_type):
     return Generator.code(code_type)
+
+
+@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
+       target_fixture='ws_less_9000_rec')
+def ws_less_9000_rec(dataset):
+    code = prepare_filter(dataset)
+    return derive_ws(dataset, code)

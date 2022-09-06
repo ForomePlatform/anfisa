@@ -29,6 +29,13 @@ class Generator:
         return (int(time()) % 4 * '!') + (int(time()) % 6 * '@')
 
     @staticmethod
+    def tag(tag, tag_type):
+        if tag_type == 'generated true Tag' or tag_type == 'generated false Tag':
+            return '{"%(tag)s": true}' % {'tag': tag}
+        elif tag_type == 'generated _note Tag':
+            return '{"_note": "%(text)s"}' % {'text': tag}
+
+    @staticmethod
     def code(code, prop1='Callers', prop2='GATK_HOMOZYGOUS'):
         match code:
             case 'valid':
