@@ -1,6 +1,7 @@
 import json
 import random
 import time
+import requests
 
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
@@ -34,12 +35,15 @@ def delete_auto_dtrees():
     response_dir_info = DirInfo.get()
     dataset_list = json.loads(response_dir_info.content)["ds-list"]
     for ds in dataset_list:
-        response = DtreeSet.post({"ds": ds, "code": 'return False'})
-        dtree_list = response.json()["dtree-list"]
-        for dtree in dtree_list:
-            if testDataPrefix + 'dtree' in dtree["name"]:
-                instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
-                DtreeSet.post({"ds": ds, "code": 'return False', "instr": instr})
+        try:
+            response = DtreeSet.post({"ds": ds, "code": 'return False'})
+            dtree_list = response.json()["dtree-list"]
+            for dtree in dtree_list:
+                if testDataPrefix + 'dtree' in dtree["name"]:
+                    instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
+                    DtreeSet.post({"ds": ds, "code": 'return False', "instr": instr})
+        except requests.exceptions.JSONDecodeError:
+            continue
 
 
 def successful_string_to_bool(successful):

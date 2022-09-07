@@ -6,6 +6,7 @@ Feature: Remove test-data after automation test run
     @specific
     @positive
     @negative
+    @error
     Scenario: Delete test-data created automatically
       Then "ws datasets" should be deleted
       And "dtrees" should be deleted

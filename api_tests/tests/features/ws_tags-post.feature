@@ -34,7 +34,7 @@ Feature: Check ws_tags [POST] request
     Scenario Outline: Create a new tag for any ws dataset
     Given "xl Dataset with code filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
-    And unique_name is generated
+    And unique "tag" is generated
     When ws_tags request with correct "<ws>", "<rec>" and "<tag_type>" is send
     Then response status should be "200" OK
     And response body "op-tags" tag list should include "<tag_type>"
