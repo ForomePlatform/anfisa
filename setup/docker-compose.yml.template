@@ -19,7 +19,7 @@ services:
     <<: *common_parameters
     image: forome.azurecr.io/anfisa-react-client:latest
     ports:
-      - "3000:80"
+      - "3000:8080"
     env_file:
       - setup/.env.frontend
     restart: always
