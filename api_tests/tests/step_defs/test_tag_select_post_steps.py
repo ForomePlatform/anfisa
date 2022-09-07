@@ -24,8 +24,8 @@ def another_derived_ws(dataset):
 
 @given(parsers.cfparse('"{tag_type:String}" is created for "{rec:String}" record of ws dataset',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='tag_creation')
-def tag_creation(tag_type, rec, ws_less_9000_rec, unique_tag):
-    tag_object = Generator.tag(unique_tag, tag_type)
+def tag_creation(tag_type, rec, ws_less_9000_rec, unique_name):
+    tag_object = Generator.tag(unique_name, tag_type)
     parameters = Constructor.ws_tags_payload(ds=ws_less_9000_rec, rec=rec, tags=tag_object)
     return WsTags.post(parameters)
 

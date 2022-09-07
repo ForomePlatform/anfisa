@@ -1,5 +1,5 @@
 """
-This module contains DtreeCheck jsonschema
+This module contains DtreeCheck schemas
 """
 
 dtree_check_schema = {

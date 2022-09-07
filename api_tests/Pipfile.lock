@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "a2f90b4724bc68374fa1ebe1c43b9fe334458a7556a5140eb07045d3265ef5ab"
+            "sha256": "b46f2a888a1e9313c37bb1e81a5b7578a213a3ed090154d3e1a2e40cfe5f927b"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -54,6 +54,13 @@
             ],
             "markers": "sys_platform == 'win32'",
             "version": "==0.4.5"
+        },
+        "csvvalidator": {
+            "hashes": [
+                "sha256:f1f222993589f9d8f8d83088d0bf80475462e5fa848baf920d0c03c03690c37e"
+            ],
+            "index": "pypi",
+            "version": "==1.2"
         },
         "deepdiff": {
             "hashes": [

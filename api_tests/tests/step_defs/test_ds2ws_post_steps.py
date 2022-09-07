@@ -15,16 +15,16 @@ scenarios('../features/ds2ws-post.feature')
 
 @when(parsers.cfparse('ds2ws request with correct "ds" and "ws" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
-def ds2ws_response(dataset, unique_ds_name):
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ds_name)
+def ds2ws_response(dataset, unique_name):
+    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_name)
     pytest.response = Ds2ws.post(parameters)
     return pytest.response
 
 
 @when(parsers.cfparse('ds2ws request with correct "ds", "code" and "ws" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
-def ds2ws_response(dataset, code, unique_ds_name):
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ds_name, code=code)
+def ds2ws_response(dataset, code, unique_name):
+    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_name, code=code)
     pytest.response = Ds2ws.post(parameters)
     return pytest.response
 
@@ -47,17 +47,17 @@ def ds2ws_response(dataset, ds, ws):
 
 
 @then(parsers.cfparse('derived dataset can be found in the dirinfo response'))
-def assert_code_presence(unique_ds_name):
+def assert_code_presence(unique_name):
     time.sleep(1)
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
     print('DirInfo response', response.text)
-    assert unique_ds_name in ds_dict
+    assert unique_name in ds_dict
 
 
 @then(parsers.cfparse('"code" is present in dsinfo response for derived dataset'))
-def assert_job_status(unique_ds_name, code):
+def assert_job_status(unique_name, code):
     time.sleep(1)
-    response = Dsinfo.get({'ds': unique_ds_name})
+    response = Dsinfo.get({'ds': unique_name})
     print("DsInfo response", response.text)
     assert response.json()['receipts'][0]['dtree-code'] == code

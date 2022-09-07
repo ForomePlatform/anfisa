@@ -2,7 +2,7 @@ import time
 
 from pytest_bdd import scenarios, then, parsers
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
-from tests.step_defs.conftest import delete_auto_ws_datasets, delete_auto_dtrees
+from tests.helpers.functions import delete_auto_ws_datasets, delete_auto_dtrees
 
 scenarios('../features/аfter_all_hook.feature')
 

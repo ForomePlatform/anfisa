@@ -6,7 +6,7 @@ Feature: Check job_status [POST] request
     @positive
     Scenario: Positive job_status request
       Given "xl Dataset with > 9000 records" is uploaded and processed by the system
-      And unique "ws" Dataset name is generated
+      And unique "ws Dataset name" is generated
       And ws dataset is derived from it
       When job_status request is send
       Then response status should be "200" OK

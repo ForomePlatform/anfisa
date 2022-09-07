@@ -13,14 +13,6 @@ from tests.helpers.generators import Generator
 scenarios('../features/dtree_set-post.feature')
 
 
-@given(parsers.cfparse('unique Dtree name is generated',
-                      ), target_fixture='unique_dtree_name')
-def unique_dtree_name():
-    unique_dtree_name = Generator.unique_name('dtree')
-    assert unique_dtree_name != ''
-    return unique_dtree_name
-
-
 @when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
 def ds2ws_response(ds, code, dataset):
@@ -31,14 +23,15 @@ def ds2ws_response(ds, code, dataset):
     return pytest.response
 
 
-@when(parsers.cfparse('dtree_set request with correct "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
-                      extra_types=EXTRA_STRING_TYPES))
-def ds2ws_response(ds, code, instr, dataset, unique_dtree_name):
+@when(parsers.cfparse(
+    'dtree_set request with correct "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
+    extra_types=EXTRA_STRING_TYPES))
+def ds2ws_response(ds, code, instr, dataset, unique_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
-    instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_dtree_name, 'instr': instr}
+    instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_name, 'instr': instr}
     parameters = Constructor.dtree_set_payload(ds=ds, code=code, instr=instr)
-    print('parameters',parameters)
+    print('parameters', parameters)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
 
@@ -68,10 +61,10 @@ def assert_stat_list_schemas(property_name):
 
 
 @then(parsers.cfparse('created dtree should be present in dtree list for selected dataset'))
-def assert_dtree_presence(dataset, unique_dtree_name):
+def assert_dtree_presence(dataset, unique_name):
     parameters = Constructor.dtree_set_payload(ds=dataset, code=Generator.code('valid'))
     response_json = DtreeSet.post(parameters).json()
     dtree_list = []
     for dtree in response_json["dtree-list"]:
         dtree_list.append(dtree["name"])
-    assert unique_dtree_name in dtree_list
+    assert unique_name in dtree_list

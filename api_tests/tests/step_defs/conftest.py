@@ -1,68 +1,32 @@
 import json
 import pytest
-import time
-from lib.api.adm_drop_ds_api import AdmDropDs
-from lib.api.dirinfo_api import DirInfo
-from lib.api.ds_stat_api import DsStat
-from lib.api.dsinfo_api import Dsinfo
-from lib.jsonschema.ds_list_schema import ds_list_schema
-from lib.jsonschema.job_status_schema import job_status_schema
-from lib.jsonschema.stat_units_schema import stat_units_schema
-from lib.jsonschema.ws_list_schema import ws_list_schema
-from lib.jsonschema.tag_select_schema import tag_select_schema
-from lib.jsonschema.ws_tags_schema import ws_tags_schema
-from lib.jsonschema.ds_stat_schema import ds_stat_schema
-from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
-    func_property_status_schema, solution_entry_schema
-from lib.api.dtree_set_api import DtreeSet
-from lib.jsonschema.dtree_set_schema import dtree_set_schema
-from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
-from tests.helpers.generators import testDataPrefix, Generator
-from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
+from csvvalidator import CSVValidator
+from deepdiff import DeepDiff
 from jsonschema import validate
 from pytest_bdd import parsers, given, then
-from lib.api.ds2ws_api import Ds2ws
-from lib.api.job_status_api import JobStatus
-from tests.helpers.constructors import Constructor
+from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
+from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
+    func_property_status_schema, solution_entry_schema
+from lib.jsonschema.csv_export_schema import csv_export_schema
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
+from lib.jsonschema.ds_list_schema import ds_list_schema
+from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
-from deepdiff import DeepDiff
-import random
+from lib.jsonschema.dtree_set_schema import dtree_set_schema
+from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
+from lib.jsonschema.job_status_schema import job_status_schema
+from lib.jsonschema.stat_units_schema import stat_units_schema
+from lib.jsonschema.tag_select_schema import tag_select_schema
+from lib.jsonschema.ws_list_schema import ws_list_schema
+from lib.jsonschema.ws_tags_schema import ws_tags_schema
+from tests.helpers.functions import xl_dataset, derive_ws, prepare_filter, find_dataset, ds_creation_status
+from tests.helpers.generators import Generator
 
 
 # Hooks
 def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func_args, exception):
     print(f'Step failed: {step}')
-
-
-def delete_auto_ws_datasets():
-    ws_to_drop = []
-    response = DirInfo.get()
-    ds_dict = json.loads(response.content)["ds-dict"]
-    for value in ds_dict.values():
-        try:
-            if testDataPrefix + 'ws' in value['name']:
-                ws_to_drop.append(value['name'])
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-    for wsDataset in ws_to_drop:
-        AdmDropDs.post({'ds': wsDataset})
-        time.sleep(1)
-
-
-def delete_auto_dtrees():
-    response_dir_info = DirInfo.get()
-    dataset_list = json.loads(response_dir_info.content)["ds-list"]
-    for ds in dataset_list:
-        response = DtreeSet.post({"ds": ds, "code": 'return False'})
-        dtree_list = response.json()["dtree-list"]
-        for dtree in dtree_list:
-            if testDataPrefix + 'dtree' in dtree["name"]:
-                instr = '["DTREE","DELETE","%(dtree)s"]' % {'dtree': dtree["name"]}
-                DtreeSet.post({"ds": ds, "code": 'return False', "instr": instr})
 
 
 def pytest_bdd_after_scenario():
@@ -81,98 +45,6 @@ def i_do_something(fixture_function):
     print('i_do_something')
 
 
-def successful_string_to_bool(successful):
-    if successful == "successful":
-        return True
-    else:
-        return False
-
-
-def number_of_ds_records(ds_name):
-    response = Dsinfo.get({'ds': ds_name})
-    return response.json()['total']
-
-
-def xl_dataset(required_records=0):
-    _dataset = ''
-    response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.text)["ds-dict"]
-    xl_list = []
-    for value in ds_dict.values():
-        try:
-            if (value['kind'] == 'xl') and (number_of_ds_records(value['name']) > required_records):
-                xl_list.append(value['name'])
-        except TypeError:
-            continue
-        except ValueError:
-            continue
-    print('xl_list', xl_list)
-    _dataset = random.choice(xl_list)
-    print('selected xl dataset', _dataset)
-    assert _dataset != ''
-    return _dataset
-
-
-def find_dataset(dataset):
-    found = False
-    response_dir_info = DirInfo.get()
-    ds_dict = json.loads(response_dir_info.content)["ds-dict"]
-    for value in ds_dict.values():
-        try:
-            if value['name'] == dataset:
-                found = True
-                break
-        except ValueError:
-            continue
-        except TypeError:
-            continue
-    assert found
-
-
-def prepare_filter(dataset):
-    parameters = Constructor.ds_stat_payload(ds=dataset)
-    response = DsStat.post(parameters)
-    stat_list = json.loads(response.text)["stat-list"]
-    result = ''
-    for element in stat_list:
-        try:
-            if element['kind'] == 'enum':
-                for variant in element["variants"]:
-                    if (variant[1] < 3000) and (variant[1] > 3):
-                        result = '''if %(stat_name)s in {%(variant_name)s}:
-    return True
-return False''' % {'stat_name': element["name"], 'variant_name': variant[0]}
-                        return result
-        except TypeError:
-            continue
-    return result
-
-
-def ds_creation_status(task_id):
-    parameters = {'task': task_id}
-    job_status_response = JobStatus.post(parameters)
-    for i in range(60):
-        if (job_status_response.json()[1] == 'Done') or (job_status_response.json()[0] is None):
-            break
-        else:
-            time.sleep(1)
-            job_status_response = JobStatus.post(parameters)
-            continue
-    return job_status_response.json()[1]
-
-
-def derive_ws(dataset, code='return False'):
-    print('derive_ws', dataset, code)
-    # Deriving ws dataset
-    unique_ws_name = Generator.unique_name('ws')
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_ws_name, code=code)
-    response = Ds2ws.post(parameters)
-
-    # Checking creation
-    assert ds_creation_status(response.json()['task_id']) == 'Done'
-    return unique_ws_name
-
-
 @given(
     parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
@@ -184,7 +56,7 @@ def dataset(dataset_identifier):
             return xl_dataset(9000)
         case 'xl Dataset with > 150 records':
             return xl_dataset(150)
-        case 'ws Dataset':
+        case 'ws Dataset' | 'ws Dataset with <test> in the name':
             return derive_ws(xl_dataset())
         case 'xl Dataset with code filter':
             xl_ds = ''
@@ -196,11 +68,138 @@ def dataset(dataset_identifier):
                 xl_ds = ''
             assert xl_ds != ''
             return xl_ds
-        case 'ws Dataset with <test> in the name':
-            return derive_ws(xl_dataset())
         case _:
             find_dataset(dataset_identifier)
             return dataset_identifier
+
+
+@given(parsers.cfparse('unique "{name_type:String}" is generated',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_name')
+def unique_name(name_type):
+    _unique_name = ''
+    match name_type:
+        case 'xl Dataset name':
+            _unique_name = Generator.unique_name('xl')
+        case 'ws Dataset name':
+            _unique_name = Generator.unique_name('ws')
+        case 'tag':
+            _unique_name = Generator.unique_name('tag')
+        case 'Dtree name':
+            _unique_name = Generator.unique_name('dtree')
+    assert _unique_name != ''
+    return _unique_name
+
+
+@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
+def code(code_type):
+    return Generator.code(code_type)
+
+
+@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
+def code(code_type):
+    return Generator.code(code_type)
+
+
+@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
+       target_fixture='ws_less_9000_rec')
+def ws_less_9000_rec(dataset):
+    code = prepare_filter(dataset)
+    return derive_ws(dataset, code)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_status(property_name, unique_name, tag_type):
+    if tag_type == 'generated true Tag':
+        assert unique_name in pytest.response.json()[property_name]
+    elif tag_type == 'generated _note Tag':
+        assert '_note' in pytest.response.json()[property_name]
+
+
+@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
+def assert_job_status(status):
+    assert status in ds_creation_status(pytest.response.json()['task_id'])
+
+
+@then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_test_data(request_name, dataset):
+    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
+        test_data_json = json.load(f)
+    response_json = json.loads(pytest.response.text)
+
+    print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
+    print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
+
+    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
+                     exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
+                                    "root['op-tags']", "root['rec-tags']", "root['dtree-list']", "root['ds']"})
+    print('ddiff', ddiff)
+
+    assert ddiff == {}
+
+
+@then(parsers.cfparse('response body "{property_name_1:String}" value should be equal "{property_name_2:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def determine_equality_of_properties(property_name_1, property_name_2):
+    response_json = json.loads(pytest.response.text)
+    # print('response_json[property_name_1]', response_json[property_name_1])
+    # print('response_json[property_name_2]', response_json[property_name_2])
+    assert response_json[property_name_1] == response_json[property_name_2]
+
+
+@then(parsers.cfparse('response body "{property_name:String}" "{schema_name:String}" schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_nested_schemas(property_name, schema_name):
+    match schema_name:
+        case 'solution_entry':
+            for element in pytest.response.json()[property_name]:
+                print('element', element)
+                validate(element, solution_entry_schema)
+        case 'descriptor':
+            for element in pytest.response.json()[property_name]:
+                print('element', element)
+                validate(element, ws_list_schema)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" property_status schemas should be valid',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_stat_list_schemas(property_name):
+    for element in pytest.response.json()[property_name]:
+        match element['kind']:
+            case 'enum':
+                validate(element, enum_property_status_schema)
+            case 'numeric':
+                validate(element, numeric_property_status_schema)
+            case 'func':
+                validate(element, func_property_status_schema)
+
+
+@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(error_message):
+    assert error_message in pytest.response.text
+
+
+@then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
+def dsinfo_response_error(body):
+    assert pytest.response.text == f'"{body}"'
+
+
+@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text):
+    assert pytest.response.status_code == status
+
+
+@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
+def assert_response_code(key, value):
+    if value[:9] == 'generated':
+        value = Generator.test_data(value[10:])
+    elif value[:4] == 'gen.':
+        value = Generator.test_data(value[5:])
+    response_json = json.loads(pytest.response.text)
+    assert response_json[key] == value
 
 
 @then(parsers.cfparse('response body schema should be valid by "{schema:String}"',
@@ -232,128 +231,12 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ws_list_schema)
         case 'tag_select_schema':
             validate(pytest.response.json(), tag_select_schema)
+        case 'csv_export_schema':
+            validator = CSVValidator(csv_export_schema)
+            validator.add_value_check('chromosome', str)
+            validator.add_value_check('variant', str)
+            problems = validator.validate(pytest.response.text)
+            assert len(problems) == 0
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
             raise NameError('Schema is not found')
-
-
-@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
-def assert_response_code(key, value):
-    if value[:9] == 'generated':
-        value = Generator.test_data(value[10:])
-    elif value[:4] == 'gen.':
-        value = Generator.test_data(value[5:])
-    response_json = json.loads(pytest.response.text)
-    assert response_json[key] == value
-
-
-@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_error(error_message):
-    assert error_message in pytest.response.text
-
-
-@then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_error(body):
-    assert pytest.response.text == f'"{body}"'
-
-
-@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
-def assert_status(status, text):
-    assert pytest.response.status_code == status
-
-
-@then(parsers.cfparse('response body "{property_name:String}" property_status schemas should be valid',
-                      extra_types=EXTRA_STRING_TYPES))
-def assert_stat_list_schemas(property_name):
-    for element in pytest.response.json()[property_name]:
-        match element['kind']:
-            case 'enum':
-                validate(element, enum_property_status_schema)
-            case 'numeric':
-                validate(element, numeric_property_status_schema)
-            case 'func':
-                validate(element, func_property_status_schema)
-
-
-@then(parsers.cfparse('response body "{property_name:String}" "{schema_name:String}" schemas should be valid',
-                      extra_types=EXTRA_STRING_TYPES))
-def assert_nested_schemas(property_name, schema_name):
-    match schema_name:
-        case 'solution_entry':
-            for element in pytest.response.json()[property_name]:
-                print('element', element)
-                validate(element, solution_entry_schema)
-        case 'descriptor':
-            for element in pytest.response.json()[property_name]:
-                print('element', element)
-                validate(element, ws_list_schema)
-
-
-@then(parsers.cfparse('response body "{property_name_1:String}" value should be equal "{property_name_2:String}"',
-                      extra_types=EXTRA_STRING_TYPES))
-def determine_equality_of_properties(property_name_1, property_name_2):
-    response_json = json.loads(pytest.response.text)
-    #print('response_json[property_name_1]', response_json[property_name_1])
-    #print('response_json[property_name_2]', response_json[property_name_2])
-    assert response_json[property_name_1] == response_json[property_name_2]
-
-
-@then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
-                      extra_types=EXTRA_STRING_TYPES))
-def assert_test_data(request_name, dataset):
-    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
-        test_data_json = json.load(f)
-    response_json = json.loads(pytest.response.text)
-
-    print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
-    print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
-
-    ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
-                     exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",
-                                    "root['op-tags']", "root['rec-tags']", "root['dtree-list']", "root['ds']"})
-    print('ddiff', ddiff)
-
-    assert ddiff == {}
-
-
-@given(parsers.cfparse('unique "{dataset_type:String}" Dataset name is generated',
-                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_ds_name')
-def unique_ds_name(dataset_type):
-    _unique_ds_name = Generator.unique_name(dataset_type)
-    assert _unique_ds_name != ''
-    return _unique_ds_name
-
-
-@given(parsers.cfparse('unique tag is prepared',
-                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_tag')
-def unique_tag():
-    _unique_tag_name = Generator.unique_name('tag')
-    assert _unique_tag_name != ''
-    return _unique_tag_name
-
-
-@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
-def assert_job_status(status):
-    assert status in ds_creation_status(pytest.response.json()['task_id'])
-
-
-@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
-                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
-def code(code_type):
-    return Generator.code(code_type)
-
-
-@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
-       target_fixture='ws_less_9000_rec')
-def ws_less_9000_rec(dataset):
-    code = prepare_filter(dataset)
-    return derive_ws(dataset, code)
-
-
-@then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
-                      extra_types=EXTRA_STRING_TYPES))
-def assert_status(property_name, unique_tag, tag_type):
-    if tag_type == 'generated true Tag':
-        assert unique_tag in pytest.response.json()[property_name]
-    elif tag_type == 'generated _note Tag':
-        assert '_note' in pytest.response.json()[property_name]

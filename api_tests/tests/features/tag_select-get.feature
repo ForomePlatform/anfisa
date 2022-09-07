@@ -30,7 +30,7 @@ Feature: Check tag_select [GET] request
     Scenario Outline: Should return tag, created by another ws dataset
     Given "xl Dataset with code filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
-    And unique tag is prepared
+    And unique_name is generated
     And "<tag>" is created for "<rec>" record of ws dataset
     And another ws Dataset with < 9000 records is derived
     When tag_select request with second ws dataset as "ds" is send
