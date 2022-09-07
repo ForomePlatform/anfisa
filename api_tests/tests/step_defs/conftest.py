@@ -66,9 +66,7 @@ def delete_auto_dtrees():
 
 
 def pytest_bdd_after_scenario():
-    #time.sleep(7)
-    delete_auto_ws_datasets()
-    # delete_auto_dtrees()
+    pass
 
 
 # Fixtures

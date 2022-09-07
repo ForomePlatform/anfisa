@@ -1,6 +1,7 @@
 @api
 Feature: Check stat_units [POST] request
 
+    @any
     @positive
     Scenario: Return first attribute data, marked as incomplete by ds_stat for any dataset
     Given "xl Dataset" is uploaded and processed by the system
@@ -12,6 +13,7 @@ Feature: Check stat_units [POST] request
     And response body "rq-id" should match the one in request
 
 
+    @any
     @positive
     Scenario: Return first attribute data, marked as incomplete by ds_stat for any dataset
     Given "xl Dataset" is uploaded and processed by the system
@@ -22,7 +24,7 @@ Feature: Check stat_units [POST] request
     And response body "units" property_status schemas should be valid
     And response body "rq-id" should match the one in request
 
-
+    @any
     @negative
     Scenario Outline: Fail to return attribute data, marked as incomplete
     Given "xl Dataset" is uploaded and processed by the system

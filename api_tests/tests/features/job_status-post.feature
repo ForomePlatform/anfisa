@@ -1,6 +1,7 @@
 @api
 Feature: Check job_status [POST] request
 
+    @any
     @positive
     Scenario: Positive job_status request
       Given "xl Dataset with > 9000 records" is uploaded and processed by the system
@@ -11,7 +12,7 @@ Feature: Check job_status [POST] request
       And response body schema should be valid by "job_status_schema"
 
 
-
+    @any
     @negative
     Scenario Outline: Send job_status request without parameter
       When job_status request with "<task>" is send
@@ -24,8 +25,8 @@ Feature: Check job_status [POST] request
       | generated random literal string | invalid literal for int()       | 500  | Internal Error |
 
 
-
-   @negative
+    @any
+    @negative
     Scenario Outline: Send job_status request with incorrect parameter
       When job_status request with "<task>" is send
       Then response status should be "200" OK

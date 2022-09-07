@@ -1,6 +1,7 @@
 @api
 Feature: Check ds_list [POST] request
 
+    @any
     @positive
     Scenario: Return a list samples for any dataset
     Given "xl Dataset with > 150 records" is uploaded and processed by the system
@@ -10,7 +11,7 @@ Feature: Check ds_list [POST] request
     And job_status should be "Done"
     And job_status response body records schema should be valid
 
-
+    @any
     @positive
     Scenario Outline: Return a list of N samples for any dataset
     Given "xl Dataset with > 150 records" is uploaded and processed by the system
@@ -30,7 +31,7 @@ Feature: Check ds_list [POST] request
         | 150    | 150 |
         | 151    | 150 |
 
-
+    @any
     @negative
     Scenario Outline: Fail to return a list samples for any dataset
     When ds_list request with incorrect "<ds>" parameter is send

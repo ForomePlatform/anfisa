@@ -1,6 +1,7 @@
 @api
 Feature: Check ws_list [POST] request
 
+    @any
     @positive
     Scenario: Return current list of Dataset variants for any ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
@@ -11,6 +12,7 @@ Feature: Check ws_list [POST] request
     And response body "records" "descriptor" schemas should be valid
 
 
+    @specific
     @positive
     Scenario: Return current list of Dataset variants for specific ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -19,7 +21,7 @@ Feature: Check ws_list [POST] request
     Then response status should be "200" OK
     And response body json should match expected data for "ws_list" request
 
-
+    @any
     @negative
     Scenario Outline: Return current list of Dataset variants for any ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system

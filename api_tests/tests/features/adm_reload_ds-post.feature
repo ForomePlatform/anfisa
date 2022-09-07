@@ -1,6 +1,7 @@
 @api
 Feature: Check adm_reload_ds [POST] request
 
+    @any
     @positive
     Scenario Outline: Force reload xl dataset in memory
     Given "<dsType>" is uploaded and processed by the system
@@ -14,6 +15,7 @@ Feature: Check adm_reload_ds [POST] request
         | ws Dataset |
 
 
+    @any
     @negative
     Scenario Outline: adm_reload_ds with empty parameter
     When adm_reload_ds request with incorrect "<ds>" parameter is send

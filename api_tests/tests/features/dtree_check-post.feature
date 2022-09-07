@@ -1,6 +1,7 @@
 @api
 Feature: Check dtree_check [POST] request
 
+    @any
     @positive
     Scenario Outline: Submit correct Python code
         Given "xl Dataset" is uploaded and processed by the system
@@ -15,6 +16,8 @@ Feature: Check dtree_check [POST] request
         | xl Dataset | return True            |
         | xl Dataset | generated complex code |
 
+
+    @any
     @negative
     Scenario Outline: Submit incorrect Python code
         Given "xl Dataset" is uploaded and processed by the system
@@ -28,6 +31,8 @@ Feature: Check dtree_check [POST] request
         | xl Dataset | retur True    | Improper instruction          |
         | xl Dataset | True          | Instructon must be of if-type |
 
+
+    @any
     @negative
     Scenario Outline: Submit dtree_check request without a parameter
         Given "xl Dataset" is uploaded and processed by the system

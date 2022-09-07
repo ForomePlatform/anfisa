@@ -1,6 +1,7 @@
 @api
 Feature: Check adm_drop_ds [POST] request
 
+    @any
     @positive
     Scenario: Delete ws Dataset from the database
     Given "ws Dataset with <test> in the name" is uploaded and processed by the system
@@ -9,7 +10,7 @@ Feature: Check adm_drop_ds [POST] request
     And response body should be equal "Dropped" DatasetName
 
 
-
+    @any
     @negative
     Scenario Outline: Send adm_drop_ds with incorrect parameters
     When adm_drop_ds requests with incorrect "<ds>" parameter is send

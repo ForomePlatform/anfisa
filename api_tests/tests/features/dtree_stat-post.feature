@@ -1,6 +1,7 @@
 @api
 Feature: Check dtree_stat [POST] request
 
+    @any
     @positive
     Scenario Outline: Get attributes for any xl dataset's dtree by code
     Given "xl Dataset" is uploaded and processed by the system
@@ -14,7 +15,7 @@ Feature: Check dtree_stat [POST] request
     | ds         | code         | no | tm |
     | xl Dataset | return False | 0  | 0  |
 
-
+    @any
     @positive
     Scenario Outline: Get attributes for specific xl dataset's dtree by code
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -26,7 +27,7 @@ Feature: Check dtree_stat [POST] request
     | ds                        | code         | no | tm |
     | xl_PGP3140_wgs_NIST-3_3_2 | return False | 0  | 0  |
 
-
+    @any
     @negative
     Scenario Outline: Fail to get attributes for any xl dataset's dtree
     Given "xl Dataset" is uploaded and processed by the system

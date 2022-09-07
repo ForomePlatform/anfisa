@@ -1,6 +1,7 @@
 @api
 Feature: Check dtree_set [POST] request
 
+    @any
     @positive
     Scenario Outline: Set dtree for any dataset by code
     Given "<ds>" is uploaded and processed by the system
@@ -22,6 +23,7 @@ Feature: Check dtree_set [POST] request
     | ws Dataset | gen. complex code | ws   |
 
 
+    @specific
     @positive
     Scenario Outline: Set dtree for specific dataset by code
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -34,6 +36,7 @@ Feature: Check dtree_set [POST] request
     | xl Dataset | gen. complex code |
 
 
+    @any
     @positive
     Scenario Outline: Create dtree for any dataset
     Given "<ds>" is uploaded and processed by the system
@@ -48,7 +51,7 @@ Feature: Check dtree_set [POST] request
     | ws Dataset | gen. valid code | UPDATE |
 
 
-
+    @any
     @negative
     Scenario Outline: Create dtree for any xl dataset
     Given "xl Dataset" is uploaded and processed by the system

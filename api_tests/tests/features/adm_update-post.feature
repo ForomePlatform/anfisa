@@ -1,6 +1,7 @@
 @api
 Feature: Check adm_update [POST] request
 
+    @any
     @positive
     Scenario: Force update vault state
     When adm_update request is send

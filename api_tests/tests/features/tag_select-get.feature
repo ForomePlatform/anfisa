@@ -1,6 +1,7 @@
 @api
 Feature: Check tag_select [GET] request
 
+    @any
     @positive
     Scenario Outline: Should return tags of any ws dataset
     Given "ws Dataset" is uploaded and processed by the system
@@ -13,6 +14,7 @@ Feature: Check tag_select [GET] request
         | ws Dataset |
 
 
+    @specific
     @positive
     Scenario: Should return tags of specific ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -22,6 +24,7 @@ Feature: Check tag_select [GET] request
     And response body json should match expected data for "tag_select" request
 
 
+    @any
     @positive
     Scenario Outline: Should return tag, created by another ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
@@ -38,6 +41,7 @@ Feature: Check tag_select [GET] request
         | 0   | generated _note Tag |
 
 
+    @any
     @negative
     Scenario Outline: Should return tags of specific ws dataset
     Given "xl Dataset" is uploaded and processed by the system

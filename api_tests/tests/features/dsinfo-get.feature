@@ -1,6 +1,7 @@
 @api
 Feature: Check Dsinfo[GET] request
 
+  @any
   @positive
   Scenario Outline: Send Dsinfo request with parameters: "<parameters>" (successful)
     When I send get dsinfo request with parameters: "<parameters>" (successful)
@@ -13,6 +14,7 @@ Feature: Check Dsinfo[GET] request
       | { "ds": "1658095799" }              | 1658095799              |
 
 
+  @any
   @negative
   Scenario Outline: Send Dsinfo request with parameters: "<parameters>" (unsuccessful)
     When I send get dsinfo request with parameters: "<parameters>" (unsuccessful)

@@ -1,6 +1,7 @@
 @api
 Feature: Check DsStat [POST] request
 
+    @any
     @positive
     Scenario Outline: Return full information about any dataset (no filters applied)
     Given "<dataset>" is uploaded and processed by the system
@@ -17,7 +18,7 @@ Feature: Check DsStat [POST] request
         | ws Dataset |
         | xl Dataset |
 
-
+    @any
     @negative
     Scenario Outline: Fail to return information about any xl dataset
     Given "xl Dataset" is uploaded and processed by the system

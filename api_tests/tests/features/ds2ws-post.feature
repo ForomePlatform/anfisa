@@ -1,6 +1,7 @@
 @api
 Feature: Check ds2ws [POST] request
 
+    @any
     @positive
     Scenario: Derive ws dataset with code attribute
     Given "xl Dataset" is uploaded and processed by the system
@@ -14,6 +15,7 @@ Feature: Check ds2ws [POST] request
     And "code" is present in dsinfo response for derived dataset
 
 
+    @any
     @negative
     Scenario: Fail to derive ws dataset without attributes (>9000 records)
     Given "xl Dataset with > 9000 records" is uploaded and processed by the system
@@ -24,6 +26,7 @@ Feature: Check ds2ws [POST] request
     And job status should be "Size is incorrect"
 
 
+    @any
     @negative
     Scenario Outline: Fail to derive ws dataset with incorrect parameters
     Given "xl Dataset" is uploaded and processed by the system
@@ -41,6 +44,7 @@ Feature: Check ds2ws [POST] request
         | generated 251 literal string      | Failed, ask tech support         |
 
 
+    @any
     @negative
     Scenario Outline: Fail to derive ws dataset with missing parameters
     Given "xl Dataset" is uploaded and processed by the system

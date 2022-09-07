@@ -1,6 +1,7 @@
 @api
 Feature: Check ws_tags [POST] request
 
+    @any
     @positive
     Scenario Outline: Return a list of tags for any ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
@@ -14,6 +15,7 @@ Feature: Check ws_tags [POST] request
         | ws Dataset    | 0   |
 
 
+    @specific
     @positive
     Scenario Outline: Return a list of tags for specific ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -26,6 +28,7 @@ Feature: Check ws_tags [POST] request
         | ws Dataset    | 0   |
 
 
+    @any
     @positive
     Scenario Outline: Create a new tag for any ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
@@ -43,6 +46,7 @@ Feature: Check ws_tags [POST] request
         | ws Dataset | 0   | generated _note Tag |
 
 
+    @any
     @negative
     Scenario Outline: Fail to return a list of tags for any ws dataset
     Given "xl Dataset with filter" is uploaded and processed by the system
