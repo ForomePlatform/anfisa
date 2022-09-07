@@ -126,7 +126,9 @@ def assert_job_status(status):
 @then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    with open(f'tests/test-data/{dataset}/{request_name}.json', encoding="utf8") as f:
+    request_name = request_name.replace('"', '')
+    path = f'tests/test-data/{dataset}/{request_name}.json'
+    with open(path, encoding="utf8") as f:
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
 
