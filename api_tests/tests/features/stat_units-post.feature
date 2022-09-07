@@ -23,7 +23,7 @@ Feature: Check stat_units [POST] request
     And response body "rq-id" should match the one in request
 
 
-    @progress
+    @negative
     Scenario Outline: Fail to return attribute data, marked as incomplete
     Given "xl Dataset" is uploaded and processed by the system
     And dtree_stat response with incomplete units is returned

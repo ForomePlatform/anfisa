@@ -1,7 +1,7 @@
 @api
 Feature: Check job_status [POST] request
 
-    @progress
+    @positive
     Scenario: Positive job_status request
       Given "xl Dataset with > 9000 records" is uploaded and processed by the system
       And unique "ws" Dataset name is generated

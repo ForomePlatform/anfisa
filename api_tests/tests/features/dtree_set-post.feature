@@ -1,7 +1,7 @@
 @api
 Feature: Check dtree_set [POST] request
 
-    @progress
+    @positive
     Scenario Outline: Set dtree for any dataset by code
     Given "<ds>" is uploaded and processed by the system
     When dtree_set request with "<ds>" and "<code>" parameters is send
