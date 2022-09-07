@@ -1,6 +1,8 @@
 @api
+@csv_export
 Feature: Check csv_export [POST] request
 
+    @any
     @positive
     Scenario: Export any ws dataset as csv
       Given "ws Dataset" is uploaded and processed by the system
@@ -9,6 +11,7 @@ Feature: Check csv_export [POST] request
       And response body schema should be valid by "csv_export_schema"
 
 
+    @specific
     @positive
     Scenario: Export specific ws dataset as csv
       Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
@@ -18,6 +21,7 @@ Feature: Check csv_export [POST] request
       And response body should match expected data for "csv_export" request
 
 
+    @any
     @negative
     Scenario Outline: Fail to export xl dataset with more than 9000 records
       Given "xl Dataset" is uploaded and processed by the system

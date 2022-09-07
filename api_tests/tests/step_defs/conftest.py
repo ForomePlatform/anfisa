@@ -5,10 +5,10 @@ import time
 from csvvalidator import CSVValidator
 from lib.api.adm_drop_ds_api import AdmDropDs
 from lib.api.dirinfo_api import DirInfo
-from lib.schemas.csv_export_schema import csv_export_schema
+from lib.jsonschema.csv_export_schema import csv_export_schema
 from lib.api.dsinfo_api import Dsinfo
-from lib.schemas.common import enum_property_status, numeric_property_status, func_property_status
-from lib.schemas.dtree_stat_schema import dtree_stat_schema
+from lib.jsonschema.common import enum_property_status, numeric_property_status, func_property_status
+from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
 from tests.helpers.generators import testDataPrefix, Generator
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
 from jsonschema import validate
@@ -17,9 +17,9 @@ from lib.api.ds2ws_api import Ds2ws
 from lib.api.job_status_api import JobStatus
 from tests.helpers.constructors import Constructor
 from deepdiff import DeepDiff
-from lib.schemas.ds2ws_schema import ds2ws_schema
-from lib.schemas.dsinfo_schema import dsinfo_schema
-from lib.schemas.dtree_check_schema import dtree_check_schema
+from lib.jsonschema.ds2ws_schema import ds2ws_schema
+from lib.jsonschema.dsinfo_schema import dsinfo_schema
+from lib.jsonschema.dtree_check_schema import dtree_check_schema
 
 
 # Hooks
