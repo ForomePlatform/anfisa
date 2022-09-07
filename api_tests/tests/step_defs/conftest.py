@@ -9,6 +9,7 @@ from lib.jsonschema.ds_list_schema import ds_list_schema
 from lib.jsonschema.job_status_schema import job_status_schema
 from lib.jsonschema.stat_units_schema import stat_units_schema
 from lib.jsonschema.ws_list_schema import ws_list_schema
+from lib.jsonschema.tag_select_schema import tag_select_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
@@ -230,6 +231,8 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), stat_units_schema)
         case 'ws_list_schema':
             validate(pytest.response.json(), ws_list_schema)
+        case 'tag_select_schema':
+            validate(pytest.response.json(), tag_select_schema)
         case _:
             print(f"Sorry, I couldn't understand {schema!r}")
             raise NameError('Schema is not found')
@@ -322,6 +325,14 @@ def unique_ds_name(dataset_type):
     return _unique_ds_name
 
 
+@given(parsers.cfparse('unique tag is prepared',
+                       extra_types=EXTRA_STRING_TYPES), target_fixture='unique_tag')
+def unique_tag():
+    _unique_tag_name = Generator.unique_name('tag')
+    assert _unique_tag_name != ''
+    return _unique_tag_name
+
+
 @then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
 def assert_job_status(status):
     assert status in ds_creation_status(pytest.response.json()['task_id'])
@@ -338,3 +349,12 @@ def code(code_type):
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
     return derive_ws(dataset, code)
+
+
+@then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
+                      extra_types=EXTRA_STRING_TYPES))
+def assert_status(property_name, unique_tag, tag_type):
+    if tag_type == 'generated true Tag':
+        assert unique_tag in pytest.response.json()[property_name]
+    elif tag_type == 'generated _note Tag':
+        assert '_note' in pytest.response.json()[property_name]
