@@ -1,7 +1,6 @@
-# because there is no after all hook in pytest-bdd
-
 @api
-Feature: Remove test-data after automation test cases
+@after_all_hook
+Feature: Remove test-data after automation test run
 
     @any
     @specific

@@ -1,4 +1,5 @@
 @api
+@dtree_set
 Feature: Check dtree_set [POST] request
 
     @any

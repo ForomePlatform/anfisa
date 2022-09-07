@@ -1,4 +1,5 @@
 @api
+@ds2ws
 Feature: Check ds2ws [POST] request
 
     @any

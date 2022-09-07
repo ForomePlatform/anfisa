@@ -186,13 +186,14 @@ def dataset(dataset_identifier):
             return xl_dataset(150)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
-        case 'xl Dataset with filter':
+        case 'xl Dataset with code filter':
             xl_ds = ''
             for i in range(10):
                 xl_ds = xl_dataset()
                 prep_filter = prepare_filter(xl_ds)
                 if prep_filter != '':
                     break
+                xl_ds = ''
             assert xl_ds != ''
             return xl_ds
         case 'ws Dataset with <test> in the name':
@@ -292,8 +293,8 @@ def assert_nested_schemas(property_name, schema_name):
                       extra_types=EXTRA_STRING_TYPES))
 def determine_equality_of_properties(property_name_1, property_name_2):
     response_json = json.loads(pytest.response.text)
-    print('response_json[property_name_1]', response_json[property_name_1])
-    print('response_json[property_name_2]', response_json[property_name_2])
+    #print('response_json[property_name_1]', response_json[property_name_1])
+    #print('response_json[property_name_2]', response_json[property_name_2])
     assert response_json[property_name_1] == response_json[property_name_2]
 
 
@@ -304,8 +305,8 @@ def assert_test_data(request_name, dataset):
         test_data_json = json.load(f)
     response_json = json.loads(pytest.response.text)
 
-    #print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
-    #print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
+    print('\ntest_data_json\n', json.dumps(test_data_json, indent=4, sort_keys=True))
+    print('\nresponse_json\n', json.dumps(response_json, indent=4, sort_keys=True))
 
     ddiff = DeepDiff(test_data_json, response_json, ignore_order=True,
                      exclude_paths={"root['rq-id']", "root['upd-time']", "root['upd-from']", "root['tags-state']",

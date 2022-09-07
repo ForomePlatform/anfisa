@@ -1,4 +1,5 @@
 @api
+@adm_update
 Feature: Check adm_update [POST] request
 
     @any

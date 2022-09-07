@@ -1,10 +1,11 @@
 @api
+@ws_list
 Feature: Check ws_list [POST] request
 
     @any
     @positive
     Scenario: Return current list of Dataset variants for any ws dataset
-    Given "xl Dataset with filter" is uploaded and processed by the system
+    Given "xl Dataset with code filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_list request with correct "ds" parameter is send
     Then response status should be "200" OK
@@ -24,7 +25,7 @@ Feature: Check ws_list [POST] request
     @any
     @negative
     Scenario Outline: Return current list of Dataset variants for any ws dataset
-    Given "xl Dataset with filter" is uploaded and processed by the system
+    Given "xl Dataset with code filter" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it
     When ws_list request with incorrect "<ds>" parameter is send
     Then response status should be "403" Forbidden

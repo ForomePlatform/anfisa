@@ -1,4 +1,5 @@
 @api
+@ds_stat
 Feature: Check DsStat [POST] request
 
     @any

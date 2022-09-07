@@ -1,4 +1,5 @@
 @api
+@adm_drop_ds
 Feature: Check adm_drop_ds [POST] request
 
     @any

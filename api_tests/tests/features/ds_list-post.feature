@@ -1,4 +1,5 @@
 @api
+@ds_list
 Feature: Check ds_list [POST] request
 
     @any

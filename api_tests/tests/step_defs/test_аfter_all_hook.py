@@ -1,4 +1,3 @@
-# because there is no after all hook in pytest-bdd
 import time
 
 from pytest_bdd import scenarios, then, parsers
@@ -13,6 +12,8 @@ def delete_test_data(data_type):
     time.sleep(7)
     match data_type:
         case 'ws datasets':
+            print('deleting test datasets created automatically')
             delete_auto_ws_datasets()
         case 'dtrees':
+            print('deleting test dtrees created automatically')
             delete_auto_dtrees()

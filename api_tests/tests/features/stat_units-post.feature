@@ -1,4 +1,5 @@
 @api
+@stat_units
 Feature: Check stat_units [POST] request
 
     @any

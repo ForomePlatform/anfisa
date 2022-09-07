@@ -1,4 +1,5 @@
 @api
+@dsinfo
 Feature: Check Dsinfo[GET] request
 
   @any

@@ -1,4 +1,5 @@
 @api
+@adm_reload_ds
 Feature: Check adm_reload_ds [POST] request
 
     @any

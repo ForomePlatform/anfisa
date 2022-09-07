@@ -1,4 +1,5 @@
 @api
+@job_status
 Feature: Check job_status [POST] request
 
     @any
