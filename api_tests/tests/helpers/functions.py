@@ -32,6 +32,7 @@ def delete_auto_ws_datasets():
 
 
 def delete_auto_dtrees():
+    # Searches is performed in all datasets in the system
     response_dir_info = DirInfo.get()
     dataset_list = json.loads(response_dir_info.content)["ds-list"]
     for ds in dataset_list:
