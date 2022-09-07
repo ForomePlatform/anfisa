@@ -46,7 +46,7 @@ class Generator:
                 return ''
             case 'space separated string':
                 return Generator.space_separated_string()
-            case 'duplicated ws name':
+            case 'duplicated ws name' | 'random registered ws':
                 _dataset = ''
                 ds_dict = json.loads(DirInfo.get().content)["ds-dict"]
                 for value in ds_dict.values():

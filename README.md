@@ -63,14 +63,20 @@ To install Anfisa on a local Linux or MacOS system:
 1. Clone the repository on your system. We suggest cloning one of 
 the tagged (released) version as the master branch is undergoing 
 continues development.
-
+```sh
+       git clone https://github.com/ForomePlatform/anfisa.git
+```
 2. Change into anfisa directory, e.g.:
+```sh
+       cd anfisa
+```
+3. Checkout to `stable` release (for ex this is latest release in `github`)
+```sh
+       git checkout v.0.7.8
+```
+4. Decide what directory will be a working directory for Anfisa
 
-`cd anfisa`
-
-3. Decide what directory will be a working directory for Anfisa
-
-4. Decide which of the following installation paths you prefer:
+5. Decide which of the following installation paths you prefer:
 - Use a Docker container. This method will also install Druid and 
 other dependencies. However, Druid requires at least 8G of memory, 
 if your box does not have this amount of RAM, you should avoid running 
@@ -163,9 +169,15 @@ Example:
 4. [Optionally] Adjust setting for your webserver to serve Anfisa.
 For nginx add the following location block:
 
-``` 
-location /anfisa {
-	proxy_pass http://localhost:3000;
+```nginx
+server {
+    listen 80;
+    server_name dnsname.for.reversproxy.com;
+    client_max_body_size 100M;
+
+    location / {
+       proxy_pass http://localhost:3000; 
+    }
 }
 ```
 

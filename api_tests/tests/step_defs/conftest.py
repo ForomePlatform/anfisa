@@ -22,6 +22,7 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
 
 
 def pytest_bdd_after_scenario():
+    time.sleep(7)
     ws_to_drop = []
     response = DirInfo.get()
     ds_dict = json.loads(response.content)["ds-dict"]
@@ -109,7 +110,9 @@ def dataset(dataset_type):
             return xl_dataset(9000)
         case 'ws Dataset':
             return derive_ws(xl_dataset())
-        case other:
+        case 'ws Dataset with <test> in the name':
+            return derive_ws(xl_dataset())
+        case _:
             return xl_dataset()
 
 
