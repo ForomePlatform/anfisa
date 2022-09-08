@@ -20,6 +20,7 @@ from lib.jsonschema.stat_units_schema import stat_units_schema
 from lib.jsonschema.tag_select_schema import tag_select_schema
 from lib.jsonschema.ws_list_schema import ws_list_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
+from lib.jsonschema.zone_list_schema import zone_descriptor_serial, zone_descriptor_single
 from tests.helpers.functions import xl_dataset, derive_ws, prepare_filter, find_dataset, ds_creation_status
 from tests.helpers.generators import Generator
 
@@ -109,6 +110,11 @@ def ws_less_9000_rec(dataset):
     return derive_ws(dataset, code)
 
 
+@given(parsers.cfparse('ws Dataset is derived from it'), target_fixture='derived_ws')
+def derived_ws(dataset):
+    return derive_ws(dataset)
+
+
 @then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_status(property_name, unique_name, tag_type):
@@ -123,10 +129,9 @@ def assert_job_status(status):
     assert status in ds_creation_status(pytest.response.json()['task_id'])
 
 
-@then(parsers.cfparse('response body json should match expected data for {request_name:String} request',
+@then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_test_data(request_name, dataset):
-    request_name = request_name.replace('"', '')
     path = f'tests/test-data/{dataset}/{request_name}.json'
     with open(path, encoding="utf8") as f:
         test_data_json = json.load(f)
@@ -233,6 +238,10 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), ws_list_schema)
         case 'tag_select_schema':
             validate(pytest.response.json(), tag_select_schema)
+        case 'zone_descriptor_serial':
+            validate(pytest.response.json(), zone_descriptor_serial)
+        case 'zone_descriptor_single':
+            validate(pytest.response.json(), zone_descriptor_single)
         case 'csv_export_schema':
             validator = CSVValidator(csv_export_schema)
             validator.add_value_check('chromosome', str)

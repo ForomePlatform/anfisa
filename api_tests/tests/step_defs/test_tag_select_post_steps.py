@@ -11,11 +11,6 @@ from tests.step_defs.conftest import derive_ws, prepare_filter
 scenarios('../features/tag_select-get.feature')
 
 
-@given(parsers.cfparse('ws Dataset is derived from it'), target_fixture='derived_ws')
-def derived_ws(dataset):
-    return derive_ws(dataset)
-
-
 @given(parsers.cfparse('another ws Dataset with < 9000 records is derived'), target_fixture='another_derived_ws')
 def another_derived_ws(dataset):
     code = prepare_filter(dataset)

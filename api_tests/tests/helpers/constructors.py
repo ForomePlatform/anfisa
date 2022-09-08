@@ -157,3 +157,12 @@ class Constructor:
                 'conditions': kwargs['conditions'] if 'conditions' in kwargs else '',
                 'zone': kwargs['zone'] if 'zone' in kwargs else '',
                 }
+
+    @staticmethod
+    def zone_list_payload(**kwargs):
+        for key, value in kwargs.items():
+            if value[:9] == 'generated':
+                kwargs[key] = Generator.test_data(value[10:])
+        return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
+                'zone': kwargs['zone'] if 'zone' in kwargs else ''
+                }
