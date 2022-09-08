@@ -44,7 +44,8 @@ Feature: Check zone_list [POST] request
     And response body json should match expected data for "zone_list_single" request
 
 
-    @progress
+    @any
+    @negative
     Scenario Outline: Should return a list of zones for any ws dataset
     Given "xl Dataset" is uploaded and processed by the system
     And ws Dataset with < 9000 records is derived from it

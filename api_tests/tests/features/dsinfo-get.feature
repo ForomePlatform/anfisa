@@ -4,6 +4,7 @@ Feature: Check Dsinfo[GET] request
 
   @any
   @positive
+  @progress
   Scenario Outline: Send Dsinfo request with parameters: "<parameters>" (successful)
     When I send get dsinfo request with parameters: "<parameters>" (successful)
     Then response body schema should be valid by "dsinfo_schema"
