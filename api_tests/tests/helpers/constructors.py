@@ -323,18 +323,6 @@ class Constructor:
                 }
 
     @staticmethod
-    def symbols_payload(**kwargs):
-        for key, value in kwargs.items():
-            if value[:9] == 'generated':
-                kwargs[key] = Generator.test_data(value[10:])
-        return {'ds': kwargs['ds'] if 'ds' in kwargs else '',
-                'tp': kwargs['tp'] if 'tp' in kwargs else '',
-                'list': kwargs['list'] if 'list' in kwargs else '',
-                'panel': kwargs['panel'] if 'panel' in kwargs else '',
-                'pattern': kwargs['pattern'] if 'pattern' in kwargs else ''
-                }
-
-    @staticmethod
     def symbol_info_payload(**kwargs):
         for key, value in kwargs.items():
             if value[:9] == 'generated':
