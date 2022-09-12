@@ -99,6 +99,10 @@ To get familiar with AnFiSA capabilities, go through the following pages:
    intro
 
    managing_data
+
+   workspace
+
+   filter_refiner
    
    annotation_sources
    
