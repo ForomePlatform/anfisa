@@ -117,7 +117,7 @@ return False''' % {'stat_name': element["name"], 'variant_name': variant[0]}
 def ds_creation_status(task_id):
     parameters = {'task': task_id}
     job_status_response = JobStatus.post(parameters)
-    for i in range(60):
+    for i in range(360):
         if (job_status_response.json()[1] == 'Done') or (job_status_response.json()[0] is None):
             break
         else:

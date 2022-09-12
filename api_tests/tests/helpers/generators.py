@@ -10,7 +10,7 @@ testDataPrefix = 'Autotest-'
 class Generator:
     @staticmethod
     def unique_name(instance_type):
-        return testDataPrefix + instance_type + strftime("-%y-%m-%d_%H-%M-%S", gmtime())
+        return testDataPrefix + instance_type + strftime("-%y-%m-%d_%H-%M-%S", gmtime()) + random.randrange(1000)
 
     @staticmethod
     def random_literal_string(length):
