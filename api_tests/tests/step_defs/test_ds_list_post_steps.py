@@ -35,7 +35,7 @@ def ds_list_response(ds):
 def job_status_response():
     task_id = pytest.response.json()['task_id']
     response = ''
-    for i in range(10):
+    for i in range(360):
         response = JobStatus.post({'task': task_id})
         if False not in response.json():
             break
