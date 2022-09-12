@@ -5,19 +5,24 @@ from deepdiff import DeepDiff
 from jsonschema import validate
 from pytest_bdd import parsers, given, then
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES, EXTRA_TYPES
+from lib.jsonschema.export_ws_schema import export_ws_schema
 from lib.jsonschema.common import enum_property_status_schema, numeric_property_status_schema, \
     func_property_status_schema, solution_entry_schema
 from lib.jsonschema.csv_export_schema import csv_export_schema
+from lib.jsonschema.defaults_schema import defaults_schema
 from lib.jsonschema.ds2ws_schema import ds2ws_schema
 from lib.jsonschema.ds_list_schema import ds_list_schema
 from lib.jsonschema.ds_stat_schema import ds_stat_schema
 from lib.jsonschema.dsinfo_schema import dsinfo_schema
 from lib.jsonschema.dtree_check_schema import dtree_check_schema
+from lib.jsonschema.dtree_counts_schema import dtree_counts_schema
 from lib.jsonschema.dtree_set_schema import dtree_set_schema
 from lib.jsonschema.dtree_stat_schema import dtree_stat_schema
+from lib.jsonschema.export_schema import export_schema
 from lib.jsonschema.job_status_schema import job_status_schema
 from lib.jsonschema.stat_units_schema import stat_units_schema
 from lib.jsonschema.tag_select_schema import tag_select_schema
+from lib.jsonschema.vsetup_schema import vsetup_schema
 from lib.jsonschema.ws_list_schema import ws_list_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.zone_list_schema import zone_descriptor_serial, zone_descriptor_single
@@ -50,6 +55,7 @@ def i_do_something(fixture_function):
     parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_identifier):
+    print('\npreparing dataset..')
     match dataset_identifier:
         case 'xl Dataset':
             return xl_dataset()
@@ -242,6 +248,16 @@ def assert_json_schema(schema):
             validate(pytest.response.json(), zone_descriptor_serial)
         case 'zone_descriptor_single':
             validate(pytest.response.json(), zone_descriptor_single)
+        case 'defaults_schema':
+            validate(pytest.response.json(), defaults_schema)
+        case 'dtree_counts_schema':
+            validate(pytest.response.json(), dtree_counts_schema)
+        case 'export_schema':
+            validate(pytest.response.json(), export_schema)
+        case 'export_ws_schema':
+            validate(pytest.response.json(), export_ws_schema)
+        case 'vsetup_schema':
+            validate(pytest.response.json(), vsetup_schema)
         case 'csv_export_schema':
             validator = CSVValidator(csv_export_schema)
             validator.add_value_check('chromosome', str)

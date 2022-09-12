@@ -39,7 +39,7 @@ dtree_set_schema = {
                 {
                     "type": "array",
                     "items": {
-                        "type": "array"
+                        "type": ["array",  "null"]
                     }
                 },
                 {

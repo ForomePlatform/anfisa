@@ -15,7 +15,7 @@ scenarios('../features/dtree_set-post.feature')
 
 @when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def ds2ws_response(ds, code, dataset):
+def dtree_set_response(ds, code, dataset):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
     parameters = Constructor.dtree_set_payload(ds=ds, code=code)
@@ -26,7 +26,7 @@ def ds2ws_response(ds, code, dataset):
 @when(parsers.cfparse(
     'dtree_set request with correct "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES))
-def ds2ws_response(ds, code, instr, dataset, unique_name):
+def dtree_set_response(ds, code, instr, dataset, unique_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
     instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_name, 'instr': instr}
