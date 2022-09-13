@@ -44,7 +44,7 @@ Feature: Check tag_select [GET] request
 
     @any
     @negative
-    Scenario Outline: Should return tags of specific ws dataset
+    Scenario Outline: Should fail to return tags
     Given "xl Dataset" is uploaded and processed by the system
     When tag_select request with "<ds>" parameter is send
     Then response status should be "403" Forbidden
