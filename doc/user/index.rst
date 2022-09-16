@@ -103,6 +103,8 @@ To get familiar with AnFiSA capabilities, go through the following pages:
    workspace
 
    filter_refiner
+
+   decision_tree.rst
    
    annotation_sources
    
