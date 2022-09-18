@@ -34,8 +34,7 @@ class SolutionEnv:
         self.mName = name
         self.mMongoAgent = mongo_connector.getPlainAgent(name)
         self.mBrokers = []
-        self.mHandlers = {sol_kind: _SolKindMongoHandler(
-            sol_kind, self.mMongoAgent)
+        self.mHandlers = {sol_kind: _SolKindMongoHandler(sol_kind, self)
             for sol_kind in self.sSolKeys}
 
     def getName(self):
@@ -43,6 +42,9 @@ class SolutionEnv:
 
     def getAgentKind(self):
         return "SolutionEnv"
+
+    def getMongoAgent(self):
+        return self.mMongoAgent
 
     def attachBroker(self, broker_h):
         assert broker_h not in self.mBrokers
@@ -73,6 +75,12 @@ class SolutionEnv:
             return True
         return False
 
+    def checkEntryKind(self, name):
+        for sol_kind, sol_h in self.mHandlers.items():
+            if sol_h.getEntry(name) is not None:
+                return sol_kind
+        return None
+
     def dumpAll(self):
         ret = []
         for rec_obj in self.mMongoAgent.find():
@@ -86,18 +94,18 @@ class SolutionEnv:
 
 #===============================================
 class _SolKindMongoHandler:
-    def __init__(self, sol_kind, mongo_agent):
+    def __init__(self, sol_kind, master):
         self.mSolKind = sol_kind.replace('.', '_')
-        self.mMongoAgent = mongo_agent
+        self.mMaster = master
         self.mEntries = dict()
         self.mIntVersion = 0
-        for it in self.mMongoAgent.find({"_tp": self.mSolKind}):
+        for it in self.mMaster.getMongoAgent().find({"_tp": self.mSolKind}):
             assert "data" in it, "Mongo support is out of date"
             assert it["name"] not in self.mEntries, (
                 "Key duplication: " + self.mSolKind + "/" + it["name"])
             self.mEntries[it["name"]] = makeSolItemInfo(
                 self.mSolKind, it["name"], it["data"], it.get("rubric"),
-                    it["time"], it["from"])
+                it["time"], it["from"])
 
     def getSolKind(self):
         return self.mSolKind
@@ -114,18 +122,23 @@ class _SolKindMongoHandler:
 
     def modifyEntry(self, option, name, value, rubric, upd_from):
         if option == "UPDATE":
+            checked_kind = self.mMaster.checkEntryKind(name)
+            assert checked_kind in (self.mSolKind, None), (
+                "Solution kind duplication conflict: "
+                + f"{checked_kind}/{self.mSolKind}")
             info = makeSolItemInfo(self.mSolKind,
                 name, value, rubric,
                 upd_time = datetime.now().isoformat(),
                 upd_from = upd_from)
-            self.mMongoAgent.update_one({"_tp": self.mSolKind, "name": name},
-                {"$set": info},
-                upsert = True)
+            self.mMaster.getMongoAgent().update_one(
+                {"_tp": self.mSolKind, "name": name},
+                {"$set": info}, upsert = True)
             self.mEntries[name] = info
             self.mIntVersion += 1
             return True
         if option == "DELETE" and name in self.mEntries:
-            self.mMongoAgent.delete_many({"_tp": self.mSolKind, "name": name})
+            self.mMaster.getMongoAgent().delete_many(
+                {"_tp": self.mSolKind, "name": name})
             del self.mEntries[name]
             self.mIntVersion += 1
             return True

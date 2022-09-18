@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import os, json, logging, re, shutil
+import os, json, logging, shutil
 from copy import deepcopy
 from datetime import datetime
 
@@ -44,16 +44,6 @@ class SecondaryWsCreation(ExecutionTask):
     def getTaskType(self):
         return "sec-ws"
 
-    sDSNamePattern = re.compile(r'^\S+$', re.U)
-
-    @classmethod
-    def correctWSName(cls, name):
-        if len(name) > AnfisaConfig.configOption("ds.name.max.length"):
-            return False
-        if not cls.sDSNamePattern.match(name):
-            return False
-        return name[0].isalpha and not name.lower().startswith("xl_")
-
     def onProgressChange(self, progress, mode):
         if mode == "fdata":
             self.setStatus("Filtering progress %d%s"
@@ -63,8 +53,9 @@ class SecondaryWsCreation(ExecutionTask):
                 % (min(progress, 100), '%'))
 
     def execIt(self):
-        if not self.correctWSName(self.mWSName):
-            self.setStatus("Incorrect derived dataset name")
+        err_rep = AnfisaConfig.checkDatasetName(self.mWSName, "ws")
+        if err_rep:
+            self.setStatus("Incorrect derived dataset: " + err_rep)
             return None
         self.setStatus("Preparing to create derived dataset")
         logging.info("Prepare dataset derivation: %s" % self.mWSName)

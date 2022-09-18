@@ -303,7 +303,7 @@ class DataSet(SolutionBroker):
             eval_h, stat_ctx, time_end = None, point_no = None):
         ret = []
         for unit_name in unit_names:
-            check_data = self. checkSupportStat(unit_name, condition)
+            check_data = self.checkSupportStat(unit_name, condition)
             if check_data is not None:
                 ret.append(check_data)
                 continue
@@ -316,6 +316,17 @@ class DataSet(SolutionBroker):
             if time_end is not None and datetime.now() > time_end:
                 break
         return ret
+
+    #===============================================
+    def druidRqForUnit(self, unit_name, condition, eval_h, stat_ctx):
+        unit_h = self.getEvalSpace().getUnit(unit_name)
+        assert not unit_h.isScreened() and unit_h.getUnitKind != "func", (
+            "No function provided in DS: " + unit_name)
+        assert stat_ctx.get("druid-rq")
+        check_data = self.checkSupportStat(unit_name, condition)
+        if check_data is not None:
+            return None
+        return unit_h.makeStat(condition, eval_h, stat_ctx)
 
     #===============================================
     def prepareDTreePointCounts(self, dtree_h, rq_id,
@@ -506,11 +517,16 @@ class DataSet(SolutionBroker):
             eval_h = self._getArgCondFilter(rq_args)
             condition, point_no = eval_h.getCondition(), None
         assert "units" in rq_args, 'Missing request argument "units"'
+        stat_ctx = self._getStatCtx(rq_args)
+        units = json.loads(rq_args["units"])
+        if stat_ctx and stat_ctx.get("druid-rq"):
+            assert len(units) == 1, "druid-rq uses only one unit"
+            assert self.getDSKind() == "xl", "druid-rq supports only in XL"
+            return self.druidRqForUnit(units[0], condition, eval_h, stat_ctx)
         ret_handle = {
             "rq-id": rq_args.get("rq_id"),
-            "units": self.prepareSelectedUnitStat(
-                json.loads(rq_args["units"]), condition,
-                eval_h, self._getStatCtx(rq_args), time_end, point_no)}
+            "units": self.prepareSelectedUnitStat(units, condition,
+                eval_h, stat_ctx, time_end, point_no)}
         return ret_handle
 
     #===============================================
@@ -749,6 +765,8 @@ class DataSet(SolutionBroker):
     #===============================================
     @RestAPI.ds_request
     def rq__solutions(self, rq_args):
+        if "entry" in rq_args:
+            return self.getSolEnv().checkEntryKind(rq_args["entry"])
         return self.reportSolutions()
 
     #===============================================

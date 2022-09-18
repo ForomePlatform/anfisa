@@ -55,6 +55,8 @@ div#filter-stat, div#filter-conditions {
 
 div#filter-stat {
     width: 40%;
+    display: flex;
+    flex-direction: column;
 }
 
 div#filter-conditions {

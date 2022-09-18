@@ -278,9 +278,13 @@ class Workspace(DataSet):
                 eval_h = self._getArgCondFilter(rq_args)
                 rec_no_seq = self.mEvalSpace.evalRecSeq(
                     eval_h.getCondition())
+        zone_fseq = self.restrictZoneF(rq_args.get("zone"))
         assert self.mTagsMan.tagIsProper(tag_name), "Missing tag: " + tag_name
         with self:
-            rec_keys = {self.getRecKey(rec_no) for rec_no in rec_no_seq}
+            rec_keys = set()
+            for rec_no in rec_no_seq:
+                if all(zone_f(rec_no) for zone_f in zone_fseq):
+                    rec_keys.add(self.getRecKey(rec_no))
             if rq_args.get("delay") == "true":
                 task = MacroTaggingOperation(self.mTagsMan, tag_name, rec_keys)
                 return {"task_id": self.getApp().runTask(task)}

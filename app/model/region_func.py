@@ -22,9 +22,8 @@ from app.eval.var_unit import FunctionUnit
 #===============================================
 class RegionFuncUnit(FunctionUnit):
     @staticmethod
-    def makeIt(ds_h, descr, map_units, before = None, after = None):
+    def makeIt(ds_h, descr, map_units):
         unit_h = RegionFuncUnit(ds_h, descr, map_units)
-        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr, map_units):

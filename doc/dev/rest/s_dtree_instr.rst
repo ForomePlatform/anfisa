@@ -32,8 +32,12 @@ Actions:
     
     **UPDATE**: update (as well as create) decision tree with given name
        
-        (Note: if position **[3]** is omited, no change of rubric is expected on update)
-          
+        Notes: 
+        
+            - if position **[3]** is omited, no change of rubric is expected on update)
+
+            - decision tree creation can be blocked if there exists another :term:`solution item` with the same name, see details :ref:`here<sol_items_namespace>`.
+        
     **DELETE**: delete decision tree with given name
     
 INSTR modifying actions
@@ -134,3 +138,5 @@ Actions:
 Used in request
 ----------------
 :doc:`dtree_set`
+
+:doc:`../concepts/sol_work`

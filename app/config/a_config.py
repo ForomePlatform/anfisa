@@ -141,4 +141,31 @@ class AnfisaConfig:
         result["_rand"] = crc32(bytes(result["_key"], 'utf-8'))
         return result
 
+    @classmethod
+    def checkDatasetName(cls, name, ds_kind):
+        if len(name) < 1:
+            return "Empty dataset name"
+        if ' ' in name:
+            return "Improper name for dataset: " + name
+        max_ds_name_length = cls.sConfigOptions["ds.name.max.length"]
+        if len(name) >= max_ds_name_length:
+            return f"Too long dataset name ({max_ds_name_length}+): {name}"
+        if ds_kind != "xl" and name.lower().startswith("xl_"):
+            return "Wrong name for not XL-dataset: " + name
+        return None
+
+    @classmethod
+    def assertGoodTagName(cls, name):
+        max_tag_name_length = cls.sConfigOptions["tag.name.max.length"]
+        assert len(name) <= max_tag_name_length, (
+            f"Too long tag name ({max_tag_name_length}+): {name}")
+
+    @classmethod
+    def assertGoodSolutionName(cls, name):
+        assert name[0].isalpha() and ' ' not in name, (
+            "Improper name for solution entry: " + name)
+        max_sol_name_length = cls.sConfigOptions["sol.name.max.length"]
+        assert len(name) < max_sol_name_length, (
+            f"Too long solution name ({max_sol_name_length}+): {name}")
+
 #===============================================

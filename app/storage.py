@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-import sys, json, os, shutil, re, time, logging
+import sys, json, os, shutil, time, logging
 from argparse import ArgumentParser
 from datetime import datetime
 
@@ -29,30 +29,26 @@ from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
 from app.prepare.ds_create import (createDS,
     portionFavorDruidPush, pushDruidDataset)
+from app.config.a_config import AnfisaConfig
 from app.config.solutions import setupSolutions
 from app.model.mongo_db import MongoConnector
 from app.model.dir_entry import DirDSEntry
 from app.model.ds_favor import FavorStorageAgent
 #===============================================
-sDSNamePattern = re.compile(r'^\S+$', re.U)
 
 def checkDSName(name, kind):
-    global sDSNamePattern
-    if not sDSNamePattern.match(name) or not name[0].isalpha():
-        print("Incorrect dataset name:", name, file = sys.stderr)
+    if kind not in ("ws", "xl"):
+        print("Wrong dataset kind:", kind, file = sys.stderr)
         assert False
-    if kind == "ws":
-        if name.lower().startswith("xl_"):
-            print("Improper WS name:", name, file = sys.stderr)
-            print("(Should not have prefix XL_)", file = sys.stderr)
-            assert False
-    elif kind == "xl":
-        if not name.lower().startswith("xl_"):
-            print("Improper XL-dataset name:", name, file = sys.stderr)
-            print("(Should have prefix XL_ or xl_)", file = sys.stderr)
-            assert False
-    else:
-        print("Wrong dataset kind:", kind)
+
+    err_rep = AnfisaConfig.checkDatasetName(name, kind)
+    if err_rep:
+        print(err_rep, file = sys.stderr)
+        assert False
+
+    if kind == "xl" and not name.lower().startswith("xl_"):
+        print("Improper XL-dataset name:", name, file = sys.stderr)
+        print("(Should have prefix XL_ or xl_)", file = sys.stderr)
         assert False
 
 #===============================================

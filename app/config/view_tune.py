@@ -148,6 +148,7 @@ class UCSC_AttrH(AttrH):
     def htmlRepr(self, obj, v_context):
         start = int(v_context["data"]["__data"]["start"])
         end = int(v_context["data"]["__data"]["end"])
+        start, end = sorted([start, end])
         region_name = v_context["data"]["__data"]["seq_region_name"]
         link1 = self.makeLink(region_name, start, end, 10)
         link2 = self.makeLink(region_name, start, end, 250)
@@ -203,6 +204,7 @@ class GnomAD_AttrH(AttrH):
             start = int(region[0])
             if (len(region) > 1):
                 end = int(region[1])
+                start, end = sorted([start, end])
             else:
                 end = start
             return self.makeLink(region_name, start, end, 3)
@@ -481,6 +483,7 @@ class IGV_AttrH(AttrH):
             except Exception:
                 logging.error("Error creating IGV link for " + str(pos))
                 return "Error!"
+        start, end = sorted([start, end])
         locus = rec_data["__data"]["seq_region_name"]
         return (self.mPreUrl
             + f'&locus={locus}:{max(0, start - 250)}-{end + 250}')

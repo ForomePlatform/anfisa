@@ -28,9 +28,8 @@ class InheritanceUnit(FunctionUnit):
         for key in sCaseKeys]
 
     @staticmethod
-    def makeIt(ds_h, descr, before = None, after = None):
+    def makeIt(ds_h, descr):
         unit_h = InheritanceUnit(ds_h, descr)
-        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
@@ -112,9 +111,8 @@ class InheritanceUnit(FunctionUnit):
 class CustomInheritanceUnit(FunctionUnit):
 
     @staticmethod
-    def makeIt(ds_h, descr, before = None, after = None):
+    def makeIt(ds_h, descr):
         unit_h = CustomInheritanceUnit(ds_h, descr)
-        ds_h.getEvalSpace()._insertUnit(unit_h, before = before, after = after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):

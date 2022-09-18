@@ -780,14 +780,12 @@ var sFiltersH = {
         switch (this.mCurOp) {
             case "create":
                 if (!q_all && checkIdentifier(filter_name)) {
-                    sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
-                        ["instr", JSON.stringify(["UPDATE", filter_name])]);
+                    this._doUpdate(cur_filter, filter_name);
                 }
                 break;
             case "modify":
                 if (q_op && filter_name != cur_filter) {
-                    sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
-                        ["instr", JSON.stringify(["UPDATE", filter_name])]);
+                    this._doUpdate(cur_filter, filter_name);
                 }
                 break;
             case "join":
@@ -805,6 +803,22 @@ var sFiltersH = {
         }
     },
 
+    _doUpdate: function(cur_filter, filter_name) {
+        ajaxCall("solutions", "ds=" + sDSName + "&entry=" + filter_name,
+            function(info) {sFiltersH.doUpdate(info, cur_filter, filter_name);});
+    },
+    
+    doUpdate: function(info, cur_filter, filter_name) {
+        if (info === null || info == "filter") { 
+            sUnitsH.setup(sConditionsH.getConditions(), cur_filter,
+                ["instr", JSON.stringify(["UPDATE", filter_name])]);
+            return;
+        }
+        alert("Solution name duplication: " + info);
+        this.mInpName.className = "bad";
+        this.mBtnOp.disabled = true;
+    },    
+    
     fillSelNames: function(with_empty, filter_list, cur_value) {
         if (this.mListName == null || this.mAllNames == null)
             return;

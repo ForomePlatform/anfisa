@@ -40,6 +40,8 @@ The value of **panel-sol-version** indicator is useful especially in this reques
 
 Also it reports versions of sources used to build gene symbols database, in **db-version**.
 
+Note: panel creation can be blocked if there exists another :term:`solution item` with the same name, see details :ref:`here<sol_items_namespace>`.
+
 See also
 --------
 :doc:`../concepts/sol_work`  

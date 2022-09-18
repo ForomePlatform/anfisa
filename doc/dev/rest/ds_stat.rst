@@ -100,8 +100,10 @@ If argument **instr** is set, the request modifies filter on server side in the 
    * ``["DELETE", <filter_name>]`` the filter ``filter_name`` is subject to be deleted.
      
 In case ``["JOIN", <filter_name>]`` the request modifies current condiitons collected from **conditions** or **filter** by joining them with content of named filter ``filter_name``.
-     
-See also :doc:`../concepts/sol_work`
+
+Note: filter creation can be blocked if there exists another :term:`solution item` with the same name, see details :ref:`here<sol_items_namespace>`.
+
+See also :doc:`../concepts/sol_work`.
 
 Comments
 --------

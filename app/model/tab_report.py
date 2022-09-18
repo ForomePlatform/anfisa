@@ -35,7 +35,8 @@ class ReportTabSchema:
             f"Duplicate name in tab schema {self.mName}: {name}")
         getter = AttrFuncHelper.getter(field_path)
         if transform_func is not None:
-            get_func = lambda data: transform_func(getter(data))
+            def get_func(data):
+                return transform_func(getter(data))
         else:
             get_func = getter
         self.mFields.append((name, get_func))

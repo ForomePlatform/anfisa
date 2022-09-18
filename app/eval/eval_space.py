@@ -94,13 +94,9 @@ class EvalSpace:
         self.mUnitDict[meta_unit_h.getName()] = meta_unit_h
 
     def _addFunction(self, unit_h):
-        # temporary hack: unit is already added as unit
-        if True:
-            assert unit_h.getName() in self.mUnitDict
-        else:
-            assert unit_h.getName() not in self.mUnitDict, (
-                "Duplicate function unit name: " + unit_h.getName())
-            self.mUnitDict[unit_h.getName()] = unit_h
+        assert unit_h.getName() not in self.mUnitDict, (
+            "Duplicate function unit name: " + unit_h.getName())
+        self.mUnitDict[unit_h.getName()] = unit_h
         self.mFunctions.append(unit_h)
 
     def getUnit(self, unit_name):

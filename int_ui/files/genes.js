@@ -129,7 +129,7 @@ function setupList(info) {
     sCurSelMode = 1;
     if (info == null) {
         sCurPatternList = null;
-        sCurPatternList = null;
+        sCurPatternListInDS = null;
     } else {
         if (info["pattern"]) {
             sCurPatternList = info["all"];
@@ -325,9 +325,13 @@ function checkDynSel(mode, force_it) {
         dyn_panel = document.getElementById("dyn-panels-combo-list").value;
     }
     if (dyn_panel != sCurDynPanelName || force_it) {
-        ajaxCall("symbols", "ds=" + sDSName + 
-            "&tp=Symbol&panel=" + encodeURIComponent(dyn_panel), 
-            setupDynPanel);
+        if (!dyn_panel) {
+            setupDynPanel(null);
+        } else {
+            ajaxCall("symbols", "ds=" + sDSName + 
+                "&tp=Symbol&panel=" + encodeURIComponent(dyn_panel), 
+                setupDynPanel);
+        }
     }
     return true;
 }
@@ -484,9 +488,17 @@ function fixModList() {
 
 function dynPanelSave() {
     fixModList();
-    resetPanels(["UPDATE", sCurDynPanelName, sCurDynPanelModList]);
+    ajaxCall("solutions", "ds=" + sDSName + "&entry=" + sCurDynPanelName, doUpdatePanel);
 }
 
+function doUpdatePanel(info) {
+    if (info === null || info == "panel.Symbol") {
+        resetPanels(["UPDATE", sCurDynPanelName, sCurDynPanelModList]);
+        return;
+    }
+    alert("Solution name duplication: " + info);
+    document.getElementById('dyn-panels-name-input').className = "bad";
+}
 function startDynPanelSaveAs() {
     sCurDynAction = "SaveAs";
     document.getElementById("dyn-panels-op-act").innerHTML = "Save as new";

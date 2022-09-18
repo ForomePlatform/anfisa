@@ -27,7 +27,7 @@ div#stat-list {
     white-space: nowrap;
     overflow: auto;
     font-size: 12px;
-    height: 100%;
+    flex-grow: 1;
 }
 
 div.stat-group {
