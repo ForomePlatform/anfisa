@@ -42,6 +42,10 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sViewH.addNotifier(sDecisionTree);
 }
     
+function viewRejectionMode() {
+    return sDecisionTree.viewRejectionMode();
+}
+    
 /**************************************/
 var sDecisionTree = {
     mTreeCode: null,
@@ -328,6 +332,13 @@ var sDecisionTree = {
         if (point_no >= 0)
             new_el.className = "cur";
         sUnitsH.setup();
+    },
+    
+    viewRejectionMode: function() {
+        if (this.mCurPointNo !== null) {
+            return (this.mPoints[this.mCurPointNo]["decision"] === false);
+        }
+        return false;
     },
     
     atomEdit: function(point_no, atom_idx) {

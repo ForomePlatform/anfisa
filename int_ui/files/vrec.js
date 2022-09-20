@@ -171,8 +171,12 @@ var sSubVRecH = {
         rec_info = this.mInfo[["records", "samples"][this.mMode]][this.mCurRecIdx];
         var args = "rec?ds=" + sDSName + "&rec=" + rec_info["no"] + 
             "&port=0" + this.mActiveSamplesInstr;
-        if (rec_info["dt"])
-            args += "&details=" + rec_info["dt"];
+        if (rec_info["dt"]) {
+            details = rec_info["dt"];
+            if (viewRejectionMode())
+                details = details.replace('0', '-').replace('1', '0').replace('-', '1');
+            args += "&details=" + details;
+        }
         this.mSpanRecTitle.innerHTML = rec_info["lb"];
         softScroll(new_rec_el);
         window.frames['rec-frame1'].location.replace(args);

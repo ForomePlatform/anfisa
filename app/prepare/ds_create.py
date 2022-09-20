@@ -38,7 +38,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
     assert solutionsAreReady()
     assert (ds_kind == "xl") == (druid_adm is not None)
 
-    err_rep = AnfisaConfig.checkDatasetName(ds_name, "ws")
+    err_rep = AnfisaConfig.checkDatasetName(ds_name, ds_kind)
     if err_rep:
         logging.critical(
             "Attempt to create improper dataset: " + err_rep)

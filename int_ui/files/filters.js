@@ -136,6 +136,10 @@ var sUnitsH = {
     }    
 };
 
+function viewRejectionMode() {
+    return false;
+}
+
 /**************************************/
 var sOpFilterH = {
     mCurFilter: "",
