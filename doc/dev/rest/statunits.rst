@@ -53,7 +53,7 @@ Returning data must contain status report for first property (the first entry in
 
 In case of :term:`WS-dataset` the request provides status report construction for special name ``"_tags"`` as "name of unit". Tags are not subect of :term:`filtration` process, however status report for tags can be useful in logic of Front-End application. The status report for this case is simpler than :doc:`s_prop_stat`, it contains only **name** and **variants** properties. See :doc:`s_zone` for details.
 
-If **ctx** argument contains option ``"druid-rd": 1`` (see details :doc:`here<s_stat_ctx>`):
+If **ctx** argument contains option ``"druid-rq": 1`` (see details :doc:`here<s_stat_ctx>`):
 
     - only single unit name is expected in **units** argument
     
