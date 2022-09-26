@@ -174,9 +174,7 @@ var sSubVRecH = {
         if (rec_info["dt"]) {
             details = rec_info["dt"];
             if (viewRejectionMode()) {
-                console.log("details: " + details);
                 details = details.replaceAll('0', '-').replaceAll('1', '0').replaceAll('-', '1');
-                console.log("-> " + details);
             }
             args += "&details=" + details;
         }
