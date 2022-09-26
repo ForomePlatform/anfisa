@@ -163,7 +163,7 @@ var sSubVRecH = {
             return;
         if (this.mCurRecIdx != null) {
             var prev_el = document.getElementById('sub-li--' + this.mCurRecIdx);
-            prev_el.className = prev_el.className.replace(" press", "");
+            prev_el.className = prev_el.className.replaceAll(" press", "");
         }
         this.mCurRecIdx = rec_idx;
         var new_rec_el = document.getElementById('sub-li--' + this.mCurRecIdx);
@@ -173,8 +173,11 @@ var sSubVRecH = {
             "&port=0" + this.mActiveSamplesInstr;
         if (rec_info["dt"]) {
             details = rec_info["dt"];
-            if (viewRejectionMode())
-                details = details.replace('0', '-').replace('1', '0').replace('-', '1');
+            if (viewRejectionMode()) {
+                console.log("details: " + details);
+                details = details.replaceAll('0', '-').replaceAll('1', '0').replaceAll('-', '1');
+                console.log("-> " + details);
+            }
             args += "&details=" + details;
         }
         this.mSpanRecTitle.innerHTML = rec_info["lb"];

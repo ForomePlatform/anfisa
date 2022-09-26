@@ -116,7 +116,7 @@ var sUnitsH = {
             return;
         prev_el = sEvalCtrlH.curUnitDiv();
         if (prev_el)
-            prev_el.className = prev_el.className.replace(" cur", "");
+            prev_el.className = prev_el.className.replaceAll(" cur", "");
         sEvalCtrlH.setCurUnit(unit_name);
         if (new_unit_el) {
             new_unit_el.className = new_unit_el.className + " cur";
@@ -307,7 +307,7 @@ var sConditionsH = {
         }
         if (this.mCurCondIdx != null) {
             var prev_el = document.getElementById("cond--" + this.mCurCondIdx);
-            prev_el.className = prev_el.className.replace(" cur", "");
+            prev_el.className = prev_el.className.replaceAll(" cur", "");
         }
         this.mCurCondIdx = cond_no;
         if (new_cond_el != null) {

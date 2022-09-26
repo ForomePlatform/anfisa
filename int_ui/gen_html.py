@@ -25,11 +25,11 @@ from .mirror_dir import MirrorUiDirectory
 def startHtmlPage(output, title = None, html_base = None,
         css_files = None, js_files = None):
     print('''
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">''',
-    file = output)
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <link rel="icon" href="ui/images/forome.png"/>''', file = output)
     if title:
         print(f'    <title>{escape(title)}</title>', file = output)
     if html_base:

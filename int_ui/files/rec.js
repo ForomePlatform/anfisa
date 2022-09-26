@@ -125,7 +125,7 @@ function pickAspect(aspect_id) {
         var cur_tab_id = "la--" + aspect_id;
         if (sCurTabEl == null || sCurTabEl.id != cur_tab_id) {  
             if (sCurTabEl != null) 
-                sCurTabEl.className = sCurTabEl.className.replace(" active", "");
+                sCurTabEl.className = sCurTabEl.className.replaceAll(" active", "");
             sCurTabEl = document.getElementById(cur_tab_id);
             sCurTabEl.className += " active";
         }
@@ -171,7 +171,7 @@ function updateCfg(reset_port) {
     var cur_tab_id = "la--" + tab_port_data[sViewPort];
     if (sCurTabEl == null || sCurTabEl.id != cur_tab_id) {  
         if (sCurTabEl != null) 
-            sCurTabEl.className = sCurTabEl.className.replace(" active", "");
+            sCurTabEl.className = sCurTabEl.className.replaceAll(" active", "");
         sCurTabEl = document.getElementById(cur_tab_id);
         sCurTabEl.className += " active";
     }

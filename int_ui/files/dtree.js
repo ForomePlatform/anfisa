@@ -376,7 +376,7 @@ var sDecisionTree = {
         if (mode)
             atom_el.className += " active";
         else
-            atom_el.className = atom_el.className.replace(" active", "");
+            atom_el.className = atom_el.className.replaceAll(" active", "");
     },
     
     getCurAtomLoc: function() {
