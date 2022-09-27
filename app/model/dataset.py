@@ -766,7 +766,9 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__solutions(self, rq_args):
         if "entry" in rq_args:
-            return self.getSolEnv().checkEntryKind(rq_args["entry"])
+            entry_name = rq_args["entry"]
+            AnfisaConfig.assertGoodSolutionName(entry_name)
+            return self.getSolEnv().checkEntryKind(entry_name)
         return self.reportSolutions()
 
     #===============================================
