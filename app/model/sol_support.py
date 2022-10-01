@@ -155,7 +155,7 @@ class SolutionKindHandler:
         assert name and self.isDyn(name), (
             "Improper name for dynamic solution entry: " + name)
         if name != self.mSpecialName:
-            AnfisaConfig.assertGoodSolutionName()
+            AnfisaConfig.assertGoodSolutionName(name)
         if len(instr) > 2:
             rubric = instr[2]
         else:
