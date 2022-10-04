@@ -143,9 +143,7 @@ class UCSC_AttrH(AttrH):
     def __init__(self, view_gen, ds_h):
         AttrH.__init__(self, "UCSC")
         self.setAspect(view_gen)
-        meta_info = ds_h.getDataInfo()["meta"]
-        reference = meta_info["versions"].get("reference")
-        self.mBase = "hg38" if reference and "38" in reference else "hg19"
+        self.mBase = ds_h.getFastaBase()
 
     def htmlRepr(self, obj, v_context):
 
@@ -442,8 +440,7 @@ class IGV_AttrH(AttrH):
         self.mSamplesIds = sorted(samples.keys())
         self.mSamplesNames = ",".join([samples[id] for id in self.mSamplesIds])
 
-        reference = meta_info["versions"].get("reference")
-        self.mBase = "hg38" if reference and "38" in reference else "hg19"
+        self.mBase = ds_h.getFastaBase()
         self.mIGV_Url = False
         self.mPreUrl = None
         self._checkPreUrl()

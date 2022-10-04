@@ -41,7 +41,10 @@ class SolutionBroker(SyncronizedObject):
         self.mNamedAttrs = dict()
 
         reference = meta_info["versions"].get("reference")
-        self.mFastaBase = "hg38" if reference and "38" in reference else "hg19"
+        if reference is None:
+            self.mFastaBase = "hg38"
+        else:
+            self.mFastaBase = "hg38" if "38" in reference else "hg19"
 
         if derived_mode:
             self.addModes({"DERIVED"})
