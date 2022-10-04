@@ -46,7 +46,7 @@ def tuneAspects(ds_h, aspects):
     view_pkgb = aspects["view_pharmagkb"]
     view_gnomad = aspects["view_gnomAD"]
 
-    _resetupAttr(view_gen, UCSC_AttrH(view_gen))
+    _resetupAttr(view_gen, UCSC_AttrH(view_gen, ds_h))
     _resetupAttr(view_gen, SymbolPanels_AttrH(view_gen, ds_h))
     attr_gnomad = _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
     ds_h.regNamedAttr("gnomAD", attr_gnomad)
@@ -135,17 +135,20 @@ class TrSymbolPanels_AttrH(AttrH):
 #===============================================
 class UCSC_AttrH(AttrH):
 
-    @staticmethod
-    def makeLink(region_name, start, end, delta, assembly = "hg19"):
+    def makeLink(self, region_name, start, end, delta):
         return ("https://genome.ucsc.edu/cgi-bin/hgTracks?"
-            f"db={assembly}&position={region_name}"
+            f"db={self.mBase}&position={region_name}"
             f"%3A{max(0, start - delta)}%2D{end + delta}")
 
-    def __init__(self, view_gen):
+    def __init__(self, view_gen, ds_h):
         AttrH.__init__(self, "UCSC")
         self.setAspect(view_gen)
+        meta_info = ds_h.getDataInfo()["meta"]
+        reference = meta_info["versions"].get("reference")
+        self.mBase = "hg38" if reference and "38" in reference else "hg19"
 
     def htmlRepr(self, obj, v_context):
+
         start = int(v_context["data"]["__data"]["start"])
         end = int(v_context["data"]["__data"]["end"])
         start, end = sorted([start, end])
