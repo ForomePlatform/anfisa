@@ -2,8 +2,8 @@ branches:
   - main
   - master
   - name: "v.0.7.x"
-    channel: '0.7.x'
-    prerelease: true
+    channel: 'rc'
+    prerelease: 'rc'
 ci: false
 debug: true
 dryRun: true
