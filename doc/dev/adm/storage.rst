@@ -81,7 +81,7 @@ Comments
     
 * **--delay** not an essential mode, affects only  **create** mode, controls pause between pushes of data for multiple datasets into Druid
 
-* *Name of database*: in case of an xl-database it must begin with the prefix ``xl_`` or ``XL_``. Secondary workspaces created by this xl-dataset will have the same name but with other prefixes, of the form “ws<​number​>_”.
+* *Name of dataset*: in case of an xl-dataset it must begin with the prefix ``xl_`` or ``XL_``. Secondary workspaces created by this xl-dataset will have the same name but with other prefixes, of the form “ws<​number​>_”.
 
 See also
 --------

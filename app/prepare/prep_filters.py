@@ -44,10 +44,8 @@ class FilterPrepareSetH(SolutionBroker):
         self.mTranscriptIdName = None
         self.mDruidAdm = druid_adm
 
-        self.mTransPathBaseF = None
-        if self.getDSKind() == "ws":
-            self.mTransPathBaseF = AttrFuncPool.makeFunc(
-                AnfisaConfig.configOption("transcript.path.base"))
+        self.mTransPathBaseF = AttrFuncPool.makeFunc(
+            AnfisaConfig.configOption("transcript.path.base"))
 
         assert self.sZygosityPath is not None, (
             "Missing configuration zygosity.path.base setting")
@@ -265,31 +263,34 @@ class FilterPrepareSetH(SolutionBroker):
         for transform_f in self.mPreTransformSeq:
             transform_f(rec_no, rec_data)
 
+        ws_mode = (self.getDSKind() == "ws")
+
         result = dict()
-        if self.mTransPathBaseF is not None:
-            tr_seq_seq = self.mTransPathBaseF(rec_data)
-            assert len(tr_seq_seq) <= 1
-            if len(tr_seq_seq) == 1:
-                tr_seq = tr_seq_seq[0]
-            else:
-                tr_seq = []
-            result["$1"] = len(tr_seq)
+        tr_seq_seq = self.mTransPathBaseF(rec_data)
+        assert len(tr_seq_seq) <= 1
+        if len(tr_seq_seq) == 1:
+            tr_seq = tr_seq_seq[0]
         else:
-            tr_seq = None
+            tr_seq = []
+        if ws_mode:
+            result["$1"] = len(tr_seq)
 
         for unit_h in self.mUnits:
-            tr_name = unit_h.getTranscriptName()
-            if tr_name is None:
+            if unit_h.getTranscriptName() is None:
                 unit_h.process(rec_no, rec_data, result)
-            elif tr_seq is not None:
-                if len(tr_seq) == 0:
-                    unit_h.processEmpty()
-                else:
-                    res_seq = [unit_h.processOne(tr_obj.get(tr_name))
-                        for tr_obj in tr_seq]
-                    result[unit_h.getName()] = res_seq
-                assert unit_h.isOK(), (
-                    f"Tr-unit {unit_h.getName()} improper evaluation")
+                continue
+
+            if len(tr_seq) == 0:
+                unit_h.processEmpty()
+                continue
+
+            tr_name = unit_h.getTranscriptName()
+            res_seq = [unit_h.processOne(tr_obj.get(tr_name))
+                for tr_obj in tr_seq]
+            if ws_mode:
+                result[unit_h.getName()] = res_seq
+            assert unit_h.isOK(), (
+                f"Tr-unit {unit_h.getName()} improper evaluation")
 
         self.mZygosityData.process(rec_no, rec_data, result)
         if self.mDruidAdm is not None:

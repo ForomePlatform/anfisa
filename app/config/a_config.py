@@ -141,8 +141,14 @@ class AnfisaConfig:
         result["_rand"] = crc32(bytes(result["_key"], 'utf-8'))
         return result
 
+    sDatasetPreffixMap = {
+        "xl": "xl",
+        "wgs": "xl",
+        "wes": "xl"
+    }
+
     @classmethod
-    def checkDatasetName(cls, name, ds_kind):
+    def checkDatasetName(cls, name, ds_kind, force_preffix = False):
         if len(name) < 1:
             return "Empty dataset name"
         if ' ' in name:
@@ -150,8 +156,23 @@ class AnfisaConfig:
         max_ds_name_length = cls.sConfigOptions["ds.name.max.length"]
         if len(name) >= max_ds_name_length:
             return f"Too long dataset name ({max_ds_name_length}+): {name}"
-        if ds_kind != "xl" and name.lower().startswith("xl_"):
-            return "Wrong name for not XL-dataset: " + name
+        if force_preffix and ds_kind not in cls.sDatasetPreffixMap.values():
+            force_preffix = False
+        prefix, sep, name = name.partition('_')
+        if sep is None:
+            if force_preffix:
+                return "No prefix in dataset name: " + name
+            return None
+        if force_preffix:
+            if cls.sDatasetPreffixMap.get(prefix) != ds_kind:
+                return f"Improper prefix for dataset kind {ds_kind}: {name}"
+        else:
+            if cls.sDatasetPreffixMap.get(prefix) not in (ds_kind, None):
+                return f"Improper prefix for dataset kind {ds_kind}: {name}"
+        if prefix in cls.sDatasetPreffixMap:
+            if name is None or len(name) == 0:
+                return ("Dataset name needs to be longer than just prefix: "
+                    + name)
         return None
 
     @classmethod

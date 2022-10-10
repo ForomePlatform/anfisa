@@ -41,14 +41,9 @@ def checkDSName(name, kind):
         print("Wrong dataset kind:", kind, file = sys.stderr)
         assert False
 
-    err_rep = AnfisaConfig.checkDatasetName(name, kind)
+    err_rep = AnfisaConfig.checkDatasetName(name, kind, force_preffix = True)
     if err_rep:
         print(err_rep, file = sys.stderr)
-        assert False
-
-    if kind == "xl" and not name.lower().startswith("xl_"):
-        print("Improper XL-dataset name:", name, file = sys.stderr)
-        print("(Should have prefix XL_ or xl_)", file = sys.stderr)
         assert False
 
 #===============================================
