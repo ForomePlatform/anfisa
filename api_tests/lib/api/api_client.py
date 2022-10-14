@@ -19,12 +19,15 @@ class ApiRequest:
         print('url: ' + url)
         print('params')
         print(params)
-        return requests.request(
+        response = requests.request(
             method=self._method,
             url=url,
             params=params,
             headers=headers,
         )
+        print('responseCode:' + str(response.status_code))
+        print('responseBody:', response.text)
+        return response
 
     def request_with_formdata(self, payload):
         url = self._base_url + self._path

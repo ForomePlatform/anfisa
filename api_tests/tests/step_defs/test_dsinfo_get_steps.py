@@ -4,17 +4,15 @@ import pytest
 from pytest_bdd import scenarios, parsers, then, when
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
 from lib.api.dsinfo_api import Dsinfo
-from tests.helpers.functions import successful_string_to_bool
 
 scenarios('../features/dsinfo-get.feature')
 
 
-@when(parsers.cfparse('I send get dsinfo request with parameters: "{parameters:String}" ({successful:String})',
+@when(parsers.cfparse('dsinfo request is send with parameters: "{parameters:String}"',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='dsinfo_response')
-def dsinfo_response(parameters, successful):
+def dsinfo_response(parameters):
     parameters = json.loads(parameters)
-    successful = successful_string_to_bool(successful)
-    pytest.response = Dsinfo.get(parameters, successful)
+    pytest.response = Dsinfo.get(parameters)
     return pytest.response
 
 

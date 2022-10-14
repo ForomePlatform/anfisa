@@ -9,7 +9,7 @@ scenarios('../features/аfter_all_hook.feature')
 
 @then(parsers.cfparse('"{data_type:String}" should be deleted', extra_types=EXTRA_STRING_TYPES))
 def delete_test_data(data_type):
-    time.sleep(7)
+    time.sleep(10)
     match data_type:
         case 'ws datasets':
             print('deleting test datasets created automatically')

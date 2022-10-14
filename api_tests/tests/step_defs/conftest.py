@@ -56,15 +56,16 @@ def i_do_something(fixture_function):
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_identifier):
     print('\npreparing dataset..')
+    pytest.dataset = ''
     match dataset_identifier:
         case 'xl Dataset':
-            return xl_dataset()
+            pytest.dataset = xl_dataset()
         case 'xl Dataset with > 9000 records':
-            return xl_dataset(9000)
+            pytest.dataset = xl_dataset(9000)
         case 'xl Dataset with > 150 records':
-            return xl_dataset(150)
+            pytest.dataset = xl_dataset(150)
         case 'ws Dataset' | 'ws Dataset with <test> in the name':
-            return derive_ws(xl_dataset())
+            pytest.dataset = derive_ws(xl_dataset())
         case 'xl Dataset with code filter':
             xl_ds = ''
             for i in range(10):
@@ -74,10 +75,11 @@ def dataset(dataset_identifier):
                     break
                 xl_ds = ''
             assert xl_ds != ''
-            return xl_ds
+            pytest.dataset = xl_ds
         case _:
             find_dataset(dataset_identifier)
-            return dataset_identifier
+            pytest.dataset = dataset_identifier
+    return pytest.dataset
 
 
 @given(parsers.cfparse('unique "{name_type:String}" is generated',
@@ -191,12 +193,12 @@ def assert_stat_list_schemas(property_name):
 
 
 @then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_error(error_message):
+def contain_response_error(error_message):
     assert error_message in pytest.response.text
 
 
 @then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
-def dsinfo_response_error(body):
+def equal_response_error(body):
     assert pytest.response.text == f'"{body}"'
 
 
@@ -213,6 +215,11 @@ def assert_response_code(key, value):
         value = Generator.test_data(value[5:])
     response_json = json.loads(pytest.response.text)
     assert response_json[key] == value
+
+
+@then(parsers.cfparse('response body should be equal "{body:String}" DatasetName', extra_types=EXTRA_STRING_TYPES))
+def dataset_name_response_error(body, dataset):
+    assert pytest.response.text == f'"{body} {dataset}"'
 
 
 @then(parsers.cfparse('response body schema should be valid by "{schema:String}"',

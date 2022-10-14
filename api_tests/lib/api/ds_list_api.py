@@ -11,8 +11,5 @@ class DsList:
 
     @staticmethod
     def post(parameters):
-        response = apiRequest.request(parameters)
-        print('responseCode:' + str(response.status_code))
-        print('responseBody:', response.text)
-        return response
+        return apiRequest.request(parameters)
 

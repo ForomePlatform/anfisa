@@ -47,13 +47,6 @@ def delete_auto_dtrees():
             continue
 
 
-def successful_string_to_bool(successful):
-    if successful == "successful":
-        return True
-    else:
-        return False
-
-
 def number_of_ds_records(ds_name):
     response = Dsinfo.get({'ds': ds_name})
     return response.json()['total']

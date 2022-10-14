@@ -1,4 +1,6 @@
 import os
+import re
+
 import requests
 import json
 
@@ -48,7 +50,7 @@ for feature in data:
             _passing = _passing + 1
         else:
             _failing = _failing + 1
-            _text = _text + '*Scenario*: ' + scenario['name'] + ' ' + '[*' + param + '*]\n'
+            _text = _text + '*Scenario*: ' + scenario['name'] + ' ' + '[*' + param + '*] (' + scenario['id'] + ')\n'
 _count = _failing + _passing
 
 result = \

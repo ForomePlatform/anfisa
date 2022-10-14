@@ -5,15 +5,15 @@ Feature: Check ws_tags [POST] request
     @any
     @positive
     Scenario Outline: Return a list of tags for any ws dataset
-    Given "xl Dataset with code filter" is uploaded and processed by the system
-    And ws Dataset with < 9000 records is derived from it
-    When ws_tags request with "<ws>" and "<rec>" is send
-    Then response status should be "200" OK
-    And response body schema should be valid by "ws_tags_schema"
+        Given "xl Dataset with code filter" is uploaded and processed by the system
+        And ws Dataset with < 9000 records is derived from it
+        When ws_tags request with "<ws>" and "<rec>" is send
+        Then response status should be "200" OK
+        And response body schema should be valid by "ws_tags_schema"
 
         Examples:
-        | ws            | rec |
-        | ws Dataset    | 0   |
+            | ws            | rec |
+            | ws Dataset    | 0   |
 
 
     @specific
