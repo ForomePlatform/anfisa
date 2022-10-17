@@ -1,3 +1,5 @@
+.. _filter_refiner:
+
 **************
 Filter refiner
 **************
@@ -72,6 +74,39 @@ and have more flexibility in region selection.
 Each numeric filter passes variations with the parameter value *inside* the specified range.
 In **Filter Refiner** mode there is no way to select variations *outside* the selected range.
 To do this, one can use **Decision tree**.
+
+Filter discriminative power
+---------------------------
+In the context of Anfisa application there is a wide list of variant properties that can be used to reduce the number
+the set of selected variants.
+The **Discriminative Power** value is a special number used to help the user to notice the most “effective” properties
+from a long list.
+
+Here “Effectivity” of a filter means that with use of it one can split the current set of variants
+on the the most strongly differing groups (e.g. with loss maximum of “entropy”).
+So, the Discriminative Power in this context pure informational effectiveness,
+with no concerns of property meanings.
+The "effective" filter can separate variations into most differing groups, but this differentiation
+can have no real biological meaning.
+
+The algorithm of discriminative power calculation is described in the **Discriminative Power specification** in
+:ref:`suppl`
+
+The visualization of this “effectivity” is an indicator with a choice of 3 or 4 colors
+close to the name of each filter. Each interval of discriminative power value has its own color coding,
+representing the number of different groups and number of variations in each group.
+This is a rough tool, however it might be helpful in work with a wide list of variants and filters.
+
+.. image:: pics/discriminative-power_indicators.png
+  :width: 200
+  :alt: Discriminative power color coding
+
+To see the exact value of discriminative power one can hover a mouse over the filter discriminative power indicator.
+
+.. image:: pics/discriminative-power.png
+  :width: 500
+  :alt: Discriminative power popup
+
 
 Filter chain creation
 =====================
@@ -158,7 +193,9 @@ and providing dataset name. The derived datasets are described in the correspond
 
 After creating a derived dataset user can open derived dataset, or continue refining data.
 
+**Next**: :ref:`decision_tree`
 
+:ref:`toc`
 
 
 
