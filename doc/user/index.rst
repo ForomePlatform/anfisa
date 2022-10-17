@@ -90,7 +90,14 @@ in genetic variant’s analysis, annotations and curation.
 
 This guide is current as of Anfisa version v.0.7.
 
-To get familiar with AnFiSA capabilities, go through the following pages:
+To get familiar with AnFiSA capabilities, start from :ref:`intro`
+
+Or select page from table of contents.
+
+.. _toc:
+
+Table of contents
+-----------------
 
 
 .. toctree::
@@ -104,7 +111,11 @@ To get familiar with AnFiSA capabilities, go through the following pages:
 
    filter_refiner
 
-   decision_tree.rst
+   decision_tree
+
+   filter_dashboard
+
+   derived_dataset
    
    annotation_sources
    
@@ -113,6 +124,17 @@ To get familiar with AnFiSA capabilities, go through the following pages:
    dtree_syntax
    
    zygosity
+
+.. _suppl:
+
+Supplementary materials
+=======================
+
+.. toctree::
+   :maxdepth: 1
+
+   suppl/discriminative_power.rst
+
 
 Acknowledgment
 ==============

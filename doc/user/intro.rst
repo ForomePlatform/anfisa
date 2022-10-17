@@ -1,3 +1,5 @@
+.. _intro:
+
 ************
 Introduction
 ************
@@ -116,4 +118,6 @@ The high-confidence benchmark variants have been provided by NIST version 4.2.
 The publicly available demo version of
 AnFiSA includes datasets based on these resources.
 
+**Next**: :ref:`filter_refiner`
 
+:ref:`toc`

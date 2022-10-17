@@ -1,6 +1,8 @@
-**************
+.. _decision_tree:
+
+*************
 Decision Tree
-**************
+*************
 
 The Decision tree is an advances method of variations filtering.
 It allows very powerful and flexible way to refine variations set and create new derives sets.
@@ -24,7 +26,7 @@ in variation filtering and in subsequent actions.
 The overall logic is following:
 
 * Decision tree is a linear sequence of steps
-* Each step is a particular filter or a combination of filters joined by AND/OR.
+* Each step is a particular filter or a combination of filters joined by AND/OR (In decision tree they are referred as *attributes*).
 * For variations, *passing* the step user can choose one of the following actions:
     * Include variations in the final data set
     * Exclude variations form the subsequent analysis
@@ -79,7 +81,7 @@ By clicking on the filter user can see the filter properties in the pop-up windo
 After pressing the *Add attribute* button the filter is added
 to the current step.
 
-*Attribute - just one filter in the list of filters for particular step*
+*Attribute - just one filter in the particular step*
 
 User can add more filters to the same step by clicking on the other filters
 or by pressing the **Add attribute** button on the **Results** panel (see below).
@@ -124,9 +126,9 @@ include into final dataset or exclude from calculation.
 
 The icon "three vertical dots" allows to change decision tree:
 * Add steps before/after current
-* Negate the step (reverse the final result of step filters)
+* Negate the step -- reverse the final result of step
 * Duplicate step
-* Split step -- separate multi-filter step to the several independent steps
+* Split step -- separate multi-attribute step to the several independent steps
 * Delete step
 
 The left part of step details shows the filters (attributes) with their settings.
@@ -136,5 +138,13 @@ The gear icon in the filter allows user to configure the filter parameters.
 The configuration window is the same as for adding new filter to the step.
 User can save updated filter parameters, cancel changed or remove the filter form the step.
 
+The "**Add step**" button at the bottom of the tree adds mode step to the decision tree.
 
+The bottom of the tree always occupied by the special step called "**Final Step**"
+The only purpose of this step is to decide, what we should do with te rest of variations,
+not included/excluded by other filters. Here we have only two possible options:
+include these variation to the final dataset, or exclude.
 
+**Next**: :ref:`filter_dashboard`
+
+:ref:`toc`
