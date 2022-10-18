@@ -9,11 +9,11 @@ scenarios('../features/dtree_stat-post.feature')
 
 
 @when(parsers.cfparse(
-    'dtree_stat request with "{ds:String}", "{code:String}", "{no:String}" and "{tm:String}" parameters is send',
+    'dtree_stat request with "{ds:String}", "{code_name:String}", "{no:String}" and "{tm:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES), target_fixture='dtree_stat')
-def dtree_stat(dataset, ds, code, no, tm):
+def dtree_stat(dataset, ds, code_name, no, tm):
     ds_name = dataset if ds == 'xl Dataset' else ds
-    parameters = Constructor.dtree_stat_payload(ds=ds_name, code=code, no=no, tm=tm)
+    parameters = Constructor.dtree_stat_payload(ds=ds_name, code=code_name, no=no, tm=tm)
     pytest.response = DtreeStat.post(parameters)
     return pytest.response
 

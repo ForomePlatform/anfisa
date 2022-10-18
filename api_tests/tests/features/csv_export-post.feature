@@ -13,7 +13,7 @@ Feature: Check csv_export [POST] request
 
     @specific
     @positive
-    Scenario: Export specific ws dataset as csv
+    Scenario: Export specific "wgs_PGP3140_nist_3_3_2" ws dataset as csv
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And ws Dataset with < 9000 records is derived from it
         When csv_export request with "ws with < 9000 records" and "csv" parameters is send

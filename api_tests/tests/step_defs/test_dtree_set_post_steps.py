@@ -13,24 +13,24 @@ from tests.helpers.generators import Generator
 scenarios('../features/dtree_set-post.feature')
 
 
-@when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code:String}" parameters is send',
+@when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code_name:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def dtree_set_response(ds, code, dataset):
+def dtree_set_response(ds, code_name, dataset):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
-    parameters = Constructor.dtree_set_payload(ds=ds, code=code)
+    parameters = Constructor.dtree_set_payload(ds=ds, code=code_name)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
 
 
 @when(parsers.cfparse(
-    'dtree_set request with correct "{ds:String}", "{code:String}" and "{instr:String}" parameters is send',
+    'dtree_set request with correct "{ds:String}", "{code_name:String}" and "{instr:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES))
-def dtree_set_response(ds, code, instr, dataset, unique_name):
+def dtree_set_response(ds, code_name, instr, dataset, unique_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
         ds = dataset
     instr = '["DTREE","%(instr)s","%(dtree)s"]' % {'dtree': unique_name, 'instr': instr}
-    parameters = Constructor.dtree_set_payload(ds=ds, code=code, instr=instr)
+    parameters = Constructor.dtree_set_payload(ds=ds, code=code_name, instr=instr)
     print('parameters', parameters)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response
