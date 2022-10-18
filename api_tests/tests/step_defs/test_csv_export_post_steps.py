@@ -9,9 +9,9 @@ scenarios('../features/csv_export-post.feature')
 
 @when(parsers.cfparse('csv_export request with "{ds:String}" and "{schema:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def csv_export_response(dataset, ws_less_9000_rec, ds, schema):
+def csv_export_response(ds, schema):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
-        ds = dataset
+        ds = pytest.dataset
     elif ds == 'ws with < 9000 records':
         ds = pytest.ws_less_9000_rec
     parameters = Constructor.csv_export_payload(ds=ds, schema=schema)
