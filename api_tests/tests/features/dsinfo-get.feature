@@ -10,7 +10,8 @@ Feature: Check Dsinfo[GET] request
     Examples:
       | parameters                          | name                    |
       | { "ds": "xl_PGP3140_wgs_panel_hl" } | xl_PGP3140_wgs_panel_hl |
-      | { "ds": "1658095799" }              | 1658095799              |
+      | { "ds": "PGP3140_wgs_panel_hl" }    | PGP3140_wgs_panel_hl    |
+      | { "ds": "bgm_red_button" }          | bgm_red_button          |
 
 
   @negative
