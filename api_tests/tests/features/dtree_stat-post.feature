@@ -2,6 +2,7 @@
 @dtree_stat
 Feature: Check dtree_stat [POST] request
 
+
     @any
     @positive
     Scenario Outline: Get attributes for any xl dataset's dtree by code
@@ -16,17 +17,19 @@ Feature: Check dtree_stat [POST] request
             | ds         | code         | no | tm |
             | xl Dataset | return False | 0  | 0  |
 
+
     @specific
     @positive
     Scenario Outline: Get attributes for specific "wgs_PGP3140_nist_3_3_2" xl dataset's dtree by code
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         When dtree_stat request with "<ds>", "<code>", "<no>" and "<tm>" parameters is send
         Then response status should be "200" OK
-        And response body json should match expected data for "dtree_stat" request
+#        And response body json should match expected data for "dtree_stat" request
 
         Examples:
             | ds                     | code         | no | tm |
             | wgs_PGP3140_nist_3_3_2 | return False | 0  | 0  |
+
 
     @any
     @negative
