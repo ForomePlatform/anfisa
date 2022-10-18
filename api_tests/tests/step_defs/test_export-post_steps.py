@@ -6,7 +6,7 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/export-post.feature')
 
 
-@when(parsers.cfparse('"export" request with ds and empty conditions parameters is send'))
+@when(parsers.cfparse('"export" request with "ws Dataset" and empty conditions parameters is send'))
 def export_response(dataset):
     parameters = Constructor.export_payload(ds=dataset, conditions='[]')
     pytest.response = Export.post(parameters)
