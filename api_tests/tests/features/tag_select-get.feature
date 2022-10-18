@@ -17,7 +17,7 @@ Feature: Check tag_select [GET] request
 
     @specific
     @positive
-    Scenario: Should return tags of specific ws dataset
+    Scenario: Should return tags of specific "wgs_PGP3140_nist_3_3_2" ws dataset
     Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
     And ws Dataset is derived from it
     When tag_select request with specified "ds" parameter is send

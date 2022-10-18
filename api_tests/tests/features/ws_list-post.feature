@@ -15,8 +15,8 @@ Feature: Check ws_list [POST] request
 
     @specific
     @positive
-    Scenario: Return current list of Dataset variants for specific ws dataset
-        Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
+    Scenario: Return current list of Dataset variants for specific "wgs_PGP3140_nist_3_3_2" ws dataset
+        Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And ws Dataset with < 9000 records is derived from it
         When ws_list request with correct "ds" parameter is send
         Then response status should be "200" OK

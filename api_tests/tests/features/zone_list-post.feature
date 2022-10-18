@@ -24,8 +24,8 @@ Feature: Check zone_list [POST] request
 
     @specific
     @positive
-    Scenario: Should return zone variants for specific ws dataset
-        Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
+    Scenario: Should return zone variants for specific "wgs_PGP3140_nist_3_3_2" ws dataset
+        Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And ws Dataset with < 9000 records is derived from it
         And "first" zone is selected
         When zone_list request with "ds" parameter is send
@@ -35,8 +35,8 @@ Feature: Check zone_list [POST] request
 
     @specific
     @positive
-    Scenario: Should return a list of zones for specific ws dataset
-        Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
+    Scenario: Should return a list of zones for specific "wgs_PGP3140_nist_3_3_2" ws dataset
+        Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And ws Dataset with < 9000 records is derived from it
         And "first" zone is selected
         When zone_list request with correct "ds" and "zone" parameters is send

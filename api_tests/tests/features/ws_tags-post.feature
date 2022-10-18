@@ -18,8 +18,8 @@ Feature: Check ws_tags [POST] request
 
     @specific
     @positive
-    Scenario Outline: Return a list of tags for specific ws dataset
-        Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
+    Scenario Outline: Return a list of tags for specific "wgs_PGP3140_nist_3_3_2" ws dataset
+        Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And ws Dataset with < 9000 records is derived from it
         When ws_tags request with "<ws>" and "<rec>" is send
         Then response body json should match expected data for "ws_tags" request
