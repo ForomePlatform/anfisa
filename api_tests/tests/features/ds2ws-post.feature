@@ -1,5 +1,4 @@
 @api
-@ws2ds
 Feature: Check ds2ws [POST] request
 
     @positive
