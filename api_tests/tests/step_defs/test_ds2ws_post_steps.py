@@ -13,14 +13,6 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/ds2ws-post.feature')
 
 
-@when(parsers.cfparse('ds2ws request with correct "ds" and "ws" parameters is send',
-                      extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
-def ds2ws_response(dataset, unique_name):
-    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_name)
-    pytest.response = Ds2ws.post(parameters)
-    return pytest.response
-
-
 @when(parsers.cfparse('ds2ws request with correct "ds", "code" and "ws" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, code, unique_name):
@@ -33,6 +25,14 @@ def ds2ws_response(dataset, code, unique_name):
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, code, ws):
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=ws, code=code)
+    pytest.response = Ds2ws.post(parameters)
+    return pytest.response
+
+
+@when(parsers.cfparse('ds2ws request with correct "ds" and "ws" parameters is send',
+                      extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
+def ds2ws_response(dataset, unique_name):
+    parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_name)
     pytest.response = Ds2ws.post(parameters)
     return pytest.response
 

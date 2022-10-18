@@ -5,13 +5,13 @@ Feature: Check adm_reload_ds [POST] request
     @any
     @positive
     Scenario Outline: Force reload xl dataset in memory
-        Given "<dsType>" is uploaded and processed by the system
-        When adm_reload_ds request with "ds" parameter is send
+        Given "<ds>" is uploaded and processed by the system
+        When adm_reload_ds request with "<ds>" parameter is send
         Then response status should be "200" OK
         And response body should be equal "Reloaded" DatasetName
 
         Examples:
-            | dsType     |
+            | ds         |
             | xl Dataset |
             | ws Dataset |
 

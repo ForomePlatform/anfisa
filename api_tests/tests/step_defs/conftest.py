@@ -39,18 +39,6 @@ def pytest_bdd_after_scenario():
     pass
 
 
-# Fixtures
-@pytest.fixture
-def fixture_function():
-    print('fixture_function')
-
-
-# Shared Given Steps
-@given('I do something', target_fixture='ddg_home')
-def i_do_something(fixture_function):
-    print('i_do_something')
-
-
 @given(
     parsers.cfparse('"{dataset_identifier:String}" is uploaded and processed by the system',
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
@@ -85,42 +73,43 @@ def dataset(dataset_identifier):
 @given(parsers.cfparse('unique "{name_type:String}" is generated',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='unique_name')
 def unique_name(name_type):
-    _unique_name = ''
     match name_type:
         case 'xl Dataset name':
-            _unique_name = Generator.unique_name('xl')
+            pytest.unique_name = Generator.unique_name('xl')
         case 'ws Dataset name':
-            _unique_name = Generator.unique_name('ws')
+            pytest.unique_name = Generator.unique_name('ws')
         case 'tag':
-            _unique_name = Generator.unique_name('tag')
+            pytest.unique_name = Generator.unique_name('tag')
         case 'Dtree name':
-            _unique_name = Generator.unique_name('dtree')
-    assert _unique_name != ''
-    return _unique_name
+            pytest.unique_name = Generator.unique_name('dtree')
+    assert pytest.unique_name != ''
+    return pytest.unique_name
 
 
 @given(parsers.cfparse('"{code_type:String}" Python code is constructed',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='code')
 def code(code_type):
-    return Generator.code(code_type)
-
-
-@given(parsers.cfparse('"{code_type:String}" Python code is constructed',
-                       extra_types=EXTRA_STRING_TYPES), target_fixture='code')
-def code(code_type):
-    return Generator.code(code_type)
+    pytest.code = Generator.code(code_type)
+    return pytest.code
 
 
 @given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
        target_fixture='ws_less_9000_rec')
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
-    return derive_ws(dataset, code)
+    pytest.ws_less_9000_rec = derive_ws(dataset, code)
+
+    return pytest.ws_less_9000_rec
 
 
 @given(parsers.cfparse('ws Dataset is derived from it'), target_fixture='derived_ws')
 def derived_ws(dataset):
     return derive_ws(dataset)
+
+
+@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
+def assert_job_status(status):
+    assert status in ds_creation_status(pytest.response.json()['task_id'])
 
 
 @then(parsers.cfparse('response body "{property_name:String}" tag list should include "{tag_type:String}"',
@@ -130,11 +119,6 @@ def assert_status(property_name, unique_name, tag_type):
         assert unique_name in pytest.response.json()[property_name]
     elif tag_type == 'generated _note Tag':
         assert '_note' in pytest.response.json()[property_name]
-
-
-@then(parsers.cfparse('job status should be "{status:String}"', extra_types=EXTRA_STRING_TYPES))
-def assert_job_status(status):
-    assert status in ds_creation_status(pytest.response.json()['task_id'])
 
 
 @then(parsers.cfparse('response body json should match expected data for "{request_name:String}" request',
@@ -165,6 +149,36 @@ def determine_equality_of_properties(property_name_1, property_name_2):
     assert response_json[property_name_1] == response_json[property_name_2]
 
 
+@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
+def contain_response_error(error_message):
+    assert error_message in pytest.response.text
+
+
+@then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
+def equal_response_error(body):
+    assert pytest.response.text == f'"{body}"'
+
+
+@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
+def assert_response_code(key, value):
+    if value[:9] == 'generated':
+        value = Generator.test_data(value[10:])
+    elif value[:4] == 'gen.':
+        value = Generator.test_data(value[5:])
+    response_json = json.loads(pytest.response.text)
+    assert response_json[key] == value
+
+
+@then(parsers.cfparse('response body should be equal "{body:String}" DatasetName', extra_types=EXTRA_STRING_TYPES))
+def dataset_name_response_error(body, dataset):
+    assert pytest.response.text == f'"{body} {dataset}"'
+
+
+@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
+def assert_status(status, text):
+    assert pytest.response.status_code == status
+
+
 @then(parsers.cfparse('response body "{property_name:String}" "{schema_name:String}" schemas should be valid',
                       extra_types=EXTRA_STRING_TYPES))
 def assert_nested_schemas(property_name, schema_name):
@@ -190,36 +204,6 @@ def assert_stat_list_schemas(property_name):
                 validate(element, numeric_property_status_schema)
             case 'func':
                 validate(element, func_property_status_schema)
-
-
-@then(parsers.cfparse('response body should contain "{error_message:String}"', extra_types=EXTRA_STRING_TYPES))
-def contain_response_error(error_message):
-    assert error_message in pytest.response.text
-
-
-@then(parsers.cfparse('response body should be equal "{body:String}"', extra_types=EXTRA_STRING_TYPES))
-def equal_response_error(body):
-    assert pytest.response.text == f'"{body}"'
-
-
-@then(parsers.cfparse('response status should be "{status:Number}" {text:String}', extra_types=EXTRA_TYPES))
-def assert_status(status, text):
-    assert pytest.response.status_code == status
-
-
-@then(parsers.cfparse('response body "{key:String}" should be equal "{value:String}"', extra_types=EXTRA_STRING_TYPES))
-def assert_response_code(key, value):
-    if value[:9] == 'generated':
-        value = Generator.test_data(value[10:])
-    elif value[:4] == 'gen.':
-        value = Generator.test_data(value[5:])
-    response_json = json.loads(pytest.response.text)
-    assert response_json[key] == value
-
-
-@then(parsers.cfparse('response body should be equal "{body:String}" DatasetName', extra_types=EXTRA_STRING_TYPES))
-def dataset_name_response_error(body, dataset):
-    assert pytest.response.text == f'"{body} {dataset}"'
 
 
 @then(parsers.cfparse('response body schema should be valid by "{schema:String}"',

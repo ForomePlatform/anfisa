@@ -6,7 +6,7 @@ Feature: Check adm_drop_ds [POST] request
     @positive
     Scenario: Delete ws Dataset from the database
         Given "ws Dataset with <test> in the name" is uploaded and processed by the system
-        When adm_drop_ds requests with "ds" parameter is send
+        When adm_drop_ds requests with "ws Dataset with <test> in the name" parameter is send
         Then response status should be "200" OK
         And response body should be equal "Dropped" DatasetName
 

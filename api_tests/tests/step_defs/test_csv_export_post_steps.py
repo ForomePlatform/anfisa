@@ -1,34 +1,19 @@
 import pytest
-from pytest_bdd import when, scenarios, parsers, given, then
+from pytest_bdd import when, scenarios, parsers, then
 from lib.api.csv_export_api import CsvExport
 from lib.interfaces.interfaces import EXTRA_STRING_TYPES
 from tests.helpers.constructors import Constructor
-from tests.helpers.generators import Generator
-from tests.step_defs.conftest import derive_ws
 
 scenarios('../features/csv_export-post.feature')
 
 
-
-@when(parsers.cfparse('csv_export request with "ds" and "schema" parameters is send'))
-def csv_export_response(dataset):
-    parameters = Constructor.csv_export_payload(ds=dataset, schema='csv')
-    pytest.response = CsvExport.post(parameters)
-
-
-@when(parsers.cfparse('csv_export request with "schema" and "ds" parameters is send'))
-def csv_export_response(ws_less_9000_rec):
-    parameters = Constructor.csv_export_payload(ds=ws_less_9000_rec, schema='csv')
-    pytest.response = CsvExport.post(parameters)
-
-
 @when(parsers.cfparse('csv_export request with "{ds:String}" and "{schema:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def csv_export_response(dataset, ws_less_9000_rec, ds, schema):
-    if ds == 'xl Dataset':
-        ds = dataset
+def csv_export_response(ds, schema):
+    if ds == 'xl Dataset' or ds == 'ws Dataset':
+        ds = pytest.dataset
     elif ds == 'ws with < 9000 records':
-        ds = ws_less_9000_rec
+        ds = pytest.ws_less_9000_rec
     parameters = Constructor.csv_export_payload(ds=ds, schema=schema)
     pytest.response = CsvExport.post(parameters)
 

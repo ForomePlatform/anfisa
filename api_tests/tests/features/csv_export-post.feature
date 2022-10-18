@@ -6,19 +6,19 @@ Feature: Check csv_export [POST] request
     @positive
     Scenario: Export any ws dataset as csv
         Given "ws Dataset" is uploaded and processed by the system
-        When csv_export request with "ds" and "csv" parameters is send
+        When csv_export request with "ws Dataset" and "csv" parameters is send
         Then response status should be "200" OK
         And response body schema should be valid by "csv_export_schema"
 
-#todo
-#    @specific
-#    @positive
-#    Scenario: Export specific ws dataset as csv
-#        Given "xl_PGP3140_wgs_NIST-3_3_2" is uploaded and processed by the system
-#        And ws Dataset with < 9000 records is derived from it
-#        When csv_export request with "ds" and "csv" parameters is send
-#        Then response status should be "200" OK
-#        And response body should match expected data for "csv_export" request
+
+    @specific
+    @positive
+    Scenario: Export specific ws dataset as csv
+        Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
+        And ws Dataset with < 9000 records is derived from it
+        When csv_export request with "ws with < 9000 records" and "csv" parameters is send
+        Then response status should be "200" OK
+        And response body should match expected data for "csv_export" request
 
 
     @any
