@@ -8,15 +8,10 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/ds_stat-post.feature')
 
 
-@when(parsers.cfparse('ds_stat request with correct "ds" parameter is send',
+@when(parsers.cfparse('ds_stat request with "{ds:String}" parameter is send',
                       extra_types=EXTRA_STRING_TYPES))
-def ds_stat_response(dataset):
-    parameters = Constructor.ds_stat_payload(ds=dataset)
-    pytest.response = DsStat.post(parameters)
-
-
-@when(parsers.cfparse('ds_stat request with incorrect "{ds:String}" parameter is send',
-                      extra_types=EXTRA_STRING_TYPES))
-def ds_stat_response(ds):
+def ds_stat_response(dataset, ds):
+    if ds == 'xl Dataset' or ds == 'ws Dataset':
+        ds = dataset
     parameters = Constructor.ds_stat_payload(ds=ds)
     pytest.response = DsStat.post(parameters)

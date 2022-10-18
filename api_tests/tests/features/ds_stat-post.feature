@@ -5,8 +5,8 @@ Feature: Check DsStat [POST] request
     @any
     @positive
     Scenario Outline: Return full information about any dataset (no filters applied)
-        Given "<dataset>" is uploaded and processed by the system
-        When ds_stat request with correct "ds" parameter is send
+        Given "<ds>" is uploaded and processed by the system
+        When ds_stat request with "<ds>" parameter is send
         Then response status should be "200" OK
         And response body schema should be valid by "ds_stat_schema"
         And response body "stat-list" property_status schemas should be valid
@@ -15,15 +15,14 @@ Feature: Check DsStat [POST] request
         And response body "total-counts" value should be equal "filtered-counts"
 
         Examples:
-            | dataset    |
+            | ds         |
             | ws Dataset |
             | xl Dataset |
 
     @any
     @negative
     Scenario Outline: Fail to return information about any xl dataset
-        Given "xl Dataset" is uploaded and processed by the system
-        When ds_stat request with incorrect "<ds>" parameter is send
+        When ds_stat request with "<ds>" parameter is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"
 

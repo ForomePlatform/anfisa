@@ -6,7 +6,7 @@ Feature: Check ds_list [POST] request
     @positive
     Scenario: Return a list samples for any dataset
         Given "xl Dataset with > 150 records" is uploaded and processed by the system
-        When ds_list request is send
+        When ds_list request with "xl Dataset with > 150 records" parameter is send
         Then response status should be "200" OK
         And response body schema should be valid by "ds_list_schema"
         And job_status should be "Done"
@@ -16,7 +16,7 @@ Feature: Check ds_list [POST] request
     @positive
     Scenario Outline: Return a list of N samples for any dataset
         Given "xl Dataset with > 150 records" is uploaded and processed by the system
-        When ds_list request with "<smpcnt>" parameter is send
+        When ds_list request with "xl Dataset with > 150 records" and "<smpcnt>" parameters is send
         Then response status should be "200" OK
         And response body schema should be valid by "ds_list_schema"
         And job_status should be "Done"
@@ -35,7 +35,7 @@ Feature: Check ds_list [POST] request
     @any
     @negative
     Scenario Outline: Fail to return a list samples for any dataset
-        When ds_list request with incorrect "<ds>" parameter is send
+        When ds_list request with "<ds>" parameter is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"
 

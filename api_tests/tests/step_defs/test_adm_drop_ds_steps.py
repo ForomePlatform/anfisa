@@ -9,9 +9,9 @@ scenarios('../features/adm_drop_ds-post.feature')
 
 
 @when(parsers.cfparse('adm_drop_ds requests with "{ds:String}" parameter is send', EXTRA_STRING_TYPES))
-def adm_drop_ds_response(dataset, ds):
+def adm_drop_ds_response(ds):
     if ds == 'ws Dataset with <test> in the name':
-        ds = dataset
+        ds = pytest.dataset
     parameters = Constructor.arm_drop_ds_payload(ds=ds)
     pytest.response = AdmDropDs.post(parameters)
     return pytest.response

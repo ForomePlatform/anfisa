@@ -12,21 +12,17 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/ds_list-post.feature')
 
 
-@when(parsers.cfparse('ds_list request is send'))
-def ds_list_response(dataset):
-    parameters = Constructor.ds_list_payload(ds=dataset)
+@when(parsers.cfparse('ds_list request with "{ds:String}" parameter is send', extra_types=EXTRA_STRING_TYPES))
+def ds_list_response(dataset, ds):
+    if ds == 'xl Dataset with > 150 records':
+        ds = dataset
+    parameters = Constructor.ds_list_payload(ds=ds)
     pytest.response = DsList.post(parameters)
 
 
-@when(parsers.cfparse('ds_list request with "{smpcnt:String}" parameter is send', extra_types=EXTRA_STRING_TYPES))
+@when(parsers.cfparse('ds_list request with "xl Dataset with > 150 records" and "{smpcnt:String}" parameters is send', extra_types=EXTRA_STRING_TYPES))
 def ds_list_response(dataset, smpcnt):
     parameters = Constructor.ds_list_payload(ds=dataset, smpcnt=smpcnt)
-    pytest.response = DsList.post(parameters)
-
-
-@when(parsers.cfparse('ds_list request with incorrect "{ds:String}" parameter is send', extra_types=EXTRA_STRING_TYPES))
-def ds_list_response(ds):
-    parameters = Constructor.ds_list_payload(ds=ds)
     pytest.response = DsList.post(parameters)
 
 
