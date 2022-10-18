@@ -44,16 +44,15 @@ def pytest_bdd_after_scenario():
                     extra_types=EXTRA_STRING_TYPES), target_fixture='dataset')
 def dataset(dataset_identifier):
     print('\npreparing dataset..')
-    pytest.dataset = ''
     match dataset_identifier:
         case 'xl Dataset':
-            pytest.dataset = xl_dataset()
+            return xl_dataset()
         case 'xl Dataset with > 9000 records':
-            pytest.dataset = xl_dataset(9000)
+            return xl_dataset(9000)
         case 'xl Dataset with > 150 records':
-            pytest.dataset = xl_dataset(150)
+            return xl_dataset(150)
         case 'ws Dataset' | 'ws Dataset with <test> in the name':
-            pytest.dataset = derive_ws(xl_dataset())
+            return derive_ws(xl_dataset())
         case 'xl Dataset with code filter':
             xl_ds = ''
             for i in range(10):
@@ -63,11 +62,10 @@ def dataset(dataset_identifier):
                     break
                 xl_ds = ''
             assert xl_ds != ''
-            pytest.dataset = xl_ds
+            return xl_ds
         case _:
             find_dataset(dataset_identifier)
-            pytest.dataset = dataset_identifier
-    return pytest.dataset
+            return dataset_identifier
 
 
 @given(parsers.cfparse('unique "{name_type:String}" is generated',
@@ -75,31 +73,27 @@ def dataset(dataset_identifier):
 def unique_name(name_type):
     match name_type:
         case 'xl Dataset name':
-            pytest.unique_name = Generator.unique_name('xl')
+            return Generator.unique_name('xl')
         case 'ws Dataset name':
-            pytest.unique_name = Generator.unique_name('ws')
+            return Generator.unique_name('ws')
         case 'tag':
-            pytest.unique_name = Generator.unique_name('tag')
+            return Generator.unique_name('tag')
         case 'Dtree name':
-            pytest.unique_name = Generator.unique_name('dtree')
-    assert pytest.unique_name != ''
-    return pytest.unique_name
+            return Generator.unique_name('dtree')
+    return ''
 
 
 @given(parsers.cfparse('"{code_type:String}" Python code is constructed',
                        extra_types=EXTRA_STRING_TYPES), target_fixture='code')
 def code(code_type):
-    pytest.code = Generator.code(code_type)
-    return pytest.code
+    return Generator.code(code_type)
 
 
 @given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
        target_fixture='ws_less_9000_rec')
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
-    pytest.ws_less_9000_rec = derive_ws(dataset, code)
-
-    return pytest.ws_less_9000_rec
+    return derive_ws(dataset, code)
 
 
 @given(parsers.cfparse('ws Dataset is derived from it'), target_fixture='derived_ws')

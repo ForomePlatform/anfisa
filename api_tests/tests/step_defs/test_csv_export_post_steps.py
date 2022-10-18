@@ -9,9 +9,9 @@ scenarios('../features/csv_export-post.feature')
 
 @when(parsers.cfparse('csv_export request with "{ds:String}" and "{schema:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def csv_export_response(ds, schema):
+def csv_export_response(dataset, ws_less_9000_rec, ds, schema):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
-        ds = pytest.dataset
+        ds = dataset
     elif ds == 'ws with < 9000 records':
         ds = pytest.ws_less_9000_rec
     parameters = Constructor.csv_export_payload(ds=ds, schema=schema)
@@ -20,7 +20,7 @@ def csv_export_response(ds, schema):
 
 @then(parsers.cfparse('response body should match expected data for "{request_name:String}" request',
                       extra_types=EXTRA_STRING_TYPES))
-def assert_csv_data(request_name, dataset):
+def assert_csv_data(dataset, request_name):
     with open(f'tests/test-data/{dataset}/{request_name}', encoding="utf8") as f:
         expected_data = f.read()
     assert expected_data == pytest.response.text.replace("\r", "")
