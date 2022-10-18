@@ -13,9 +13,9 @@ scenarios('../features/ds_list-post.feature')
 
 
 @when(parsers.cfparse('ds_list request with "{ds:String}" parameter is send', extra_types=EXTRA_STRING_TYPES))
-def ds_list_response(dataset, ds):
+def ds_list_response(ds):
     if ds == 'xl Dataset with > 150 records':
-        ds = dataset
+        ds = pytest.dataset
     parameters = Constructor.ds_list_payload(ds=ds)
     pytest.response = DsList.post(parameters)
 

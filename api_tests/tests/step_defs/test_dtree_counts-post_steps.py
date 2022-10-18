@@ -8,7 +8,7 @@ from tests.helpers.generators import Generator
 scenarios('../features/dtree_counts-post.feature')
 
 
-@given(parsers.cfparse('"dtree_set" request with "ds" and "code" parameters is send'),
+@given(parsers.cfparse('"dtree_set" request with "xl Dataset" and "code" parameters is send'),
        target_fixture='dtree_set_response')
 def dtree_set_response(dataset):
     code = Generator.code('valid')
