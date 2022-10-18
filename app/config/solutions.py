@@ -279,7 +279,7 @@ def setupSolutions_Case(app_config, base_pack):
 
     base_pack.regFilter("Loss_Of_Function", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence", LoF_CSQ)],
-                        rubric = RUBRIC_GENETIC_FIRST)
+        rubric = RUBRIC_GENETIC_FIRST)
 
     base_pack.regFilter("Non_Synonymous", condition_high_quality() + [
         ConditionMaker.condEnum("Most_Severe_Consequence",
@@ -290,7 +290,8 @@ def setupSolutions_Case(app_config, base_pack):
             LOW_IMPACT_CSQ, join_mode = "NOT")], rubric = RUBRIC_GENETIC_FIRST)
 
     base_pack.regFilter("Impact_Splicing",
-        condition_high_confidence() + impacting_splicing(), rubric = RUBRIC_GENETIC_FIRST)
+        condition_high_confidence() + impacting_splicing(),
+        rubric = RUBRIC_GENETIC_FIRST)
 
     base_pack.regFilter("ClinVar_VUS_or_Worse",
         condition_high_confidence() + [
@@ -321,7 +322,7 @@ def setupSolutions_Case(app_config, base_pack):
         requires = {"trio_base"}, rubric = RUBRIC_GENETIC_FIRST)
     base_pack.regDTree("All Rare Variants",
         cfgPathSeq(["quality.pyt", "rare.pyt", "return_true.pyt"]),
-                       rubric = RUBRIC_GENETIC_FIRST)
+        rubric = RUBRIC_GENETIC_FIRST)
     # base_pack.regDTree("Hearing Loss, v.4",
     #    cfgPathSeq(["quality.pyt", "hearing_loss.pyt"]))
     base_pack.regDTree("Hearing Loss, v.5",

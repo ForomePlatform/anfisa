@@ -125,7 +125,7 @@ function pickAspect(aspect_id) {
         var cur_tab_id = "la--" + aspect_id;
         if (sCurTabEl == null || sCurTabEl.id != cur_tab_id) {  
             if (sCurTabEl != null) 
-                sCurTabEl.className = sCurTabEl.className.replace(" active", "");
+                sCurTabEl.className = sCurTabEl.className.replaceAll(" active", "");
             sCurTabEl = document.getElementById(cur_tab_id);
             sCurTabEl.className += " active";
         }
@@ -171,7 +171,7 @@ function updateCfg(reset_port) {
     var cur_tab_id = "la--" + tab_port_data[sViewPort];
     if (sCurTabEl == null || sCurTabEl.id != cur_tab_id) {  
         if (sCurTabEl != null) 
-            sCurTabEl.className = sCurTabEl.className.replace(" active", "");
+            sCurTabEl.className = sCurTabEl.className.replaceAll(" active", "");
         sCurTabEl = document.getElementById(cur_tab_id);
         sCurTabEl.className += " active";
     }
@@ -192,11 +192,14 @@ function setupHitTransctriptsCtrl() {
         return;
     span_el = document.getElementById("tr-hit-span");
     if (span_el) {
-        span_el.innerHTML = 
+        var rep_span = 
             '<label for="transcript_hit_check">&nbsp;' +
             'Show selection only</label>&nbsp;' +
             '<input id="transcript_hit_check" type="checkbox" ' +
             'onchange="_checkHitTr();"/>';
+        if (window.parent.viewRejectionMode())
+            rep_span += " (selection marks trancripts to keep)";
+        span_el.innerHTML = rep_span;
         sCheckTrHit = document.getElementById("transcript_hit_check");
         refreshHitTranscripts();
     } else {

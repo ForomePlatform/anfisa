@@ -133,7 +133,7 @@ function selectDS(ds_idx) {
             rep_seq.push('<span class="note-date">' +  
                 "Updated at " +  timeRepr(ds_info["date-note"]) + '</span>');
         rep_seq.push('</p><p class="the-note">' + 
-            ds_info["note"].replace('\n', '<br>') + '</p></div>');
+            ds_info["note"].replaceAll('\n', '<br>') + '</p></div>');
     }
     document.getElementById("ds-info").innerHTML = rep_seq.join('\n');
 }

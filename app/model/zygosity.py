@@ -192,4 +192,3 @@ class ZygositySupport:
             if err_msg:
                 return err_msg + (" in record no %d" % (idx + 1))
         return None
-

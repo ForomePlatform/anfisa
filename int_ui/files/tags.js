@@ -176,7 +176,7 @@ function checkTagInputs() {
 function dropCurTag() {
     if (sCurTagIdx != null) {
         el = document.getElementById("tag--" + sCurTagIdx);
-        el.className = el.className.replace(" cur", "");
+        el.className = el.className.replaceAll(" cur", "");
     }
     sCurTagIdx = null;
 }

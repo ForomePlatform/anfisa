@@ -53,6 +53,16 @@ Returning data must contain status report for first property (the first entry in
 
 In case of :term:`WS-dataset` the request provides status report construction for special name ``"_tags"`` as "name of unit". Tags are not subect of :term:`filtration` process, however status report for tags can be useful in logic of Front-End application. The status report for this case is simpler than :doc:`s_prop_stat`, it contains only **name** and **variants** properties. See :doc:`s_zone` for details.
 
+If **ctx** argument contains option ``"druid-rq": 1`` (see details :doc:`here<s_stat_ctx>`):
+
+    - only single unit name is expected in **units** argument
+    
+    - only context of :term:`XL-dataset` is expected
+    
+    - the return value for this special case is Druid JSON representation of the request
+
+Note: :term:`Function<functions>` filtering properties are not subject of the request, use :doc:`statfunc` instead.
+
 See also
 --------
 :doc:`ds_stat` 
@@ -62,5 +72,7 @@ See also
 :doc:`../concepts/status_report`
 
 :doc:`../concepts/filters_reg`
+
+:doc:`s_stat_ctx`
 
 :doc:`s_zone`

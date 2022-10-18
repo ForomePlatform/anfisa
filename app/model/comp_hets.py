@@ -23,15 +23,12 @@ from hashlib import md5
 
 from app.config.a_config import AnfisaConfig
 from app.eval.var_unit import FunctionUnit
-# =====================================
 
-
+#=====================================
 class CompHetsUnit(FunctionUnit):
     @staticmethod
-    def makeIt(ds_h, descr, before=None, after=None):
+    def makeIt(ds_h, descr):
         unit_h = CompHetsUnit(ds_h, descr)
-        ds_h.getEvalSpace()._insertUnit(
-            unit_h, before=before, after=after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
@@ -49,6 +46,9 @@ class CompHetsUnit(FunctionUnit):
             [1,  {"1": [id_base,  id_mother],  "0": [id_father]}]]
         return self.mZygSupport.makeCompoundRequest(
             approx_mode, actual_condition, c_rq, self.getName())
+
+    def _isDetailed(self, context):
+        return self.mZygSupport.getGeneUnit(context.get("approx")).isDetailed()
 
     def buildConditions(self, approx_mode, actual_condition):
         ret_handle = dict()
@@ -128,29 +128,27 @@ class CompHetsUnit(FunctionUnit):
             ret_handle["err"] = err_msg
         else:
             self.collectComplexStat(ret_handle, condition, context,
-                                    self.mZygSupport.getGeneUnit(
-                                        context.get("approx")).isDetailed())
+                self._isDetailed(context))
 
         return ret_handle
 
-# =====================================
-
-
+#=====================================
 class CompoundRequestUnit(FunctionUnit):
     @staticmethod
-    def makeIt(ds_h, descr, before=None, after=None):
+    def makeIt(ds_h, descr):
         unit_h = CompoundRequestUnit(ds_h, descr)
-        ds_h.getEvalSpace()._insertUnit(
-            unit_h, before=before, after=after)
         ds_h.getEvalSpace()._addFunction(unit_h)
 
     def __init__(self, ds_h, descr):
         FunctionUnit.__init__(self, ds_h.getEvalSpace(), descr,
-                              sub_kind="comp-request",
-                              parameters=["request", "approx", "state"])
+            sub_kind="comp-request",
+            parameters=["request", "approx", "state"])
         self.mZygSupport = ds_h.getZygositySupport()
         self.mOpCache = LRUCache(
             AnfisaConfig.configOption("comp-hets.cache.size"))
+
+    def _isDetailed(self, context):
+        return self.mZygSupport.getGeneUnit(context.get("approx")).isDetailed()
 
     def iterComplexCriteria(self, context, variants=None):
         if context is None:
@@ -170,8 +168,8 @@ class CompoundRequestUnit(FunctionUnit):
             actual_condition = eval_h.getLabelCondition(
                 parameters["state"], point_no)
             if actual_condition is None:
-                return None, ("State label %s not defined"
-                              % parameters["state"])
+                return None, (
+                    "State label %s not defined" % parameters["state"])
         else:
             actual_condition = eval_h.getActualCondition(point_no)
         approx_mode = self.mZygSupport.normalizeApprox(
@@ -184,8 +182,8 @@ class CompoundRequestUnit(FunctionUnit):
             return None, "Empty request"
 
         build_id = md5(bytes(json.dumps(c_rq, sort_keys=True)
-                             + approx_mode + '|' + actual_condition.hashCode(),
-                             encoding="utf-8")).hexdigest()
+            + approx_mode + '|' + actual_condition.hashCode(),
+            encoding="utf-8")).hexdigest()
         with self.getEvalSpace().getDS():
             context = self.mOpCache.get(build_id)
         context = None
@@ -219,8 +217,6 @@ class CompoundRequestUnit(FunctionUnit):
             ret_handle["err"] = err_msg
         else:
             self.collectComplexStat(ret_handle, condition, context,
-                                    self.mZygSupport.getGeneUnit(
-                                        context.get("approx")).isDetailed())
+                self._isDetailed(context))
         ret_handle.update(parameters)
         return ret_handle
-

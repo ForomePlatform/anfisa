@@ -161,6 +161,7 @@ def condDataUnits(cond_data):
             ret |= condDataUnits(sub_cond)
         return ret
     assert False, "!Bad cond data: " + cond_data[0]
+    return None
 
 
 #===============================================

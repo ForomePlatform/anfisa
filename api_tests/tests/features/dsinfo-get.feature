@@ -13,7 +13,8 @@ Feature: Check Dsinfo[GET] request
         Examples:
             | parameters                          | name                    |
             | { "ds": "xl_PGP3140_wgs_panel_hl" } | xl_PGP3140_wgs_panel_hl |
-            | { "ds": "1658095799" }              | 1658095799              |
+            | { "ds": "PGP3140_wgs_panel_hl" }    | PGP3140_wgs_panel_hl    |
+            | { "ds": "bgm_red_button" }          | bgm_red_button          |
 
 
     @any
@@ -23,8 +24,8 @@ Feature: Check Dsinfo[GET] request
         Then response status should be "403" Forbidden
         And response body should contain "<error>"
 
-    Examples:
-      | parameters   | error                                |
-      | { "ds": "" } | Error: Missing request argument "ds" |
-      | { "aa": "" } | Error: Missing request argument "ds" |
-      | {  }         | Error: Missing request argument "ds" |
+        Examples:
+            | parameters   | error                                |
+            | { "ds": "" } | Error: Missing request argument "ds" |
+            | { "aa": "" } | Error: Missing request argument "ds" |
+            | {  }         | Error: Missing request argument "ds" |

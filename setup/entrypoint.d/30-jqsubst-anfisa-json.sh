@@ -7,10 +7,10 @@ ME=$(basename $0)
 json_subst() {
   local anfisa_conf_template="/anfisa/anfisa.json.template"
   local anfisa_conf="/anfisa/anfisa.json"
-  # if [[ -f "$anfisa_conf" ]]; then
-  #   echo "$ME: $anfisa_conf exists, skip substitute"
-  #   return 0
-  # fi
+  if [[ -f "$anfisa_conf" ]]; then
+    echo "$ME: $anfisa_conf exists, skip substitute"
+    return 0
+  fi
   echo "$ME: Substitute json values from $anfisa_conf_template to $anfisa_conf"
   jq '
     ."file-path-def"."WORK" = "'"${ANFISA_WORK}"'" |

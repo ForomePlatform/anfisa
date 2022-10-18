@@ -149,7 +149,6 @@ class TagsManager(ZoneH):
                 del tags_data[tag_name]
                 to_update_seq.append((rec_key, tags_data))
         simple_tag_data = {tag_name: "True"}
-        max_tag_name_length = AnfisaConfig.configOption("tag.name.max.length")
 
         cur_progess = 0
         if task_h is not None:
@@ -164,8 +163,7 @@ class TagsManager(ZoneH):
                 next_cnt += step_cnt
                 cur_progess += 1
                 task_h.setStatus("Markup records %d%s" % (cur_progess, '%'))
-            assert len(rec_key) <= max_tag_name_length, (
-                "Too long tag name (%d+): %s" % (max_tag_name_length, rec_key))
+                AnfisaConfig.assertGoodTagName(rec_key)
             to_update_seq.append((rec_key, simple_tag_data))
 
         cur_progess = 0

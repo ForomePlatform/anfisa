@@ -171,4 +171,3 @@ class Evaluation(SolutionBaseInfo):
         visitor = EnumUnitConditionVisitor(unit_name)
         self.visitAll(visitor)
         return visitor.makeResult()
-

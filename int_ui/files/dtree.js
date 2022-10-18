@@ -42,6 +42,10 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sViewH.addNotifier(sDecisionTree);
 }
     
+function viewRejectionMode() {
+    return sDecisionTree.viewRejectionMode();
+}
+    
 /**************************************/
 var sDecisionTree = {
     mTreeCode: null,
@@ -330,6 +334,13 @@ var sDecisionTree = {
         sUnitsH.setup();
     },
     
+    viewRejectionMode: function() {
+        if (this.mCurPointNo !== null) {
+            return (this.mPoints[this.mCurPointNo]["decision"] === false);
+        }
+        return false;
+    },
+    
     atomEdit: function(point_no, atom_idx) {
         this.selectPoint(point_no);
         if (sEvalCtrlH.postAction(
@@ -365,7 +376,7 @@ var sDecisionTree = {
         if (mode)
             atom_el.className += " active";
         else
-            atom_el.className = atom_el.className.replace(" active", "");
+            atom_el.className = atom_el.className.replaceAll(" active", "");
     },
     
     getCurAtomLoc: function() {
@@ -808,14 +819,12 @@ var sDTreesH = {
         switch (this.mCurOp) {
             case "create":
                 if (!q_all && checkIdentifier(dtree_name)) {
-                    sDecisionTree.setup(true, 
-                        ["DTREE", "UPDATE", dtree_name]);
+                    this._doUpdate(dtree_name);
                 }
                 break;
             case "modify":
                 if (q_op && dtree_name != this.mCurDTreeName) {
-                    sDecisionTree.setup(true,
-                        ["DTREE", "UPDATE", dtree_name]);
+                    this._doUpdate(dtree_name);
                 }
                 break;
             case "load":
@@ -825,7 +834,22 @@ var sDTreesH = {
                 break;
         }
     },
-
+    
+    _doUpdate: function(dtree_name) {
+        ajaxCall("solutions", "ds=" + sDSName + "&entry=" + dtree_name,
+            function(info) {sDTreesH.doUpdate(info, dtree_name);});
+    },
+    
+    doUpdate: function(info, dtree_name) {
+        if (info === null || info == "dtree") {
+            sDecisionTree.setup(true, ["DTREE", "UPDATE", dtree_name]);
+            return;
+        }
+        alert("Solution name duplication: " + info);
+        this.mInpName.className = "bad";
+        this.mBtnOp.disabled = true;
+    },
+    
     fillSelNames: function(with_empty, dtree_list, cur_value) {
         if (this.mListName == null || this.mAllNames == null)
             return;

@@ -36,7 +36,7 @@ The functionality of import and :doc:`export<export_ws>`  :term:`workspaces<work
 
 The request imports dataset archive in ``*.tgz`` form, produced in another Anfisa instance by :doc:`export_ws` operation. 
 
-The name of new dataset **name** should be new one, it can not be name of existing dataset or :ref:`reserved<ReservedDSNames>` one. 
+The name of new dataset **name** should be new one, it can not be name of existing dataset or :ref:`reserved<ReservedDSNames>` one. As a string, it should be nonempty, without space symbols and length limited by 255. 
 
 See also
 --------

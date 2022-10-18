@@ -1,0 +1,117 @@
+branches:
+  - main
+  - master
+  - name: "v.0.7.x"
+    channel: 'rc'
+    prerelease: 'rc'
+ci: false
+debug: true
+dryRun: true
+tagFormat: 'v.${version}'
+
+preset: 'conventionalcommits'
+
+plugins:
+  - "@semantic-release/github"
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/exec"
+  - "@semantic-release/changelog"
+
+
+
+verifyConditions: []
+
+analyzeCommits:
+  - path: '@semantic-release/commit-analyzer'
+    releaseRules:
+      - breaking: true
+        release: major
+      - type: build
+        release: patch
+      - type: chore
+        release: false
+      - type: ci
+        release: false
+      - type: docs
+        release: patch
+      - type: feat
+        release: patch
+        #release: minor
+      - type: fix
+        release: patch
+      - type: perf
+        release: patch
+      - type: refactor
+        release: false
+      - type: revert
+        release: patch
+      - type: style
+        release: false
+      - type: test
+        release: false
+
+generateNotes:
+  - path: '@semantic-release/release-notes-generator'
+    writerOpts:
+      groupBy: 'type'
+      commitGroupsSort: 'title'
+      commitsSort: 'header'
+    linkCompare: true
+    linkReferences: true
+    parserOpts:
+      mergePattern: "^Merge branch '(.*)' into (.*)$"
+      mergeCorrespondence: ['branch_src', 'branch_dst']
+    presetConfig:
+      types:
+        - type: 'build'
+          section: '🛺 CI/CD'
+          hidden: false
+        - type: 'chore'
+          section: 'Other'
+          hidden: true
+        - type: 'ci'
+          section: '🛺 CI/CD'
+          hidden: true
+        - type: 'docs'
+          section: '📔 Docs'
+          hidden: false
+        - type: 'example'
+          section: '📝 Examples'
+          hidden: true
+        - type: 'feat'
+          section: '🚀 Features'
+          hidden: false
+        - type: 'fix'
+          section: '🛠 Fixes'
+          hidden: false
+        - type: 'perf'
+          section: '⏩ Performance'
+        - type: 'refactor'
+          section: ':scissors: Refactor'
+          hidden: false
+        - type: 'revert'
+          section: '🙅‍♂️ Reverts'
+        - type: 'style'
+          section: '💈 Style'
+          hidden: true
+        - type: 'test'
+          section: '🧪 Tests'
+          hidden: true
+
+prepare:
+  - path: '@semantic-release/exec'
+    cmd: "echo Anfisa ${nextRelease.version} > app/VERSION"
+  - path: '@semantic-release/exec'
+    cmd: "echo $(git rev-parse --short HEAD) > app/BUILD-HASH"
+  - path: '@semantic-release/changelog'
+  - path: '@semantic-release/git'
+    # Push a release commit and tag, including configurable files
+    message: 'chore(RELEASE): ${nextRelease.version}'
+    assets: ['app/VERSION','app/BUILD-HASH']
+
+publish:
+  - path: '@semantic-release/github'
+
+
+sucess: false
+fail: false

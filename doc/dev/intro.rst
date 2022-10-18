@@ -78,6 +78,8 @@ this database is used to store information about user activities; it does NOT co
 
 .. _MongoDB: https://www.mongodb.com/
 
+.. _Druid_in_Anfisa:
+
 Druid_ OLAP system
 this engine is used for effective support of :term:`XL-datasets<xl-dataset>` (Druid is not necessary while working without XL-datasets)
 

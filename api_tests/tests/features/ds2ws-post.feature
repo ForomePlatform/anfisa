@@ -45,8 +45,8 @@ Feature: Check ds2ws [POST] request
         And job status should be "Size is incorrect"
 
 
-    @only
-#    @negative
+    @any
+    @negative
     Scenario Outline: Fail to derive ws dataset with missing "<ws>" parameters
         Given "xl Dataset" is uploaded and processed by the system
         When ds2ws request with "<ds>" and "<ws>" parameters is send

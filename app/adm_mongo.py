@@ -87,6 +87,23 @@ def presentation(obj, pretty_mode):
 
 
 #===============================================
+def upgradeIt(it):
+    if it["_tp"] == "dsinfo" or "data" in it:
+        return None
+    fld_name = it["_tp"]
+    if fld_name not in it:
+        print("Warning strange item:", presentation(it))
+        return None
+    ret = {"_tp": it["_tp"], "name": it["name"], "data": it[fld_name]}
+    for key in ("time", "from", "rubric"):
+        if key in it:
+            ret[key] = it[key]
+    rest_keys = set(it.keys()) - set(ret.keys()) - {"_id", fld_name}
+    assert len(rest_keys) == 0, repr(sorted(rest_keys))
+    return ret
+
+
+#===============================================
 try:
     with open(run_args.config, "r", encoding = "utf-8") as inp:
         cfg = json.loads(inp.read())
@@ -136,22 +153,6 @@ assert len(aspects) > 0, (
     "Aspect (All/Info/Filter/Dtree/Panels/Tags) not defined")
 
 print("//Aspects: " + " ".join(sorted(aspects)), file = sys.stderr)
-
-#===============================================
-def upgradeIt(it):
-    if it["_tp"] == "dsinfo" or "data" in it:
-        return None
-    fld_name = it["_tp"]
-    if fld_name not in it:
-        print("Warning strange item:", presentation(it))
-        return None
-    ret = {"_tp": it["_tp"], "name": it["name"], "data": it[fld_name]}
-    for key in ("time", "from", "rubric"):
-        if key in it:
-            ret[key] = it[key]
-    rest_keys = set(it.keys()) - set(ret.keys()) - {"_id", fld_name}
-    assert len(rest_keys) == 0, repr(sorted(rest_keys))
-    return ret
 
 #===============================================
 name_flt = NameFilter(run_args.datasets)

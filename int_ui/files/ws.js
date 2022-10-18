@@ -156,7 +156,7 @@ function updateRecordMarks(rec_mark_seq) {
 function _updateRecordMark(rec_id, is_marked) {
     el = document.getElementById('li--' + rec_id);
     if (el) { 
-        cls_val = el.className.replace(" marked", "");
+        cls_val = el.className.replaceAll(" marked", "");
         if (is_marked)
             el.className = cls_val + " marked";
         else
@@ -172,11 +172,11 @@ function changeRec(rec_no) {
         return;
     if (sCurRecNo != null) {
         var prev_el = document.getElementById("li--" + sCurRecID);
-        prev_el.className = prev_el.className.replace(" press", "");
+        prev_el.className = prev_el.className.replaceAll(" press", "");
     }
     sCurRecNo = rec_no;
     sCurRecID = sViewRecNoSeq[sCurRecNo];
-    new_rec_el.className = new_rec_el.className.replace(" press", "");
+    new_rec_el.className = new_rec_el.className.replaceAll(" press", "");
     new_rec_el.className = new_rec_el.className + " press";
     softScroll(new_rec_el);
     window.frames['rec-frame1'].location.replace("rec?ds=" + sDSName +

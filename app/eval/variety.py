@@ -25,9 +25,7 @@ from app.config.a_config import AnfisaConfig
 from .condition import ConditionMaker
 from .var_unit import VarUnit
 
-# ===============================================
-
-
+#===============================================
 class MultiStatusUnitAdapter:
     def __init__(self, base_unit_h):
         self.mBaseUnit = base_unit_h
@@ -125,9 +123,7 @@ class MultiStatusUnitAdapter:
             return {self.mSingleIdxMap[rec_no]}
         return self.mMultiIdxMap[rec_no]
 
-# ===============================================
-
-
+#===============================================
 class VarietySupport:
     @staticmethod
     def makePanelDescr(descr, sub_kind=None):
@@ -143,9 +139,7 @@ class VarietySupport:
 
     def __init__(self, base_descr, sub_kind=None):
         self.mPanelUnit = VarietyPanelUnit(self,
-                                           VarietySupport.makePanelDescr(
-                                               base_descr, sub_kind),
-                                           sub_kind)
+            VarietySupport.makePanelDescr(base_descr, sub_kind), sub_kind)
         self.mPanelType = base_descr["panel-type"]
         self.mPanelKind = "panel." + self.mPanelType
         self.mDefaultRestSize = AnfisaConfig.configOption(
@@ -173,25 +167,55 @@ class VarietySupport:
 
     def _makeStat(self, condition, eval_h, stat_ctx):
         ret_handle = self.prepareStat(stat_ctx)
-        base_panel_name = (stat_ctx.get(self.getName() + ".base-panel")
-                           if stat_ctx is not None else None)
-        if base_panel_name:
-            base_panel = self.getEvalSpace().getDS().pickSolEntry(
-                self.mPanelKind, base_panel_name)
-            panel_mode = False
-        else:
-            base_panel = self.getEvalSpace().getDS().getSpecialSolEntry(
-                self.mPanelKind)
-            panel_mode = eval_h is not None
-        ret_handle["base-panel"] = base_panel.getName()
-        max_rest_size = (stat_ctx.get("max-rest-size", self.mDefaultRestSize)
-                         if stat_ctx is not None else self.mDefaultRestSize)
-
-        if panel_mode:
+        base_panel = self.getEvalSpace().getDS().getSpecialSolEntry(
+            self.mPanelKind)
+        if eval_h:
             panel_seq = [[pname, set(names)]
-                         for pname, names in self.iterPanels()]
+                for pname, names in self.iterPanels()]
         else:
             panel_seq = None
+        sym_list = None
+        max_rest_size = self.mDefaultRestSize
+
+        if stat_ctx:
+            max_rest_size = stat_ctx.get(
+                "max-rest-size", self.mDefaultRestSize)
+
+            ctx_panel, ctx_list, ctx_pattern = [
+                stat_ctx.get(self.getName() + "." + key)
+                for key in ("base-panel", "sym-list", "sym-pattern")]
+            if ctx_panel:
+                assert ctx_list is None, (
+                    "ctx conflict: base-panel|sym-list, use only one")
+                assert ctx_pattern is None, (
+                    "ctx conflict: base-panel|sym-pattern use only one")
+                base_panel = self.getEvalSpace().getDS().pickSolEntry(
+                    self.mPanelKind, ctx_panel)
+                panel_seq = None
+            else:
+                if ctx_pattern:
+                    assert ctx_list is None, (
+                        "ctx conflict: sym-pattern|sym-list use only one")
+                    ds_h = self.getEvalSpace().getDS()
+                    panel_db = ds_h.getDataVault().getPanelDB(self.mPanelKind)
+                    sym_list = panel_db.selectSymbols(ctx_pattern,
+                        ds_h._getPanelExtra(self.mPanelType))
+                    assert sym_list is not None, (
+                        "Wrong ctx sym-pattern option, too short?")
+                elif ctx_list:
+                    assert isinstance(ctx_list, list), (
+                        "Wrong ctx sym-list option, not a list")
+                    sym_list = ctx_list
+        if sym_list is not None:
+            base_panel = None
+            panel_seq = None
+
+        if base_panel is not None:
+            ret_handle["base-panel"] = base_panel.getName()
+            sym_list = base_panel.getSymList()
+
+        max_rest_size = (stat_ctx.get("max-rest-size", self.mDefaultRestSize)
+            if stat_ctx is not None else self.mDefaultRestSize)
 
         var_dict, panel_res = self._collectVariantStat(
             condition, eval_h, panel_seq)
@@ -205,9 +229,9 @@ class VarietySupport:
             return ret_handle
 
         total_cnt = self._countSeq(var_dict.values())
-        res_variants = self._varSeq(var_dict, base_panel.getSymList())
+        res_variants = self._varSeq(var_dict, sym_list)
         split_info = [["active", len(res_variants)]]
-        base_names = set(base_panel.getSymList())
+        base_names = set(sym_list)
         base_cnt = self._countSeq(res_variants)
         rest_cnt = total_cnt - base_cnt
         if total_cnt < max_rest_size:
@@ -237,9 +261,7 @@ class VarietySupport:
             ret_handle["detailed"] = True
         return ret_handle
 
-# ===============================================
-
-
+#===============================================
 class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
     @staticmethod
     def makeVarietyDescr(descr):
@@ -278,11 +300,11 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
         self._fillRecord(inp_data, rec_no)
 
     def makeStat(self, condition, eval_h, stat_ctx):
+        if stat_ctx and stat_ctx.get("druid-rq"):
+            return self.mBaseUnit.makeStat(condition, eval_h, stat_ctx)
         return self._makeStat(condition, eval_h, stat_ctx)
 
-# ===============================================
-
-
+#===============================================
 class VarietyPanelUnit(VarUnit):
 
     def __init__(self, variety_h, descr, sub_kind=None):
@@ -297,7 +319,7 @@ class VarietyPanelUnit(VarUnit):
 
     def getVariantSet(self):
         return VariantSet([pname
-                           for pname, _ in self.mVariety.iterPanels()])
+            for pname, _ in self.mVariety.iterPanels()])
 
     def mapVariants(self, variants):
         collected = set()
@@ -342,9 +364,10 @@ class VarietyPanelUnit(VarUnit):
         pass
 
     def makeStat(self, condition, eval_h, stat_ctx):
+        if stat_ctx and stat_ctx.get("druid-rq"):
+            return None
         ret_handle = self.prepareStat(stat_ctx)
         ret_handle["variants"] = []
         if self.mVariety.isDetailed():
             ret_handle["detailed"] = True
         return ret_handle
-
