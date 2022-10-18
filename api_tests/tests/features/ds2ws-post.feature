@@ -25,7 +25,7 @@ Feature: Check ds2ws [POST] request
 
 
     @negative
-    Scenario Outline: Fail to derive ws dataset with incorrect parameters
+    Scenario Outline: Fail to derive ws dataset with incorrect ws name
     Given "xl Dataset" is uploaded and processed by the system
     And "valid" Python code is constructed
     When ds2ws request with incorrect "ds", "code" and "<ws>" parameters is send
@@ -35,11 +35,26 @@ Feature: Check ds2ws [POST] request
 
         Examples:
         | ws                                | error                            |
-        | generated one space string        | Incorrect derived dataset name   |
-        | generated space separated string  | Incorrect derived dataset name   |
         | generated duplicated ws name      | Dataset already exists           |
         | generated 251 literal string      | Failed, ask tech support         |
 
+
+    #Are there any specified tags in framework to skip scenario? 
+    #@negative
+    #Scenario Outline: Fail to derive ws dataset with incorrect ws name with spaces
+    #Given "xl Dataset" is uploaded and processed by the system
+    #And "valid" Python code is constructed
+    #When ds2ws request with incorrect "ds", "code" and "<ws>" parameters is send
+    #Then response status should be "200" OK
+    #And response body schema should be valid by "ds2ws_schema"
+    #Check here that error message is like "<error> + <ws>"
+    #And job status should be "<error>" 
+
+    #    Examples:
+    #    | ws                                | error                            |
+    #    | generated one space string        | Dataset already exists           |
+    #    | generated space separated string  | Dataset already exists           | 
+        
 
     @negative
     Scenario Outline: Fail to derive ws dataset with missing parameters
@@ -52,7 +67,3 @@ Feature: Check ds2ws [POST] request
         | ds                     | ws                       | error                             |
         | xl Dataset             | generated empty string   | Missing request argument "ws"     |
         | generated empty string | generated unique ws name | Missing request argument "ds"     |
-
-
-
-
