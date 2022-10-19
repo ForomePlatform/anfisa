@@ -46,7 +46,7 @@ The request operates over all :term:`tag<tagging>` with given name for variants 
 
 If option **off** is ``true``, the operation clears **tag** from all records of root dataset (see :doc:`ws_tags` for details).
 
-If option **of** is not set to ``true``, the operation marks all filtered records in current dataset with **tag** and text value of tag as "True", and also clears **tag** from all other records of root dataset.
+If option **off** is not set to ``true``, the operation marks all filtered records in current dataset with **tag** and text value of tag as "True", and also clears **tag** from all other records of root dataset.
 
 Property **tags-state** is the same as in request :doc:ws_tags, see discussion :ref:`here<tags_state>`.
 

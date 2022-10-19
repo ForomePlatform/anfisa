@@ -38,12 +38,11 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
     assert solutionsAreReady()
     assert (ds_kind == "xl") == (druid_adm is not None)
 
-    max_ds_name_length = AnfisaConfig.configOption("ds.name.max.length")
-    if len(ds_name) > max_ds_name_length:
+    err_rep = AnfisaConfig.checkDatasetName(ds_name, ds_kind)
+    if err_rep:
         logging.critical(
-            "Attempt to create dataset with too long (%d+) name: %s"
-            % (max_ds_name_length, ds_name))
-        assert False
+            "Attempt to create improper dataset: " + err_rep)
+        assert False, err_rep
 
     time_start = datetime.now()
     logging.info("Dataset %s creation started at %s\tVersion: %s"

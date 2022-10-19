@@ -12,7 +12,11 @@ The complex is needed when nomenclature of symbols is too wide. Gene symbols is 
 
 :term:`Variery filtering unit<variety property>`, is a special subtype of :term:`enumerated unit<enumerated property>` that collects statistics (see :doc:`status_report`) in a special restricted way. In contrast to the ordinary :term:`enumerated property`, the statistics for this property does not include whole list of property values(symbols):
     
-    - only :term:`active symbols` are traced in complete form; active symbols form special hidden symbol panel, see details :ref:`here<panels_as_sol_items>`. 
+    - only :term:`active symbols` are traced in complete form; 
+    
+        - by default, active symbols form special hidden symbol panel, see details :ref:`here<panels_as_sol_items>`
+        
+        - active symbol list can be controlled manually with :doc:`ctx<../rest/s_stat_ctx>` argument
         
     - other symbols are traced only if they really present in the applied set (with positive count, ones with zero count are ignored), and only if the list of these symbols is short enough (up to 300 now) 
     

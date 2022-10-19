@@ -379,6 +379,10 @@ class DataVault(SyncronizedObject):
         assert "file" in rq_args, 'Missing argument "file"'
         ds_name = rq_args["name"]
         content = rq_args["file"]
+
+        err_rep = AnfisaConfig.checkDatasetName(ds_name, "ws")
+        if err_rep:
+            assert False, err_rep
         if (isinstance(ds_name, typing.ByteString)
                 or isinstance(ds_name, array.array)):
             ds_name = ds_name.decode("utf-8")
@@ -428,4 +432,3 @@ class DataVault(SyncronizedObject):
             ret["ds-name"] = rq_args["ds"]
             ret["can-drop-ds"] = self.canDropDS(rq_args["ds"])
         return ret
-

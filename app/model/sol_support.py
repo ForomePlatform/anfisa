@@ -64,8 +64,6 @@ class StdNameSupport:
 
 #===============================================
 class SolutionKindHandler:
-    sMaxSolNameLen = AnfisaConfig.configOption("sol.name.max.length")
-
     def __init__(self, broker, sol_kind, sol_maker, special_name = None):
         self.mBroker = broker
         self.mSolKind = sol_kind
@@ -156,11 +154,8 @@ class SolutionKindHandler:
         option, name = instr[:2]
         assert name and self.isDyn(name), (
             "Improper name for dynamic solution entry: " + name)
-        assert ((name[0].isalpha() and ' ' not in name)
-            or name == self.mSpecialName), (
-            "Improper name for solution entry: " + name)
-        assert len(name) < self.sMaxSolNameLen, (
-            "Too long name for solution entry: " + name)
+        if name != self.mSpecialName:
+            AnfisaConfig.assertGoodSolutionName(name)
         if len(instr) > 2:
             rubric = instr[2]
         else:

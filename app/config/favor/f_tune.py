@@ -46,7 +46,7 @@ def tuneFavorUnits(ds_h):
             "start":    "Position",
             "end":      "Position",
             "symbol":   "Symbol"
-        }, before = "Chromosome")
+        })
 
 # ===============================================
 def startFavorTune(ds_h):

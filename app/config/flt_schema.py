@@ -41,6 +41,7 @@ sConsequenceVariants = [
     "missense_variant",
     "protein_altering_variant",
     "incomplete_terminal_codon_variant",
+    "start_retained_variant",
     "stop_retained_variant",
     "synonymous_variant",
     "splice_region_variant",

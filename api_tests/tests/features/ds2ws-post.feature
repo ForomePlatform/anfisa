@@ -67,7 +67,3 @@ Feature: Check ds2ws [POST] request
         | ds                     | ws                       | error                             |
         | xl Dataset             | generated empty string   | Missing request argument "ws"     |
         | generated empty string | generated unique ws name | Missing request argument "ds"     |
-
-
-
-

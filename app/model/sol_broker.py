@@ -41,7 +41,10 @@ class SolutionBroker(SyncronizedObject):
         self.mNamedAttrs = dict()
 
         reference = meta_info["versions"].get("reference")
-        self.mFastaBase = "hg38" if reference and "38" in reference else "hg19"
+        if reference is None:
+            self.mFastaBase = "hg38"
+        else:
+            self.mFastaBase = "hg38" if "38" in reference else "hg19"
 
         if derived_mode:
             self.addModes({"DERIVED"})
@@ -84,7 +87,8 @@ class SolutionBroker(SyncronizedObject):
                 elif sol_kind.startswith("panel."):
                     prefix, ptype = sol_kind.split('.')
                     panels_cfg = AnfisaConfig.configOption("panels.setup")
-                    assert ptype in panels_cfg, ("Panel type not supported: " + ptype)
+                    assert ptype in panels_cfg, (
+                        "Panel type not supported: " + ptype)
                     kind_h = SolutionKindHandler(self, sol_kind,
                         SolPanelHandler.makeSolEntry,
                         special_name = panels_cfg[ptype].get("special"))

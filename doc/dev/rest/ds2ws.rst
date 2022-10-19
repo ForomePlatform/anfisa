@@ -53,4 +53,4 @@ Selection of variants is defined by arguments:
 
 Derived workspace should be of limited size: **not more than 9000 variants**.
 
-The name of derived dataset **ws** should be new one, it can not be name of existing dataset or :ref:`reserved<ReservedDSNames>` one. 
+The name of derived dataset **ws** should be new one, it can not be name of existing dataset or :ref:`reserved<ReservedDSNames>` one. As a string, it should be nonempty, without space symbols and length limited by 255. 

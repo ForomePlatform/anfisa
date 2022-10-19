@@ -1156,8 +1156,6 @@ var sEvalCtrlH = {
         var idx;
         for (idx = 0; idx < stat_list.length; idx++) {
             unit_stat = stat_list[idx];
-            if (unit_stat["kind"] == "func")
-                continue;
             this.mUnitMap[unit_stat["name"]] = unit_stat;
             this.mItems.push(unit_stat);
         }

@@ -121,6 +121,8 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
     def makeStat(self, condition, eval_h, stat_ctx):
         druid_agent = self.getEvalSpace().getDruidAgent()
         query = self._makeQuery(druid_agent, condition)
+        if stat_ctx and stat_ctx.get("druid-rq"):
+            return query
         if query is not None:
             rq = druid_agent.call("query", query)
             v_min, v_max, count = [rq[0]["result"][nm] for nm in
@@ -155,8 +157,7 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
     def getVariantSet(self):
         return self.mVariantSet
 
-    def _makeStat(self, condition):
-        druid_agent = self.getEvalSpace().getDruidAgent()
+    def _makeQuery(self, druid_agent, condition):
         query = {
             "queryType": "topN",
             "dataSource": druid_agent.normDataSetName(
@@ -175,13 +176,17 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
                 return []
             if cond_repr is not None:
                 query["filter"] = cond_repr
+        return query
+
+    def _makeStat(self, condition):
+        druid_agent = self.getEvalSpace().getDruidAgent()
+        query = self._makeQuery(druid_agent, condition)
         rq = druid_agent.call("query", query)
         if len(rq) != 1:
             logging.error("Got problem with xl_unit %s: %d" %
                 (self.getInternalName(), len(rq)))
             if len(rq) == 0:
                 return [[var, 0] for var in self.mVariants]
-
         assert len(rq) == 1
         counts = dict()
         for rec in rq[0]["result"]:
@@ -190,6 +195,9 @@ class XL_EnumUnit(XL_Unit, EnumUnitSupport):
             for var in self.mVariants]
 
     def makeStat(self, condition, eval_h, stat_ctx):
+        if stat_ctx and stat_ctx.get("druid-rq"):
+            druid_agent = self.getEvalSpace().getDruidAgent()
+            return self._makeQuery(druid_agent, condition)
         ret_handle = self.prepareStat(stat_ctx)
         ret_handle["variants"] = self._makeStat(condition)
         return ret_handle

@@ -40,7 +40,7 @@ def tuneUnits(ds_h):
             "start":    "Start_Pos",
             "end":      "End_Pos",
             "symbol":   "Symbol"
-        }, before = "Chromosome")
+        })
 
     zyg_support = ds_h.getZygositySupport()
     zyg_support.setupX(x_unit = "Chromosome", x_values = ["chrX"])
@@ -62,12 +62,10 @@ def tuneUnits(ds_h):
         if len(ds_h.getFamilyInfo()) > 1:
             InheritanceUnit.makeIt(ds_h, {
                 "name": "Inheritance_Mode",
-                "vgroup": "Inheritance"},
-                before = "Proband_Zygosity")
+                "vgroup": "Inheritance"})
             CustomInheritanceUnit.makeIt(ds_h, {
                 "name": "Custom_Inheritance_Mode",
-                "vgroup": "Inheritance"},
-                before = "Proband_Zygosity")
+                "vgroup": "Inheritance"})
 
         if ds_h.testRequirements({"trio"}):
             CompHetsUnit.makeIt(ds_h, {

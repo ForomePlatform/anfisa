@@ -56,6 +56,11 @@ Panels are lists of names (symbols), and their usage as solution items is slight
 
 Notes
 -----
+
+.. _sol_items_namespace:
+
+* For all types of solution items the common namespace is provided. It means that there can no be such a confusion that two solution items of different kinds have the same name. An attempt to create second solution item with the same name (and different kind) is automatically blocked. Use :doc:`../rest/solutions` request with **entry** argument to prevent such a situation in the Front-End logic.
+
 .. _sol_version_indicators:
     
 * For each type of solution items the system provides version integer indicators of the type common state: indicator increases if any solution item of this type created, updated or deleted. Indicators are reset on restart of the system. Indicators can be used in the Front-End logics for detection when the correspondent information on solution items should be reloaded from Back-End.
@@ -67,6 +72,8 @@ Notes
         /^\S+$/u.test(name) && (name[0].toLowerCase() != name[0].toUpperCase())
 
     Length of name for dynamical solution must not exceed 255 symbols.
+
+    
     
 See also
 --------

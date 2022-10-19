@@ -46,7 +46,7 @@ def tuneAspects(ds_h, aspects):
     view_pkgb = aspects["view_pharmagkb"]
     view_gnomad = aspects["view_gnomAD"]
 
-    _resetupAttr(view_gen, UCSC_AttrH(view_gen))
+    _resetupAttr(view_gen, UCSC_AttrH(view_gen, ds_h))
     _resetupAttr(view_gen, SymbolPanels_AttrH(view_gen, ds_h))
     attr_gnomad = _resetupAttr(view_gnomad, GnomAD_AttrH(view_gnomad))
     ds_h.regNamedAttr("gnomAD", attr_gnomad)
@@ -135,19 +135,21 @@ class TrSymbolPanels_AttrH(AttrH):
 #===============================================
 class UCSC_AttrH(AttrH):
 
-    @staticmethod
-    def makeLink(region_name, start, end, delta, assembly = "hg19"):
+    def makeLink(self, region_name, start, end, delta):
         return ("https://genome.ucsc.edu/cgi-bin/hgTracks?"
-            f"db={assembly}&position={region_name}"
+            f"db={self.mBase}&position={region_name}"
             f"%3A{max(0, start - delta)}%2D{end + delta}")
 
-    def __init__(self, view_gen):
+    def __init__(self, view_gen, ds_h):
         AttrH.__init__(self, "UCSC")
         self.setAspect(view_gen)
+        self.mBase = ds_h.getFastaBase()
 
     def htmlRepr(self, obj, v_context):
+
         start = int(v_context["data"]["__data"]["start"])
         end = int(v_context["data"]["__data"]["end"])
+        start, end = sorted([start, end])
         region_name = v_context["data"]["__data"]["seq_region_name"]
         link1 = self.makeLink(region_name, start, end, 10)
         link2 = self.makeLink(region_name, start, end, 250)
@@ -203,6 +205,7 @@ class GnomAD_AttrH(AttrH):
             start = int(region[0])
             if (len(region) > 1):
                 end = int(region[1])
+                start, end = sorted([start, end])
             else:
                 end = start
             return self.makeLink(region_name, start, end, 3)
@@ -437,8 +440,7 @@ class IGV_AttrH(AttrH):
         self.mSamplesIds = sorted(samples.keys())
         self.mSamplesNames = ",".join([samples[id] for id in self.mSamplesIds])
 
-        reference = meta_info["versions"].get("reference")
-        self.mBase = "hg38" if reference and "38" in reference else "hg19"
+        self.mBase = ds_h.getFastaBase()
         self.mIGV_Url = False
         self.mPreUrl = None
         self._checkPreUrl()
@@ -481,6 +483,7 @@ class IGV_AttrH(AttrH):
             except Exception:
                 logging.error("Error creating IGV link for " + str(pos))
                 return "Error!"
+        start, end = sorted([start, end])
         locus = rec_data["__data"]["seq_region_name"]
         return (self.mPreUrl
             + f'&locus={locus}:{max(0, start - 250)}-{end + 250}')
