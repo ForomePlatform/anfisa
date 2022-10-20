@@ -19,7 +19,7 @@ Feature: Check tag_select [GET] request
     @positive
     Scenario: Should return tags of specific "wgs_PGP3140_nist_3_3_2" ws dataset
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
-        And ws Dataset is derived from it
+        And "ws Dataset" is derived from it
         When tag_select request with specified "ds" parameter is send
         Then response status should be "200" OK
         And response body json should match expected data for "tag_select" request
@@ -29,7 +29,7 @@ Feature: Check tag_select [GET] request
     @positive
     Scenario Outline: Should return tag, created by another ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         And unique "tag" is generated
         And "<tag>" is created for "<rec>" record of ws dataset
         And another ws Dataset with < 9000 records is derived

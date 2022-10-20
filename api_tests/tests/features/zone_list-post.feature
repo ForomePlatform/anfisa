@@ -15,7 +15,7 @@ Feature: Check zone_list [POST] request
     @positive
     Scenario: Should return zone variants for any ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         And "random" zone is selected
         When zone_list request with correct "ds" and "zone" parameters is send
         Then response status should be "200" OK
@@ -26,7 +26,7 @@ Feature: Check zone_list [POST] request
     @positive
     Scenario: Should return zone variants for specific "wgs_PGP3140_nist_3_3_2" ws dataset
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         And "first" zone is selected
         When zone_list request with "ds" parameter is send
         Then response status should be "200" OK
@@ -37,7 +37,7 @@ Feature: Check zone_list [POST] request
     @positive
     Scenario: Should return a list of zones for specific "wgs_PGP3140_nist_3_3_2" ws dataset
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         And "first" zone is selected
         When zone_list request with correct "ds" and "zone" parameters is send
         Then response status should be "200" OK
@@ -48,7 +48,7 @@ Feature: Check zone_list [POST] request
     @negative
     Scenario Outline: Should return a list of zones for any ws dataset
         Given "xl Dataset" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When zone_list request with "<ds>" parameter is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"

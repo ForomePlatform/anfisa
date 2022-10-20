@@ -21,7 +21,7 @@ def job_status_response(task_id):
     pytest.response = JobStatus.post(parameters)
 
 
-@given(parsers.cfparse('ws dataset is derived from it'), target_fixture='task_id')
+@given(parsers.cfparse('"ws Dataset" is derived from it'), target_fixture='task_id')
 def task_id(dataset, unique_name):
     parameters = Constructor.ds2ws_payload(ds=dataset, ws=unique_name)
     response = Ds2ws.post(parameters)

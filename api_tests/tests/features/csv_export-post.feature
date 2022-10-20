@@ -15,7 +15,7 @@ Feature: Check csv_export [POST] request
     @positive
     Scenario: Export specific "wgs_PGP3140_nist_3_3_2" ws dataset as csv
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When csv_export request with "ws with < 9000 records" and "csv" parameters is send
         Then response status should be "200" OK
         And response body should match expected data for "csv_export" request
@@ -25,7 +25,7 @@ Feature: Check csv_export [POST] request
     @negative
     Scenario Outline: Fail to export xl dataset with more than 9000 records
         Given "xl Dataset" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When csv_export request with "<ds>" and "<schema>" parameters is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"

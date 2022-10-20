@@ -98,7 +98,7 @@ def code(code_type):
     return pytest.code
 
 
-@given(parsers.cfparse('ws Dataset with < 9000 records is derived from it', extra_types=EXTRA_STRING_TYPES),
+@given(parsers.cfparse('"ws Dataset with < 9000" records is derived from it', extra_types=EXTRA_STRING_TYPES),
        target_fixture='ws_less_9000_rec')
 def ws_less_9000_rec(dataset):
     code = prepare_filter(dataset)
@@ -106,7 +106,7 @@ def ws_less_9000_rec(dataset):
     return pytest.ws_less_9000_rec
 
 
-@given(parsers.cfparse('ws Dataset is derived from it'), target_fixture='derived_ws')
+@given(parsers.cfparse('"ws Dataset" is derived from it'), target_fixture='derived_ws')
 def derived_ws(dataset):
     return derive_ws(dataset)
 

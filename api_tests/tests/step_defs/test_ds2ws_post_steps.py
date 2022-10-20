@@ -13,7 +13,7 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/ds2ws-post.feature')
 
 
-@when(parsers.cfparse('ds2ws request with "ds", "code" and "{ws:String}" parameters is send',
+@when(parsers.cfparse('ds2ws request with "xl Dataset", "code" and "{ws:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES), target_fixture='ds2ws_response')
 def ds2ws_response(dataset, code, ws):
     if ws == 'unique_ws_Dataset_name':

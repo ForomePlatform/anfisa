@@ -8,7 +8,7 @@ from tests.helpers.constructors import Constructor
 scenarios('../features/ws_list-post.feature')
 
 
-@when(parsers.cfparse('ws_list request with correct "ds" parameter is send'))
+@when(parsers.cfparse('ws_list request with correct "ws Dataset with < 9000" parameter is send'))
 def dtree_stat(ws_less_9000_rec):
     parameters = Constructor.ws_list_payload(ds=ws_less_9000_rec)
     pytest.response = WsList.post(parameters)

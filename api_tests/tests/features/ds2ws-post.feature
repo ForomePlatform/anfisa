@@ -8,7 +8,7 @@ Feature: Check ds2ws [POST] request
         Given "xl Dataset" is uploaded and processed by the system
         And unique "ws Dataset name" is generated
         And "valid" Python code is constructed
-        When ds2ws request with "ds", "code" and "unique_ws_Dataset_name" parameters is send
+        When ds2ws request with "xl Dataset", "code" and "unique_ws_Dataset_name" parameters is send
         Then response status should be "200" OK
         And response body schema should be valid by "ds2ws_schema"
         And job status should be "Done"
@@ -21,7 +21,7 @@ Feature: Check ds2ws [POST] request
     Scenario Outline: Fail to derive ws dataset with incorrect "<ws>" parameters
         Given "xl Dataset" is uploaded and processed by the system
         And "valid" Python code is constructed
-        When ds2ws request with "ds", "code" and "<ws>" parameters is send
+        When ds2ws request with "xl Dataset", "code" and "<ws>" parameters is send
         Then response status should be "200" OK
         And response body schema should be valid by "ds2ws_schema"
         And job status should be "<error>"
