@@ -15,9 +15,9 @@ scenarios('../features/dtree_set-post.feature')
 
 @when(parsers.cfparse('dtree_set request with "{ds:String}" and "{code_name:String}" parameters is send',
                       extra_types=EXTRA_STRING_TYPES))
-def dtree_set_response(ds, code_name, dataset):
+def dtree_set_response(ds, code_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
-        ds = dataset
+        ds = pytest.dataset
     parameters = Constructor.dtree_set_payload(ds=ds, code=code_name)
     pytest.response = DtreeSet.post(parameters)
     return pytest.response

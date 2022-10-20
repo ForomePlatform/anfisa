@@ -26,7 +26,8 @@ from lib.jsonschema.vsetup_schema import vsetup_schema
 from lib.jsonschema.ws_list_schema import ws_list_schema
 from lib.jsonschema.ws_tags_schema import ws_tags_schema
 from lib.jsonschema.zone_list_schema import zone_descriptor_serial, zone_descriptor_single
-from tests.helpers.functions import xl_dataset, derive_ws, prepare_filter, find_dataset, ds_creation_status
+from tests.helpers.functions import xl_dataset, derive_ws, prepare_filter, find_dataset, ds_creation_status, \
+    delete_auto_ws_datasets, delete_auto_dtrees
 from tests.helpers.generators import Generator
 
 
@@ -37,6 +38,10 @@ def pytest_bdd_step_error(request, feature, scenario, step, step_func, step_func
 
 def pytest_bdd_after_scenario():
     pass
+    print('deleting test datasets created automatically')
+    delete_auto_ws_datasets()
+    print('deleting test dtrees created automatically')
+    delete_auto_dtrees()
 
 
 @given(
