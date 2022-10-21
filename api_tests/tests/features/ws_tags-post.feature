@@ -6,7 +6,7 @@ Feature: Check ws_tags [POST] request
     @positive
     Scenario Outline: Return a list of tags for any ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When ws_tags request with "<ws>" and "<rec>" is send
         Then response status should be "200" OK
         And response body schema should be valid by "ws_tags_schema"
@@ -20,7 +20,7 @@ Feature: Check ws_tags [POST] request
     @positive
     Scenario Outline: Return a list of tags for specific "wgs_PGP3140_nist_3_3_2" ws dataset
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When ws_tags request with "<ws>" and "<rec>" is send
         Then response body json should match expected data for "ws_tags" request
 
@@ -51,7 +51,7 @@ Feature: Check ws_tags [POST] request
     @negative
     Scenario Outline: Fail to return a list of tags for any ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
-        And ws Dataset with < 9000 records is derived from it
+        And "ws Dataset with < 9000" records is derived from it
         When ws_tags request with "<ws>" and "<rec>" is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"

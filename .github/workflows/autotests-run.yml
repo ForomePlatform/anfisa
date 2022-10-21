@@ -43,7 +43,7 @@ jobs:
         run: pipenv run send_report
         working-directory: ./api_tests
         
-      - name: Send request
+      - name: Delete auto datasets request
         if: ${{ success() || failure() }}
         run: pipenv run delete_auto_datasets_hook
         working-directory: ./api_tests

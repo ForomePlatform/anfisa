@@ -39,6 +39,12 @@ for wsDataset in ws_to_drop:
     print('responseBody:', responseWsDataset.text)
     time.sleep(1)
 
+response = requests.request(
+            method='GET',
+            url=url + 'dirinfo',
+            params='dirinfo',
+            headers=headers,
+        )
 dataset_list = json.loads(response.content)["ds-list"]
 for ds in dataset_list:
     try:
