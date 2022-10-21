@@ -57,11 +57,11 @@
         },
         "deepdiff": {
             "hashes": [
-                "sha256:8d4eb2c4e6cbc80b811266419cb71dd95a157094a3947ccf937a94d44943c7b8",
-                "sha256:e9aea49733f34fab9a0897038d8f26f9d94a97db1790f1b814cced89e9e0d2b7"
+                "sha256:3fe134dde5b3922ff8c51fc1e95a972e659c853797231b836a5ccf15532fd516",
+                "sha256:8ba27c185f9197b78c316ce7bb0c743d25d14f7cdb8ec3b340437dbc93dcbff2"
             ],
             "index": "pypi",
-            "version": "==5.8.1"
+            "version": "==6.2.1"
         },
         "execnet": {
             "hashes": [
