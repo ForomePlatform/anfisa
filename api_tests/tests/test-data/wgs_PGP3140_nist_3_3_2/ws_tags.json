@@ -1,0 +1,19 @@
+{
+    "check-tags": [
+        "Previously categorized",
+        "Previously Triaged",
+        "Not categorized",
+        "Benign/Likely benign",
+        "False positives"
+    ],
+    "op-tags": [
+        "_note"
+    ],
+    "rec-tags": {
+        "_note": "Autotest-tag-22-08-30_13-58-52"
+    },
+    "upd-time": "2022-08-30T13:58:53.197302",
+    "upd-from": "Autotest-ws-22-08-30_13-58-47",
+    "filters": [],
+    "tags-state": 8
+}

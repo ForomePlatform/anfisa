@@ -1,0 +1,12 @@
+{
+    "tag-list": [
+        "Previously categorized",
+        "Previously Triaged",
+        "Not categorized",
+        "Benign/Likely benign",
+        "False positives"
+    ],
+    "tag": null,
+    "tags-state": 8,
+    "tags-rec-list": []
+}
