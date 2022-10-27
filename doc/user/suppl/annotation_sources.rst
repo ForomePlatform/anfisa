@@ -1,3 +1,5 @@
+.. _annotation_sources:
+
 ******************
 Annotation Sources
 ******************

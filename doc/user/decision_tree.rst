@@ -10,8 +10,9 @@ It allows very powerful and flexible way to refine variations set and create new
 How Decision Tree works
 =======================
 On the first glance, the Decision Tree is very similar to **Filter Refiner** functionality.
-This if a sequence of a filters, each of them filters variation by the specific condition.
-each filter separates variations in two groups:
+This if a sequence of a filtering steps, each of them filters variation by the specific condition,
+or group of conditions.
+Each filter separates variations in two groups:
 
 * Variations which pass filter
 * Variations which not pass filter
@@ -21,19 +22,24 @@ However, the **Filter Refiner** has very straightforward hardcoded logic:
 * Variations, *not passing* the filter are *excluded* from the analysis
 * Variations, *passing* the filter goes to subsequent filters
 
-In **Decision tree** we have more flexible options both
-in variation filtering and in subsequent actions.
+In **Decision tree** we have more flexible options both in variation filtering and in subsequent actions.
 The overall logic is following:
 
-* Decision tree is a linear sequence of steps
-* Each step is a particular filter or a combination of filters joined by AND/OR (In decision tree they are referred as *attributes*).
-* For variations, *passing* the step user can choose one of the following actions:
-    * Include variations in the final data set
-    * Exclude variations form the subsequent analysis
-* Variations, *not passing* the step criteria goes to subsequent steps.
+* A Decision Tree consists of a sequence of steps (branching points).
+* The process starts with a set consisting of all of the variants from the dataset.
+* This set "travels" through a tree trunk.
+* Every step is a particular filter or a combination of filters joined by AND/OR
+  (In decision tree they are referred as *attributes*).
+* At each step all variations are separated in two groups
+    * Variations, *not matching* the step criteria goes to subsequent steps.
+    * For variations, *matching* step criteria user can choose one of the following actions:
+        * Unconditionally include variations in the final selection
+        * Exclude variations from further consideration (thrown away)
 
-At the final step we can decide what to do with rest of variations:
-add in to the final data set or trow away.
+A result of application of any Decision Tree is a set that we will call "Final selection".
+
+At the final step of decision tree we can decide what to do with rest of variations:
+add in to the final selection or trow away.
 
 In fact, the **Filter Refiner** is just a simple version of a decision tree,
 where at each step we exclude variations, not passing the filter,
@@ -68,22 +74,21 @@ On the left panel user can see the list of the filters, same as for **Filter Ref
   :width: 800
   :alt: Decision tree main window
 
-On the right **Results** panel user can see the current decision tree.
-User can select the step by clicking on the step caption.
-By default the decision tree contains only one step.
-
 By clicking on the filter user can see the filter properties in the pop-up window.
 
 .. image:: pics/decision-tree_filter-popup.png
   :width: 300
   :alt: Decision tree - filter popup
 
+On the right **Results** panel user can see the current decision tree.
+User can select the step by clicking on the step caption.
+By default the decision tree contains only one step.
+
 After pressing the *Add attribute* button the filter is added
 to the current step.
+Here an *Attribute* is just one filter in the particular step.
 
-*Attribute - just one filter in the particular step*
-
-User can add more filters to the same step by clicking on the other filters
+User can add more filters to the same step by clicking on the other filters in the left panel
 or by pressing the **Add attribute** button on the **Results** panel (see below).
 
 The filter popup for new filter will looks the same except of action buttons.
@@ -138,12 +143,27 @@ The gear icon in the filter allows user to configure the filter parameters.
 The configuration window is the same as for adding new filter to the step.
 User can save updated filter parameters, cancel changed or remove the filter form the step.
 
+The right part of the step shows the python-like code describing the step.
+
 The "**Add step**" button at the bottom of the tree adds mode step to the decision tree.
 
 The bottom of the tree always occupied by the special step called "**Final Step**"
 The only purpose of this step is to decide, what we should do with te rest of variations,
 not included/excluded by other filters. Here we have only two possible options:
 include these variation to the final dataset, or exclude.
+
+Code editor
+-----------
+User can directory edit the decision tree code by clicking the "Text editor" button on top of the decision tree window.
+The code syntax for decision tree is described in :ref:`decision_tree_syntax`.
+
+.. image:: pics/decision-tree_code-editor.png
+  :width: 600
+  :alt: Decision tree results
+
+After clicking the "Save" button decision tree update according to the code changes.
+The "Done" button allows to save changes in code without direct updating the decision tree.
+
 
 **Next**: :ref:`filter_dashboard`
 

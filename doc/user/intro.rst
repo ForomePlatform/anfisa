@@ -110,6 +110,17 @@ for patients with undiagnosed diseases. AnFiSA gives clinicians an option to cre
 which includes only very limited and fully de-identified information and thus can be shared
 with outside researchers.
 
+Variation annotation
+--------------------
+The computational pipline preparing data for AnFiSA uses many annotation sources
+to bring together as much data as possible.
+Full list of annotation sources used by AnFiSA
+can be found in :ref:`annotation_sources`
+
+Moreover, AnFiSA regularly pulls updates from annotation databases.
+This allows user to easily update the analysis results to latest available data
+without posing challenges  for reproducibility and traceability
+
 Testing data
 ============
 For software development, validation and testing we used data from benchmark variants from the
@@ -118,6 +129,6 @@ The high-confidence benchmark variants have been provided by NIST version 4.2.
 The publicly available demo version of
 AnFiSA includes datasets based on these resources.
 
-**Next**: :ref:`filter_refiner`
+**Next**: :ref:`managing_data`
 
 :ref:`toc`

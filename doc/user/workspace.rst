@@ -1,3 +1,5 @@
+.. _workspace:
+
 *********
 Workspace
 *********
@@ -96,10 +98,18 @@ subsequent sections:
 * Filter refiner
 * Decision tree
 
-Also the **What's next?** panel contains several build-in analysis types
-(ACMG analysis, Phenotype based analysis), which will be described later.
+The **What's next?** panel also contains several build-in analysis types
+(ACMG analysis, Phenotype based analysis).
+If fact, each pre-build analysis type is just a quick access to corresponding group
+of pre-defined decision trees. One can choose a decision tree from build-in analysis types,
+or manually choose it in the "**Decision tree**" mode. The result will be the same.
 
+The full list and description of pre-defined filter sets and decision trees is here:
+:ref:`predefined_filters`
 
+**Next**: :ref:`filter_refiner`
+
+:ref:`toc`
 
 
 

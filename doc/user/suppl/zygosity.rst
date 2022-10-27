@@ -1,4 +1,6 @@
-Notes on Zygosity 
+.. _zygosity_notes:
+
+Notes on Zygosity
 =================
 
 Below we use JSON-format notation for definition of the system terms. 
