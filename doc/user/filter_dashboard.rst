@@ -4,7 +4,7 @@
 Filter dashboard
 ****************
 
-**Filter dashboard** isd a special view in Anfisa, allowing to see all filters in one place.
+**Filter dashboard** is a special view in Anfisa, allowing to see all filters in one place.
 
 One can switch to dashboard view both from **Filter refiner** and **Decision Tree** pages
 using the dashboard mode on the filter tab.

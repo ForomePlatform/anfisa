@@ -28,8 +28,8 @@ The Anfisa provides for the user the large set of available filters for almost a
 variation properties in initial VCF file.
 By clicking on the each filter user can see the filter settings and details.
 
-All list of available filters with descriptions are available on the separate page
-(not ready now, to be added in future).
+All list of available filters with descriptions are available here:
+:ref:`func_ref`
 
 By operation mode all filters can be divided into two groups:
 
@@ -89,8 +89,8 @@ with no concerns of property meanings.
 The "effective" filter can separate variations into most differing groups, but this differentiation
 can have no real biological meaning.
 
-The algorithm of discriminative power calculation is described in the **Discriminative Power specification** in
-:ref:`suppl`
+The algorithm of discriminative power calculation is described here:
+:ref:`discriminative_power`
 
 The visualization of this “effectivity” is an indicator with a choice of 3 or 4 colors
 close to the name of each filter. Each interval of discriminative power value has its own color coding,
@@ -98,14 +98,51 @@ representing the number of different groups and number of variations in each gro
 This is a rough tool, however it might be helpful in work with a wide list of variants and filters.
 
 .. image:: pics/discriminative-power_indicators.png
-  :width: 200
-  :alt: Discriminative power color coding
+   :width: 200
+   :alt: Discriminative power color coding
 
 To see the exact value of discriminative power one can hover a mouse over the filter discriminative power indicator.
 
 .. image:: pics/discriminative-power.png
-  :width: 500
-  :alt: Discriminative power popup
+   :width: 500
+   :alt: Discriminative power popup
+
+Functional Units
+----------------
+The functional units (filtering functions) are specific types of filtering actions
+which user can use to filter variations.
+
+From the user point of view they are very similar to "ordinary" filters. The only difference is that
+"ordinary" filters use only data fields already present in the dataset.
+They utilise standard functionality of OLAP database and works very fast even on large sets of data.
+Functions perform some calculations to filter data which has to be done interactively
+and can't be precalculated in advance.
+
+Functional units are accessible via specific popup on top of the filter list.
+For now AnFiSA implements only five functions.
+
+.. image:: pics/fucntional-units_list.png
+   :width: 400
+   :alt: Functional units tab
+
+Functional units requires proper settings to work, which can be complicated in case of complex functions.
+
+Full description of functional units with required parameters is here: :ref:`func_ref`
+The description of filtering functions scientific applications can be found in
+`AnFiSA paper <https://www.sciencedirect.com/science/article/abs/pii/S153204642200185X>`_
+
+Resulting data size note
+^^^^^^^^^^^^^^^^^^^^^^^^
+Some complex filtering functions (for example *Compound_Request()*) produce proper result
+only for valuable size of input data set.
+If input data contain to much variations the filtering results will not have
+any sense from scientific point of view. In this case AnFiSA stops calculation and returns an error message.
+This prevents user from making methodological errors in formally correct analysis.
+
+**The error message regarding too large data size is not just a technical limitation.
+In most cases it means that your results does not have a sense from scientific point of view.**
+
+The same logic works for several other types of analysis and filtering, and even for visual representation of the data.
 
 
 Filter chain creation
@@ -147,13 +184,16 @@ All "regular" filters available in the filter refinement page are commutative:
 they can be applied in any order and will produce the same result.
 This is the requirement of all OLAP data analysis platforms.
 Support of non-commutative operations is much more complicated and described in the separate section
-"Notes on Zygosity"
+:ref:`zygosity_notes`
 
 Presets
 =======
 User can save a created set of filters by pressing the **Create preset** button.
 User should provide the preset name and optionally assign a solution pack -- the group of presets.
 To load a preset, user just needs to select a preset in a combo-box on the **Filter Refiner** caption.
+
+The list of all available filter presets can be found here:
+:ref:`predefined_filters`
 
 
 Viewing and saving filtration result
@@ -196,21 +236,4 @@ After creating a derived dataset user can open derived dataset, or continue refi
 **Next**: :ref:`decision_tree`
 
 :ref:`toc`
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
