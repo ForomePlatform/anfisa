@@ -43,6 +43,7 @@ function updateCurFilter(filter_name, force_it) {
 }
 
 function onFilterListChange() {
+    arrangeControls();
 }
 
 /*************************************/
@@ -63,6 +64,8 @@ function doCSVExport() {
 /*************************************/
 /**************************************/
 function arrangeControls() {
+    document.getElementById("filter-mod").style.height = 
+        Math.max(window.innerHeight - 55, 30) + "px";
     sSubVRecH.arrangeControls();
     sOpEnumH.arrangeControls();
 }

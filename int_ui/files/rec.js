@@ -102,8 +102,8 @@ function onClick(event_ms) {
 
 function arrangeControls() {
     document.getElementById("r-cnt-container").style.height = 
-        Math.max(30, window.innerHeight - 10 -
-            document.getElementById("r-tab").style.height);
+        (Math.max(30, window.innerHeight - 10 -
+            document.getElementById("r-tab").style.height)) + "px";
 }
 
 /**************************************/

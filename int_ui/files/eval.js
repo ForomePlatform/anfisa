@@ -401,7 +401,7 @@ var sOpEnumH = {
         if ( block_h < this.mArrangeDelta)
             return;
         document.getElementById("cur-cond-enum-list").style.height = 
-            block_h - this.mArrangeDelta;
+            (block_h - this.mArrangeDelta) + "px";
     },
 
     careEnumZeros: function(opt, func_mode) {

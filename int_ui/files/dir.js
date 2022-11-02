@@ -158,7 +158,8 @@ function arrangeControls() {
     var delta = 60;
     if (document.getElementById("dir-docs")) 
         delta += document.getElementById("dir-docs").clientHeight + 20;
-    document.getElementById("dir-main").style.height = window.innerHeight - delta;
+    document.getElementById("dir-main").style.height = 
+        Math.max(window.innerHeight - delta, 30) + "px";
 }
 
 /*************************************/

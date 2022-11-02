@@ -1174,6 +1174,8 @@ var sVersionsH = {
 
 /**************************************/
 function arrangeControls() {
+    document.getElementById("dtree-main").style.height = 
+        Math.max(window.innerHeight - 55, 30) + "px";
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
         cond_mod_height = el_cond_mod.offsetHeight;
@@ -1181,7 +1183,7 @@ function arrangeControls() {
         if (func_el && func_el.style.display != "none") 
             cond_mod_height -= func_el.getBoundingClientRect().height;
         document.getElementById("wrap-cond-enum").style.height = 
-            Math.max(10, cond_mod_height - 110);
+            Math.max(10, cond_mod_height - 110) + "px";
     }
     sSubVRecH.arrangeControls();
     sOpEnumH.arrangeControls();

@@ -599,3 +599,23 @@ textarea#code-edit-content {
     overflow: auto;
     font-size: 16px;
 }
+
+div#cur-cond-variety {
+    font-size: 12px;
+    cursor: pointer;
+    font-style: italic;
+    white-space: normal;
+    border: 1px solid #A0A0FF;
+    padding: 5px;
+    text-align: center;
+    margin-left: 30px;
+}
+
+div#cur-cond-enum-ctrl {
+    display: flex;
+    flex-direction: row;
+    vertical-align: top;
+    overflow: hidden;
+    margin: 10px 5px;
+    padding: 5px 5px;
+}

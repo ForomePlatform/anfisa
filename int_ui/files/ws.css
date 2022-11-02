@@ -170,12 +170,12 @@ div#wrap-rec-list {
 }
 
 div#rec-list  {
+    display: block;
     background-color:#333455; 
     margin-top: 2px;
     overflow-y: scroll;
     overflow-x: hidden;
     white-space: nowrap;
-    height: 100%;
     max-height: 100%;
 }
 

@@ -63,14 +63,14 @@ function resetPanels(instr) {
 }
 
 function arrangeControls() {
-    all_w = document.getElementById("all").offsetWidth;
-    all_h = document.getElementById("all").offsetHeight;
-    
-    document.getElementById("bottom").style.height = all_h - 115;
-    document.getElementById("left").style.width = 180;
-    document.getElementById("center").style.width = all_w - 370;
-    document.getElementById("right").style.width = 180; 
-    document.getElementById("symbol-info-wrap").style.height = all_h - 135; 
+    document.getElementById("bottom").style.height = 
+        Math.max(window.innerHeight - 140, 30) + "px";
+    document.getElementById("left").style.width = "180px";
+    document.getElementById("center").style.width = 
+        Math.max(window.innerWidth - 370, 30) + "px";
+    document.getElementById("right").style.width = "180px"; 
+    document.getElementById("symbol-info-wrap").style.height = 
+        Math.max(window.innerHeight - 135, 30) + "px"; 
 }
 
 function setupPanels(info) {
@@ -99,6 +99,8 @@ function setupPanels(info) {
     checkControls();
     checkSel(sCurSelMode, true);
     checkDynSel(sCurDynSelMode, true);
+    arrangeControls();
+    
 }
 
 function checkSel(mode, force_it) {
