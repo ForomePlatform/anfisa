@@ -20,7 +20,8 @@ def ds_list_response(ds):
     pytest.response = DsList.post(parameters)
 
 
-@when(parsers.cfparse('ds_list request with "xl Dataset with > 150 records" and "{smpcnt:String}" parameters is send', extra_types=EXTRA_STRING_TYPES))
+@when(parsers.cfparse('ds_list request with "xl Dataset with > 150 records" and "{smpcnt:String}" parameters is send',
+                      extra_types=EXTRA_STRING_TYPES))
 def ds_list_response(dataset, smpcnt):
     parameters = Constructor.ds_list_payload(ds=dataset, smpcnt=smpcnt)
     pytest.response = DsList.post(parameters)

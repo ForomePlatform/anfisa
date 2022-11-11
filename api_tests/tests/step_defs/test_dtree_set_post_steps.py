@@ -24,7 +24,7 @@ def dtree_set_response(ds, code_name):
 
 
 @when(parsers.cfparse(
-    'dtree_set request with correct "{ds:String}", "{code_name:String}" and "{instr:String}" parameters is send',
+    'dtree_set request with "{ds:String}", "{code_name:String}", "{instr:String}" parameters is send',
     extra_types=EXTRA_STRING_TYPES))
 def dtree_set_response(ds, code_name, instr, dataset, unique_name):
     if ds == 'xl Dataset' or ds == 'ws Dataset':
