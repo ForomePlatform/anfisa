@@ -4,7 +4,7 @@ Feature: Check stat_units [POST] request
 
     @any
     @positive
-    Scenario: Return first attribute data, marked as incomplete by ds_stat for any dataset
+    Scenario: Return first attribute data, marked as incomplete by dtree_stat for any dataset
         Given "xl Dataset" is uploaded and processed by the system
         And dtree_stat response with incomplete units is returned
         When stat_units request is send
