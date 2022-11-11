@@ -21,7 +21,7 @@ def ws_tags_response(dataset, ws_less_9000_rec, ws, rec):
     pytest.response = WsTags.post(parameters)
 
 
-@when(parsers.cfparse('ws_tags request with correct "{ws:String}", "{rec:String}" and "{tag_type:String}" is send',
+@when(parsers.cfparse('ws_tags request with correct "{ws:String}", "{rec:String}", "{tag_type:String}" is send',
                       extra_types=EXTRA_STRING_TYPES))
 def tag_creation(dataset, ws_less_9000_rec, ws, rec, tag_type, unique_name):
     if ws == 'ws Dataset':

@@ -7,7 +7,7 @@ Feature: Check ws_list [POST] request
     Scenario: Return current list of Dataset variants for any ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
         And "ws Dataset with < 9000" records is derived from it
-        When ws_list request with correct "ws Dataset with < 9000" parameter is send
+        When ws_list request with "ws Dataset with < 9000" parameter is send
         Then response status should be "200" OK
         And response body schema should be valid by "ws_list_schema"
         And response body "records" "descriptor" schemas should be valid
@@ -18,7 +18,7 @@ Feature: Check ws_list [POST] request
     Scenario: Return current list of Dataset variants for specific "wgs_PGP3140_nist_3_3_2" ws dataset
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And "ws Dataset with < 9000" records is derived from it
-        When ws_list request with correct "ws Dataset with < 9000" parameter is send
+        When ws_list request with "ws Dataset with < 9000" parameter is send
         Then response status should be "200" OK
         And response body json should match expected data for "ws_list" request
 
@@ -27,7 +27,7 @@ Feature: Check ws_list [POST] request
     Scenario Outline: Return current list of Dataset variants for any ws dataset
         Given "xl Dataset with code filter" is uploaded and processed by the system
         And "ws Dataset with < 9000" records is derived from it
-        When ws_list request with incorrect "<ds>" parameter is send
+        When ws_list request with "<ds>" parameter is send
         Then response status should be "403" Forbidden
         And response body should contain "<error>"
 

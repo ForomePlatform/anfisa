@@ -17,7 +17,7 @@ Feature: Check zone_list [POST] request
         Given "xl Dataset with code filter" is uploaded and processed by the system
         And "ws Dataset with < 9000" records is derived from it
         And "random" zone is selected
-        When zone_list request with correct "ds" and "zone" parameters is send
+        When zone_list request with "ds", "zone" parameters is send
         Then response status should be "200" OK
         And response body schema should be valid by "zone_descriptor_single"
 
@@ -39,7 +39,7 @@ Feature: Check zone_list [POST] request
         Given "wgs_PGP3140_nist_3_3_2" is uploaded and processed by the system
         And "ws Dataset with < 9000" records is derived from it
         And "first" zone is selected
-        When zone_list request with correct "ds" and "zone" parameters is send
+        When zone_list request with "ds", "zone" parameters is send
         Then response status should be "200" OK
         And response body json should match expected data for "zone_list_single" request
 

@@ -32,7 +32,7 @@ def zone_list_response(dataset, ws_less_9000_rec, ds):
     pytest.response = ZoneList.post(parameters)
 
 
-@when(parsers.cfparse('zone_list request with correct "ds" and "zone" parameters is send'))
+@when(parsers.cfparse('zone_list request with "ds", "zone" parameters is send'))
 def zone_list_response(ws_less_9000_rec, random_zone):
     parameters = Constructor.zone_list_payload(ds=ws_less_9000_rec, zone=random_zone)
     pytest.response = ZoneList.post(parameters)

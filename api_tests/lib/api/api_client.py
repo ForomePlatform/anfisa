@@ -24,6 +24,7 @@ class ApiRequest:
             url=url,
             params=params,
             headers=headers,
+            verify=False
         )
         print('responseCode:' + str(response.status_code))
         print('responseBody:', response.text)

@@ -15,6 +15,7 @@ response = requests.request(
             url=url + 'dirinfo',
             params='dirinfo',
             headers=headers,
+            verify=False
         )
 print('responseCode:' + str(response.status_code))
 print('responseBody:', response.text)
@@ -34,6 +35,7 @@ for wsDataset in ws_to_drop:
         url=url + 'adm_drop_ds',
         params={'ds': wsDataset},
         headers=headers,
+        verify=False
     )
     print('responseCode:' + str(responseWsDataset.status_code))
     print('responseBody:', responseWsDataset.text)
@@ -44,6 +46,7 @@ response = requests.request(
             url=url + 'dirinfo',
             params='dirinfo',
             headers=headers,
+            verify=False
         )
 dataset_list = json.loads(response.content)["ds-list"]
 for ds in dataset_list:
@@ -53,6 +56,7 @@ for ds in dataset_list:
             url=url + 'dtree_set',
             params={"ds": ds, "code": 'return False'},
             headers=headers,
+            verify=False
         )
         print('responseCode:' + str(responseSet.status_code))
         print('responseBody:', responseSet.text)
@@ -65,6 +69,7 @@ for ds in dataset_list:
                     url=url + 'dtree_set',
                     params={"ds": ds, "code": 'return False', "instr": instr},
                     headers=headers,
+                    verify=False
                 )
                 print('responseCode:' + str(responseSetInstr.status_code))
                 print('responseBody:', responseSetInstr.text)
