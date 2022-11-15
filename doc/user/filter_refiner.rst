@@ -107,44 +107,6 @@ To see the exact value of discriminative power one can hover a mouse over the fi
    :width: 500
    :alt: Discriminative power popup
 
-Functional Units
-----------------
-The functional units (filtering functions) are specific types of filtering actions
-which user can use to filter variations.
-
-From the user point of view they are very similar to "ordinary" filters. The only difference is that
-"ordinary" filters use only data fields already present in the dataset.
-They utilise standard functionality of OLAP database and works very fast even on large sets of data.
-Functions perform some calculations to filter data which has to be done interactively
-and can't be precalculated in advance.
-
-Functional units are accessible via specific popup on top of the filter list.
-For now AnFiSA implements only five functions.
-
-.. image:: pics/fucntional-units_list.png
-   :width: 400
-   :alt: Functional units tab
-
-Functional units requires proper settings to work, which can be complicated in case of complex functions.
-
-Full description of functional units with required parameters is here: :ref:`func_ref`
-The description of filtering functions scientific applications can be found in
-`AnFiSA paper <https://www.sciencedirect.com/science/article/abs/pii/S153204642200185X>`_
-
-Resulting data size note
-^^^^^^^^^^^^^^^^^^^^^^^^
-Some complex filtering functions (for example *Compound_Request()*) produce proper result
-only for valuable size of input data set.
-If input data contain to much variations the filtering results will not have
-any sense from scientific point of view. In this case AnFiSA stops calculation and returns an error message.
-This prevents user from making methodological errors in formally correct analysis.
-
-**The error message regarding too large data size is not just a technical limitation.
-In most cases it means that your results does not have a sense from scientific point of view.**
-
-The same logic works for several other types of analysis and filtering, and even for visual representation of the data.
-
-
 Filter chain creation
 =====================
 After setting filtering options for the filter user applies it by pressing the **Add condition** button
@@ -180,11 +142,50 @@ To achieve more flexible filtering one should use **Decision tree** capability.
 All charts in the filter details panel also displays the statistics for variations filed by previous filters,
 no for original variations set.
 
-All "regular" filters available in the filter refinement page are commutative:
+Functional Units (Filtering functions)
+======================================
+
+The **Functional units** (filtering functions) are specific types of filtering actions.
+
+From the user point of view they are very similar to "ordinary" filters.
+The difference is that "ordinary" filters use only data fields already present in the dataset.
+They utilise standard functionality of OLAP database and works very fast even on large sets of data.
+Also, all "regular" filters are commutative:
 they can be applied in any order and will produce the same result.
-This is the requirement of all OLAP data analysis platforms.
-Support of non-commutative operations is much more complicated and described in the separate section
-:ref:`zygosity_notes`
+This is the requirement of OLAP data analysis platform.
+
+Filtering functions  perform some calculations to filter data which has to be done interactively
+and can't be precalculated in advance. They are not commutative and recommended to appy
+only after narrowing down the dataset size by "ordinary" filters
+
+Functional units are accessible via specific popup on top of the filter list.
+For now AnFiSA implements only five functions.
+
+.. image:: pics/functional-units_list.png
+   :width: 400
+   :alt: Functional units tab
+
+Functional units requires proper settings to work, which can be complicated in case of complex functions.
+Most part of currently implemented functions are associated with zygosity calculations
+and described in the separate section :ref:`zygosity_notes`.
+
+Full description of functional units with required parameters is here: :ref:`func_ref`
+The description of filtering functions scientific applications can be found in
+`AnFiSA paper <https://www.sciencedirect.com/science/article/abs/pii/S153204642200185X>`_
+
+Data size for filtering functions
+---------------------------------
+Most part of complex filtering functions (for example *Compound_Request()*) produce proper result
+only for valuable size of input data set.
+If input data contain to much variations the filtering results will not have
+any sense from scientific point of view. In this case AnFiSA stops calculation and returns an error message.
+This prevents user from making methodological errors in formally correct analysis.
+
+**The error message regarding too large data size is not just a technical limitation.
+In most cases it means that your results does not have a sense from scientific point of view.**
+
+The same logic works for several other types of analysis and filtering, and even for visual representation of the data.
+
 
 Presets
 =======

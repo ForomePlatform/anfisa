@@ -101,6 +101,8 @@ in genetic variant’s analysis, annotations and curation.
 
 This guide is current as of Anfisa version v.0.7.
 
+For a very quick dive into AnFiSA, review :ref:`analysis_nutshell`
+
 To get familiar with AnFiSA capabilities, start from :ref:`intro`
 
 Or select page from table of contents.
@@ -112,6 +114,8 @@ Table of contents
 
 ..  toctree::
     :maxdepth: 1
+
+    variant_analysis_nutshell
 
     intro
 

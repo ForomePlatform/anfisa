@@ -105,6 +105,26 @@ For example, "**Open IGV**" for "**General**" group and "**gnomAD browser**" for
 At each step user can export the resulting variations table to Excel/CSV file using
 **Export report** function (Located on top of the screen next to user picture).
 
+Exporting data
+==============
+
+Anfisa supports several ways of exporting selected variants.
+
+
+To export selected variants as a Microsoft Excel Workbook, the user should use "Export report" button
+next to the user picture.
+Anfisa exports variations according to the current filtering settings.
+
+To export data in Excel document AnFiSA uses a template Excel table.
+A template defines what properties of the variant are exported, in what order they are exported,
+and what colors/styles are used for specific columns.
+Default package includes template used for SEQaBOO project.
+
+Variants can be also exported as a simple tab-delimited file.
+By default, only gene name and variant notations are included as two columns in the file.
+This option can be customized for a specific installation by modifying the `solutions.py` module.
+
+
 **Next**: :ref:`analysis_examples`
 
 :ref:`toc`

@@ -1,7 +1,8 @@
 .. _func_ref:
 
+*******************
 Filtering functions
-===================
+*******************
 
 Discussion
 ----------
@@ -80,7 +81,7 @@ Inheritance_mode()
 
         ``["Homozygous Recessive", "X-linked", "Autosomal Dominant", "Compensational"]``
     
-Function selects variants with :ref:`Standard Zygosity Scenarios<standard-zygosity-scenarios>` if problem group is defined. 
+Function selects variants with :ref:`standard_zygosity_scenarios` if problem group is defined.
 
 **Examples**
 
@@ -91,7 +92,7 @@ Function selects variants with :ref:`Standard Zygosity Scenarios<standard-zygosi
 
 Notes:
     
-    - :ref:`Default problem group<default-problem-group>` is preset
+    - :ref:`default_problem_group` is preset
     
     - function value ``X-linked`` is actual only if case includes a male sample
     
@@ -178,13 +179,14 @@ In this case detection procedure is run on labeled state of filtering process.
 .. index:: 
     Compound_Request; function
 
+
 Compound_Request()
 ^^^^^^^^^^^^^^^^^^
     **sub-type**: ``"comp-request"``
     
     **Parameters**: 
         
-    |   **request**, :ref:`compound request<compound-request>` *structure*
+    |   **request**, :ref:`compound_request` *structure*
     |   **approx**, *optional* :ref:`gene approximation variant<gene_aproximations>`, *string*
     |   **state**, *optional* decision tree state label, *string*
     
@@ -208,6 +210,6 @@ from function :ref:`Compound_Heterozygous()<Compound_Heterozygous>` are actual i
 The example demonstrates realization of Compound_Heterozygous() functionality for trio
 ``["bgm9001a1", "bgm9001u1", "bgm9001u2"]``.
 
-The user interface provides an easy way to build any of :ref:`Standard Zygosity Scenarios<standard-zygosity-scenarios>`
-applied to :ref:`default problem group<default-problem-group>` of the case.
+The user interface provides an easy way to build any of :ref:`standard_zygosity_scenarios>`
+applied to :ref:`default_problem_group` of the case.
 Then the user can modify these scenarios to perform more complex conditions.
