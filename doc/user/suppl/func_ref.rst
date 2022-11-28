@@ -115,11 +115,11 @@ Custom_Inheritance()
     
     **Parameters**: 
         
-        **scenario**, :ref:`scenario<zygosity-scenario>` *structure*
+        **scenario**, :ref:`zygosity_scenario` *structure*
     
     **Values**: ``["True"]``
     
-The function selects variants by a fixed :ref:`Zygosity Scenario<zygosity-scenario>`.
+The function selects variants by a fixed :ref:`zygosity_scenario`.
 
 In terms of functionality it is an extension of :ref:`Inheritance_Mode()<Inheritance_Mode>` function.
 
@@ -132,16 +132,14 @@ In terms of functionality it is an extension of :ref:`Inheritance_Mode()<Inherit
     
 .. _Compound_Heterozygous:
 
-.. index:: 
-    Compound_Heterozygous; function
-
 Compound_Heterozygous()
 ^^^^^^^^^^^^^^^^^^^^^^^
+
     **sub-type**: ``"comp-hets"``
     
     **Parameters**: 
         
-    |   **approx**, *optional* :ref:`gene approximation variant<gene_aproximations>`, *string*
+    |   **approx**, *optional* :ref:`gene_approximations`, *string*
     |   **state**, *optional* decision tree state label, *string*
     
     **Values**: 
@@ -176,28 +174,25 @@ In this case detection procedure is run on labeled state of filtering process.
             
 .. _Compound_Request:
 
-.. index:: 
-    Compound_Request; function
-
-
 Compound_Request()
 ^^^^^^^^^^^^^^^^^^
+
     **sub-type**: ``"comp-request"``
     
     **Parameters**: 
         
     |   **request**, :ref:`compound_request` *structure*
-    |   **approx**, *optional* :ref:`gene approximation variant<gene_aproximations>`, *string*
+    |   **approx**, *optional* :ref:`gene_approximations`, *string*
     |   **state**, *optional* decision tree state label, *string*
     
     **Values**: ``["True"]``
 
-The function evaluates :ref:`compound request<compound-request>`. 
+The function evaluates :ref:`Compound_Request`.
 
-In terms of functionality it is a wide extension of :ref:`Compound_Heterozygous()<Compound_Heterozygous>` function 
+In terms of functionality it is a wide extension of :ref:`Compound_Heterozygous` function
 
 All comments on parameters **approx** and **state**, environment properties **approx-modes** and **labels**
-from function :ref:`Compound_Heterozygous()<Compound_Heterozygous>` are actual in this context.
+from function :ref:`Compound_Heterozygous` are actual in this context.
 
 **Example** 
 
@@ -210,6 +205,6 @@ from function :ref:`Compound_Heterozygous()<Compound_Heterozygous>` are actual i
 The example demonstrates realization of Compound_Heterozygous() functionality for trio
 ``["bgm9001a1", "bgm9001u1", "bgm9001u2"]``.
 
-The user interface provides an easy way to build any of :ref:`standard_zygosity_scenarios>`
+The user interface provides an easy way to build any of :ref:`standard_zygosity_scenarios`
 applied to :ref:`default_problem_group` of the case.
 Then the user can modify these scenarios to perform more complex conditions.

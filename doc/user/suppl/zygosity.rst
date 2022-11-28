@@ -161,20 +161,18 @@ Identifies the compound heterozygous variations *inside a trio*.
 The formal definition of compound heterozygous can be found here: :ref:`func_ref`
 
 
-.. _compound_request:
-
 Compound_Request()
 ------------------
 The extension of *Compound_Heterozygous()* function to more complicated cases.
 
 
-
+.. _compound-heterozygous:
 
 Zygosity events and compound requests
 -------------------------------------
 
 Let us fix some diapason or diapasons of positions on chromosome as "gene"
-(see :ref:`below<gene_aproximations>` for details).
+(see :ref:`gene_approximations` for details).
 Then for some fixed zygosity scenario it is possible to count how many variants with this scenario
 presents inside the "gene". Let us call these variants as "events".
 
@@ -194,9 +192,6 @@ Strongly speaking, a compound request applies to "genes", and its result is eith
 or *list of lists* of variants that cause events.
 The current version of the system does not support so complex selection objects,
 so we interpret result of compound request as a joined plain list of variants.
-
-.. _compound-heterozygous:
-
 
 
 The following compound request is important in practice. It applies to trio:
@@ -218,7 +213,7 @@ Comments.
   Results of the procedure might be good only if most part of benign variants are filtered out before the detection process.
   It is a matter of experiments, so the system provides extended functionality for this special kind of experimental activity.
     
-.. _gene_aproximations:    
+.. _gene_approximations:
     
 Approximations to gene locations
 --------------------------------
