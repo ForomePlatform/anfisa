@@ -4,14 +4,15 @@
 Decision Tree
 *************
 
-The Decision tree is an advances method of variations filtering.
+The Decision tree is an advanced method of variations filtering.
 It allows very powerful and flexible way to refine variations set and create new derives sets.
 
 How Decision Tree works
 =======================
 On the first glance, the Decision Tree is very similar to **Filter Refiner** functionality.
-This if a sequence of a filtering steps, each of them filters variation by the specific condition,
+This is a sequence of a filtering steps, each of them filters variation by the specific condition,
 or group of conditions.
+
 Each filter separates variations in two groups:
 
 * Variations which pass filter
@@ -34,12 +35,12 @@ The overall logic is following:
     * Variations, *not matching* the step criteria goes to subsequent steps.
     * For variations, *matching* step criteria user can choose one of the following actions:
         * Unconditionally include variations in the final selection
-        * Exclude variations from further consideration (thrown away)
+        * Exclude variations from further consideration (throw away)
 
-A result of application of any Decision Tree is a set that we will call "Final selection".
+A result of the application of any **Decision Tree** is a set that we will call "Final selection".
 
 At the final step of decision tree we can decide what to do with rest of variations:
-add in to the final selection or trow away.
+add in to the final selection or throw away.
 
 In fact, the **Filter Refiner** is just a simple version of a decision tree,
 where at each step we exclude variations, not passing the filter,
@@ -63,7 +64,7 @@ From it user can:
 * **Create derived dataset** -- apply decision tree to the dataset and save results as a derived dataset.
 
 AnFiSA is distributed together with the set of pre-defined decision trees.
-The detailed description of these trees are located in separate section.
+The detailed description of these trees are located in the separate section.
 
 Filters panel
 -------------
@@ -106,7 +107,7 @@ In the second case user must select the joining function: OR/AND
 Decision tree panel (Results)
 -----------------------------
 The **Results** panel contains active decision tree filters.
-Of the first glance it can look complicated, however underlying logic is rather straightforward
+On the first glance it can look complicated, however underlying logic is rather straightforward.
 
 .. image:: pics/decision-tree_results.png
   :width: 800
@@ -119,15 +120,15 @@ and two buttons to view results:
 * View returned variations - variations passing decision tree
 * View variations - all list of variations
 
-The **Tree** column shows graphical tree with list of tree steps.
+The **Tree** column shows graphical tree with the list of tree steps.
 At the each step AnFiSa displays the number of variations before step.
-The arrow indicates number of variations which are included ijn the final dataset
+The arrow indicates number of variations which are included in the final dataset
 (green arrow) or excluded from subsequent analysis (purple arrow).
 
 The **Algorithm** column shows the step details for each step.
 
 The **Include/Exclude** radio buttons define action for variations passing filter:
-include into final dataset or exclude from calculation.
+include into final dataset or exclude from the calculation.
 
 The icon "three vertical dots" allows to change decision tree:
 * Add steps before/after current

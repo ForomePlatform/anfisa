@@ -7,10 +7,10 @@ Derived Dataset
 Derived dataset selection
 =========================
 
-To pen derived dataset, just select one of the primary datasets,
+To open derived dataset, just select one of the primary datasets,
 the select option "Use existing candidate set".
-After selecting the candidate set one will see all information regarding the selected set:
-General information, annotation sources and code of decision tree/filters used to produce this dataset
+After selecting the candidate set one will see all the information regarding the selected set:
+the general information, annotation sources, and code of decision tree/filters used to produce this dataset
 
 .. image:: pics/dataset-derived_info.png
   :width: 800
