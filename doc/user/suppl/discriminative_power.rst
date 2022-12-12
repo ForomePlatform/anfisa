@@ -8,27 +8,27 @@ This document describes an algorithm of Discriminative Power calculation.
 Formulation of the problem
 --------------------------
 As was said in the filters description, the **Discriminative power** is a special numeric characteristic
-use to indicate the “Effectivity” of a filter.
+used to indicate the “Effectivity” of a filter.
 This means that "Effective" filter can split the current set of variants
-on the the most strongly differing groups, e.g. with loss maximum of “entropy”.
+on the most strongly differing groups, e.g. with the maximum loss of “entropy”.
 
 As a possibility, we can use here evaluation of plain proper entropy, but it is not so helpful if the set of
-variants is wide (up to millions). So we evaluate some entropy-like product instead of proper entropy,
+variants is wide (up to millions). So, we evaluate some entropy-like product instead of proper entropy,
 and below is the description of the procedure.
 
 Procedure of evaluation
 -----------------------
-For each property we start from property status data, and form list of numeric (positive integer) values,
-one integer for each of “choices”:
+For each property, we start from property status data, and form list a of numeric (positive integer) values,
+one integer for each of the “choices”:
 
-* For numeric property we have histogram of values, use this as “list of choices”
+* For numeric property we have a histogram of values, use this as a “list of choices”
 
-* For enumerated property we have count of each value - use this as base list for “list of choices”, and take in account “total count”, that equals to the filtered-counts of variants (or transcripts, in some cases)
+* For enumerated property we have a count of each value - use this as a base list for the “list of choices”, and take in account the “total count”, which equals to the filtered-counts of variants (or transcripts, in some cases)
     * For status property the sum of values in the base list equals to the total count, the base list is the final
-    * If the sum of values in the base list is less than total count, append the difference to the base list, otherwise use the base one as it
+    * If the sum of values in the base list is less than the total count, append the difference to the base list, otherwise use the base one as it
 
-**Note**: The procedure is rough, so we ignore (up to now) specifics of multivalued enumerated properties with wide overlap.
-With use of “list of choices” we evaluate Discriminative Power by the following procedure (in JavaScript language):
+**Note**: The procedure is rough, so we ignore (up to now) the specifics of multivalued enumerated properties with wide overlap.
+With the use of the “list of choices” we evaluate Discriminative Power by the following procedure (in JavaScript language):
 
 
 ..  code-block:: JavaScript
