@@ -4,7 +4,7 @@
 Analysis examples
 *****************
 
-Here a couple of examples of variation analysis using AnFiSA capabilities.
+Here is a couple of examples of variation analysis using AnFiSA capabilities.
 
 At the time of AnFiSA publication
 (`AnFiSA: An open-source computational platform for the analysis

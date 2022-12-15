@@ -19,16 +19,16 @@ the general information, annotation sources, and code of decision tree/filters u
 On the right panel one can add dataset description and decide, what to do with the dataset.
 One can continue to filter variations by Filter refiner/decision tree.
 Alternatively, if the dataset is small enough, one can directly view variations
-by selection option "View all variants".
+by selecting the option "View all variants".
 
 Variations table
 ================
 
-The main scree of the derived dataset exploration is the variations table.
+The main screen of the derived dataset exploration is the variations table.
 
 The left part of the screen contains the list of all variations in the dataset,
-including gene name and exact variation description. The right part of the screen contain detailed
-description of selected variation.
+including gene name and exact variation description. The right part of the screen contains the detailed
+description of the selected variation.
 
 .. image:: pics/derived-dataset_variations-table.png
   :width: 800
@@ -39,12 +39,13 @@ Table controls
 --------------
 
 The action "**Edit filters**" switches interface to variations filtering via filter refiner
-or decision tree. Both options works the same way both for primary and for derived datasets.
+or decision tree.
+The "Filter refiner" and "Decision tree" functionality works the same way both for primary and for derived datasets.
 
 The actions "**Select filter preset**" is used to perform a quick filtering of variations.
-One can choose from list of previously saved filter presets.
+One can choose from the list of previously saved filter presets.
 
-Actions "Add gene", "**Add gene list**", "**Add samples**", "**Add tags**" are used to set additional quick filters
+Actions "**Add gene**", "**Add gene list**", "**Add samples**", "**Add tags**" are used to set additional quick filters
 by the corresponding properties. One can use this quick filters to narrow down variations list.
 
 
@@ -52,10 +53,10 @@ Variants list and classification
 --------------------------------
 
 The left part of the screen contains the list of all variations, according to the current filter settings.
-By default the table contains gene symbol and variant.
-By clicking on the variation one can see the variation details in the right panel.
+By default, the table contains the gene symbol and the variant notation.
+By clicking on the variation, one can see the variation details in the right panel.
 
-The color and symbol on the variation record indicates the result of semi-automate variant classification
+The color and symbol on the variation record indicates the result of the semi-automated variant classification
 based on a transparent decision model.
 
 Visual labels represent the variant functional impact:

@@ -4,15 +4,15 @@
 Decision tree syntax reference
 ******************************
 
-Decision tree is an algorithm of filtration that allows to build complex procedure of variants selection.
+The **Decision tree** is an algorithm of filtration that allows building complex procedure of variants selection.
 The main idea of how  decision tree works is described in :ref:`decision_tree`.
 In the text below we define and discuss a dialect of Python that is used to construct a decision tree.
-One can use it to construct decision trees in a more IT-way.
+One can use it to construct decision trees in a more IT way.
 
 Decision tree logic
 ===================
 
-- Initially we have the whole set of items (variants) as working selection.
+- Initially we have the whole set of items (variants) as a working selection.
 - At each branching point:
     - If-instruction selects some subset of working selection;
     - Return-instruction determines whether the selected subset should be included in the "final selection"
@@ -22,11 +22,11 @@ Decision tree logic
           if condition :
               return bool decision
 
-    - after If-instruction the selection set is (probably) reduced, and next instruction is
-      applied to this reduced set; next instruction is one more If-instruction, or...
+    - after If-instruction the selection set is (probably) reduced, and the next instruction is
+      applied to this reduced set; the next instruction is one more If-instruction, or...
         
     - final instruction in code is always Return-instruction that determines what should be done
-      to the rest of working selection: to include it in the "final selection" (``True``) or to exclude it (``False``):
+      to the rest of the working selection: to include it in the "final selection" (``True``) or to exclude it (``False``):
       :: code-block:: python
 
           return bool decision
@@ -38,8 +38,8 @@ There is only one other type of available instruction, Label-instruction:
         label (string)
 
 
-This instruction can be inserted to decision tree code before any If-instruction.
-So the user has a possibility to mark state of working selection by label mark.
+This instruction can be inserted to the decision tree code before any If-instruction.
+So the user has the possibility to mark the state of working selection by label mark.
 This mark can be used in complex procedures
 
 (see :ref:`func_ref`, functions :ref:`Compound_Heterozygous()<Compound_Heterozygous>`
@@ -48,10 +48,10 @@ and :ref:`Compound_Request()<Compound_Request>`).
 Syntax principles
 =================
 
-There are three levels of details in description of Decision Tree Python dialect:
+There are three levels of details in the description of the **Decision Tree** Python dialect:
 
-- **neccessary level**: the dialect deals with very restricted subset of Python,
-  so only small amount of Python constructions are allowed in it; below is complete description of this subset
+- **necessary level**: the dialect deals with a very restricted subset of Python,
+  so only small a amount of Python constructions are allowed in it; below is the complete description of this subset
 
 - **good practice level**: some constructs discussed below are recommended as "good practice";
   similar constructs that are not considered good practices could be refactored to their "good practice" analogues
@@ -63,14 +63,14 @@ There are three levels of details in description of Decision Tree Python dialect
       - **string constants** can be typed without quote symbols ``""`` or ``''``
         if they are correct Python identifiers or constants ``True, False, None``
 
-      - **lists vs. sets**: in case when code refers list objects with ``[]`` parentheses,
+      - **lists vs. sets**: in the case when code refers list objects with ``[]`` parentheses,
         it is good practice to use set notation with ``{}``; indeed in most cases,
-        order of elements in a "list" is irrelevant, while ``{}`` are more readable
+        the order of elements in a "list" is irrelevant, while ``{}`` are more readable
                 
-Top level constructions
+Top-level constructions
 =======================
 
-There are three top level constructions available in the dialect:
+There are three top-level constructions available in the dialect:
     :: code-block:: python
 
         if condition :
@@ -81,7 +81,7 @@ There are three top level constructions available in the dialect:
         label (string)
 
 
-The following rules must be hold:
+The following rules must be followed:
 
 - All instructions (excluding Return-sub-instruction of If-instruction) must start at the first character of a line,
   no indentation
