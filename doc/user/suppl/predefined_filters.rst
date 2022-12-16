@@ -1,10 +1,10 @@
 .. _predefined_filters:
 
 *******************
-Pre-defined filters
+Predefined filters
 *******************
 
-This section contains description of all pre-defined filter sets and decision trees.
+This section contains a description of all pre-defined filter sets and decision trees.
 
 Filters
 =======
