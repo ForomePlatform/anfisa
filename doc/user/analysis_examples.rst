@@ -4,16 +4,16 @@
 Analysis examples
 *****************
 
-Here is a couple of examples of variation analysis using AnFiSA capabilities.
+Here are a couple of examples of variation analysis using AnFiSA capabilities.
 
-At the time of AnFiSA publication
+At the time of the publication
 (`AnFiSA: An open-source computational platform for the analysis
-of sequencing data for rare genetic disease <https://www.sciencedirect.com/science/article/abs/pii/S153204642200185X>`_)
-a demo instance,
-and the Ashkenazi Trio high-confidence benchmarks VCF version 4.2 provided by NIST [56] is hosted at
+of sequencing data for rare genetic disease <https://www.sciencedirect.com/science/article/abs/pii/S153204642200185X>`_),
+a demo instance of the platform is available for use here:
 https://app.demo.forome.org/.
+The "Ashkenazi Trio" high-confidence benchmarks provided by NIST is available on the demo platform.”
 
-Alternatively, one can use self-hosted Anfisa installation with sample data.
+Alternatively, one can use a self-hosted Anfisa installation with sample data.
 
 Phenotype-based analysis (looking for potential hearing loss variants)
 ======================================================================
@@ -54,7 +54,7 @@ The next KCNQ1 variant chr11:2847958 C>T and the last variant in JAG should be c
 The rest are extremely rare variants without clear clinical annotations.
 A user might want to look at the transcripts tab to categorize them.
 The transcripts that served as a base for selecting variants are shown in bold.
-If the user checks “Show Selection Only” checkbox, then all other transcripts become hidden.
+If the user checks the “Show Selection Only” checkbox, then all other transcripts become hidden.
 
 Genetics first/Phenotype agnostic analysis
 ==========================================
@@ -66,7 +66,7 @@ The BGMR decision tree is a superset of BGMRB that includes auxiliary variants w
 while there is no known evidence of them being causative, there is no evidence to the contrary either,
 as well as variants with poorer call quality.
 
-We first review the PGP3140_BGM_RedButton data set created by application of BGMRB.
+We first review the PGP3140_BGM_RedButton data set created by the application of BGMRB.
 The X-chromosome variants are not identified in the publicly available dataset;
 hence the X-linked inheritance mode is not applicable in this example.
 Therefore, we only review the autosomal dominant and recessive inheritance modes.
@@ -76,11 +76,11 @@ either running dedicated de-novo callers or more than just 3 relatives included 
 In this dataset, however, we only have a simple trio.
 
 Recessive analysis falls into two categories: homozygous and compound heterozygous.
-Selecting Mendelian_Homozygous_Recessive quick filter yields 6 variants in 5 genes,
-5 missense and 1 in-frame insertion. All missense variants have mostly benign in-silico predictions
+Selecting the Mendelian_Homozygous_Recessive quick filter yields 6 variants in 5 genes,
+5 missense, and 1 in-frame insertion. All missense variants have mostly benign in-silico predictions
 and are not found in ClinVar.
 Detailed in-silico predictions can be examined in the Transcripts tab,
-where transcripts that served as the basis for inclusion of the variants in the list are shown in bold.
+where transcripts that served as the basis for the inclusion of the variants in the list are shown in bold.
 By checking the “Show Selection Only” checkbox, the user can view only predictions relevant to the inclusion criteria.
 Selecting the Mendelian_Compound_Het filter displays a list of 7 compound heterozygous variants in 3 genes.
 They can be reviewed in the same way as the homozygous variants.
