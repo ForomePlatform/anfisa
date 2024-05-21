@@ -1263,7 +1263,10 @@ gnomAD_PopMax_AF:
         id: log,<
         description: Should be rendered as a logarithmic scale. Most often, users
             select the lower bound.
-    tooltip: Maximum allele frequency across outbred populations
+    tooltip: |
+        Allele Frequency (AF) of population derived in gnomAD_PopMax 
+        (calculated the same way as gnomAD_AF, but for the specific population)
+        Excludes inbred populations
     used_in_groups:
       - gnomAD
     variable_subtype:
@@ -1283,7 +1286,9 @@ gnomAD_PopMax:
         id: exp
         name: Experimental, Other
     title: PopMax Ancestry
-    tooltip: Outbred population that has the maximum allele frequency
+    tooltip: |
+        Population having the maximum AF (calculated the same way as gnomAD_AF, but per population). 
+        Excludes inbred populations
     used_in_groups:
       - gnomAD
     render-mode:
@@ -1333,7 +1338,10 @@ gnomAD_PopMax_AF_Inbred:
         id: log,<
         description: Should be rendered as a logarithmic scale. Most often, users
             select the lower bound.
-    tooltip: Maximum allele frequency across all populations (including inbred)
+    tooltip: |
+        Allele Frequency (AF) of population derived in gnomAD_PopMax 
+        (calculated the same way as gnomAD_AF, but for the specific population),
+        including inbred populations
     used_in_groups:
       - gnomAD
     variable_subtype:
@@ -1357,7 +1365,9 @@ gnomAD_PopMax_Inbred:
         id: log,<
         description: Should be rendered as a logarithmic scale. Most often, users
             select the lower bound.
-    tooltip: Population, including inbred, that has the maximum allele frequency
+    tooltip: |
+        Population having the maximum AF (calculated the same way as gnomAD_AF, but per population), 
+        including inbred populations
     used_in_groups:
       - gnomAD
     variable_subtype:
@@ -1841,7 +1851,9 @@ Clinvar_Trusted_Significance:
         id: clinical
         name: Clinical Evidence
     title: ClinVar significance by trusted submitters only
-    tooltip: Clinical Significance by ClinVar trusted submitters only
+    tooltip: |
+        Clinical Significance as reported by ClinVar trusted submitters only.
+        A list of trusted submitters is provided in configuration
     used_in_groups:
       - Predictions
     render-mode:
@@ -1863,7 +1875,13 @@ Clinvar_Trusted_Simplified:
     Method:
         id: clinical
         name: Clinical Evidence
-    tooltip: Simplified Clinical Significance by trusted submitters only
+    tooltip: |
+        Simplified Clinical Significance by trusted submitters only.
+        ClinSigSimple data is provided by ClinVar where 0 = no current value of 
+        Likely pathogenic or Pathogenic and 1= at least one current record submitted 
+        with an interpretation of Likely pathogenic or Pathogenic (independent of 
+        whether that record includes assertion criteria and evidence).
+        [see](https://www.biorxiv.org/content/10.1101/2020.12.13.422582v1)
     used_in_groups:
       - Predictions
     render-mode:
@@ -2019,6 +2037,24 @@ splice_altering:
         id: bioinf
         name: Bioinformatics Inference
     title: Splice AI splice altering
+    tooltip: |
+        From [SpliceAI GitHub](https://github.com/Illumina/SpliceAI):
+        
+        _Delta score of a variant, defined as the maximum of (DS_AG, DS_AL, DS_DG, DS_DL), 
+        ranges from 0 to 1 and can be interpreted as the probability of the variant being 
+        splice-altering. In the [paper](https://github.com/Illumina/SpliceAI), 
+        a detailed characterization is provided 
+        for 0.2 (high recall), 0.5 (recommended), and 0.8 (high precision) cutoffs._
+        
+        In Anifsa we assign the following values to `splice_altering` annotation:
+        
+        | Condition                                     | splice_altering              |
+        |-----------------------------------------------|------------------------------|
+        | MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.2        |  `unlikely`                  |
+        | 0.2 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.5 |  `likely_pathogenic`         |
+        | 0.5 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.8 |  `pathogenic`                |
+        | 0.8 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL)       |  `high_precision_pathogenic` |
+
     used_in_groups:
       - Predictions
     render-mode:
@@ -2194,7 +2230,22 @@ GERP_score:
     Method:
         id: bioinf
         name: Bioinformatics Inference
-    title: GERP Score
+    title: GERP "rejected substitutions" (RS) Score
+    tooltip: |
+        Genomic Evolutionary Rate Profiling (GERP) score downloaded from
+        [](http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz)
+        
+        The file contains two columns:
+        
+         1. Neutral evolution score (GERPN) score
+         2. Rejected substitutions" (RS) score
+        
+        We only use RS scores.
+        
+        See [Project URL](http://mendel.stanford.edu/SidowLab/downloads/gerp/) for more information
+        
+        See [GERP Scores at UCSC](https://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&g=allHg19RS_BW)
+        
     render-mode:
         id: linear,>
         description: Should be rendered as a linear scale. Most often, users select
