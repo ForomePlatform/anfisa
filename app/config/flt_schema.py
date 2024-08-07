@@ -22,7 +22,7 @@ import sys
 
 from app.prepare.prep_filters import FilterPrepareSetH
 from .variables import anfisaVariables
-from .favor import FavorSchema
+from . import getDataConfigSchema
 #===============================================
 #===============================================
 sAdvanceMode = False
@@ -118,8 +118,10 @@ def getClinvarTrusted(filters):
 #===============================================
 def defineFilterSchema(metadata_record, ds_kind, druid_adm = None):
     data_schema = metadata_record.get("data_schema")
-    if data_schema == "FAVOR":
-        return FavorSchema.defineFilterSchema(
+
+    data_cfg_schema = getDataConfigSchema(data_schema)
+    if data_cfg_schema is not None:
+        return data_cfg_schema.defineFilterSchema(
             metadata_record, ds_kind, druid_adm)
     assert data_schema is None or data_schema == "CASE", (
         "Bad data schema: " + data_schema)

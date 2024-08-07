@@ -40,10 +40,12 @@ class FavorSchema:
     @classmethod
     def tuneAspects(cls, ds_h, aspects):
         tuneFavorAspects(ds_h, aspects)
+        return True
 
     @classmethod
     def tuneUnits(cls, ds_h):
         tuneFavorUnits(ds_h)
+        return True
 
     @classmethod
     def startTune(cls, ds_h):

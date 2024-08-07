@@ -23,13 +23,14 @@
 from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
 from app.model.comp_hets import CompHetsUnit, CompoundRequestUnit
 from app.model.region_func import RegionFuncUnit
-from .favor import FavorSchema
+from . import getDataConfigSchema
 
 #===============================================
 def tuneUnits(ds_h):
-    if ds_h.getDataSchema() == "FAVOR":
-        FavorSchema.tuneUnits(ds_h)
-        return
+    data_schema = getDataConfigSchema(ds_h.getDataSchema())
+    if data_schema is not None:
+        if data_schema.tuneUnits(ds_h):
+            return
 
     RegionFuncUnit.makeIt(ds_h,
         {
