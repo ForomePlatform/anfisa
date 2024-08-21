@@ -30,11 +30,11 @@ def defAvarstarView(metadata_record, schema_modes):
         + metadata_record.get("data_schema"))
 
     aspect_list = [
-        AspectH("view_gen", "General", "_view", field = "general"),
-        AspectH("view_transcripts", "Transcripts", "_view",
+        AspectH("view_gen", "General", "view", field = "general"),
+        AspectH("view_transcripts", "Transcripts", "view",
             col_groups = ColGroupsH([("transcripts", "Transcripts")])),
-        #AspectH("view_gnomAD", "gnomAD", "_view", field = "gnomAD"),
-        #AspectH("view_pred", "Predictions", "_view", field = "predictions"),
+        #AspectH("view_gnomAD", "gnomAD", "view", field = "gnomAD"),
+        #AspectH("view_pred", "Predictions", "view", field = "predictions"),
     ]
 
     aspects = AspectSetH(aspect_list, schema_modes)

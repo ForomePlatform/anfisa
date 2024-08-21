@@ -55,7 +55,7 @@ def defFavorView(metadata_record, schema_modes):
             field = "mutation_rate"),
         AspectH("view_mappability", "Mappability", "_view",
             field = "mappability"),
-        AspectH("_main", "VEP Data", "__data")
+        AspectH("_main", "VEP Data", "__data", view_kind = "tech")
     ]
 
     aspects = AspectSetH(aspect_list, schema_modes)

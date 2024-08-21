@@ -63,14 +63,16 @@ def defineViewSchema(metadata_record = None, schema_modes = None):
     aspect_list += [
         AspectH("view_inheritance", "Inheritance", "_view",
             field = "inheritance", ignored = True),
-        AspectH("_main", "VEP Data", "__data"),
+        AspectH("_main", "VEP Data", "__data", view_kind = "tech"),
         AspectH("transcripts", "VEP Transcripts", "__data",
+            view_kind = "tech",
             col_groups = ColGroupsH([
                 ("transcript_consequences", "Transcript"),
                 ("regulatory_feature_consequences", "Regulatory"),
                 ("motif_feature_consequences", "Motif"),
                 ("intergenic_consequences", "Intergenic")])),
         AspectH("colocated_v", "Colocated Variants", "__data",
+            view_kind = "tech",
             col_groups = ColGroupsH([["colocated_variants", None]])),
         AspectH("input", "VCF", "__data", field = "input", mode = "string")]
 
