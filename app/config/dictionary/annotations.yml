@@ -1151,9 +1151,9 @@ In_hg19:
     variable_subtype:
         id: status
         name: Single categorical value
-gnomAD_AF:
+gnomad_af:
     variable_type: numeric
-    name: gnomAD_AF
+    name: gnomad_af
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1175,9 +1175,9 @@ gnomAD_AF:
     variable_subtype:
         id: float
         name: float
-gnomAD_AF_Exomes:
+gnomad_af_exomes:
     variable_type: numeric
-    name: gnomAD_AF_Exomes
+    name: gnomad_af_exomes
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1198,9 +1198,9 @@ gnomAD_AF_Exomes:
     variable_subtype:
         id: float
         name: float
-gnomAD_AF_Genomes:
+gnomad_af_genomes:
     variable_type: numeric
-    name: gnomAD_AF_Genomes
+    name: gnomad_af_genomes
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1245,9 +1245,9 @@ gnomAD_AF_Proband:
     variable_subtype:
         id: float
         name: float
-gnomAD_PopMax_AF:
+gnomad_popmax_af_outbred:
     variable_type: numeric
-    name: gnomAD_PopMax_AF
+    name: gnomad_popmax_af_outbred
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1272,9 +1272,9 @@ gnomAD_PopMax_AF:
     variable_subtype:
         id: float
         name: float
-gnomAD_PopMax:
+gnomad_popmax_outbred:
     variable_type: categorical
-    name: gnomAD_PopMax
+    name: gnomad_popmax_outbred
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1297,9 +1297,9 @@ gnomAD_PopMax:
     variable_subtype:
         id: status
         name: Single categorical value
-gnomAD_PopMax_AN:
+gnomad_popmax_an_outbred:
     variable_type: numeric
-    name: gnomAD_PopMax_AN
+    name: gnomad_popmax_an_outbred
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1320,9 +1320,9 @@ gnomAD_PopMax_AN:
     variable_subtype:
         id: int
         name: int
-gnomAD_PopMax_AF_Inbred:
+gnomad_popmax_af:
     variable_type: numeric
-    name: gnomAD_PopMax_AF_Inbred
+    name: gnomad_popmax_af
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1347,9 +1347,9 @@ gnomAD_PopMax_AF_Inbred:
     variable_subtype:
         id: float
         name: float
-gnomAD_PopMax_Inbred:
+gnomad_popmax:
     variable_type: categorical
-    name: gnomAD_PopMax_Inbred
+    name: gnomad_popmax
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1373,9 +1373,9 @@ gnomAD_PopMax_Inbred:
     variable_subtype:
         id: status
         name: Single categorical value
-gnomAD_PopMax_AN_Inbred:
+gnomad_popmax_an:
     variable_type: numeric
-    name: gnomAD_PopMax_AN_Inbred
+    name: gnomad_popmax_an
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1396,9 +1396,9 @@ gnomAD_PopMax_AN_Inbred:
     variable_subtype:
         id: int
         name: int
-gnomAD_Hom:
+gnomad_hom:
     variable_type: numeric
-    name: gnomAD_Hom
+    name: gnomad_hom
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1419,9 +1419,9 @@ gnomAD_Hom:
     variable_subtype:
         id: int
         name: int
-gnomAD_Hem:
+gnomad_hem:
     variable_type: numeric
-    name: gnomAD_Hem
+    name: gnomad_hem
     purpose: evidence
     Knowledge Domain:
         id: popgen
@@ -1464,9 +1464,9 @@ Presence_in_Databases:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-ClinVar_Submitters:
+clinvar_submitters:
     variable_type: categorical
-    name: ClinVar_Submitters
+    name: clinvar_submitters
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1793,9 +1793,9 @@ HGMD_Tags:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-Clinvar_Benign:
+clinvar_benign:
     variable_type: categorical
-    name: Clinvar_Benign
+    name: clinvar_benign
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1815,9 +1815,9 @@ Clinvar_Benign:
     variable_subtype:
         id: status
         name: Single categorical value
-ClinVar_Significance:
+clinvar_significance:
     variable_type: categorical
-    name: ClinVar_Significance
+    name: clinvar_significance
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1837,9 +1837,9 @@ ClinVar_Significance:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-Clinvar_Trusted_Significance:
+clinvar_trusted_significance:
     variable_type: categorical
-    name: Clinvar_Trusted_Significance
+    name: clinvar_trusted_significance
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1862,9 +1862,9 @@ Clinvar_Trusted_Significance:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-Clinvar_Trusted_Simplified:
+clinvar_trusted_simplified:
     variable_type: categorical
-    name: Clinvar_Trusted_Simplified
+    name: clinvar_trusted_simplified
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1890,9 +1890,9 @@ Clinvar_Trusted_Simplified:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-Clinvar_stars:
+clinvar_stars:
     variable_type: categorical
-    name: Clinvar_stars
+    name: clinvar_stars
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1913,9 +1913,9 @@ Clinvar_stars:
     variable_subtype:
         id: status
         name: Single categorical value
-Number_of_clinvar_submitters:
+clinvar_submitters_count:
     variable_type: numeric
-    name: Number_of_clinvar_submitters
+    name: clinvar_submitters_count
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1936,9 +1936,9 @@ Number_of_clinvar_submitters:
     variable_subtype:
         id: int
         name: int
-Clinvar_review_status:
+clinvar_review_status:
     variable_type: categorical
-    name: Clinvar_review_status
+    name: clinvar_review_status
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1958,9 +1958,9 @@ Clinvar_review_status:
     variable_subtype:
         id: status
         name: Single categorical value
-Clinvar_criteria_provided:
+clinvar_criteria_provided:
     variable_type: categorical
-    name: Clinvar_criteria_provided
+    name: clinvar_criteria_provided
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -1980,9 +1980,9 @@ Clinvar_criteria_provided:
     variable_subtype:
         id: status
         name: Single categorical value
-Clinvar_conflicts:
+clinvar_conflicts:
     variable_type: categorical
-    name: Clinvar_conflicts
+    name: clinvar_conflicts
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -2002,9 +2002,9 @@ Clinvar_conflicts:
     variable_subtype:
         id: status
         name: Single categorical value
-Clinvar_acmg_guidelines:
+clinvar_acmg_guidelines:
     variable_type: categorical
-    name: Clinvar_acmg_guidelines
+    name: clinvar_acmg_guidelines
     purpose: evidence
     Knowledge Domain:
         id: human
@@ -2217,9 +2217,9 @@ PrimateAI:
     variable_subtype:
         id: multi
         name: Multiple categorical values
-GERP_score:
+gerp_score:
     variable_type: numeric
-    name: GERP_score
+    name: gerp_score
     purpose: evidence
     Knowledge Domain:
         id: animal
