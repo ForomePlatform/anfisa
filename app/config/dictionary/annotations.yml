@@ -1,0 +1,2623 @@
+Variant_in:
+    variable_type: categorical
+    name: Variant_in
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Variant presence in cohorts
+    comment: |
+        This annotation is only used when "cohort mode" is enabled. Cohort
+        mode means that the case includes multiple (usually hundreds) of patients
+        belonging to different cohorts corresponding to their phenotype. 
+
+        A list of cohorts, where this variant is present among patients.
+Callers:
+    variable_type: categorical
+    name: Callers
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Called by
+    comment: |
+        A list of variant callers that have called this variant
+    used_in_groups:
+      - Inheritance
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Inheritance_Mode:
+    variable_type: runtime function
+    name: Inheritance_Mode
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Inheritance Mode
+    comment: |
+        Presumed inheritance mode, one of:
+         * Homozygous recessive
+         * Autosomal dominant
+         * X-linked
+         * Recessive / Compound heterozygous
+Custom_Inheritance_Mode:
+    variable_type: runtime function
+    name: Custom_Inheritance_Mode
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Custom Inheritance Mode
+Compound_Het:
+    variable_type: runtime function
+    name: Compound_Het
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: na3
+        name: N/A
+    title: Calculated Compound
+Compound_Request:
+    variable_type: runtime function
+    name: Compound_Request
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: na3
+        name: N/A
+    title: Calculated Compound Request
+Proband_Zygosity:
+    variable_type: categorical
+    name: Proband_Zygosity
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Proband Zygosity
+    used_in_groups:
+      - Inheritance
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Num_Samples:
+    variable_type: numeric
+    name: Num_Samples
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Number of Samples
+    tooltip: Number of samples in the case for which this variant has been called
+    used_in_groups:
+      - Inheritance
+    variable_subtype:
+        id: int
+        name: int
+Has_Variant:
+    variable_type: categorical
+    name: Has_Variant
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Inheritance
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+ALL_AF:
+    variable_type: numeric
+    name: ALL_AF
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: AD for all cohorts
+    comment: |
+        This annotation is only used when "cohort mode" is enabled. Cohort
+        mode means that the case includes multiple (usually hundreds) of patients
+        belonging to different cohorts corresponding to their phenotype. 
+
+        This annotation contains allele frequency of a certain allele among all
+        patients in all cohorts
+ALL_AF2:
+    variable_type: numeric
+    name: ALL_AF2
+    purpose: phenotype
+    Knowledge Domain:
+        id: phenotype
+        name: Phenotypic Data
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: AF Hom for all cohorts
+    tooltip: Frequency of the allele in homozygous state for all cohorts
+    comment: |
+        This annotation is only used when "cohort mode" is enabled. Cohort
+        mode means that the case includes multiple (usually hundreds) of patients
+        belonging to different cohorts corresponding to their phenotype. 
+
+        This annotation contains frequency of a certain allele seen in the homozygous 
+        state among all patients in all cohorts
+Variant_Class:
+    variable_type: categorical
+    name: Variant_Class
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: Variant class as returned by VEP. The class of a variant is based on
+        Sequence Ontology and is called according to its component alleles and its
+        mapping to the reference genome. 
+        https://useast.ensembl.org/info/genome/variation/prediction/classification.html#classes
+    used_in_groups:
+      - Variant
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Most_Severe_Consequence:
+    variable_type: categorical
+    name: Most_Severe_Consequence
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: "Most Severe Consequences from the transcript with the worst annotation.\n
+        The set of consequence terms is\n defined by the Sequence Ontology (SO)
+        http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n
+        for details.\n"
+    used_in_groups:
+      - Variant
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Canonical_Annotation:
+    variable_type: categorical
+    name: Canonical_Annotation
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: "Most Severe Consequences from canonical transcripts. \n The set of
+        consequence terms is\n defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.\n
+        See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n
+        for details.\n"
+    used_in_groups:
+      - Variant
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Multiallelic:
+    variable_type: categorical
+    name: Multiallelic
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Multi-allelic?
+    comment: |
+        Is this variant multi-allelic? I.e., has more than one alternative alleles 
+        been observed at the same site for samples included in the case?
+    used_in_groups:
+      - Variant
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Altered_VCF:
+    variable_type: categorical
+    name: Altered_VCF
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Has VCF been normalized?
+    comment: |
+        This annotation notes if the original VCF record for this variant had to be 
+        modified in order to be normalized
+    used_in_groups:
+      - Variant
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Number_ALTs:
+    variable_type: numeric
+    name: Number_ALTs
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Number of Alternative alleles
+_Symbol:
+    variable_type: categorical
+    name: _Symbol
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+Symbol:
+    variable_type: categorical
+    name: Symbol
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Genes
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+    comment: |
+        Gene symbol for gene(s) in which the varaint is observed
+Gene_Lists:
+    variable_type: categorical
+    name: Gene_Lists
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Genes
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+EQTL_Gene:
+    variable_type: categorical
+    name: EQTL_Gene
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: window
+        name: Window
+    Method:
+        id: statgen
+        name: Statistical Genetics Evidence
+    title: EQTL Gene
+    used_in_groups:
+      - Genes
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Num_Genes:
+    variable_type: numeric
+    name: Num_Genes
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Number of overlapping genes
+    used_in_groups:
+      - Genes
+    variable_subtype:
+        id: int
+        name: int
+Num_Transcripts:
+    variable_type: numeric
+    name: Num_Transcripts
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Number of transcripts at the position
+    used_in_groups:
+      - Genes
+    variable_subtype:
+        id: int
+        name: int
+Transcript_consequence:
+    variable_type: categorical
+    name: Transcript_consequence
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: "\n The set of consequence terms is\n defined by the Sequence Ontology
+        (SO) http://www.sequenceontology.org/.\n See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html\n
+        for details.\n"
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: transcript-multiset
+        name: Multiple categorical values where the combination of values is specific to a transcript rather than to a variant
+Transcript_canonical:
+    variable_type: categorical
+    name: Transcript_canonical
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_GENCODE_Basic:
+    variable_type: categorical
+    name: Transcript_GENCODE_Basic
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_biotype:
+    variable_type: categorical
+    name: Transcript_biotype
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_worst:
+    variable_type: categorical
+    name: Transcript_worst
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_id:
+    variable_type: categorical
+    name: Transcript_id
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    render-mode:
+        id: tree-map
+        description: Should be rendered as a tree-map.
+    used_in_groups:
+      - Transcripts
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transctript_Gene:
+    variable_type: categorical
+    name: Transctript_Gene
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_Gene:
+    variable_type: categorical
+    name: Transcript_Gene
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+Transcript_Gene_Lists:
+    variable_type: categorical
+    name: Transcript_Gene_Lists
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: transcript-panels
+        name: A list of selected transcripts (transcript panel)
+Transcript_source:
+    variable_type: categorical
+    name: Transcript_source
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_codon_pos:
+    variable_type: categorical
+    name: Transcript_codon_pos
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_region:
+    variable_type: categorical
+    name: Transcript_region
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: window
+        name: Window
+    Method:
+        id: na3
+        name: N/A
+    title: Gene Region
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    comment: |
+        The regions field as returned by VEP.
+Transcript_CDS:
+    variable_type: categorical
+    name: Transcript_CDS
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    title: CDS?
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_masked:
+    variable_type: categorical
+    name: Transcript_masked
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    title: Masked
+    used_in_groups:
+      - Transcripts
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    comment: |
+        Whether a variant falls in a "Masked-repeats" region (for tandem repeats). 
+        In FASTA files for an assembly repeat elements are usually written in lower case.
+    reference: https://training.galaxyproject.org/training-material/topics/genome-annotation/tutorials/repeatmasker/tutorial.html
+Transcript_dist_from_exon:
+    variable_type: numeric
+    name: Transcript_dist_from_exon
+    purpose: evidence
+    Knowledge Domain:
+        id: na1
+        name: N/A
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: na3
+        name: N/A
+    title: Distance from Exon Boundary
+    used_in_groups:
+      - Transcripts
+    variable_subtype:
+        id: transcript-int
+        name: An integer value specific to a transcript rather than to a variant
+Transcript_PolypPhen_HDIV:
+    variable_type: categorical
+    name: Transcript_PolypPhen_HDIV
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcript_Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    tooltip: HumDiv (HDIV) classifier is trained on a smaller number of select extreme
+        effect disease mutations vs. divergence with close homologs (e.g. primates),
+        which is supposed to consist of mostly neutral mutations.
+Transcript_PolyPhen_HVAR:
+    variable_type: categorical
+    name: Transcript_PolyPhen_HVAR
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcript_Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    tooltip: HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation
+        (disease mutations vs. common neutral variants)
+Transcript_SIFT:
+    variable_type: categorical
+    name: Transcript_SIFT
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcript_Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    tooltip: |
+        Sorting Intolerant from Tolerant (SIFT) is an algorithm that predicts the 
+        potential impact of amino acid substitutions on protein function. 
+        
+        SIFT uses sequence homology to compute the likelihood that an amino acid 
+        substitution will have an adverse effect on protein function. The underlying 
+        assumption is that evolutionarily conserved regions tend to be less tolerant 
+        f mutations, and hence amino acid substitutions or insertions/deletions 
+        in these regions are more likely to affect function.
+        
+        Values:
+        
+         * D: Deleterious 
+         * T: Tolerated
+    reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3394338/
+Transcript_SIFT_4G:
+    variable_type: categorical
+    name: Transcript_SIFT_4G
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcript_Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Transcript_FATHMM:
+    variable_type: categorical
+    name: Transcript_FATHMM
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    used_in_groups:
+      - Transcript_Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+Chromosome:
+    variable_type: categorical
+    name: Chromosome
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Coordinates
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+GeneRegion:
+    variable_type: runtime function
+    name: GeneRegion
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Gene Region
+Start_Pos:
+    variable_type: numeric
+    name: Start_Pos
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Start Position
+    render-mode:
+        id: neighborhood
+        description: Should be rendered as a neighborhood.
+    used_in_groups:
+      - Coordinates
+    variable_subtype:
+        id: int
+        name: int
+End_Pos:
+    variable_type: numeric
+    name: End_Pos
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: End Position
+    render-mode:
+        id: neighborhood
+        description: Should be rendered as a neighborhood.
+    used_in_groups:
+      - Coordinates
+    variable_subtype:
+        id: int
+        name: int
+Dist_from_Exon:
+    variable_type: numeric
+    name: Dist_from_Exon
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Distance From Intron/Exon Boundary
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    used_in_groups:
+      - Coordinates
+    variable_subtype:
+        id: int
+        name: int
+Dist_from_Exon_Canonical:
+    variable_type: numeric
+    name: Dist_from_Exon_Canonical
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Distance From Intron/Exon Boundary (Canonical)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    used_in_groups:
+      - Coordinates
+    variable_subtype:
+        id: int
+        name: int
+Dist_from_Exon_Worst:
+    variable_type: numeric
+    name: Dist_from_Exon_Worst
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Distance From Intron/Exon Boundary (Worst)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    used_in_groups:
+      - Coordinates
+    variable_subtype:
+        id: int
+        name: int
+Region_Canonical:
+    variable_type: categorical
+    name: Region_Canonical
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Region (Canonical)
+    used_in_groups:
+      - Coordinates
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Region_Worst:
+    variable_type: categorical
+    name: Region_Worst
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Region (Worst)
+    used_in_groups:
+      - Coordinates
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Region:
+    variable_type: categorical
+    name: Region
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    title: Region (All)
+    used_in_groups:
+      - Coordinates
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: transcript-status
+        name: Single categorical value specific to a transcript rather than to a variant
+    comment: |
+        This annotation is calculated differently for small variants and for CNVs.
+        
+        For small variants it s a union of all regions in the transcripts, see @Transcript_region
+        annotation. However, we also check if a 
+        variant falls in a "Masked-repeats" region (for tandem repeats). In FASTA files for
+        an assembly repeat elements are usually written in lower case.  If a variant
+        is in a masked region, we add "masked-repeats" to the list of regions.
+In_hg19:
+    variable_type: categorical
+    name: In_hg19
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: na3
+        name: N/A
+    used_in_groups:
+      - Coordinates
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+gnomAD_AF:
+    variable_type: numeric
+    name: gnomAD_AF
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: gnomAD Allele Frequency (family)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    tooltip: gnomAD Overall Allele Frequency
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_AF_Exomes:
+    variable_type: numeric
+    name: gnomAD_AF_Exomes
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: gnomAD Exome Allele Frequency (family)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_AF_Genomes:
+    variable_type: numeric
+    name: gnomAD_AF_Genomes
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: gnomAD Genome Allele Frequency (family)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_AF_Proband:
+    variable_type: numeric
+    name: gnomAD_AF_Proband
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: gnomAD Allele Frequency (proband)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    tooltip: gnomAD Overall Allele Frequency for the allele present in proband
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_PopMax_AF:
+    variable_type: numeric
+    name: gnomAD_PopMax_AF
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: PopMax Allele Frequency
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    tooltip: |
+        Allele Frequency (AF) of population derived in gnomAD_PopMax 
+        (calculated the same way as gnomAD_AF, but for the specific population)
+        Excludes inbred populations
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_PopMax:
+    variable_type: categorical
+    name: gnomAD_PopMax
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: PopMax Ancestry
+    tooltip: |
+        Population having the maximum AF (calculated the same way as gnomAD_AF, but per population). 
+        Excludes inbred populations
+    used_in_groups:
+      - gnomAD
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+gnomAD_PopMax_AN:
+    variable_type: numeric
+    name: gnomAD_PopMax_AN
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: Number of alleles in outbred PopMax Ancestry
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: int
+        name: int
+gnomAD_PopMax_AF_Inbred:
+    variable_type: numeric
+    name: gnomAD_PopMax_AF_Inbred
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: PopMax Allele Frequency (including inbred)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    tooltip: |
+        Allele Frequency (AF) of population derived in gnomAD_PopMax 
+        (calculated the same way as gnomAD_AF, but for the specific population),
+        including inbred populations
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: float
+        name: float
+gnomAD_PopMax_Inbred:
+    variable_type: categorical
+    name: gnomAD_PopMax_Inbred
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: PopMax Ancestry (including inbred)
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+    tooltip: |
+        Population having the maximum AF (calculated the same way as gnomAD_AF, but per population), 
+        including inbred populations
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: status
+        name: Single categorical value
+gnomAD_PopMax_AN_Inbred:
+    variable_type: numeric
+    name: gnomAD_PopMax_AN_Inbred
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: Number of alleles in (inbred) PopMax Ancestry
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: int
+        name: int
+gnomAD_Hom:
+    variable_type: numeric
+    name: gnomAD_Hom
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: 'gnomAD: Number of homozygous'
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: int
+        name: int
+gnomAD_Hem:
+    variable_type: numeric
+    name: gnomAD_Hem
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: exp
+        name: Experimental, Other
+    title: 'gnomAD: Number of hemizygous'
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - gnomAD
+    variable_subtype:
+        id: int
+        name: int
+Presence_in_Databases:
+    variable_type: categorical
+    name: Presence_in_Databases
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Presence in Databases
+    used_in_groups:
+      - Databases
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+ClinVar_Submitters:
+    variable_type: categorical
+    name: ClinVar_Submitters
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar Submitters
+    used_in_groups:
+      - Databases
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Number_submitters:
+    variable_type: numeric
+    name: Number_submitters
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: Number of ClinVar Submitters
+    used_in_groups:
+      - Databases
+    variable_subtype:
+        id: int
+        name: int
+PMIDs:
+    variable_type: categorical
+    name: PMIDs
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: PMIDs
+    used_in_groups:
+      - Databases
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Number_pmid:
+    variable_type: numeric
+    name: Number_pmid
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Number of PMIDs
+    used_in_groups:
+      - Databases
+    variable_subtype:
+        id: int
+        name: int
+Proband_GQ:
+    variable_type: numeric
+    name: Proband_GQ
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Genotype Quality (GQ) for Proband
+    render-mode:
+        id: linear,>
+        description: Should be rendered as a linear scale. Most often, users select
+            the upper bound.
+    tooltip: GQ tells you how confident we are that the genotype we assigned to
+        a particular sample is correct. It is simply the second lowest PL, because
+        it is the difference between the second lowest PL and the lowest PL (always
+        0).
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: float
+        name: float
+Min_GQ:
+    variable_type: numeric
+    name: Min_GQ
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Minimum GQ for the family
+    render-mode:
+        id: linear,>
+        description: Should be rendered as a linear scale. Most often, users select
+            the upper bound.
+    tooltip: GQ tells you how confident we are that the genotype we assigned to
+        a particular sample is correct. It is simply the second lowest PL, because
+        it is the difference between the second lowest PL and the lowest PL (always
+        0).
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: float
+        name: float
+Max_GQ:
+    variable_type: numeric
+    name: Max_GQ
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: The highest GQ
+    render-mode:
+        id: linear,=
+        description: Should be rendered as a linear scale. Most often, users select
+            both upper and lower bounds.
+    tooltip: Max(GQ) for those samples that have the variant
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: int
+        name: int
+Num_NO_CALL:
+    variable_type: numeric
+    name: Num_NO_CALL
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Number of NO_CALL samples
+    render-mode:
+        id: linear,=
+        description: Should be rendered as a linear scale. Most often, users select
+            both upper and lower bounds.
+    tooltip: Number of samples with NO_CALL in the current site
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: int
+        name: int
+QUAL:
+    variable_type: numeric
+    name: QUAL
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Variant Call Quality
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: int
+        name: int
+QD:
+    variable_type: numeric
+    name: QD
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Quality by Depth
+    render-mode:
+        id: linear,>
+        description: Should be rendered as a linear scale. Most often, users select
+            the upper bound.
+    tooltip: The QUAL score normalized by allele depth (AD) for a variant. This
+        annotation puts the variant confidence QUAL score into perspective by normalizing
+        for the amount of coverage available. Because each read contributes a little
+        to the QUAL score, variants in regions with deep coverage can have artificially
+        inflated QUAL scores, giving the impression that the call is supported by
+        more evidence than it really is. To compensate for this, we normalize the
+        variant confidence by depth, which gives us a more objective picture of
+        how well supported the call is.
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: float
+        name: float
+FS:
+    variable_type: numeric
+    name: FS
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: Fisher Strand Bias
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+    tooltip: Phred-scaled probability that there is strand bias at the site. Strand
+        Bias tells us whether the alternate allele was seen more or less often on
+        the forward or reverse strand than the reference allele. When there little
+        to no strand bias at the site, the FS value will be close to 0.
+    used_in_groups:
+      - Call_Quality
+    variable_subtype:
+        id: float
+        name: float
+FT:
+    variable_type: categorical
+    name: FT
+    purpose: provenance
+    Knowledge Domain:
+        id: call
+        name: Call Annotations
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: na3
+        name: N/A
+    title: FILTER
+    tooltip: This field contains the name(s) of any filter(s) that the variant fails
+        to pass, or the value PASS if the variant passed all filters. If the FILTER
+        value is ., then no filtering has been applied to the records.
+    used_in_groups:
+      - Call_Quality
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+HGMD_Benign:
+    variable_type: categorical
+    name: HGMD_Benign
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: Categorized Benign in HGMD
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+HGMD_Tags:
+    variable_type: categorical
+    name: HGMD_Tags
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Clinvar_Benign:
+    variable_type: categorical
+    name: Clinvar_Benign
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: Categorized Benign in ClinVar by all submitters
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+ClinVar_Significance:
+    variable_type: categorical
+    name: ClinVar_Significance
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: Clinical Significance in ClinVar
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Clinvar_Trusted_Significance:
+    variable_type: categorical
+    name: Clinvar_Trusted_Significance
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar significance by trusted submitters only
+    tooltip: |
+        Clinical Significance as reported by ClinVar trusted submitters only.
+        A list of trusted submitters is provided in configuration
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Clinvar_Trusted_Simplified:
+    variable_type: categorical
+    name: Clinvar_Trusted_Simplified
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    tooltip: |
+        Simplified Clinical Significance by trusted submitters only.
+        ClinSigSimple data is provided by ClinVar where 0 = no current value of 
+        Likely pathogenic or Pathogenic and 1= at least one current record submitted 
+        with an interpretation of Likely pathogenic or Pathogenic (independent of 
+        whether that record includes assertion criteria and evidence).
+        [see](https://www.biorxiv.org/content/10.1101/2020.12.13.422582v1)
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Clinvar_stars:
+    variable_type: categorical
+    name: Clinvar_stars
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar Stars
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - Predictions
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Number_of_clinvar_submitters:
+    variable_type: numeric
+    name: Number_of_clinvar_submitters
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: 'ClinVar: Number of Submitters'
+    render-mode:
+        id: log,>
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the upper bound.
+    used_in_groups:
+      - Predictions
+    variable_subtype:
+        id: int
+        name: int
+Clinvar_review_status:
+    variable_type: categorical
+    name: Clinvar_review_status
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar Review Status
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Clinvar_criteria_provided:
+    variable_type: categorical
+    name: Clinvar_criteria_provided
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar Criteria
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Clinvar_conflicts:
+    variable_type: categorical
+    name: Clinvar_conflicts
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    title: ClinVar Conflicts
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+Clinvar_acmg_guidelines:
+    variable_type: categorical
+    name: Clinvar_acmg_guidelines
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+splice_altering:
+    variable_type: categorical
+    name: splice_altering
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: Splice AI splice altering
+    tooltip: |
+        From [SpliceAI GitHub](https://github.com/Illumina/SpliceAI):
+        
+        _Delta score of a variant, defined as the maximum of (DS_AG, DS_AL, DS_DG, DS_DL), 
+        ranges from 0 to 1 and can be interpreted as the probability of the variant being 
+        splice-altering. In the [paper](https://github.com/Illumina/SpliceAI), 
+        a detailed characterization is provided 
+        for 0.2 (high recall), 0.5 (recommended), and 0.8 (high precision) cutoffs._
+        
+        In Anifsa we assign the following values to `splice_altering` annotation:
+        
+        | Condition                                     | splice_altering              |
+        |-----------------------------------------------|------------------------------|
+        | MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.2        |  `unlikely`                  |
+        | 0.2 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.5 |  `likely_pathogenic`         |
+        | 0.5 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.8 |  `pathogenic`                |
+        | 0.8 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL)       |  `high_precision_pathogenic` |
+
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: pie
+        description: Should be rendered as a pie chart.
+    variable_subtype:
+        id: status
+        name: Single categorical value
+splice_ai_dsmax:
+    variable_type: numeric
+    name: splice_ai_dsmax
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: Splice AI splice altering score
+    render-mode:
+        id: linear,>
+        description: Should be rendered as a linear scale. Most often, users select
+            the upper bound.
+    used_in_groups:
+      - Predictions
+    variable_subtype:
+        id: float
+        name: float
+Polyphen_2_HVAR:
+    variable_type: categorical
+    name: Polyphen_2_HVAR
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: Polyphen
+    tooltip: HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation
+        (disease mutations vs. common neutral variants)
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Polyphen_2_HDIV:
+    variable_type: categorical
+    name: Polyphen_2_HDIV
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: Polyphen HDIV (High sensitivity)
+    tooltip: HumDiv (HDIV) classifier is trained on a smaller number of select extreme
+        effect disease mutations vs. divergence with close homologs (e.g. primates),
+        which is supposed to consist of mostly neutral mutations.
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+SIFT:
+    variable_type: categorical
+    name: SIFT
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: |
+        Sorting Intolerant from Tolerant (SIFT) is an algorithm that predicts the 
+        potential impact of amino acid substitutions on protein function. 
+        
+        SIFT uses sequence homology to compute the likelihood that an amino acid 
+        substitution will have an adverse effect on protein function. The underlying 
+        assumption is that evolutionarily conserved regions tend to be less tolerant 
+        f mutations, and hence amino acid substitutions or insertions/deletions 
+        in these regions are more likely to affect function.
+        
+        Values:
+        
+         * D: Deleterious 
+         * T: Tolerated
+    reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3394338/
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+FATHMM:
+    variable_type: categorical
+    name: FATHMM
+    purpose: evidence
+    Knowledge Domain:
+        id: function
+        name: Functional Genetics
+    Scale:
+        id: transcript
+        name: Transcript
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: 'Functional analysis through hidden markov model HMM.D: Deleterious;
+        T: Tolerated'
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+PrimateAI:
+    variable_type: categorical
+    name: PrimateAI
+    purpose: evidence
+    Knowledge Domain:
+        id: animal
+        name: Animal Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    tooltip: Prediction of PrimateAI score based on the authors recommendation,
+        “T(olerated)” or “D(amaging)”. The score cutoff between “D” and “T” is 0.803.
+    used_in_groups:
+      - Predictions
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+GERP_score:
+    variable_type: numeric
+    name: GERP_score
+    purpose: evidence
+    Knowledge Domain:
+        id: animal
+        name: Animal Genetics
+    Scale:
+        id: position
+        name: Position
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: GERP "rejected substitutions" (RS) Score
+    tooltip: |
+        Genomic Evolutionary Rate Profiling (GERP) score downloaded from
+        [](http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz)
+        
+        The file contains two columns:
+        
+         1. Neutral evolution score (GERPN) score
+         2. Rejected substitutions" (RS) score
+        
+        We only use RS scores.
+        
+        See [Project URL](http://mendel.stanford.edu/SidowLab/downloads/gerp/) for more information
+        
+        See [GERP Scores at UCSC](https://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&g=allHg19RS_BW)
+        
+    render-mode:
+        id: linear,>
+        description: Should be rendered as a linear scale. Most often, users select
+            the upper bound.
+    used_in_groups:
+      - Predictions
+    variable_subtype:
+        id: float
+        name: float
+Diseases:
+    variable_type: categorical
+    name: Diseases
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    used_in_groups:
+      - Pharmacogenomics
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Chemicals:
+    variable_type: categorical
+    name: Chemicals
+    purpose: evidence
+    Knowledge Domain:
+        id: human
+        name: Human Genetics
+    Scale:
+        id: variant
+        name: Variant
+    Method:
+        id: clinical
+        name: Clinical Evidence
+    used_in_groups:
+      - Pharmacogenomics
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Mostly_Expressed_in:
+    variable_type: categorical
+    name: Mostly_Expressed_in
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    used_in_groups:
+      - Expression
+    render-mode:
+        id: bar
+        description: Should be rendered as a bar chart.
+    variable_subtype:
+        id: multi
+        name: Multiple categorical values
+Severity:
+    variable_type: numeric
+    name: Severity
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    used_in_groups:
+      - Debug_Info
+    variable_subtype:
+        id: int
+        name: int
+Position:
+    variable_type: numeric
+    name: Position
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: neighborhood
+        description: Should be rendered as a neighborhood.
+gnomAD_Total_AF:
+    variable_type: numeric
+    name: gnomAD_Total_AF
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    title: gnomAD Allele Frequency
+    render-mode:
+        id: log,<
+        description: Should be rendered as a logarithmic scale. Most often, users
+            select the lower bound.
+GENCODE_Category:
+    variable_type: categorical
+    name: GENCODE_Category
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+GENCODE_Exonic_Category:
+    variable_type: categorical
+    name: GENCODE_Exonic_Category
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+TOPMed_QC_Status:
+    variable_type: categorical
+    name: TOPMed_QC_Status
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+TOPMed_Bravo_AF:
+    variable_type: numeric
+    name: TOPMed_Bravo_AF
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+ExAC03:
+    variable_type: numeric
+    name: ExAC03
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+Disruptive_Missense:
+    variable_type: categorical
+    name: Disruptive_Missense
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+CAGE_Promoter:
+    variable_type: categorical
+    name: CAGE_Promoter
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+CAGE_Enhancer:
+    variable_type: categorical
+    name: CAGE_Enhancer
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+Gene_Hancer:
+    variable_type: categorical
+    name: Gene_Hancer
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+Super_Enhancer:
+    variable_type: categorical
+    name: Super_Enhancer
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+bStatistics:
+    variable_type: numeric
+    name: bStatistics
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+Freq1000bp:
+    variable_type: numeric
+    name: Freq1000bp
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+Rare1000bp:
+    variable_type: numeric
+    name: Rare1000bp
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+PolyPhenCat:
+    variable_type: categorical
+    name: PolyPhenCat
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+SIFTcat:
+    variable_type: categorical
+    name: SIFTcat
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    tooltip: Sort intolerated from tolerated (An amino acid at a position is tolerated
+        | The most frequentest amino acid being tolerated).
+GC:
+    variable_type: numeric
+    name: GC
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+CpG:
+    variable_type: numeric
+    name: CpG
+    purpose: evidence
+    Knowledge Domain:
+        id: epigenetics
+        name: Epigenetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: in-vivo
+        name: Experimental, in Vivo
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.

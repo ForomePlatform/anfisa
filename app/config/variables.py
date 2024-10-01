@@ -35,7 +35,7 @@ anfisaVariables.setupClassificationFacet(1, "Knowledge Domain", [
     ["phenotype", "Phenotypic Data"],
     ["rules", "Compound Rules"],
     ["popgen", "Population Genetics"],
-    ["function", "Functional"],
+    ["function", "Functional Genetics"],
     ["animal", "Animal Genetics"],
     ["human", "Human Genetics"],
     ["epigenetics", "Epigenetics"],
