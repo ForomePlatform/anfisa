@@ -218,8 +218,8 @@ Variant_Class:
         id: function
         name: Functional Genetics
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: bioinf
         name: Bioinformatics Inference
@@ -357,8 +357,8 @@ _Symbol:
         id: na1
         name: N/A
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: na3
         name: N/A
@@ -370,8 +370,8 @@ Symbol:
         id: na1
         name: N/A
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: na3
         name: N/A
@@ -393,8 +393,8 @@ Gene_Lists:
         id: na1
         name: N/A
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: na3
         name: N/A
@@ -474,8 +474,8 @@ Transcript_consequence:
         id: function
         name: Functional Genetics
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: bioinf
         name: Bioinformatics Inference
@@ -511,6 +511,7 @@ Transcript_canonical:
     variable_subtype:
         id: transcript-status
         name: Single categorical value specific to a transcript rather than to a variant
+    tooltip: This is a boolean flag, indicating whether the transcript is canonical.
 Transcript_GENCODE_Basic:
     variable_type: categorical
     name: Transcript_GENCODE_Basic
@@ -561,8 +562,8 @@ Transcript_worst:
         id: function
         name: Functional Genetics
     Scale:
-        id: transcript
-        name: Transcript
+        id: variant_in_transcript
+        name: Variant in a transcript
     Method:
         id: bioinf
         name: Bioinformatics Inference
@@ -574,6 +575,9 @@ Transcript_worst:
     variable_subtype:
         id: transcript-status
         name: Single categorical value specific to a transcript rather than to a variant
+    tooltip: |
+        Indicates whether the consequences of the given variant in a given transcript are worse (or the same)
+        as in all other transcripts
 Transcript_id:
     variable_type: categorical
     name: Transcript_id
