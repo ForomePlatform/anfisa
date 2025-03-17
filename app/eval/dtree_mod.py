@@ -128,7 +128,7 @@ def modifyDTreeCode(parsed, instr):
     replace_lines = []
     if use_comments:
         for line_no in range(c_line_from, c_line_to):
-            if parsed.isLineIsDummy(line_no):
+            if parsed.isLineIsComment(line_no):
                 replace_lines.append(code_lines[line_no - 1])
     if new_cond_data:
         replace_lines += formatIfCode(new_cond_data).splitlines()

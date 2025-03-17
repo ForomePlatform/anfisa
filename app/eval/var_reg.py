@@ -24,6 +24,7 @@ class VarFacetClassifier:
     def __init__(self):
         self.mDescr = []
         self.mFacetMaps = []
+        self.mFacetAllNamesMap = []
         self.mNames = set()
 
     def getSize(self):
@@ -34,21 +35,26 @@ class VarFacetClassifier:
             f"Name {name} duplication in facet declaration")
         self.mNames.add(name)
 
-    def declareFacet(self, idx, facet_title, name_title_pairs):
+    def declareFacet(self, idx, facet_name, facet_title, name_title_pairs):
         assert idx == len(self.mFacetMaps) + 1, (
             "Facets should be declared one by one")
 
         val_titles = []
         facet_map = dict()
+        facet_all_map = dict()
         for name, title in name_title_pairs:
             self._regName(name)
             facet_map[name] = len(val_titles)
+            facet_all_map[name] = len(val_titles)
+            facet_all_map[title] = len(val_titles)
             val_titles.append(title)
 
         self.mDescr.append({
+            "name": facet_name,
             "title": facet_title,
             "values": val_titles})
         self.mFacetMaps.append(facet_map)
+        self.mFacetAllNamesMap.append(facet_all_map)
 
     def mapFacetClassName(self, facet_idx, facet_name):
         assert facet_name in self.mFacetMaps[facet_idx], (
@@ -58,6 +64,14 @@ class VarFacetClassifier:
 
     def getDescr(self):
         return self.mDescr
+
+    def checkMetaAnnotation(self, facet, fvalue):
+        for idx, descr in enumerate(self.mDescr):
+            if descr["name"] == facet:
+                if not fvalue in self.mFacetAllNamesMap[idx]:
+                    return None, f"Wrong meta annotation value: {fvalue}"
+                return (idx, self.mFacetAllNamesMap[idx][fvalue]), None
+        return None, f"Wrong meta annotation group: {facet}"
 
 #===============================================
 class VarRegistry:
@@ -82,8 +96,10 @@ class VarRegistry:
     def getClassificationDescr(self):
         return self.mFacetClassifier.getDescr()
 
-    def setupClassificationFacet(self, facet_idx, title, name_title_pairs):
-        self.mFacetClassifier.declareFacet(facet_idx, title, name_title_pairs)
+    def setupClassificationFacet(self,
+            facet_idx, name, title, name_title_pairs):
+        self.mFacetClassifier.declareFacet(facet_idx,
+            name, title, name_title_pairs)
 
     def predeclareClassification(self, cur_facet1, cur_facet2, cur_facet3):
         self.mCurFacets = [
@@ -158,5 +174,7 @@ class VarRegistry:
         assert False, "No variable registered: " + str(var_name)
         return None
 
+    def checkMetaAnnotation(self, facet, fvalue):
+        return self.mFacetClassifier.checkMetaAnnotation(facet, fvalue)
 
 #===============================================

@@ -18,45 +18,75 @@
 #  limitations under the License.
 #
 
-import ast, tokenize
+import ast, tokenize, re
 from io import StringIO
+
+from app.config.variables import anfisaVariables
 #===============================================
-def parseCodeByPortions(code_lines, dummy_lines_reg):
+def parseCodeByPortions(code_lines, comment_lines_reg):
+    for diap, error_info in _iterCodePortions(code_lines, comment_lines_reg):
+        parsed_block, meta_annotations = None, None
+        if error_info is None:
+            meta_annotations, error_info = _parseMetaAnnotations(
+                code_lines, comment_lines_reg, diap)
+        if error_info is None:
+            parsed_block, error_info = _validatePortion(diap[0], diap[1],
+                code_lines, error_info, comment_lines_reg)
+        yield (parsed_block, error_info, diap, meta_annotations)
+
+#===============================================
+def _iterCodePortions(code_lines, comment_lines_reg):
     start_line_no = 1
-    base_pos, error_info = None, None
+    base_indent = None
+    multiline_comment_mode = False
+    multiline_line_idx = None
+
     for line_idx, line in enumerate(code_lines):
         stripped = line.strip()
-        if not stripped or stripped.startswith('#'):
-            dummy_lines_reg.add(line_idx + 1)
-            if base_pos is None:
-                continue
-        elif base_pos is not None and line[:base_pos + 1].isspace():
+        if stripped == '"""':
+            if base_indent is not None:
+                yield (start_line_no, line_idx + 1), None
+                start_line_no = line_idx
+                base_indent = None
+            comment_lines_reg.add(line_idx + 1)
+            multiline_comment_mode = not multiline_comment_mode
+            multiline_line_idx = line_idx + 1
             continue
-        if base_pos is not None:
-            parsed_block, error_info = _validatePortion(start_line_no,
-                line_idx + 1, code_lines, error_info, dummy_lines_reg)
-            yield (parsed_block, error_info, (start_line_no, line_idx + 1))
-            start_line_no = line_idx + 1
-            base_pos, error_info = None, None
-            if stripped.startswith('#') or not stripped:
+
+        if (multiline_comment_mode or not stripped
+                or stripped.startswith('#')):
+            comment_lines_reg.add(line_idx + 1)
+            if base_indent is not None:
+                yield (start_line_no, line_idx + 1), None
+                start_line_no = line_idx + 1
+                base_indent = None
+            continue
+
+        if base_indent is not None:
+            if line[:base_indent + 1].isspace():
                 continue
-        base_pos = 0
-        while line[base_pos] == ' ':
-            base_pos += 1
-        if base_pos > 0 and error_info is None:
-            error_info = ("Improper indent on top level",
-                line_idx + 1, base_pos)
-    if base_pos is not None:
-        parsed_block, error_info = _validatePortion(start_line_no,
-            len(code_lines) + 1, code_lines, error_info, dummy_lines_reg)
-    else:
-        parsed_block = None
-        error_info = ("Script not finished", start_line_no, 0)
-    yield (parsed_block, error_info, (start_line_no, len(code_lines) + 1))
+            yield (start_line_no, line_idx + 1), None
+            start_line_no = line_idx + 1
+
+        base_indent = 0
+        while line[base_indent] == ' ':
+            base_indent += 1
+        if base_indent > 0:
+            yield (start_line_no, line_idx + 1), (
+                "Improper indent on top level", line_idx + 1, base_indent)
+            return
+
+    if multiline_comment_mode:
+        yield (start_line_no, len(code_lines) + 1), (
+            "Unterminated multiline comment", multiline_line_idx, 0)
+        return
+
+    if base_indent is not None:
+        yield (start_line_no, len(code_lines) + 1), None
 
 #===============================================
 def _validatePortion(start_line_no, end_line_no,
-        lines, error_info, dummy_lines_reg):
+        lines, error_info, comment_lines_reg):
     text_block = '\n'.join(lines[start_line_no - 1: end_line_no - 1])
     parsed_block = None
     if error_info is None:
@@ -73,7 +103,7 @@ def _validatePortion(start_line_no, end_line_no,
         for info in tokenize.generate_tokens(text_io.readline):
             if info[0] == tokenize.COMMENT:
                 line_no, offset = info[2]
-                if line_no + start_line_no - 1 not in dummy_lines_reg:
+                if line_no + start_line_no - 1 not in comment_lines_reg:
                     error_info = ("Sorry, no inline comments",
                         start_line_no + line_no - 1, offset)
                     parsed_block = None
@@ -100,3 +130,29 @@ def _validateInstrSplit(instr_d, lines, start_line_no, on_top = False):
             if err:
                 return err
     return None
+
+#===============================================
+sMetaPattern = re.compile(
+    r'^\s*@(\w+)\s*\(\s*((\w+)|(["]([\w ]+)["]))\s*\)\s*$')
+
+def _parseMetaAnnotations(code_lines, comment_lines_reg, diap):
+    ret = None
+    for idx in range(*diap):
+        if idx not in comment_lines_reg:
+            continue
+        line = code_lines[idx - 1]
+        stripped = line.strip()
+        if not stripped.startswith('@'):
+            continue
+        match = sMetaPattern.match(line)
+        m_pos = line.index('@')
+        if match is None:
+            return None, ("Improper meta annotation", idx, m_pos)
+        if ret is None:
+            ret = []
+        meta_idxs, err_msg = anfisaVariables.checkMetaAnnotation(
+            match.group(1), match.group(5) or match.group(2))
+        if err_msg is not None:
+            return None, (err_msg, idx, m_pos)
+        ret.append([meta_idxs, (idx, m_pos), stripped])
+    return ret, None
