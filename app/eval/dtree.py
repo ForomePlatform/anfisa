@@ -313,6 +313,14 @@ class DTreeEval(Evaluation, CaseStory):
                     self._addPoint(TerminalPoint(self, frag_h, prev_point))
                 continue
             assert False, "Bad frag type: %s" % frag_h.getInstrType()
+        for frag_h in self.mFragments:
+            if frag_h.getMetaErr() is not None:
+                err_msg = frag_h.getMetaErr()[0]
+                first_atom = frag_h.getCondAtoms()[0]
+                Evaluation.operationError(self, first_atom.getCondData(), err_msg)
+                first_atom.setError(err_msg)
+                logging.info("Got it")
+
         self.finishRuntime()
 
     def operationError(self, cond_data, err_msg):

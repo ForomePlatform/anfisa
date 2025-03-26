@@ -8,7 +8,7 @@
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
-#
+#`
 #        http://www.apache.org/licenses/LICENSE-2.0
 #
 #  Unless required by applicable law or agreed to in writing, software
@@ -39,6 +39,10 @@ class TreeFragment:
         self.mDecision = decision
         self.mCondAtoms = cond_atoms if cond_atoms is not None else []
         self.mLabel = label
+        self.mMetaErr = None
+
+    def setMetaErr(self, meta_err):
+        self.mMetaErr = meta_err
 
     def setLineDiap(self, base_diap, full_diap):
         self.mBaseLineDiap = base_diap
@@ -70,6 +74,9 @@ class TreeFragment:
 
     def getCondAtoms(self):
         return self.mCondAtoms
+
+    def getMetaErr(self):
+        return self.mMetaErr
 
     def _getAtom(self, cond_data, is_optional = False):
         for atom_info in self.mCondAtoms:
@@ -157,8 +164,8 @@ class ParsedDTree:
 
             if err_info is None and meta_a is not None:
                 if isinstance(instr_d, ast.If):
-                    err_info = self._checkMetaAnnotation(
-                        fragments[0], meta_a)
+                    fragments[0].setMetaErr(
+                        self._checkMetaAnnotation(fragments[0], meta_a))
                 else:
                     err_info = (
                         "Meta annotation should be set only for if-type",

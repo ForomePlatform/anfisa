@@ -224,7 +224,7 @@ class WS_Condition(Eval_Condition):
             count_grp += 1
             count_items += rec_it_map.count()
             idx_start, _ = eval_space.getGroupPos(rec_no)
-            for idx_pos in rec_it_map.itersearch(self.sPattTrue):
+            for idx_pos in rec_it_map.search(self.sPattTrue):
                 tr_set.add(eval_space.mapTranscriptID(idx_start + idx_pos))
         return [count_grp, count_items, len(tr_set)]
 
@@ -239,7 +239,7 @@ class WS_Condition(Eval_Condition):
         grp_idx = 0
         groups = self.getEvalSpace().getGroups()
         idx_max = len(groups) - 1
-        for idx_pos in self.mBitArray.itersearch(self.sPattTrue):
+        for idx_pos in self.mBitArray.search(self.sPattTrue):
             while (grp_idx < idx_max and idx_pos >= groups[grp_idx + 1][0]):
                 grp_idx += 1
             yield grp_idx, idx_pos
