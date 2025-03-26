@@ -40,14 +40,14 @@ rm vault/*
 if [ ! -d data/docs ] ; then
   cd data || exit
   rm -r *
-  curl -O -L https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
+  curl -fsSLO https://zenodo.org/records/11496131/files/pgp3140_wgs_hlpanel.zip
   unzip pgp3140_wgs_hlpanel.zip
   cd ..
 fi
 
 if [ ! -f data/gene_db.js ] ; then
   cd data || exit
-  curl -O -L https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/gene_db.zip
+  curl -fsSLO https://zenodo.org/records/11496131/files/gene_db.zip
   unzip gene_db.zip
   cd ..
 fi
