@@ -606,6 +606,17 @@ anfisaVariables.regVar("CpG", "numeric",
     render_mode = "linear,<")
 
 #======================================
+## Avarstar:
+
+anfisaVariables.regVar("gnomAD_PopMax_Outbred", "enum")
+
+anfisaVariables.regVar("gnomAD_PopMax_AF_Outbred", "numeric",
+    render_mode = "log,<")
+
+anfisaVariables.regVar("gnomAD_PopMax_AN_Outbred", "numeric",
+    render_mode = "log,>")
+
+#======================================
 def _fixVarName(var_name):
     if var_name == "hg19":
         return "In_hg19"

@@ -18,19 +18,32 @@
 #  limitations under the License.
 #
 
-from .favor import FavorSchema
-from .avarstar import AvarstarSchema
-
+from .a_view import defAvarstarView
+from .a_flt import defAvarstarFlt
 #===============================================
-sDataConfigSchemaDict = {
-    "FAVOR": FavorSchema,
-    "AVARSTAR": AvarstarSchema
-}
+class AvarstarSchema:
 
-def getDataConfigSchema(name):
-    global sDataConfigSchemaDict
-    return sDataConfigSchemaDict.get(name)
+    @classmethod
+    def setupSolutions(cls, app_config, sol_pack):
+        pass
 
-def iterDataConfigSchema():
-    global sDataConfigSchemaDict
-    return sDataConfigSchemaDict.items()
+    @classmethod
+    def defineViewSchema(cls, metadata_record, schema_modes):
+        return defAvarstarView(metadata_record, schema_modes)
+
+    @classmethod
+    def defineFilterSchema(cls, metadata_record, ds_kind, druid_adm):
+        return defAvarstarFlt(metadata_record, ds_kind, druid_adm)
+
+    @classmethod
+    def tuneAspects(cls, ds_h, aspects):
+        return True
+
+    @classmethod
+    def tuneUnits(cls, ds_h):
+        # Use standard CASE tune
+        return False
+
+    @classmethod
+    def startTune(cls, ds_h):
+        pass

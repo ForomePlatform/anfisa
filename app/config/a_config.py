@@ -20,9 +20,7 @@
 
 import os
 from datetime import timedelta
-from zlib import crc32
 
-from forome_tools.path_works import AttrFuncHelper
 #===============================================
 class AnfisaConfig:
     sTextMessages = {
@@ -68,10 +66,6 @@ class AnfisaConfig:
             "Symbol": {"unit": "Symbol", "special": "__Symbol__"}
         },
 
-        "zygosity.path.base": "/__data/zygosity",
-
-        "transcript.path.base": "/_view/transcripts",
-
         "ws.transcript.id": "Transcript_id",
 
         "job.pool.size":    50,
@@ -85,6 +79,17 @@ class AnfisaConfig:
         "comp-hets.cache.size": 10,
 
         "max.gene.comp.count": 10000}
+
+    sDefaultPathBase = {
+        "chromosome":       "/_filters/chromosome",
+        "start":            "/_filters/start",
+        "ref":              "/_filters/ref",
+        "alt":              "/_filters/alt",
+        "color":            "/__data/color_code",
+        "label":            "/__data/label",
+        "zygosity":         "/__data/zygosity",
+        "transcripts":      "/_view/transcripts",
+    }
 
     sTextDecor = {
         "VEP Data": "VEP<br/>Data",
@@ -123,23 +128,6 @@ class AnfisaConfig:
             return None
         with open(fname, "r", encoding = "utf-8") as inp:
             return inp.read().strip()
-
-    sVariantSystemFields = {
-        "_color": AttrFuncHelper.singleGetter(
-            "/__data/color_code"),
-        "_label": AttrFuncHelper.singleGetter(
-            "/__data/label"),
-        "_key":   AttrFuncHelper.multiStrGetter(
-            "-", ["/_filters/chromosome",
-            "/_filters/start", "/_filters/ref", "/_filters/alt"])}
-
-    @classmethod
-    def getVariantSystemFields(cls, rec_data):
-        result = dict()
-        for name, fld_f in cls.sVariantSystemFields.items():
-            result[name] = fld_f(rec_data)
-        result["_rand"] = crc32(bytes(result["_key"], 'utf-8'))
-        return result
 
     sDatasetPreffixMap = {
         "xl": "xl",

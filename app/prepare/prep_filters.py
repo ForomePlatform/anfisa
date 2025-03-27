@@ -17,20 +17,24 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from forome_tools.path_works import AttrFuncPool
+from zlib import crc32
+from forome_tools.path_works import AttrFuncPool, AttrFuncHelper
 from forome_tools.ident import checkIdentifier
 from app.config.a_config import AnfisaConfig
 import app.prepare.prep_unit as prep_unit
 from app.model.sol_broker import SolutionBroker
+
 #===============================================
 class FilterPrepareSetH(SolutionBroker):
 
-    sZygosityPath = AnfisaConfig.configOption("zygosity.path.base")
     sNamedFunctions = dict()
 
     def __init__(self, metadata_record, var_registry, ds_kind,
-            derived_mode = False, check_identifiers = True,
-            druid_adm = None, pre_flt_schema = None):
+            derived_mode = False,
+            check_identifiers = True,
+            druid_adm = None,
+            pre_flt_schema = None,
+            path_base = None):
         SolutionBroker.__init__(self, metadata_record, ds_kind,
             derived_mode = derived_mode, zygosity_support = True)
 
@@ -43,14 +47,14 @@ class FilterPrepareSetH(SolutionBroker):
         self.mPreTransformSeq = []
         self.mTranscriptIdName = None
         self.mDruidAdm = druid_adm
+        self.mPathBase = (path_base if path_base is not None
+            else AnfisaConfig.sDefaultPathBase)
 
-        self.mTransPathBaseF = AttrFuncPool.makeFunc(
-            AnfisaConfig.configOption("transcript.path.base"))
+        self.mTransPathBaseF = AttrFuncPool.makeFunc(self._getPathBase("transcripts"))
 
-        assert self.sZygosityPath is not None, (
-            "Missing configuration zygosity.path.base setting")
         self.mZygosityData = ZygosityDataPreparator(
-            "_zyg", self.sZygosityPath, self.getFamilyInfo())
+            "_zyg", self._getPathBase("zygosity"), self.getFamilyInfo())
+        self.mSysFieldsGetter = None
 
         if pre_flt_schema is not None:
             self._setupSchema(pre_flt_schema)
@@ -64,6 +68,12 @@ class FilterPrepareSetH(SolutionBroker):
     @classmethod
     def getNamedFunction(cls, name):
         return cls.sNamedFunctions.get(name)
+
+    def _getPathBase(self, name):
+        path_val = self.mPathBase.get(name)
+        assert path_val is not None, (
+            "Missing configuration path path base for " + name)
+        return path_val
 
     def _setupSchema(self, info_seq):
         for info in info_seq:
@@ -314,6 +324,24 @@ class FilterPrepareSetH(SolutionBroker):
     def getZygosityVarName(self):
         return self.mZygosityData.getVarName()
 
+    def preparePData(self, rec_data):
+        if self.mSysFieldsGetter is None:
+            self.mSysFieldsGetter = {
+                "_color": AttrFuncHelper.singleGetter(
+                    self._getPathBase("color")),
+                "_label": AttrFuncHelper.singleGetter(
+                    self._getPathBase("label")),
+                "_key":   AttrFuncHelper.multiStrGetter(
+                    "-", [self._getPathBase(key)
+                    for key in ("chromosome", "start", "ref", "alt")])}
+        result = dict()
+        for name, fld_f in self.mSysFieldsGetter.items():
+            result[name] = fld_f(rec_data)
+        result["_rand"] = crc32(bytes(result["_key"], 'utf-8'))
+        return result
+
+
+
 #===============================================
 class ViewGroupH:
     def __init__(self, filter_set, title, no):
@@ -337,6 +365,7 @@ class ViewGroupH:
 
     def getUnits(self):
         return self.mUnits
+
 
 #===============================================
 class ZygosityDataPreparator:
@@ -363,9 +392,14 @@ class ZygosityDataPreparator:
             return
         assert len(zyg_distr_seq) == 1
         zyg_distr = zyg_distr_seq[0]
-        assert len(zyg_distr.keys()) == len(self.mMemberNames)
-        for idx, member_id in enumerate(self.mMemberIds):
-            zyg_val = zyg_distr[member_id]
-            if zyg_val is None:
-                zyg_val = -1
-            result[self.mMemberNames[idx]] = zyg_val
+        if isinstance(zyg_distr, dict):
+            assert len(zyg_distr.keys()) == len(self.mMemberNames)
+            for idx, member_id in enumerate(self.mMemberIds):
+                zyg_val = zyg_distr[member_id]
+                if zyg_val is None:
+                    zyg_val = -1
+                result[self.mMemberNames[idx]] = zyg_val
+        else:
+            assert len(zyg_distr) == len(self.mMemberNames)
+            for idx, zyg_val in enumerate(zyg_distr):
+                result[self.mMemberNames[idx]] = zyg_val

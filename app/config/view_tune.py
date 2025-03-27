@@ -24,13 +24,14 @@ from xml.sax.saxutils import escape
 
 from app.view.attr import AttrH
 from app.config.a_config import AnfisaConfig
-from .favor import FavorSchema
+from . import getDataConfigSchema
 import app.config.view_op_tune as view_op
 #===============================================
 def tuneAspects(ds_h, aspects):
-    if ds_h.getDataSchema() == "FAVOR":
-        FavorSchema.tuneAspects(ds_h, aspects)
-        return
+    data_cfg_schema = getDataConfigSchema(ds_h.getDataSchema())
+    if data_cfg_schema is not None:
+        if data_cfg_schema.tuneAspects(ds_h, aspects):
+            return
 
     if ds_h.getDataSchema() == "CASE":
         if ds_h.testRequirements({"WS"}):

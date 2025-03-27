@@ -24,7 +24,7 @@ from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
 from app.model.sol_support import StdNameSupport
 from app.model.tab_report import ReportTabSchema
-from .favor import FavorSchema
+from . import iterDataConfigSchema, getDataConfigSchema
 from app.config.view_op_tune import prepareSeqColorTransform
 #===============================================
 
@@ -145,13 +145,15 @@ def setupSolutions(app_config):
     if sSolutionsAreReady:
         return
     sSolutionsAreReady = True
-    favor_pack = SolutionPack("FAVOR", checkSolutionUnits)
-    setupGenericPack(app_config, favor_pack)
-    FavorSchema.setupSolutions(app_config, favor_pack)
-
     base_pack = SolutionPack("CASE", checkSolutionUnits)
     setupGenericPack(app_config, base_pack)
     setupSolutions_Case(app_config, base_pack)
+
+    for schema_name, schema_h in iterDataConfigSchema():
+        pack = SolutionPack(schema_name, checkSolutionUnits)
+        setupGenericPack(app_config, pack)
+        schema_h.setupSolutions(app_config, pack)
+
 
 #===============================================
 def setupSolutions_Case(app_config, base_pack):
@@ -489,5 +491,6 @@ def setupInstanceSolutions(app_config, base_pack):
 
 #===============================================
 def startTune(ds_h):
-    if ds_h.getDataSchema() == "FAVOR":
-        FavorSchema.startTune(ds_h)
+    data_schema = getDataConfigSchema(ds_h.getDataSchema())
+    if data_schema is not None:
+        data_schema.startTune(ds_h)
