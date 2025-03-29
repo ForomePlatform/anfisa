@@ -7,7 +7,10 @@ ME=$(basename $0)
 auto_envsubst() {
   local template_dir="${NGINX_ENVSUBST_TEMPLATE_DIR:-/etc/nginx/templates}"
   local suffix="${NGINX_ENVSUBST_TEMPLATE_SUFFIX:-.template}"
-  local output_dir="${NGINX_ENVSUBST_OUTPUT_DIR:-/etc/nginx/conf.d}"
+  local output_dir="${NGINX_ENVSUBST_OUTPUT_DIR:-/etc/nginx/sites-available}"
+  local sites_enabled="/etc/nginx/sites-enabled"
+  rm -rf ${sites_enabled}/*
+  rm -rf ${output_dir}/*
 
   local template defined_envs relative_path output_path subdir
   defined_envs=$(printf '${%s} ' $(env | cut -d= -f1))
@@ -24,6 +27,7 @@ auto_envsubst() {
     mkdir -p "$output_dir/$subdir"
     echo "$ME: Running envsubst on $template to $output_path"
     envsubst "$defined_envs" < "$template" > "$output_path"
+    ln -s "$output_path"  ${sites_enabled}/
   done
 }
 
