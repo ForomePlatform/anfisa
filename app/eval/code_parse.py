@@ -46,7 +46,7 @@ def _iterCodePortions(code_lines, comment_lines_reg):
         if stripped == '"""':
             if base_indent is not None:
                 yield (start_line_no, line_idx + 1), None
-                start_line_no = line_idx
+                start_line_no = line_idx + 1
                 base_indent = None
             comment_lines_reg.add(line_idx + 1)
             multiline_comment_mode = not multiline_comment_mode
