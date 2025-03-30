@@ -117,7 +117,7 @@ The language syntax can be explained based on the following pseudo-BNF:
 > [!NOTE] For what is valid identifier, see
 > [Python syntax](https://docs.python.org/3/reference/lexical_analysis.html#identifiers)
                                           
-> **Warning** As per note above, conceptually any string 
+> **⚠️Warning** As per note above, conceptually any string 
 > is a categorical value.
 > In other words, syntactically a string is an arbitrary string
 > but semantically it must belong to a set of strings defined
