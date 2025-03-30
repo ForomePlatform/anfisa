@@ -2090,6 +2090,31 @@ splice_ai_dsmax:
     variable_subtype:
         id: float
         name: float
+pLI:
+    variable_type: numeric
+    name: pLI
+    purpose: evidence
+    Knowledge Domain:
+        id: popgen
+        name: Population Genetics
+    Scale:
+        id: gene
+        name: Gene
+    Method:
+        id: bioinf
+        name: Bioinformatics Inference
+    title: pLI Score
+    tooltip: >
+        The pLI score quantifies the likelihood that a gene is intolerant to mutations 
+        that lead to a loss of function in the protein product.
+    variable_subtype:
+        id: float
+        name: float
+    render-mode:
+        id: linear,<
+        description: Should be rendered as a linear scale. Most often, users select
+            the lower bound.
+
 Polyphen_2_HVAR:
     variable_type: categorical
     name: Polyphen_2_HVAR
