@@ -23,7 +23,7 @@ of records. Each record is a shallow JSON-like structure — essentially, a
 collection of key-value pairs. A key is a string from a predefined set, and its
 value can be one of the primitive types: string, integer, boolean, or float. 
   
-> [!IMPORTANT] For the majority of keys with string values, the values are 
+> **ℹ️ Important!** For the majority of keys with string values, the values are 
 > conceptually of categorical type. However, validating that 
 > a string value is a valid string belonging to one of the 
 > predefined categories requires defining vocabularies which
@@ -114,7 +114,7 @@ The language syntax can be explained based on the following pseudo-BNF:
                     | "<string surrounded by double quotes>"
 ```
               
-> [!NOTE] For what is valid identifier, see
+> ℹ️ For what is valid identifier, see
 > [Python syntax](https://docs.python.org/3/reference/lexical_analysis.html#identifiers)
                                           
 > **⚠️Warning** As per note above, conceptually any string 
