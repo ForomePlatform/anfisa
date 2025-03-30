@@ -58,14 +58,14 @@ if [ ! -z "$ASETUP" ] && [ ! -z "$DRUID" ]; then
 
   pushd $ASETUP/data/examples || exit
   if [ ! -d pgp3140_wgs_hlpanel/docs ]; then
-    curl -fsSLO https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/pgp3140_wgs_hlpanel.zip
+    curl -fsSLO https://zenodo.org/records/11496131/files/pgp3140_wgs_hlpanel.zip
     mkdir pgp3140_wgs_hlpanel
     unzip pgp3140_wgs_hlpanel.zip -d ./pgp3140_wgs_hlpanel
   fi
 
   pushd $ASETUP/data || exit
   if [ ! -f gene_db.js ]; then
-    curl -fsSLO https://forome-dataset-public.s3.us-south.cloud-object-storage.appdomain.cloud/gene_db.zip
+    curl -fsSLO https://zenodo.org/records/11496131/files/gene_db.zip
     unzip gene_db.zip
   fi
 

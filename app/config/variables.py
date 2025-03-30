@@ -30,7 +30,8 @@ consequences_help = '''
 '''
 
 
-anfisaVariables.setupClassificationFacet(1, "Knowledge Domain", [
+anfisaVariables.setupClassificationFacet(1,
+    "knowledge_domain", "Knowledge Domain", [
     ["call", "Call Annotations"],
     ["phenotype", "Phenotypic Data"],
     ["rules", "Compound Rules"],
@@ -42,7 +43,8 @@ anfisaVariables.setupClassificationFacet(1, "Knowledge Domain", [
     ["na1", "N/A"]
 ])
 
-anfisaVariables.setupClassificationFacet(2, "Scale", [
+anfisaVariables.setupClassificationFacet(2,
+    "scale", "Scale", [
     ["transcript", "Transcript"],
     ["variant", "Variant"],
     ["position", "Position"],
@@ -51,7 +53,8 @@ anfisaVariables.setupClassificationFacet(2, "Scale", [
     ["na2", "N/A"]
 ])
 
-anfisaVariables.setupClassificationFacet(3, "Method", [
+anfisaVariables.setupClassificationFacet(3,
+    "method", "Method", [
     ["statgen", "Statistical Genetics Evidence"],
     ["bioinf", "Bioinformatics Inference"],
     ["in-vivo", "Experimental, in Vivo"],
