@@ -23,7 +23,7 @@ of records. Each record is a shallow JSON-like structure — essentially, a
 collection of key-value pairs. A key is a string from a predefined set, and its
 value can be one of the primitive types: string, integer, boolean, or float. 
   
-> For the majority of keys with string values, the values are 
+> [!IMPORTANT] For the majority of keys with string values, the values are 
 > conceptually of categorical type. However, validating that 
 > a string value is a valid string belonging to one of the 
 > predefined categories requires defining vocabularies which
@@ -45,7 +45,7 @@ Annotations are classified based on their purpose as follows:
 Evidence annotations undergo further classification according to scale,
 knowledge domain, and method of acquisition. Thus, each annotation possesses
 either one classification (when the purpose is `phenotype` or `provenance`) or
-four classifications (`purpose`, `scale`, `knowledge domain`, and `method`) when
+four classifications (`purpose`, `scale`, `knowledge_domain`, and `method`) when
 it serves as evidence.
 
 In a record, a tuple consisting of a key and value is referred to as a *
@@ -104,21 +104,25 @@ The language syntax can be explained based on the following pseudo-BNF:
 
 <Metapredicate> ::= '@' <classification> '(' <classification_value> ')'
 
-<classification> ::= "Purpose" 
-                   | '"Knowledge Domain"'
+<classification> ::= "purpose" 
                    | "knowledge_domain"
-                   | "Scale" 
-                   | "Method"
-       (
-          The string value is case-insensitive and can be either a 
-          valid identifier or a string with spaces and special
-          characters in double quotes. A string usually refers
-          to classification name. For example, "Knowledge Domain"
-          is a name for an entry with identifier knowledge_domain. 
-       )
+                   | "scale" 
+                   | "method"
+       
 
-<classification_value> ::= (an arbitrary string value)
+<classification_value> ::= <valid_Python_identifier>
+                    | "<string surrounded by double quotes>"
 ```
+              
+> [!NOTE] For what is valid identifier, see
+> [Python syntax](https://docs.python.org/3/reference/lexical_analysis.html#identifiers)
+                                          
+> [!WARNING] As per note above, conceptually any string 
+> is a categorical value.
+> In other words, syntactically a string is an arbitrary string
+> but semantically it must belong to a set of strings defined
+> in the 
+> [annotations classification](../../app/config/dictionary/annotations.yml)
 
 If a Metapredicates section is defined for a statement, then the logical
 expression is validated as follows:
