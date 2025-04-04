@@ -45,7 +45,7 @@ anfisaVariables.setupClassificationFacet(1,
 
 anfisaVariables.setupClassificationFacet(2,
     "scale", "Scale", [
-    ["transcript", "Transcript"],
+    ["transcript", "Variant in Transcript"],
     ["variant", "Variant"],
     ["position", "Position"],
     ["window", "Window"],
