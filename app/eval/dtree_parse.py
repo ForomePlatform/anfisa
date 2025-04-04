@@ -39,9 +39,13 @@ class TreeFragment:
         self.mDecision = decision
         self.mCondAtoms = cond_atoms if cond_atoms is not None else []
         self.mLabel = label
+        self.mMetaCorrect = None
+        self.mMetaSetList = None
         self.mMetaErr = None
 
-    def setMetaErr(self, meta_err):
+    def setMetaInfo(self, meta_correct, meta_set_list, meta_err):
+        self.mMetaCorrect = meta_correct
+        self.mMetaSetList = meta_set_list
         self.mMetaErr = meta_err
 
     def setLineDiap(self, base_diap, full_diap):
@@ -74,6 +78,9 @@ class TreeFragment:
 
     def getCondAtoms(self):
         return self.mCondAtoms
+
+    def getMetaInfo(self):
+        return self.mMetaCorrect, self.mMetaSetList
 
     def getMetaErr(self):
         return self.mMetaErr
@@ -162,11 +169,10 @@ class ParsedDTree:
                         raise err
                     err_info = self.mError
 
-            if err_info is None and meta_a is not None:
+            if err_info is None:
                 if isinstance(instr_d, ast.If):
-                    fragments[0].setMetaErr(
-                        self._checkMetaAnnotation(fragments[0], meta_a))
-                else:
+                    self._checkMetaAnnotation(fragments[0], meta_a)
+                elif meta_a is not None:
                     err_info = (
                         "Meta annotation should be set only for if-type",
                         meta_a[0][1][0], meta_a[0][1][1])
@@ -583,24 +589,43 @@ class ParsedDTree:
 
     #===============================================
     def _checkMetaAnnotation(self, fragment, meta_annotations):
-        meta_annotations = meta_annotations[:]
+        if self.mEvalSpace is None:
+            return
+        meta_correct = None
+
         unit_names = condDataUnits(fragment.getCondData())
         for name in unit_names:
             unit_h = self.mEvalSpace.getUnit(name)
             u_classes = unit_h.getInfo()["classes"]
-            to_continue = True
-            while to_continue:
-                to_continue = False
-                for idx, meta_rec in enumerate(meta_annotations):
-                    f_idx, f_v_idx = meta_rec[0]
-                    if u_classes[f_idx] == f_v_idx:
-                        del meta_annotations[idx]
-                        to_continue = True
-                        break
-        if len(meta_annotations) == 0:
-            return None
-        _, loc, descr = meta_annotations[0]
-        return (f"Annotation does not matches: {descr}", loc[0], loc[1])
+            if meta_correct is None:
+                meta_correct = [set() for _ in u_classes]
+            for idx, f_v_idx in enumerate(u_classes):
+                meta_correct[idx].add(f_v_idx)
+
+        meta_set_list, meta_err = None, None
+        bad_annotations = []
+        bad_loc = None
+        if meta_annotations is not None:
+            meta_set_list = []
+            for meta_idxs, loc, meta_text in meta_annotations:
+                f_idx, f_v_idx = meta_idxs
+                meta_set_list.append([meta_text, f_idx, f_v_idx])
+                if f_v_idx in meta_correct[f_idx]:
+                    continue
+                bad_annotations.append(meta_text)
+                if bad_loc is None:
+                    bad_loc = loc
+
+        if bad_loc is not None:
+            if len(bad_annotations) == 1:
+                msg_txt = "Annotation does not matches: " + bad_annotations[0]
+            else:
+                cnt = len(bad_annotations)
+                msg_txt = (f"Annotations({cnt}) do not match: " +
+                    ", ".join(bad_annotations))
+            meta_err = (msg_txt, loc[0], loc[1])
+        fragment.setMetaInfo([sorted(f_v_idxs) for f_v_idxs in meta_correct],
+            meta_set_list, meta_err)
 
 #===============================================
 if __name__ == '__main__':

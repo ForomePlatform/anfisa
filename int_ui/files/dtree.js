@@ -190,9 +190,15 @@ var sDecisionTree = {
                     mode = " reject"
                     sign_mode = "-";
                 }
-            }            
+            }
+            meta_mark = "";
+            if (point["meta-err"]) {
+                meta_mark = '<div class="point-count-warn" title="' +
+                    point["meta-err"][0] + '">&#x2699;</div> ';
+            }
+            
             list_rep.push('<td class="point-count' + mode + '">' + 
-                sign_mode + count_repr + '</td>');
+                meta_mark + sign_mode + count_repr + '</td>');
                 list_rep.push('<td class="point-no">' + 
                     this._renderInstrMenu(p_no, point) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
@@ -930,6 +936,7 @@ var sCodeEditH = {
     mBaseContent: null,
     mCurContent: null,
     mCurError: false,
+    mCurWarnings: null,
     mButtonShow: null,
     mButtonDrop: null,
     mButtonSave: null,
@@ -955,6 +962,7 @@ var sCodeEditH = {
         this.mAreaContent.value = this.mBaseContent;
         this.mCurContent = this.mBaseContent;
         this.mCurError = false;
+        this.mCurWarnings = null;
         this.mErrorPos = null;
         this.mWaiting = false;
         this.mNeedsSave = false;
@@ -971,8 +979,16 @@ var sCodeEditH = {
         this.mButtonShow.innerText = (same_cnt)? "Edit code":"Continue edit code"; 
         this.mButtonShow.setAttribute("class", (this.mCurError)? "bad":"");
         this.mButtonDrop.disabled = same_cnt;
-        this.mButtonSave.disabled = same_cnt|| this.mCurError; 
-        this.mSpanError.innerHTML = (this.mCurError)? this.mCurError:"";
+        this.mButtonSave.disabled = same_cnt || this.mCurError; 
+        err_msg = ""; err_class = "";
+        if (this.mCurError)
+            err_msg = this.mCurError;
+        else if (this.mCurWarnings != null) {
+            err_msg = this.mCurWarnings;
+            err_class = "warn";
+        }
+        this.mSpanError.innerHTML = err_msg;
+        this.mSpanError.setAttribute("class", err_class);
     },
     
     show: function() {
@@ -993,7 +1009,8 @@ var sCodeEditH = {
     validation: function() {
         clearInterval(this.mTimeH);
         this.mTimeH = null;
-        this.mCurError = false;
+        this.mCurError = null;
+        this.mCurWarnings = null;
         this.mErrorPos = null;
         this.mWaiting = true;
         ajaxCall("dtree_check", "ds=" + sDSName + "&code=" +
@@ -1004,14 +1021,24 @@ var sCodeEditH = {
     _validation: function(info) {
         this.mCurContent = info["code"];
         this.mWaiting = false;
+        this.mCurError = null;
+        this.mCurWarnings = null;
+        this.mErrorPos = null;
         if (info["error"]) {
             this.mCurError = "At line " + info["line"] + 
                 " pos " + (info["pos"] + 1) + ": " +
                 info["error"];
             this.mErrorPos = [info["line"], info["pos"]];
-        } else {
-            this.mCurError = null;
-            this.mErrorPos = null;
+        } else if (info["warnings"]) {
+            this.mCurWarnings = "Warning";
+            if (info["warnings"].length > 1)
+                this.mCurWarnings += "(+" + 
+                    (info["warnings"].length - 1) + " more)";
+            var w_info = info["warnings"][0];
+            this.mCurWarnings += " at " + w_info["line"] + 
+                "/" + (w_info["pos"] + 1) + ": " +
+                w_info["error"];
+            this.mErrorPos = [w_info["line"], w_info["pos"]];;
         }
         this.checkControls();
         if (this.mNeedsSave) {
