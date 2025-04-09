@@ -25,10 +25,9 @@ from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 #===============================================
 class XL_LongRunner_DTreeCounts(ExecutionTask):
-    def __init__(self, ds_h, rq_id, dtree_h, point_idxs = None):
+    def __init__(self, ds_h, dtree_h, point_idxs = None):
         ExecutionTask.__init__(self, "dtree-counts")
         self.mDS = ds_h
-        self.mRqID = rq_id
         self.mDTreeH = dtree_h
         self.mCondition = Condition()
         self.mCounts = [None] * len(dtree_h)

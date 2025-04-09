@@ -603,22 +603,31 @@ class ParsedDTree:
                 meta_correct[idx].add(f_v_idx)
 
         meta_set_list, meta_err = None, None
-        bad_annotations = []
+        bad_values, bad_annotations = [], []
         bad_loc = None
         if meta_annotations is not None:
             meta_set_list = []
             for meta_idxs, loc, meta_text in meta_annotations:
                 f_idx, f_v_idx = meta_idxs
                 meta_set_list.append([meta_text, f_idx, f_v_idx])
-                if f_v_idx in meta_correct[f_idx]:
+                if f_v_idx is not None and f_v_idx in meta_correct[f_idx]:
                     continue
-                bad_annotations.append(meta_text)
+                if f_v_idx is None:
+                    bad_values.append(meta_text)
+                else:
+                    bad_annotations.append(meta_text)
                 if bad_loc is None:
                     bad_loc = loc
 
         if bad_loc is not None:
-            if len(bad_annotations) == 1:
-                msg_txt = "Annotation does not matches: " + bad_annotations[0]
+            if len(bad_values) == 1:
+                msg_txt = "Wrong meta annotation value: " + bad_values[0]
+            elif len(bad_values) > 1:
+                count = len(bad_values)
+                msg_txt = (f"Wrong meta annotation values ({count}): " +
+                    ",".join(bad_values))
+            elif len(bad_annotations) == 1:
+                msg_txt = "Annotation does not match: " + bad_annotations[0]
             else:
                 cnt = len(bad_annotations)
                 msg_txt = (f"Annotations({cnt}) do not match: " +

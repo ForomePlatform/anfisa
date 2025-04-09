@@ -369,6 +369,9 @@ class DTreeEval(Evaluation, CaseStory):
     def getCode(self):
         return self.mCode
 
+    def iterPoints(self):
+        return iter(self.mPointList)
+
     def getCurPointNo(self):
         return Evaluation.getCurPointNo(self)
 

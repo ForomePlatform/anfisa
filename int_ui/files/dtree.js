@@ -194,7 +194,7 @@ var sDecisionTree = {
             meta_mark = "";
             if (point["meta-err"]) {
                 meta_mark = '<div class="point-count-warn" title="' +
-                    point["meta-err"][0] + '">&#x2699;</div> ';
+                    point["meta-err"][0].replace(/"/g, '&quot;') + '">&#x2699;</div> ';
             }
             
             list_rep.push('<td class="point-count' + mode + '">' + 
@@ -454,7 +454,7 @@ var sDecisionTree = {
     },
     
     isEmpty: function() {
-        return (this.mPoints.length < 2);
+        return this.mPoints && (this.mPoints.length < 2);
     },
     
     instrAction: function(action, point_no) {

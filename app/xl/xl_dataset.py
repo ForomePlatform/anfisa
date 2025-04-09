@@ -81,7 +81,7 @@ class XLDataset(DataSet):
     #===============================================
     def prepareDTreePointCounts(self, dtree_h, rq_id,
             point_idxs = None, time_end = None):
-        if self.mLongRunners is None:
+        if self.mLongRunners is None or rq_id is None:
             return DataSet.prepareDTreePointCounts(self, dtree_h, rq_id,
                 point_idxs, time_end)
         with self:

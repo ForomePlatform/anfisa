@@ -20,7 +20,7 @@
 
 import sys, os, shutil, traceback
 from glob import glob
-from xml.sax.saxutils import escape
+from html import escape
 
 from .html_report import startHtmlReport
 #===============================================

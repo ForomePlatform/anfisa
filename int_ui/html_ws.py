@@ -17,7 +17,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from xml.sax.saxutils import escape
+from html import escape
 
 import int_ui.gen_html as gen_html
 #===============================================

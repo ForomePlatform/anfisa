@@ -20,7 +20,7 @@
 
 import numbers
 from io import StringIO
-from xml.sax.saxutils import escape
+from html import escape
 
 #===============================================
 def htmlEscape(val):

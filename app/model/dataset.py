@@ -20,7 +20,7 @@
 
 import json, abc
 from datetime import datetime, timedelta
-from xml.sax.saxutils import escape
+from html import escape
 
 from app.view.asp_set import AspectSetH
 from app.config.a_config import AnfisaConfig
@@ -41,6 +41,7 @@ from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
 from .tab_report import reportCSV
+from .variant_tracer import VariantTracerTask
 #===============================================
 class DataSet(SolutionBroker):
     sStatRqCount = 0
@@ -770,6 +771,17 @@ class DataSet(SolutionBroker):
             AnfisaConfig.assertGoodSolutionName(entry_name)
             return self.getSolEnv().checkEntryKind(entry_name)
         return self.reportSolutions()
+
+    #===============================================
+    @RestAPI.дс_request
+    def rq__dtree_variant_report(self, rq_args):
+        assert "rec" in rq_args, 'Missing request argument "rec"'
+        rec_no = int(rq_args.get("rec"));
+        dtree_h = self._getArgDTree(rq_args, no_cache=True)
+        self.collectActive(dtree_h)
+        rq_id = self._makeRqId()
+        return {"task_id": self.getApp().runTask(
+            VariantTracerTask(self, rec_no, dtree_h, rq_id))}
 
     #===============================================
     @RestAPI.ds_request

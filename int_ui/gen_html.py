@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
+from html import escape
 
 from .mirror_dir import MirrorUiDirectory
 #===============================================

@@ -19,7 +19,7 @@
 #
 
 from datetime import datetime, timedelta
-from xml.sax.saxutils import escape
+from html import escape
 #===============================================
 def startHtmlReport(output, title = None, use_pygments = False):
     print('''

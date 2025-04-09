@@ -68,9 +68,7 @@ class VarFacetClassifier:
     def checkMetaAnnotation(self, facet, fvalue):
         for idx, descr in enumerate(self.mDescr):
             if descr["name"] == facet:
-                if not fvalue in self.mFacetAllNamesMap[idx]:
-                    return None, f"Wrong meta annotation value: {fvalue}"
-                return (idx, self.mFacetAllNamesMap[idx][fvalue]), None
+                return (idx, self.mFacetAllNamesMap[idx].get(fvalue)), None
         return None, f"Wrong meta annotation group: {facet}"
 
 #===============================================

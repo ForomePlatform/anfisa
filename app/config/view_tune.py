@@ -20,7 +20,7 @@
 #  limitations under the License.
 #
 import logging
-from xml.sax.saxutils import escape
+from html import escape
 
 from app.view.attr import AttrH
 from app.config.a_config import AnfisaConfig
