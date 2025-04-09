@@ -773,7 +773,7 @@ class DataSet(SolutionBroker):
         return self.reportSolutions()
 
     #===============================================
-    @RestAPI.дс_request
+    @RestAPI.ds_request
     def rq__dtree_variant_report(self, rq_args):
         assert "rec" in rq_args, 'Missing request argument "rec"'
         rec_no = int(rq_args.get("rec"));
