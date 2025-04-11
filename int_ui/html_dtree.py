@@ -40,6 +40,7 @@ def formDTreePage(output, common_title, html_base, ds_h, ws_pub_url):
     gen_html.formDeriveWsDiv(output)
     gen_html.formSubViewDiv(output)
     gen_html.formUnitClassesDiv(output)
+    gen_html.formDTreeTracerDiv(output)
 
     print(' </body>', file = output)
     print('</html>', file = output)
@@ -61,6 +62,10 @@ def _formPanel(output):
                     >Dataset Note...</a>
                 <a class="popup" onclick="wsCreate();"
                     >Derive dataset...</a>
+                <a class="popup" onclick="traceReportAll();"
+                    >Trace report...</a>
+                <a class="popup" onclick="traceReportOne();"
+                    >Trace single variant...</a>
             </div>
           </div>&emsp;
           Dataset: <span id="ds-name" class="bold"></span><br/>

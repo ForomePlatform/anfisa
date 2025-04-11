@@ -41,6 +41,7 @@ from .zygosity import ZygositySupport
 from .rest_api import RestAPI
 from .rec_list import RecListTask
 from .tab_report import reportCSV
+from .dtree_tracer import DTreeTracerTask
 from .variant_tracer import VariantTracerTask
 #===============================================
 class DataSet(SolutionBroker):
@@ -774,14 +775,23 @@ class DataSet(SolutionBroker):
 
     #===============================================
     @RestAPI.ds_request
-    def rq__dtree_variant_report(self, rq_args):
-        assert "rec" in rq_args, 'Missing request argument "rec"'
-        rec_no = int(rq_args.get("rec"));
+    def rq__dtree_variants_report(self, rq_args):
         dtree_h = self._getArgDTree(rq_args, no_cache=True)
         self.collectActive(dtree_h)
         rq_id = self._makeRqId()
         return {"task_id": self.getApp().runTask(
-            VariantTracerTask(self, rec_no, dtree_h, rq_id))}
+            DTreeTracerTask(self, dtree_h, rq_id))}
+
+    #===============================================
+    @RestAPI.ds_request
+    def rq__dtree_variant_trace(self, rq_args):
+        assert "variant" in rq_args, 'Missing request argument "variant"'
+        dtree_h = self._getArgDTree(rq_args, no_cache=True)
+        self.collectActive(dtree_h)
+        rq_id = self._makeRqId()
+        return {"task_id": self.getApp().runTask(
+            VariantTracerTask(self, dtree_h, rq_args["variant"],
+                rq_id, transcript = rq_args.get("transcript")))}
 
     #===============================================
     @RestAPI.ds_request

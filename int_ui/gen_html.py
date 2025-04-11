@@ -396,3 +396,34 @@ def formUnitClassesDiv(output):
     </div>
 ''', file = output)
 #===============================================
+def formDTreeTracerDiv(output):
+    print('''
+    <div id="dtree-tracer-back" class="modal-back">
+      <div id="dtree-tracer-mod">
+        <div id="dtree-tracer-top">
+            <span id="dtree-tracer-title"></span>
+              <span class="close-it"
+                onclick="sViewH.modalOff();">&times;</span>
+        </div>
+        <div id="dtree-tracer-params">
+            <div>Variant:
+                <input id="dtree-tracer-variant" type="text">
+            </div>
+            <div id="dtree-tracer-transcript-input-div">Transcript:
+                <input id="dtree-tracer-transcript" type="text">
+            </div>
+        </div>
+        <div id="dtree-tracer-problems"></div>
+        <div id="dtree-tracer-status"></div>
+        <div id="dtree-tracer-ctrl">
+            <button id="dtree-tracer-start" onclick="startDTreeTrace();">
+              Start...
+            </button>
+            <button id="dtree-tracer-cancel" onclick="sViewH.modalOff();">
+              Cancel
+            </button>
+        </div>
+      </div>
+    </div>
+''', file = output)
+

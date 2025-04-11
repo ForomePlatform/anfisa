@@ -94,6 +94,10 @@ class WS_EvalSpace(EvalSpace):
     def mapTranscriptID(self, pos_idx):
         return self.mTrIdUnit.getItValIdx(pos_idx)
 
+    def mapTranscriptValue(self, pos_idx):
+        it_idx = self.mTrIdUnit.getItValIdx(pos_idx)
+        return self.mTrIdUnit.getVariantSet().getValue(it_idx)
+
     def makeEmptyCounts(self):
         return [0, 0, 0]
 
@@ -107,6 +111,31 @@ class WS_EvalSpace(EvalSpace):
 
     def makeEnumCond(self, unit_h, variants, filter_mode = "OR"):
         return WS_CondEnum.create(unit_h, variants, filter_mode)
+
+    def makeRecNoCond(self, rec_no, transcript_id = None):
+        if transcript_id is not None:
+            tr_idx = self.mTrIdUnit.getVariantSet().indexOf(transcript_id)
+            if tr_idx is None:
+                return None
+            offset_from, offset_to = self.mGroups[rec_no]
+            rec_idx = None
+            for idx_pos in range(offset_from, offset_to):
+                if self.mapTranscriptID(idx_pos) == tr_idx:
+                    rec_idx = idx_pos
+                    break
+            if rec_idx is None:
+                return None
+            def fill_items_f(it_idx):
+                return it_idx == rec_idx
+            fill_groups_f = None
+            detailed = True
+        else:
+            def fill_groups_f(in_rec_no):
+                return in_rec_no == rec_no
+            fill_items_f = None
+            detailed = False
+        return WS_Condition(self, "numeric", None,
+            fill_groups_f, fill_items_f, detailed)
 
     @staticmethod
     def numericFilterFunc(min_val, min_eq, max_val, max_eq):
@@ -227,6 +256,18 @@ class WS_Condition(Eval_Condition):
             for idx_pos in rec_it_map.search(self.sPattTrue):
                 tr_set.add(eval_space.mapTranscriptID(idx_start + idx_pos))
         return [count_grp, count_items, len(tr_set)]
+
+    def iterSelectionDescr(self):
+        eval_space = self.getEvalSpace()
+        for rec_no, rec_it_map in self.iterSelection():
+            idx_start, _ = eval_space.getGroupPos(rec_no)
+            transcript_seq = [
+                eval_space.mapTranscriptValue(idx_start + idx_pos)
+                for idx_pos in rec_it_map.search(self.sPattTrue)]
+            yield {
+                "color": eval_space.getDS().getRecColor(rec_no),
+                "label": eval_space.getDS().getRecLabel(rec_no),
+                "transcripts": transcript_seq}
 
     def getItemCount(self):
         return self.mBitArray.count()

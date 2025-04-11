@@ -89,7 +89,7 @@ class XLDataset(DataSet):
             runner = self.mLongRunners.get(rq_id)
             if runner is None:
                 runner = XL_LongRunner_DTreeCounts(
-                    self, rq_id, dtree_h, point_idxs)
+                    self, dtree_h, point_idxs)
                 needs_start = True
                 self.mLongRunners[rq_id] = runner
         if needs_start:

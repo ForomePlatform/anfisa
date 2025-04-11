@@ -185,6 +185,12 @@ class Workspace(DataSet):
     def getRecRand(self, rec_no):
         return self.mTabRecRand[rec_no]
 
+    def getRecLabel(self, rec_no):
+        return self.mTabRecLabel[rec_no]
+
+    def getRecColor(self, rec_no):
+        return self.mTabRecColor[rec_no]
+
     def iterRecKeys(self):
         return enumerate(self.mTabRecKey)
 

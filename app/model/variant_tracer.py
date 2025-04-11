@@ -18,77 +18,114 @@
 #  limitations under the License.
 #
 
-from datetime import datetime, timedelta
-
 from forome_tools.job_pool import ExecutionTask
 #===============================================
 class VariantTracerTask(ExecutionTask):
-    def __init__(self, ds_h, rec_no, dtree_h, rq_id):
+    def __init__(self, ds_h, dtree_h, variant, rq_id, transcript = None):
         ExecutionTask.__init__(self, "Preparing...")
         self.mDS = ds_h
-        self.mRecNo = rec_no
         self.mDTreeH = dtree_h
+        self.mVariant = variant
+        self.mTranscript = transcript
         self.mRqId = rq_id
 
     def getTaskType(self):
-        return "rec-list"
-
-    def onProgressChange(self, progress, mode):
-        self.setStatus("Preparation progress: %d%s" %
-            (min(progress, 100), '%'))
-
-    def collectInfo_XL(self):
-        assert False, "Not properly implemented yet"
-        ret = {}
-        if self.mDTreeH.getName():
-            ret["dtree-name"] = self.mDTreeH.getName()
-        self.setStatus("Preparation progress: 0%")
-        rec_dict = self.mDS.getRecStorage().collectPReports(
-            {self.mRecNo}, self)
-        ret["variant"] = rec_dict[self.mRecNo]
-
-        self.setStatus("Tree evaluation")
-        point_counts = self.mDS.prepareDTreePointCounts(
-            self.mDTreeH, rq_id=None,
-            time_end=datetime.now() + timedelta(minutes=60))
-        self.setStatus("Finishing")
-
-        steps = []
-        code_lines = self.mDTreeH.getCode().split('\n')
-        cur_code = []
-        final_status = None
-
-        for point_h in self.mDTreeH.iterPoints():
-            cur_code.append(point_h.getCodeFrag(code_lines))
-            if point_h.getPointKind() == "If":
-                continue
-            status = "N/A"
-            if point_h.getPointKind() == "Terminal":
-                count = point_counts[point_h.getPointNo()]
-                if count is not None and count > 0:
-                    status = ["Rejected", "Approved"][
-                        point_h.getDecision() is True]
-                    assert final_status is None
-                    final_status = status
-                else:
-                    status = ["N/A", "Passed"][final_status is None]
-            steps.append({"code": '\n'.join(cur_code), "status": status,
-                "no": point_h.getPointNo() - 1})
-            cur_code = []
-
-        ret["steps"] = steps
-        #assert final_status is not None
-        ret["status"] = final_status
-        ret["counts"] = point_counts
-        return ret
-
-    def collectInfo_WS(self):
-        assert False, "Not implemented yet"
+        return "dtree-variant-trace"
 
     def execIt(self):
+        ret = {"variant" : self.mVariant}
+        if self.mDTreeH.getName():
+            ret["dtree-name"] = self.mDTreeH.getName()
+        if self.mTranscript is not None:
+            ret["transcript-id"] = self.mTranscript
+            if self.mDS.getDSKind() != "ws":
+                ret["status"] = "Failed"
+                ret["error"] = "Transcript option is not provided"
+                return ret
+        the_rec_no = None
+        for rec_no, p_data in self.mDS.getRecStorage().iterPData(
+                notifier = self):
+            label = p_data["_label"]
+            if ']' in label:
+                _, _, variant = label.partition(']')
+            else:
+                variant = label
+            if (variant.strip() + " ").startswith(self.mVariant + " "):
+                the_rec_no = rec_no
+                break
+        if the_rec_no is None:
+            ret["status"] = "Failed"
+            ret["error"] = "Variant not found in dataset"
+            return ret
+
+        self.setStatus("Decision evaluation")
         if self.mDS.getDSKind() == "ws":
-            ret = self.collectInfo_WS()
+            return self._collectInfo_WS(the_rec_no, ret)
         else:
-            ret = self.collectInfo_XL()
-        self.setStatus("Done")
-        return ret
+            return self._collectInfo_XL(the_rec_no, ret)
+
+    #===============================================
+    def _collectInfo_XL(self, rec_no, descr):
+        trace_condition = self.mDS.getEvalSpace().makeRecNoCond(rec_no)
+        for point_h in self.mDTreeH.iterPoints():
+            self.setStatus("Decision evaluation progress: " +
+                f"{point_h.getPointNo() + 1} of {len(self.mDTreeH)}")
+            if (point_h.getPointKind() != "Return" or
+                    not point_h.isActive()):
+                continue
+            point_cond = trace_condition.addAnd(point_h.actualCondition())
+            p_counts = self.mDS.getEvalSpace().evalTotalCounts(point_cond)
+            assert p_counts[0] < 2
+            if p_counts[0] == 1:
+                descr["trace"] = {
+                    "point-no": point_h.getPointNo(),
+                    "status": "Approved" if point_h.getDecision()
+                        else "Rejected"}
+                self.setStatus("Finished")
+                return descr
+        descr["error"] = "Variant lost?"
+        self.setStatus("Finished")
+        return descr
+
+    #===============================================
+    def onProgressChange(self, progress, mode):
+        self.setStatus("Scanning variants progress: %d%s" %
+            (min(progress, 100), '%'))
+
+    #===============================================
+    def _collectInfo_WS(self, rec_no, descr):
+        trace_condition = self.mDS.getEvalSpace().makeRecNoCond(
+            rec_no, self.mTranscript)
+        if trace_condition is None:
+            descr["error"] = "Trancript not found"
+            return descr
+        traces = []
+        for point_h in self.mDTreeH.iterPoints():
+            self.setStatus("Decision evaluation progress: " +
+                f"{point_h.getPointNo() + 1} of {len(self.mDTreeH)}")
+            if (point_h.getPointKind() != "Return" or
+                    not point_h.isActive()):
+                continue
+            point_cond = trace_condition.addAnd(point_h.actualCondition())
+            p_counts = point_cond.getCounts()
+            if p_counts[0] > 0:
+                if self.mTranscript is not None:
+                    descr["trace"] = {
+                        "point-no": point_h.getPointNo(),
+                        "status": "Approved" if point_h.getDecision()
+                            else "Rejected"}
+                    self.setStatus("Finished")
+                    return descr
+                seq_descr = list(point_cond.iterSelectionDescr())
+                assert len(seq_descr) == 1
+                traces.append({
+                    "point-no": point_h.getPointNo(),
+                    "status": "Approved" if point_h.getDecision()
+                        else "Rejected",
+                    "transcripts": seq_descr[0]["transcripts"]})
+        if len(traces) == 0:
+            descr["error"] = "Lost transcripts?"
+        else:
+            descr["traces"] = traces
+        self.setStatus("Finished")
+        return descr

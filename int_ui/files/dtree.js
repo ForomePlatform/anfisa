@@ -40,6 +40,7 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sDTreesH.init();
     sDecisionTree.clear();
     sViewH.addNotifier(sDecisionTree);
+    sTraceDTreeH.init();
 }
     
 function viewRejectionMode() {
@@ -49,6 +50,7 @@ function viewRejectionMode() {
 /**************************************/
 var sDecisionTree = {
     mTreeCode: null,
+    mTreeName: null,
     mPoints: null,
     mCondAtoms: null,
     mPointCounts: null,
@@ -75,12 +77,22 @@ var sDecisionTree = {
         ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     
+    makeArgs: function() {
+        args = "ds=" + sDSName;
+        if (this.mTreeName)
+            args += "&dtree=" + encodeURIComponent(this.mTreeName);
+        else            
+            args += "&code=" + encodeURIComponent(this.mTreeCode);
+        return args;
+    },
+    
     _setup: function(info) {
         this.mTreeCode = info["code"];
+        this.mTreeName = info["dtree-name"];
         this.mTotalCounts = info["total-counts"];
         this.mRqId = info["rq-id"];
         this.mEvalStatus = info["eval-status"];
-        sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
+        sDTreesH.setup(this.mTreeName, info["dtree-list"]);
         sHistoryH.update(info["hash"]);
         this.mCondAtomLoc = null;
         this.mPostTreeAction = null;
@@ -1199,6 +1211,129 @@ var sVersionsH = {
     }
 };
 
+/*************************************/
+/* DTree tracers                     */
+/*************************************/
+var sTraceDTreeH = {
+    mSpanModTitle: null,
+    mInputModVariant: null,
+    mInputModTranscript: null,
+    mInputModTranscript: null,
+    mDivModParams: null,
+    mDivModCtrl: null,
+    mDivModProblems: null,
+    mDivModStatus: null,
+    mTaskId: null,
+    mTimeH: null,
+    mRunMode: null,
+    
+    init: function() {
+        this.mSpanModTitle = document.getElementById("dtree-tracer-title");
+        this.mInputModVariant = document.getElementById("dtree-tracer-variant");
+        this.mInputModTranscript = document.getElementById("dtree-tracer-transcript");
+        this.mDivModParams = document.getElementById("dtree-tracer-params");
+        this.mDivModCtrl = document.getElementById("dtree-tracer-ctrl");
+        this.mDivModParamTranscript = document.getElementById("dtree-tracer-transcript-input-div");
+
+        this.mDivModProblems = document.getElementById("dtree-tracer-problems");
+        this.mDivModStatus = document.getElementById("dtree-tracer-status");
+        
+        //"dtree-tracer-back"
+        //"dtree-tracer-mod"
+        //"dtree-tracer-top"
+    },
+    
+    reportAll: function() {
+        this.mRunMode = "All";
+        this.mSpanModTitle.innerHTML = 'Tracing report for decision tree';
+        this.mDivModParams.style.visibility = "hidden";
+        this.mDivModCtrl.style.visibility = "hidden";
+        this.mDivModProblems.innerHTML = "";
+        this.mDivModStatus.innerHTML = "";
+        
+        sViewH.modalOn(document.getElementById("dtree-tracer-back"));
+        args = sDecisionTree.makeArgs();
+        ajaxCall("dtree_variants_report", args, function(info){sTraceDTreeH.setupTask(info);});
+    },
+    
+    readyReportOne: function() {
+        this.mRunMode = "One";
+        this.mSpanModTitle.innerHTML = 'Trace variant in decision tree';
+        this.mDivModParams.style.visibility = "visible";
+        if (sDSKind == "ws")
+            this.mDivModParamTranscript.style.visibility = "visible";
+        else
+            this.mDivModParamTranscript.style.visibility = "hidden";
+        this.mDivModCtrl.style.visibility = "visible";
+        this.mDivModProblems.innerHTML = "";
+        this.mDivModStatus.innerHTML = "";
+        sViewH.modalOn(document.getElementById("dtree-tracer-back"));
+    },
+
+    reportOne: function() {
+        if (!this.mInputModVariant.value)
+            return;
+        args = sDecisionTree.makeArgs();
+        args += "&variant=" + encodeURIComponent(this.mInputModVariant.value);
+        if (sDSKind == "ws" && this.mInputModTranscript)
+            args += "&transcript=" + encodeURIComponent(this.mInputModTranscript.value);
+        ajaxCall("dtree_variant_trace", args, function(info){sTraceDTreeH.setupTask(info);});
+    },
+    
+    setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.checkTask();
+    },
+
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sTraceDTreeH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info != null && info[0] == false) {
+            this.mDivModStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sTraceDTreeH.checkTask()}, 3000);
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        sViewH.blockModal(false);
+        if (info == null) {
+            this.mDivModStatus.innerHTML = "Task information lost";
+        } else {
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                if (info[1]["error"])
+                    this.mDivModProblems.innerHTML = info[1]["error"];
+                else {
+                    target_ref = "job_status?task=" + this.mTaskId;
+                    this.mDivModStatus.innerHTML = 'Done: <a href="' + 
+                        target_ref +'" target="blank">' + '>Open it</a>';
+                }
+            }
+        }
+    }
+};
+
+function traceReportAll() {
+    sTraceDTreeH.reportAll();
+}
+
+function traceReportOne() {
+    sTraceDTreeH.readyReportOne();
+}
+
+function startDTreeTrace() {
+    sTraceDTreeH.reportOne();
+}
 /**************************************/
 function arrangeControls() {
     document.getElementById("dtree-main").style.height = 
