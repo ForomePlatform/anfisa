@@ -198,8 +198,8 @@ var sSubVRecH = {
         if (el_mod_height == 0)
             return;
         document.getElementById("sub-view-wrap-list").style.height=
-            Math.max(10, el_mod_height - 110);
+            Math.max(10, el_mod_height - 110) + "px";
         document.getElementById("sub-view-rec-wrap").style.height=
-            Math.max(10, el_mod_height - 30);
+            Math.max(10, el_mod_height - 30) + "px";
     }
 };

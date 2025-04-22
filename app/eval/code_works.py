@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
+from html import escape
 from pygments import highlight
 from pygments.lexers import PythonLexer
 from pygments.formatters import HtmlFormatter
@@ -151,7 +151,7 @@ class HtmlPresentation:
                         mark_class = "dtree-atom-drop warn"
                     else:
                         mark_class += " warn"
-                    title_cnt = ' title="%s"' % err_msg
+                    title_cnt = ' title="%s"' % escape(err_msg)
                 insert_code = ('<span class="%s" id="__atom_%d-%d" %s></span>'
                     % (mark_class, check_no, instr_no, title_cnt))
                 l_upd = (l_upd[:j_upd_start] + insert_code + l_upd[j_upd:])

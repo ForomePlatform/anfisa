@@ -18,7 +18,7 @@
 #  limitations under the License.
 #
 
-from xml.sax.saxutils import escape
+from html import escape
 from app.config.a_config import AnfisaConfig
 from .gen_html import tagsBlock, startHtmlPage
 #===============================================

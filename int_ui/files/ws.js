@@ -107,8 +107,8 @@ function arrangeControls() {
     if (sSamplesCtrl != null) {
         sSamplesCtrl.arrangeControls();
     }    
-    document.getElementById("top").style.height = 60;
-    document.getElementById("rec-list").style.height = window.innerHeight - 61;
+    document.getElementById("top").style.height = "60px";
+    document.getElementById("rec-list").style.height = Math.max(window.innerHeight - 67, 20) + "px";
     sZoneH.arrangeControls();
     sOpEnumH.arrangeControls();
 }

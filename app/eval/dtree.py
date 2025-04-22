@@ -134,12 +134,21 @@ class CheckPoint:
         return self.getPrevPoint()._accumulateConditions().negative()
 
     def getInfo(self, code_lines):
-        return {
+        ret = {
             "kind": self.getPointKind(),
             "level": self.getLevel(),
             "decision": self.getDecision(),
             "code-frag": self.getCodeFrag(code_lines),
             "actions": self.getActions()}
+        if ret["kind"] == "If":
+            meta_correct, meta_set_list = self.mFrag.getMetaInfo()
+            if meta_correct is not None:
+                ret["meta-correct"] = meta_correct
+            if meta_set_list:
+                ret["meta-set"] = meta_set_list
+            if self.mFrag.getMetaErr():
+                ret["meta-err"] = self.mFrag.getMetaErr()
+        return ret
 
     def getCodeFrag(self, code_lines):
         line_from, line_to = self.mFrag.getLineDiap()
@@ -263,12 +272,24 @@ class DTreeEval(Evaluation, CaseStory):
         self.mFinalCondition = None
 
         self.mErrorInfo = None
+
         if parsed.getError() is not None:
             msg_text, lineno, offset = parsed.getError()
             self.mErrorInfo = {
                 "line": lineno, "pos": offset, "error": msg_text}
             logging.error(("Error in tree %s code: (%d:%d) %s\n" %
                 (name if name else "", lineno, offset, msg_text)))
+        else:
+            warn_list = []
+            for frag_h in self.mFragments:
+                meta_err = frag_h.getMetaErr()
+                if meta_err is None:
+                    continue
+                msg_text, lineno, offset = meta_err
+                warn_list.append({"line": lineno, "pos": offset,
+                    "error": msg_text})
+            if len(warn_list) > 0:
+                self.mErrorInfo = {"warnings": warn_list}
 
     @staticmethod
     def makeSolEntry(eval_space, info):
@@ -313,6 +334,14 @@ class DTreeEval(Evaluation, CaseStory):
                     self._addPoint(TerminalPoint(self, frag_h, prev_point))
                 continue
             assert False, "Bad frag type: %s" % frag_h.getInstrType()
+        for frag_h in self.mFragments:
+            if frag_h.getMetaErr() is not None:
+                err_msg = frag_h.getMetaErr()[0]
+                first_atom = frag_h.getCondAtoms()[0]
+                Evaluation.operationError(self, first_atom.getCondData(), err_msg)
+                first_atom.setError(err_msg)
+                logging.info("Got it")
+
         self.finishRuntime()
 
     def operationError(self, cond_data, err_msg):
@@ -339,6 +368,9 @@ class DTreeEval(Evaluation, CaseStory):
 
     def getCode(self):
         return self.mCode
+
+    def iterPoints(self):
+        return iter(self.mPointList)
 
     def getCurPointNo(self):
         return Evaluation.getCurPointNo(self)

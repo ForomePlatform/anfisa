@@ -40,6 +40,7 @@ function setupDTree(ds_name, ds_kind, common_title, ws_pub_url) {
     sDTreesH.init();
     sDecisionTree.clear();
     sViewH.addNotifier(sDecisionTree);
+    sTraceDTreeH.init();
 }
     
 function viewRejectionMode() {
@@ -49,6 +50,7 @@ function viewRejectionMode() {
 /**************************************/
 var sDecisionTree = {
     mTreeCode: null,
+    mTreeName: null,
     mPoints: null,
     mCondAtoms: null,
     mPointCounts: null,
@@ -75,12 +77,22 @@ var sDecisionTree = {
         ajaxCall("dtree_set", args, function(info){sDecisionTree._setup(info);})
     },
     
+    makeArgs: function() {
+        args = "ds=" + sDSName;
+        if (this.mTreeName)
+            args += "&dtree=" + encodeURIComponent(this.mTreeName);
+        else            
+            args += "&code=" + encodeURIComponent(this.mTreeCode);
+        return args;
+    },
+    
     _setup: function(info) {
         this.mTreeCode = info["code"];
+        this.mTreeName = info["dtree-name"];
         this.mTotalCounts = info["total-counts"];
         this.mRqId = info["rq-id"];
         this.mEvalStatus = info["eval-status"];
-        sDTreesH.setup(info["dtree-name"], info["dtree-list"]);
+        sDTreesH.setup(this.mTreeName, info["dtree-list"]);
         sHistoryH.update(info["hash"]);
         this.mCondAtomLoc = null;
         this.mPostTreeAction = null;
@@ -190,9 +202,15 @@ var sDecisionTree = {
                     mode = " reject"
                     sign_mode = "-";
                 }
-            }            
+            }
+            meta_mark = "";
+            if (point["meta-err"]) {
+                meta_mark = '<div class="point-count-warn" title="' +
+                    point["meta-err"][0].replace(/"/g, '&quot;') + '">&#x2699;</div> ';
+            }
+            
             list_rep.push('<td class="point-count' + mode + '">' + 
-                sign_mode + count_repr + '</td>');
+                meta_mark + sign_mode + count_repr + '</td>');
                 list_rep.push('<td class="point-no">' + 
                     this._renderInstrMenu(p_no, point) + '</td>');
             list_rep.push('<td class="point-code"><div class="highlight">' +
@@ -448,7 +466,7 @@ var sDecisionTree = {
     },
     
     isEmpty: function() {
-        return (this.mPoints.length < 2);
+        return this.mPoints && (this.mPoints.length < 2);
     },
     
     instrAction: function(action, point_no) {
@@ -930,6 +948,7 @@ var sCodeEditH = {
     mBaseContent: null,
     mCurContent: null,
     mCurError: false,
+    mCurWarnings: null,
     mButtonShow: null,
     mButtonDrop: null,
     mButtonSave: null,
@@ -955,6 +974,7 @@ var sCodeEditH = {
         this.mAreaContent.value = this.mBaseContent;
         this.mCurContent = this.mBaseContent;
         this.mCurError = false;
+        this.mCurWarnings = null;
         this.mErrorPos = null;
         this.mWaiting = false;
         this.mNeedsSave = false;
@@ -971,8 +991,16 @@ var sCodeEditH = {
         this.mButtonShow.innerText = (same_cnt)? "Edit code":"Continue edit code"; 
         this.mButtonShow.setAttribute("class", (this.mCurError)? "bad":"");
         this.mButtonDrop.disabled = same_cnt;
-        this.mButtonSave.disabled = same_cnt|| this.mCurError; 
-        this.mSpanError.innerHTML = (this.mCurError)? this.mCurError:"";
+        this.mButtonSave.disabled = same_cnt || this.mCurError; 
+        err_msg = ""; err_class = "";
+        if (this.mCurError)
+            err_msg = this.mCurError;
+        else if (this.mCurWarnings != null) {
+            err_msg = this.mCurWarnings;
+            err_class = "warn";
+        }
+        this.mSpanError.innerHTML = err_msg;
+        this.mSpanError.setAttribute("class", err_class);
     },
     
     show: function() {
@@ -993,7 +1021,8 @@ var sCodeEditH = {
     validation: function() {
         clearInterval(this.mTimeH);
         this.mTimeH = null;
-        this.mCurError = false;
+        this.mCurError = null;
+        this.mCurWarnings = null;
         this.mErrorPos = null;
         this.mWaiting = true;
         ajaxCall("dtree_check", "ds=" + sDSName + "&code=" +
@@ -1004,14 +1033,24 @@ var sCodeEditH = {
     _validation: function(info) {
         this.mCurContent = info["code"];
         this.mWaiting = false;
+        this.mCurError = null;
+        this.mCurWarnings = null;
+        this.mErrorPos = null;
         if (info["error"]) {
             this.mCurError = "At line " + info["line"] + 
                 " pos " + (info["pos"] + 1) + ": " +
                 info["error"];
             this.mErrorPos = [info["line"], info["pos"]];
-        } else {
-            this.mCurError = null;
-            this.mErrorPos = null;
+        } else if (info["warnings"]) {
+            this.mCurWarnings = "Warning";
+            if (info["warnings"].length > 1)
+                this.mCurWarnings += "(+" + 
+                    (info["warnings"].length - 1) + " more)";
+            var w_info = info["warnings"][0];
+            this.mCurWarnings += " at " + w_info["line"] + 
+                "/" + (w_info["pos"] + 1) + ": " +
+                w_info["error"];
+            this.mErrorPos = [w_info["line"], w_info["pos"]];;
         }
         this.checkControls();
         if (this.mNeedsSave) {
@@ -1172,8 +1211,133 @@ var sVersionsH = {
     }
 };
 
+/*************************************/
+/* DTree tracers                     */
+/*************************************/
+var sTraceDTreeH = {
+    mSpanModTitle: null,
+    mInputModVariant: null,
+    mInputModTranscript: null,
+    mInputModTranscript: null,
+    mDivModParams: null,
+    mDivModCtrl: null,
+    mDivModProblems: null,
+    mDivModStatus: null,
+    mTaskId: null,
+    mTimeH: null,
+    mRunMode: null,
+    
+    init: function() {
+        this.mSpanModTitle = document.getElementById("dtree-tracer-title");
+        this.mInputModVariant = document.getElementById("dtree-tracer-variant");
+        this.mInputModTranscript = document.getElementById("dtree-tracer-transcript");
+        this.mDivModParams = document.getElementById("dtree-tracer-params");
+        this.mDivModCtrl = document.getElementById("dtree-tracer-ctrl");
+        this.mDivModParamTranscript = document.getElementById("dtree-tracer-transcript-input-div");
+
+        this.mDivModProblems = document.getElementById("dtree-tracer-problems");
+        this.mDivModStatus = document.getElementById("dtree-tracer-status");
+        
+        //"dtree-tracer-back"
+        //"dtree-tracer-mod"
+        //"dtree-tracer-top"
+    },
+    
+    reportAll: function() {
+        this.mRunMode = "All";
+        this.mSpanModTitle.innerHTML = 'Tracing report for decision tree';
+        this.mDivModParams.style.visibility = "hidden";
+        this.mDivModCtrl.style.visibility = "hidden";
+        this.mDivModProblems.innerHTML = "";
+        this.mDivModStatus.innerHTML = "";
+        
+        sViewH.modalOn(document.getElementById("dtree-tracer-back"));
+        args = sDecisionTree.makeArgs();
+        ajaxCall("dtree_variants_report", args, function(info){sTraceDTreeH.setupTask(info);});
+    },
+    
+    readyReportOne: function() {
+        this.mRunMode = "One";
+        this.mSpanModTitle.innerHTML = 'Trace variant in decision tree';
+        this.mDivModParams.style.visibility = "visible";
+        if (sDSKind == "ws")
+            this.mDivModParamTranscript.style.visibility = "visible";
+        else
+            this.mDivModParamTranscript.style.visibility = "hidden";
+        this.mDivModCtrl.style.visibility = "visible";
+        this.mDivModProblems.innerHTML = "";
+        this.mDivModStatus.innerHTML = "";
+        sViewH.modalOn(document.getElementById("dtree-tracer-back"));
+    },
+
+    reportOne: function() {
+        if (!this.mInputModVariant.value)
+            return;
+        args = sDecisionTree.makeArgs();
+        args += "&variant=" + encodeURIComponent(this.mInputModVariant.value);
+        if (sDSKind == "ws" && this.mInputModTranscript)
+            args += "&transcript=" + encodeURIComponent(this.mInputModTranscript.value);
+        ajaxCall("dtree_variant_trace", args, function(info){sTraceDTreeH.setupTask(info);});
+    },
+    
+    setupTask: function(info) {
+        this.mTaskId = info["task_id"];
+        this.checkTask();
+    },
+
+    checkTask: function() {
+        if (this.mTaskId == null)
+            return;
+        ajaxCall("job_status", "task=" + this.mTaskId,
+            function(info) {
+                sTraceDTreeH._checkTask(info);})
+    },
+    
+    _checkTask: function(info) {
+        if (info != null && info[0] == false) {
+            this.mDivModStatus.innerHTML = info[1];
+            if (this.mTimeH == null)
+                this.mTimeH = setInterval(function() {sTraceDTreeH.checkTask()}, 3000);
+            return;
+        }
+        if (this.mTimeH != null) {
+            clearInterval(this.mTimeH);
+            this.mTimeH = null;
+        }
+        sViewH.blockModal(false);
+        if (info == null) {
+            this.mDivModStatus.innerHTML = "Task information lost";
+        } else {
+            if (info[0] == null) {
+                this.mDivModStatus.innerHTML = info[1];
+            } else {
+                if (info[1]["error"])
+                    this.mDivModProblems.innerHTML = info[1]["error"];
+                else {
+                    target_ref = "job_status?task=" + this.mTaskId;
+                    this.mDivModStatus.innerHTML = 'Done: <a href="' + 
+                        target_ref +'" target="blank">' + '>Open it</a>';
+                }
+            }
+        }
+    }
+};
+
+function traceReportAll() {
+    sTraceDTreeH.reportAll();
+}
+
+function traceReportOne() {
+    sTraceDTreeH.readyReportOne();
+}
+
+function startDTreeTrace() {
+    sTraceDTreeH.reportOne();
+}
 /**************************************/
 function arrangeControls() {
+    document.getElementById("dtree-main").style.height = 
+        Math.max(window.innerHeight - 55, 30) + "px";
     el_cond_mod = document.getElementById("cur-cond-mod");
     if (el_cond_mod.className == "enum") {
         cond_mod_height = el_cond_mod.offsetHeight;
@@ -1181,7 +1345,7 @@ function arrangeControls() {
         if (func_el && func_el.style.display != "none") 
             cond_mod_height -= func_el.getBoundingClientRect().height;
         document.getElementById("wrap-cond-enum").style.height = 
-            Math.max(10, cond_mod_height - 110);
+            Math.max(10, cond_mod_height - 110) + "px";
     }
     sSubVRecH.arrangeControls();
     sOpEnumH.arrangeControls();

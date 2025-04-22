@@ -17,3 +17,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+
+from .favor import FavorSchema
+from .avarstar import AvarstarSchema
+
+#===============================================
+sDataConfigSchemaDict = {
+    "FAVOR": FavorSchema,
+    "AVARSTAR": AvarstarSchema
+}
+
+def getDataConfigSchema(name):
+    global sDataConfigSchemaDict
+    return sDataConfigSchemaDict.get(name)
+
+def iterDataConfigSchema():
+    global sDataConfigSchemaDict
+    return sDataConfigSchemaDict.items()

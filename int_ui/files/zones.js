@@ -52,6 +52,7 @@ var sZoneH = {
     },
     
     updateCur: function(mode_on) {
+        this.arrangeControls();
         cur_zone_status = this.getStatus();
         prev_zone_data = this.mCurState;
         document.getElementById("zone-cur-title").innerHTML = 
@@ -72,8 +73,9 @@ var sZoneH = {
                     this.mCurState = [[this.mWorkData[0], this.mWorkData[1], false]];
             }
         }
-        if (prev_zone_data != this.mCurState)
+        if (prev_zone_data != this.mCurState) {
             reloadList();
+        }
     },
 
     checkControls: function() {
@@ -84,9 +86,9 @@ var sZoneH = {
         zone_mod_height = document.getElementById("zone-mod").
             getBoundingClientRect().height;
         document.getElementById("work-zone-area").style.height = 
-            zone_mod_height - 60;
+            (zone_mod_height - 60) + "px";
         document.getElementById("work-zone-wrap-list").style.height = 
-            zone_mod_height - 125;
+            (zone_mod_height - 125) + "px";
     },
 
     clearSelection: function() {

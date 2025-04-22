@@ -30,20 +30,22 @@ consequences_help = '''
 '''
 
 
-anfisaVariables.setupClassificationFacet(1, "Knowledge Domain", [
+anfisaVariables.setupClassificationFacet(1,
+    "knowledge_domain", "Knowledge Domain", [
     ["call", "Call Annotations"],
     ["phenotype", "Phenotypic Data"],
     ["rules", "Compound Rules"],
     ["popgen", "Population Genetics"],
-    ["function", "Functional"],
+    ["function", "Functional Genetics"],
     ["animal", "Animal Genetics"],
     ["human", "Human Genetics"],
     ["epigenetics", "Epigenetics"],
     ["na1", "N/A"]
 ])
 
-anfisaVariables.setupClassificationFacet(2, "Scale", [
-    ["transcript", "Transcript"],
+anfisaVariables.setupClassificationFacet(2,
+    "scale", "Scale", [
+    ["transcript", "Variant in Transcript"],
     ["variant", "Variant"],
     ["position", "Position"],
     ["window", "Window"],
@@ -51,7 +53,8 @@ anfisaVariables.setupClassificationFacet(2, "Scale", [
     ["na2", "N/A"]
 ])
 
-anfisaVariables.setupClassificationFacet(3, "Method", [
+anfisaVariables.setupClassificationFacet(3,
+    "method", "Method", [
     ["statgen", "Statistical Genetics Evidence"],
     ["bioinf", "Bioinformatics Inference"],
     ["in-vivo", "Experimental, in Vivo"],
@@ -601,6 +604,17 @@ anfisaVariables.regVar("GC", "numeric",
 
 anfisaVariables.regVar("CpG", "numeric",
     render_mode = "linear,<")
+
+#======================================
+## Avarstar:
+
+anfisaVariables.regVar("gnomAD_PopMax_Outbred", "enum")
+
+anfisaVariables.regVar("gnomAD_PopMax_AF_Outbred", "numeric",
+    render_mode = "log,<")
+
+anfisaVariables.regVar("gnomAD_PopMax_AN_Outbred", "numeric",
+    render_mode = "log,>")
 
 #======================================
 def _fixVarName(var_name):

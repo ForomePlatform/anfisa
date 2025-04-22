@@ -1,63 +1,21 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
-FROM python:3.7-slim
+## To build:
+## In the Repository root:
+##  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa:0.8.2 --load -f setup/Dockerfile .
+## Front: DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa-react-client:0.11.3 --load .
+## docker run --rm -p 9081:80 --env-file .env.backend.dev --name anfisa forome/anfisa:0.8.2
 
-ENV NGINX_VERSION   1.23.1
-ENV PKG_RELEASE     1~bullseye
+FROM python:3.10-slim
+
+ENV NGINX_VERSION=1.23.1
+ENV PKG_RELEASE=1~bullseye
 
 RUN set -x \
     && apt-get update \
     && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
         zip unzip jq git gcc python3-dev python3-pip python3-venv \
-    && \
-    NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
-    found=''; \
-    for server in \
-        hkp://keyserver.ubuntu.com:80 \
-        pgp.mit.edu \
-    ; do \
-        echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
-        apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
-    done; \
-    test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-    apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
-    && dpkgArch="$(dpkg --print-architecture)" \
-    && nginxPackages=" \
-        nginx=${NGINX_VERSION}-${PKG_RELEASE} \
-    " \
-    && case "$dpkgArch" in \
-        amd64|arm64) \
-            echo "deb https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
-            && apt-get update \
-            ;; \
-        *) \
-            echo "deb-src https://nginx.org/packages/mainline/debian/ bullseye nginx" >> /etc/apt/sources.list.d/nginx.list \
-            \
-            && tempDir="$(mktemp -d)" \
-            && chmod 777 "$tempDir" \
-            \
-            && savedAptMark="$(apt-mark showmanual)" \
-            \
-            && apt-get update \
-            && apt-get build-dep -y $nginxPackages \
-            && ( \
-                cd "$tempDir" \
-                && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
-                    apt-get source --compile $nginxPackages \
-            ) \
-            \
-            && apt-mark showmanual | xargs apt-mark auto > /dev/null \
-            && { [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; } \
-            \
-            && ls -lAFh "$tempDir" \
-            && ( cd "$tempDir" && dpkg-scanpackages . > Packages ) \
-            && grep '^Package: ' "$tempDir/Packages" \
-            && echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list \
-            && apt-get -o Acquire::GzipIndexes=false update \
-            ;; \
-    esac \
-    \
     && apt-get install --no-install-recommends --no-install-suggests -y \
-                        $nginxPackages \
+                        nginx \
                         gettext-base \
                         curl \
     && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
@@ -83,7 +41,7 @@ COPY setup/igv.dir ./
 COPY setup/default.conf.template /etc/nginx/templates/
 COPY setup/supervisord.conf /etc/supervisord.conf
 COPY setup/entrypoint.sh /entrypoint.sh
-COPY setup/entrypoint.d/ /entrypoint.d
+COPY setup/entrypoint.d /entrypoint.d
 RUN set -eux \
     && chmod +x /entrypoint.sh \
     && chmod +x /entrypoint.d/*.sh

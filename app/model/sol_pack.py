@@ -70,6 +70,8 @@ class SolutionPack:
         if pack_name not in cls.sPacks:
             logging.warning("Unregistered pack name: " + pack_name)
             pack_name = None
+        if pack_name is None:
+            return []
         return cls.sPacks[pack_name]
 
     #===============================================

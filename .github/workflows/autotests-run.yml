@@ -29,16 +29,22 @@ jobs:
         working-directory: ./api_tests
         
       - name: Local modules install
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         run: pipenv install
         working-directory: ./api_tests
         
       - name: Run tests
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         run: pipenv run tests_parallel_cucumberjson_report
         working-directory: ./api_tests
         
       - name: Send request
-        if: ${{ always() }}
+        if: ${{ success() || failure() }}
         run: pipenv run send_report
         working-directory: ./api_tests
+        
+      - name: Delete auto datasets request
+        if: ${{ success() || failure() }}
+        run: pipenv run delete_auto_datasets_hook
+        working-directory: ./api_tests
+        continue-on-error: true

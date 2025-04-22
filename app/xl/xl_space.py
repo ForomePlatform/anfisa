@@ -98,6 +98,10 @@ class XL_EvalSpace(EvalSpace):
             return cond.negative()
         return cond
 
+    def makeRecNoCond(self, rec_no):
+        return self.makeNumericCond(
+            self.mOrdRUnit, min_val=rec_no, max_val=rec_no)
+
     def evalTotalCounts(self, condition = None):
         if condition is None:
             return self.getTotalCounts()
@@ -119,26 +123,6 @@ class XL_EvalSpace(EvalSpace):
         ret = self.mDruidAgent.call("query", query)
         assert len(ret) == 1
         return [ret[0]["result"]["count"]]
-
-    def _evalRecSeq(self, condition, expect_count):
-        if condition is None:
-            cond_repr = None
-        else:
-            cond_repr = condition.getDruidRepr()
-            if cond_repr is False:
-                return []
-        query = {
-            "queryType": "search",
-            "dataSource": self.mDruidAgent.normDataSetName(self.getName()),
-            "granularity": self.mDruidAgent.GRANULARITY,
-            "searchDimensions": ["_ord"],
-            "limit": expect_count + 5,
-            "intervals": [self.mDruidAgent.INTERVAL]}
-        if cond_repr is not None:
-            query["filter"] = cond_repr
-        ret = self.mDruidAgent.call("query", query)
-        assert len(ret) == 1
-        return [int(it["value"]) for it in ret[0]["result"]]
 
     def evalRecSeq(self, condition, expect_count):
         if condition is None:

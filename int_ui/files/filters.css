@@ -236,3 +236,23 @@ div#export-result {
 span#export-result.problems {
     color: red;
 }
+
+div#cur-cond-variety {
+    font-size: 12px;
+    cursor: pointer;
+    font-style: italic;
+    margin-top: 20px;
+    white-space: normal;
+    border: 1px solid #A0A0FF;
+    padding: 5px;
+    text-align: center;
+}
+
+div#cur-cond-enum-ctrl {
+    width: 80px;
+    min-width: 80px;
+    vertical-align: top;
+    overflow: hidden;
+    margin: 10px 5px;
+    padding: 10px 5px;
+}

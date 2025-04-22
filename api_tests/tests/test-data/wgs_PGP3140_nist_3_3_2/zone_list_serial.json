@@ -1,0 +1,18 @@
+[
+	{
+		"zone": "Symbol",
+		"title": "Gene"
+	},
+	{
+		"zone": "Gene_Lists",
+		"title": "Gene List"
+	},
+	{
+		"zone": "Has_Variant",
+		"title": "Sample"
+	},
+	{
+		"zone": "_tags",
+		"title": "Tag"
+	}
+]

@@ -26,7 +26,7 @@ from .colgrp import ColGroupsH
 class AspectH:
     def __init__(self, name, title, source, field = None,
             attrs = None, ignored = False, col_groups = None,
-            mode = "dict"):
+            mode = "dict", view_kind = "norm"):
         self.mName     = name
         self.mTitle    = title
         self.mSource   = source
@@ -35,11 +35,11 @@ class AspectH:
         self.mIgnored  = ignored
         self.mColGroups = col_groups
         self.mMode      = mode
+        self.mViewKind  = view_kind
         self.mColumnMarkupF = None
         self.mMaster = None
-        assert self.mSource in ("_view", "__data"), (
-            "For aspect " + name + "missing source: " + self.mSource)
 
+        assert self.mMode in ("dict", "string")
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []
         if attrs is not None:
@@ -108,6 +108,7 @@ class AspectH:
             "source": self.mSource,
             "ignored": self.mIgnored,
             "mode": self.mMode,
+            "vkind": self.mViewKind,
             "attrs": [attr_h.dump() for attr_h in self.mAttrs]}
         if self.mField is not None:
             ret["field"] = self.mField
@@ -122,18 +123,21 @@ class AspectH:
             attrs = [AttrH.load(it) for it in data["attrs"]],
             ignored = data["ignored"],
             col_groups = ColGroupsH.load(data.get("col_groups")),
-            mode = data["mode"])
+            mode = data["mode"],
+            view_kind = data.get("vkind",
+                "tech" if data["source"] == "__data" else "norm"))
 
     #===============================================
     def getViewRepr(self, rec_data, view_context = None):
         ret_handle = {
             "name": self.mName,
             "title": self.mTitle,
-            "kind": {"_view": "norm", "__data": "tech"}[self.mSource]}
-        if self.mName == "input":
+            "kind": self.mViewKind}
+        if self.mMode == "string":
             ret_handle["type"] = "pre"
-            if "input" in rec_data["__data"]:
-                ret_handle["content"] = vcfRepr(rec_data["__data"]["input"])
+            if self.mName in rec_data[self.mSource]:
+                ret_handle["content"] = vcfRepr(
+                    rec_data[self.mSource][self.mName])
             return ret_handle
         ret_handle["type"] = "table"
         ret_handle["parcontrol"] = None

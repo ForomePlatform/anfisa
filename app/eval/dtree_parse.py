@@ -8,7 +8,7 @@
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
 #  You may obtain a copy of the License at
-#
+#`
 #        http://www.apache.org/licenses/LICENSE-2.0
 #
 #  Unless required by applicable law or agreed to in writing, software
@@ -22,7 +22,7 @@ import sys, ast, json
 from hashlib import md5
 
 from forome_tools.log_err import logException
-from .condition import ConditionMaker
+from .condition import ConditionMaker, condDataUnits
 from .code_works import normalizeCode
 from .code_parse import parseCodeByPortions
 #===============================================
@@ -39,6 +39,14 @@ class TreeFragment:
         self.mDecision = decision
         self.mCondAtoms = cond_atoms if cond_atoms is not None else []
         self.mLabel = label
+        self.mMetaCorrect = None
+        self.mMetaSetList = None
+        self.mMetaErr = None
+
+    def setMetaInfo(self, meta_correct, meta_set_list, meta_err):
+        self.mMetaCorrect = meta_correct
+        self.mMetaSetList = meta_set_list
+        self.mMetaErr = meta_err
 
     def setLineDiap(self, base_diap, full_diap):
         self.mBaseLineDiap = base_diap
@@ -70,6 +78,12 @@ class TreeFragment:
 
     def getCondAtoms(self):
         return self.mCondAtoms
+
+    def getMetaInfo(self):
+        return self.mMetaCorrect, self.mMetaSetList
+
+    def getMetaErr(self):
+        return self.mMetaErr
 
     def _getAtom(self, cond_data, is_optional = False):
         for atom_info in self.mCondAtoms:
@@ -110,21 +124,33 @@ class ParsedDTree:
         self.mEvalSpace = eval_space
         self.mFragments = []
         self.mCode = normalizeCode(dtree_code)
-        self.mDummyLinesReg = set()
+        self.mCommentLinesReg = set()
         self.mLabels = dict()
         self.mFirstError = None
         code_lines = self.mCode.splitlines()
 
-        for parsed_d, err_info, line_diap in parseCodeByPortions(
-                code_lines, self.mDummyLinesReg):
+        for parsed_d, err_info, line_diap, meta_a in parseCodeByPortions(
+                code_lines, self.mCommentLinesReg):
             fragments = []
-            if parsed_d is None or len(parsed_d.body) != 1:
-                err_info = ("Improper instruction", line_diap[0], 0)
+            instr_d = None
+
+            if (err_info is None and parsed_d is not None
+                    and len(parsed_d.body) >= 1):
+                instr_d = parsed_d.body[-1]
+                for idx in range(0, len(parsed_d.body) - 1):
+                    mcomment_d = parsed_d.body[idx]
+                    if (not isinstance(mcomment_d, ast.Expr) or
+                            not isinstance(mcomment_d.value, ast.Constant) or
+                            not isinstance(mcomment_d.value.value, str)):
+                        instr_d = None
+                        break
+                if instr_d is None:
+                    err_info = ("Improper instruction", line_diap[0], 0)
+
             if err_info is None:
                 self.mError = None
                 self.mCurLineDiap = line_diap
                 try:
-                    instr_d = parsed_d.body[0]
                     if isinstance(instr_d, ast.Return):
                         fragments.append(TreeFragment(0, "Return", line_diap,
                             decision = self.getReturnValue(instr_d)))
@@ -139,9 +165,18 @@ class ParsedDTree:
                             "Instructon must be of if-type")
                 except Exception as err:
                     if self.mError is None:
-                        logException("Exception on parse tree code")
+                        logException("Exception while parsing the script")
                         raise err
                     err_info = self.mError
+
+            if err_info is None:
+                if isinstance(instr_d, ast.If):
+                    self._checkMetaAnnotation(fragments[0], meta_a)
+                elif meta_a is not None:
+                    err_info = (
+                        "Meta annotation should be set only for if-type",
+                        meta_a[0][1][0], meta_a[0][1][1])
+
             if err_info is not None:
                 fragments = [TreeFragment(0, "Error", line_diap,
                     err_info = err_info)]
@@ -193,8 +228,8 @@ class ParsedDTree:
     def getHashCode(self):
         return self.mHashCode
 
-    def isLineIsDummy(self, line_no):
-        return line_no in self.mDummyLinesReg
+    def isLineIsComment(self, line_no):
+        return line_no in self.mCommentLinesReg
 
     def errorIt(self, it, msg_text):
         self.mError = (msg_text,
@@ -552,6 +587,54 @@ class ParsedDTree:
         self.errorIt(it, "Incorrect data format")
         return None
 
+    #===============================================
+    def _checkMetaAnnotation(self, fragment, meta_annotations):
+        if self.mEvalSpace is None:
+            return
+        meta_correct = None
+
+        unit_names = condDataUnits(fragment.getCondData())
+        for name in unit_names:
+            unit_h = self.mEvalSpace.getUnit(name)
+            u_classes = unit_h.getInfo()["classes"]
+            if meta_correct is None:
+                meta_correct = [set() for _ in u_classes]
+            for idx, f_v_idx in enumerate(u_classes):
+                meta_correct[idx].add(f_v_idx)
+
+        meta_set_list, meta_err = None, None
+        bad_values, bad_annotations = [], []
+        bad_loc = None
+        if meta_annotations is not None:
+            meta_set_list = []
+            for meta_idxs, loc, meta_text in meta_annotations:
+                f_idx, f_v_idx = meta_idxs
+                meta_set_list.append([meta_text, f_idx, f_v_idx])
+                if f_v_idx is not None and f_v_idx in meta_correct[f_idx]:
+                    continue
+                if f_v_idx is None:
+                    bad_values.append(meta_text)
+                else:
+                    bad_annotations.append(meta_text)
+                if bad_loc is None:
+                    bad_loc = loc
+
+        if bad_loc is not None:
+            if len(bad_values) == 1:
+                msg_txt = "Wrong meta annotation value: " + bad_values[0]
+            elif len(bad_values) > 1:
+                count = len(bad_values)
+                msg_txt = (f"Wrong meta annotation values ({count}): " +
+                    ",".join(bad_values))
+            elif len(bad_annotations) == 1:
+                msg_txt = "Annotation does not match: " + bad_annotations[0]
+            else:
+                cnt = len(bad_annotations)
+                msg_txt = (f"Annotations({cnt}) do not match: " +
+                    ", ".join(bad_annotations))
+            meta_err = (msg_txt, loc[0], loc[1])
+        fragment.setMetaInfo([sorted(f_v_idxs) for f_v_idxs in meta_correct],
+            meta_set_list, meta_err)
 
 #===============================================
 if __name__ == '__main__':

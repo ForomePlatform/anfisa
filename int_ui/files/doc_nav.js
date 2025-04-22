@@ -39,9 +39,9 @@ function initReportPage(ds_name, ds_kind, common_title){
 
 function arrangeControls() {
     document.getElementById("right").style.width = 
-        document.getElementById("all").style.width - 255;
+        Math.max(window.innerWidth - 255, 30);
     document.getElementById("doc-content").style.height = 
-        document.getElementById("all").style.height - 55;
+        Math.max(window.innerHeight - 70, 30) + "px";
 }
 
 function setupDocList(info) {

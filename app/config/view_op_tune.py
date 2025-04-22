@@ -19,7 +19,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from xml.sax.saxutils import escape
+from html import escape
 from bitarray import bitarray
 
 from app.view.attr import AttrH

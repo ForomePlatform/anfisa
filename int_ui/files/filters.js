@@ -585,8 +585,7 @@ var sFiltersH = {
                     this.mEvalProblemRubrics.push(this.mAllRubrics[idx]);
             }
         }
-        if (prev_all_list != JSON.stringify(this.mAllNames))
-            onFilterListChange();
+        onFilterListChange();
         return this.mAllNames;
     },
     

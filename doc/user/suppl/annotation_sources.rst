@@ -1,9 +1,11 @@
+.. _annotation_sources:
+
 ******************
 Annotation Sources
 ******************
 
 As a warehouse, AnFiSA stores annotations of single nucleotide variants (SNP),
-insertions and deletions, copy number variantions (CNV) and structural variations (SV)
+insertions and deletions, copy number variantions (CNV), and structural variations (SV)
 in the human genome that are used to prioritize candidate pathogenic variants in an affected proband.
 Some of the annotations reflect technical information such as provenance and confidence information
 about the specific call (call annotations).
@@ -15,20 +17,19 @@ from different public and proprietary sources.
 Brief description of annotation sources
 =======================================
 
-AnFiSA relies on dbNSFP gnomAD, ENSEMBLE Variant Effect Predictor (VEP)
-and NCBI resources (e.g., ClinVar, MedGen and PubMed), OMIM, SpliceAI and HGMD as main annotation sources.
-Collectively, these sources provide information on phenotypic effects of genes and individual variants,
+AnFiSA relies on dbNSFP gnomAD, ENSEMBLE Variant Effect Predictor (VEP),
+and NCBI resources (e.g., ClinVar, MedGen, and PubMed), OMIM, SpliceAI, and HGMD as main annotation sources.
+Collectively, these sources provide information on the phenotypic effects of genes and individual variants,
 allele frequencies, functional effect predictors (e.g., SIFT, PolyPhen),
-conservation scores (e.g. PhastCons and GERP).
+and conservation scores (e.g. PhastCons and GERP).
+
 For ClinVar, in addition to the usual data for each variant including clinical significance,
-stars, review status, conflicts, etc., the user has an option to select a set of trusted submitters,
+stars, review status, conflicts, etc., the user has the option to select a set of trusted submitters,
 in which case the clinical significance assigned by them will be provided as a separate category.
 By default, AnFiSA includes Laboratory of Molecular Medicine (LMM),
-GeneDx and Invitae as trusted sources by our team, though designation as trusted can be customized.
+GeneDx, and Invitae as trusted sources by our team, though designation as trusted can be customized.
 
-
-
-Here is the list of sources used in annotation process in Anfisa System
+Here is the list of sources used in annotation process in AnFiSA system.
 
 Assemblies
 ==========

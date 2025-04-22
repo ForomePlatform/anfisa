@@ -1,5 +1,5 @@
 """
-This module contains Adm_drop_ds requests
+This module contains AdmUpdate requests
 """
 
 from lib.api.api_client import ApiRequest
@@ -10,7 +10,4 @@ class AdmUpdate:
 
     @staticmethod
     def post():
-        response = apiRequest.request()
-        print('responseCode:' + str(response.status_code))
-        print('responseBody:', response.text)
-        return response
+        return apiRequest.request()
