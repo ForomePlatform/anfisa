@@ -165,7 +165,7 @@ class ParsedDTree:
                             "Instructon must be of if-type")
                 except Exception as err:
                     if self.mError is None:
-                        logException("Exception on parse tree code")
+                        logException("Exception while parsing the script")
                         raise err
                     err_info = self.mError
 

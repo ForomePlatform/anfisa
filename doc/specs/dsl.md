@@ -7,6 +7,7 @@
 - [Annotation classification](#annotation-classification)
 - [Examples of Metapredicates](#examples-of-metapredicates)
 - [How to use Statement Validation](#how-to-use-statement-validation)
+- [Experimenting with Meta-predicates](#experimenting-with-meta-predicates)
 
 <!-- tocstop -->
 
@@ -349,10 +350,16 @@ its scale is `gene`, not `variant`.
 The purpose of statement validation is to ensure that record classification
 follows some predefined rules. For example, for variant classification a rule
 might say that a variant can only be included in the candidate set based
-on clinical evidence. Metapredicates allow us to validate that this rule is
+on clinical evidence. Meta-predicates allow us to validate that this rule is
 indeed followed. 
 
 For every variant included in the candidate set we can show what kind 
 of evidence served as foundation for the inclusion. For every excluded
 variant we can show the reason for exclusion.
 
+## Experimenting with Meta-predicates
+
+Please see the following
+[mini-tutorial](../tutorial/using-meta-predicates.md)
+
+for some examples.
