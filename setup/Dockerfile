@@ -1,8 +1,8 @@
 # Replaced   /anfisa/anfisa/setup --> /anfisa/anfisa because deploy.sh (line 54) does: cp setup/*  $WORKDIR/
 ## To build:
 ## In the Repository root:
-##  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa:0.8.2 --load -f setup/Dockerfile .
-## Front: DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa-react-client:0.11.5 --load .
+##  DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa:0.8.3 --load -f setup/Dockerfile .
+## Front: DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker buildx build  --no-cache --tag forome/anfisa-react-client:0.11.7 --load .
 ## docker run --rm -p 9081:80 --env-file .env.backend.dev --name anfisa forome/anfisa:0.8.2
 
 FROM python:3.10-slim
