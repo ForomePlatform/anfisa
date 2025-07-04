@@ -36,18 +36,18 @@ fi
 [ ! -d "logs" ] && mkdir logs
 [ ! -d "vault" ] && mkdir vault
 
-rm vault/*
+rm -r vault/*
 if [ ! -d data/docs ] ; then
   cd data || exit
   rm -r *
-  curl -fsSLO https://zenodo.org/records/11496131/files/pgp3140_wgs_hlpanel.zip
+  curl -O -L https://zenodo.org/records/11496131/files/pgp3140_wgs_hlpanel.zip
   unzip pgp3140_wgs_hlpanel.zip
   cd ..
 fi
 
 if [ ! -f data/gene_db.js ] ; then
   cd data || exit
-  curl -fsSLO https://zenodo.org/records/11496131/files/gene_db.zip
+  curl -O -L https://zenodo.org/records/11496131/files/gene_db.zip
   unzip gene_db.zip
   cd ..
 fi
