@@ -266,6 +266,7 @@ class DTreeEval(Evaluation, CaseStory):
         Evaluation.__init__(self, "dtree", eval_space, parsed.getHashCode(),
             name, rubric, updated_time, updated_from)
         CaseStory.__init__(self)
+        self.mParsed = parsed
         self.mCode = parsed.getTreeCode()
         self.mPointList = None
         self.mFragments = parsed.getFragments()
@@ -368,6 +369,9 @@ class DTreeEval(Evaluation, CaseStory):
 
     def getCode(self):
         return self.mCode
+
+    def getParsed(self):
+        return self.mParsed
 
     def iterPoints(self):
         return iter(self.mPointList)

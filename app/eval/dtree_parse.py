@@ -96,6 +96,20 @@ class TreeFragment:
     def _setAtomError(self, cond_data, err_msg):
         self._getAtom(cond_data).setError(err_msg)
 
+    def getCorrectMetaAnnotations(self,  eval_space):
+        if self.mType != "If":
+            return None
+        meta_correct = None
+        unit_names = condDataUnits(self.getCondData())
+        for name in unit_names:
+            unit_h = eval_space.getUnit(name)
+            u_classes = unit_h.getInfo()["classes"]
+            if meta_correct is None:
+                meta_correct = [set() for _ in u_classes]
+            for idx, f_v_idx in enumerate(u_classes):
+                meta_correct[idx].add(f_v_idx)
+        return meta_correct
+
 #===============================================
 class CondAtomInfo:
     def __init__(self, cond_data, location, warn_msg = None):
@@ -591,16 +605,7 @@ class ParsedDTree:
     def _checkMetaAnnotation(self, fragment, meta_annotations):
         if self.mEvalSpace is None:
             return
-        meta_correct = None
-
-        unit_names = condDataUnits(fragment.getCondData())
-        for name in unit_names:
-            unit_h = self.mEvalSpace.getUnit(name)
-            u_classes = unit_h.getInfo()["classes"]
-            if meta_correct is None:
-                meta_correct = [set() for _ in u_classes]
-            for idx, f_v_idx in enumerate(u_classes):
-                meta_correct[idx].add(f_v_idx)
+        meta_correct = fragment.getCorrectMetaAnnotations(self.mEvalSpace)
 
         meta_set_list, meta_err = None, None
         bad_values, bad_annotations = [], []

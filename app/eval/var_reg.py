@@ -39,6 +39,7 @@ class VarFacetClassifier:
         assert idx == len(self.mFacetMaps) + 1, (
             "Facets should be declared one by one")
 
+        val_names = []
         val_titles = []
         facet_map = dict()
         facet_all_map = dict()
@@ -47,11 +48,13 @@ class VarFacetClassifier:
             facet_map[name] = len(val_titles)
             facet_all_map[name] = len(val_titles)
             facet_all_map[title] = len(val_titles)
+            val_names.append(name)
             val_titles.append(title)
 
         self.mDescr.append({
             "name": facet_name,
             "title": facet_title,
+            "names": val_names,
             "values": val_titles})
         self.mFacetMaps.append(facet_map)
         self.mFacetAllNamesMap.append(facet_all_map)

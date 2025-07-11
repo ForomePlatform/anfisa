@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 
+from app.config.variables import anfisaVariables
 from .condition import ConditionMaker, reduceCondData
 from .code_repr import formatIfCode
 
@@ -136,3 +137,33 @@ def modifyDTreeCode(parsed, instr):
         replace_lines.append(add_line)
     code_lines[line_from - 1: line_to - 1] = replace_lines + more_lines
     return "\n".join(code_lines)
+
+#===============================================
+def annotateDTreeCode(parsed):
+    code_lines = parsed.getTreeCode().splitlines()
+    res_code_lines = []
+
+    facets_descr = anfisaVariables.getClassificationDescr()
+    for frag_h in parsed.getFragments():
+        line_from, line_to = frag_h.getLineDiap()
+        correct_meta = frag_h.getCorrectMetaAnnotations(parsed.getEvalSpace())
+        if correct_meta is None:
+            res_code_lines += code_lines[line_from - 1:line_to - 1]
+            continue
+        for line_no in range(line_from, line_to):
+            if parsed.isLineIsComment(line_no):
+                if code_lines[line_no-1].strip().startswith('#'):
+                    res_code_lines.append(code_lines[line_no-1])
+                    continue
+            else:
+                if correct_meta is not None:
+                    res_code_lines.append('"""')
+                    for f_idx, f_idxs in enumerate(correct_meta):
+                        fname = facets_descr[f_idx]["name"]
+                        for fvalue in sorted(f_idxs):
+                            vname = facets_descr[f_idx]["names"][fvalue]
+                            res_code_lines.append(f'@{fname}({vname})')
+                    res_code_lines.append('"""')
+                    correct_meta = None
+                res_code_lines.append(code_lines[line_no - 1])
+    return "\n".join(res_code_lines)

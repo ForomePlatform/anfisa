@@ -952,6 +952,7 @@ var sCodeEditH = {
     mButtonShow: null,
     mButtonDrop: null,
     mButtonSave: null,
+    mButtonAnnotate: null,
     mSpanPos: null,
     mSpanError: null,
     mAreaContent: null,
@@ -964,6 +965,7 @@ var sCodeEditH = {
         this.mButtonShow = document.getElementById("code-edit-show");
         this.mButtonDrop = document.getElementById("code-edit-drop");
         this.mButtonSave = document.getElementById("code-edit-save");
+        this.mButtonAnnotate = document.getElementById("code-edit-annotate");
         this.mSpanPos = document.getElementById("code-edit-pos");
         this.mSpanError = document.getElementById("code-edit-error");
         this.mAreaContent = document.getElementById("code-edit-content");
@@ -978,6 +980,7 @@ var sCodeEditH = {
         this.mErrorPos = null;
         this.mWaiting = false;
         this.mNeedsSave = false;
+        this.mButtonAnnotate.disabled = false;
         if (this.mTimeH != null) {
             clearInterval(this.mTimeH);
             this.mTimeH = null;
@@ -1030,12 +1033,30 @@ var sCodeEditH = {
             function(info) {sCodeEditH._validation(info);});
     },
     
+    annotate: function() {
+        if (this.mCurError != false && this.mCurError != null ) {
+            this.checkControls();
+            return;
+        }
+        clearInterval(this.mTimeH);
+        this.mCurContent = this.mAreaContent.value;
+        this.mTimeH = null;
+        this.mCurError = null;
+        this.mCurWarnings = null;
+        this.mErrorPos = null;
+        this.mWaiting = true;
+        ajaxCall("dtree_check", "ds=" + sDSName + "&annotate=true&code=" +
+            encodeURIComponent(this.mCurContent), 
+            function(info) {sCodeEditH._validation(info);});        
+    },
+    
     _validation: function(info) {
         this.mCurContent = info["code"];
         this.mWaiting = false;
         this.mCurError = null;
         this.mCurWarnings = null;
         this.mErrorPos = null;
+        this.mButtonAnnotate.disabled = true;
         if (info["error"]) {
             this.mCurError = "At line " + info["line"] + 
                 " pos " + (info["pos"] + 1) + ": " +
@@ -1051,7 +1072,15 @@ var sCodeEditH = {
                 "/" + (w_info["pos"] + 1) + ": " +
                 w_info["error"];
             this.mErrorPos = [w_info["line"], w_info["pos"]];;
+        } else if (info["annotated-code"] != undefined) 
+        {
+            this.mCurContent = info["annotated-code"];
+            this.mAreaContent.value = this.mCurContent;
+        } else
+        {
+            this.mButtonAnnotate.disabled = false;
         }
+            
         this.checkControls();
         if (this.mNeedsSave) {
             this.mNeedsSave = false;

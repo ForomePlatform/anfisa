@@ -32,7 +32,7 @@ from app.eval.filter import FilterEval
 from app.eval.dtree import DTreeEval
 from app.eval.code_works import cmpTrees
 from app.eval.dtree_parse import ParsedDTree
-from app.eval.dtree_mod import modifyDTreeCode
+from app.eval.dtree_mod import modifyDTreeCode, annotateDTreeCode
 from app.prepare.sec_ws import SecondaryWsCreation
 from .ds_disk import DataDiskStorage
 from .ds_favor import FavorStorage
@@ -615,6 +615,9 @@ class DataSet(SolutionBroker):
         ret_handle = {"code": dtree_h.getCode()}
         if dtree_h.getErrorInfo() is not None:
             ret_handle.update(dtree_h.getErrorInfo())
+        elif "annotate" in rq_args:
+            ret_handle["annotated-code"] = annotateDTreeCode(
+                dtree_h.getParsed())
         return ret_handle
 
     #===============================================

@@ -28,6 +28,8 @@ def dirPage(output, common_title, html_base, ws_pub_url, doc_sets):
     doc_repr_seq = []
     target = common_title + "-DOC"
     for doc_set in doc_sets:
+        if not doc_set.isActive():
+            continue
         doc_url = doc_set.getUrl()
         doc_title = escape(doc_set.getTitle())
         doc_repr_seq.append(

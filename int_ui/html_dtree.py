@@ -266,6 +266,9 @@ def _formEditCodeDiv(output):
             </button>
             <span id="code-edit-error"
                 onclick="sCodeEditH.posError();"></span>
+            <button id="code-edit-annotate" onclick="sCodeEditH.annotate();">
+                Annotate all
+            </button>
         </div>
         <div id="code-edit-main">
             <textarea id="code-edit-content"

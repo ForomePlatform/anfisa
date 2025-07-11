@@ -169,7 +169,7 @@ function showUploadArchive() {
         'Archive: <input id="up-archive-file" type="file" accept=".tgz" onchange="checkUploadPar()"/><br/>' +
         'Dataset name: <input id="up-archive-name" type="input" onchange="checkUploadPar()"/><br/>' +
         '<button id="up-archive-do" class="popup" onclick="doUploadArchive();"' +
-        ' disabled>Upload</button>';
+        ' disabled>Upload</button>&nbsp;<button class="popup" onclick="relaxView();">Cancel</button>';
     res_el = document.getElementById("upload-works");
     res_el.innerHTML = res_content;
     sViewH.popupOn(res_el);
