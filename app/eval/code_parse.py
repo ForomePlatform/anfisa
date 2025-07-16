@@ -132,8 +132,11 @@ def _validateInstrSplit(instr_d, lines, start_line_no, on_top = False):
     return None
 
 #===============================================
+# sMetaPattern = re.compile(
+#     r'^\s*@(\w+)\s*\(\s*((\w+)|(["]([\w ]+)["]))\s*\)\s*$')
+
 sMetaPattern = re.compile(
-    r'^\s*@(\w+)\s*\(\s*((\w+)|(["]([\w ]+)["]))\s*\)\s*$')
+    r'^\s*@(\w+)\s*\(\s*((\w+)|(["]([\w ,\\.\\-]+)["]))\s*\)\s*$')
 
 def _parseMetaAnnotations(code_lines, comment_lines_reg, diap):
     ret = None

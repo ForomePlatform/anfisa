@@ -161,8 +161,9 @@ def annotateDTreeCode(parsed):
                     for f_idx, f_idxs in enumerate(correct_meta):
                         fname = facets_descr[f_idx]["name"]
                         for fvalue in sorted(f_idxs):
-                            vname = facets_descr[f_idx]["names"][fvalue]
-                            res_code_lines.append(f'@{fname}({vname})')
+                            vtitle: str = facets_descr[f_idx]["values"][fvalue]
+                            if vtitle.upper() not in ["N/A"]:
+                                res_code_lines.append(f'@{fname}("{vtitle}")')
                     res_code_lines.append('"""')
                     correct_meta = None
                 res_code_lines.append(code_lines[line_no - 1])

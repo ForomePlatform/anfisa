@@ -30,7 +30,6 @@ RUN set -x \
 WORKDIR /anfisa/anfisa
 COPY . ./
 RUN set -x \
-    && pip3 install --no-cache-dir -e git+https://github.com/ForomePlatform/forome_misc_tools.git#egg=forome-tools \
     && pip3 install --no-cache-dir -r requirements.txt \
     && pip3 install --no-cache-dir supervisor
 
