@@ -23,15 +23,9 @@
 from app.model.inheritance import InheritanceUnit, CustomInheritanceUnit
 from app.model.comp_hets import CompHetsUnit, CompoundRequestUnit
 from app.model.region_func import RegionFuncUnit
-from . import getDataConfigSchema
 
 #===============================================
-def tuneUnits(ds_h):
-    data_schema = getDataConfigSchema(ds_h.getDataSchema())
-    if data_schema is not None:
-        if data_schema.tuneUnits(ds_h):
-            return
-
+def tuneUnits_Case(ds_h):
     RegionFuncUnit.makeIt(ds_h,
         {
             "name":     "GeneRegion",
@@ -49,13 +43,8 @@ def tuneUnits(ds_h):
     if ds_h.testRequirements({"WS"}):
         zyg_support.regGeneApprox("transcript",
             "Transcript_id", "shared transcript")
-        #TRF: temporary fix
-        if ds_h.getEvalSpace().getUnit("Transctript_Gene") is not None:
-            zyg_support.regGeneApprox("gene",
-                "Transctript_Gene", "shared gene")
-        else:
-            zyg_support.regGeneApprox("gene",
-                "Transcript_Gene", "shared gene")
+        zyg_support.regGeneApprox("gene",
+            "Transcript_Gene", "shared gene")
     zyg_support.regGeneApprox("rough",
         "Symbol", "non-intersecting transcripts")
 

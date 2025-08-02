@@ -913,12 +913,17 @@ var sEvalCtrlH = {
         return this.mUnitMap[this.mCurUnit];
     },
 
-    getCurUnitTitle: function() {
+    getCurUnitTitleRepr: function() {
         if (this.mCurUnit == null)
             return "?";
+        var unit_repr = this.mCurUnit;
         if (this.mUnitMap[this.mCurUnit]["kind"] == "func")
-            return this.mCurUnit + "()";
-        return this.mCurUnit;
+            unit_repr += "()";
+        if (this.mUnitMap[this.mCurUnit]["var-doc-ref"])
+            unit_repr += ' &nbsp;&nbsp;<a href="' +
+                this.mUnitMap[this.mCurUnit]["var-doc-ref"] +
+                '" target="' + sCommonTitle + '-DOC">&#x1F6C8;</a></span>';
+        return unit_repr;
     },
     
     getUnitStat: function(unit_name) {
@@ -1183,7 +1188,7 @@ var sEvalCtrlH = {
         this.mVGroupsSeq = [];
         for (idx = 0; idx < this.mItems.length; idx++) {
             unit_stat = this.mItems[idx];
-            unit_name   = unit_stat["name"];
+            unit_name = unit_stat["name"];
             if (group_title != unit_stat["vgroup"] || unit_stat["vgroup"] == null) {
                 if (group_title != false) {
                     list_stat_rep.push('</div>');
@@ -1225,6 +1230,9 @@ var sEvalCtrlH = {
             if (unit_stat["title"]) 
                 list_stat_rep.push('<span class="stat-unit-title">' + 
                     unit_stat["title"] + '</span>');
+            if (unit_stat["var-doc-ref"])
+                list_stat_rep.push(' &nbsp;&nbsp;<a href="' + unit_stat["var-doc-ref"] +
+                '" target="' + sCommonTitle + '-DOC">&#x1F6C8;</a></span>');
             list_stat_rep.push('</div>')
             list_stat_rep.push('<div id="stat-data--' + 
                 unit_name + '" class="stat-unit-data">');

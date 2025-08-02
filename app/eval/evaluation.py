@@ -19,20 +19,15 @@
 #
 import abc
 import json
-from app.model.sol_support import SolutionBaseInfo
+from app.model.sol_item import SolItem
 from .visitor import EnumUnitConditionVisitor
 
 # ===============================================
 
-
-class Evaluation(SolutionBaseInfo):
-    def __init__(self, kind, eval_space, hash_code,
-                 name=None, rubric=None,
-                 updated_time=None, updated_from=None):
-        SolutionBaseInfo.__init__(self, kind, name, rubric,
-                                  updated_time, updated_from)
+class Evaluation(SolItem):
+    def __init__(self, eval_space, info):
+        SolItem.__init__(self, info.getDescr())
         self.mEvalSpace = eval_space
-        self.mHashCode = hash_code
         self.mPointNo = 0
         self.mLabels = dict()
         self.mErrors = dict()
@@ -40,9 +35,6 @@ class Evaluation(SolutionBaseInfo):
 
     def getEvalSpace(self):
         return self.mEvalSpace
-
-    def getHashCode(self):
-        return self.mHashCode
 
     def getLabelCondition(self, label, point_no):
         if label not in self.mLabels or self.mLabels[label] > point_no:
@@ -63,11 +55,6 @@ class Evaluation(SolutionBaseInfo):
 
     def getEvalStatus(self):
         return self.mEvalStatus
-
-    @abc.abstractmethod
-    def isActive(self):
-        assert False
-        return False
 
     @abc.abstractmethod
     def activate(self):

@@ -68,6 +68,8 @@ class AnfisaConfig:
 
         "ws.transcript.id": "Transcript_id",
 
+        "solution.pool.size":   30,
+
         "job.pool.size":    50,
         "job.pool.threads": 10,
         "job.pool.memlen":  100,

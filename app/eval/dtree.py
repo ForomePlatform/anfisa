@@ -21,11 +21,11 @@
 import logging, json
 
 from app.config.a_config import AnfisaConfig
-from app.model.sol_support import StdNameSupport
 from .evaluation import Evaluation
 from .dtree_parse import ParsedDTree
 from .code_works import HtmlPresentation
 from .condition import condDataUnits
+from app.model.sol_item import SolItem
 #===============================================
 class CaseStory:
     def __init__(self, parent = None, start = None):
@@ -133,7 +133,7 @@ class CheckPoint:
             return self.getStory().getMaster().getEvalSpace().getCondAll()
         return self.getPrevPoint()._accumulateConditions().negative()
 
-    def getInfo(self, code_lines):
+    def getPointInfo(self, code_lines):
         ret = {
             "kind": self.getPointKind(),
             "level": self.getLevel(),
@@ -260,26 +260,39 @@ class ConditionPoint(CheckPoint):
 
 #===============================================
 class DTreeEval(Evaluation, CaseStory):
-    def __init__(self, eval_space, dtree_code, name = None,
-            rubric = None, updated_time = None, updated_from = None):
-        parsed = ParsedDTree(eval_space, dtree_code)
-        Evaluation.__init__(self, "dtree", eval_space, parsed.getHashCode(),
-            name, rubric, updated_time, updated_from)
+
+    @staticmethod
+    def create(ds_h, dtree_code, activate_it=False):
+        info = SolItem.create("dtree", None, dtree_code)
+        if activate_it:
+            entry_h = ds_h.remindSolEntry(info)
+            if entry_h is not None:
+                entry_h.activate()
+                return entry_h
+        entry_h = DTreeEval(ds_h.getEvalSpace(), info)
+        if activate_it:
+            entry_h.activate()
+            ds_h.mindSolEntry(entry_h)
+        return entry_h
+
+    def __init__(self, eval_space, info):
+        Evaluation.__init__(self, eval_space, info)
         CaseStory.__init__(self)
-        self.mParsed = parsed
-        self.mCode = parsed.getTreeCode()
+        tree_code = info.getData()
+        self.mParsed = ParsedDTree(eval_space, tree_code)
+        self.mCode = self.mParsed.getTreeCode()
         self.mPointList = None
-        self.mFragments = parsed.getFragments()
+        self.mFragments = self.mParsed.getFragments()
         self.mFinalCondition = None
 
         self.mErrorInfo = None
 
-        if parsed.getError() is not None:
-            msg_text, lineno, offset = parsed.getError()
+        if self.mParsed.getError() is not None:
+            msg_text, lineno, offset = self.mParsed.getError()
             self.mErrorInfo = {
                 "line": lineno, "pos": offset, "error": msg_text}
-            logging.error(("Error in tree %s code: (%d:%d) %s\n" %
-                (name if name else "", lineno, offset, msg_text)))
+            logging.error(f"Error in tree {self.getName()} code: " +
+                f"({lineno}:{offset}) {msg_text}\n")
         else:
             warn_list = []
             for frag_h in self.mFragments:
@@ -292,16 +305,7 @@ class DTreeEval(Evaluation, CaseStory):
             if len(warn_list) > 0:
                 self.mErrorInfo = {"warnings": warn_list}
 
-    @staticmethod
-    def makeSolEntry(eval_space, info):
-        assert info["_tp"] == "dtree"
-        return DTreeEval(eval_space, info["data"],
-            name = StdNameSupport.normNm(info["name"], info.get("is_std")),
-            rubric = info.get("rubric"),
-            updated_time = info.get("time"),
-            updated_from = info.get("from"))
-
-    def isActive(self):
+    def isActivated(self):
         return self.mPointList is not None
 
     def activate(self):
@@ -413,7 +417,8 @@ class DTreeEval(Evaluation, CaseStory):
                 atom_err_dict[point.getPointNo()] = error_dict
         html_lines = self._decorCode(atom_seq)
         ret_handle = {
-            "points": [point.getInfo(html_lines) for point in self.mPointList],
+            "points": [point.getPointInfo(html_lines)
+                for point in self.mPointList],
             "cond-atoms": atom_dict,
             "labels": self.getLabelPoints(),
             "code": self.mCode,

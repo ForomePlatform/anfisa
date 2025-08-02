@@ -25,12 +25,9 @@ from datetime import datetime
 from forome_tools.job_pool import ExecutionTask
 from app.model.ds_disk import DataDiskStorageWriter
 from app.config.a_config import AnfisaConfig
-from app.config.flt_schema import defineFilterSchema
-from app.config.variables import anfisaVariables
-from app.prepare.prep_filters import FilterPrepareSetH
+from app.prepare.prep_filters import FiltersMaster
 from .html_report import reportDS
 
-_make_compiler_happy = defineFilterSchema
 #===============================================
 class SecondaryWsCreation(ExecutionTask):
     def __init__(self, ds_h, ws_name, eval_h, force_mode = False):
@@ -116,14 +113,13 @@ class SecondaryWsCreation(ExecutionTask):
 
         view_schema = deepcopy(self.mDS.getViewSchema())
         meta_rec = deepcopy(self.mDS.getDataInfo().get("meta"))
-        filter_set = FilterPrepareSetH(meta_rec, anfisaVariables,
-            "ws", derived_mode = True,
-            pre_flt_schema = self.mDS.getFltSchema())
+        filters_master = FiltersMaster(meta_rec, "ws", derived_mode = True,
+            pre_flt_schema = self.mDS.getFltModel())
 
         os.mkdir(ws_dir)
         logging.info("Fill dataset %s datafiles..." % self.mWSName)
 
-        with DataDiskStorageWriter(False, ws_dir, filter_set) as ws_out:
+        with DataDiskStorageWriter(False, ws_dir, filters_master) as ws_out:
             for _, rec_data in self.mDS.getRecStorage().iterRecords(
                     rec_no_seq):
                 ws_out.saveRecord(rec_data)
@@ -153,7 +149,7 @@ class SecondaryWsCreation(ExecutionTask):
             "name": self.mWSName,
             "kind": "ws",
             "view_schema": view_schema,
-            "flt_schema": filter_set.dump(),
+            "flt_schema": filters_master.dump(),
             "total": len(rec_no_seq),
             "total_items": self.mDS.getTotal(),
             "mongo": self.mWSName,

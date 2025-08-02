@@ -27,7 +27,6 @@ from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
 from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import setupSolutions
-from app.config.variables import anfisaVariables
 from app.model.dir_entry import DirDSEntry
 from app.model.data_vault import DataVault
 from app.model.mongo_db import MongoConnector
@@ -148,8 +147,7 @@ class UpdateApp:
         self.mMongoConn = MongoConnector(self.mConfig["mongo-db"],
             self.mConfig.get("mongo-host"), self.mConfig.get("mongo-port"))
         self.mDruidAgent = DruidAgent(self.mConfig)
-        self.mDataVault = DataVault(self, self.mVaultDir,
-            anfisaVariables, auto_mode = False)
+        self.mDataVault = DataVault(self, self.mVaultDir, auto_mode = False)
         self.mPlainReceiptMode = plain_receipt_mode
 
     def getMongoConnector(self):
@@ -204,10 +202,12 @@ class UpdateApp:
             if receipt["kind"] == "filter":
                 if not self.mPlainReceiptMode and receipt.get("filter-name"):
                     flt_name = receipt.get("filter-name")
-                    eval_h = base_ds.pickSolEntry("filter", flt_name)
-                    if eval_h is None:
+                    eval_info = base_ds.pickSolEntry("filter", flt_name)
+                    if eval_info is None:
                         logging.error("No named filter %s" % flt_name)
                         return ("NO-NAMED")
+                    eval_h = FilterEval(base_ds.getEvalSpace(),
+                        eval_info.getData(), eval_info.getInfo())
                 else:
                     eval_h = FilterEval(base_ds.getEvalSpace(),
                         receipt["conditions"])
@@ -216,10 +216,12 @@ class UpdateApp:
                     "Bad receipt kind: " + receipt["kind"])
                 if not self.mPlainReceiptMode and receipt.get("dtree-name"):
                     dtree_name = receipt.get("dtree-name")
-                    eval_h = base_ds.pickSolEntry("dtree", dtree_name)
-                    if eval_h is None:
+                    eval_info = base_ds.pickSolEntry("dtree", dtree_name)
+                    if eval_info is None:
                         logging.error("No named dtree: " + dtree_name)
                         return ("NO-NAMED")
+                    eval_h = DTreeEval(base_ds.getEvalSpace(),
+                        eval_info.getData(), eval_info.getInfo())
                 else:
                     eval_h = DTreeEval(base_ds.getEvalSpace(),
                         receipt["dtree-code"])

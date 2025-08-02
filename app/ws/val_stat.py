@@ -57,7 +57,7 @@ class NumDiapStat:
         if self.mGroupCount is not None:
             ret_handle["counts"].insert(0, self.mGroupCount)
         if h_builder is not None and h_builder.isOK():
-            ret_handle["histogram"] = h_builder.getInfo()
+            ret_handle["histogram"] = h_builder.getHistInfo()
 
 #===============================================
 class NumHistogramBuilder:
@@ -67,7 +67,8 @@ class NumHistogramBuilder:
     def __init__(self, v_min, v_max, count, unit_h,
             too_low_power = -15, num_bins = 10):
         self.mIntMode = (unit_h.getSubKind() == "int")
-        self.mLogMode = "log" in unit_h.getInfo().get("render-mode", "")
+        self.mLogMode = ("log" in
+            unit_h.getPresentationInfo().get("render-mode", ""))
 
         self.mInfo = None
         self.mIntervals = None
@@ -118,7 +119,7 @@ class NumHistogramBuilder:
     def isOK(self):
         return self.mInfo is not None
 
-    def getInfo(self):
+    def getHistInfo(self):
         return self.mInfo
 
     def getIntervals(self):

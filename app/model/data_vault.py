@@ -22,12 +22,12 @@ import sys, os, json, logging, traceback, re, shutil
 import typing, array
 from glob import glob
 from io import StringIO
-from copy import deepcopy
+
 from datetime import datetime
 from collections import defaultdict
 
 from .rest_api import RestAPI
-from .sol_env import SolutionEnv
+from .sol_repo import SolutionRepo
 from .genes_db import GenesDB
 from app.config.a_config import AnfisaConfig
 from app.ws.workspace import Workspace
@@ -35,21 +35,23 @@ from app.ws.ws_io import importWS
 from app.xl.xl_dataset import XLDataset
 from forome_tools.log_err import logException
 from forome_tools.sync_obj import SyncronizedObject
+from app.prepare.var_doc import VariablesDocHandler
 #===============================================
 class DataVault(SyncronizedObject):
-    def __init__(self, application, vault_dir, var_registry, auto_mode = True):
+    def __init__(self, application, vault_dir, auto_mode = True):
         SyncronizedObject.__init__(self)
         self.mApp = application
         self.mVaultDir = os.path.abspath(vault_dir)
-        self.mVarRegistry = var_registry
         self.mDataSets = dict()
-        self.mSolEnvDict = dict()
+        self.mSolRepoDict = dict()
         self.mScanModeLevel = 0
         self.mIntVersion = 0
         self.mIGVInfo = None
         self.mProblemDataFStats = dict()
         self.mIGV_FStat = None
         self.mGenesDB = GenesDB(self.mApp.getMongoConnector())
+        self.mVarDocH = None
+        self.mVarDocSet = None
 
         if not auto_mode:
             return
@@ -209,34 +211,14 @@ class DataVault(SyncronizedObject):
                 ret.append(ws_h)
         return sorted(ret, key = lambda ws_h: ws_h.getName())
 
-    def makeSolutionEnv(self, ds_h):
+    def connectSolutionRepo(self, ds_h):
         root_name = ds_h.getRootDSName()
         assert root_name, "No root DS?"
         with self:
-            if root_name not in self.mSolEnvDict:
-                self.mSolEnvDict[root_name] = SolutionEnv(
+            if root_name not in self.mSolRepoDict:
+                self.mSolRepoDict[root_name] = SolutionRepo(
                     self.mApp.getMongoConnector(), root_name)
-            return self.mSolEnvDict[root_name]
-
-    def getVariableInfo(self, var_name, unit_kind, sub_kind, mean):
-        var_kind, var_descr = self.mVarRegistry.getVarInfo(var_name)
-        assert unit_kind == var_kind, (
-            f"Variable kind conflict: {unit_kind}/{var_kind} for {var_name}")
-        var_info = deepcopy(var_descr)
-        if unit_kind == "enum" and var_info.get("render-mode") is None:
-            if mean == "variety":
-                var_info["render-mode"] = "tree-map"
-            elif sub_kind in {"status", "transcript-status"}:
-                var_info["render-mode"] = "pie"
-            else:
-                assert sub_kind in {"multi", "transcript-multiset",
-                    "transcript-panels", "transcript-variety"}, (
-                    "Wrong subkind: " + sub_kind)
-                var_info["render-mode"] = "bar"
-        return var_info
-
-    def getVarRegistry(self):
-        return self.mVarRegistry
+            return self.mSolRepoDict[root_name]
 
     def checkIGVSetup(self):
         igv_dir_fname = self.mApp.getOption("igv-dir")
@@ -288,6 +270,21 @@ class DataVault(SyncronizedObject):
                     logging.info(f"Drop dataset {ds_name} by rule '{pattern}'")
                 return True
         return False
+
+    #===============================================
+    def preBuildVariablesDocSet(self, doc_set_info):
+        assert self.mVarDocH is None
+        self.mVarDocH = VariablesDocHandler(doc_set_info)
+
+    def setVariablesDocSet(self, var_doc_set):
+        self.mVarDocSet = var_doc_set
+
+    def getVariableDocRef(self, var_name):
+        if self.mVarDocH is not None:
+            fname = self.mVarDocH.getDocRef(var_name)
+            if fname is not None and self.mVarDocSet is not None:
+                return self.mVarDocSet.getUrl(fname + ".html")
+        return None
 
     #===============================================
     @RestAPI.vault_request

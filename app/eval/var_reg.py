@@ -17,34 +17,47 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import logging
+import re
+
+
+from forome_tools.ident import checkIdentifier
+from forome_tools.yaml_supp import YProperty, YClass
 
 #===============================================
-class VarFacetClassifier:
-    def __init__(self):
+class FacetClassifier:
+    sVariantClass = YClass([
+        YProperty("id", required=True),
+        YProperty("name", required=True)
+        ])
+
+    sClass = YClass([
+        YProperty("facet", required=True),
+        YProperty("title", required=True),
+        YProperty("variants", sVariantClass,
+            is_seq=True, required=True)
+        ])
+
+    def __init__(self, facet_descr_seq):
         self.mDescr = []
         self.mFacetMaps = []
         self.mFacetAllNamesMap = []
-        self.mNames = set()
+        for facet_descr in facet_descr_seq:
+            self._loadFacet(facet_descr)
 
-    def getSize(self):
-        return len(self.mFacetMaps)
-
-    def _regName(self, name):
-        assert name not in self.mNames, (
-            f"Name {name} duplication in facet declaration")
-        self.mNames.add(name)
-
-    def declareFacet(self, idx, facet_name, facet_title, name_title_pairs):
-        assert idx == len(self.mFacetMaps) + 1, (
-            "Facets should be declared one by one")
-
+    def _loadFacet(self, facet_info):
         val_names = []
         val_titles = []
         facet_map = dict()
         facet_all_map = dict()
-        for name, title in name_title_pairs:
-            self._regName(name)
+        for variant_info in facet_info["variants"]:
+            name = variant_info["id"]
+            assert checkIdentifier(name, ext_mode=True), (
+                "Facet variant id is not an identifier: " + name)
+            title = variant_info["name"]
+            assert name not in facet_map, (
+                "Facet variant id duplication: " + name)
+            assert title not in facet_all_map, (
+                "Facet variant name duplication: " + title)
             facet_map[name] = len(val_titles)
             facet_all_map[name] = len(val_titles)
             facet_all_map[title] = len(val_titles)
@@ -52,12 +65,19 @@ class VarFacetClassifier:
             val_titles.append(title)
 
         self.mDescr.append({
-            "name": facet_name,
-            "title": facet_title,
+            "name": facet_info["facet"],
+            "title": facet_info["title"],
             "names": val_names,
             "values": val_titles})
         self.mFacetMaps.append(facet_map)
         self.mFacetAllNamesMap.append(facet_all_map)
+
+    def getSize(self):
+        return len(self.mFacetMaps)
+
+    def getYProperties(self):
+        return [YProperty(facet_info["name"])
+            for facet_info in self.mDescr]
 
     def mapFacetClassName(self, facet_idx, facet_name):
         assert facet_name in self.mFacetMaps[facet_idx], (
@@ -68,6 +88,17 @@ class VarFacetClassifier:
     def getDescr(self):
         return self.mDescr
 
+    def prepareFacetIdxSet(self, descr):
+        ret = []
+        for idx, facet_info in enumerate(self.mDescr):
+            val = descr.get(facet_info["name"])
+            if val is not None:
+                facet_idx = self.mapFacetClassName(idx, val)
+            else:
+                facet_idx = len(facet_info["names"]) - 1
+            ret.append(facet_idx)
+        return ret
+
     def checkMetaAnnotation(self, facet, fvalue):
         for idx, descr in enumerate(self.mDescr):
             if descr["name"] == facet:
@@ -76,106 +107,265 @@ class VarFacetClassifier:
 
 #===============================================
 class VarRegistry:
+    sListClass = YClass([
+        YProperty("list", required=True),
+        YProperty("values", is_seq=True, required=True)
+        ])
 
-    def __init__(self):
-        self.mFacetClassifier = VarFacetClassifier()
-        self.mVariables = dict()
-        self.mTemplates = []
-        self.mFixFunc = None
-        self.mFixedNames = set()
-        self.mCurFacets = [None, None, None]
+    sMapClass = YClass([
+        YProperty("map", required=True),
+        YProperty("values", dict, required=True)
+        ])
 
-    def setFixFunc(self, fix_func):
-        self.mFixFunc = fix_func
+    sConfigClass = YClass([
+        YProperty("facets", FacetClassifier.sClass,
+            is_seq=True, required=True),
+        YProperty("lists", sListClass, is_seq=True),
+        YProperty("maps", sMapClass, is_seq=True)
+        ])
 
-    def relax(self, target):
-        if len(self.mFixedNames) > 0:
-            logging.warning(f"Fixed var names for {target}: "
-                + " ".join(sorted(self.mFixedNames)))
-            self.mFixedNames = set()
+    def prepareGroupAttrClass(self):
+        attr_properties = [
+            YProperty("attribute", required=True),
+            YProperty("template-base"),
+            YProperty("panel"),
+            YProperty("title"),
+            YProperty("alt-names", is_seq=True),
+            YProperty("type", required=True),
+            YProperty("transcript-mode"),
+            YProperty("transcript-mode-flex", bool),
+            YProperty("panel-type")]
 
+        attr_properties += self.mFacetClassifier.getYProperties()
+
+        attr_properties += [
+            YProperty("comment"),
+            YProperty("description"),
+            YProperty("reference"),
+            YProperty("requires", is_seq=True),
+            YProperty("diap"),
+            YProperty("default"),
+            YProperty("variants"),
+            YProperty("value-map"),
+            YProperty("render-mode"),
+            ]
+
+        attrClass = YClass(attr_properties)
+        groupClass = YClass([
+            YProperty("group", required=True),
+            YProperty("comment"),
+            YProperty("attributes", attrClass, is_seq=True, required=True)
+        ])
+
+        return groupClass
+
+    def __init__(self, config_fname, var_fname):
+        config_data = self.sConfigClass.loadFile(config_fname)
+        self.mFacetClassifier = FacetClassifier(config_data["facets"])
+        self.mPresetMaps = {entry["map"]: entry["values"]
+            for entry in config_data["maps"]}
+        self.mPresetLists = {entry["list"]: entry["values"]
+            for entry in config_data["lists"]}
+
+        groupClass = self.prepareGroupAttrClass()
+        self.mGroupsData = groupClass.loadFile(var_fname)
+
+        self.mVariables = {}
+        self.mTemplates = {}
+        for group_info in self.mGroupsData:
+            for var_descr in group_info["attributes"]:
+                self._regVar(var_descr)
+#        for group_info in self.mGroupsData:
+#            for var_descr in group_info["attributes"]:
+#                if var_descr["type"] == "variety":
+#                    assert var_descr["panel"] in self.mVariables, (
+#                        "Variable " + var_descr["attribute"] + " panel " +
+#                        var_descr["panel"] + " is not found")
+#                    panel_descr = self.mVariables[var_descr["panel"]]
+#                    assert (panel_descr["type"] == "panel" and
+#                        (not var_descr.get("transcript-mode")) ==
+#                        (not panel_descr.get("transcript-mode"))), (
+#                        "Variable " + var_descr["attribute"] + "panel " +
+#                        var_descr["panel"] + " is inconsistent")
+
+    #===============================================
     def getClassificationDescr(self):
         return self.mFacetClassifier.getDescr()
 
-    def setupClassificationFacet(self,
-            facet_idx, name, title, name_title_pairs):
-        self.mFacetClassifier.declareFacet(facet_idx,
-            name, title, name_title_pairs)
-
-    def predeclareClassification(self, cur_facet1, cur_facet2, cur_facet3):
-        self.mCurFacets = [
-            self.mFacetClassifier.mapFacetClassName(facet_idx, facet_name)
-            for facet_idx, facet_name in enumerate(
-                [cur_facet1, cur_facet2, cur_facet3])]
-
-    def _prepareFacets(self, facets):
-        ret = []
-        for idx in range(self.mFacetClassifier.getSize()):
-            if facets[idx] is not None:
-                facet_idx = self.mFacetClassifier.mapFacetClassName(
-                    idx, facets[idx])
-            else:
-                facet_idx = self.mCurFacets[idx]
-            assert facet_idx is not None, f"Undefined facet{idx+1}"
-            ret.append(facet_idx)
-        return ret
-
-    def regVar(self, var_name, var_type,
-            title = None, render_mode = None, tooltip = None,
-            facet1 = None, facet2 = None, facet3 = None):
-        assert var_name not in self.mVariables, (
-            "Variable name duplication: " + var_name)
-        descr = {
-            "name": var_name,
-            "classes": self._prepareFacets([facet1, facet2, facet3])}
-        assert all(info is not None for info in descr["classes"]), (
-            "Facet classes are not correcly defined for: " + var_name)
-        if title:
-            descr["title"] = title
-        if render_mode:
-            descr["render-mode"] = render_mode
-        if tooltip:
-            descr["tooltip"] = tooltip
-        self.mVariables[var_name] = [var_type, descr]
-
-    def regVarTemplate(self, var_type, prefix, postfix = None,
-            title = None, render_mode = None, tooltip = None,
-            facet1 = None, facet2 = None, facet3 = None):
-        assert title is None or '%' in title, (
-            "Improper template: " + str(title))
-        self.mTemplates.append([var_type, prefix, postfix,
-            title, render_mode, tooltip,
-            self._prepareFacets([facet1, facet2, facet3])])
-
-    def getVarInfo(self, var_name, attempt = 0):
-        if var_name in self.mVariables:
-            return self.mVariables[var_name]
-        for (var_type, prefix, postfix, title,
-                render_mode, _tooltip, facets) in self.mTemplates:
-            if not var_name.startswith(prefix):
-                continue
-            nm = var_name[len(prefix):]
-            if postfix:
-                if not var_name.endswith(postfix):
-                    continue
-                nm = var_name[:-len(postfix)]
-            descr = {
-                "name": var_name,
-                "classes": facets}
-            if title:
-                descr["title"] = title % nm
-            if render_mode:
-                descr["render"] = render_mode
-            return [var_type, descr]
-        if attempt == 0 and self.mFixFunc is not None:
-            fix_var_name = self.mFixFunc(var_name)
-            if fix_var_name:
-                self.mFixedNames.add(var_name)
-                return self.getVarInfo(fix_var_name, 1)
-        assert False, "No variable registered: " + str(var_name)
-        return None
-
     def checkMetaAnnotation(self, facet, fvalue):
         return self.mFacetClassifier.checkMetaAnnotation(facet, fvalue)
+
+    def getFacetNames(self):
+        return [prop.getName()
+            for prop in self.mFacetClassifier.getYProperties()]
+
+    #===============================================
+    sRegExLetters = re.compile(r'[\W_]+')
+
+    @classmethod
+    def normName(cls, name):
+        return re.sub(cls.sRegExLetters, '', name.lower())
+
+    #===============================================
+    def _regName(self, name, descr, kind="attribute", ):
+        assert checkIdentifier(name), f"Not an identifier as {kind}: {name}"
+        norm_name = self.normName(name)
+        if norm_name in self.mVariables:
+            ref_name = self.mVariables[norm_name]["attribute"]
+            assert False, (
+                f"Name collision: {kind} {name} vs definition of {ref_name}")
+        self.mVariables[norm_name] = descr
+
+    #===============================================
+    sSupportedTypes = {
+        "func", "int", "float", "status", "multiset",
+        "panel", "presence", "variety"
+    }
+
+    sNumericRenderModes = {"neighborhood"} | {f"{mode},{ord}"
+        for mode in ("linear", "log") for ord in ("<", ">", "=")}
+
+    #===============================================
+    def _regVar(self, var_descr):
+        var_name = var_descr["attribute"]
+        if var_descr.get("template-base"):
+            assert var_name not in self.mTemplates, (
+                "Name duplication in templates: " + var_descr["attribute"])
+            self.mTemplates[var_name] = var_descr
+        else:
+            self._regName(var_name, var_descr)
+            alt_names = var_descr.get("alt-names")
+            if alt_names:
+                for nm in alt_names:
+                    self._regName(nm, var_descr, "alt-attr-name")
+
+        if var_descr.get("transcript-mode"):
+            assert var_descr["transcript-mode"] in (
+                "True", "true", "master"), (
+                f"Attribute {var_name}: option transcript-mode should be " +
+                "'true' or absent (or once 'master')")
+
+        if var_descr.get("transcript-mode-flex"):
+            assert var_descr["transcript-mode-flex"] == True, (
+                f"Attribute {var_name}: option transcript-mode-flex should be " +
+                "true or absent")
+
+        var_type = var_descr.get("type")
+        assert var_type, f"Attribute {var_name} should be set"
+        var_descr["var-type"] = var_type
+        assert var_type in self.sSupportedTypes, (
+            f"Attribute {var_name}: unsupported type {var_type}")
+
+        if var_type == "variety":
+            assert var_descr.get("panel"), (
+                f"Attribute {var_name} of type variety:" +
+                " panel option should be set")
+            panel_name = var_descr["panel"]
+            assert checkIdentifier(panel_name), (
+                f"Attribute {var_name}: panel name " +
+                f"is not an identifier: {panel_name} ")
+            assert var_descr.get("panel-type") == "Symbol", (
+                f"Attribute {var_name} of type variety:" +
+                " panel-type option shoul be set to Symbol " +
+                "(only Symbol is supported now)")
+            # self._regName(var_descr["panel"], var_descr, "panel-name")
+        else:
+            assert var_descr.get("panel") is None, (
+                f"Attribute {var_name} of type {var_type}:" +
+                " panel option is out of sense")
+            assert var_descr.get("panel-type") is None, (
+                f"Attribute {var_name} of type {var_type}:" +
+                " panel-type option is out of sense")
+
+        if "title" not in var_descr:
+            var_descr["title"] = var_name
+
+        var_descr["facets"] = (
+            self.mFacetClassifier.prepareFacetIdxSet(var_descr))
+
+        if var_descr.get("requires"):
+            var_descr["requires"] = set(var_descr["requires"])
+
+        if var_descr.get("diap"):
+            assert var_type in ("int", "float"), (
+                f"Attribute {var_name} of type {var_type}:" +
+                " diap option is out of sense")
+            diap = var_descr["diap"].strip()
+            assert diap[0] == '[' and diap[-1] == ']', (
+                f"Attribute {var_name}: bad diap option")
+            values = diap[1:-1].split(',')
+            assert len(values) == 2, (
+                f"Attribute {var_name}: bad diap option")
+            res = []
+            for val in values:
+                try:
+                    if var_type == "int":
+                        res.append(int(val))
+                    else:
+                        res.append(float(val))
+                except Exception:
+                    assert False, "Attribute {var_name}: bad diap option {diap}"
+            var_descr["diap"] = res
+
+        if var_type in ("int", "float") and var_descr.get("transcript-mode"):
+            assert var_descr.get("default") is not None, (
+                f"Attribute {var_name}: transcript numeric fields " +
+                "requires default")
+
+        if var_descr.get("variants") is not None:
+            assert var_type in ("status", "multiset"), (
+                f"Attribute {var_name} of type {var_type}:" +
+                " variants option is out of sense")
+            variants_name = var_descr["variants"]
+            assert variants_name in self.mPresetLists, (
+                f"Attribute {var_name}: undefined variant list: " +
+                variants_name)
+            var_descr["variants"] = self.mPresetLists[variants_name]
+
+        if var_descr.get("value-map") is not None:
+            assert var_type in ("status", "multiset"), (
+                f"Attribute {var_name} of type {var_type}:" +
+                " value-map option is out of sense")
+            map_name = var_descr["value-map"]
+            assert map_name in self.mPresetMaps, (
+                f"Attribute {var_name}: undefined value map: " +
+                map_name)
+            var_descr["value-map"] = self.mPresetMaps[map_name]
+
+        if var_descr.get("render-mode") is not None:
+            render_mode = var_descr["render-mode"]
+            if var_type in ("int", "float"):
+                assert render_mode in self.sNumericRenderModes, (
+                    f"Attribute {var_name}: improper numeric render mode: " +
+                    render_mode)
+            elif render_mode != "tree-map":
+                assert (var_type, render_mode) == ("status", "pie") or (
+                    var_type, render_mode) == ("multiset", "bar"), (
+                    f"Attribute {var_name}: " +
+                    f"improper {var_type} render mode: {render_mode}")
+
+    def __getitem__(self, var_name):
+        nm = self.normName(var_name)
+        assert nm in self.mVariables, "Attribute not found: " + var_name
+        return self.mVariables[nm]
+
+    def __contains__(self, var_name):
+        nm = self.normName(var_name)
+        return nm in self.mVariables
+
+    def iterGroups(self):
+        return iter(self.mGroupsData)
+
+    def makeTemplatedVarSeq(self, template_name, names):
+        template_descr = self.mTemplates[template_name]
+        for name in names:
+            var_descr = {key: val for key, val in template_descr.items()}
+            del var_descr["template-base"]
+            var_descr["attribute"] = var_descr["attribute"].replace('{}', name)
+            var_descr["title"] = var_descr["title"].replace('{}', name)
+            if var_descr.get("alt-names"):
+                var_descr["alt-names"] = [nm.replace('{}', name)
+                    for nm in var_descr["alt-names"]]
+            self._regVar(var_descr)
 
 #===============================================

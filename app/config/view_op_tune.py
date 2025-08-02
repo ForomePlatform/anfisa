@@ -186,12 +186,11 @@ class SamplesConditionVisitor:
 #===============================================
 class OpHasVariant_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "OP_has_variant",
+        AttrH.__init__(self, view, "OP_has_variant",
             title = "Has variant",
             tooltip = "Samples having variant")
         self.mDS = ds_h
         self.mFamilyInfo = self.mDS.getFamilyInfo()
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         active_samples = v_context.get("active-samples")
@@ -217,11 +216,10 @@ class OpHasVariant_AttrH(AttrH):
 #===============================================
 class OpFilters_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "OP_filters",
+        AttrH.__init__(self, view, "OP_filters",
             title = "Presence in filters",
             tooltip = "Filters positive on variant")
         self.mDS = ds_h
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         return (' '.join(self.mDS.getRecFilters(v_context["rec_no"])), "norm")
@@ -229,11 +227,10 @@ class OpFilters_AttrH(AttrH):
 #===============================================
 class OpDTrees_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "OP_dtrees",
+        AttrH.__init__(self, view, "OP_dtrees",
             title = "Presence in decision trees",
             tooltip = "Decision trees positive on variant")
         self.mDS = ds_h
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         return (' '.join(self.mDS.getRecDTrees(v_context["rec_no"])), "norm")

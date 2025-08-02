@@ -395,7 +395,7 @@ var sOpCondH = {
     onUnitSelect: function() {
         unit_name = sEvalCtrlH.getCurUnitName();
         document.getElementById("cond-title").innerHTML = 
-            sEvalCtrlH.getCurUnitTitle();
+            sEvalCtrlH.getCurUnitTitleRepr();
         if (unit_name == null) {
             sOpEnumH.suspend();
             sOpNumH.suspend();

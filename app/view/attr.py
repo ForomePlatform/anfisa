@@ -18,6 +18,7 @@
 #  limitations under the License.
 #
 
+from forome_tools.yaml_supp import YProperty, YClass
 from forome_tools.log_err import logException
 from .view_repr import jsonHtmlRepr, htmlEscape
 #===============================================
@@ -27,12 +28,12 @@ class AttrH:
         return value
 
     #===============================================
-    def __init__(self, name, kind = None, title = None,
+    def __init__(self, aspect, name, kind = None, title = None,
             is_seq = False, tooltip = None, render_mode = None,
             requires = None):
         assert kind != "place" or name.lower() == name, (
             f"Placement attribute {name}: must be lowercase")
-        self.mAspect = None
+        self.mAspect = aspect
         self.mName = name
         self.mTitle = (title if title is not None else name)
         self.mKinds = kind.split() if kind else ["norm"]
@@ -41,9 +42,6 @@ class AttrH:
         self.mRenderMode = render_mode
         self.mReprFunc = None
         self.mRequires = requires
-
-    def setAspect(self, asp):
-        self.mAspect = asp
 
     def reset(self, kind, is_seq):
         self.mKinds = kind.split() if kind else ["norm"]
@@ -94,9 +92,38 @@ class AttrH:
         return ret
 
     @classmethod
-    def load(cls, data):
-        return cls(data["name"], data["kind"], data["title"],
+    def load(cls, aspect, data):
+        return cls(aspect, data["name"], data["kind"], data["title"],
             is_seq = data["is_seq"], tooltip = data.get("tooltip"),
+            requires = data.get("requires"))
+
+    #===============================================
+    sClass = YClass([
+        YProperty("attribute", required=True),
+        YProperty("title"),
+        YProperty("kind"),
+        YProperty("tooltip"),
+        YProperty("requires")
+        ])
+
+    @classmethod
+    def loadY(cls, aspect, data):
+        kind = data.get("kind")
+        is_seq = False
+        if kind is not None:
+            kinds = kind.split()
+            if "sequence" in kinds:
+                is_seq = True
+                kinds.remove("sequence")
+            assert len(kinds) < 2, "Bad attr kind:" + " ".join(kinds)
+            if len(kinds) == 1:
+                kind = kinds[0]
+            else:
+                kind = None
+        if kind is not None:
+            assert kind in {"hidden", "json", "numeric", "link", "place"}
+        return cls(aspect, data["attribute"], kind, data.get("title"),
+            is_seq = is_seq, tooltip = data.get("tooltip"),
             requires = data.get("requires"))
 
     #===============================================

@@ -19,27 +19,36 @@
 #
 
 import json
-from hashlib import md5
 
 from forome_tools.log_err import logException
-from app.model.sol_support import StdNameSupport
 from .evaluation import Evaluation
 from .condition import validateCondition, condDataUnits
 from .code_repr import formatConditionCode
-
+from app.model.sol_item import SolItem
 #===============================================
 class FilterEval(Evaluation):
-    def __init__(self, eval_space, cond_data_seq, name = None,
-            rubric = None, updated_time = None, updated_from = None):
-        Evaluation.__init__(self, "filter", eval_space,
-            md5(bytes(json.dumps(cond_data_seq, sort_keys = True),
-                encoding = "utf-8")).hexdigest(),
-            name, rubric, updated_time, updated_from)
-        self.mCondDataSeq = cond_data_seq
+
+    @staticmethod
+    def create(ds_h, cond_data_seq, activate_it=True):
+        info = SolItem.create("filter", None, cond_data_seq)
+        if activate_it:
+            entry_h = ds_h.remindSolEntry(info)
+            if entry_h is not None:
+                entry_h.activate()
+                return entry_h
+        entry_h = FilterEval(ds_h.getEvalSpace(), info)
+        if activate_it:
+            entry_h.activate()
+            ds_h.mindSolEntry(entry_h)
+        return entry_h
+
+    def __init__(self, eval_space, info, activate_it=False):
+        Evaluation.__init__(self, eval_space, info)
+        self.mCondDataSeq = self.getData()
         self.mPresentation = []
         self.mConditions = None
         self.mOperationErrors = None
-        for idx, cond_data in enumerate(cond_data_seq):
+        for idx, cond_data in enumerate(self.mCondDataSeq):
             err_msg = validateCondition(cond_data)
             if err_msg:
                 self.pointError(err_msg, point_no = idx)
@@ -48,15 +57,11 @@ class FilterEval(Evaluation):
             else:
                 self.mPresentation.append(formatConditionCode(cond_data))
         self.mCondition = None
+        if activate_it:
+            self.activate()
 
-    @staticmethod
-    def makeSolEntry(eval_space, info):
-        assert info["_tp"] == "filter"
-        return FilterEval(eval_space, info["data"],
-            name = StdNameSupport.normNm(info["name"], info.get("is_std")),
-            rubric = info.get("rubric"),
-            updated_time = info.get("time"),
-            updated_from = info.get("from"))
+    def isActivated(self):
+        return self.mConditions is not None
 
     def activate(self):
         if self.mConditions is not None:
@@ -96,9 +101,6 @@ class FilterEval(Evaluation):
         assert False, "Condition not found: " + json.dumps(the_cond_data,
             sort_keys = True)
         return None
-
-    def isActive(self):
-        return self.mConditions is not None
 
     def getCondition(self):
         return self.mCondition

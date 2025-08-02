@@ -21,14 +21,13 @@
 import ast, tokenize, re
 from io import StringIO
 
-from app.config.variables import anfisaVariables
 #===============================================
-def parseCodeByPortions(code_lines, comment_lines_reg):
+def parseCodeByPortions(code_lines, comment_lines_reg, var_registry):
     for diap, error_info in _iterCodePortions(code_lines, comment_lines_reg):
         parsed_block, meta_annotations = None, None
         if error_info is None:
             meta_annotations, error_info = _parseMetaAnnotations(
-                code_lines, comment_lines_reg, diap)
+                code_lines, comment_lines_reg, diap, var_registry)
         if error_info is None:
             parsed_block, error_info = _validatePortion(diap[0], diap[1],
                 code_lines, error_info, comment_lines_reg)
@@ -135,7 +134,7 @@ def _validateInstrSplit(instr_d, lines, start_line_no, on_top = False):
 sMetaPattern = re.compile(
     r'^\s*@(\w+)\s*\(\s*((\w+)|(["]([\w ]+)["]))\s*\)\s*$')
 
-def _parseMetaAnnotations(code_lines, comment_lines_reg, diap):
+def _parseMetaAnnotations(code_lines, comment_lines_reg, diap, var_registry):
     ret = None
     for idx in range(*diap):
         if idx not in comment_lines_reg:
@@ -150,7 +149,7 @@ def _parseMetaAnnotations(code_lines, comment_lines_reg, diap):
             return None, ("Improper meta annotation", idx, m_pos)
         if ret is None:
             ret = []
-        meta_idxs, err_msg = anfisaVariables.checkMetaAnnotation(
+        meta_idxs, err_msg = var_registry.checkMetaAnnotation(
             match.group(1), match.group(5) or match.group(2))
         if err_msg is not None:
             return None, (err_msg, idx, m_pos)

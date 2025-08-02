@@ -24,8 +24,8 @@ from app.eval.var_unit import ReservedNumUnit
 from app.eval.condition import ConditionMaker, ZYG_BOUNDS_VAL
 #===============================================
 class XL_EvalSpace(EvalSpace):
-    def __init__(self, ds_h, druid_agent):
-        EvalSpace.__init__(self, ds_h)
+    def __init__(self, ds_h, var_registry, druid_agent):
+        EvalSpace.__init__(self, ds_h, var_registry)
         self.mDruidAgent = druid_agent
         self.mTotalCounts = [ds_h.getTotal()]
         self.mNoHistogram = (

@@ -20,8 +20,8 @@
 import logging
 from datetime import datetime
 
+from app.config import getDS_Schema
 from app.model.dataset import DataSet
-
 from .xl_space import XL_EvalSpace
 from .xl_unit import XL_Unit
 from .long_runner import XL_LongRunner_DTreeCounts
@@ -31,13 +31,17 @@ class XLDataset(DataSet):
         DataSet.__init__(self, data_vault,
             dataset_info, dataset_path)
         assert self.getDSKind() == "xl"
-        self.mEvalSpace = XL_EvalSpace(self, self.getApp().getDruidAgent())
+        metadata_record = dataset_info["meta"]
+        self.mEvalSpace = XL_EvalSpace(self,
+            getDS_Schema(metadata_record).defineVariables(
+                self, metadata_record, "xl"),
+            self.getApp().getDruidAgent())
         self.mLongRunners = dict()
 
         for zyg_name in self.getZygUnitNames():
             self.mEvalSpace._addZygUnit(zyg_name)
 
-        for unit_data in self.getFltSchema():
+        for unit_data in self.getFltModel():
             if unit_data["sub-kind"].startswith("transcript-"):
                 continue
             u_h = self.mEvalSpace.getUnit(unit_data["name"])

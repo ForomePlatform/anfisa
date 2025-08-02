@@ -23,15 +23,16 @@ import re
 import logging
 from collections import Counter
 
-from app.config.flt_conv import makeFilterConversion
 from forome_tools.path_works import AttrFuncPool
+from .flt_conv import makeFilterConversion
 #===============================================
 class ValueConvertor:
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, master, name, unit_no, vgroup, dim_name):
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name):
         self.mMaster = master
-        self.mName = name
+        self.mVarDescr = var_descr
+        self.mName = var_descr["attribute"]
         self.mVGroup = vgroup
         self.mUnitNo = unit_no
         self.mDimName = dim_name
@@ -42,6 +43,12 @@ class ValueConvertor:
 
     def getName(self):
         return self.mName
+
+    def getInternalName(self):
+        return self.mName
+
+    def getVarDescr(self):
+        return self.mVarDescr
 
     def getErrorCount(self):
         return self.mErrorCount
@@ -56,9 +63,6 @@ class ValueConvertor:
 
     def getMaster(self):
         return self.mMaster
-
-    def isTranscriptID(self):
-        return False
 
     def dump(self):
         result = {
@@ -83,8 +87,8 @@ class ValueConvertor:
 class PathValueConvertor(ValueConvertor):
     sMAX_BAD_COUNT = 3
 
-    def __init__(self, master, name, vpath, unit_no, vgroup, dim_name):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
+    def __init__(self, master, var_descr, vpath, unit_no, vgroup, dim_name):
+        ValueConvertor.__init__(self, master, var_descr, unit_no, vgroup, dim_name)
         self.mPath = vpath
         self.mPathF = AttrFuncPool.makeFunc(self.mPath)
 
@@ -95,7 +99,7 @@ class PathValueConvertor(ValueConvertor):
     def process(self, rec_no, rec_data, result):
         val = self.convert(self.mPathF(rec_data), rec_no)
         if val is not None:
-            result[self.getName()] = val
+            result[self.getInternalName()] = val
 
     def dump(self):
         ret = ValueConvertor.dump(self)
@@ -110,6 +114,7 @@ class _NumericStatCollector:
             self.mMinBound, self.mMaxBound = diap
         else:
             self.mMinBound = None
+
         self.mMinValue, self.mMaxValue = None, None
         self.mCntDef = 0
         self.mCntUndef = 0
@@ -120,27 +125,31 @@ class _NumericStatCollector:
 
     def _checkConvVal(self, msg, val):
         conv_val = self.convType(val)
-        assert val == conv_val, (
+        assert str(val) == str(conv_val), (
             f"Missing value for {self.getName()}/{msg}: {val}/{conv_val}")
 
     def checkDiap(self):
         if self.mDefaultValue is not None:
-            self._checkConvVal("default", self.mDefaultValue)
+            self.mDefaultValue = self.convType(self.mDefaultValue)
         if self.mMinBound is not None:
-            self._checkConvVal("min", self.mMinBound)
-            self._checkConvVal("max", self.mMaxBound)
+            self.mMinBound = self.convType(self.mMinBound)
+            self.mMaxBound = self.convType(self.mMaxBound)
+        if self.mMinBound is not None:
             if self.mDefaultValue is not None:
                 assert (self.mMinBound <= self.mDefaultValue
                         <= self.mMaxBound), (
                     f"Default/bound conflict for {self.getName()}: "
                     f"{self.mMinBound} <= {self.mDefaultValue} "
                     f"<= {self.mMaxBound}")
+        assert not isinstance(self.mDefaultValue, str)
 
     def regVal(self, val):
+        v0 = val
         if val is None:
             val = self.mDefaultValue
         else:
             val = self.convType(val)
+        assert not isinstance(val, str), repr(val) + "/" + repr(v0) + " " + self.getName()
         if val is None:
             self.mCntUndef += 1
             return None
@@ -176,13 +185,13 @@ class _NumericStatCollector:
 
 #===============================================
 class _NumericConvertor(PathValueConvertor, _NumericStatCollector):
-    def __init__(self, master, name, vpath, unit_no, vgroup,
+    def __init__(self, master, var_descr, vpath, unit_no, vgroup,
             default_value, diap, conversion):
         PathValueConvertor.__init__(self,
-            master, name, vpath, unit_no, vgroup, None)
+            master, var_descr, vpath, unit_no, vgroup, None)
         _NumericStatCollector.__init__(self, default_value, diap, False)
         assert default_value is not None, (
-            f"For {name} numeric unit: no default value")
+            f"For {self.getName()} numeric unit: no default value")
         self.mConversion = conversion
         self.mConvFunc = makeFilterConversion(conversion, self.getMaster())
 
@@ -215,10 +224,10 @@ class _NumericConvertor(PathValueConvertor, _NumericStatCollector):
 
 #===============================================
 class FloatConvertor(_NumericConvertor):
-    def __init__(self, master, name, vpath, unit_no, vgroup,
+    def __init__(self, master, var_descr, vpath, unit_no, vgroup,
             default_value, diap, conversion):
         _NumericConvertor.__init__(self,
-            master, name, vpath, unit_no, vgroup,
+            master, var_descr, vpath, unit_no, vgroup,
             default_value, diap, conversion)
         self.checkSetup()
 
@@ -233,10 +242,10 @@ class FloatConvertor(_NumericConvertor):
 
 #===============================================
 class IntConvertor(_NumericConvertor):
-    def __init__(self, master, name, vpath, unit_no, vgroup,
+    def __init__(self, master, var_descr, vpath, unit_no, vgroup,
             default_value, diap, conversion):
         _NumericConvertor.__init__(self,
-            master, name, vpath, unit_no, vgroup,
+            master, var_descr, vpath, unit_no, vgroup,
             default_value, diap, conversion)
         self.checkSetup()
 
@@ -318,10 +327,10 @@ class _EnumStatCollector:
 
 #===============================================
 class EnumConvertor(PathValueConvertor, _EnumStatCollector):
-    def __init__(self, master, name, vpath, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, vpath, unit_no, vgroup, dim_name,
             sub_kind, variants = None, value_map = None, conversion = None,
             default_value = None, compact_mode = False,  separators = None):
-        PathValueConvertor.__init__(self, master, name, vpath,
+        PathValueConvertor.__init__(self, master, var_descr, vpath,
             unit_no, vgroup, dim_name)
         _EnumStatCollector.__init__(self, default_value, variants, False)
         self.mSubKind = sub_kind
@@ -390,14 +399,19 @@ class EnumConvertor(PathValueConvertor, _EnumStatCollector):
 
 #===============================================
 class VarietyConvertor(EnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
-            variety_name, panel_name, vpath, panel_type, separator='|'):
-        EnumConvertor.__init__(self, master, name, vpath,
+    def __init__(self, master, var_descr, unit_no, vgroup,
+            name, variety_name, panel_name, vpath,
+            panel_type, separator='|'):
+        EnumConvertor.__init__(self, master, var_descr, vpath,
             unit_no, vgroup, None, "status")
+        self.mInternalName = name
         self.mVarietyName = variety_name
         self.mPanelName = panel_name
         self.mPanelType = panel_type
         self.mSeparator = separator
+
+    def getInternalName(self):
+        return self.mInternalName
 
     def convert(self, values, rec_no):
         try:
@@ -411,6 +425,7 @@ class VarietyConvertor(EnumConvertor):
 
     def dump(self):
         ret = EnumConvertor.dump(self)
+        ret["name"] = self.mInternalName
         ret["mean"] = "pre-variety"
         ret["variety-name"] = self.mVarietyName
         ret["panel-name"] = self.mPanelName
@@ -420,8 +435,8 @@ class VarietyConvertor(EnumConvertor):
 
 #===============================================
 class PresenceConvertor(ValueConvertor):
-    def __init__(self, master, name, unit_no, vgroup, path_info_seq):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup, None)
+    def __init__(self, master, var_descr, unit_no, vgroup, path_info_seq):
+        ValueConvertor.__init__(self, master, var_descr, unit_no, vgroup, None)
         self.mPathInfoSeq = path_info_seq
         self.mPathFunctions = [(it_name, AttrFuncPool.makeFunc(it_path))
             for it_name, it_path in self.mPathInfoSeq]
@@ -441,7 +456,7 @@ class PresenceConvertor(ValueConvertor):
                     self.regError(rec_no, [var, values])
                 is_ok = False
         if res_val is not None:
-            result[self.getName()] = res_val
+            result[self.getInternalName()] = res_val
 
     def dump(self):
         ret = ValueConvertor.dump(self)
@@ -456,9 +471,9 @@ class PresenceConvertor(ValueConvertor):
 
 #===============================================
 class PanelConvertor(ValueConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name,
             base_unit_name, panel_type, view_path):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
+        ValueConvertor.__init__(self, master, var_descr, unit_no, vgroup, dim_name)
         self.mBaseUnitName = base_unit_name
         self.mPanelType = panel_type
         p_key = "panel." + panel_type
@@ -491,7 +506,7 @@ class PanelConvertor(ValueConvertor):
                     for nm in self.mViewPathSeq[:-1]:
                         data = data[nm]
                     data[self.mViewPathSeq[-1]] = res_val
-        result[self.getName()] = res_val
+        result[self.getInternalName()] = res_val
 
     def dump(self):
         ret = ValueConvertor.dump(self)
@@ -512,9 +527,9 @@ class PanelConvertor(ValueConvertor):
 
 #===============================================
 class TranscriptNumConvertor(ValueConvertor, _NumericStatCollector):
-    def __init__(self, master, name, unit_no, vgroup,
+    def __init__(self, master, var_descr, unit_no, vgroup,
             sub_kind, trans_name, default_value):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup, None)
+        ValueConvertor.__init__(self, master, var_descr, unit_no, vgroup, None)
         _NumericStatCollector.__init__(self, default_value, None,
             self.getMaster().getDSKind() != "ws")
         prefix, _, postfix = sub_kind.partition('-')
@@ -524,6 +539,7 @@ class TranscriptNumConvertor(ValueConvertor, _NumericStatCollector):
         self.mConvF = int if postfix == "int" else float
         self.mTransName = trans_name
         self.mIsOK = True
+        self.checkDiap()
 
     def getTranscriptName(self):
         return self.mTransName
@@ -562,20 +578,18 @@ class TranscriptNumConvertor(ValueConvertor, _NumericStatCollector):
 
 #===============================================
 class _TranscriptEnumConvertor(ValueConvertor, _EnumStatCollector):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name,
             sub_kind, trans_name, variants, default_value,
-            bool_check_value=None, transcript_id_mode=False):
-        ValueConvertor.__init__(self, master, name, unit_no, vgroup, dim_name)
+            bool_check_value=None):
+        ValueConvertor.__init__(self, master, var_descr, unit_no, vgroup, dim_name)
         _EnumStatCollector.__init__(self, default_value, variants,
             self.getMaster().getDSKind() != "ws")
         assert sub_kind.startswith("transcript-"), (
             "Expected leading transcript- in sub_kind: " + sub_kind)
-        assert not transcript_id_mode or sub_kind == "transcript-status", (
-            "Transcript ID unit has not status subtype:" + name)
         self.mSubKind = sub_kind
         self.mTransName = trans_name
         if self.mTransName is None:
-            assert self.mSubKind == "transcript-panels", (
+            assert self.mSubKind == "transcript-panel", (
                 "Unexpected sub_kind: " + self.mSubKind)
             assert default_value is None, (
                 "Default value is set: " + repr(default_value))
@@ -595,14 +609,13 @@ class _TranscriptEnumConvertor(ValueConvertor, _EnumStatCollector):
 
 #===============================================
 class TranscriptStatusConvertor(_TranscriptEnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name,
             sub_kind, trans_name, variants, default_value,
-            bool_check_value = None, transcript_id_mode = False):
-        _TranscriptEnumConvertor.__init__(self, master, name, unit_no,
+            bool_check_value = None):
+        _TranscriptEnumConvertor.__init__(self, master, var_descr, unit_no,
             vgroup, dim_name, sub_kind,
             trans_name, variants, default_value)
         self.mTransName = trans_name
-        self.mTrIdMode = transcript_id_mode
         self.mBoolCheckValue = bool_check_value
         self.mIsOK = True
 
@@ -611,9 +624,6 @@ class TranscriptStatusConvertor(_TranscriptEnumConvertor):
 
     def process(self, rec_no, rec_data, result):
         assert False
-
-    def isTranscriptID(self):
-        return self.mTrIdMode
 
     def isOK(self):
         return self.mIsOK
@@ -646,15 +656,14 @@ class TranscriptStatusConvertor(_TranscriptEnumConvertor):
 
     def dump(self):
         ret = _TranscriptEnumConvertor.dump(self)
-        ret["tr-id-mode"] = self.mTrIdMode
         ret["bool-check"] = self.mBoolCheckValue
         return ret
 
 #===============================================
 class TranscriptMultiConvertor(_TranscriptEnumConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name,
             sub_kind, trans_name, variants, default_value):
-        _TranscriptEnumConvertor.__init__(self, master, name, unit_no,
+        _TranscriptEnumConvertor.__init__(self, master, var_descr, unit_no,
             vgroup, dim_name, sub_kind, trans_name, variants, default_value)
         self.mIsOK = True
 
@@ -690,13 +699,13 @@ class TranscriptMultiConvertor(_TranscriptEnumConvertor):
 #===============================================
 # Reserved
 class TranscriptPanelsConvertor(TranscriptMultiConvertor):
-    def __init__(self, master, name, unit_no, vgroup, dim_name,
+    def __init__(self, master, var_descr, unit_no, vgroup, dim_name,
             base_tr_name, panel_type, view_name):
         p_key = "panel." + panel_type
         panel_sets = {p_it["name"]: p_it["data"]
             for p_it in master.iterStdItems(p_key)}
-        TranscriptMultiConvertor.__init__(self, master, name,
-            unit_no, vgroup, dim_name, "transcript-panels",
+        TranscriptMultiConvertor.__init__(self, master, var_descr,
+            unit_no, vgroup, dim_name, "transcript-panel",
             base_tr_name, sorted(panel_sets.keys()), None)
         self.mPanelType = panel_type
         self.mViewName = view_name
@@ -725,9 +734,9 @@ class TranscriptPanelsConvertor(TranscriptMultiConvertor):
 
 #===============================================
 class TranscriptVarietyConvertor(TranscriptStatusConvertor):
-    def __init__(self, master, name, unit_no, vgroup,
+    def __init__(self, master, var_descr, unit_no, vgroup,
             trans_name, panel_type, panel_name, default_value):
-        TranscriptStatusConvertor.__init__(self, master, name, unit_no,
+        TranscriptStatusConvertor.__init__(self, master, var_descr, unit_no,
             vgroup, None, "transcript-variety", trans_name,
             None, default_value)
         self.mPanelName = panel_name
@@ -750,18 +759,19 @@ def loadConvertorInstance(info, vgroup, filter_set):
             "Title vgroup conflict: " + vgroup.getTitle() + " vs. "
             + info["vgroup"])
     kind = info["kind"]
+    var_descr = filter_set.getVarRegistry()[info["name"]]
 
     if kind == "numeric":
         if info["sub-kind"].startswith("transcript-"):
             return TranscriptNumConvertor(
-                filter_set, info["name"], info["no"], vgroup,
+                filter_set, var_descr, info["no"], vgroup,
                 info["sub-kind"], info["tr-name"], info.get("default"))
         if info["sub-kind"] == "float":
-            return FloatConvertor(filter_set, info["name"], info["path"],
+            return FloatConvertor(filter_set, var_descr, info["path"],
                 info["no"], vgroup, info.get("default"), None,
                 info.get("conversion"))
         if info["sub-kind"] == "int":
-            return IntConvertor(filter_set, info["name"], info["path"],
+            return IntConvertor(filter_set, var_descr, info["path"],
                 info["no"], vgroup, info.get("default"), None,
                 info.get("conversion"))
         assert False, f'Bad numeric unit: {info["sub-kind"]}'
@@ -770,41 +780,41 @@ def loadConvertorInstance(info, vgroup, filter_set):
     if kind == "enum":
         assert info.get("mean") != "panel" or "panel-name" not in info
         if info["sub-kind"] == "transcript-variety":
-            return TranscriptVarietyConvertor(filter_set, info["name"],
+            return TranscriptVarietyConvertor(filter_set, var_descr,
                 info["no"], vgroup, info["tr-name"],
                 info["panel-type"], info["panel-name"], info.get("default"))
         assert info.get("mean") != "variety"
-        if info["sub-kind"] == "transcript-panels":
+        if info["sub-kind"] == "transcript-panel":
             return TranscriptPanelsConvertor(
-                filter_set, info["name"], info["no"], vgroup,
+                filter_set, var_descr, info["no"], vgroup,
                 info.get("dim-name"), info["panel-base"],
                 info["panel-type"], info.get("view-name"))
         if info["sub-kind"] == "transcript-status":
-            return TranscriptStatusConvertor(filter_set, info["name"],
+            return TranscriptStatusConvertor(filter_set, var_descr,
                 info["no"], vgroup, info.get("dim-name"), info["sub-kind"],
                 info["tr-name"], info.get("pre-variants"),
-                info.get("default"), info["bool-check"],
-                info.get("tr-id-mode"))
+                info.get("default"), info["bool-check"])
         if info["sub-kind"] == "transcript-multiset":
-            return TranscriptMultiConvertor(filter_set, info["name"],
+            return TranscriptMultiConvertor(filter_set, var_descr,
                 info["no"], vgroup, info.get("dim-name"),
                 info["sub-kind"], info["tr-name"],
                 info.get("pre-variants"), info.get("default"))
         if info.get("mean") == "presence":
             path_info_seq = [(var, it_path)
                 for var, _, it_path in info["variants"]]
-            return PresenceConvertor(filter_set, info["name"],
+            return PresenceConvertor(filter_set, var_descr,
                 info["no"], vgroup, path_info_seq)
         if info.get("mean") == "panel":
-            return PanelConvertor(filter_set, info["name"], info["no"],
+            return PanelConvertor(filter_set, var_descr, info["no"],
                 vgroup, info.get("dim-name"), info["panel-base"],
                 info["panel-type"], info.get("view-path"))
         if info.get("mean") == "pre-variety":
-            return VarietyConvertor(filter_set, info["name"], info["no"],
-                vgroup, info["variety-name"], info["panel-name"],
+            return VarietyConvertor(filter_set, var_descr, info["no"],
+                vgroup,
+                info["name"], info["variety-name"], info["panel-name"],
                 info["path"], info["panel-type"], info["separator"])
 
-        return EnumConvertor(filter_set, info["name"], info["path"],
+        return EnumConvertor(filter_set, var_descr, info["path"],
             info["no"], vgroup, info.get("dim-name"), info["sub-kind"],
             info.get("pre-variants"), info.get("value-map"),
             info.get("conversion"), default_value = info.get("default"),

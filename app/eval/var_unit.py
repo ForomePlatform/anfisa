@@ -42,14 +42,92 @@ class VarUnit:
                 f"Sub-kind conflict: {self.mSubKind}/{sub_kind}"
                 f" for {self.mInternalName}")
 
-        self.mInfo = self.mEvalSpace.getDS().getDataVault().getVariableInfo(
-            self.mInternalName, self.mUnitKind, self.mSubKind,
-            self.mDescr.get("mean"))
-        self.mName = self.mInfo["name"].replace(' ', '_')
-        self.mInfo["vgroup"] = self.mVGroup
-        self.mInfo["kind"] = self.mUnitKind
-        if self.mSubKind:
-            self.mInfo["sub-kind"] = self.mSubKind
+        self.mVarDescr = self.mEvalSpace.getVarRegistry()[self.mInternalName]
+
+        self.mName = self.mVarDescr["attribute"]
+
+        self.mPresentationInfo = {
+            "name":     self.mName,
+            "vgroup":   self.mVGroup,
+            "kind":     self.mUnitKind
+        }
+        self.addPresentationProperty("sub-kind", self.mSubKind)
+        self.addPresentationProperty("classes",
+            self.mVarDescr.get("facets"))
+        self.addPresentationProperty("tooltip",
+            self.mVarDescr.get("description"))
+        self.addPresentationProperty("render-mode",
+            self.mVarDescr.get("render"))
+
+        var_type = self.mVarDescr["type"]
+        sub_kind = self.mSubKind
+        if var_type == "func":
+            assert self.mUnitKind == "func", (
+                f"Variable {self.mName} func kind conflict: " +
+                f"{var_type} vs {self.mUnitKind}")
+            return
+
+        var_mean = self.mDescr.get("mean")
+        var_transcript= False
+        if self.mSubKind and self.mSubKind.startswith("transcript-"):
+            assert (self.mVarDescr.get("transcript-mode") or
+                self.mVarDescr.get("transcript-mode-flex")), (
+                f"Variable {self.mName} transcript kind conflict: " +
+                f"{self.mSubKind} /{self.mInternalName}")
+            sub_kind = self.mSubKind[11:]
+            var_transcript = True
+            if sub_kind == "multiset" and var_type == "panel":
+                var_type = "multiset"
+            assert var_type == "variety" or sub_kind == var_type, (
+                f"Variable {self.mName} transcript subkind conflict: " +
+                f"{self.mSubKind} vs {var_type}")
+            assert var_mean in (None, "pre-variety", "variety", "panel"), (
+                f"Variable {self.mName} extra mean: {var_mean}")
+        else:
+            assert (not self.mVarDescr.get("transcript-mode") or
+                self.mVarDescr.get("transcript-mode-flex")), (
+                f"Variable {self.mName} no-transcript kind conflict: " +
+                f"{self.mSubKind} vs {var_type}")
+
+        if var_mean == "pre-variety":
+            self.mName = self.mInternalName
+
+        if var_mean is not None:
+            check_mean = {
+                "presence":     "presence",
+                "panel":        "panel",
+                "variety":      "variety",
+                "pre-variety":  "variety"}.get(var_mean)
+            if var_transcript and var_mean == "panel":
+                check_mean = "multiset"
+            assert check_mean == var_type, (
+                f"Variable {self.mName} mean conflict: " +
+                f"{var_mean} for {var_type}")
+        else:
+            assert var_type not in {"presence"}, (
+                f"Variable {self.mName} extra mean conflict for {var_type}")
+
+        if self.mUnitKind == "numeric":
+            assert sub_kind == var_type, (
+                f"Variable {self.mName} numeric kind conflict: " +
+                f"{var_type} vs {self.mSubKind}")
+        else:
+            assert self.mUnitKind == "enum"
+            assert sub_kind in ("status", "multi", "multiset",
+                "panel", "presence", "variety"), sub_kind
+            assert var_type in {"status", "multiset",
+                "panel", "presence", "variety"}, (
+                f"Variable {self.mName} enum kind conflict: " +
+                f"{var_type} vs {self.mUnitKind}")
+            if not self.mPresentationInfo.get("render-mode"):
+                self.mPresentationInfo["render-mode"] = (
+                    "tree-map" if var_type == "variety"
+                    else "pie" if sub_kind == "status"
+                    else "bar")
+
+    def addPresentationProperty(self, val, value):
+        if value is not None:
+            self.mPresentationInfo[val] = value
 
     def getEvalSpace(self):
         return self.mEvalSpace
@@ -63,8 +141,11 @@ class VarUnit:
     def getInternalName(self):
         return self.mInternalName
 
-    def getInfo(self):
-        return self.mInfo
+    def getVarDescr(self):
+        return self.mVarDescr
+
+    def getPresentationInfo(self):
+        return self.mPresentationInfo
 
     def getVGroup(self):
         return self.mVGroup
@@ -97,13 +178,13 @@ class VarUnit:
         return self.mDimName
 
     def prepareStat(self, stat_ctx, incomplete_mode=False):
-        ret_handle = deepcopy(self.mInfo)
+        ret_handle = deepcopy(self.mPresentationInfo)
+        doc_ref = self.mEvalSpace.getVariableDocRef(self)
+        if doc_ref:
+            ret_handle["var-doc-ref"] = doc_ref
         if incomplete_mode:
             ret_handle["incomplete"] = True
         return ret_handle
-
-    def isTranscriptID(self):
-        return False
 
 #===============================================
 #===============================================
@@ -220,3 +301,6 @@ class ReservedNumUnit(NumUnitSupport):
 
     def getSubKind(self):
         return self.mSubKind
+
+    def getVarDescr(self):
+        return {}

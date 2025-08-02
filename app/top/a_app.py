@@ -21,16 +21,15 @@
 import sys, os, json, logging, signal
 from io import StringIO
 
-from app.config.view_schema import defineViewSchema
+from app.config import getDS_Schema
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import setupSolutions
-from app.config.variables import anfisaVariables
 from app.model.rest_api import RestAPI
 from app.model.mongo_db import MongoConnector
 from app.model.data_vault import DataVault
 from app.prepare.v_check import ViewDataChecker
 from app.xl.druid_agent import DruidAgent
-from app.view.asp_set import AspectSetH
+from app.view.view_model import ViewModel
 from export.excel import ExcelExport
 from int_ui.mirror_dir import MirrorUiDirectory
 from int_ui.ui_requests import IntUI
@@ -52,6 +51,7 @@ class AnfisaApp:
     sTasks = dict()
     sDocSets = []
 
+
     @classmethod
     def setup(cls, config, in_container):
         setupSolutions(config)
@@ -70,8 +70,7 @@ class AnfisaApp:
 
         cls.sDruidAgent = DruidAgent(cls.sConfig)
 
-        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"],
-            anfisaVariables)
+        cls.sDataVault = DataVault(cls, cls.sConfig["data-vault"])
 
         cls.sJobPool = JobPool(
             AnfisaConfig.configOption("job.pool.threads"),
@@ -85,7 +84,15 @@ class AnfisaApp:
         sphinx_docs_seq = cls.sConfig.get("sphinx-doc-sets")
         if sphinx_docs_seq:
             for sphinx_docs_info in sphinx_docs_seq:
-                cls.sDocSets.append(SphinxDocumentationSet(sphinx_docs_info))
+                if sphinx_docs_info.get("mode") == "pre-build":
+                    assert sphinx_docs_info["id"] == "variables", (
+                        "Only variables pre-build is supported "
+                        "by current version")
+                    cls.sDataVault.preBuildVariablesDocSet(sphinx_docs_info)
+                doc_set = SphinxDocumentationSet(sphinx_docs_info)
+                if sphinx_docs_info.get("mode") == "pre-build":
+                    cls.sDataVault.setVariablesDocSet(doc_set)
+                cls.sDocSets.append(doc_set)
 
         signal.signal(signal.SIGTERM, terminateAll)
         signal.signal(signal.SIGHUP, terminateAll)
@@ -196,19 +203,24 @@ class AnfisaApp:
         return IntUI.finishRequest(serv_h,
             rq_path, rq_args, cls.sDataVault)
 
+    sSingleDataChecker = None
+    sSingleViewModel = None
+
     @classmethod
     def viewSingleRecord(cls, record):
-        view_aspects = defineViewSchema()
-        view_checker = ViewDataChecker(view_aspects)
-        view_checker.regValue(0, record)
+        if cls.sSingleDataChecker is None:
+            view_aspects = getDS_Schema().defineViewModel()
+            cls.sSingleDataChecker = ViewDataChecker(view_aspects)
+            cls.sSingleViewModel = ViewModel.load(view_aspects.dump())
+
+        cls.sSingleDataChecker.regValue(0, record)
         rep_out = StringIO()
-        is_ok = view_checker.finishUp(rep_out)
+        is_ok = cls.sSingleDataChecker.finishUp(rep_out)
         if not is_ok:
             logging.error("Single record annotation failed:\n"
                 + rep_out.getvalue())
         assert is_ok
-        aspects = AspectSetH.load(view_aspects.dump())
-        return aspects.getViewRepr(record, dict())
+        return cls.sSingleViewModel.getViewRepr(record, dict())
 
     @classmethod
     def runTask(cls, task, priority = 10):

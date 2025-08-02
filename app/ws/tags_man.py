@@ -40,8 +40,8 @@ class TagsManager(ZoneH):
     def refreshTags(self):
         self.mTagSets = defaultdict(set)
         self.mMarkedSet = set()
-        for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
-            rec_key, tags_data = tags_info["name"], tags_info["data"]
+        for tags_info in self.getDS().getSolRepo().iterEntries("tags"):
+            rec_key, tags_data = tags_info.getName(), tags_info.getData()
             if not tags_data:
                 continue
             rec_no = self.getDS().getRecNoByKey(rec_key)
@@ -68,14 +68,14 @@ class TagsManager(ZoneH):
             del tags_data[key]
 
         rec_key = self.getDS().getRecKey(rec_no)
-        prev_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        prev_info = self.getDS().getSolRepo().getEntry("tags", rec_key)
         prev_data = prev_info["data"] if prev_info is not None else None
         if (prev_data is None
                 or any(val != tags_data.get(key)
                     for key, val in prev_data.items())
                 or any(val != prev_data.get(key)
                     for key, val in tags_data.items())):
-            self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),
+            self.getDS().getSolRepo().modifyEntry(self.getDS().getName(),
                 "tags", "UPDATE", rec_key, tags_data)
 
     def getTagListInfo(self):
@@ -85,7 +85,7 @@ class TagsManager(ZoneH):
 
     def getRecTags(self, rec_no):
         rec_key = self.getDS().getRecKey(rec_no)
-        tags_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        tags_info = self.getDS().getSolRepo().getEntry("tags", rec_key)
         if tags_info is None:
             return None
         return tags_info["data"]
@@ -93,7 +93,7 @@ class TagsManager(ZoneH):
     def makeRecReport(self, rec_no):
         ret = self.getTagListInfo()
         rec_key = self.getDS().getRecKey(rec_no)
-        tags_info = self.getDS().getSolEnv().getEntry("tags", rec_key)
+        tags_info = self.getDS().getSolRepo().getEntry("tags", rec_key)
         if tags_info is not None:
             ret["rec-tags"] = tags_info["data"]
             ret["upd-time"] = tags_info.get("time")
@@ -121,7 +121,7 @@ class TagsManager(ZoneH):
         rep = {
             "tag-list": tag_list,
             "tag": tag_name,
-            "tags-state": self.getDS().getSolEnv().getIntVersion("tags"),
+            "tags-state": self.getDS().getSolRepo().getIntVersion("tags"),
             "tags-rec-list": sorted(self.mMarkedSet)}
         if tag_name:
             rep["tag-rec-list"] = sorted(self.mTagSets[tag_name])
@@ -135,8 +135,8 @@ class TagsManager(ZoneH):
         to_update_seq = []
         if task_h is not None:
             task_h.setStatus("Preparation")
-        for tags_info in self.getDS().getSolEnv().iterEntries("tags"):
-            rec_key, tags_data = tags_info["name"], tags_info["data"]
+        for tags_info in self.getDS().getSolRepo().iterEntries("tags"):
+            rec_key, tags_data = tags_info.getName(), tags_info.getData()
             if tags_data is None:
                 continue
             if rec_key in rec_keys:
@@ -179,7 +179,7 @@ class TagsManager(ZoneH):
                 next_cnt += step_cnt
                 cur_progess += 1
                 task_h.setStatus("Update records %d%s" % (cur_progess, '%'))
-            self.getDS().getSolEnv().modifyEntry(self.getDS().getName(),
+            self.getDS().getSolRepo().modifyEntry(self.getDS().getName(),
                 "tags", "UPDATE", rec_key, tags_data)
         if task_h is not None:
             task_h.setStatus("Done")
@@ -198,4 +198,4 @@ class MacroTaggingOperation(ExecutionTask):
     def execIt(self):
         self.mTagsMan.macroTaggingOp(self.mTagName, self.mRecKeys)
         return {"tags-state":
-                self.mTagsMan.getDS().getSolEnv().getIntVersion("tags")}
+                self.mTagsMan.getDS().getSolRepo().getIntVersion("tags")}

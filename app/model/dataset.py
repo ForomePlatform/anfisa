@@ -22,11 +22,8 @@ import json, abc
 from datetime import datetime, timedelta
 from html import escape
 
-from app.view.asp_set import AspectSetH
 from app.config.a_config import AnfisaConfig
-from app.config.view_tune import tuneAspects
-from app.config.flt_tune import tuneUnits
-from app.config.solutions import startTune
+from app.config import getDS_Schema
 from app.eval.condition import ConditionMaker
 from app.eval.filter import FilterEval
 from app.eval.dtree import DTreeEval
@@ -34,8 +31,8 @@ from app.eval.code_works import cmpTrees
 from app.eval.dtree_parse import ParsedDTree
 from app.eval.dtree_mod import modifyDTreeCode, annotateDTreeCode
 from app.prepare.sec_ws import SecondaryWsCreation
+from app.view.view_model import ViewModel
 from .ds_disk import DataDiskStorage
-from .ds_favor import FavorStorage
 from .sol_broker import SolutionBroker
 from .zygosity import ZygositySupport
 from .rest_api import RestAPI
@@ -65,34 +62,38 @@ class DataSet(SolutionBroker):
         self.mTotal = dataset_info["total"]
         self.mMongoAgent = (data_vault.getApp().getMongoConnector().
             getDSAgent(dataset_info["mongo"], dataset_info["kind"]))
-        self.mFltSchema = dataset_info["flt_schema"]
-        self.mAspects = AspectSetH.load(dataset_info["view_schema"],
+        self.mDataSchema = getDS_Schema(dataset_info)
+
+        self.mFltModel = dataset_info["flt_schema"]
+        for descr in self.mFltModel:
+            if descr.get("sub-kind") == "transcript-panels":
+                descr["sub-kind"] = "transcript-panel"
+
+        self.mViewModel = ViewModel.load(dataset_info["view_schema"],
             self.getModes())
         self.mPath = dataset_path
         self.mFInfo = self.mDataVault.checkFileStat(
             self.mPath + "/dsinfo.json")
         self.mCondVisitorTypes = []
 
-        if self.getDataSchema() == "FAVOR" and self.getDSKind() == "xl":
-            self.mRecStorage = FavorStorage(
-                self.getApp().getOption("favor-url"))
-        else:
-            self.mRecStorage = DataDiskStorage(self, self.mPath)
+        self.mRecStorage = DataDiskStorage(self, self.mPath)
 
         self.mViewContext = dict()
         self.mPanelsExtra = dict()
 
-        startTune(self)
-        tuneAspects(self, self.mAspects)
+        self.mDataSchema.tuneAspects(self, self.mViewModel)
 
     def startService(self):
-        self.mZygSupport = ZygositySupport(self)
-        tuneUnits(self)
-        self.mDataVault.getVarRegistry().relax(self.mName)
-        eval_space = self.getEvalSpace()
-        self._setupEnv(self.mDataVault.makeSolutionEnv(self), {
-            "filter": lambda info: FilterEval.makeSolEntry(eval_space, info),
-            "dtree": lambda info: DTreeEval.makeSolEntry(eval_space, info)})
+        with self:
+            self.mZygSupport = ZygositySupport(self)
+            self.mDataSchema.tuneUnits(self)
+            self._setupRepo(self.mDataVault.connectSolutionRepo(self),
+                lambda info: FilterEval(self.getEvalSpace(), info),
+                lambda info: DTreeEval(self.getEvalSpace(), info))
+            for entry_h in self.iterSolEntries("filter"):
+                entry_h.activate()
+            for entry_h in self.iterSolEntries("dtree"):
+                entry_h.activate()
 
     def isUpToDate(self, fstat_info):
         return fstat_info == self.mFInfo
@@ -123,8 +124,8 @@ class DataSet(SolutionBroker):
     def getMongoAgent(self):
         return self.mMongoAgent
 
-    def getFltSchema(self):
-        return self.mFltSchema
+    def getFltModel(self):
+        return self.mFltModel
 
     def getDataInfo(self):
         return self.mDataInfo
@@ -140,13 +141,13 @@ class DataSet(SolutionBroker):
         return self.mDataVault.getTimeOfStat(self.mFInfo)
 
     def getViewSchema(self):
-        return self.mAspects.dump()
+        return self.mViewModel.dump()
 
     def getRecordData(self, rec_no):
         return self.mRecStorage.getRecordData(rec_no)
 
     def getFirstAspectID(self):
-        return self.mAspects.getFirstAspectID()
+        return self.mViewModel.getFirstAspectID()
 
     def getViewRepr(self, rec_no, details = None, active_samples = None):
         rec_data = self.mRecStorage.getRecordData(rec_no)
@@ -161,7 +162,7 @@ class DataSet(SolutionBroker):
                     active_samples.split(',')))
         v_context["data"] = rec_data
         v_context["rec_no"] = rec_no
-        return self.mAspects.getViewRepr(rec_data, v_context)
+        return self.mViewModel.getViewRepr(rec_data, v_context)
 
     def getSourceVersions(self):
         if "versions" in self.mDataInfo["meta"]:
@@ -248,7 +249,7 @@ class DataSet(SolutionBroker):
             ret["meta"] = self.mDataInfo["meta"]
             ret["cohorts"] = self.getFamilyInfo().getCohortList()
             ret["unit-classes"] = (
-                self.mDataVault.getVarRegistry().getClassificationDescr())
+                self.getEvalSpace().getVarRegistry().getClassificationDescr())
             ret["export-max-count"] = self.sMaxExportSize
             if "receipts" in self.mDataInfo:
                 ret["receipts"] = self.mDataInfo["receipts"]
@@ -369,45 +370,33 @@ class DataSet(SolutionBroker):
 
     #===============================================
     def _getArgCondFilter(self, rq_args,
-            activate_it = True, join_cond_data = None):
-        filter_h, cond_data = None, None
+            activate_it=True, join_cond_data=None):
+        cond_data = None
         if rq_args.get("filter"):
-            filter_h = self.pickSolEntry("filter", rq_args["filter"])
-            assert filter_h is not None, "No filter for: " + rq_args["filter"]
+            filter_info = self.pickSolEntry("filter", rq_args["filter"])
+            assert filter_info is not None, "No filter for: " + rq_args["filter"]
             if join_cond_data is not None:
-                cond_data = filter_h.getCondDataSeq()
-                filter_h = None
-        if filter_h is None and cond_data is None:
+                cond_data = filter_info.getData()
+        if cond_data is None:
             if "conditions" in rq_args:
                 cond_data = json.loads(rq_args["conditions"])
             else:
                 cond_data = ConditionMaker.condAll()
         if join_cond_data is not None:
-            assert filter_h is None, "Filter&join collision"
             cond_data = cond_data[:] + join_cond_data[:]
-        if filter_h is None:
-            filter_h = FilterEval(self.getEvalSpace(), cond_data)
-        filter_h = self.normalizeSolEntry("filter", filter_h)
-        if activate_it:
-            filter_h.activate()
-        return filter_h
+        return FilterEval.create(self, cond_data, activate_it=activate_it)
 
-    def _getArgDTree(self, rq_args, activate_it = True,
-            use_dtree = True, dtree_h = None, no_cache = False):
-        if dtree_h is None:
-            if use_dtree and "dtree" in rq_args:
-                dtree_h = self.pickSolEntry("dtree", rq_args["dtree"])
-                assert dtree_h is not None, (
-                    "No decision tree: " + rq_args["dtree"])
-            else:
-                assert "code" in rq_args, (
-                    'Missing request argument: "dtree" or "code"')
-                dtree_h = DTreeEval(self.getEvalSpace(), rq_args["code"])
-        if not no_cache:
-            dtree_h = self.normalizeSolEntry("dtree", dtree_h)
-        if activate_it:
-            dtree_h.activate()
-        return dtree_h
+    def _getArgDTree(self, rq_args, activate_it=True, use_dtree=True):
+        if use_dtree and "dtree" in rq_args:
+            dtree_info = self.pickSolEntry("dtree", rq_args["dtree"])
+            assert dtree_info is not None, (
+                "No decision tree: " + rq_args["dtree"])
+            dtree_code = dtree_info.getData()
+        else:
+            assert "code" in rq_args, (
+                'Missing request argument: "dtree" or "code"')
+            dtree_code = rq_args["code"]
+        return DTreeEval.create(self, dtree_code, activate_it=activate_it)
 
     def _getArgTimeEnd(self, rq_args):
         if self.getEvalSpace().heavyMode() and "tm" in rq_args:
@@ -457,13 +446,13 @@ class DataSet(SolutionBroker):
             instr_info = json.loads(rq_args["instr"])
             if instr_info[0] == "JOIN":
                 join_cond_data = self.pickSolEntry(
-                    "filter", instr_info[1]).getCondDataSeq()
+                    "filter", instr_info[1]).getData()
             else:
                 if instr_info[0] == "DELETE":
                     instr_cond_data = None
                 else:
                     instr_cond_data = self._getArgCondFilter(
-                        rq_args, activate_it = False).getCondDataSeq()
+                        rq_args, activate_it=False).getCondDataSeq()
                 if not self.modifySolEntry("filter",
                         instr_info, instr_cond_data):
                     assert False, ("Bad instruction kind: "
@@ -483,7 +472,7 @@ class DataSet(SolutionBroker):
                 filter_h, stat_ctx, time_end),
             "functions": self. reportFunctions(filter_h, stat_ctx),
             "filter-list": self.getSolEntryList("filter"),
-            "filter-sol-version": self.getSolEnv().getIntVersion("filter"),
+            "filter-sol-version": self.getSolRepo().getIntVersion("filter"),
             "rq-id": self._makeRqId()}
         ret_handle.update(filter_h.reportInfo())
         return ret_handle
@@ -565,8 +554,7 @@ class DataSet(SolutionBroker):
         if instr is not None:
             instr = json.loads(instr)
         if instr and instr[0] == "DTREE":
-            dtree_proc_h = self._getArgDTree(
-                rq_args, activate_it = False)
+            dtree_proc_h = self._getArgDTree(rq_args, activate_it=False)
             if not self.modifySolEntry("dtree", instr[1:],
                     dtree_proc_h.getCode()):
                 assert False, (
@@ -577,8 +565,9 @@ class DataSet(SolutionBroker):
             assert "code" in rq_args, 'Missing request argument "code"'
             parsed = ParsedDTree(self.getEvalSpace(), rq_args["code"])
             dtree_code = modifyDTreeCode(parsed, instr)
-            dtree_h = DTreeEval(self.getEvalSpace(), dtree_code)
-        dtree_h = self._getArgDTree(rq_args, dtree_h = dtree_h)
+            dtree_h = DTreeEval.create(self, dtree_code)
+        if dtree_h is None:
+            dtree_h = self._getArgDTree(rq_args)
         if rq_args.get("actsym") in ("1", "true", "yes"):
             self.collectActive(dtree_h)
         rq_id = self._makeRqId()
@@ -588,7 +577,7 @@ class DataSet(SolutionBroker):
             "point-counts": self.prepareDTreePointCounts(
                 dtree_h, rq_id, time_end = time_end),
             "dtree-list": self.getSolEntryList("dtree"),
-            "dtree-sol-version": self.getSolEnv().getIntVersion("filter"),
+            "dtree-sol-version": self.getSolRepo().getIntVersion("filter"),
             "rq-id": rq_id}
 
         ret_handle.update(dtree_h.reportInfo())
@@ -611,25 +600,26 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__dtree_check(self, rq_args):
         dtree_h = self._getArgDTree(rq_args,
-            use_dtree = False, activate_it = False, no_cache = True)
+            use_dtree=False, activate_it=False)
         ret_handle = {"code": dtree_h.getCode()}
         if dtree_h.getErrorInfo() is not None:
             ret_handle.update(dtree_h.getErrorInfo())
         elif "annotate" in rq_args:
             ret_handle["annotated-code"] = annotateDTreeCode(
-                dtree_h.getParsed())
+                dtree_h.getParsed(),
+                self.getEvalSpace().getFacetClassificationDescr())
         return ret_handle
 
     #===============================================
     @RestAPI.ds_request
     def rq__dtree_cmp(self, rq_args):
-        dtree_h = self._getArgDTree(activate_it = False)
+        dtree_h = self._getArgDTree(rq_args, activate_it=False)
         assert "other" in rq_args, 'Missing request argument "other"'
-        other_dtree_h = self.pickSolEntry("dtree", rq_args["other"])
-        assert other_dtree_h is not None, (
+        other_dtree_info = self.pickSolEntry("dtree", rq_args["other"])
+        assert other_dtree_info is not None, (
             "Not found decision tree :" + rq_args["other"])
         return {"cmp": cmpTrees(
-            dtree_h.getCode(), other_dtree_h.getCode())}
+            dtree_h.getCode(), other_dtree_info.getData())}
 
     #===============================================
     @RestAPI.ds_request
@@ -731,7 +721,7 @@ class DataSet(SolutionBroker):
         ret = {
             "panel-type": ptype,
             "panels": self.getSolEntryList("panel." + ptype),
-            "panel-sol-version": self.getSolEnv().getIntVersion(
+            "panel-sol-version": self.getSolRepo().getIntVersion(
                 "panel." + ptype),
             "db-version": self.mDataVault.getPanelDB(ptype).getMetaInfo()}
         return ret
@@ -749,7 +739,7 @@ class DataSet(SolutionBroker):
                 rq_args["pattern"], extra = self._getPanelExtra(ptype))
         else:
             ret["panel"] = rq_args["panel"]
-            ret["panel-sol-version"] = self.getSolEnv().getIntVersion(
+            ret["panel-sol-version"] = self.getSolRepo().getIntVersion(
                 "panel." + ptype)
             entry_h = self.pickSolEntry("panel." + ptype, rq_args["panel"])
             sel_set = entry_h.getSymList() if entry_h else None
@@ -773,13 +763,13 @@ class DataSet(SolutionBroker):
         if "entry" in rq_args:
             entry_name = rq_args["entry"]
             AnfisaConfig.assertGoodSolutionName(entry_name)
-            return self.getSolEnv().checkEntryKind(entry_name)
+            return self.getSolRepo().checkEntryKind(entry_name)
         return self.reportSolutions()
 
     #===============================================
     @RestAPI.ds_request
     def rq__dtree_variants_report(self, rq_args):
-        dtree_h = self._getArgDTree(rq_args, no_cache=True)
+        dtree_h = self._getArgDTree(rq_args, activate_it=False)
         self.collectActive(dtree_h)
         rq_id = self._makeRqId()
         return {"task_id": self.getApp().runTask(
@@ -789,7 +779,7 @@ class DataSet(SolutionBroker):
     @RestAPI.ds_request
     def rq__dtree_variant_trace(self, rq_args):
         assert "variant" in rq_args, 'Missing request argument "variant"'
-        dtree_h = self._getArgDTree(rq_args, no_cache=True)
+        dtree_h = self._getArgDTree(rq_args, activate_it=False)
         self.collectActive(dtree_h)
         rq_id = self._makeRqId()
         return {"task_id": self.getApp().runTask(
@@ -799,4 +789,4 @@ class DataSet(SolutionBroker):
     #===============================================
     @RestAPI.ds_request
     def rq__vsetup(self, rq_args):
-        return {"aspects": self.mAspects.dump()}
+        return {"aspects": self.mViewModel.dump()}

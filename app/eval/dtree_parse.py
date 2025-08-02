@@ -99,11 +99,14 @@ class TreeFragment:
     def getCorrectMetaAnnotations(self,  eval_space):
         if self.mType != "If":
             return None
+        try:
+            unit_names = condDataUnits(self.getCondData())
+        except Exception:
+            return None
         meta_correct = None
-        unit_names = condDataUnits(self.getCondData())
         for name in unit_names:
             unit_h = eval_space.getUnit(name)
-            u_classes = unit_h.getInfo()["classes"]
+            u_classes = unit_h.getPresentationInfo()["classes"]
             if meta_correct is None:
                 meta_correct = [set() for _ in u_classes]
             for idx, f_v_idx in enumerate(u_classes):
@@ -144,7 +147,8 @@ class ParsedDTree:
         code_lines = self.mCode.splitlines()
 
         for parsed_d, err_info, line_diap, meta_a in parseCodeByPortions(
-                code_lines, self.mCommentLinesReg):
+                code_lines, self.mCommentLinesReg,
+                self.mEvalSpace.getVarRegistry()):
             fragments = []
             instr_d = None
 
@@ -606,6 +610,8 @@ class ParsedDTree:
         if self.mEvalSpace is None:
             return
         meta_correct = fragment.getCorrectMetaAnnotations(self.mEvalSpace)
+        if meta_correct is None:
+            return
 
         meta_set_list, meta_err = None, None
         bad_values, bad_annotations = [], []

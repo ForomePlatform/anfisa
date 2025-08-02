@@ -20,20 +20,17 @@
 
 import sys, json, os, shutil, time, logging
 from argparse import ArgumentParser
-from datetime import datetime
 
 from forome_tools.json_conf import loadJSonConfig, loadCommentedJSon
 from forome_tools.inventory import loadDatasetInventory
 from app.prepare.druid_adm import DruidAdmin
 from app.prepare.html_report import reportDS
 from app.prepare.doc_works import prepareDocDir
-from app.prepare.ds_create import (createDS,
-    portionFavorDruidPush, pushDruidDataset)
+from app.prepare.ds_create import (createDS, pushDruidDataset)
 from app.config.a_config import AnfisaConfig
 from app.config.solutions import setupSolutions
 from app.model.mongo_db import MongoConnector
 from app.model.dir_entry import DirDSEntry
-from app.model.ds_favor import FavorStorageAgent
 #===============================================
 
 def checkDSName(name, kind):
@@ -157,136 +154,6 @@ def pushDoc(app_config, ds_entry):
     print("Re-doc complete:", ds_dir)
 
 #===============================================
-def prepareFavorStorage(app_config):
-    setupSolutions(app_config)
-    portion_size, portion_fetch = app_config["favor-portions"]
-    return FavorStorageAgent(app_config["favor-url"],
-        portion_size, portion_fetch)
-
-#===============================================
-def initFavor(app_config, druid_adm, report_lines):
-    vault_dir = app_config["data-vault"]
-    if not os.path.isdir(vault_dir):
-        os.mkdir(vault_dir)
-        print("Create (empty) vault directory:", vault_dir, file = sys.stderr)
-
-    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
-    if os.path.exists(ds_dir):
-        print("Dataset exists:", ds_dir, file = sys.stderr)
-        assert False
-    os.mkdir(ds_dir)
-
-    favor_storage = prepareFavorStorage(app_config)
-
-    mongo_conn = MongoConnector(app_config["mongo-db"],
-        app_config.get("mongo-host"), app_config.get("mongo-port"))
-
-    createDS(ds_dir, mongo_conn, druid_adm,
-        "xl_FAVOR", None, "xl", report_lines = report_lines,
-        favor_storage = favor_storage)
-    mongo_conn.close()
-
-#===============================================
-def dropFavor(app_config, druid_adm, report_lines):
-    vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
-    if not os.path.exists(ds_dir):
-        print("No dataset to drop:", ds_dir)
-        return
-    shutil.rmtree(ds_dir)
-    print("Dataset droped:", ds_dir)
-
-#===============================================
-def portionFavor(app_config, druid_adm, portion_no, report_lines,
-        inside_mode = False):
-    favor_storage = prepareFavorStorage(app_config)
-    if not inside_mode:
-        print("Favor portions:", favor_storage.getPortionCount())
-    print("Push portion", portion_no)
-    vault_dir = app_config["data-vault"]
-    ds_dir = os.path.abspath(vault_dir + "/xl_FAVOR")
-    portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no)
-    print("Done portion", portion_no)
-
-#===============================================
-def ftuneFavor(app_config, druid_adm, report_lines):
-    vault_dir = app_config["data-vault"]
-    ds_name = "xl_FAVOR"
-    ds_dir = os.path.abspath(vault_dir + "/" + ds_name)
-    with open(ds_dir + "/dsinfo.json",
-            "r", encoding = "utf-8") as inp:
-        ds_info = json.loads(inp.read())
-    ds_info["total"] = druid_adm.mineTotal(ds_name)
-    for funit_entry in ds_info["flt_schema"]:
-        if funit_entry["kind"] == "enum":
-            variants = druid_adm.mineEnumVariants(
-                ds_name, funit_entry["name"])
-            print("Unit update: %s  %d -> %d" % (funit_entry["name"],
-                len(funit_entry["variants"]), len(variants)))
-            funit_entry["variants"] = variants
-    with open(ds_dir + "/~dsinfo.json", "w", encoding = "utf-8") as outp:
-        print(json.dumps(ds_info, sort_keys = True, indent = 4),
-            file = outp)
-    os.rename(ds_dir + "/dsinfo.json", ds_dir + "/dsinfo.json~")
-    os.rename(ds_dir + "/~dsinfo.json", ds_dir + "/dsinfo.json")
-    print("Filter variants tuning done")
-
-#===============================================
-def _favorBatch(app_config, druid_adm, batch_dir, report_lines):
-    assert os.path.isdir(batch_dir), (
-        "Bad batch directory: " + batch_dir)
-    if os.path.exists(batch_dir + "/stop"):
-        print("STOPPED")
-        with open(batch_dir + "/log", "at") as outp:
-            print("%s: STOPED" % str(datetime.now()), file = outp)
-        return False
-    assert os.path.exists(batch_dir + "/loaded.txt"), (
-        "No file:" + batch_dir + "/loaded.txt")
-    loaded_idxs = set()
-    with open(batch_dir + "/loaded.txt", "rt") as inp:
-        for line_idx, line in enumerate(inp):
-            idx_str = line.strip()
-            assert idx_str.isdigit(), (
-                "loaded.txt at line %d: bad line" % (line_idx + 1))
-            idx = int(idx_str)
-            assert idx not in loaded_idxs, (
-                "loaded.txt at line %d: duplicated idx %d"
-                % (line_idx + 1, idx))
-            loaded_idxs.add(idx)
-    favor_storage = prepareFavorStorage(app_config)
-    p_count = favor_storage.getPortionCount()
-    next_portion = None
-    for idx in range(p_count - 1):
-        if idx not in loaded_idxs:
-            next_portion = idx
-            break
-    if next_portion is None:
-        print("MISSION COMPLETE (check last portion", p_count - 1)
-        with open(batch_dir + "/log", "at") as outp:
-            print("%s: COMPLETE" % str(datetime.now()), file = outp)
-        return False
-    with open(batch_dir + "/log", "at") as outp:
-        print("%s: Push portion %d" % (str(datetime.now()), next_portion),
-            file = outp)
-    portionFavor(app_config, druid_adm, next_portion, report_lines, True)
-    loaded_idxs.add(next_portion)
-    with open(batch_dir + "/~loaded.txt", "wt") as outp:
-        for idx in sorted(loaded_idxs):
-            print(idx, file = outp)
-    os.rename(batch_dir + "/loaded.txt", batch_dir + "/loaded.txt~")
-    os.rename(batch_dir + "/~loaded.txt", batch_dir + "/loaded.txt")
-    with open(batch_dir + "/log", "at") as outp:
-        print("%s: Done portion %d" % (str(datetime.now()), next_portion),
-            file = outp)
-    return True
-
-#===============================================
-def favorBatch(app_config, druid_adm, batch_dir, report_lines):
-    while _favorBatch(app_config, druid_adm, batch_dir, report_lines):
-        pass
-
-
-#===============================================
 if __name__ == '__main__':
     logging.root.setLevel(logging.INFO)
 
@@ -307,7 +174,7 @@ if __name__ == '__main__':
         help = "Anfisa configuration file, used only if --dir is unset, "
         "default = anfisa.json")
     parser.add_argument("-m", "--mode",
-        help = "Mode: create/drop/druid-push/doc-push/register/favor")
+        help = "Mode: create/drop/druid-push/doc-push/register")
     parser.add_argument("-k", "--kind",  default = "ws",
         help = "Kind of dataset: ws/xl, default = ws, "
         "actual if --dir is unset")
@@ -350,40 +217,6 @@ if __name__ == '__main__':
         os.rename(args.dir, args.dir + '~')
         os.rename(tmp_name, args.dir)
         print("Directory file", args.dir, "updated")
-        sys.exit()
-
-    if args.mode == "favor":
-        app_config = loadJSonConfig(args.config,
-            home_base_file = __file__, home_base_level = 1)
-        druid_adm = DruidAdmin(app_config, False)
-        if args.names[0] == "init":
-            assert len(args.names) == 1, (
-                "favor init does not require more arguments")
-            initFavor(app_config, druid_adm, args.reportlines)
-        elif args.names[0] == "remove":
-            assert len(args.names) == 1, (
-                "favor remove does not require more arguments")
-            dropFavor(app_config, druid_adm, args.reportlines)
-        elif args.names[0] == "ftune":
-            assert len(args.names) == 1, (
-                "favor ftune does not require more arguments")
-            ftuneFavor(app_config, druid_adm, args.reportlines)
-        elif args.names[0] == "info":
-            favor_storage = prepareFavorStorage(app_config)
-            print("Favor size:", favor_storage.getTotal(), "portions:",
-                favor_storage.getPortionCount())
-        elif args.names[0] == "batch":
-            assert len(args.names) == 2, (
-                "favor batch requires one more argiment: batch directory")
-            batch_dir = args.names[1]
-            favorBatch(app_config, druid_adm, batch_dir, args.reportlines)
-        else:
-            assert args.names[0] == "portion", (
-                "favor options: init/remove/info/portion <no>")
-            assert len(args.names) == 2, (
-                "favor portion requires one more argiment: portion no")
-            portion_no = int(args.names[1])
-            portionFavor(app_config, druid_adm, portion_no, args.reportlines)
         sys.exit()
 
     if args.dir:

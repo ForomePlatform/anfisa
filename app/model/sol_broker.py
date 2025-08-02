@@ -21,7 +21,8 @@
 from forome_tools.sync_obj import SyncronizedObject
 from app.config.a_config import AnfisaConfig
 from .sol_pack import SolutionPack
-from .sol_support import SolutionKindHandler, SolPanelHandler
+from .sol_item import SolItem
+from .sol_support import SolutionKindCollection, StdNameSupport
 from .family import FamilyInfo
 #===============================================
 class SolutionBroker(SyncronizedObject):
@@ -36,7 +37,7 @@ class SolutionBroker(SyncronizedObject):
         assert self.mDSKind in {"ws", "xl"}
         self.mModes.add(self.mDSKind.upper())
 
-        self.mSolEnv = None
+        self.mSolRepo = None
         self.mSolKinds = None
         self.mNamedAttrs = dict()
 
@@ -61,8 +62,8 @@ class SolutionBroker(SyncronizedObject):
     def getDSKind(self):
         return self.mDSKind
 
-    def getSolEnv(self):
-        return self.mSolEnv
+    def getSolRepo(self):
+        return self.mSolRepo
 
     def getDataSchema(self):
         return self.mDataSchema
@@ -74,33 +75,31 @@ class SolutionBroker(SyncronizedObject):
         return self.mFastaBase
 
     #===============================================
-    def _setupEnv(self, sol_env, sol_makers):
-        assert self.mSolEnv is None, "solEnv is already set"
+    def _setupRepo(self, sol_repo, filter_maker, dtree_maker):
+        assert self.mSolRepo is None, "solRepo is already set"
         with self:
-            self.mSolEnv = sol_env
+            self.mSolRepo = sol_repo
             self.mSolKinds = dict()
-            for sol_kind in sol_env.getSolKeys():
-                kind_h = None
-                if sol_kind in sol_makers:
-                    kind_h = SolutionKindHandler(self,
-                        sol_kind, sol_makers[sol_kind])
-                elif sol_kind.startswith("panel."):
-                    prefix, ptype = sol_kind.split('.')
-                    panels_cfg = AnfisaConfig.configOption("panels.setup")
-                    assert ptype in panels_cfg, (
-                        "Panel type not supported: " + ptype)
-                    kind_h = SolutionKindHandler(self, sol_kind,
-                        SolPanelHandler.makeSolEntry,
-                        special_name = panels_cfg[ptype].get("special"))
-                else:
-                    assert sol_kind == "tags", "Bad sol kind: " + sol_kind
+            cache_size = AnfisaConfig.configOption("solution.pool.size")
+            for sol_kind in sol_repo.getSolKinds():
+                if sol_kind == "tags":
                     continue
+                elif sol_kind == "filter":
+                    kind_h = SolutionKindCollection(self, sol_kind,
+                        filter_maker, cache_size=cache_size)
+                elif sol_kind == "dtree":
+                    kind_h = SolutionKindCollection(self, sol_kind,
+                        dtree_maker, cache_size=cache_size)
+                else:
+                    kind_h = PanelSolHandler.buildCollection(
+                        self, sol_kind)
+                assert kind_h is not None, "Bad sol kind: " + sol_kind
                 self.mSolKinds[sol_kind] = kind_h
-            self.mSolEnv.attachBroker(self)
+            self.mSolRepo.attachBroker(self)
 
     def deactivate(self):
-        if self.mSolEnv is not None:
-            self.mSolEnv.detachBroker(self)
+        if self.mSolRepo is not None:
+            self.mSolRepo.detachBroker(self)
 
     #===============================================
     def addModes(self, modes):
@@ -113,14 +112,15 @@ class SolutionBroker(SyncronizedObject):
         return len(modes & self.mModes) == len(modes)
 
     def iterStdItems(self, item_kind):
+        item_kind = SolItem.normKind(item_kind)
         for it in self.mSolPack:
-            if it["_tp"] == item_kind and self.testRequirements(it.get("req")):
+            if it.getSolKind() == item_kind and self.testRequirements(it.get("req")):
                 yield it
 
     def getStdItemData(self, item_kind, item_name):
         for it in self.iterStdItems(item_kind):
-            if it["name"] == item_name:
-                return it["data"]
+            if it.getName() == item_name:
+                return it.getData()
         return None
 
     def getModes(self):
@@ -158,8 +158,11 @@ class SolutionBroker(SyncronizedObject):
     def pickSolEntry(self, kind, name):
         return self.mSolKinds[kind].pickByName(name)
 
-    def normalizeSolEntry(self, kind, sol_entry):
-        return self.mSolKinds[kind].normalizeSolEntry(sol_entry)
+    def remindSolEntry(self, sol_entry):
+        return self.mSolKinds[sol_entry.getSolKind()].remindSolEntry(sol_entry)
+
+    def mindSolEntry(self, sol_entry):
+        return self.mSolKinds[sol_entry.getSolKind()].mindSolEntry(sol_entry)
 
     def modifySolEntry(self, kind, instr, entry_data):
         with self:
@@ -181,7 +184,7 @@ class SolutionBroker(SyncronizedObject):
         return None
 
     def iterSpecialPanels(self):
-        for sol_kind in self.mSolEnv.getSolKeys():
+        for sol_kind in self.mSolRepo.getSolKinds():
             kind_h = self.mSolKinds.get(sol_kind)
             if kind_h is None:
                 continue
@@ -201,5 +204,36 @@ class SolutionBroker(SyncronizedObject):
     def reportSolutions(self):
         ret = dict()
         for kind in ("filter", "dtree", "zone", "tab-schema", "panel.Symbol"):
-            ret[kind] = [it["name"] for it in self.iterStdItems(kind)]
+            ret[kind] = [it.getName() for it in self.iterStdItems(kind)]
         return ret
+
+#===============================================
+class PanelSolHandler(SolItem):
+    @staticmethod
+    def buildCollection(broker, sol_kind):
+        if not sol_kind.startswith("panel."):
+            return None
+        prefix, ptype = sol_kind.split('.')
+        panels_cfg = AnfisaConfig.configOption("panels.setup")
+        assert ptype in panels_cfg, (
+            "Panel type not supported: " + ptype)
+        return SolutionKindCollection(broker, sol_kind,
+            PanelSolHandler,
+            special_name = panels_cfg[ptype].get("special"))
+
+    def __init__(self, info):
+        SolItem.__init__(self, info.getDescr())
+        assert self.getSolKind().startswith("panel_")
+        _, _, self.mType = self.getSolKind().partition('_')
+
+    def getType(self):
+        return self.mType
+
+    def getSymList(self):
+        return self.getData()
+
+    def getEvalStatus(self):
+        return None
+
+    def isDynamic(self):
+        return not StdNameSupport.isStd(self.getName())

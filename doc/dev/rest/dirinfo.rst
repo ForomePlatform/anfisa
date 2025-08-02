@@ -27,7 +27,7 @@ Synopsis
         |                    ``{`` *dict*
         |                         "**id**":    identifier of set, *string*
         |                         "**title**": title of set, *string*
-        |                         "**id**": URL to top of set, *string*
+        |                         "**url**": URL to top of set, *string*
         |                    ``}``, ...  
         |               ``]``
         | ``}``

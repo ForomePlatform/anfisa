@@ -9,7 +9,7 @@ if HGMD_Tags in {"DM"}:
 #Include if present in ClinVar as: Path, Likely Path, VUS
 # (worst annotation, unless annotated benign by trusted submitter')
 
-if (ClinVar_Significance in {
+if (Clinvar_Significance in {
             "Pathogenic",
             "Pathogenic, protective",
             "Pathogenic, risk factor",
@@ -18,7 +18,7 @@ if (ClinVar_Significance in {
         }):
     return True
 
-if (ClinVar_Significance in {
+if (Clinvar_Significance in {
             "Uncertain significance"
         } and
         (Clinvar_Trusted_Simplified in {"uncertain", "pathogenic"} or

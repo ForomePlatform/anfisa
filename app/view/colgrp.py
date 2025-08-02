@@ -19,6 +19,7 @@
 #
 
 from xml.sax.saxutils import escape
+from forome_tools.yaml_supp import YProperty, YClass
 #===============================================
 class ColGroupsH:
     def __init__(self, attr_title_pairs,
@@ -56,6 +57,26 @@ class ColGroupsH:
             attr_title_pairs = attr_title_pairs[:-1]
 
         return cls(attr_title_pairs = attr_title_pairs)
+
+    #=============================
+    sColClass = YClass([
+        YProperty("column", required=True),
+        YProperty("title")
+        ])
+
+    sClass = YClass([
+        YProperty("single-group"),
+        YProperty("columns", sColClass, is_seq=True)
+        ])
+
+    @classmethod
+    def loadY(cls, data):
+        if data is None:
+            return None
+        single_group_col = data.get("single-group") in (True, "true", "True")
+        attr_title_pairs = [[it["column"], it.get("title")]
+            for it in data["columns"]]
+        return cls(attr_title_pairs, single_group_col)
 
     #=============================
     def formColumns(self, descr_handle, in_objects):

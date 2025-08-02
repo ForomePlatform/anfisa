@@ -138,6 +138,8 @@ class DictTypeChecker:
         if not self.mOwnCnt.regValue(rec_no, value):
             self.mStatus = "bad"
             return
+        if value is None:
+            return
         for name, val in value.items():
             self.regItemValue(rec_no, name, val)
 
@@ -168,7 +170,7 @@ class DictTypeChecker:
                 assert a_type is not None
                 if self.mBaseAsp:
                     self.mBaseAsp.addAttr(
-                        AttrH(a_check.getName(), a_kind, is_seq = a_seq))
+                        AttrH(self.mBaseAsp, a_check.getName(), a_kind, is_seq = a_seq))
                     master.problem("added", a_check, self)
                     a_check.setStatus("added")
                 else:
@@ -244,7 +246,7 @@ class SourceTypeChecker(DictTypeChecker):
                         asp_h.getField(), self.getName(), base_asp = asp_h)
                     self.mAspectCheckers.append(asp_checker)
                 elif asp_h.getMode() == "string":
-                    attr_h = AttrH(asp_h.getField())
+                    attr_h = AttrH(asp_h, asp_h.getField())
                     asp_checker = AttrTypeChecker(asp_h.getField(), attr_h)
                 self.regIt(asp_checker)
             else:

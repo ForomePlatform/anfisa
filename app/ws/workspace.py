@@ -23,6 +23,7 @@ from array import array
 from xml.sax.saxutils import escape
 
 from app.config.a_config import AnfisaConfig
+from app.config import getDS_Schema
 from app.model.rest_api import RestAPI
 from app.model.dataset import DataSet
 
@@ -46,7 +47,10 @@ class Workspace(DataSet):
         self.mTabRecColor  = []
         self.mTabRecLabel = []
         self.mKey2Idx = None
+        metadata_record = dataset_info["meta"]
         self.mEvalSpace = WS_EvalSpace(self,
+            getDS_Schema(metadata_record).defineVariables(
+                self, metadata_record, "ws"),
             self._makeRecArrayFunc(self.mTabRecRand))
 
         self.mZygArrays = []
@@ -56,45 +60,35 @@ class Workspace(DataSet):
             self.mEvalSpace._addZygUnit(zyg_name,
                 self._makeRecArrayFunc(var_array))
 
-        transcript_id_unit = None
-        for unit_data in self.getFltSchema():
+        for unit_data in self.getFltModel():
             unit_h = loadWS_Unit(self.mEvalSpace, unit_data)
             if unit_h is not None:
                 self.mEvalSpace._addUnit(unit_h)
-                if unit_h.isTranscriptID() and transcript_id_unit is None:
-                    transcript_id_unit = unit_h.getName()
         self._loadPData()
         self._loadFData()
         self.mRulesUnit = RulesUnit(self)
         self.mEvalSpace._insertUnit(self.mRulesUnit, insert_idx = 0)
-        if not transcript_id_unit:
-            transcript_id_unit = AnfisaConfig.configOption("ws.transcript.id")
-        self.mEvalSpace._setupTrIdUnit(transcript_id_unit)
+        self.mEvalSpace.standUp()
         self.mTagsMan = None
         self.startService()
 
         self.mTagsMan = TagsManager(self, "Check-Tags")
         self.mZoneHandlers  = []
         for zone_it in self.iterStdItems("zone"):
-            unit_name = zone_it["data"]
+            unit_name = zone_it.getData()
             if unit_name == "_tags":
                 zone_h = self.mTagsMan
-                zone_h._setTitle(zone_it["name"])
+                zone_h._setTitle(zone_it.getName())
             else:
                 unit_h = self.mEvalSpace.getUnit(unit_name)
                 if (not unit_h):
                     continue
                 if (unit_h.getMean() == "panel"
                         and "dim-name" in unit_h.getDescr()):
-                    zone_h = PanelZoneH(self, zone_it["name"], unit_h)
+                    zone_h = PanelZoneH(self, zone_it.getName(), unit_h)
                 else:
-                    zone_h = FilterZoneH(self, zone_it["name"], unit_h)
+                    zone_h = FilterZoneH(self, zone_it.getName(), unit_h)
             self.mZoneHandlers.append(zone_h)
-
-        for filter_h in self.iterSolEntries("filter"):
-            filter_h.activate()
-        for dtree_h in self.iterSolEntries("dtree"):
-            dtree_h.activate()
 
     @staticmethod
     def _makeRecArrayFunc(val_array):
@@ -207,7 +201,6 @@ class Workspace(DataSet):
         for filter_h in self.iterSolEntries("filter"):
             if filter_h.getEvalStatus() != "ok":
                 continue
-            filter_h.activate()
             if filter_h.getCondition().recInSelection(rec_no):
                 ret_seq.append(filter_h.getName())
         return sorted(ret_seq)
@@ -217,7 +210,6 @@ class Workspace(DataSet):
         for dtree_h in self.iterSolEntries("dtree"):
             if dtree_h.getEvalStatus() != "ok":
                 continue
-            dtree_h.activate()
             if dtree_h.getFinalCondition().recInSelection(rec_no):
                 ret_seq.append(dtree_h.getName())
         return sorted(ret_seq)
@@ -251,7 +243,7 @@ class Workspace(DataSet):
                 self.mTagsMan.updateRec(rec_no, tags_data)
         rep = self.mTagsMan.makeRecReport(rec_no)
         rep["filters"] = self.getRecFilters(rec_no)
-        rep["tags-state"] = self.getSolEnv().getIntVersion("tags")
+        rep["tags-state"] = self.getSolRepo().getIntVersion("tags")
         return rep
 
     #===============================================
@@ -295,7 +287,7 @@ class Workspace(DataSet):
                 task = MacroTaggingOperation(self.mTagsMan, tag_name, rec_keys)
                 return {"task_id": self.getApp().runTask(task)}
             self.mTagsMan.macroTaggingOp(tag_name, rec_keys)
-        return {"tags-state": self.getSolEnv().getIntVersion("tags")}
+        return {"tags-state": self.getSolRepo().getIntVersion("tags")}
 
     #===============================================
     @RestAPI.ws_request

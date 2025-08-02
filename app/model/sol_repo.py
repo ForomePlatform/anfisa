@@ -18,30 +18,31 @@
 #  limitations under the License.
 #
 
+import logging
 from datetime import datetime
 
-from .sol_support import makeSolItemInfo
+from .sol_item import SolItem
 
 #===============================================
-class SolutionEnv:
-    sSolKeys = ["filter", "dtree", "panel.Symbol", "tags"]
+class SolutionRepo:
+    sSolKinds = ["filter", "dtree", "panel.Symbol", "tags"]
 
     @classmethod
-    def getSolKeys(cls):
-        return cls.sSolKeys
+    def getSolKinds(cls):
+        return cls.sSolKinds
 
     def __init__(self, mongo_connector, name):
         self.mName = name
         self.mMongoAgent = mongo_connector.getPlainAgent(name)
         self.mBrokers = []
-        self.mHandlers = {sol_kind: _SolKindMongoHandler(sol_kind, self)
-            for sol_kind in self.sSolKeys}
+        self.mHandlers = {sol_kind: _RepoKindHandler(self, sol_kind)
+            for sol_kind in self.sSolKinds}
 
     def getName(self):
         return self.mName
 
     def getAgentKind(self):
-        return "SolutionEnv"
+        return "SolutionRepo"
 
     def getMongoAgent(self):
         return self.mMongoAgent
@@ -83,29 +84,39 @@ class SolutionEnv:
 
     def dumpAll(self):
         ret = []
-        for rec_obj in self.mMongoAgent.find():
-            if rec_obj["_tp"] in self.sSolKeys:
-                rec = dict()
-                for key, val in rec_obj.items():
-                    if key != "_id":
-                        rec[key] = val
-                ret.append(rec)
+        for sol_kind in self.sSolKinds:
+            ret += self.mHandlers[sol_kind].dumpItems()
         return ret
 
 #===============================================
-class _SolKindMongoHandler:
-    def __init__(self, sol_kind, master):
+class _RepoKindHandler:
+    def __init__(self, master, sol_kind):
         self.mSolKind = sol_kind.replace('.', '_')
         self.mMaster = master
-        self.mEntries = dict()
+        self.mEntries = {}
+        self.mHashCodes = {}
         self.mIntVersion = 0
-        for it in self.mMaster.getMongoAgent().find({"_tp": self.mSolKind}):
-            assert "data" in it, "Mongo support is out of date"
-            assert it["name"] not in self.mEntries, (
-                "Key duplication: " + self.mSolKind + "/" + it["name"])
-            self.mEntries[it["name"]] = makeSolItemInfo(
-                self.mSolKind, it["name"], it["data"], it.get("rubric"),
-                it["time"], it["from"])
+        for descr in self._findItems():
+            assert "data" in descr, "Mongo support is out of date"
+            assert descr["_tp"] == self.mSolKind
+            if descr["name"] in self.mEntries:
+                nm = descr["name"]
+                logging.error(
+                    f"Kind {self.mSolKind}: name duplication {nm} ignored")
+                continue
+            item = SolItem(descr)
+            if item.getHashCode() in self.mHashCodes:
+                nm1 = descr["name"]
+                nm2 = self.mHashCodes[item.getHashCode()]["name"]
+                logging.error(
+                    f"Kind {self.mSolKind}: hashcode duplication with {nm1}" +
+                    f" {nm2} ignored")
+                continue
+            self.mEntries[descr["name"]] = item
+            self.mHashCodes[item.getHashCode()] = item
+
+    def _findItems(self):
+        return self.mMaster.getMongoAgent().find({"_tp": self.mSolKind})
 
     def getSolKind(self):
         return self.mSolKind
@@ -126,20 +137,39 @@ class _SolKindMongoHandler:
             assert checked_kind in (self.mSolKind, None), (
                 "Solution kind duplication conflict: "
                 + f"{checked_kind}/{self.mSolKind}")
-            info = makeSolItemInfo(self.mSolKind,
+            pre_item = self.mEntries.get("name")
+            item = SolItem.create(self.mSolKind,
                 name, value, rubric,
                 upd_time = datetime.now().isoformat(),
                 upd_from = upd_from)
             self.mMaster.getMongoAgent().update_one(
                 {"_tp": self.mSolKind, "name": name},
-                {"$set": info}, upsert = True)
-            self.mEntries[name] = info
+                {"$set": item.getDescr()}, upsert = True)
+            self.mEntries[name] = item
+            if pre_item is not None:
+                del self.mHashCodes[pre_item.getHashCode()]
+            self.mHashCodes[item.getHashCode()] = item
             self.mIntVersion += 1
             return True
         if option == "DELETE" and name in self.mEntries:
             self.mMaster.getMongoAgent().delete_many(
                 {"_tp": self.mSolKind, "name": name})
+            pre_item = self.mEntries.get("name")
             del self.mEntries[name]
+            if pre_item is not None:
+                del self.mHashCodes[pre_item.getHashCode()]
             self.mIntVersion += 1
             return True
         return False
+
+    def _dumpItems(self):
+        ret = []
+        for descr in self.mMongoAgent.find():
+            assert descr["_tp"] == self.mSolKind
+            rec = dict()
+            for key, val in descr.items():
+                if key != "_id":
+                    rec[key] = val
+            ret.append(rec)
+        return ret
+

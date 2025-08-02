@@ -33,10 +33,12 @@ class DruidAdmin(DruidAgent):
         self.mScpConfig = None
         self.mCopyDir = None
         self.mNoCoord = no_coord
+        self.mTransDir = None
         if "druid" in config:
             self.mScpConfig = config["druid"].get("scp")
             if self.mScpConfig is None:
                 self.mCopyDir = config["druid"].get("copydir")
+            self.mTransDir = config["druid"].get("trans-dir")
         self.mStartTime = self.str2dt(self.TIME_START)
 
     @staticmethod
@@ -83,6 +85,10 @@ class DruidAdmin(DruidAgent):
         else:
             base_dir = os.path.dirname(fdata_name)
             filter_name = os.path.basename(fdata_name)
+            if self.mTransDir is not None:
+                dir_from, dir_to = self.mTransDir
+                assert base_dir.startswith(dir_from)
+                base_dir = dir_to + base_dir[len(dir_from):]
 
         dim_container = [
             {"name": "_ord", "type": "long"},

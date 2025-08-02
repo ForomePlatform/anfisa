@@ -49,9 +49,9 @@ class RulesUnit(ComplexEnumUnit):
 
     def iterComplexCriteria(self, context, variants = None):
         for dtree_h in self.mDS.iterSolEntries("dtree"):
+            dtree_h.activate()
             if variants is not None and dtree_h.getName() not in variants:
                 continue
-            dtree_h.activate()
             yield dtree_h.getName(), dtree_h.getFinalCondition()
 
     def makeStat(self, condition, eval_h, stat_ctx):

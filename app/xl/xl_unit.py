@@ -87,7 +87,7 @@ class XL_NumUnit(XL_Unit, NumUnitSupport):
         if self.getEvalSpace().noHistogram():
             return None
         h_builder = NumHistogramBuilder(v_min, v_max, count, self)
-        h_info = h_builder.getInfo()
+        h_info = h_builder.getHistInfo()
         if h_info is None:
             return None
 

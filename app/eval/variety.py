@@ -255,8 +255,8 @@ class VarietySupport:
 
         if panel_res is not None:
             ret_handle["panels"] = panel_res
-            ret_handle["panel-state"] = self.getEvalSpace().getDS().getSolEnv(
-                ).getIntVersion(self.mPanelKind)
+            ret_handle["panel-state"] = self.getEvalSpace().getDS(
+                ).getSolRepo().getIntVersion(self.mPanelKind)
         if self.isDetailed():
             ret_handle["detailed"] = True
         return ret_handle
@@ -281,7 +281,8 @@ class VarietyUnit(VarUnit, MultiStatusUnitAdapter, VarietySupport):
             base_unit_h.getDescr()), "enum")
         MultiStatusUnitAdapter.__init__(self, base_unit_h)
         VarietySupport.__init__(self, base_unit_h.getDescr())
-        self.getInfo()["panel-name"] = self.getPanelUnit().getName()
+        self.addPresentationProperty(
+            "panel-name", self.getPanelUnit().getName())
         self._logStart(self.getEvalSpace().getDS().getName())
 
     def makeBaseCond(self, variants, filter_mode):
@@ -312,7 +313,8 @@ class VarietyPanelUnit(VarUnit):
             self, variety_h.getEvalSpace(),
             descr, "enum", "multi" if sub_kind is None else sub_kind)
         self.mVariety = variety_h
-        self.getInfo()["variety-name"] = self.mVariety.getName()
+        self.addPresentationProperty(
+            "variety-name", self.mVariety.getName())
 
     def getVariety(self):
         return self.mVariety

@@ -35,6 +35,7 @@ fi
 [ ! -d "export/work" ] && mkdir -p export/work
 [ ! -d "logs" ] && mkdir logs
 [ ! -d "vault" ] && mkdir vault
+[ ! -d "pre-build" ] && mkdir pre-build
 
 rm vault/*
 if [ ! -d data/docs ] ; then

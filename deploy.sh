@@ -29,6 +29,7 @@ for flag in "$@"; do
       mkdir -p $ASETUP/ui
       mkdir -p $ASETUP/export
       mkdir -p $ASETUP/logs
+      mkdir -p $ASETUP/pre-build
       chmod -R a+rwx $ASETUP
     fi
     if [ ! -d "$ASETUP/../data" ]; then

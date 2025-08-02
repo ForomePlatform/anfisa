@@ -24,7 +24,6 @@ from app.eval.condition import ConditionMaker
 from app.model.sol_pack import SolutionPack
 from app.model.sol_support import StdNameSupport
 from app.model.tab_report import ReportTabSchema
-from . import iterDataConfigSchema, getDataConfigSchema
 from app.config.view_op_tune import prepareSeqColorTransform
 #===============================================
 
@@ -118,6 +117,7 @@ def clinVar_not_benign():
         ["benign"], "NOT")]
 
 #===============================================
+# Out of use now:
 def checkSolutionUnits(sol_kind, sol_name, unit_names, requires):
     if "Rules" in unit_names:
         if not requires or "WS" not in requires:
@@ -145,15 +145,9 @@ def setupSolutions(app_config):
     if sSolutionsAreReady:
         return
     sSolutionsAreReady = True
-    base_pack = SolutionPack("CASE", checkSolutionUnits)
+    base_pack = SolutionPack("CASE")
     setupGenericPack(app_config, base_pack)
     setupSolutions_Case(app_config, base_pack)
-
-    for schema_name, schema_h in iterDataConfigSchema():
-        pack = SolutionPack(schema_name, checkSolutionUnits)
-        setupGenericPack(app_config, pack)
-        schema_h.setupSolutions(app_config, pack)
-
 
 #===============================================
 def setupSolutions_Case(app_config, base_pack):
@@ -487,10 +481,3 @@ def setupInstanceSolutions(app_config, base_pack):
         for file_name in glob(dir_pass + "/*.lst"):
             panel_name = file_name.rpartition('/')[2].rpartition('.')[0]
             base_pack.regPanel(panel_name, panel_type, file_name)
-
-
-#===============================================
-def startTune(ds_h):
-    data_schema = getDataConfigSchema(ds_h.getDataSchema())
-    if data_schema is not None:
-        data_schema.startTune(ds_h)

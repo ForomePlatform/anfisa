@@ -1,0 +1,777 @@
+aspects:
+- aspect: view_gen
+  title: General
+  source: _view
+  field: general
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: genes
+    title: Gene(s)
+    kind: sequence
+    tooltip: Gene Symbol (Ensembl classification)
+  - attribute: hg19
+    tooltip: Genetic coordinates in HG19 Assembly
+  - attribute: hg38
+    tooltip: Genetic coordinates in HG38 Assembly
+  - attribute: worst_annotation
+    title: Worst Annotation
+    tooltip: Most Severe Consequences from the transcript with the worst annotation.
+      The set of consequence terms is  defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+      See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+      for details
+  - attribute: canonical_annotation
+    title: Canonical Annotations
+    kind: sequence
+    tooltip: Most Severe Consequences from canonical transcripts. The set of consequence
+      terms is  defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+      See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+      for details
+  - attribute: refseq_transcript_canonical
+    title: RefSeq Transcript (Canonical)
+    kind: sequence
+  - attribute: refseq_transcript_worst
+    title: RefSeq Transcript (Worst)
+    kind: sequence
+  - attribute: ensembl_transcripts_canonical
+    title: Ensembl Transcripts (Canonical)
+    kind: sequence
+  - attribute: ensembl_transcripts_worst
+    title: Ensembl Transcripts (Worst)
+    kind: sequence
+  - attribute: ref
+    title: Ref
+  - attribute: original_ref
+    title: Denormalized Ref in VCF
+  - attribute: alt
+    title: Alt
+  - attribute: original_alt
+    title: Denormalized Alt in VCF
+  - attribute: mostly_expressed
+    title: Mostly expressed in
+    kind: sequence
+  - attribute: splice_region
+    title: Splice Region
+    kind: sequence
+  - attribute: gene_splicer
+    title: GeneSplicer
+    kind: sequence
+  - attribute: splice_altering
+    title: Splice AI splice altering
+  - attribute: cpos_worst
+    title: cPos (Worst)
+    kind: sequence
+  - attribute: cpos_canonical
+    title: cPos (Canonical)
+    kind: sequence
+  - attribute: cpos_other
+    title: cPos (Other)
+    kind: sequence
+  - attribute: ppos_worst
+    title: pPos (Worst)
+    kind: sequence
+  - attribute: ppos_canonical
+    title: pPos (Canonical)
+    kind: sequence
+  - attribute: ppos_other
+    title: pPos (Other)
+    kind: sequence
+  - attribute: variant_exon_canonical
+    title: Variant Exon (Canonical)
+    kind: sequence
+    tooltip: 'Exon # according to canonical transcript'
+  - attribute: variant_exon_worst
+    title: Variant Exon (Worst Annotation)
+    kind: sequence
+    tooltip: 'Exon # according to the transcript with the worst annotation'
+  - attribute: variant_intron_worst
+    title: Variant Intron (Worst Annotation)
+    kind: sequence
+    tooltip: 'Intron # according to the transcript with the worst annotation'
+  - attribute: variant_intron_canonical
+    title: Variant Intron (Canonical)
+    kind: sequence
+    tooltip: 'Intron # according to canonical transcript'
+  - attribute: gene_lists
+    kind: place
+  - attribute: proband_genotype
+    title: Proband Genotype
+    requires: '{''PROBAND''}'
+  - attribute: maternal_genotype
+    title: Maternal Genotype
+  - attribute: paternal_genotype
+    title: Paternal Genotype
+  - attribute: igv
+    title: IGV
+    kind: place
+    tooltip: Open this variant in local IGV (https://software.broadinstitute.org/software/igv/)
+  - attribute: ucsc
+    title: View in UCSC
+    kind: place
+    tooltip: View this variant in UCSC Browser
+  - attribute: transcripts
+    title: Transcripts
+    kind: sequence
+  - attribute: op_filters
+    title: Presence in filters
+    kind: place
+    tooltip: Filters positive on variant
+  - attribute: op_dtrees
+    title: Presence in decision trees
+    kind: place
+    tooltip: Decision trees positive on variant
+  - attribute: op_has_variant
+    title: Has variant
+    kind: place
+    tooltip: Samples having variant
+- aspect: view_transcripts
+  title: Transcripts
+  source: _view
+  col-groups:
+    columns:
+    - column: transcripts
+      title: Transcripts
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: id
+    title: Transcript Id
+  - attribute: gene
+    title: Gene
+  - attribute: is_canonical
+    title: Canonical
+  - attribute: gencode_basic
+    title: GENCODE Basic
+    tooltip: The transcripts tagged as “basic” form part of a subset of representative
+      transcripts for each gene. This subset prioritises full-length protein coding
+      transcripts over partial or non-protein coding transcripts within the same gene,
+      and intends to highlight those transcripts that will be useful to the majority
+      of users.
+  - attribute: is_worst
+    title: Worst?
+  - attribute: transcript_source
+    title: Source
+  - attribute: biotype
+    title: Biotype
+  - attribute: transcript_annotations
+    title: Consequences
+    kind: sequence
+  - attribute: variant_exon
+    title: Exon
+  - attribute: variant_intron
+    title: Intron
+  - attribute: tr_gene_lists
+    kind: place
+  - attribute: cpos
+    title: CPos
+  - attribute: hgvs_c_snp_eff
+    title: CPos SnpEff
+  - attribute: hgvs_c_annovar
+    title: CPos ANNOVAR
+  - attribute: ppos
+    title: PPos
+  - attribute: hgvs_p_snp_eff
+    title: PPos SnpEff
+  - attribute: hgvs_p_annovar
+    title: PPos ANNOVAR
+  - attribute: amino_acids
+    title: Amino acids
+  - attribute: codons
+    title: Codons
+  - attribute: codonpos
+    title: Codon Pos
+  - attribute: refcodon
+    title: Ref Codon
+  - attribute: region
+    title: Gene Region
+  - attribute: cds
+    title: CDS?
+  - attribute: masked_region
+    title: Masked
+  - attribute: dist_from_exon
+    title: Distance from Exon Boundary
+  - attribute: polyphen2_hdiv_prediction
+    title: Polyphen HDIV
+  - attribute: polyphen2_hvar_prediction
+    title: Polyphen HVAR
+  - attribute: sift_prediction
+    title: SIFT
+  - attribute: sift_4g_prediction
+    title: SIFT 4G
+  - attribute: mutation_assessor_prediction
+    title: Mutation Assessor
+  - attribute: fathmm_prediction
+    title: FATHMM
+  - attribute: polyphen2_hdiv_score
+    title: Polyphen HDIV Score
+  - attribute: polyphen2_hvar_score
+    title: Polyphen HVAR Score
+  - attribute: sift_score
+    title: SIFT Score
+  - attribute: sift_4g_score
+    title: SIFT 4G Score
+  - attribute: mutation_assessor_score
+    title: Mutation Assessor Score
+  - attribute: fathmm_score
+    title: FATHMM Score
+  - attribute: mpc_score
+    title: MPC Score
+  - attribute: ensembl_gene_id
+    title: Gene Id
+    kind: hidden
+  - attribute: ensembl_protein_id
+    title: Protein Id
+    kind: hidden
+  - attribute: uniprot_acc
+    title: Uniprot
+    kind: place
+- aspect: view_qsamples
+  title: Quality
+  source: _view
+  col-groups:
+    columns:
+    - column: quality_samples
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: title
+    title: Title
+  - attribute: qd
+    title: Quality by Depth
+    kind: numeric
+    tooltip: The QUAL score normalized by allele depth (AD) for a variant. This annotation
+      puts the variant confidence QUAL score into perspective by normalizing for the
+      amount of coverage available. Because each read contributes a little to the
+      QUAL score, variants in regions with deep coverage can have artificially inflated
+      QUAL scores, giving the impression that the call is supported by more evidence
+      than it really is. To compensate for this, we normalize the variant confidence
+      by depth, which gives us a more objective picture of how well supported the
+      call is.
+  - attribute: mq
+    title: Mapping Quality
+    kind: numeric
+    tooltip: This is the root mean square mapping quality over all the reads at the
+      site. Instead of the average mapping quality of the site, this annotation gives
+      the square root of the average of the squares of the mapping qualities at the
+      site. When the mapping qualities are good at a site, the MQ will be around 60.
+      Broad Institute recommendation is to fail any variant with an MQ value less
+      than 40.0
+  - attribute: variant_call_quality
+    title: Variant Call Quality
+    tooltip: QUAL tells you how confident we are that there is some kind of variation
+      at a given site. The variation may be present in one or more samples.
+  - attribute: strand_odds_ratio
+    title: Strand Odds Ratio
+    kind: numeric
+    tooltip: Another way to estimate strand bias using a test similar to the symmetric
+      odds ratio test. SOR was created because FS tends to penalize variants that
+      occur at the ends of exons. Reads at the ends of exons tend to only be covered
+      by reads in one direction and FS gives those variants a bad score. SOR will
+      take into account the ratios of reads that cover both alleles.
+  - attribute: fs
+    title: Fisher Strand Bias
+    kind: numeric
+    tooltip: Phred-scaled probability that there is strand bias at the site. Strand
+      Bias tells us whether the alternate allele was seen more or less often on the
+      forward or reverse strand than the reference allele. When there little to no
+      strand bias at the site, the FS value will be close to 0.
+  - attribute: allelic_depth
+    title: Allelic Depth
+    tooltip: AD is the unfiltered allele depth, i.e. the number of reads that support
+      each of the reported alleles. All reads at the position (including reads that
+      did not pass the variant caller's filters) are included in this number, except
+      reads that were considered uninformative. Reads are considered uninformative
+      when they do not provide enough statistical evidence to support one allele over
+      another.
+  - attribute: read_depth
+    title: Read Depth
+    tooltip: DP - is a number of times that base pair locus was read
+  - attribute: ft
+    title: FILTERs
+    kind: sequence
+    tooltip: This field contains the name(s) of any filter(s) that the variant fails
+      to pass, or the value PASS if the variant passed all filters. If the FILTER
+      value is ., then no filtering has been applied to the records.
+  - attribute: genotype_quality
+    title: Genotype Quality
+    tooltip: GQ tells you how confident we are that the genotype we assigned to a
+      particular sample is correct. It is simply the second lowest PL, because it
+      is the difference between the second lowest PL and the lowest PL (always 0).
+  - attribute: genotype
+    title: Sample Genotype
+- aspect: view_gnomAD
+  title: gnomAD
+  source: _view
+  field: gnomAD
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: allele
+    title: Allele
+  - attribute: proband
+    title: Proband
+    requires: '{''PROBAND''}'
+  - attribute: pli
+    title: pLI
+    kind: sequence
+  - attribute: af
+    title: Overall AF
+  - attribute: genome_af
+    title: Genome AF
+  - attribute: exome_af
+    title: Exome AF
+  - attribute: hom
+    title: Number of homozygotes
+  - attribute: hem
+    title: Number of hemizygotes
+  - attribute: genome_an
+    title: Genome AN
+  - attribute: exome_an
+    title: Exome AN
+  - attribute: url
+    title: URL
+    kind: link sequence
+  - attribute: popmax
+    title: PopMax (outbred populations)
+  - attribute: raw_popmax
+    title: PopMax (including inbred)
+- aspect: view_db
+  title: Databases
+  source: _view
+  field: databases
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: hgmd
+    title: HGMD
+  - attribute: hgmd_hg38
+    title: HGMD (HG38)
+  - attribute: hgmd_tags
+    title: HGMD TAGs
+    kind: sequence
+  - attribute: hgmd_phenotypes
+    title: HGMD Phenotypes
+    kind: sequence
+  - attribute: hgmd_pmids
+    title: HGMD PMIDs
+    kind: place sequence
+  - attribute: omim
+    title: OMIM
+    kind: place sequence
+  - attribute: clinVar_variants
+    title: ClinVar Variants
+    kind: sequence
+  - attribute: clinVar_significance
+    title: ClinVar Significance
+    kind: sequence
+  - attribute: clinvar_review_status
+    title: ClinVar Review Status
+  - attribute: num_clinvar_submitters
+    title: 'ClinVar: Number of submitters'
+  - attribute: clinvar_acmg_guidelines
+    title: ClinVar ACMG Guidelines
+    kind: sequence
+  - attribute: clinvar_trusted
+    title: Clinical Significance by Trusted Submitters
+    kind: json
+  - attribute: lmm_significance
+    title: Clinical Significance by LMM
+  - attribute: gene_dx_significance
+    title: Clinical Significance by GeneDx
+  - attribute: clinVar_phenotypes
+    title: ClinVar Phenotypes
+    kind: sequence
+  - attribute: clinVar_submitters
+    title: ClinVar Submitters
+    kind: sequence
+  - attribute: clinVar
+    title: ClinVar
+    kind: link sequence
+  - attribute: gtex
+    kind: place
+  - attribute: gene_cards
+    title: GeneCards
+    kind: place sequence
+  - attribute: grev
+    kind: place sequence
+  - attribute: medgen
+    kind: place sequence
+  - attribute: beacons
+    title: Observed at
+    kind: sequence
+  - attribute: references
+    kind: place sequence
+- aspect: view_pred
+  title: Predictions
+  source: _view
+  field: predictions
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: lof_score
+    title: LoF Score
+    kind: sequence
+  - attribute: lof_score_canonical
+    title: LoF Score (Canonical)
+    kind: sequence
+  - attribute: max_ent_scan
+    title: MaxEntScan
+    kind: sequence
+  - attribute: polyphen
+    title: Polyphen
+    kind: sequence
+    tooltip: https://brb.nci.nih.gov/seqtools/colexpanno.html#dbnsfp
+  - attribute: polyphen2_hvar
+    title: Polyphen 2 HVAR
+    kind: sequence
+    tooltip: HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation
+      (disease mutations vs. common neutral variants)
+  - attribute: polyphen2_hdiv
+    title: Polyphen 2 HDIV
+    kind: sequence
+    tooltip: HumDiv (HDIV) classifier is trained on a smaller number of select extreme
+      effect disease mutations vs. divergence with close homologs (e.g. primates),
+      which is supposed to consist of mostly neutral mutations.
+  - attribute: sift
+    title: SIFT from dbNSFP
+    kind: sequence
+    tooltip: 'Sort intolerated from tolerated (An amino acid at a position is tolerated
+      | The most frequentest amino acid being tolerated). D: Deleterious T: tolerated'
+  - attribute: sift_vep
+    title: SIFT from VEP
+    kind: sequence
+  - attribute: revel
+    title: REVEL
+    kind: sequence
+  - attribute: mutation_taster
+    title: Mutation Taster
+    kind: sequence
+    tooltip: 'Bayes Classifier. A: (disease_causing_automatic); D: (disease_causing);
+      N: (polymorphism [probably harmless]); P: (polymorphism_automatic[known to be
+      harmless])'
+  - attribute: mutation_assessor_predictions
+    title: MutationAssessor
+    kind: sequence
+    tooltip: 'MutationAssessor functional impact of a variant : predicted functional,
+      i.e. high (“H”) or medium (“M”), or predicted non-functional, i.e. low (“L”)
+      or neutral (“N”). The MAori score cutoffs between “H” and “M”, “M” and “L”,
+      and “L” and “N”, are 3.5, 1.935 and 0.8, respectively. The rankscore cutoffs
+      between “H” and “M”, “M” and “L”, and “L” and “L”, are 0.92922, 0.51944 and
+      0.19719, respectively.'
+  - attribute: fathmm
+    title: FATHMM
+    kind: sequence
+    tooltip: 'Functional analysis through hidden markov model HMM.D: Deleterious;
+      T: Tolerated'
+  - attribute: primate_ai_pred
+    title: PrimateAI
+    kind: sequence
+    tooltip: Prediction of PrimateAI score based on the authors recommendation, “T(olerated)”
+      or “D(amaging)”. The score cutoff between “D” and “T” is 0.803.
+  - attribute: cadd_phred
+    title: CADD (Phred)
+    kind: sequence
+    tooltip: CADD Combined annotation dependent depletion
+  - attribute: cadd_raw
+    title: CADD (Raw)
+    kind: sequence
+    tooltip: CADD Combined annotation dependent depletion
+  - attribute: sift_score
+    title: SIFT score
+    kind: sequence
+  - attribute: polyphen2_hvar_score
+    title: Polyphen 2 HVAR score
+    kind: sequence
+  - attribute: polyphen2_hdiv_score
+    title: Polyphen 2 HDIV score
+    kind: sequence
+  - attribute: mutation_assessor_scores
+    title: MutationAssessor score (MAori)
+    kind: sequence
+    tooltip: MutationAssessor functional impact combined score (MAori). Multiple entries
+      are separated by “;”, corresponding to Uniprot_entry.
+  - attribute: dann_score
+    title: DANN Functional Prediction score
+    kind: sequence
+    tooltip: DANN is a functional prediction score retrained based on the training
+      data of CADD using deep neural network
+- aspect: view_pharmagkb
+  title: Pharmacogenomics
+  source: _view
+  field: pharmacogenomics
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: diseases
+    title: Diseases
+    kind: place sequence
+  - attribute: chemicals
+    title: Chemicals
+    kind: sequence
+  - attribute: notes
+    title: Notes
+    kind: sequence
+  - attribute: pmids
+    title: PMIDs
+    kind: sequence
+- aspect: view_genetics
+  title: Bioinformatics
+  source: _view
+  field: bioinformatics
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: zygosity
+    title: Zygosity
+  - attribute: inherited_from
+    title: Inherited from
+  - attribute: region_worst
+    title: Gene Region (Worst)
+    kind: sequence
+  - attribute: dist_from_exon_worst
+    title: Distance From Intron/Exon Boundary (Worst)
+    kind: sequence
+  - attribute: region_canonical
+    title: Gene Region (Canonical)
+    kind: sequence
+  - attribute: dist_from_exon_canonical
+    title: Distance From Intron/Exon Boundary (Canonical)
+    kind: sequence
+  - attribute: masked_region
+    title: Masked
+  - attribute: gerp_rs
+    title: GERP Score
+  - attribute: conservation
+    title: Conservation
+    kind: json
+  - attribute: species_with_variant
+    title: Species with variant
+  - attribute: species_with_others
+    title: Species with other variants
+  - attribute: max_ent_scan
+    title: MaxEntScan
+    kind: sequence
+  - attribute: nn_splice
+    title: NNSplice
+  - attribute: human_splicing_finder
+    title: Human Splicing Finder
+  - attribute: splice_ai_ag
+    title: Splice AI acceptor gain
+    kind: sequence
+  - attribute: splice_ai_al
+    title: Splice AI acceptor loss
+    kind: sequence
+  - attribute: splice_ai_dg
+    title: Splice AI donor gain
+    kind: sequence
+  - attribute: splice_ai_dl
+    title: Splice AI donor loss
+    kind: sequence
+  - attribute: splice_ai
+    kind: hidden
+  - attribute: eqtl_gene
+    title: EQTL Gene
+    kind: sequence
+  - attribute: refcodon
+    title: Ref Codon(s)
+    kind: sequence
+  - attribute: other_genes
+    title: Gene symbols from other transcripts
+    kind: sequence
+  - attribute: called_by
+    title: Called by
+    kind: sequence
+  - attribute: caller_data
+    title: CALLER DATA
+- aspect: view_cohorts
+  title: Cohorts
+  source: _view
+  field: cohorts
+  mode: dict
+  view-kind: norm
+  attrs:
+  - attribute: AF
+  - attribute: AF2
+    title: AF_Hom
+  requires: COHORTS
+- aspect: view_inheritance
+  title: Inheritance
+  source: _view
+  field: inheritance
+  ignored: true
+  mode: dict
+  view-kind: norm
+  attrs: []
+- aspect: _main
+  title: VEP Data
+  source: __data
+  mode: dict
+  view-kind: tech
+  attrs:
+  - attribute: label
+  - attribute: color_code
+  - attribute: id
+    kind: sequence
+  - attribute: assembly_name
+    title: Assembly
+  - attribute: seq_region_name
+  - attribute: start
+  - attribute: end
+  - attribute: strand
+  - attribute: allele_string
+  - attribute: variant_class
+  - attribute: most_severe_consequence
+  - attribute: ClinVar
+    kind: sequence
+  - attribute: clinvar_variants
+    kind: sequence
+  - attribute: clinvar_phenotypes
+    kind: sequence
+  - attribute: clinvar_significance
+    kind: sequence
+  - attribute: HGMD
+  - attribute: HGMD_HG38
+  - attribute: HGMD_PIMIDs
+    kind: hidden sequence
+  - attribute: HGMD_phenotypes
+    kind: hidden sequence
+  - attribute: EXPECTED
+  - attribute: gnomad_db_genomes_af
+    kind: hidden
+  - attribute: gnomad_db_exomes_af
+    kind: hidden
+  - attribute: SEQaBOO
+- aspect: transcripts
+  title: VEP Transcripts
+  source: __data
+  col-groups:
+    columns:
+    - column: transcript_consequences
+      title: Transcript
+    - column: regulatory_feature_consequences
+      title: Regulatory
+    - column: motif_feature_consequences
+      title: Motif
+    - column: intergenic_consequences
+      title: Intergenic
+  mode: dict
+  view-kind: tech
+  attrs:
+  - attribute: amino_acids
+  - attribute: bam_edit
+  - attribute: biotype
+  - attribute: cadd_phred
+  - attribute: cadd_raw
+  - attribute: canonical
+  - attribute: ccds
+  - attribute: cdna_end
+  - attribute: cdna_start
+  - attribute: cds_end
+  - attribute: cds_start
+  - attribute: clinvar_clnsig
+  - attribute: clinvar_rs
+  - attribute: codons
+  - attribute: consequence_terms
+    kind: sequence
+  - attribute: conservation
+  - attribute: distance
+  - attribute: domains
+    kind: json sequence
+  - attribute: exacpli
+  - attribute: exon
+  - attribute: fathmm_pred
+  - attribute: fathmm_score
+  - attribute: flags
+    kind: sequence
+  - attribute: gene_id
+  - attribute: gene_pheno
+  - attribute: genesplicer
+  - attribute: gene_symbol
+  - attribute: gene_symbol_source
+  - attribute: given_ref
+  - attribute: gnomad_exomes_ac
+  - attribute: gnomad_exomes_af
+  - attribute: gnomad_exomes_an
+  - attribute: gnomad_exomes_asj_af
+  - attribute: gnomad_genomes_ac
+  - attribute: gnomad_genomes_af
+  - attribute: gnomad_genomes_an
+  - attribute: gnomad_genomes_asj_af
+  - attribute: hgnc_id
+  - attribute: hgvs_offset
+  - attribute: hgvsc
+  - attribute: hgvsp
+  - attribute: high_inf_pos
+  - attribute: impact
+  - attribute: intron
+  - attribute: loftool
+  - attribute: maxentscan_alt
+  - attribute: maxentscan_diff
+  - attribute: maxentscan_ref
+  - attribute: motif_feature_id
+  - attribute: motif_name
+  - attribute: motif_pos
+  - attribute: motif_score_change
+  - attribute: mutationassessor_pred
+  - attribute: mutationassessor_score
+  - attribute: mutationtaster_pred
+  - attribute: mutationtaster_score
+  - attribute: polyphen2_hdiv_pred
+  - attribute: polyphen2_hdiv_score
+  - attribute: polyphen2_hvar_pred
+  - attribute: polyphen2_hvar_score
+  - attribute: polyphen_prediction
+  - attribute: polyphen_score
+  - attribute: protein_end
+  - attribute: protein_id
+  - attribute: protein_start
+  - attribute: regulatory_feature_id
+  - attribute: revel_score
+  - attribute: sift_pred
+  - attribute: sift_prediction
+  - attribute: sift_score
+  - attribute: strand
+  - attribute: source
+  - attribute: spliceregion
+    kind: sequence
+  - attribute: swissprot
+    kind: sequence
+  - attribute: transcript_id
+  - attribute: trembl
+    kind: sequence
+  - attribute: uniparc
+    kind: sequence
+  - attribute: used_ref
+  - attribute: variant_allele
+- aspect: colocated_v
+  title: Colocated Variants
+  source: __data
+  col-groups:
+    columns:
+    - column: colocated_variants
+  mode: dict
+  view-kind: tech
+  attrs:
+  - attribute: id
+  - attribute: start
+  - attribute: end
+  - attribute: allele_string
+  - attribute: strand
+  - attribute: pubmed
+    kind: sequence
+  - attribute: somatic
+  - attribute: gnomAD
+  - attribute: frequencies
+    kind: json
+  - attribute: phenotype_or_disease
+  - attribute: seq_region_name
+  - attribute: clin_sig
+    kind: sequence
+  - attribute: minor
+- aspect: input
+  title: VCF
+  source: __data
+  field: input
+  mode: string
+  view-kind: norm
+  attrs: []

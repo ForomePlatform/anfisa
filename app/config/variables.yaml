@@ -1,0 +1,1180 @@
+- group: Inheritance
+  comment: |
+      Variables based on inheritance properties of the case
+  attributes:
+  - attribute: Variant_in
+    title: Variant presence in cohorts
+    type: multiset
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    comment: |
+      This annotation is only used when "cohort mode" is enabled. Cohort
+      mode means that the case includes multiple (usually hundreds) of patients
+      belonging to different cohorts corresponding to their phenotype.
+
+      A list of cohorts, where this variant is present among patients.
+    requires:
+    - COHORTS
+  - attribute: Callers
+    title: Called by
+    type: multiset
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    comment: |
+      A list of variant callers that have called this variant
+  - attribute: Inheritance_Mode
+    title: Inheritance Mode
+    type: func
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    comment: |
+      Presumed inheritance mode, one of:
+       * Homozygous recessive
+       * Autosomal dominant
+       * X-linked
+       * Recessive / Compound heterozygous
+  - attribute: Custom_Inheritance_Mode
+    title: Custom Inheritance Mode
+    type: func
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+  - attribute: Compound_Het
+    title: Calculated Compound
+    type: func
+    knowledge_domain: phenotype
+    scale: gene
+    purpose: phenotype
+  - attribute: Compound_Request
+    title: Calculated Compound Request
+    type: func
+    knowledge_domain: phenotype
+    scale: gene
+    purpose: phenotype
+  - attribute: Proband_Zygosity
+    title: Proband Zygosity
+    type: status
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    requires:
+    - PROBAND
+    default: 'False'
+  - attribute: Num_Samples
+    title: Number of Samples
+    type: int
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    description: Number of samples in the case for which this variant has been called
+    default: '0'
+  - attribute: Has_Variant
+    type: multiset
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+- group: Cohorts
+  attributes:
+  - attribute: ALL_AF
+    title: AD for all cohorts
+    type: float
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    comment: |
+      This annotation is only used when "cohort mode" is enabled. Cohort
+      mode means that the case includes multiple (usually hundreds) of patients
+      belonging to different cohorts corresponding to their phenotype.
+
+      This annotation contains allele frequency of a certain allele among all
+      patients in all cohorts
+    requires:
+    - COHORTS
+    default: '0'
+  - attribute: ALL_AF2
+    title: AF Hom for all cohorts
+    type: float
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: phenotype
+    comment: |
+      This annotation is only used when "cohort mode" is enabled. Cohort
+      mode means that the case includes multiple (usually hundreds) of patients
+      belonging to different cohorts corresponding to their phenotype.
+
+      This annotation contains frequency of a certain allele seen in the homozygous
+      state among all patients in all cohorts
+    description: Frequency of the allele in homozygous state for all cohorts
+    requires:
+    - COHORTS
+    default: '0'
+  - attribute: Cohort_{}_AF
+    alt-names:
+    - "{}_AF"
+    template-base: cohort
+    type: float
+    knowledge_domain: phenotype
+    scale: variant
+  - attribute: Cohort_{}_AF2
+    alt-names:
+    - "{}_AF2"
+    template-base: cohort
+    title: AF Hom for cohort {}
+    type: float
+    knowledge_domain: phenotype
+    scale: variant
+- group: Variant
+  attributes:
+  - attribute: Variant_Class
+    type: status
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: Variant class as returned by VEP. The class of a variant is based
+      on Sequence Ontology and is called according to its component alleles and its
+      mapping to the reference genome. https://useast.ensembl.org/info/genome/variation/prediction/classification.html#classes
+    default: 'False'
+  - attribute: Most_Severe_Consequence
+    type: status
+    knowledge_domain: function
+    scale: variant
+    method: bioinf
+    purpose: evidence
+    description: |
+      Most Severe Consequences from the transcript with the worst annotation.
+       The set of consequence terms is
+       defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+       See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+       for details.
+    default: undefined
+    variants: Most_Severe_Consequence
+  - attribute: Canonical_Annotation
+    type: multiset
+    knowledge_domain: function
+    scale: variant
+    method: bioinf
+    purpose: evidence
+    description: |
+      Most Severe Consequences from canonical transcripts.
+       The set of consequence terms is
+       defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+       See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+       for details.
+    default: undefined
+  - attribute: Multiallelic
+    title: Multi-allelic?
+    type: status
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    comment: |
+      Is this variant multi-allelic? I.e., has more than one alternative alleles
+      been observed at the same site for samples included in the case?
+    default: 'False'
+  - attribute: Altered_VCF
+    title: Has VCF been normalized?
+    type: status
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    comment: |
+      This annotation notes if the original VCF record for this variant had to be
+      modified in order to be normalized
+    default: 'False'
+  - attribute: Number_ALTs
+    title: Number of Alternative alleles
+    type: int
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+- group: Genes
+  attributes:
+  - attribute: Symbol
+    panel: Gene_Lists
+    type: variety
+    panel-type: Symbol
+    scale: transcript
+    purpose: evidence
+    comment: |
+      Gene symbol for gene(s) in which the varaint is observed
+  - attribute: Gene_Lists
+    alt-names:
+    - Panels
+    type: panel
+    scale: transcript
+    purpose: evidence
+  - attribute: EQTL_Gene
+    title: EQTL Gene
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: window
+    method: statgen
+    purpose: evidence
+    default: None
+  - attribute: Num_Genes
+    title: Number of overlapping genes
+    type: int
+    scale: position
+    purpose: evidence
+    default: '0'
+  - attribute: Num_Transcripts
+    title: Number of transcripts at the position
+    type: int
+    scale: position
+    purpose: evidence
+    default: '0'
+- group: Transcripts
+  attributes:
+  - attribute: Transcript_consequence
+    type: multiset
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: |
+
+       The set of consequence terms is
+       defined by the Sequence Ontology (SO) http://www.sequenceontology.org/.
+       See https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html
+       for details.
+    default: undefined
+    variants: Most_Severe_Consequence
+  - attribute: Transcript_canonical
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    description: This is a boolean flag, indicating whether the transcript is canonical.
+    default: 'False'
+  - attribute: Transcript_GENCODE_Basic
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    default: 'False'
+  - attribute: Transcript_biotype
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    default: undefined
+  - attribute: Transcript_worst
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: |
+      Indicates whether the consequences of the given variant in a given transcript are worse (or the same)
+      as in all other transcripts
+    default: 'False'
+  - attribute: Transcript_id
+    type: status
+    transcript-mode: master
+    scale: transcript
+    purpose: evidence
+    default: undefined
+    render-mode: tree-map
+  - attribute: Transcript_Gene
+    alt-names: Transctript_Gene
+    panel: Transcript_Gene_Lists
+    type: variety
+    transcript-mode: true
+    panel-type: Symbol
+    scale: transcript
+    purpose: evidence
+    default: undefined
+  - attribute: Transcript_Gene_Lists
+    alt-names:
+    - Transcript_Gene_Panels
+    type: panel
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+  - attribute: Transcript_source
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    default: undefined
+  - attribute: Transcript_codon_pos
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    default: undefined
+  - attribute: Transcript_region
+    title: Gene Region
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: window
+    purpose: evidence
+    comment: |
+      The regions field as returned by VEP.
+    default: undefined
+  - attribute: Transcript_CDS
+    title: CDS?
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    default: '-'
+  - attribute: Transcript_masked
+    title: Masked
+    type: status
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    comment: |
+      Whether a variant falls in a "Masked-repeats" region (for tandem repeats).
+      In FASTA files for an assembly repeat elements are usually written in lower case.
+    reference: https://training.galaxyproject.org/training-material/topics/genome-annotation/tutorials/repeatmasker/tutorial.html
+    default: 'No'
+  - attribute: Transcript_dist_from_exon
+    title: Distance from Exon Boundary
+    type: int
+    transcript-mode: true
+    scale: transcript
+    purpose: evidence
+    default: '-1'
+- group: Transcript_Predictions
+  attributes:
+  - attribute: Transcript_PolypPhen_HDIV
+    type: status
+    transcript-mode: true
+    knowledge_domain: popgen
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: HumDiv (HDIV) classifier is trained on a smaller number of select
+      extreme effect disease mutations vs. divergence with close homologs (e.g. primates),
+      which is supposed to consist of mostly neutral mutations.
+    default: 'False'
+  - attribute: Transcript_PolyPhen_HVAR
+    type: status
+    transcript-mode: true
+    knowledge_domain: popgen
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation
+      (disease mutations vs. common neutral variants)
+    default: 'False'
+  - attribute: Transcript_SIFT
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: |
+      Sorting Intolerant from Tolerant (SIFT) is an algorithm that predicts the
+      potential impact of amino acid substitutions on protein function.
+
+      SIFT uses sequence homology to compute the likelihood that an amino acid
+      substitution will have an adverse effect on protein function. The underlying
+      assumption is that evolutionarily conserved regions tend to be less tolerant
+      f mutations, and hence amino acid substitutions or insertions/deletions
+      in these regions are more likely to affect function.
+
+      Values:
+
+       * D: Deleterious
+       * T: Tolerated
+    reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3394338/
+    default: 'False'
+  - attribute: Transcript_SIFT_4G
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    default: 'False'
+  - attribute: Transcript_FATHMM
+    type: status
+    transcript-mode: true
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    default: 'False'
+- group: Coordinates
+  attributes:
+  - attribute: Chromosome
+    type: status
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: undefined
+    variants: Chromosome
+  - attribute: GeneRegion
+    title: Gene Region
+    type: func
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+  - attribute: Start_Pos
+    title: Start Position
+    type: int
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: '9223372036854775807'
+    render-mode: neighborhood
+  - attribute: End_Pos
+    title: End Position
+    type: int
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: '0'
+    render-mode: neighborhood
+  - attribute: Dist_from_Exon
+    title: Distance From Intron/Exon Boundary
+    type: int
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: '0'
+    render-mode: log,<
+  - attribute: Dist_from_Exon_Canonical
+    title: Distance From Intron/Exon Boundary (Canonical)
+    type: int
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: '0'
+    render-mode: log,<
+  - attribute: Dist_from_Exon_Worst
+    title: Distance From Intron/Exon Boundary (Worst)
+    type: int
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: '0'
+    render-mode: log,<
+  - attribute: Region_Canonical
+    title: Region (Canonical)
+    type: multiset
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: Other
+  - attribute: Region_Worst
+    title: Region (Worst)
+    type: multiset
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: Other
+  - attribute: Region
+    title: Region (All)
+    type: status
+    transcript-mode: true
+    transcript-mode-flex:  true
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    comment: |
+      This annotation is calculated differently for small variants and for CNVs.
+
+      For small variants it s a union of all regions in the transcripts, see @Transcript_region
+      annotation. However, we also check if a
+      variant falls in a "Masked-repeats" region (for tandem repeats). In FASTA files for
+      an assembly repeat elements are usually written in lower case.  If a variant
+      is in a masked region, we add "masked-repeats" to the list of regions.
+    default: undefined
+  - attribute: In_hg19
+    alt-names:
+    - hg19
+    type: status
+    knowledge_domain: human
+    scale: position
+    purpose: evidence
+    default: Mapped
+    value-map: In_hg19
+- group: gnomAD
+  attributes:
+  - attribute: gnomAD_AF
+    title: gnomAD Allele Frequency (family)
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: gnomAD Overall Allele Frequency
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_AF_Exomes
+    title: gnomAD Exome Allele Frequency (family)
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_AF_Genomes
+    title: gnomAD Genome Allele Frequency (family)
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_AF_Proband
+    title: gnomAD Allele Frequency (proband)
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: gnomAD Overall Allele Frequency for the allele present in proband
+    requires:
+    - PROBAND
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_PopMax_AF
+    title: PopMax Allele Frequency
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: |
+      Allele Frequency (AF) of population derived in gnomAD_PopMax
+      (calculated the same way as gnomAD_AF, but for the specific population),
+      including inbred populations
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_PopMax
+    title: PopMax Ancestry
+    type: status
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: |
+      Population having the maximum AF (calculated the same way as gnomAD_AF, but per population),
+      including inbred populations
+    default: None
+  - attribute: gnomAD_PopMax_AN
+    title: Number of alleles in outbred PopMax Ancestry
+    type: int
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    default: '0'
+    render-mode: log,>
+  - attribute: gnomAD_PopMax_AF_Inbred
+    title: PopMax Allele Frequency (including inbred)
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    description: Maximum allele frequency across all populations (including inbred)
+    diap: [0.0, 1.0]
+    default: '0.0'
+    render-mode: log,<
+  - attribute: gnomAD_PopMax_Inbred
+    title: PopMax Ancestry (including inbred)
+    type: status
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    description: Population, including inbred, that has the maximum allele frequency
+    default: None
+  - attribute: gnomAD_PopMax_AN_Inbred
+    title: Number of alleles in (inbred) PopMax Ancestry
+    type: int
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    default: '0'
+    render-mode: log,>
+  - attribute: gnomAD_Hom
+    title: 'gnomAD: Number of homozygous'
+    type: int
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    default: '0'
+    render-mode: log,>
+  - attribute: gnomAD_Hem
+    title: 'gnomAD: Number of hemizygous'
+    type: int
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    default: '0'
+    render-mode: log,>
+- group: Databases
+  attributes:
+  - attribute: Presence_in_Databases
+    title: Presence in Databases
+    type: presence
+    knowledge_domain: human
+    scale: variant
+    purpose: evidence
+  - attribute: ClinVar_Submitters
+    title: ClinVar Submitters
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+  - attribute: Number_Submitters
+    title: Number of ClinVar Submitters
+    alt-names:
+    - Clinvar_Submitters_Count
+    type: int
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: '0'
+  - attribute: PMIDs
+    title: PMIDs
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    purpose: evidence
+  - attribute: Number_pmid
+    title: Number of PMIDs
+    type: int
+    knowledge_domain: human
+    scale: variant
+    purpose: evidence
+    default: '0'
+- group: Call_Quality
+  attributes:
+  - attribute: Proband_GQ
+    title: Genotype Quality (GQ) for Proband
+    type: float
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: GQ tells you how confident we are that the genotype we assigned to
+      a particular sample is correct. It is simply the second lowest PL, because it
+      is the difference between the second lowest PL and the lowest PL (always 0).
+    requires:
+    - PROBAND
+    default: '-1'
+    render-mode: linear,>
+  - attribute: Min_GQ
+    title: Minimum GQ for the family
+    type: float
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: GQ tells you how confident we are that the genotype we assigned to
+      a particular sample is correct. It is simply the second lowest PL, because it
+      is the difference between the second lowest PL and the lowest PL (always 0).
+    default: '-1'
+    render-mode: linear,>
+  - attribute: Max_GQ
+    title: The highest GQ
+    type: int
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: Max(GQ) for those samples that have the variant
+    default: '0'
+    render-mode: linear,=
+  - attribute: Num_NO_CALL
+    title: Number of NO_CALL samples
+    type: int
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: Number of samples with NO_CALL in the current site
+    default: '0'
+    render-mode: linear,=
+  - attribute: QUAL
+    title: Variant Call Quality
+    type: int
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    default: '-1'
+  - attribute: QD
+    title: Quality by Depth
+    type: float
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: The QUAL score normalized by allele depth (AD) for a variant. This
+      annotation puts the variant confidence QUAL score into perspective by normalizing
+      for the amount of coverage available. Because each read contributes a little
+      to the QUAL score, variants in regions with deep coverage can have artificially
+      inflated QUAL scores, giving the impression that the call is supported by more
+      evidence than it really is. To compensate for this, we normalize the variant
+      confidence by depth, which gives us a more objective picture of how well supported
+      the call is.
+    default: '-1.0'
+    render-mode: linear,>
+  - attribute: FS
+    title: Fisher Strand Bias
+    type: float
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: Phred-scaled probability that there is strand bias at the site. Strand
+      Bias tells us whether the alternate allele was seen more or less often on the
+      forward or reverse strand than the reference allele. When there little to no
+      strand bias at the site, the FS value will be close to 0.
+    default: '0.0'
+    render-mode: linear,<
+  - attribute: FT
+    title: FILTER
+    type: multiset
+    knowledge_domain: call
+    scale: variant
+    purpose: provenance
+    description: This field contains the name(s) of any filter(s) that the variant
+      fails to pass, or the value PASS if the variant passed all filters. If the FILTER
+      value is ., then no filtering has been applied to the records.
+- group: Predictions
+  attributes:
+  - attribute: HGMD_Benign
+    title: Categorized Benign in HGMD
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: Not in HGMD
+    value-map: HGMD_Benign
+  - attribute: HGMD_Tags
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: None
+  - attribute: Clinvar_Benign
+    title: Categorized Benign in ClinVar by all submitters
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: Not in ClinVar
+    value-map: HGMD_Benign
+  - attribute: Clinvar_Significance
+    title: Clinical Significance in ClinVar
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+  - attribute: Clinvar_Trusted_Significance
+    title: ClinVar significance by trusted submitters only
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    description: |
+      Clinical Significance as reported by ClinVar trusted submitters only.
+      A list of trusted submitters is provided in configuration
+  - attribute: Clinvar_Trusted_Simplified
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    description: |
+      Simplified Clinical Significance by trusted submitters only.
+      ClinSigSimple data is provided by ClinVar where 0 = no current value of
+      Likely pathogenic or Pathogenic and 1= at least one current record submitted
+      with an interpretation of Likely pathogenic or Pathogenic (independent of
+      whether that record includes assertion criteria and evidence).
+      [see](https://www.biorxiv.org/content/10.1101/2020.12.13.422582v1)
+  - attribute: Clinvar_stars
+    title: ClinVar Stars
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: No data
+  - attribute: Number_of_clinvar_submitters
+    title: 'ClinVar: Number of Submitters'
+    type: int
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: '0'
+    render-mode: log,>
+  - attribute: Clinvar_review_status
+    title: ClinVar Review Status
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: No data
+  - attribute: Clinvar_criteria_provided
+    title: ClinVar Criteria
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: Not Provided
+  - attribute: Clinvar_conflicts
+    title: ClinVar Conflicts
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: Criteria not Provided
+  - attribute: Clinvar_acmg_guidelines
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: None
+  - attribute: ClinVar_Significance_{}
+    template-base: submitter
+    alt-names:
+        - "{}_Significance"
+    title: Clinical Significance by {}
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    default:  None
+  - attribute: splice_altering
+    title: Splice AI splice altering
+    type: status
+    knowledge_domain: human
+    scale: variant
+    method: bioinf
+    purpose: evidence
+    description: |
+      From [SpliceAI GitHub](https://github.com/Illumina/SpliceAI):
+
+      _Delta score of a variant, defined as the maximum of (DS_AG, DS_AL, DS_DG, DS_DL),
+      ranges from 0 to 1 and can be interpreted as the probability of the variant being
+      splice-altering. In the [paper](https://github.com/Illumina/SpliceAI),
+      a detailed characterization is provided
+      for 0.2 (high recall), 0.5 (recommended), and 0.8 (high precision) cutoffs._
+
+      In Anifsa we assign the following values to `splice_altering` annotation:
+
+      +-----------------------------------------------+------------------------------+
+      | Condition                                     | splice_altering              |
+      +-----------------------------------------------+------------------------------+
+      | MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.2        |  `unlikely`                  |
+      | 0.2 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.5 |  `likely_pathogenic`         |
+      | 0.5 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL) < 0.8 |  `pathogenic`                |
+      | 0.8 <= MAX (DS_AG, DS_AL, DS_DG, DS_DL)       |  `high_precision_pathogenic` |
+      +-----------------------------------------------+------------------------------+
+
+    default: No altering
+  - attribute: splice_ai_dsmax
+    title: Splice AI splice altering score
+    type: float
+    knowledge_domain: human
+    scale: variant
+    method: bioinf
+    purpose: evidence
+    default: '0'
+    render-mode: linear,>
+  - attribute: Polyphen_2_HVAR
+    title: Polyphen
+    type: multiset
+    knowledge_domain: human
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: HumVar (HVAR) is PolyPhen-2 classifier trained on known human variation
+      (disease mutations vs. common neutral variants)
+    default: N/A
+  - attribute: Polyphen_2_HDIV
+    title: Polyphen HDIV (High sensitivity)
+    type: multiset
+    knowledge_domain: human
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: HumDiv (HDIV) classifier is trained on a smaller number of select
+      extreme effect disease mutations vs. divergence with close homologs (e.g. primates),
+      which is supposed to consist of mostly neutral mutations.
+    default: N/A
+  - attribute: SIFT
+    type: multiset
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: |
+      Sorting Intolerant from Tolerant (SIFT) is an algorithm that predicts the
+      potential impact of amino acid substitutions on protein function.
+
+      SIFT uses sequence homology to compute the likelihood that an amino acid
+      substitution will have an adverse effect on protein function. The underlying
+      assumption is that evolutionarily conserved regions tend to be less tolerant
+      f mutations, and hence amino acid substitutions or insertions/deletions
+      in these regions are more likely to affect function.
+
+      Values:
+
+       * D: Deleterious
+       * T: Tolerated
+    reference: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3394338/
+    default: N/A
+  - attribute: FATHMM
+    type: multiset
+    knowledge_domain: function
+    scale: transcript
+    method: bioinf
+    purpose: evidence
+    description: 'Functional analysis through hidden markov model HMM.D: Deleterious;
+      T: Tolerated'
+    default: N/A
+  - attribute: PrimateAI
+    type: multiset
+    knowledge_domain: animal
+    scale: variant
+    method: bioinf
+    purpose: evidence
+    description: Prediction of PrimateAI score based on the authors recommendation,
+      “T(olerated)” or “D(amaging)”. The score cutoff between “D” and “T” is 0.803.
+    default: N/A
+  - attribute: GERP_score
+    title: GERP Score
+    type: float
+    knowledge_domain: animal
+    scale: position
+    method: bioinf
+    purpose: evidence
+    description: |
+      Genomic Evolutionary Rate Profiling (GERP) score downloaded from
+      [](http://mendel.stanford.edu/SidowLab/downloads/gerp/hg19.GERP_scores.tar.gz)
+
+      The file contains two columns:
+
+       1. Neutral evolution score (GERPN) score
+       2. Rejected substitutions" (RS) score
+
+      We only use RS scores.
+
+      See [Project URL](http://mendel.stanford.edu/SidowLab/downloads/gerp/) for more information
+
+      See [GERP Scores at UCSC](https://genome.ucsc.edu/cgi-bin/hgTrackUi?db=hg19&g=allHg19RS_BW)
+    default: '0'
+    render-mode: linear,>
+- group: Pharmacogenomics
+  attributes:
+  - attribute: Diseases
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: N/A
+  - attribute: Chemicals
+    type: multiset
+    knowledge_domain: human
+    scale: variant
+    method: clinical
+    purpose: evidence
+    default: N/A
+- group: Expression
+  attributes:
+  - attribute: Mostly_Expressed_in
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+    default: N/A
+- group: Debug Info
+  attributes:
+  - attribute: Severity
+    type: int
+    knowledge_domain: phenotype
+    scale: variant
+    purpose: evidence
+    default: '-1'
+  - attribute: Rules
+    type: multiset
+    knowledge_domain: rules
+- group: Rest or lost
+  comment: |
+      Technical group of variables,  presence here does not mean that variable is active in Anfisa
+  attributes:
+  - attribute: gnomad_popmax_af_outbred
+    type: float
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: |
+      Allele Frequency (AF) of population derived in gnomAD_PopMax
+      (calculated the same way as gnomAD_AF, but for the specific population)
+      Excludes inbred populations
+  - attribute: gnomad_popmax_outbred
+    type: status
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+    description: |
+      Population having the maximum AF (calculated the same way as gnomAD_AF, but per population).
+      Excludes inbred populations
+  - attribute: gnomad_popmax_an_outbred
+    type: int
+    knowledge_domain: popgen
+    scale: variant
+    method: exp
+    purpose: evidence
+  - attribute: pLI
+    type: float
+    knowledge_domain: popgen
+    scale: gene
+    method: bioinf
+    purpose: evidence
+    description: |
+      The pLI score quantifies the likelihood that a gene is intolerant to mutations  that lead to a loss of function in the protein product.
+  - attribute: Position
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: gnomAD_Total_AF
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: GENCODE_Category
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: GENCODE_Exonic_Category
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: TOPMed_QC_Status
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: TOPMed_Bravo_AF
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: ExAC03
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: Disruptive_Missense
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: CAGE_Promoter
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: CAGE_Enhancer
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: Gene_Hancer
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: Super_Enhancer
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: bStatistics
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: Freq1000bp
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: Rare1000bp
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: PolyPhenCat
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: SIFTcat
+    type: multiset
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+    description: Sort intolerated from tolerated (An amino acid at a position is tolerated
+      | The most frequentest amino acid being tolerated).
+  - attribute: GC
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence
+  - attribute: CpG
+    type: float
+    knowledge_domain: epigenetics
+    scale: gene
+    method: in-vivo
+    purpose: evidence

@@ -17,33 +17,34 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import logging
 from zlib import crc32
 from forome_tools.path_works import AttrFuncPool, AttrFuncHelper
 from forome_tools.ident import checkIdentifier
 from app.config.a_config import AnfisaConfig
+from app.config import getDS_Schema
 import app.prepare.prep_unit as prep_unit
 from app.model.sol_broker import SolutionBroker
 
 #===============================================
-class FilterPrepareSetH(SolutionBroker):
+class FiltersMaster(SolutionBroker):
 
     sNamedFunctions = dict()
 
-    def __init__(self, metadata_record, var_registry, ds_kind,
+    def __init__(self, metadata_record, ds_kind,
             derived_mode = False,
-            check_identifiers = True,
             druid_adm = None,
             pre_flt_schema = None,
             path_base = None):
         SolutionBroker.__init__(self, metadata_record, ds_kind,
             derived_mode = derived_mode, zygosity_support = True)
 
-        self.mVarRegistry = var_registry
+        self.mVarRegistry = getDS_Schema(metadata_record).defineVariables(
+                self, metadata_record, ds_kind)
         self.mUnits = []
         self.mVGroups  = dict()
         self.mCurVGroup = None
         self.mMeta = metadata_record
-        self.mCheckIdent = check_identifiers
         self.mPreTransformSeq = []
         self.mTranscriptIdName = None
         self.mDruidAdm = druid_adm
@@ -56,8 +57,10 @@ class FilterPrepareSetH(SolutionBroker):
             "_zyg", self._getPathBase("zygosity"), self.getFamilyInfo())
         self.mSysFieldsGetter = None
 
+        self.mTranscriptIdName = None
+
         if pre_flt_schema is not None:
-            self._setupSchema(pre_flt_schema)
+            self._setupSecondarySchema(pre_flt_schema)
 
     @classmethod
     def regNamedFunction(cls, name, func):
@@ -69,205 +72,207 @@ class FilterPrepareSetH(SolutionBroker):
     def getNamedFunction(cls, name):
         return cls.sNamedFunctions.get(name)
 
+    def getVarRegistry(self):
+        return self.mVarRegistry
+
     def _getPathBase(self, name):
         path_val = self.mPathBase.get(name)
         assert path_val is not None, (
             "Missing configuration path path base for " + name)
         return path_val
 
-    def _setupSchema(self, info_seq):
+    def _setupSecondarySchema(self, info_seq):
         for info in info_seq:
-            self._setViewGroup(info.get("vgroup"))
+            self.startViewGroup(info.get("vgroup"))
             unit_h = prep_unit.loadConvertorInstance(info,
                 self.mCurVGroup, self)
             self._addUnit(unit_h)
-            if unit_h.isTranscriptID():
-                assert self.mTranscriptIdName is None, (
-                    "Transcript ID unit duplication: " + unit_h.getName()
-                    + " | " + self.mTranscriptIdName)
-                self.mTranscriptIdName = unit_h.getName()
-        self._setViewGroup(None)
+        self.standUp()
 
     def getTranscriptIdUnitName(self):
         return self.mTranscriptIdName
 
-    def viewGroup(self, view_group_title):
+    def startViewGroup(self, view_group_title):
+        if self.mCurVGroup and view_group_title == self.mCurVGroup.getTitle():
+            return
         assert view_group_title not in self.mVGroups, (
             "View group duplication: " + view_group_title)
-        ret = ViewGroupH(self, view_group_title, len(self.mVGroups))
-        self.mVGroups[view_group_title] = ret
-        return ret
+        self.mCurVGroup = ViewGroupH(self, view_group_title, len(self.mVGroups))
+        self.mVGroups[view_group_title] = self.mCurVGroup
 
-    def _checkVar(self, name, var_type):
-        if self.mCheckIdent:
-            assert checkIdentifier(name), "Bad unit name: " + name
-        var_tp, _ = self.mVarRegistry.getVarInfo(name)
-        assert var_tp == var_type, (
-            f"Bad check type for {name}: {var_tp} vs. {var_type}")
+    def standUp(self):
+        assert self.mTranscriptIdName is not None, (
+            "Transcript ID unit is not set")
+        self.mCurVGroup = None
+
+
+    sConflictsAllowed = [
+        ("panel", "multiset"),
+        ("multiset", "variety"),
+        ("status", "variety")]
+
+    def getVarDescr(self, name, var_type=None, transcript_mode=False):
+        assert checkIdentifier(name), "Bad unit name: " + name
+        if name not in self.mVarRegistry:
+            logging.error("No variable: " + name)
+            return None
+        var_descr = self.mVarRegistry[name]
+        if var_type is not None and var_type != var_descr["type"]:
+            var_type1 = var_descr["type"]
+            for t1, t2 in self.sConflictsAllowed:
+                if t1 == var_type and t2 == var_type1:
+                    var_type1 = None
+                    break
+            if var_type1 is not None:
+                logging.error(
+                    f"Variable {name} type conflict: {var_type}/{var_type1}")
+                return None
+        if (var_descr.get("requires") and
+                not self.testRequirements(var_descr["requires"])):
+            return None
+        tr_mode = var_descr.get("transcript-mode")
+        assert (not transcript_mode) == (not tr_mode), (
+            f"Variable {name} transcript-mode conflict: {tr_mode}/" +
+            f"{transcript_mode}")
+        return var_descr
 
     def regPreTransform(self, transform_f):
         self.mPreTransformSeq.append(transform_f)
 
-    def _startViewGroup(self, view_group_h):
-        assert self.mCurVGroup is None, "View group is currently pushed"
-        self.mCurVGroup = view_group_h
-
-    def _endViewGroup(self, view_group_h):
-        assert self.mCurVGroup is view_group_h, "View group conflict"
-        self.mCurVGroup = None
-
-    def _setViewGroup(self, view_group_title):
-        if view_group_title is None:
-            self.mCurVGroup = None
-        elif (self.mCurVGroup is None
-                or self.mCurVGroup.getTitle() != view_group_title):
-            self.mCurVGroup = self.viewGroup(view_group_title)
-
     def _addUnit(self, unit_h):
         for u_h in self.mUnits:
             assert u_h.getName() != unit_h.getName(), (
-                "Unit name collision" + u_h.getName())
+                "Unit name collision " + u_h.getName())
         self.mUnits.append(unit_h)
+        if unit_h.getVarDescr().get("transcript-mode") == "master":
+            assert self.mTranscriptIdName is None, (
+                "Transcript ID duplication: " + self.mTranscriptIdName +
+                " vs " + unit_h.getName())
+            self.mTranscriptIdName = unit_h.getName()
         return unit_h
 
-    def intValueUnit(self, name, vpath, default_value = None,
-            diap = None, conversion = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def intValueUnit(self, name, vpath, conversion = None):
+        var_descr = self.getVarDescr(name, "int")
+        if var_descr is None:
             return None
-        self._checkVar(name, "numeric")
-        return self._addUnit(prep_unit.IntConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup,
-            default_value, diap, conversion))
+        return self._addUnit(prep_unit.IntConvertor(self, var_descr,
+            vpath, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("default"), var_descr.get("diap"), conversion))
 
-    def floatValueUnit(self, name, vpath, default_value = None,
-            diap = None, conversion = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def floatValueUnit(self, name, vpath, conversion = None):
+        var_descr = self.getVarDescr(name, "float")
+        if var_descr is None:
             return None
-        self._checkVar(name, "numeric")
-        return self._addUnit(prep_unit.FloatConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup,
-            default_value, diap, conversion))
+        return self._addUnit(prep_unit.FloatConvertor(self, var_descr,
+            vpath, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("default"), var_descr.get("diap"), conversion))
 
-    def statusUnit(self, name, vpath,
-            variants = None, default_value = "False",
-            value_map = None, conversion = None,
-            dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def statusUnit(self, name, vpath, conversion = None):
+        var_descr = self.getVarDescr(name, "status")
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
-        return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup, dim_name,
-            "status", variants, value_map,
-            conversion, default_value = default_value))
+        # dim-name is reserved
+        return self._addUnit(prep_unit.EnumConvertor(self, var_descr,
+            vpath, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("dim-name"), "status",
+            var_descr.get("variants"), var_descr.get("value-map"),
+            conversion,
+            default_value = var_descr.get("default")))
 
-    def multiStatusUnit(self, name, vpath,
-            variants = None, default_value = None, compact_mode = False,
-            value_map = None, conversion = None,
-            dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def multiStatusUnit(self, name, vpath, compact_mode = False,
+            conversion = None):
+        var_descr = self.getVarDescr(name, "multiset")
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
-        return self._addUnit(prep_unit.EnumConvertor(self,
-            name, vpath, len(self.mUnits), self.mCurVGroup, dim_name,
-            "multi", variants, value_map,
+        # dim-name is reserved
+        return self._addUnit(prep_unit.EnumConvertor(self, var_descr,
+            vpath, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("dim-name"), "multi",
+            var_descr.get("variants"), var_descr.get("value-map"),
             conversion, compact_mode = compact_mode,
-            default_value = default_value))
+            default_value = var_descr.get("default")))
 
-    def presenceUnit(self, name, var_info_seq, requires = None):
-        if requires and not self.testRequirements(requires):
+    def presenceUnit(self, name, var_info_seq = None):
+        var_descr = self.getVarDescr(name, "presence")
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
-        return self._addUnit(prep_unit.PresenceConvertor(self, name,
+        return self._addUnit(prep_unit.PresenceConvertor(self, var_descr,
             len(self.mUnits), self.mCurVGroup, var_info_seq))
 
-    def varietyUnit(self, name, variety_name, panel_name, vpath, panel_type,
-            requires = None):
-        if requires and not self.testRequirements(requires):
+    def varietyUnit(self, name, variety_name, vpath):
+        var_descr = self.getVarDescr(variety_name, "variety")
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
-        self._checkVar(panel_name, "enum")
-        self._checkVar(variety_name, "enum")
-        return self._addUnit(prep_unit.VarietyConvertor(self, name,
+        return self._addUnit(prep_unit.VarietyConvertor(self, var_descr,
             len(self.mUnits), self.mCurVGroup,
-            variety_name, panel_name, vpath, panel_type))
+            name, variety_name, var_descr["panel"],
+            vpath, var_descr["panel-type"]))
 
-    # reserved (currently out of use)
-    def panelsUnit(self, name, unit_base, panel_type,
-            view_path = None, dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
-            return None
-        self._checkVar(name, "enum")
+    def panelsUnit(self, unit_base, view_path):
         return self._addUnit(prep_unit.PanelConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
-            unit_base.getName(), panel_type, view_path))
+            {"attribute": unit_base.getVarDescr()["panel"], "base": unit_base},
+            len(self.mUnits), self.mCurVGroup,
+            unit_base.getVarDescr().get("dim-name"),
+            unit_base.getName(),
+            unit_base.getVarDescr()["panel-type"], view_path))
 
-    def transcriptIntValueUnit(self, name, trans_name,
-            default_value = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def transcriptIntValueUnit(self, name, trans_name):
+        var_descr = self.getVarDescr(name, "int", transcript_mode=True)
+        if var_descr is None:
             return None
-        self._checkVar(name, "numeric")
-        assert default_value is not None, (
-            f"Transcript Int unit {name} requires default")
-        return self._addUnit(prep_unit.TranscriptNumConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
-            "transcript-int", trans_name, default_value))
+        return self._addUnit(prep_unit.TranscriptNumConvertor(self, var_descr,
+            len(self.mUnits), self.mCurVGroup,
+            "transcript-int", trans_name, var_descr["default"]))
 
-    def transcriptFloatValueUnit(self, name, trans_name,
-            default_value = None, dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def transcriptFloatValueUnit(self, name, trans_name):
+        var_descr = self.getVarDescr(name, "float", transcript_mode=True)
+        if var_descr is None:
             return None
-        self._checkVar(name, "numeric")
-        assert default_value is not None, (
-            f"Transcript Float unit {name} requires default")
-        return self._addUnit(prep_unit.TranscriptNumConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
-            "transcript-float", trans_name, default_value))
+        return self._addUnit(prep_unit.TranscriptNumConvertor(self, var_descr,
+            len(self.mUnits), self.mCurVGroup,
+            var_descr.get("dim-name"),
+            "transcript-int", trans_name, var_descr["default"]))
 
     def transcriptStatusUnit(self, name, trans_name,
-            variants = None, default_value = "False",
-            bool_check_value = None, transcript_id_mode = False,
-            dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
+            bool_check_value = None):
+        var_descr = self.getVarDescr(name, "status", transcript_mode=True)
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
-        if transcript_id_mode:
-            assert self.mTranscriptIdName is None, (
-                "Transcript ID unit set twice: " + self.mTranscriptIdName
-                + " | " + name)
-            self.mTranscriptIdName = name
         return self._addUnit(prep_unit.TranscriptStatusConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
-            "transcript-status", trans_name, variants, default_value,
-            bool_check_value, transcript_id_mode))
+            var_descr, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("dim-name"),
+            "transcript-status", trans_name,
+            var_descr.get("variants"), var_descr.get("default"),
+            bool_check_value))
 
-    def transcriptMultisetUnit(self, name, trans_name, variants = None,
-            default_value = None, dim_name = None, requires = None):
-        if requires and not self.testRequirements(requires):
+    def transcriptMultisetUnit(self, name, trans_name):
+        var_descr = self.getVarDescr(name, "multiset", transcript_mode=True)
+        if var_descr is None:
             return None
-        self._checkVar(name, "enum")
         return self._addUnit(prep_unit.TranscriptMultiConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
-            "transcript-multiset", trans_name, variants, default_value))
+            var_descr, len(self.mUnits), self.mCurVGroup,
+            var_descr.get("dim-name"),
+            "transcript-multiset", trans_name,
+            var_descr.get("variants"), var_descr.get("default")))
 
-    def transcriptVarietyUnit(self, name, panel_name, trans_name, panel_type,
-            default_value = None, requires = None):
-        self._checkVar(name, "enum")
-        self._checkVar(panel_name, "enum")
-        if requires and not self.testRequirements(requires):
+    def transcriptVarietyUnit(self, name, trans_name):
+        var_descr = self.getVarDescr(name, "variety", transcript_mode=True)
+        if var_descr is None:
             return None
         return self._addUnit(prep_unit.TranscriptVarietyConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup,
-            trans_name, panel_type, panel_name, default_value))
+            var_descr, len(self.mUnits), self.mCurVGroup,
+            trans_name, var_descr["panel-type"], var_descr["panel"],
+            var_descr.get("default")))
 
-    # reserved (currently out of use)
-    def transcriptPanelsUnit(self, name, unit_base, panel_type,
-            view_name = None, dim_name = None, requires = None):
-        self._checkVar(name, "enum")
-        if requires and not self.testRequirements(requires):
-            return None
+    def transcriptPanelsUnit(self, unit_base, trans_name = None):
+        assert unit_base.getVarDescr().get("transcript-mode"), (
+            "Base should be transcript")
         return self._addUnit(prep_unit.TranscriptPanelsConvertor(self,
-            name, len(self.mUnits), self.mCurVGroup, dim_name,
-            unit_base.getTranscriptName(), panel_type, view_name))
+            {"attribute": unit_base.getVarDescr()["panel"], "base": unit_base},
+            len(self.mUnits), self.mCurVGroup,
+            unit_base.getVarDescr().get("dim-name"),
+            unit_base.getName(),
+            unit_base.getVarDescr()["panel-type"], trans_name))
 
     def process(self, rec_no, rec_data, pre_data):
         for transform_f in self.mPreTransformSeq:
@@ -298,9 +303,9 @@ class FilterPrepareSetH(SolutionBroker):
             res_seq = [unit_h.processOne(tr_obj.get(tr_name))
                 for tr_obj in tr_seq]
             if ws_mode:
-                result[unit_h.getName()] = res_seq
+                result[unit_h.getInternalName()] = res_seq
             assert unit_h.isOK(), (
-                f"Tr-unit {unit_h.getName()} improper evaluation")
+                f"Unit {unit_h.getName()} improper evaluation")
 
         self.mZygosityData.process(rec_no, rec_data, result)
         if self.mDruidAdm is not None:
@@ -349,13 +354,6 @@ class ViewGroupH:
         self.mTitle = title
         self.mNo = no
         self.mUnits = []
-
-    def __enter__(self):
-        self.mFilterSet._startViewGroup(self)
-        return self
-
-    def __exit__(self, tp, value, traceback):
-        self.mFilterSet._endViewGroup(self)
 
     def addUnit(self, unit):
         self.mUnits.append(unit)

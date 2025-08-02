@@ -20,9 +20,7 @@
 
 import logging
 from hashlib import md5
-from app.eval.dtree import DTreeEval
-from app.eval.condition import condDataUnits
-from .sol_support import makeSolItemInfo
+from .sol_item import SolItem
 
 #===============================================
 def codeHash(tree_code):
@@ -75,10 +73,9 @@ class SolutionPack:
         return cls.sPacks[pack_name]
 
     #===============================================
-    def __init__(self, name, check_units_func = None):
+    def __init__(self, name):
         self.mName = name
         self.mItems = []
-        self.mCheckUnitsFunc = check_units_func
         self.mUsedNames = set()
         self.regPack(self)
 
@@ -88,55 +85,51 @@ class SolutionPack:
     def __iter__(self):
         return iter(self.mItems)
 
-    def regFilter(self, flt_name, cond_seq,
-            requires = None, rubric = None):
-        if self.mCheckUnitsFunc is not None:
-            unit_names = set()
-            for cond_data in cond_seq:
-                unit_names |= condDataUnits(cond_data)
-            if not self.mCheckUnitsFunc("filter",
-                    flt_name, unit_names, requires):
-                return
-        self.mItems.append(makeSolItemInfo(
-            "filter", flt_name, cond_seq, rubric,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+    def getStdItemData(self, item_kind, item_name):
+        item_kind = SolItem.normKind(item_kind)
+        for it in self.mItems:
+            if it.getSolKind() == item_kind and it.getName() == item_name:
+                return it.getData()
+        return None
 
-    def regDTree(self, tree_name, fname_seq,
-            requires = None, rubric= None):
+    def regFilter(self, flt_name, cond_seq, requires=None, rubric=None):
+        self.mItems.append(SolItem.create(
+            "filter", flt_name, cond_seq, rubric,
+            used_names=self.mUsedNames, requires=requires, is_std=True))
+
+    def regDTree(self, tree_name, fname_seq, requires=None, rubric=None):
         tree_code = self.readFileSeq(fname_seq)
-        if self.mCheckUnitsFunc is not None:
-            dtree_h = DTreeEval(None, tree_code)
-            if not self.mCheckUnitsFunc("dtree",
-                    tree_name, dtree_h.getActiveUnitSet(), requires):
-                return
-        self.mItems.append(makeSolItemInfo(
+        self.mItems.append(SolItem.create(
             "dtree", tree_name, tree_code, rubric,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+            used_names=self.mUsedNames, requires=requires, is_std=True))
 
     def regPanel(self, panel_name, panel_type,
-            fname = None, items = None,
-            requires = None, rubric = None):
+            fname=None, items=None,
+            requires=None, rubric=None):
         assert (fname is not None) ^ (items is not None), (
             f"Collision: fname={fname} / items={items is not None}")
         if fname:
             items = self.readListFile(fname)
         else:
             assert isinstance(items, list)
-        self.mItems.append(makeSolItemInfo(
-            "panel." + panel_type, panel_name, items, rubric,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+        self.mItems.append(SolItem.create(
+            "panel." + panel_type, panel_name, sorted(items), rubric,
+            used_names = self.mUsedNames, requires=requires, is_std=True))
 
-    def regItemDict(self, name, the_dict, requires = None):
-        self.mItems.append(makeSolItemInfo(
+    def regItemDict(self, name, the_dict, requires=None):
+        self.mItems.append(SolItem.create(
             "item-dict", name, the_dict, None,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+            used_names = self.mUsedNames, requires=requires,
+            is_std=True, use_hash=False))
 
-    def regZone(self, zone_title, unit_name, requires = None):
-        self.mItems.append(makeSolItemInfo(
+    def regZone(self, zone_title, unit_name, requires=None):
+        self.mItems.append(SolItem.create(
             "zone", zone_title, unit_name, None,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+            used_names=self.mUsedNames, requires=requires,
+            is_std=True, use_hash=False))
 
-    def regTabSchema(self, tab_schema, requires = None, rubric = None):
-        self.mItems.append(makeSolItemInfo(
+    def regTabSchema(self, tab_schema, requires=None, rubric=None):
+        self.mItems.append(SolItem.create(
             "tab-schema", tab_schema.getName(), tab_schema, rubric,
-            used_names = self.mUsedNames, requires = requires, is_std = True))
+            used_names=self.mUsedNames, requires=requires,
+            is_std=True, use_hash=False))

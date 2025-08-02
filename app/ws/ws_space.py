@@ -27,8 +27,8 @@ from .ws_unit import WS_ReservedNumUnit
 
 #===============================================
 class WS_EvalSpace(EvalSpace):
-    def __init__(self, ds_h, rec_rand_f):
-        EvalSpace.__init__(self, ds_h)
+    def __init__(self, ds_h, var_registry, rec_rand_f):
+        EvalSpace.__init__(self, ds_h, var_registry)
         self.mTotalCounts = [0, 0, 0]
         self.mGroups = []
         self.mTrCounts = []
@@ -44,8 +44,16 @@ class WS_EvalSpace(EvalSpace):
         self.mZygRUnits.append(r_unit_h)
         self._addReservedUnit(r_unit_h)
 
-    def _setupTrIdUnit(self, unit_name):
-        self.mTrIdUnit = self.getUnit(unit_name)
+    def standUp(self):
+        assert self.mTrIdUnit is None
+        for unit_h in self.iterUnits():
+            if unit_h.getVarDescr().get("transcript-mode") == "master":
+                assert self.mTrIdUnit is None, (
+                    f"TranscriptID duplication in {self.getName()}: " +
+                    f"{self.mTrIdUnit.getName()} vs {unit_h.getName()}")
+                self.mTrIdUnit = unit_h
+        assert self.mTrIdUnit is not None, (
+            "No TranscriptID in " + self.getName())
         tr_idx_set = {self.mapTranscriptID(idx)
             for idx in range(self.mTotalCounts[1])}
         self.mTotalCounts[2] = len(tr_idx_set)

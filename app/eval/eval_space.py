@@ -24,8 +24,9 @@ from .condition import ConditionMaker
 from .variety import VarietyUnit
 #===============================================
 class EvalSpace:
-    def __init__(self, ds_h):
+    def __init__(self, ds_h, var_registry):
         self.mDS = ds_h
+        self.mVarRegistry = var_registry
         self.mUnits = []
         self.mUnitDict = dict()
         self.mFunctions = []
@@ -38,6 +39,12 @@ class EvalSpace:
 
     def heavyMode(self):
         return False
+
+    def getVarRegistry(self):
+        return self.mVarRegistry
+
+    def getFacetClassificationDescr(self):
+        return self.mVarRegistry.getClassificationDescr()
 
     @abc.abstractmethod
     def getZygUnit(self, idx):
@@ -57,9 +64,9 @@ class EvalSpace:
             self._addUnit(variety_h)
             return
 
-        self.mUnits.append(unit_h)
         assert force_it or unit_h.getName() not in self.mUnitDict, (
             "Duplicate unit name: " + unit_h.getName())
+        self.mUnits.append(unit_h)
         self.mUnitDict[unit_h.getName()] = unit_h
 
         if unit_h.getMean() == "variety":
@@ -123,6 +130,9 @@ class EvalSpace:
             if unit_h.getDimName() == dim_name:
                 ret |= eval_h.getUsedEnumValues(unit_h.getName())
         return ret
+
+    def getVariableDocRef(self, unit_h):
+        return self.mDS.getDataVault().getVariableDocRef(unit_h.getName())
 
 #===============================================
 class Eval_Condition:

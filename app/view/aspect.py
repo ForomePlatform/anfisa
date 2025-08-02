@@ -18,15 +18,17 @@
 #  limitations under the License.
 #
 
+from forome_tools.yaml_supp import YProperty, YClass
 from .attr import AttrH
 from .view_repr import vcfRepr
 from .colgrp import ColGroupsH
 
 #===============================================
 class AspectH:
-    def __init__(self, name, title, source, field = None,
-            attrs = None, ignored = False, col_groups = None,
+    def __init__(self, master, name, title, source, field = None,
+            ignored = False, col_groups = None,
             mode = "dict", view_kind = "norm"):
+        self.mMaster   = master
         self.mName     = name
         self.mTitle    = title
         self.mSource   = source
@@ -37,17 +39,10 @@ class AspectH:
         self.mMode      = mode
         self.mViewKind  = view_kind
         self.mColumnMarkupF = None
-        self.mMaster = None
 
         assert self.mMode in ("dict", "string")
         if self.mIgnored or self.mMode != "dict":
             self.mAttrs = []
-        if attrs is not None:
-            self.setAttributes(attrs)
-
-    def _setMaster(self, master):
-        assert self.mMaster is None
-        self.mMaster = master
 
     def __getitem__(self, idx):
         return self.mAttrs[idx]
@@ -60,11 +55,8 @@ class AspectH:
 
     def setAttributes(self, attrs):
         self.mAttrs = attrs
-        for attr_h in self.mAttrs:
-            attr_h.setAspect(self)
 
     def addAttr(self, attr_h, idx = -1):
-        attr_h.setAspect(self)
         if idx < 0:
             self.mAttrs.append(attr_h)
         else:
@@ -75,6 +67,9 @@ class AspectH:
 
     def setColumnMarkup(self, markup_func):
         self.mColumnMarkupF = markup_func
+
+    def setColGroups(self, col_groups):
+        self.mColGroups = col_groups
 
     def getName(self):
         return self.mName
@@ -117,15 +112,48 @@ class AspectH:
         return ret
 
     @classmethod
-    def load(cls, data):
-        return cls(data["name"], data["title"], data["source"],
+    def load(cls, master, data):
+        ret = cls(master, data["name"], data["title"], data["source"],
             field = data.get("field"),
-            attrs = [AttrH.load(it) for it in data["attrs"]],
             ignored = data["ignored"],
             col_groups = ColGroupsH.load(data.get("col_groups")),
             mode = data["mode"],
             view_kind = data.get("vkind",
                 "tech" if data["source"] == "__data" else "norm"))
+        ret.setAttributes(
+            [AttrH.load(ret, it) for it in data["attrs"]])
+        return ret
+
+
+    #===============================================
+    sClass = YClass([
+        YProperty("aspect"),
+        YProperty("title", required=True),
+        YProperty("source", required=True),
+        YProperty("field"),
+        YProperty("ignored"),
+        YProperty("col-groups", ColGroupsH.sClass),
+        YProperty("mode", default="dict"),
+        YProperty("view-kind", default="norm"),
+        YProperty("attrs", AttrH.sClass, is_seq=True),
+        YProperty("requires")
+        ])
+
+    @classmethod
+    def loadY(cls, master, data):
+        ignored = data.get("ignored") in (True, "true", "True")
+        requires = data.get("requires")
+        if requires:
+            if not master.testRequirements(set(requires.split())):
+                ignored = True
+        ret = cls(master, data["aspect"], data["title"], data["source"],
+            field = data.get("field"),
+            ignored = ignored,
+            col_groups = ColGroupsH.loadY(data.get("col-groups")),
+            mode = data["mode"],
+            view_kind = data.get("view-kind"))
+        ret.setAttributes([AttrH.loadY(ret, it) for it in data["attrs"]])
+        return ret
 
     #===============================================
     def getViewRepr(self, rec_data, view_context = None):

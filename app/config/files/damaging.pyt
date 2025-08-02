@@ -29,7 +29,7 @@ if (Most_Severe_Consequence in {
     return True
 
 if (Clinvar_stars in {'2', '3', '4'} and
-        ClinVar_Significance in {
+        Clinvar_Significance in {
             'Likely pathogenic',
             'Pathogenic',
             'Pathogenic, Affects',
@@ -51,7 +51,7 @@ if (Clinvar_stars in {'2', '3', '4'} and
     return True
 
 if (Clinvar_stars in {'2', '3', '4'} and
-        ClinVar_Significance in {
+        Clinvar_Significance in {
             'Benign',
             'Benign, association',
             'Benign, drug response',

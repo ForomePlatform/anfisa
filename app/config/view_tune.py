@@ -24,21 +24,15 @@ from html import escape
 
 from app.view.attr import AttrH
 from app.config.a_config import AnfisaConfig
-from . import getDataConfigSchema
 import app.config.view_op_tune as view_op
 #===============================================
-def tuneAspects(ds_h, aspects):
-    data_cfg_schema = getDataConfigSchema(ds_h.getDataSchema())
-    if data_cfg_schema is not None:
-        if data_cfg_schema.tuneAspects(ds_h, aspects):
-            return
-
+def tuneAspects_Case(ds_h, aspects):
     if ds_h.getDataSchema() == "CASE":
         if ds_h.testRequirements({"WS"}):
-            aspects.setAspectColumnMarkup("view_transcripts",
+            aspects["view_transcripts"].setColumnMarkup(
                 view_op.markupTranscriptTab)
         ds_h.addConditionVisitorType(view_op.SamplesConditionVisitor)
-        aspects.setAspectColumnMarkup("view_qsamples",
+        aspects["view_qsamples"].setColumnMarkup(
                 view_op.SamplesColumnsMarkup(ds_h))
 
     view_gen = aspects["view_gen"]
@@ -67,7 +61,7 @@ def tuneAspects(ds_h, aspects):
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "pmids", True))
     _resetupAttr(view_pkgb, PGKB_AttrH(view_pkgb, "notes", False))
 
-    attr_igv = _resetupAttr(view_gen, IGV_AttrH(ds_h, view_gen))
+    attr_igv = _resetupAttr(view_gen, IGV_AttrH(view_gen, ds_h))
     ds_h.regNamedAttr("IGV", attr_igv)
 
     view_gen[view_gen.find("transcripts")].setReprFunc(
@@ -110,11 +104,10 @@ def setupNamedAttr(ds_h, name, process_func):
 #===============================================
 class SymbolPanels_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "GENE_LISTS",
+        AttrH.__init__(self, view, "GENE_LISTS",
             title = "Gene lists",
             tooltip = "Gene lists positive on variant")
         self.mDS = ds_h
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         genes = obj["genes"]
@@ -123,11 +116,10 @@ class SymbolPanels_AttrH(AttrH):
 #===============================================
 class TrSymbolPanels_AttrH(AttrH):
     def __init__(self, view, ds_h):
-        AttrH.__init__(self, "TR_GENE_LISTS",
+        AttrH.__init__(self, view, "TR_GENE_LISTS",
             title = "Gene lists",
             tooltip = "Gene lists positive on transcript variant")
         self.mDS = ds_h
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         genes = [obj.get("gene")]
@@ -141,9 +133,8 @@ class UCSC_AttrH(AttrH):
             f"db={self.mBase}&position={region_name}"
             f"%3A{max(0, start - delta)}%2D{end + delta}")
 
-    def __init__(self, view_gen, ds_h):
-        AttrH.__init__(self, "UCSC")
-        self.setAspect(view_gen)
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, view, "UCSC")
         self.mBase = ds_h.getFastaBase()
 
     def htmlRepr(self, obj, v_context):
@@ -189,8 +180,7 @@ class GnomAD_AttrH(AttrH):
         return (GnomAD_AttrH.wrap(url), "norm")
 
     def __init__(self, view):
-        AttrH.__init__(self, "URL")
-        self.setAspect(view)
+        AttrH.__init__(self, view, "URL")
 
     def makeValue(self, rec_data):
         url = rec_data["_view"]["gnomAD"]["url"]
@@ -227,9 +217,8 @@ class GTEx_AttrH(AttrH):
         return "https://www.gtexportal.org/home/gene/" + gene
 
     def __init__(self, view):
-        AttrH.__init__(self, "GTEx", title = "View on GTEx",
+        AttrH.__init__(self, view, "GTEx", title = "View on GTEx",
             tooltip = "View this gene on GTEx portal")
-        self.setAspect(view)
 
     def makeValue(self, rec_data):
         genes = rec_data["_view"]["general"]["genes"]
@@ -260,8 +249,7 @@ class OMIM_AttrH(AttrH):
             f"&search={gene}")
 
     def __init__(self, view):
-        AttrH.__init__(self, "OMIM")
-        self.setAspect(view)
+        AttrH.__init__(self, view, "OMIM")
 
     def makeValue(self, rec_data):
         genes = rec_data["_view"]["general"]["genes"]
@@ -290,9 +278,8 @@ class GREV_AttrH(AttrH):
         return f"https://www.ncbi.nlm.nih.gov/books/NBK1116/?term={gene}"
 
     def __init__(self, view):
-        AttrH.__init__(self, "GREV", title = "GeneReviews®",
+        AttrH.__init__(self, view, "GREV", title = "GeneReviews®",
             tooltip = "Search GeneReviews®")
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         genes = v_context["data"]["_view"]["general"]["genes"]
@@ -315,9 +302,8 @@ class MEDGEN_AttrH(AttrH):
             + gene + "%5BGene%20Name%5D")
 
     def __init__(self, view):
-        AttrH.__init__(self, "MEDGEN",
+        AttrH.__init__(self, view, "MEDGEN",
             title = "MedGen", tooltip = "Search MedGen")
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         genes = v_context["data"]["_view"]["general"]["genes"]
@@ -339,9 +325,8 @@ class GENE_CARDS_AttrH(AttrH):
         return ("https://www.genecards.org/cgi-bin/carddisp.pl?gene=" + gene)
 
     def __init__(self, view):
-        AttrH.__init__(self, "GENE_CARDS",
+        AttrH.__init__(self, view, "GENE_CARDS",
             title = "GeneCards", tooltip = "Read GeneCards")
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         genes = v_context["data"]["_view"]["general"]["genes"]
@@ -363,11 +348,10 @@ class BEACONS_AttrH(AttrH):
             f"pos={pos}&chrom={chrom}&allele={alt}&ref={ref}&rs=GRCh37")
 
     def __init__(self, view):
-        AttrH.__init__(self, "BEACONS",
+        AttrH.__init__(self, view, "BEACONS",
             title = "Beacons",
             tooltip = "Search what other organizations have "
                       "observed the same variant")
-        self.setAspect(view)
 
     def htmlRepr(self, obj, v_context):
         chrom = v_context["data"]["__data"]["seq_region_name"]
@@ -388,8 +372,7 @@ class _PMID_AttrH(AttrH):
         return f"https://www.ncbi.nlm.nih.gov/pubmed/{pmid}"
 
     def __init__(self, view, name, title, tooltip):
-        AttrH.__init__(self, name, title = title, tooltip = tooltip)
-        self.setAspect(view)
+        AttrH.__init__(self, view, name, title = title, tooltip = tooltip)
 
     @classmethod
     def make_span(cls, pmid):
@@ -427,11 +410,10 @@ class HGMD_PMID_AttrH(_PMID_AttrH):
 
 #===============================================
 class IGV_AttrH(AttrH):
-    def __init__(self, ds_h, view_gen):
-        AttrH.__init__(self, "IGV")
+    def __init__(self, view, ds_h):
+        AttrH.__init__(self, view, "IGV")
         self.mDataVault = ds_h.getDataVault()
         self.mDsRootName = ds_h.getRootDSName()
-        self.setAspect(view_gen)
 
         meta_info = ds_h.getDataInfo()["meta"]
 
@@ -508,9 +490,8 @@ class UNIPROT_AttrH(AttrH):
     base_url = "https://www.uniprot.org/uniprot/%s"
 
     def __init__(self, view):
-        AttrH.__init__(self, "UNIPROT_ACC",
+        AttrH.__init__(self, view, "UNIPROT_ACC",
             title = "Uniprot", tooltip = "View on Uniprot site")
-        self.setAspect(view)
 
     @classmethod
     def makeLink(cls, acc):
@@ -532,8 +513,7 @@ class UNIPROT_AttrH(AttrH):
 #===============================================
 class PGKB_AttrH(AttrH):
     def __init__(self, view, key, is_simple):
-        AttrH.__init__(self, key.upper(), title = key.title())
-        self.setAspect(view)
+        AttrH.__init__(self, view, key.upper(), title = key.title())
         self.key = key
         self.simple = is_simple
 

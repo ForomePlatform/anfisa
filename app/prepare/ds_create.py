@@ -17,15 +17,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-import sys, os, logging, json, gzip
+import sys, os, logging, json
 from datetime import datetime
 from io import StringIO
 
 from forome_tools.read_json import JsonLineReader
 from forome_tools.log_err import logException
 from app.config.a_config import AnfisaConfig
-from app.config.flt_schema import defineFilterSchema
-from app.config.view_schema import defineViewSchema
+from app.config import getDS_Schema
 from app.config.solutions import solutionsAreReady
 from app.model.ds_disk import DataDiskStorageWriter
 from .html_report import reportDS
@@ -72,16 +71,17 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
         metadata_record["versions"][
             "Anfisa load"] = AnfisaConfig.getAnfisaVersion()
 
-    filter_set = defineFilterSchema(metadata_record, ds_kind,
+    data_schema = getDS_Schema(metadata_record)
+    filter_master = data_schema.defineFilterMaster(metadata_record, ds_kind,
         druid_adm if ds_kind != "ws" else None)
-    view_aspects = defineViewSchema(metadata_record, filter_set.getModes())
+    view_aspects = data_schema.defineViewModel(metadata_record, filter_master.getModes())
     view_checker = ViewDataChecker(view_aspects)
 
     if input_reader:
         if report_lines:
             print("Processing...", file = sys.stderr)
 
-        with DataDiskStorageWriter(True, ds_dir, filter_set,
+        with DataDiskStorageWriter(True, ds_dir, filter_master,
                 view_checker, report_lines) as ds_out:
             for record in input_reader:
                 ds_out.saveRecord(record)
@@ -99,13 +99,13 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
     rep_out = StringIO()
     is_ok = view_checker.finishUp(rep_out,
         no_mode = input_reader is None)
-    is_ok &= filter_set.reportProblems(rep_out)
+    is_ok &= filter_master.reportProblems(rep_out)
 
-    flt_schema_data = filter_set.dump()
+    flt_schema_data = filter_master.dump()
     if ds_kind == "xl" and input_reader:
         is_ok &= druid_adm.uploadDataset(ds_name, flt_schema_data,
             os.path.abspath(ds_dir + "/fdata.json.gz"),
-            filter_set.getZygosityNames(),
+            filter_master.getZygosityNames(),
             os.path.abspath(ds_dir + "/druid_rq.json"),
             no_druid_push = no_druid_push, rep_out = rep_out)
 
@@ -127,7 +127,7 @@ def createDS(ds_dir, mongo_conn, druid_adm, ds_name, ds_source, ds_kind,
             "mongo": ds_name,
             "name": ds_name,
             "root": ds_name,
-            "zygosity_var": filter_set.getZygosityVarName(),
+            "zygosity_var": filter_master.getZygosityVarName(),
             "total": total,
             "view_schema": view_aspects.dump()}
 
@@ -167,32 +167,11 @@ def pushDruidDataset(ds_dir, druid_adm, ds_name):
     with open(ds_dir + "/dsinfo.json",
             "r", encoding = "utf-8") as inp:
         ds_info = json.loads(inp.read())
-    filter_set = defineFilterSchema(ds_info["meta"], "xl", druid_adm)
+    filter_master = getDS_Schema(ds_info["meta"]).defineFilterMaster(
+        ds_info["meta"], "xl", druid_adm)
 
     return druid_adm.uploadDataset(ds_name,
         ds_info["flt_schema"],
         os.path.abspath(ds_dir + "/fdata.json.gz"),
-        filter_set.getZygosityNames(),
+        filter_master.getZygosityNames(),
         os.path.abspath(ds_dir + "/druid_rq.json"))
-
-#=====================================
-def portionFavorDruidPush(ds_dir, druid_adm, favor_storage, portion_no):
-    assert solutionsAreReady()
-    filter_set = defineFilterSchema(
-        favor_storage.getMetaData(), "xl", druid_adm)
-    fdata_path = os.path.abspath(ds_dir + "/__fdata.json.gz")
-
-    with gzip.open(fdata_path, "wt", encoding = "utf-8") as outp:
-        for rec_no, record in favor_storage.loadRecords(portion_no):
-            flt_data = filter_set.process(rec_no, record)
-            flt_data.update(favor_storage.internalFltData(rec_no))
-            print(json.dumps(flt_data, ensure_ascii = False), file = outp)
-
-    flt_schema_data = filter_set.dump()
-
-    report_fname = (os.path.abspath(ds_dir + "/druid_rq.json")
-        if portion_no == 0 else None)
-
-    druid_adm.uploadDataset("xl_FAVOR", flt_schema_data, fdata_path,
-            filter_set.getZygosityNames(),
-            report_fname = report_fname, portion_mode = True)

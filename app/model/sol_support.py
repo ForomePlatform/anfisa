@@ -18,23 +18,11 @@
 #  limitations under the License.
 #
 
-import json
-from hashlib import md5
+import logging
+from cachetools import LRUCache
 
+from .sol_item import SolItem
 from app.config.a_config import AnfisaConfig
-#===============================================
-def makeSolItemInfo(kind, name, data, rubric,
-        upd_time = None, upd_from = None,
-        used_names = None, requires = None, is_std = None):
-    if used_names is not None:
-        assert name not in used_names, "Name duplication " + name
-        used_names.add(name)
-    ret = {"_tp": kind, "name": name, "data": data}
-    for key, val in [("rubric", rubric), ("is_std", is_std), ("req", requires),
-            ("time", upd_time), ("from", upd_from)]:
-        if val is not None:
-            ret[key] = val
-    return ret
 
 #===============================================
 class StdNameSupport:
@@ -63,8 +51,9 @@ class StdNameSupport:
         return cls.offNm(name)
 
 #===============================================
-class SolutionKindHandler:
-    def __init__(self, broker, sol_kind, sol_maker, special_name = None):
+class SolutionKindCollection:
+    def __init__(self, broker, sol_kind, sol_maker,
+            cache_size=0, special_name=None):
         self.mBroker = broker
         self.mSolKind = sol_kind
         self.mSolMaker = sol_maker
@@ -76,7 +65,11 @@ class SolutionKindHandler:
             for info in self.mBroker.iterStdItems(self.mSolKind)]
         self.mStdNames = [entry_h.getName()
             for entry_h in self.mStdEntries]
-        self._setup([], [])
+        if cache_size > 0:
+            self.mCache = LRUCache(cache_size)
+        else:
+            self.mCache = None
+        self._setup([])
 
     def offName(self, name):
         if self.mSpecialName and name == self.mSpecialName:
@@ -91,15 +84,30 @@ class SolutionKindHandler:
     def getSpecialName(self):
         return self.mSpecialName
 
-    def _setup(self, dyn_names, dyn_entries):
-        self.mNames = self.mStdNames[:] + dyn_names[:]
+    def _setup(self, dyn_entries):
         self.mEntryDict = {name: entry_h
             for name, entry_h in zip(self.mStdNames, self.mStdEntries)}
-        for name, entry_h in zip(dyn_names, dyn_entries):
+        self.mNames = self.mStdNames[:]
+        for entry_h in dyn_entries:
+            name = entry_h.getName()
             assert self.isDyn(name), "Not a dyn name: " + name
-            self.mEntryDict[name] = entry_h
-        self.mHashDict = {entry_obj.getHashCode(): entry_obj
-            for entry_obj in self.mEntryDict.values()}
+            self.mNames.append(name)
+            if name not in self.mEntryDict:
+                self.mEntryDict[name] = entry_h
+            else:
+                logging.warning(
+                    f"Kind {self.mKind} collection name duplication: {name}")
+        self.mHashDict = {}
+        for name in self.mNames:
+            entry_h = self.mEntryDict[name]
+            hash_code = entry_h.getHashCode()
+            if hash_code not in self.mHashDict:
+                self.mHashDict[hash_code] = entry_h
+            else:
+                nm1 = self.mHashDict[hash_code].getName()
+                logging.warning(
+                    f"Kind {self.mKind} collection hashcode conflict:" +
+                    f"for {nm1} and ignored {name}")
 
     def isEmpty(self):
         return len(self.mNames) == 0
@@ -107,31 +115,27 @@ class SolutionKindHandler:
     def refreshSolEntries(self):
         update = False
         with self.mBroker:
-            dyn_names = []
             dyn_entries = []
-            for info in self.mBroker.getSolEnv().iterEntries(self.mSolKind):
-                name = info["name"]
-                dyn_names.append(name)
-                entry_obj = self.mEntryDict.get(name)
-                upd_info = [info.get("time"), info.get("from")]
-                if (entry_obj is not None
-                        and upd_info != entry_obj.getUpdateInfo()):
-                    entry_obj = None
-                if entry_obj is None:
-                    entry_obj = self.mSolMaker(makeSolItemInfo(
-                        self.mSolKind, name, info["data"], info.get("rubric"),
-                        info.get("time"), info.get("from")))
+            for item in self.mBroker.getSolRepo().iterEntries(self.mSolKind):
+                cur_entry = self.mEntryDict.get(item.getName())
+                if (cur_entry is not None and
+                        cur_entry.getUpdateInfo() != item.getUpdateInfo()):
+                    cur_entry = None
+                if cur_entry is None:
+                    cur_entry = self.mSolMaker(item)
+                    cur_entry.activate()
                     update = True
-                dyn_entries.append(entry_obj)
-            if (self.mSpecialName is not None
-                    and self.mSpecialName not in dyn_names):
-                dyn_names.append(self.mSpecialName)
-                dyn_entries.append(self.mSolMaker(makeSolItemInfo(
+                dyn_entries.append(cur_entry)
+            if (self.mSpecialName and not any(
+                    entry_h.getName() == self.mSpecialName
+                    for entry_h in dyn_entries)):
+                dyn_entries.append(self.mSolMaker(SolItem.create(
                     self.mSolKind, self.mSpecialName, [], None)))
-            update |= len(dyn_names) + len(self.mStdNames) != len(self.mNames)
-            if update:
-                self._setup(dyn_names, dyn_entries)
-        return update
+            if (update or len(dyn_entries) + len(self.mStdNames) !=
+                    len(self.mNames)):
+                self._setup(dyn_entries)
+                return True
+        return False
 
     def getListInfo(self):
         ret_handle = []
@@ -139,15 +143,13 @@ class SolutionKindHandler:
             for idx, name in enumerate(self.mNames):
                 if self.mSpecialName and name == self.mSpecialName:
                     continue
-                entry_obj = self.mEntryDict[name]
-                upd_time, upd_from = entry_obj.getUpdateInfo()
+                entry_h = self.mEntryDict[name]
                 ret_handle.append({
                     "name": name,
                     "standard": idx < len(self.mStdNames),
-                    "upd-time": upd_time,
-                    "upd-from": upd_from,
-                    "rubric": entry_obj.getRubric(),
-                    "eval-status": entry_obj.getEvalStatus()})
+                    "upd-time": entry_h.get("upd-time"),
+                    "upd-from": entry_h.get("upd_from"),
+                    "rubric": entry_h.get("rubric")})
         return ret_handle
 
     def modifySolEntry(self, instr, entry_data):
@@ -156,23 +158,33 @@ class SolutionKindHandler:
             "Improper name for dynamic solution entry: " + name)
         if name != self.mSpecialName:
             AnfisaConfig.assertGoodSolutionName(name)
+        prev_entry = self.pickByName(name)
+        if prev_entry and prev_entry.getHashCode() in self.mCache:
+            del self.mCache[prev_entry.getHashCode()]
         if len(instr) > 2:
             rubric = instr[2]
         else:
-            prev_entry = self.pickByName(name)
             rubric = (prev_entry.getRubric()
                 if prev_entry is not None else None)
 
-        return self.mBroker.getSolEnv().modifyEntry(
+        return self.mBroker.getSolRepo().modifyEntry(
             self.mBroker.getName(), self.mSolKind, option,
             name, entry_data, rubric)
 
-    def normalizeSolEntry(self, sol_obj):
+    def remindSolEntry(self, entry_h):
         with self.mBroker:
-            upd_sol_entry = self.mHashDict.get(sol_obj.getHashCode())
-            if upd_sol_entry is not None:
-                return upd_sol_entry
-            return sol_obj
+            hash_code = entry_h.getHashCode()
+            if hash_code in self.mHashDict:
+                return self.mHashDict[hash_code]
+            if self.mCache is not None and hash_code in self.mCache:
+                return self.mCache[hash_code]
+        return None
+
+    def mindSolEntry(self, entry_h):
+        if self.mCache is None:
+            return
+        with self.mBroker:
+                self.mCache[entry_h.getHashCode()] = entry_h
 
     def pickByHash(self, hash_code):
         with self.mBroker:
@@ -181,65 +193,3 @@ class SolutionKindHandler:
     def pickByName(self, name):
         with self.mBroker:
             return self.mEntryDict.get(name)
-
-#===============================================
-class SolutionBaseInfo:
-    def __init__(self, kind, name = None, rubric = None,
-            updated_time = None, updated_from = None):
-        self.mKind = kind
-        self.mName = name
-        self.mRubric = rubric
-        self.mUpdatedInfo = [updated_time, updated_from]
-
-        if self.mRubric is not None:
-            assert isinstance(self.mRubric, str), (
-                "Rubric is not string: " + str(self.mRubric))
-
-    def getSolKind(self):
-        return self.mKind
-
-    def getName(self):
-        return self.mName
-
-    def getRubric(self):
-        return self.mRubric
-
-    def getUpdateInfo(self):
-        return self.mUpdatedInfo
-
-#===============================================
-class SolPanelHandler(SolutionBaseInfo):
-    def __init__(self, tp, name, sym_list, rubric = None,
-            updated_time = None, updated_from = None):
-        SolutionBaseInfo.__init__(self, "panel." + tp,
-            name, rubric, updated_time, updated_from)
-        self.mType = tp
-        self.mSymList = sym_list
-        self.mHashCode = md5(bytes(json.dumps(sorted(set(self.mSymList)),
-            sort_keys = True), encoding = "utf-8")).hexdigest()
-
-    @staticmethod
-    def makeSolEntry(info):
-        prefix, tp = info["_tp"].split('.')
-        assert prefix == "panel"
-        return SolPanelHandler(tp,
-            StdNameSupport.normNm(info["name"], info.get("is_std")),
-            info["data"],
-            rubric = info.get("rubric"),
-            updated_time = info.get("time"),
-            updated_from = info.get("from"))
-
-    def getType(self):
-        return self.mType
-
-    def getSymList(self):
-        return self.mSymList
-
-    def getHashCode(self):
-        return self.mHashCode
-
-    def getEvalStatus(self):
-        return None
-
-    def isDynamic(self):
-        return not StdNameSupport.isStd(self.mName)

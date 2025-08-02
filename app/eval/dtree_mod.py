@@ -18,7 +18,6 @@
 #  limitations under the License.
 #
 
-from app.config.variables import anfisaVariables
 from .condition import ConditionMaker, reduceCondData
 from .code_repr import formatIfCode
 
@@ -139,11 +138,10 @@ def modifyDTreeCode(parsed, instr):
     return "\n".join(code_lines)
 
 #===============================================
-def annotateDTreeCode(parsed):
+def annotateDTreeCode(parsed, facets_descr):
     code_lines = parsed.getTreeCode().splitlines()
     res_code_lines = []
 
-    facets_descr = anfisaVariables.getClassificationDescr()
     for frag_h in parsed.getFragments():
         line_from, line_to = frag_h.getLineDiap()
         correct_meta = frag_h.getCorrectMetaAnnotations(parsed.getEvalSpace())

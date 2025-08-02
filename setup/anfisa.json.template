@@ -43,6 +43,15 @@
             "source": "${HOME}/doc/user/",
             "build": "${WORK}/doc/user/",
             "path": "doc/user/"
+        },
+        {
+            "id": "variables",
+            "mode": "pre-build",
+            "title": "Anfisa Filtering Variables Documentation",
+            "--url": "https://foromeplatform.github.io/documentation/anfisa-user.v0.7/",
+            "source": "${WORK}/pre-build/variables/",
+            "build": "${WORK}/doc/variables/",
+            "path": "doc/variables/"            
         }
     ],
     "dir-files": [

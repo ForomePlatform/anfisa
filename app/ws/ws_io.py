@@ -56,7 +56,7 @@ def exportWS(ds_h, with_support, with_root_doc):
 
     if with_support:
         support_data = {
-            "mongo": ds_h.getSolEnv().dumpAll(),
+            "mongo": ds_h.getSolRepo().dumpAll(),
             "note": ds_h.getMongoAgent().getNote()[0]}
 
     out_name = ds_h.getName() + ".tgz"

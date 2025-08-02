@@ -18,15 +18,21 @@
 #  limitations under the License.
 #
 
+from forome_tools.yaml_supp import YProperty, YClass
 from .aspect import AspectH
 
 #===============================================
-class AspectSetH:
-    def __init__(self, aspects, schema_modes):
-        self.mAspects = aspects
+class ViewModel:
+    sClass = YClass([
+        YProperty("aspects", AspectH.sClass, is_seq=True, required=True)
+    ])
+
+    def __init__(self, schema_modes):
+        self.mAspects = []
         self.mSchemaModes = schema_modes
-        for asp in self.mAspects:
-            asp._setMaster(self)
+
+    def _addAspect(self, aspect):
+        self.mAspects.append(aspect)
 
     def __getitem__(self, name):
         for asp in self.mAspects:
@@ -37,19 +43,29 @@ class AspectSetH:
     def __iter__(self):
         return iter(self.mAspects)
 
+    def testRequirements(self, modes):
+        if modes is None:
+            return True
+        return len(self.mSchemaModes & set(modes)) > 0
+
     #===============================================
     def dump(self):
         return [asp.dump() for asp in self.mAspects]
 
     @classmethod
     def load(cls, data, schema_modes):
-        return cls([AspectH.load(it) for it in data],
-            schema_modes)
+        ret = cls(schema_modes)
+        for it in data:
+            ret._addAspect(AspectH.load(ret, it))
+        return ret
 
-    def testRequirements(self, modes):
-        if modes is None:
-            return True
-        return len(self.mSchemaModes & set(modes)) > 0
+    @classmethod
+    def loadY(cls, yaml_file, schema_modes):
+        ret = cls(schema_modes)
+        descr = cls.sClass.loadFile(yaml_file)
+        for asp_data in descr["aspects"]:
+            ret._addAspect(AspectH.loadY(ret, asp_data))
+        return ret
 
     #===============================================
     def getViewRepr(self, rec_data, view_context):
@@ -62,10 +78,3 @@ class AspectSetH:
 
     def getFirstAspectID(self):
         return self.mAspects[0].getName()
-
-    def setAspectColumnMarkup(self, aspect_name, markup_func):
-        for aspect in self.mAspects:
-            if aspect.getName() == aspect_name:
-                aspect.setColumnMarkup(markup_func)
-                return
-        assert False, "Failed to find aspect for column markup: " + aspect_name

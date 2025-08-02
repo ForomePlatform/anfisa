@@ -18,19 +18,10 @@
 #  limitations under the License.
 #
 
-from .favor import FavorSchema
-from .avarstar import AvarstarSchema
-
 #===============================================
-sDataConfigSchemaDict = {
-    "FAVOR": FavorSchema,
-    "AVARSTAR": AvarstarSchema
-}
-
-def getDataConfigSchema(name):
-    global sDataConfigSchemaDict
-    return sDataConfigSchemaDict.get(name)
-
-def iterDataConfigSchema():
-    global sDataConfigSchemaDict
-    return sDataConfigSchemaDict.items()
+def getDS_Schema(metadata_record = None):
+    from .schema_case import DS_Schema_Case
+    data_schema = (metadata_record.get("data_schema")
+        if metadata_record else None)
+    assert data_schema in (None, "CASE"), "Unknown data schema: " + data_schema
+    return DS_Schema_Case

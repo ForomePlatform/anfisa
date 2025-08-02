@@ -232,13 +232,9 @@ class WS_TranscriptStatusUnit(WS_Unit, EnumUnitSupport):
         self._setScreened(
             sum(info[1] for info in variants_info) == 0)
         self.mArray = array('L')
-        self.mIdMode = unit_data.get("tr-id-mode")
 
     def isDetailed(self):
         return True
-
-    def isTranscriptID(self):
-        return self.mIdMode
 
     def getVariantSet(self):
         return self.mVariantSet
@@ -331,7 +327,8 @@ class WS_TranscriptVarietyUnit(WS_TranscriptStatusUnit, VarietySupport):
         WS_TranscriptStatusUnit.__init__(self,
             eval_space, unit_data, "transcript-variety")
         VarietySupport.__init__(self, self.getDescr(), "transcript-multiset")
-        self.getInfo()["panel-name"] = self.getPanelUnit().getName()
+        self.addPresentationProperty(
+            "panel-name", self.getPanelUnit().getName())
 
     def makeBaseCond(self, variants, filter_mode):
         ret = self.getEvalSpace().makeEnumCond(
@@ -386,7 +383,7 @@ def loadWS_Unit(eval_space, unit_data):
         return WS_TranscriptMultisetUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "transcript-variety":
         return WS_TranscriptVarietyUnit(eval_space, unit_data)
-    if unit_data["sub-kind"] == "transcript-panels":
+    if unit_data["sub-kind"] == "transcript-panel":
         return WS_TranscriptMultisetUnit(eval_space, unit_data)
     if unit_data["sub-kind"] == "status":
         return WS_StatusUnit(eval_space, unit_data)

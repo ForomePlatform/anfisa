@@ -588,8 +588,14 @@ var sOpCondH = {
         else
             this.mCurUnitName = unit_name;
         unit_stat = sEvalCtrlH.getUnitStat(this.mCurUnitName);
-        document.getElementById("cond-title").innerHTML = this.mCurUnitName + 
-            ((unit_stat["kind"] == "func")? "()" : "");
+        var unit_t_repr = this.mCurUnitName;
+        if (unit_stat["kind"] == "func")
+            unit_t_repr += "()";
+        if (unit_stat["var-doc-ref"])
+            unit_t_repr += ' &nbsp;&nbsp;<a href="' +
+                unit_stat["var-doc-ref"] +
+                '" target="' + sCommonTitle + '-DOC">&#x1F6C8;</a></span>';
+        document.getElementById("cond-title").innerHTML = unit_t_repr;
         mode = "num";
         if (unit_stat === undefined || unit_stat["incomplete"]) {
             this.mCurTpHandler = null;
