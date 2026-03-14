@@ -26,7 +26,10 @@ class VariantTracerTask(ExecutionTask):
         self.mDS = ds_h
         self.mDTreeH = dtree_h
         self.mVariant = variant
-        self.mTranscript = transcript
+        if transcript:
+            self.mTranscript = transcript
+        else:
+            self.mTranscript = None
         self.mRqId = rq_id
 
     def getTaskType(self):
@@ -40,7 +43,7 @@ class VariantTracerTask(ExecutionTask):
             ret["transcript-id"] = self.mTranscript
             if self.mDS.getDSKind() != "ws":
                 ret["status"] = "Failed"
-                ret["error"] = "Transcript option is not provided"
+                ret["error"] = "Transcript option is not supported for Whole Genome/Exome"
                 return ret
         the_rec_no = None
         for rec_no, p_data in self.mDS.getRecStorage().iterPData(
@@ -97,7 +100,7 @@ class VariantTracerTask(ExecutionTask):
         trace_condition = self.mDS.getEvalSpace().makeRecNoCond(
             rec_no, self.mTranscript)
         if trace_condition is None:
-            descr["error"] = "Trancript not found"
+            descr["error"] = "Transcript not found"
             return descr
         traces = []
         for point_h in self.mDTreeH.iterPoints():
